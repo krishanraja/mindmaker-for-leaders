@@ -19,8 +19,9 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'inter': ['Inter', 'sans-serif'],
-				'editorial': ['Georgia', 'serif'], // Fallback for Editorial New
+				'sans': ['Inter', 'system-ui', 'sans-serif'], // Default body font
+				'inter': ['Inter', 'system-ui', 'sans-serif'],
+				'outfit': ['Outfit', 'Inter', 'system-ui', 'sans-serif'], // Modern minimal headings
 			},
 			colors: {
 				border: 'hsl(var(--border))',

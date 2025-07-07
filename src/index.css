@@ -100,12 +100,36 @@
   }
 
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04'; /* Inter modern features */
   }
   
-  /* Typography system */
-  h1, h2 {
-    @apply font-editorial;
+  /* Modern minimal typography system */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-outfit font-light tracking-tight;
+    font-feature-settings: 'ss01', 'ss02'; /* Outfit stylistic sets */
+  }
+  
+  h1 {
+    @apply text-5xl md:text-7xl lg:text-8xl font-extralight leading-[0.9] tracking-tighter;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl font-light leading-tight tracking-tight;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl lg:text-3xl font-normal leading-tight;
+  }
+  
+  /* Body text with modern styling */
+  p, span, div {
+    @apply font-inter font-normal tracking-wide leading-relaxed;
+  }
+  
+  /* Enhanced button typography */
+  button {
+    @apply font-inter font-medium tracking-wide;
   }
   
   /* Custom utility classes */
