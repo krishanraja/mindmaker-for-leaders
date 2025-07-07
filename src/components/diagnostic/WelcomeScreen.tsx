@@ -13,17 +13,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           
           {/* Main headline with neon animation */}
           <div className="space-y-4">
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-outfit font-extralight leading-[0.85] tracking-tighter">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-outfit font-extralight leading-[0.9] tracking-tighter">
               Become the{' '}
               <span className="relative inline-block">
-                <span className="text-primary font-light">10×</span>
+                <span className="text-primary font-light">10× AI-literate</span>
                 <div className="neon-line absolute inset-0 opacity-80"></div>
               </span>
+              {' '}leader
               <br />
-              <span className="font-light">AI-literate,</span>{' '}
-              <span className="text-primary font-light">well-rounded</span>
-              <br />
-              <span className="font-light">leader</span>
+              <span className="text-primary font-light">well-rounded</span> and future-ready
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-inter font-light tracking-wide">
