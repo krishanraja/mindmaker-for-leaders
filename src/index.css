@@ -2,57 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ALDAD Design System - Dark theme with royal purple accents */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core brand colors */
+    --background: 225 14% 6%;  /* #0E0E11 matte black */
+    --foreground: 0 0% 100%;   /* White text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 225 14% 8%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 225 14% 8%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Royal purple primary */
+    --primary: 258 100% 62%;    /* #6C40FF royal purple */
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary purple variations */
+    --secondary: 258 20% 15%;
+    --secondary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 225 14% 12%;
+    --muted-foreground: 0 0% 65%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 258 100% 62%;      /* Same as primary for consistency */
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 225 14% 20%;
+    --input: 225 14% 12%;
+    --ring: 258 100% 62%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Purple glow effects */
+    --purple-glow: 258 100% 62%;
+    --purple-glow-intense: 258 100% 70%;
+    
+    /* Gradient definitions */
+    --gradient-primary: linear-gradient(135deg, hsl(258 100% 62%), hsl(258 80% 55%));
+    --gradient-neon: linear-gradient(90deg, 
+      transparent 0%, 
+      hsl(258 100% 62% / 0.8) 50%, 
+      transparent 100%);
+    
+    /* Animation timing */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
@@ -100,6 +100,71 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
+  }
+  
+  /* Typography system */
+  h1, h2 {
+    @apply font-editorial;
+  }
+  
+  /* Custom utility classes */
+  .neon-line {
+    @apply relative overflow-hidden;
+  }
+  
+  .neon-line::before {
+    content: '';
+    @apply absolute top-0 left-0 h-full w-full;
+    background: var(--gradient-neon);
+    transform: translateX(-100%);
+    animation: neon-sweep 8s infinite;
+  }
+  
+  .purple-glow {
+    box-shadow: 0 0 20px hsl(var(--purple-glow) / 0.3),
+                0 0 40px hsl(var(--purple-glow) / 0.2),
+                0 0 60px hsl(var(--purple-glow) / 0.1);
+  }
+  
+  .purple-glow-intense {
+    box-shadow: 0 0 30px hsl(var(--purple-glow-intense) / 0.5),
+                0 0 60px hsl(var(--purple-glow-intense) / 0.3),
+                0 0 90px hsl(var(--purple-glow-intense) / 0.2);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 
+           transition-all duration-300 px-8 py-4 rounded-xl 
+           font-semibold text-lg purple-glow hover:purple-glow-intense
+           hover:scale-105 active:scale-95;
+  }
+  
+  .diagnostic-container {
+    @apply max-w-6xl mx-auto px-6 py-8;
+  }
+  
+  .question-card {
+    @apply bg-card/50 backdrop-blur-sm border border-border/50 
+           rounded-2xl p-8 hover:border-primary/30 
+           transition-all duration-300;
+  }
+}
+
+/* Animations */
+@keyframes neon-sweep {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px hsl(var(--purple-glow) / 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 40px hsl(var(--purple-glow) / 0.6);
   }
 }
