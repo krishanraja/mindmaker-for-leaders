@@ -19,8 +19,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                 <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">10× leader</span>
                 <div className="neon-line absolute inset-0 opacity-80"></div>
               </span>
-              <br />
-              Transform your impact with AI
+              .
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-inter font-medium">
