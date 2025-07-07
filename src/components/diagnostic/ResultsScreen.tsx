@@ -42,8 +42,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         
         {/* Header */}
         <div className="text-center space-y-6 mb-12">
-          <h1 className="text-5xl md:text-7xl font-outfit font-extralight tracking-tighter leading-[0.9]">
-            Your <span className="text-primary font-light">ALDAD</span> Results
+          <h1 className="text-5xl md:text-7xl font-outfit font-black tracking-tight leading-[0.9]">
+            Your <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">ALDAD</span> Results
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-inter font-light">
             {getPersonaDescription(scores)}
@@ -55,7 +55,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           {/* Main Score Gauge */}
           <Card className="question-card text-center">
             <div className="space-y-8">
-              <h2 className="text-2xl font-outfit font-light tracking-tight">
+              <h2 className="text-2xl font-outfit font-bold tracking-tight">
                 Overall ALDAD Score
               </h2>
               
@@ -101,7 +101,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           {/* Radar Chart - Dimensions */}
           <Card className="question-card">
             <div className="space-y-6">
-              <h2 className="text-2xl font-outfit font-light tracking-tight text-center">
+              <h2 className="text-2xl font-outfit font-bold tracking-tight text-center">
                 Leadership Dimensions
               </h2>
               
@@ -153,7 +153,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         {/* Quick Wins */}
         <Card className="question-card mt-8">
           <div className="space-y-6">
-            <h2 className="text-2xl font-outfit font-light tracking-tight text-center">
+            <h2 className="text-2xl font-outfit font-bold tracking-tight text-center">
               Your Quick Wins
             </h2>
             <p className="text-center text-muted-foreground">
@@ -180,7 +180,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
         {/* CTA Section */}
         <div className="text-center space-y-6 mt-12">
-          <h2 className="text-3xl md:text-4xl font-outfit font-light tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-outfit font-bold tracking-tight">
             Ready to 10× your leadership impact?
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">

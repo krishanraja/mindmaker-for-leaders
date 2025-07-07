@@ -13,17 +13,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           
           {/* Main headline with neon animation */}
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-outfit font-extralight leading-[0.9] tracking-tighter">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-outfit font-black leading-[0.9] tracking-tight">
               Become a{' '}
               <span className="relative inline-block">
-                <span className="text-primary font-light">10× leader</span>
+                <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">10× leader</span>
                 <div className="neon-line absolute inset-0 opacity-80"></div>
               </span>
               <br />
               Transform your impact with AI
             </h1>
             
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-inter font-light tracking-wide">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-inter font-medium">
               Discover your leadership advantage with AI. 
               Transform how you work, decide, and influence in just 7 minutes.
             </p>

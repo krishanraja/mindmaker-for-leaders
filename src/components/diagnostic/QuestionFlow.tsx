@@ -55,7 +55,7 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
         {/* Header with progress */}
         <div className="sticky top-0 bg-background/80 backdrop-blur-sm z-10 py-6 border-b border-border/20">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-outfit font-light tracking-tight">
+            <h1 className="text-2xl font-outfit font-bold tracking-tight">
               AI Leader Daily Advantage Diagnostic
             </h1>
             <div className="text-sm text-muted-foreground">
@@ -84,7 +84,7 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
           <Card className="question-card">
             <div className="space-y-8">
               <div className="text-center space-y-2">
-                <h2 className="text-3xl font-outfit font-light tracking-tight">
+                <h2 className="text-3xl font-outfit font-bold tracking-tight">
                   Section {sections[currentSection].id}: {sections[currentSection].title}
                 </h2>
                 <p className="text-muted-foreground">

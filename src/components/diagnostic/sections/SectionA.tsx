@@ -43,7 +43,7 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
       
       {/* 24-hour wheel representation */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-outfit font-light tracking-tight mb-6">How do you allocate your 24-hour day?</h3>
+        <h3 className="text-xl font-outfit font-bold tracking-tight mb-6">How do you allocate your 24-hour day?</h3>
         
         <div className="space-y-6">
           <div className="space-y-3">
