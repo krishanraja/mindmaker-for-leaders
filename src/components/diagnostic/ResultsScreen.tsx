@@ -19,11 +19,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const quickWins = generatePersonalizedQuickWins(data, scores);
 
   const getPersonaDescription = (scores: DiagnosticScores, data: DiagnosticData) => {
-    const toolCount = data.aiCopilots?.length || 0;
+    const toolCount = data.aiUseCases?.length || 0;
     const learningTime = data.upskillPercentage || 0;
     
     if (scores.aiToolFluency > 50 && scores.aiDecisionMaking > 50) {
-      return `AI Power User - Using ${toolCount} tools, ${learningTime}% weekly learning time`;
+      return `AI Power User - Using AI for ${toolCount} use cases, ${learningTime}% weekly learning time`;
     }
     if (scores.aiCommunication > 50 && scores.aiLearningGrowth > 50) {
       return `AI-Enhanced Communicator - Strong growth mindset, expanding influence`;
@@ -32,6 +32,31 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       return `AI Adopter - Building toolkit mastery, ${100 - scores.aiMindmakerScore} points to optimization`;
     }
     return `AI Explorer - Early journey, unlimited potential for 10X transformation`;
+  };
+
+  const generatePersonalizedInsights = () => {
+    const insights = [];
+    
+    if (data.aiUseCases && data.aiUseCases.length > 0) {
+      const topTools = data.aiUseCases.map(u => u.tool).filter(t => t).slice(0, 3);
+      if (topTools.length > 0) {
+        insights.push(`You're currently using ${topTools.join(', ')} for your AI-powered work.`);
+      }
+    }
+    
+    if (data.dailyFrictions && data.dailyFrictions.length > 0) {
+      insights.push(`Your biggest productivity challenge is ${data.dailyFrictions[0].toLowerCase()}.`);
+    }
+    
+    if (data.persuasionChallenge) {
+      insights.push(`Your communication challenge: "${data.persuasionChallenge}"`);
+    }
+    
+    if (data.upskillPercentage) {
+      insights.push(`You're investing ${data.upskillPercentage}% of your time in AI skill development.`);
+    }
+    
+    return insights;
   };
 
   return (
@@ -178,6 +203,26 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             </div>
           </Card>
         </div>
+
+        {/* We heard you section */}
+        <Card className="question-card mt-8">
+          <div className="space-y-6">
+            <h2 className="text-2xl font-heading font-bold tracking-tight text-center">
+              We Heard You
+            </h2>
+            <p className="text-center text-muted-foreground">
+              Based on your specific inputs, here's what we understand about your AI journey
+            </p>
+            
+            <div className="space-y-4">
+              {generatePersonalizedInsights().map((insight, index) => (
+                <div key={index} className="bg-secondary/10 p-4 rounded-lg border border-primary/20">
+                  <p className="text-sm text-muted-foreground italic">"{insight}"</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
 
         {/* Quick Wins */}
         <Card className="question-card mt-8">

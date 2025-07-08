@@ -17,12 +17,12 @@ interface QuestionFlowProps {
 }
 
 const sections = [
-  { id: 'A', title: 'Personal Productivity', component: SectionA },
-  { id: 'B', title: 'Decision Velocity', component: SectionB },
-  { id: 'C', title: 'Stakeholder Influence', component: SectionC },
-  { id: 'D', title: 'Learning & Growth', component: SectionD },
-  { id: 'E', title: 'Risk & Governance', component: SectionE },
-  { id: 'F', title: 'Priority & Contact', component: SectionF },
+  { id: 'A', title: 'Personal Productivity', component: SectionA, required: ['deepWorkHours', 'meetingHours', 'adminHours', 'aiUseCases'] },
+  { id: 'B', title: 'Decision Velocity', component: SectionB, required: ['hoursToDecision', 'aiTrustLevel'] },
+  { id: 'C', title: 'Stakeholder Influence', component: SectionC, required: ['stakeholderAudiences', 'persuasionChallenge'] },
+  { id: 'D', title: 'Learning & Growth', component: SectionD, required: ['upskillPercentage', 'skillGaps'] },
+  { id: 'E', title: 'Risk & Governance', component: SectionE, required: ['hasAiSafetyPlaybook', 'riskComfortLevel'] },
+  { id: 'F', title: 'Priority & Contact', component: SectionF, required: ['dailyFrictions', 'email', 'company', 'title'] },
 ];
 
 export const QuestionFlow: React.FC<QuestionFlowProps> = ({ 
@@ -33,9 +33,33 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
   const [currentSection, setCurrentSection] = useState(0);
   const progress = ((currentSection + 1) / sections.length) * 100;
 
+  const isCurrentSectionComplete = () => {
+    const section = sections[currentSection];
+    return section.required.every(field => {
+      const value = data[field as keyof typeof data];
+      if (field === 'aiUseCases') {
+        return Array.isArray(value) && value.length > 0 && (value as any[]).every(u => u.tool && u.tool.trim() !== '');
+      }
+      if (field === 'stakeholderAudiences' || field === 'skillGaps' || field === 'dailyFrictions') {
+        return Array.isArray(value) && value.length > 0;
+      }
+      if (field === 'persuasionChallenge') {
+        return typeof value === 'string' && value.trim() !== '';
+      }
+      if (field === 'hasAiSafetyPlaybook') {
+        return typeof value === 'boolean';
+      }
+      return value !== undefined && value !== null && value !== '';
+    });
+  };
+
   const handleNext = () => {
     if (currentSection < sections.length - 1) {
       setCurrentSection(currentSection + 1);
+      // Smooth scroll to top
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 50);
     } else {
       onComplete();
     }
@@ -44,6 +68,10 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
   const handlePrevious = () => {
     if (currentSection > 0) {
       setCurrentSection(currentSection - 1);
+      // Smooth scroll to top
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 50);
     }
   };
 
@@ -127,6 +155,7 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
 
             <Button
               onClick={handleNext}
+              disabled={!isCurrentSectionComplete()}
               className="btn-primary px-8 py-3"
             >
               {currentSection === sections.length - 1 ? 'Get Results' : 'Next'}

@@ -1,0 +1,61 @@
+import React from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { AIUseCase } from '../DiagnosticTool';
+
+interface AIUseCaseInputProps {
+  useCase: string;
+  value: AIUseCase | null;
+  onChange: (value: AIUseCase | null) => void;
+}
+
+export const AIUseCaseInput: React.FC<AIUseCaseInputProps> = ({ 
+  useCase, 
+  value, 
+  onChange 
+}) => {
+  const isChecked = value !== null;
+  
+  const handleCheckboxChange = (checked: boolean) => {
+    if (checked) {
+      onChange({ useCase, tool: '' });
+    } else {
+      onChange(null);
+    }
+  };
+
+  const handleToolChange = (tool: string) => {
+    if (value) {
+      onChange({ ...value, tool });
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center space-x-3">
+        <Checkbox
+          id={useCase}
+          checked={isChecked}
+          onCheckedChange={handleCheckboxChange}
+        />
+        <label 
+          htmlFor={useCase}
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+        >
+          {useCase}
+        </label>
+      </div>
+      
+      {isChecked && (
+        <div className="ml-6 space-y-1">
+          <Input
+            placeholder="Which tool do you use? (e.g., ChatGPT, Claude, etc.)"
+            value={value?.tool || ''}
+            onChange={(e) => handleToolChange(e.target.value)}
+            className="text-sm"
+          />
+        </div>
+      )}
+    </div>
+  );
+};

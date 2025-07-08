@@ -5,12 +5,17 @@ import { ResultsScreen } from './diagnostic/ResultsScreen';
 
 export type DiagnosticStep = 'welcome' | 'questions' | 'results';
 
+export interface AIUseCase {
+  useCase: string;
+  tool: string;
+}
+
 export interface DiagnosticData {
   // Section A - Personal Productivity
   deepWorkHours?: number;
   meetingHours?: number;
   adminHours?: number;
-  aiCopilots?: string[];
+  aiUseCases?: AIUseCase[];
   
   // Section B - Decision Velocity
   hoursToDecision?: number;
@@ -60,7 +65,7 @@ const DiagnosticTool: React.FC = () => {
 
   const calculateScores = (data: DiagnosticData): DiagnosticScores => {
     // AI Tool Fluency (25%) - Based on tool usage and time allocation optimization
-    const toolCount = (data.aiCopilots?.length || 0);
+    const toolCount = (data.aiUseCases?.length || 0);
     const deepWorkOptimization = Math.min(1, (data.deepWorkHours || 0) / 10);
     const aiToolFluency = Math.min(70, (toolCount / 9) * 40 + deepWorkOptimization * 30);
     

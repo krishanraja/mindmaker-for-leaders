@@ -236,13 +236,22 @@ export function generatePersonalizedQuickWins(
   const selectedWins: PersonalQuickWin[] = [];
   const usedTitles = new Set<string>();
   
+  // Get user's specific tools for personalization
+  const userTools = data.aiUseCases?.map(u => u.tool).filter(t => t) || [];
+  const toolsText = userTools.length > 0 ? ` using ${userTools.slice(0, 2).join(' and ')}` : '';
+  
   // Priority 1: Address top productivity bottlenecks
   const bottlenecks = data.dailyFrictions || [];
   bottlenecks.slice(0, 2).forEach(bottleneck => {
     const solutions = PERSONAL_AI_SOLUTIONS[bottleneck] || [];
     const bestSolution = solutions.find(s => !usedTitles.has(s.title));
     if (bestSolution) {
-      selectedWins.push(bestSolution);
+      // Personalize the solution with user's specific tools
+      const personalizedSolution = {
+        ...bestSolution,
+        reason: `${bestSolution.reason}${toolsText}`
+      };
+      selectedWins.push(personalizedSolution);
       usedTitles.add(bestSolution.title);
     }
   });
@@ -267,10 +276,10 @@ export function generatePersonalizedQuickWins(
     if (scores.aiToolFluency < 50) {
       lowScoreSolutions.push({
         title: 'AI Tool Stack Optimization',
-        description: `Expand from ${data.aiCopilots?.length || 0} to 5+ integrated AI tools`,
+        description: `Expand from ${data.aiUseCases?.length || 0} to 5+ integrated AI use cases`,
         impact: 'Double your AI-powered productivity',
         priority: 1,
-        reason: `Current tool count: ${data.aiCopilots?.length || 0}`
+        reason: `Current use cases: ${data.aiUseCases?.length || 0}${toolsText}`
       });
     }
     

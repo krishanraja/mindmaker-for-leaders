@@ -1,27 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import { DiagnosticData } from '../../DiagnosticTool';
+import { Input } from '@/components/ui/input';
+import { DiagnosticData, AIUseCase } from '../../DiagnosticTool';
+import { AIUseCaseInput } from '../AIUseCaseInput';
 
 interface SectionAProps {
   data: DiagnosticData;
   onUpdate: (data: Partial<DiagnosticData>) => void;
 }
 
-const personalAITools = [
-  'ChatGPT/GPT-4 for writing & analysis',
-  'Claude for deep thinking & research',
-  'Perplexity for quick research',
-  'Notion AI for note-taking & organization',
-  'Grammarly for writing enhancement',
-  'Otter.ai for meeting transcription',
-  'Midjourney/DALL-E for visual creation',
-  'GitHub Copilot for code assistance',
-  'Custom AI workflows I have built'
+const aiUseCases = [
+  'Writing & analysis',
+  'Quick research',
+  'Deep thinking & research',
+  'Note-taking & organization',
+  'Writing enhancement',
+  'Meeting transcription',
+  'Visual creation',
+  'Code assistance',
+  'Email drafting',
+  'Data analysis'
 ];
 
 export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
+  const [customUseCase, setCustomUseCase] = useState('');
   const totalHours = (data.deepWorkHours || 8) + (data.meetingHours || 4) + (data.adminHours || 4);
   
   const handleTimeAllocation = (type: 'deepWork' | 'meetings' | 'admin', value: number[]) => {
@@ -34,12 +37,23 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
     }
   };
 
-  const handleCopilotToggle = (copilot: string, checked: boolean) => {
-    const current = data.aiCopilots || [];
-    if (checked) {
-      onUpdate({ aiCopilots: [...current, copilot] });
+  const handleUseCaseChange = (useCase: string, value: AIUseCase | null) => {
+    const current = data.aiUseCases || [];
+    const filtered = current.filter(u => u.useCase !== useCase);
+    
+    if (value) {
+      onUpdate({ aiUseCases: [...filtered, value] });
     } else {
-      onUpdate({ aiCopilots: current.filter(c => c !== copilot) });
+      onUpdate({ aiUseCases: filtered });
+    }
+  };
+
+  const handleCustomUseCaseAdd = () => {
+    if (customUseCase.trim()) {
+      const current = data.aiUseCases || [];
+      const newUseCase: AIUseCase = { useCase: customUseCase.trim(), tool: '' };
+      onUpdate({ aiUseCases: [...current, newUseCase] });
+      setCustomUseCase('');
     }
   };
 
@@ -103,31 +117,53 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
         </div>
       </Card>
 
-      {/* Personal AI Tools */}
+      {/* AI Use Cases */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Which personal AI tools do you actively use?</h3>
-        <p className="text-muted-foreground mb-6">Select all AI tools you use regularly for your personal productivity and effectiveness.</p>
+        <h3 className="text-xl font-semibold mb-6">What do you actively use AI for?</h3>
+        <p className="text-muted-foreground mb-6">Select what you use AI for and specify which tools you use for each task.</p>
         
-        <div className="grid md:grid-cols-2 gap-4">
-          {personalAITools.map((tool) => (
-            <div key={tool} className="flex items-center space-x-3">
-              <Checkbox
-                id={tool}
-                checked={(data.aiCopilots || []).includes(tool)}
-                onCheckedChange={(checked) => handleCopilotToggle(tool, checked as boolean)}
+        <div className="space-y-4">
+          {aiUseCases.map((useCase) => (
+            <AIUseCaseInput
+              key={useCase}
+              useCase={useCase}
+              value={data.aiUseCases?.find(u => u.useCase === useCase) || null}
+              onChange={(value) => handleUseCaseChange(useCase, value)}
+            />
+          ))}
+          
+          {/* Custom use case input */}
+          <div className="border-t pt-4 mt-6">
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Add your own AI use case..."
+                value={customUseCase}
+                onChange={(e) => setCustomUseCase(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleCustomUseCaseAdd()}
+                className="flex-1"
               />
-              <label 
-                htmlFor={tool}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              <button
+                onClick={handleCustomUseCaseAdd}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
               >
-                {tool}
-              </label>
+                Add
+              </button>
             </div>
+          </div>
+          
+          {/* Show custom use cases */}
+          {data.aiUseCases?.filter(u => !aiUseCases.includes(u.useCase)).map((customCase) => (
+            <AIUseCaseInput
+              key={customCase.useCase}
+              useCase={customCase.useCase}
+              value={customCase}
+              onChange={(value) => handleUseCaseChange(customCase.useCase, value)}
+            />
           ))}
         </div>
         
         <div className="mt-4 text-sm text-muted-foreground">
-          Selected: {(data.aiCopilots || []).length} personal AI tools
+          Selected: {(data.aiUseCases || []).length} AI use cases
         </div>
       </Card>
     </div>
