@@ -118,7 +118,10 @@ const DiagnosticTool: React.FC = () => {
     
     // Send email with diagnostic results
     try {
-      const { data, error } = await supabase.functions.invoke('send-diagnostic-email', {
+      console.log('Starting to send diagnostic email...');
+      console.log('Data being sent:', { data: diagnosticData, scores: calculatedScores });
+      
+      const { data: responseData, error } = await supabase.functions.invoke('send-diagnostic-email', {
         body: {
           data: diagnosticData,
           scores: calculatedScores
@@ -126,12 +129,14 @@ const DiagnosticTool: React.FC = () => {
       });
       
       if (error) {
+        console.error('Supabase function error:', error);
         throw error;
       }
       
-      console.log('Diagnostic email sent successfully', data);
+      console.log('Diagnostic email sent successfully', responseData);
     } catch (error) {
       console.error('Failed to send diagnostic email:', error);
+      // Don't block the user from seeing results even if email fails
     }
   };
 
