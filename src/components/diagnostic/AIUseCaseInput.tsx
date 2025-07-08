@@ -52,8 +52,11 @@ export const AIUseCaseInput: React.FC<AIUseCaseInputProps> = ({
             placeholder="Which tool do you use? (e.g., ChatGPT, Claude, etc.)"
             value={value?.tool || ''}
             onChange={(e) => handleToolChange(e.target.value)}
-            className="text-sm"
+            className={`text-sm ${(!value?.tool || value?.tool.trim() === '') ? 'border-amber-400 ring-amber-100' : ''}`}
           />
+          {(!value?.tool || value?.tool.trim() === '') && (
+            <p className="text-xs text-amber-600 ml-1">Tool name required</p>
+          )}
         </div>
       )}
     </div>

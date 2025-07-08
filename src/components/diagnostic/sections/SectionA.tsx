@@ -162,8 +162,15 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
           ))}
         </div>
         
-        <div className="mt-4 text-sm text-muted-foreground">
-          Selected: {(data.aiUseCases || []).length} AI use cases
+        <div className="mt-4 space-y-2">
+          <div className="text-sm text-muted-foreground">
+            Selected: {(data.aiUseCases || []).length} AI use cases
+          </div>
+          {(data.aiUseCases || []).some(u => !u.tool || u.tool.trim() === '') && (
+            <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md border border-amber-200">
+              ⚠️ Please fill in the tool name for all selected use cases to continue
+            </div>
+          )}
         </div>
       </Card>
     </div>
