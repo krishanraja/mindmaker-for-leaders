@@ -42,7 +42,7 @@ export interface DiagnosticScores {
   influenceQuotient: number;
   growthMindset: number;
   governanceConfidence: number;
-  aldadScore: number;
+  aiMindmakerScore: number;
 }
 
 const DiagnosticTool: React.FC = () => {
@@ -83,7 +83,7 @@ const DiagnosticTool: React.FC = () => {
       ((data.hasAiSafetyPlaybook ? 50 : 0) + (data.riskComfortLevel || 0) * 5)
     );
     
-    const aldadScore = Math.round(
+    const aiMindmakerScore = Math.round(
       (productivityMultiplier * 0.25) +
       (decisionAgility * 0.25) +
       (influenceQuotient * 0.2) +
@@ -97,7 +97,7 @@ const DiagnosticTool: React.FC = () => {
       influenceQuotient: Math.round(influenceQuotient),
       growthMindset: Math.round(growthMindset),
       governanceConfidence: Math.round(governanceConfidence),
-      aldadScore
+      aiMindmakerScore
     };
   };
 

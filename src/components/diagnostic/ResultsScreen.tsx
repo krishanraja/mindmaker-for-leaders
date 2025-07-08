@@ -43,7 +43,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         {/* Header */}
         <div className="text-center space-y-6 mb-12">
           <h1 className="text-5xl md:text-7xl font-display font-black tracking-tight leading-[0.9]">
-            Your <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">ALDAD</span> Results
+            Your <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">AI Mindmaker</span> Results
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-body font-light">
             {getPersonaDescription(scores)}
@@ -56,7 +56,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           <Card className="question-card text-center">
             <div className="space-y-8">
               <h2 className="text-2xl font-heading font-bold tracking-tight">
-                Overall ALDAD Score
+                Overall AI Mindmaker Score
               </h2>
               
               <div className="relative">
@@ -77,14 +77,14 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                       stroke="hsl(var(--primary))"
                       strokeWidth="8"
                       fill="none"
-                      strokeDasharray={`${(scores.aldadScore / 100) * 251.2} 251.2`}
+                      strokeDasharray={`${(scores.aiMindmakerScore / 100) * 251.2} 251.2`}
                       className="purple-glow transition-all duration-1000"
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-4xl font-bold text-primary">
-                        {scores.aldadScore}
+                        {scores.aiMindmakerScore}
                       </div>
                       <div className="text-sm text-muted-foreground">/ 100</div>
                     </div>
@@ -93,7 +93,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
               </div>
               
               <p className="text-muted-foreground">
-                You're in the top {100 - scores.aldadScore}% of AI-forward leaders
+                You're in the top {100 - scores.aiMindmakerScore}% of AI-forward leaders
               </p>
             </div>
           </Card>
@@ -184,12 +184,15 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             Ready to 10× your leadership impact?
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Join the Fractionl Leader Lab and get your personalized 90-day transformation plan
+            Book a 30 minute consult to scope out your tailored 90-day agentic AI sprint.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="btn-primary">
-              Join Fractionl Leader Lab
+            <Button 
+              className="btn-primary"
+              onClick={() => window.open('https://calendly.com/krish-raja/krish-raja', '_blank')}
+            >
+              Book a call
             </Button>
             <Button variant="outline" onClick={onRestart}>
               Retake Diagnostic
