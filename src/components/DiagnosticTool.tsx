@@ -108,10 +108,27 @@ const DiagnosticTool: React.FC = () => {
     };
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     const calculatedScores = calculateScores(diagnosticData);
     setScores(calculatedScores);
     setCurrentStep('results');
+    
+    // Send email with diagnostic results
+    try {
+      await fetch('https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/send-diagnostic-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: diagnosticData,
+          scores: calculatedScores
+        }),
+      });
+      console.log('Diagnostic email sent successfully');
+    } catch (error) {
+      console.error('Failed to send diagnostic email:', error);
+    }
   };
 
   return (
