@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { WelcomeScreen } from './diagnostic/WelcomeScreen';
 import { QuestionFlow } from './diagnostic/QuestionFlow';
 import { ResultsScreen } from './diagnostic/ResultsScreen';
+import { supabase } from '@/integrations/supabase/client';
 
 export type DiagnosticStep = 'welcome' | 'questions' | 'results';
 
@@ -115,17 +116,18 @@ const DiagnosticTool: React.FC = () => {
     
     // Send email with diagnostic results
     try {
-      await fetch('https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/send-diagnostic-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('send-diagnostic-email', {
+        body: {
           data: diagnosticData,
           scores: calculatedScores
-        }),
+        }
       });
-      console.log('Diagnostic email sent successfully');
+      
+      if (error) {
+        throw error;
+      }
+      
+      console.log('Diagnostic email sent successfully', data);
     } catch (error) {
       console.error('Failed to send diagnostic email:', error);
     }
