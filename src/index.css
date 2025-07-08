@@ -104,9 +104,22 @@
     font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04'; /* Inter modern features */
   }
   
+  /* Font class definitions */
+  .font-display {
+    @apply font-outfit;
+  }
+  
+  .font-heading {
+    @apply font-outfit;
+  }
+  
+  .font-body {
+    @apply font-inter;
+  }
+  
   /* Bold, impactful typography system */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-outfit font-bold tracking-tight;
+    @apply font-heading font-bold tracking-tight;
   }
   
   h1 {
@@ -123,12 +136,12 @@
   
   /* Body text with medium weight */
   p, span, div {
-    @apply font-inter font-medium tracking-normal leading-relaxed;
+    @apply font-body font-medium tracking-normal leading-relaxed;
   }
   
   /* Enhanced button typography */
   button {
-    @apply font-inter font-semibold tracking-wide;
+    @apply font-body font-semibold tracking-wide;
   }
   
   /* Custom utility classes */

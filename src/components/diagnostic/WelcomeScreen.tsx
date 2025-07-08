@@ -22,7 +22,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
 
           {/* Main headline with neon animation */}
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-outfit font-black leading-[0.9] tracking-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-black leading-[0.9] tracking-tight">
               Become a{' '}
               <span className="relative inline-block">
                 <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">10× leader</span>
@@ -31,7 +31,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
               .
             </h1>
             
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-inter font-medium">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-body font-medium">
               Discover your leadership advantage with AI. 
               Transform how you work, decide, and influence in just 7 minutes.
             </p>
