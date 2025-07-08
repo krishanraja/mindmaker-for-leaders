@@ -70,7 +70,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
               size="lg"
               className="btn-primary text-xl px-12 py-6 hover:scale-105 transition-transform duration-300"
             >
-              Start Your Diagnostic
+              Start your Mindmaking Diagnostic
               <div className="ml-3 text-2xl">✨</div>
             </Button>
           </div>
@@ -78,10 +78,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           {/* Trust indicators */}
           <div className="pt-12 space-y-4">
             <p className="text-sm text-muted-foreground">
-              Join 1,000+ leaders already transforming their productivity
+              Join leaders from around the globe levelling up.
             </p>
             <div className="flex justify-center space-x-8 text-xs text-muted-foreground/60">
-              <span>✓ GDPR Compliant</span>
               <span>✓ No Spam</span>
               <span>✓ Instant Results</span>
             </div>
