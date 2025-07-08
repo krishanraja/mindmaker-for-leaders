@@ -29,10 +29,6 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
-				'opportunity-red': 'hsl(var(--opportunity-red))',
-				'opportunity-amber': 'hsl(var(--opportunity-amber))',
-				'success-green': 'hsl(var(--success-green))',
-				'revenue-blue': 'hsl(var(--revenue-blue))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'

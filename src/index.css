@@ -43,12 +43,6 @@
     --purple-glow: 258 100% 62%;
     --purple-glow-intense: 258 100% 70%;
     
-    /* ROI-focused color system */
-    --opportunity-red: 0 85% 60%;     /* #F43F5E - leaving money on table */
-    --opportunity-amber: 35 100% 55%; /* #F59E0B - potential gains */
-    --success-green: 142 76% 36%;     /* #10B981 - optimized state */
-    --revenue-blue: 217 91% 60%;      /* #3B82F6 - revenue impact */
-    
     /* Gradient definitions */
     --gradient-primary: linear-gradient(135deg, hsl(258 100% 62%), hsl(258 80% 55%));
     --gradient-neon: linear-gradient(90deg, 
