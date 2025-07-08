@@ -38,7 +38,11 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
     return section.required.every(field => {
       const value = data[field as keyof typeof data];
       if (field === 'aiUseCases') {
-        return Array.isArray(value) && value.length > 0 && (value as any[]).every(u => u.tool && u.tool.trim() !== '');
+        if (!Array.isArray(value) || value.length === 0) return false;
+        // If "None" is selected, no tool validation needed
+        if ((value as any[]).some(u => u.useCase.startsWith('None -'))) return true;
+        // Otherwise, all selected use cases must have tool names
+        return (value as any[]).every(u => u.tool && u.tool.trim() !== '');
       }
       if (field === 'stakeholderAudiences' || field === 'skillGaps' || field === 'dailyFrictions') {
         return Array.isArray(value) && value.length > 0;

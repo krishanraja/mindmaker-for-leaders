@@ -11,6 +11,7 @@ interface SectionAProps {
 }
 
 const aiUseCases = [
+  'None - I don\'t actively use AI yet',
   'Writing & analysis',
   'Quick research',
   'Deep thinking & research',
@@ -42,7 +43,14 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
     const filtered = current.filter(u => u.useCase !== useCase);
     
     if (value) {
-      onUpdate({ aiUseCases: [...filtered, value] });
+      // If "None" is selected, clear all other selections
+      if (useCase.startsWith('None -')) {
+        onUpdate({ aiUseCases: [value] });
+      } else {
+        // If any other option is selected, remove "None" if it exists
+        const withoutNone = filtered.filter(u => !u.useCase.startsWith('None -'));
+        onUpdate({ aiUseCases: [...withoutNone, value] });
+      }
     } else {
       onUpdate({ aiUseCases: filtered });
     }
@@ -166,7 +174,8 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
           <div className="text-sm text-muted-foreground">
             Selected: {(data.aiUseCases || []).length} AI use cases
           </div>
-          {(data.aiUseCases || []).some(u => !u.tool || u.tool.trim() === '') && (
+          {(data.aiUseCases || []).some(u => !u.useCase.startsWith('None -') && (!u.tool || u.tool.trim() === '')) && 
+           !(data.aiUseCases || []).some(u => u.useCase.startsWith('None -')) && (
             <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md border border-amber-200">
               ⚠️ Please fill in the tool name for all selected use cases to continue
             </div>

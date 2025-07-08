@@ -46,7 +46,7 @@ export const AIUseCaseInput: React.FC<AIUseCaseInputProps> = ({
         </label>
       </div>
       
-      {isChecked && (
+      {isChecked && !useCase.startsWith('None -') && (
         <div className="ml-6 space-y-1">
           <Input
             placeholder="Which tool do you use? (e.g., ChatGPT, Claude, etc.)"
