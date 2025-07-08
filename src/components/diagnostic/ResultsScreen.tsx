@@ -37,7 +37,16 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         
         {/* Header */}
         <div className="text-center space-y-6 mb-12">
-          <h1 className="text-5xl md:text-7xl font-display font-black tracking-tight leading-[0.9]">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/lovable-uploads/2819589c-814c-4ec7-9e78-0d2a80b89243.png" 
+              alt="AI Mindmaker Logo" 
+              className="h-16 w-auto"
+            />
+          </div>
+          
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black tracking-tight leading-[0.9]">
             Your <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">AI Mindmaker</span> Results
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-body font-light">
