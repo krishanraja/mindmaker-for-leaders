@@ -63,23 +63,23 @@ const DiagnosticTool: React.FC = () => {
     const deepWorkRatio = (data.deepWorkHours || 0) / 24;
     const copilotUse = (data.aiCopilots?.length || 0) / 4; // Max 4 copilots
     
-    const productivityMultiplier = Math.min(100, (deepWorkRatio * copilotUse) * 100);
+    const productivityMultiplier = Math.min(70, (deepWorkRatio * copilotUse) * 100);
     
-    const decisionAgility = Math.min(100, 
+    const decisionAgility = Math.min(70, 
       ((72 - (data.hoursToDecision || 72)) / 72) * (data.aiTrustLevel || 0) * 25
     );
     
-    const influenceQuotient = Math.min(100, 
+    const influenceQuotient = Math.min(70, 
       ((data.stakeholderAudiences?.length || 0) / 4) * 
       (data.persuasionChallenge ? 70 : 100)
     );
     
-    const growthMindset = Math.min(100, 
+    const growthMindset = Math.min(70, 
       (data.upskillPercentage || 0) * 
       (1 - ((data.skillGaps?.length || 0) / 5)) * 100
     );
     
-    const governanceConfidence = Math.min(100, 
+    const governanceConfidence = Math.min(70, 
       ((data.hasAiSafetyPlaybook ? 50 : 0) + (data.riskComfortLevel || 0) * 5)
     );
     
