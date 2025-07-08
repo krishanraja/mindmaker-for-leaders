@@ -90,7 +90,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                       <div className="text-4xl font-bold text-primary">
                         {scores.aiMindmakerScore}
                       </div>
-                      <div className="text-sm text-muted-foreground">/ 70</div>
+                      <div className="text-sm text-muted-foreground">/ 100</div>
                     </div>
                   </div>
                 </div>
@@ -103,7 +103,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                    scores.aiMindmakerScore >= 30 ? 'Accelerating Growth' : 'Emerging AI Leader'}
                 </p>
                 <p className="text-sm text-primary font-medium">
-                  {70 - scores.aiMindmakerScore} points of breakthrough potential
+                  {100 - scores.aiMindmakerScore} points of breakthrough potential
                 </p>
               </div>
             </div>
@@ -125,7 +125,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </div>
                     <span className={scores.productivityMultiplier >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.productivityMultiplier}</span>
                   </div>
-                  <Progress value={(scores.productivityMultiplier / 70) * 100} className="h-2" />
+                  <Progress value={scores.productivityMultiplier} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
@@ -136,7 +136,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </div>
                     <span className={scores.decisionAgility >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.decisionAgility}</span>
                   </div>
-                  <Progress value={(scores.decisionAgility / 70) * 100} className="h-2" />
+                  <Progress value={scores.decisionAgility} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
@@ -147,7 +147,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </div>
                     <span className={scores.influenceQuotient >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.influenceQuotient}</span>
                   </div>
-                  <Progress value={(scores.influenceQuotient / 70) * 100} className="h-2" />
+                  <Progress value={scores.influenceQuotient} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
@@ -158,7 +158,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </div>
                     <span className={scores.growthMindset >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.growthMindset}</span>
                   </div>
-                  <Progress value={(scores.growthMindset / 70) * 100} className="h-2" />
+                  <Progress value={scores.growthMindset} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
@@ -169,7 +169,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     </div>
                     <span className={scores.governanceConfidence >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.governanceConfidence}</span>
                   </div>
-                  <Progress value={(scores.governanceConfidence / 70) * 100} className="h-2" />
+                  <Progress value={scores.governanceConfidence} className="h-2" />
                 </div>
               </div>
             </div>
@@ -210,7 +210,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             Transform Your Leadership in 90 Days
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Unlock your {70 - scores.aiMindmakerScore} points of leadership potential with a tailored AI strategy sprint.
+            Unlock your {100 - scores.aiMindmakerScore} points of leadership potential with a tailored AI strategy sprint.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
