@@ -11,6 +11,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       <div className="diagnostic-container text-center">
         <div className="max-w-4xl mx-auto space-y-8">
           
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/lovable-uploads/d8a8f60a-af0d-4247-8a66-e088bc097885.png" 
+              alt="Company Logo" 
+              className="w-20 h-20 md:w-24 md:h-24 object-contain"
+            />
+          </div>
+
           {/* Main headline with neon animation */}
           <div className="space-y-4">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-outfit font-black leading-[0.9] tracking-tight">
