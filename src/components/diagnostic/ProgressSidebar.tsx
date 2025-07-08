@@ -26,7 +26,11 @@ export const ProgressSidebar: React.FC<ProgressSidebarProps> = ({
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center mb-6">
-          <div className="w-8 h-8 bg-primary rounded mr-3"></div>
+          <img 
+            src="/lovable-uploads/802426c0-fc5f-4cff-baa1-8f85055b4bfa.png" 
+            alt="Fractionl AI Logo" 
+            className="w-8 h-8 mr-3"
+          />
           <span className="text-sm font-medium tracking-wider">FRACTIONL.AI</span>
         </div>
         
