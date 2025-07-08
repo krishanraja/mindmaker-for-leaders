@@ -26,6 +26,19 @@ const aiUseCases = [
 
 export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
   const [customUseCase, setCustomUseCase] = useState('');
+  
+  // Initialize default values if they don't exist
+  React.useEffect(() => {
+    const updates: Partial<DiagnosticData> = {};
+    if (data.deepWorkHours === undefined) updates.deepWorkHours = 8;
+    if (data.meetingHours === undefined) updates.meetingHours = 4;
+    if (data.adminHours === undefined) updates.adminHours = 4;
+    
+    if (Object.keys(updates).length > 0) {
+      onUpdate(updates);
+    }
+  }, []);
+  
   const totalHours = (data.deepWorkHours || 8) + (data.meetingHours || 4) + (data.adminHours || 4);
   
   const handleTimeAllocation = (type: 'deepWork' | 'meetings' | 'admin', value: number[]) => {

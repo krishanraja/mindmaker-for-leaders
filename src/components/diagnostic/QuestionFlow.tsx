@@ -35,8 +35,13 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
 
   const isCurrentSectionComplete = () => {
     const section = sections[currentSection];
+    console.log('Checking section completion for:', section.id, 'Required fields:', section.required);
+    console.log('Current data:', data);
+    
     return section.required.every(field => {
       const value = data[field as keyof typeof data];
+      console.log(`Checking field ${field}:`, value);
+      
       if (field === 'aiUseCases') {
         console.log('Validating aiUseCases:', value);
         if (!Array.isArray(value) || value.length === 0) {
@@ -61,7 +66,9 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
       if (field === 'hasAiSafetyPlaybook') {
         return typeof value === 'boolean';
       }
-      return value !== undefined && value !== null && value !== '';
+      const isValid = value !== undefined && value !== null && value !== '';
+      console.log(`Field ${field} validation result:`, isValid);
+      return isValid;
     });
   };
 
