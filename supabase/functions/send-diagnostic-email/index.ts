@@ -129,7 +129,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email with detailed HTML content
     const emailResponse = await resend.emails.send({
       from: "AI Mindmaker <onboarding@resend.dev>",
-      to: ["krish@fractionl.ai"],
+      to: ["hello@krishraja.com"], // Changed to verified email address
       subject: `${data.company || 'New Participant'} - AI Sprint for Leaders`,
       html: `
         <h2>New AI Leadership Diagnostic Completed</h2>
