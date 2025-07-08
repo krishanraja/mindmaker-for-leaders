@@ -38,11 +38,19 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
     return section.required.every(field => {
       const value = data[field as keyof typeof data];
       if (field === 'aiUseCases') {
-        if (!Array.isArray(value) || value.length === 0) return false;
+        console.log('Validating aiUseCases:', value);
+        if (!Array.isArray(value) || value.length === 0) {
+          console.log('aiUseCases validation failed: empty or not array');
+          return false;
+        }
         // If "None" is selected, no tool validation needed
-        if ((value as any[]).some(u => u.useCase.startsWith('None -'))) return true;
+        const hasNone = (value as any[]).some(u => u.useCase.startsWith('None -'));
+        console.log('Has None option:', hasNone);
+        if (hasNone) return true;
         // Otherwise, all selected use cases must have tool names
-        return (value as any[]).every(u => u.tool && u.tool.trim() !== '');
+        const allHaveTools = (value as any[]).every(u => u.tool && u.tool.trim() !== '');
+        console.log('All use cases have tools:', allHaveTools);
+        return allHaveTools;
       }
       if (field === 'stakeholderAudiences' || field === 'skillGaps' || field === 'dailyFrictions') {
         return Array.isArray(value) && value.length > 0;
