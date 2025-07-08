@@ -38,7 +38,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           </div>
 
           {/* Animated elements */}
-          <div className="relative py-12">
+          <div className="relative py-6">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-48 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-60"></div>
             </div>
@@ -64,7 +64,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           </div>
 
           {/* CTA Button */}
-          <div className="pt-8">
+          <div className="pt-4">
             <Button 
               onClick={onStart}
               size="lg"

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
 import { DiagnosticData } from '../../DiagnosticTool';
 
 interface SectionDProps {
@@ -10,20 +11,30 @@ interface SectionDProps {
 }
 
 const skillGapOptions = [
-  'AI prompting & optimization',
-  'Data fluency & interpretation', 
-  'Storytelling with AI insights',
-  'AI ethics & governance',
-  'Automation design & workflow'
+  'AI prompting, Data analysis and interpretation',
+  'Storytelling for company reports', 
+  'Ghostwriting for PR',
+  'Ideation and strategy',
+  'Automation of admin'
 ];
 
 export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
+  const [customSkillGap, setCustomSkillGap] = useState('');
+
   const handleSkillGapToggle = (skill: string, checked: boolean) => {
     const current = data.skillGaps || [];
     if (checked && current.length < 3) {
       onUpdate({ skillGaps: [...current, skill] });
     } else if (!checked) {
       onUpdate({ skillGaps: current.filter(s => s !== skill) });
+    }
+  };
+
+  const handleCustomSkillGapAdd = () => {
+    if (customSkillGap.trim() && (data.skillGaps || []).length < 3) {
+      const current = data.skillGaps || [];
+      onUpdate({ skillGaps: [...current, customSkillGap.trim()] });
+      setCustomSkillGap('');
     }
   };
 
@@ -106,6 +117,30 @@ export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
           })}
         </div>
         
+        
+        {/* Custom Skill Gap Input */}
+        <div className="mt-6 p-4 border border-dashed border-primary/30 rounded-lg">
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Add your own skill gap:</label>
+            <div className="flex space-x-2">
+              <Input
+                value={customSkillGap}
+                onChange={(e) => setCustomSkillGap(e.target.value)}
+                placeholder="Enter a custom skill gap..."
+                className="flex-1"
+                disabled={(data.skillGaps || []).length >= 3}
+              />
+              <button
+                onClick={handleCustomSkillGapAdd}
+                disabled={!customSkillGap.trim() || (data.skillGaps || []).length >= 3}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-4 text-sm text-muted-foreground">
           Selected: {(data.skillGaps || []).length} out of 3 skill gaps
         </div>

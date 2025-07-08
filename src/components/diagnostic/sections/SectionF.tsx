@@ -20,6 +20,7 @@ const frictionOptions = [
 
 export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
   const [draggedItems, setDraggedItems] = useState<string[]>(data.dailyFrictions || []);
+  const [customFriction, setCustomFriction] = useState('');
 
   const handleFrictionToggle = (friction: string, checked: boolean) => {
     const current = data.dailyFrictions || [];
@@ -31,6 +32,16 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
       const updated = current.filter(f => f !== friction);
       setDraggedItems(updated);
       onUpdate({ dailyFrictions: updated });
+    }
+  };
+
+  const handleCustomFrictionAdd = () => {
+    if (customFriction.trim() && (data.dailyFrictions || []).length < 3) {
+      const current = data.dailyFrictions || [];
+      const updated = [...current, customFriction.trim()];
+      setDraggedItems(updated);
+      onUpdate({ dailyFrictions: updated });
+      setCustomFriction('');
     }
   };
 
@@ -99,6 +110,30 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
           })}
         </div>
         
+        
+        {/* Custom Friction Point Input */}
+        <div className="mt-6 p-4 border border-dashed border-primary/30 rounded-lg">
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Add your own friction point:</label>
+            <div className="flex space-x-2">
+              <Input
+                value={customFriction}
+                onChange={(e) => setCustomFriction(e.target.value)}
+                placeholder="Enter a custom friction point..."
+                className="flex-1"
+                disabled={(data.dailyFrictions || []).length >= 3}
+              />
+              <button
+                onClick={handleCustomFrictionAdd}
+                disabled={!customFriction.trim() || (data.dailyFrictions || []).length >= 3}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-4 text-sm text-muted-foreground">
           Selected: {(data.dailyFrictions || []).length} out of 3 friction points
         </div>

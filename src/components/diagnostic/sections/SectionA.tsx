@@ -10,6 +10,7 @@ interface SectionAProps {
 }
 
 const aiCopilotOptions = [
+  'None',
   'Document writing/editing',
   'Email triage & responses', 
   'Search & research',
@@ -43,7 +44,7 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
       
       {/* 24-hour wheel representation */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-outfit font-bold tracking-tight mb-6">How do you allocate your 24-hour day?</h3>
+        <h3 className="text-xl font-outfit font-bold tracking-tight mb-6">How do you allocate your average working day?</h3>
         
         <div className="space-y-6">
           <div className="space-y-3">
@@ -99,7 +100,7 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
 
       {/* AI Copilots */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Which AI copilots do you currently use?</h3>
+        <h3 className="text-xl font-semibold mb-6">What do you currently use AI copilots for?</h3>
         
         <div className="grid md:grid-cols-2 gap-4">
           {aiCopilotOptions.map((copilot) => (
