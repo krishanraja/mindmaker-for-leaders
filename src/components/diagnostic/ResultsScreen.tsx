@@ -88,7 +88,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           <Card className="question-card text-center">
             <div className="space-y-8">
               <h2 className="text-2xl font-heading font-bold tracking-tight">
-                AI Leadership Readiness
+                Your Results
               </h2>
               
               <div className="relative">
