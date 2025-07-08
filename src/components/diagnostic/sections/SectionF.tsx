@@ -53,6 +53,11 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
     onUpdate({ dailyFrictions: updated });
   };
 
+  const getAllFrictionOptions = () => {
+    const customFrictions = (data.dailyFrictions || []).filter(friction => !frictionOptions.includes(friction));
+    return [...frictionOptions, ...customFrictions];
+  };
+
   return (
     <div className="space-y-8">
       
@@ -64,7 +69,7 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
         </p>
         
         <div className="space-y-4">
-          {frictionOptions.map((friction) => {
+          {getAllFrictionOptions().map((friction) => {
             const isSelected = (data.dailyFrictions || []).includes(friction);
             const selectionCount = (data.dailyFrictions || []).length;
             const isDisabled = !isSelected && selectionCount >= 3;
@@ -139,9 +144,9 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
         </div>
       </Card>
 
-      {/* Email & Consent */}
+      {/* Contact Information */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Contact & Consent</h3>
+        <h3 className="text-xl font-semibold mb-6">Contact</h3>
         
         <div className="space-y-6">
           <div className="space-y-2">
@@ -158,30 +163,47 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
             />
           </div>
           
-          <div className="flex items-start space-x-3 p-4 border border-border rounded-lg">
-            <Checkbox
-              id="gdpr-consent"
-              checked={data.gdprConsent || false}
-              onCheckedChange={(checked) => onUpdate({ gdprConsent: checked as boolean })}
+          <div className="space-y-2">
+            <Label htmlFor="company" className="text-base font-medium">
+              Company
+            </Label>
+            <Input
+              id="company"
+              type="text"
+              placeholder="Your company name"
+              value={data.company || ''}
+              onChange={(e) => onUpdate({ company: e.target.value })}
+              className="w-full"
             />
-            <div className="space-y-1">
-              <Label htmlFor="gdpr-consent" className="text-sm font-medium cursor-pointer">
-                GDPR Consent & Marketing Permission
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                I consent to receive the diagnostic results, personalized recommendations, 
-                and occasional updates about AI leadership resources. You can unsubscribe anytime.
-              </p>
-            </div>
           </div>
           
-          {data.gdprConsent && (
-            <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-              <p className="text-xs text-primary">
-                ✓ Thank you! We'll send your results and keep you updated on AI leadership insights.
-              </p>
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="title" className="text-base font-medium">
+              Title
+            </Label>
+            <Input
+              id="title"
+              type="text"
+              placeholder="Your job title"
+              value={data.title || ''}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              className="w-full"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="linkedin" className="text-base font-medium">
+              LinkedIn Profile URL
+            </Label>
+            <Input
+              id="linkedin"
+              type="url"
+              placeholder="https://linkedin.com/in/yourprofile"
+              value={data.linkedinUrl || ''}
+              onChange={(e) => onUpdate({ linkedinUrl: e.target.value })}
+              className="w-full"
+            />
+          </div>
         </div>
       </Card>
 

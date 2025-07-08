@@ -3,6 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
 import { DiagnosticData } from '../../DiagnosticTool';
 
 interface SectionEProps {
@@ -30,7 +32,7 @@ export const SectionE: React.FC<SectionEProps> = ({ data, onUpdate }) => {
           <div className="flex items-center justify-between p-4 border border-border rounded-lg">
             <div className="space-y-1">
               <Label htmlFor="safety-playbook" className="text-base font-medium">
-                Do you have a personal playbook for AI safety?
+                Do you have a personal playbook for AI usage?
               </Label>
               <p className="text-sm text-muted-foreground">
                 Guidelines for responsible AI use in your role
@@ -60,9 +62,23 @@ export const SectionE: React.FC<SectionEProps> = ({ data, onUpdate }) => {
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <label className="font-medium">
-                Comfort level sharing proprietary data with cloud LLMs
-              </label>
+              <div className="flex items-center space-x-2">
+                <label className="font-medium">
+                  Comfort level sharing your own personal IP with a private AI tool
+                </label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="w-4 h-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">
+                        Fractionl AI may work with you to build personal AI assistants or repositories in order to boost YOUR capabilities, but which are not company IP or property.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <span className="text-primary font-bold">{data.riskComfortLevel || 5}/10</span>
             </div>
             

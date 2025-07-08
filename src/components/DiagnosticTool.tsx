@@ -28,10 +28,12 @@ export interface DiagnosticData {
   hasAiSafetyPlaybook?: boolean;
   riskComfortLevel?: number;
   
-  // Section F - Priority & Consent
+  // Section F - Priority & Contact
   dailyFrictions?: string[];
   email?: string;
-  gdprConsent?: boolean;
+  company?: string;
+  title?: string;
+  linkedinUrl?: string;
 }
 
 export interface DiagnosticScores {

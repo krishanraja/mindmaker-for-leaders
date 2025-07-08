@@ -38,6 +38,11 @@ export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
     }
   };
 
+  const getAllSkillOptions = () => {
+    const customSkills = (data.skillGaps || []).filter(skill => !skillGapOptions.includes(skill));
+    return [...skillGapOptions, ...customSkills];
+  };
+
   return (
     <div className="space-y-8">
       
@@ -77,7 +82,7 @@ export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
         </p>
         
         <div className="space-y-4">
-          {skillGapOptions.map((skill) => {
+          {getAllSkillOptions().map((skill) => {
             const isSelected = (data.skillGaps || []).includes(skill);
             const selectionCount = (data.skillGaps || []).length;
             const isDisabled = !isSelected && selectionCount >= 3;

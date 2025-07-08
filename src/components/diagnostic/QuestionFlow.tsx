@@ -22,7 +22,7 @@ const sections = [
   { id: 'C', title: 'Stakeholder Influence', component: SectionC },
   { id: 'D', title: 'Learning & Growth', component: SectionD },
   { id: 'E', title: 'Risk & Governance', component: SectionE },
-  { id: 'F', title: 'Priority & Consent', component: SectionF },
+  { id: 'F', title: 'Priority & Contact', component: SectionF },
 ];
 
 export const QuestionFlow: React.FC<QuestionFlowProps> = ({ 
@@ -56,7 +56,7 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
         <div className="sticky top-0 bg-background/80 backdrop-blur-sm z-10 py-6 border-b border-border/20">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-heading font-bold tracking-tight">
-              AI Leader Daily Advantage Diagnostic
+              AI Leader Mindmaker
             </h1>
             <div className="text-sm text-muted-foreground">
               Section {currentSection + 1} of {sections.length}
