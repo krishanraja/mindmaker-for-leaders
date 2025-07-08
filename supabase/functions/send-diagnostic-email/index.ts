@@ -128,8 +128,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email with detailed HTML content
     const emailResponse = await resend.emails.send({
-      from: "AI Mindmaker <onboarding@resend.dev>",
-      to: ["hello@krishraja.com"], // Changed to verified email address
+      from: "AI Mindmaker <no-reply@fractionl.ai>",
+      to: ["krish@fractionl.ai"],
       subject: `${data.company || 'New Participant'} - AI Sprint for Leaders`,
       html: `
         <h2>New AI Leadership Diagnostic Completed</h2>
