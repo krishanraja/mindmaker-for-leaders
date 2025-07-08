@@ -153,6 +153,36 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
         <p className="text-muted-foreground mb-6">Help us understand your leadership context to personalize your AI transformation roadmap.</p>
         
         <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName" className="text-base font-medium">
+                First Name
+              </Label>
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="First name"
+                value={data.firstName || ''}
+                onChange={(e) => onUpdate({ firstName: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="lastName" className="text-base font-medium">
+                Last Name
+              </Label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Last name"
+                value={data.lastName || ''}
+                onChange={(e) => onUpdate({ lastName: e.target.value })}
+                className="w-full"
+              />
+            </div>
+          </div>
+          
           <div className="space-y-2">
             <Label htmlFor="email" className="text-base font-medium">
               Email Address

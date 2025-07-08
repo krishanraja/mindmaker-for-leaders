@@ -75,7 +75,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </div>
           
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black tracking-tight leading-[0.9]">
-            {data.email ? data.email.split('@')[0] : 'Your'} <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">AI Leadership</span> Readiness
+            AI Readiness for <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">{data.firstName || 'You'}</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-body font-light">
             {getPersonaDescription(scores, data)}

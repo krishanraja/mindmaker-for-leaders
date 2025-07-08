@@ -22,7 +22,7 @@ const sections = [
   { id: 'C', title: 'Stakeholder Influence', component: SectionC, required: ['stakeholderAudiences', 'persuasionChallenge'] },
   { id: 'D', title: 'Learning & Growth', component: SectionD, required: ['upskillPercentage', 'skillGaps'] },
   { id: 'E', title: 'Risk & Governance', component: SectionE, required: ['riskComfortLevel'] },
-  { id: 'F', title: 'Priority & Contact', component: SectionF, required: ['dailyFrictions', 'email', 'company', 'title'] },
+  { id: 'F', title: 'Priority & Contact', component: SectionF, required: ['dailyFrictions', 'firstName', 'lastName', 'email', 'company', 'title'] },
 ];
 
 export const QuestionFlow: React.FC<QuestionFlowProps> = ({ 

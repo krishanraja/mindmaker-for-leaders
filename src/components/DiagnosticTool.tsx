@@ -36,6 +36,8 @@ export interface DiagnosticData {
   
   // Section F - Priority & Contact
   dailyFrictions?: string[];
+  firstName?: string;
+  lastName?: string;
   email?: string;
   company?: string;
   title?: string;
