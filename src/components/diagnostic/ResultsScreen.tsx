@@ -228,26 +228,29 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         <Card className="question-card mt-8">
           <div className="space-y-6">
             <h2 className="text-2xl font-heading font-bold tracking-tight text-center">
-              Your Personal AI Transformation Roadmap
+              Your Next Steps
             </h2>
-            <p className="text-center text-muted-foreground">
-              Personalized AI tools and workflows to unlock your 10X potential
-            </p>
             
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {quickWins.map((win, index) => (
-                <div 
-                  key={index}
-                  className="bg-secondary/20 p-4 rounded-lg border border-primary/20 hover:border-primary/40 transition-all duration-300"
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
-                      {index + 1}
+            <div className="grid md:grid-cols-2 gap-6">
+              {quickWins.slice(0, 4).map((win, index) => {
+                const [title, impact] = win.split(' → ');
+                return (
+                  <div 
+                    key={index}
+                    className="bg-secondary/20 p-4 rounded-lg border border-primary/20"
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-sm font-bold text-primary-foreground">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm mb-1">{title}</h3>
+                        <p className="text-xs text-muted-foreground">{impact?.split(' (')[0]}</p>
+                      </div>
                     </div>
-                    <span className="text-sm">{win}</span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </Card>
