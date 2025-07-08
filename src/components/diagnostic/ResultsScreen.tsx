@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { DiagnosticData, DiagnosticScores } from '../DiagnosticTool';
-import { generatePersonalizedQuickWins } from '@/utils/quickWinsGenerator';
+import { generatePersonalizedQuickWins } from '@/utils/personalAIQuickWins';
 
 interface ResultsScreenProps {
   data: DiagnosticData;
@@ -18,17 +18,20 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
 }) => {
   const quickWins = generatePersonalizedQuickWins(data, scores);
 
-  const getPersonaDescription = (scores: DiagnosticScores) => {
-    if (scores.influenceQuotient > 50 && scores.decisionAgility < 40) {
-      return 'Strategic Accelerator - Strong influence, room for decision speed optimization';
+  const getPersonaDescription = (scores: DiagnosticScores, data: DiagnosticData) => {
+    const toolCount = data.aiCopilots?.length || 0;
+    const learningTime = data.upskillPercentage || 0;
+    
+    if (scores.aiToolFluency > 50 && scores.aiDecisionMaking > 50) {
+      return `AI Power User - Using ${toolCount} tools, ${learningTime}% weekly learning time`;
     }
-    if (scores.productivityMultiplier > 50) {
-      return 'Efficiency Pioneer - High productivity, expanding leadership influence';
+    if (scores.aiCommunication > 50 && scores.aiLearningGrowth > 50) {
+      return `AI-Enhanced Communicator - Strong growth mindset, expanding influence`;
     }
-    if (scores.growthMindset > 50) {
-      return 'Transformation Leader - Balanced growth across all leadership dimensions';
+    if (scores.aiToolFluency > 40) {
+      return `AI Adopter - Building toolkit mastery, ${100 - scores.aiMindmakerScore} points to optimization`;
     }
-    return 'Emerging AI Executive - Building foundation for breakthrough leadership';
+    return `AI Explorer - Early journey, unlimited potential for 10X transformation`;
   };
 
   return (
@@ -50,7 +53,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             Your <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">AI Leadership</span> Readiness
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-body font-light">
-            {getPersonaDescription(scores)}
+            {getPersonaDescription(scores, data)}
           </p>
         </div>
 
@@ -113,63 +116,63 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           <Card className="question-card">
             <div className="space-y-6">
               <h2 className="text-2xl font-heading font-bold tracking-tight text-center">
-                Leadership Dimensions
+                Personal AI Mastery Dimensions
               </h2>
               
               <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium">Productivity Multiplier</span>
-                      {scores.productivityMultiplier < 50 && <span className="text-xs text-amber-600">⚡ Speed up output by 3-5x</span>}
+                      <span className="font-medium">AI Tool Fluency</span>
+                      {scores.aiToolFluency < 50 && <span className="text-xs text-amber-600">⚡ Master more AI tools for 10X output</span>}
                     </div>
-                    <span className={scores.productivityMultiplier >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.productivityMultiplier}</span>
+                    <span className={scores.aiToolFluency >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.aiToolFluency}</span>
                   </div>
-                  <Progress value={scores.productivityMultiplier} className="h-2" />
+                  <Progress value={scores.aiToolFluency} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium">Decision Agility</span>
-                      {scores.decisionAgility < 50 && <span className="text-xs text-amber-600">🎯 Cut cycles from days to hours</span>}
+                      <span className="font-medium">AI-Enhanced Decision Making</span>
+                      {scores.aiDecisionMaking < 50 && <span className="text-xs text-amber-600">🎯 Make decisions in hours, not days</span>}
                     </div>
-                    <span className={scores.decisionAgility >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.decisionAgility}</span>
+                    <span className={scores.aiDecisionMaking >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.aiDecisionMaking}</span>
                   </div>
-                  <Progress value={scores.decisionAgility} className="h-2" />
+                  <Progress value={scores.aiDecisionMaking} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium">Influence Quotient</span>
-                      {scores.influenceQuotient < 50 && <span className="text-xs text-amber-600">📈 Amplify stakeholder alignment</span>}
+                      <span className="font-medium">AI-Powered Communication</span>
+                      {scores.aiCommunication < 50 && <span className="text-xs text-amber-600">📈 Amplify your influence with AI</span>}
                     </div>
-                    <span className={scores.influenceQuotient >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.influenceQuotient}</span>
+                    <span className={scores.aiCommunication >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.aiCommunication}</span>
                   </div>
-                  <Progress value={scores.influenceQuotient} className="h-2" />
+                  <Progress value={scores.aiCommunication} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium">Growth Mindset</span>
-                      {scores.growthMindset < 50 && <span className="text-xs text-amber-600">🚀 Accelerate competitive positioning</span>}
+                      <span className="font-medium">AI Learning & Growth</span>
+                      {scores.aiLearningGrowth < 50 && <span className="text-xs text-amber-600">🚀 Stay ahead of AI curve</span>}
                     </div>
-                    <span className={scores.growthMindset >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.growthMindset}</span>
+                    <span className={scores.aiLearningGrowth >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.aiLearningGrowth}</span>
                   </div>
-                  <Progress value={scores.growthMindset} className="h-2" />
+                  <Progress value={scores.aiLearningGrowth} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium">Governance Confidence</span>
-                      {scores.governanceConfidence < 50 && <span className="text-xs text-amber-600">🛡️ Build AI governance mastery</span>}
+                      <span className="font-medium">AI Ethics & Balance</span>
+                      {scores.aiEthicsBalance < 50 && <span className="text-xs text-amber-600">🛡️ Build responsible AI practices</span>}
                     </div>
-                    <span className={scores.governanceConfidence >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.governanceConfidence}</span>
+                    <span className={scores.aiEthicsBalance >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.aiEthicsBalance}</span>
                   </div>
-                  <Progress value={scores.governanceConfidence} className="h-2" />
+                  <Progress value={scores.aiEthicsBalance} className="h-2" />
                 </div>
               </div>
             </div>
@@ -180,10 +183,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         <Card className="question-card mt-8">
           <div className="space-y-6">
             <h2 className="text-2xl font-heading font-bold tracking-tight text-center">
-              Your Leadership Enhancement Roadmap
+              Your Personal AI Transformation Roadmap
             </h2>
             <p className="text-center text-muted-foreground">
-              5 AI-powered tools to accelerate your leadership effectiveness
+              Personalized AI tools and workflows to unlock your 10X potential
             </p>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

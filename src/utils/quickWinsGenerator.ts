@@ -260,7 +260,7 @@ export function generatePersonalizedQuickWins(
     // Add solutions based on lowest dimension scores
     const dimensionSolutions: QuickWin[] = [];
     
-    if (scores.productivityMultiplier < 50) {
+    if (scores.aiToolFluency < 50) {
       dimensionSolutions.push({
         title: 'Deep work protector',
         description: 'AI blocks distractions during focus time',
@@ -270,7 +270,7 @@ export function generatePersonalizedQuickWins(
       });
     }
     
-    if (scores.decisionAgility < 50) {
+    if (scores.aiDecisionMaking < 50) {
       dimensionSolutions.push({
         title: 'Decision confidence engine',
         description: 'AI provides data-backed decision support',
@@ -280,7 +280,7 @@ export function generatePersonalizedQuickWins(
       });
     }
     
-    if (scores.influenceQuotient < 50) {
+    if (scores.aiCommunication < 50) {
       dimensionSolutions.push({
         title: 'Stakeholder mapping AI',
         description: 'Optimizes communication for each audience',

@@ -37,11 +37,11 @@ export interface DiagnosticData {
 }
 
 export interface DiagnosticScores {
-  productivityMultiplier: number;
-  decisionAgility: number;
-  influenceQuotient: number;
-  growthMindset: number;
-  governanceConfidence: number;
+  aiToolFluency: number;
+  aiDecisionMaking: number;
+  aiCommunication: number;
+  aiLearningGrowth: number;
+  aiEthicsBalance: number;
   aiMindmakerScore: number;
 }
 
@@ -59,44 +59,46 @@ const DiagnosticTool: React.FC = () => {
   };
 
   const calculateScores = (data: DiagnosticData): DiagnosticScores => {
-    // Scoring algorithm implementation
-    const deepWorkRatio = (data.deepWorkHours || 0) / 24;
-    const copilotUse = (data.aiCopilots?.length || 0) / 4; // Max 4 copilots
+    // AI Tool Fluency (25%) - Based on tool usage and time allocation optimization
+    const toolCount = (data.aiCopilots?.length || 0);
+    const deepWorkOptimization = Math.min(1, (data.deepWorkHours || 0) / 10);
+    const aiToolFluency = Math.min(70, (toolCount / 9) * 40 + deepWorkOptimization * 30);
     
-    const productivityMultiplier = Math.min(70, (deepWorkRatio * copilotUse) * 100);
+    // AI-Enhanced Decision Making (25%) - Based on decision speed and AI trust
+    const decisionSpeed = Math.min(1, (48 - (data.hoursToDecision || 48)) / 48);
+    const aiTrust = ((data.aiTrustLevel || 3) - 1) / 4; // Normalize 1-5 to 0-1
+    const aiDecisionMaking = Math.min(70, (decisionSpeed * 35) + (aiTrust * 35));
     
-    const decisionAgility = Math.min(70, 
-      ((72 - (data.hoursToDecision || 72)) / 72) * (data.aiTrustLevel || 0) * 25
-    );
+    // AI-Enhanced Communication (20%) - Based on audience reach and communication challenges
+    const audienceCount = (data.stakeholderAudiences?.length || 0);
+    const hasChallenge = data.persuasionChallenge ? 1 : 0;
+    const aiCommunication = Math.min(70, (audienceCount / 6) * 40 + hasChallenge * 30);
     
-    const influenceQuotient = Math.min(70, 
-      ((data.stakeholderAudiences?.length || 0) / 4) * 
-      (data.persuasionChallenge ? 70 : 100)
-    );
+    // AI Learning & Growth (20%) - Based on learning investment and skill development
+    const learningTime = (data.upskillPercentage || 0) / 50; // Normalize to 0-1
+    const skillFocus = Math.min(1, (data.skillGaps?.length || 0) / 3);
+    const aiLearningGrowth = Math.min(70, learningTime * 35 + skillFocus * 35);
     
-    const growthMindset = Math.min(70, 
-      (data.upskillPercentage || 0) * 
-      (1 - ((data.skillGaps?.length || 0) / 5)) * 100
-    );
+    // AI Ethics & Balance (10%) - Based on personal guidelines and comfort level
+    const hasGuidelines = data.hasAiSafetyPlaybook ? 35 : 0;
+    const balanceLevel = ((data.riskComfortLevel || 5) / 10) * 35;
+    const aiEthicsBalance = Math.min(70, hasGuidelines + balanceLevel);
     
-    const governanceConfidence = Math.min(70, 
-      ((data.hasAiSafetyPlaybook ? 50 : 0) + (data.riskComfortLevel || 0) * 5)
-    );
-    
+    // Overall AI Mindmaker Score - Weighted average
     const aiMindmakerScore = Math.round(
-      (productivityMultiplier * 0.25) +
-      (decisionAgility * 0.25) +
-      (influenceQuotient * 0.2) +
-      (growthMindset * 0.2) +
-      (governanceConfidence * 0.1)
+      (aiToolFluency * 0.25) +
+      (aiDecisionMaking * 0.25) +
+      (aiCommunication * 0.20) +
+      (aiLearningGrowth * 0.20) +
+      (aiEthicsBalance * 0.10)
     );
 
     return {
-      productivityMultiplier: Math.round(productivityMultiplier),
-      decisionAgility: Math.round(decisionAgility),
-      influenceQuotient: Math.round(influenceQuotient),
-      growthMindset: Math.round(growthMindset),
-      governanceConfidence: Math.round(governanceConfidence),
+      aiToolFluency: Math.round(aiToolFluency),
+      aiDecisionMaking: Math.round(aiDecisionMaking),
+      aiCommunication: Math.round(aiCommunication),
+      aiLearningGrowth: Math.round(aiLearningGrowth),
+      aiEthicsBalance: Math.round(aiEthicsBalance),
       aiMindmakerScore
     };
   };
