@@ -9,11 +9,13 @@ interface SectionCProps {
   onUpdate: (data: Partial<DiagnosticData>) => void;
 }
 
-const stakeholderOptions = [
-  'Board of Directors',
-  'Regulators/Compliance',
-  'Key Clients/Customers',
-  'Team Members/Direct Reports'
+const communicationAudiences = [
+  'Senior executives and board members',
+  'Peers and colleagues',
+  'Direct reports and team members',
+  'External clients and partners',
+  'Industry networks and conferences',
+  'Social media and thought leadership'
 ];
 
 export const SectionC: React.FC<SectionCProps> = ({ data, onUpdate }) => {
@@ -29,26 +31,26 @@ export const SectionC: React.FC<SectionCProps> = ({ data, onUpdate }) => {
   return (
     <div className="space-y-8">
       
-      {/* Stakeholder Audiences */}
+      {/* Communication Enhancement */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Key Audiences to Persuade</h3>
+        <h3 className="text-xl font-semibold mb-6">AI-Enhanced Communication</h3>
         <p className="text-muted-foreground mb-6">
-          Which audiences do you need to persuade with AI-backed arguments?
+          Which audiences do you communicate with regularly where AI could help you be more effective?
         </p>
         
         <div className="grid md:grid-cols-2 gap-4">
-          {stakeholderOptions.map((stakeholder) => (
-            <div key={stakeholder} className="flex items-center space-x-3">
+          {communicationAudiences.map((audience) => (
+            <div key={audience} className="flex items-center space-x-3">
               <Checkbox
-                id={stakeholder}
-                checked={(data.stakeholderAudiences || []).includes(stakeholder)}
-                onCheckedChange={(checked) => handleStakeholderToggle(stakeholder, checked as boolean)}
+                id={audience}
+                checked={(data.stakeholderAudiences || []).includes(audience)}
+                onCheckedChange={(checked) => handleStakeholderToggle(audience, checked as boolean)}
               />
               <label 
-                htmlFor={stakeholder}
+                htmlFor={audience}
                 className="text-sm font-medium leading-none cursor-pointer"
               >
-                {stakeholder}
+                {audience}
               </label>
             </div>
           ))}
@@ -59,15 +61,15 @@ export const SectionC: React.FC<SectionCProps> = ({ data, onUpdate }) => {
         </div>
       </Card>
 
-      {/* Persuasion Challenge */}
+      {/* Communication Challenge */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Biggest Persuasion Challenge</h3>
+        <h3 className="text-xl font-semibold mb-6">Personal Communication Challenge</h3>
         <p className="text-muted-foreground mb-4">
-          What's your biggest challenge when persuading stakeholders with data-driven insights?
+          What's your biggest challenge when communicating ideas or building influence? Where could AI help you be more effective?
         </p>
         
         <Textarea
-          placeholder="e.g., 'Getting buy-in for AI investments from traditional board members' or 'Explaining complex ML models to non-technical clients'"
+          placeholder="e.g., 'Crafting compelling presentations that resonate with executives' or 'Creating thought leadership content that stands out' or 'Explaining complex topics in simple terms'"
           value={data.persuasionChallenge || ''}
           onChange={(e) => onUpdate({ persuasionChallenge: e.target.value })}
           className="min-h-[120px] resize-none"

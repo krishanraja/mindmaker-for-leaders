@@ -10,12 +10,15 @@ interface SectionDProps {
   onUpdate: (data: Partial<DiagnosticData>) => void;
 }
 
-const skillGapOptions = [
-  'AI prompting, Data analysis and interpretation',
-  'Storytelling for company reports', 
-  'Ghostwriting for PR',
-  'Ideation and strategy',
-  'Automation of admin'
+const aiMasterySkills = [
+  'Advanced prompt engineering and AI conversation',
+  'Building custom AI workflows and automations',
+  'Using AI for strategic thinking and analysis',
+  'AI-powered content creation and writing',
+  'Leveraging AI for research and information synthesis',
+  'Creating AI-enhanced presentations and visuals',
+  'Using AI for personal productivity optimization',
+  'AI-assisted decision making and problem solving'
 ];
 
 export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
@@ -39,20 +42,21 @@ export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
   };
 
   const getAllSkillOptions = () => {
-    const customSkills = (data.skillGaps || []).filter(skill => !skillGapOptions.includes(skill));
-    return [...skillGapOptions, ...customSkills];
+    const customSkills = (data.skillGaps || []).filter(skill => !aiMasterySkills.includes(skill));
+    return [...aiMasterySkills, ...customSkills];
   };
 
   return (
     <div className="space-y-8">
       
-      {/* Upskilling Time */}
+      {/* AI Learning Time */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Learning Investment</h3>
+        <h3 className="text-xl font-semibold mb-6">AI Learning Investment</h3>
+        <p className="text-muted-foreground mb-6">How much time do you invest in staying current with AI tools and capabilities?</p>
         
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <label className="font-medium">% of weekly time spent upskilling</label>
+            <label className="font-medium">% of weekly time spent learning AI tools & techniques</label>
             <span className="text-primary font-bold">{data.upskillPercentage || 10}%</span>
           </div>
           
@@ -74,11 +78,11 @@ export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
         </div>
       </Card>
 
-      {/* Top 3 Skill Gaps */}
+      {/* AI Mastery Gaps */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Top 3 Skill Gaps</h3>
+        <h3 className="text-xl font-semibold mb-6">AI Mastery Development Areas</h3>
         <p className="text-muted-foreground mb-6">
-          Select your top 3 skill gaps to focus on (maximum 3 selections)
+          Which AI skills would most help you become a 10X leader? (Select up to 3)
         </p>
         
         <div className="space-y-4">
@@ -126,12 +130,12 @@ export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
         {/* Custom Skill Gap Input */}
         <div className="mt-6 p-4 border border-dashed border-primary/30 rounded-lg">
           <div className="space-y-3">
-            <label className="text-sm font-medium">Add your own skill gap:</label>
+            <label className="text-sm font-medium">Add your own AI mastery area:</label>
             <div className="flex space-x-2">
               <Input
                 value={customSkillGap}
                 onChange={(e) => setCustomSkillGap(e.target.value)}
-                placeholder="Enter a custom skill gap..."
+                placeholder="Enter a custom AI skill you want to develop..."
                 className="flex-1"
                 disabled={(data.skillGaps || []).length >= 3}
               />
@@ -147,7 +151,7 @@ export const SectionD: React.FC<SectionDProps> = ({ data, onUpdate }) => {
         </div>
 
         <div className="mt-4 text-sm text-muted-foreground">
-          Selected: {(data.skillGaps || []).length} out of 3 skill gaps
+          Selected: {(data.skillGaps || []).length} out of 3 AI mastery areas
         </div>
       </Card>
     </div>

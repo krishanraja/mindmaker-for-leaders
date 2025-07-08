@@ -10,12 +10,15 @@ interface SectionFProps {
   onUpdate: (data: Partial<DiagnosticData>) => void;
 }
 
-const frictionOptions = [
-  'Context-switching between tools',
-  'Information overload & filtering',
-  'Slow approval processes',
-  'Manual slide-building & presentations',
-  'Email management & responses'
+const personalBottlenecks = [
+  'Writing and content creation taking too long',
+  'Information research and synthesis',
+  'Decision-making with incomplete information',
+  'Preparing presentations and reports',
+  'Managing email and communications',
+  'Staying current with industry trends',
+  'Creative problem-solving and ideation',
+  'Time management and prioritization'
 ];
 
 export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
@@ -54,30 +57,30 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
   };
 
   const getAllFrictionOptions = () => {
-    const customFrictions = (data.dailyFrictions || []).filter(friction => !frictionOptions.includes(friction));
-    return [...frictionOptions, ...customFrictions];
+    const customBottlenecks = (data.dailyFrictions || []).filter(bottleneck => !personalBottlenecks.includes(bottleneck));
+    return [...personalBottlenecks, ...customBottlenecks];
   };
 
   return (
     <div className="space-y-8">
       
-      {/* Daily Frictions Ranking */}
+      {/* Personal Productivity Bottlenecks */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Priority Friction Points</h3>
+        <h3 className="text-xl font-semibold mb-6">Personal Productivity Bottlenecks</h3>
         <p className="text-muted-foreground mb-6">
-          Rank your top 3 daily frictions you'd eliminate first (drag to reorder)
+          What are your top 3 productivity bottlenecks where AI could help you become 10X more effective?
         </p>
         
         <div className="space-y-4">
-          {getAllFrictionOptions().map((friction) => {
-            const isSelected = (data.dailyFrictions || []).includes(friction);
+          {getAllFrictionOptions().map((bottleneck) => {
+            const isSelected = (data.dailyFrictions || []).includes(bottleneck);
             const selectionCount = (data.dailyFrictions || []).length;
             const isDisabled = !isSelected && selectionCount >= 3;
-            const rank = isSelected ? (data.dailyFrictions || []).indexOf(friction) + 1 : null;
+            const rank = isSelected ? (data.dailyFrictions || []).indexOf(bottleneck) + 1 : null;
             
             return (
               <div 
-                key={friction} 
+                key={bottleneck} 
                 className={`flex items-center space-x-3 p-4 rounded-lg border transition-all duration-200 ${
                   isSelected 
                     ? 'border-primary/50 bg-primary/10 cursor-move' 
@@ -87,18 +90,18 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
                 }`}
               >
                 <Checkbox
-                  id={friction}
+                  id={bottleneck}
                   checked={isSelected}
                   disabled={isDisabled}
-                  onCheckedChange={(checked) => handleFrictionToggle(friction, checked as boolean)}
+                  onCheckedChange={(checked) => handleFrictionToggle(bottleneck, checked as boolean)}
                 />
                 <label 
-                  htmlFor={friction}
+                  htmlFor={bottleneck}
                   className={`text-sm font-medium leading-none cursor-pointer flex-1 ${
                     isDisabled ? 'cursor-not-allowed' : ''
                   }`}
                 >
-                  {friction}
+                  {bottleneck}
                 </label>
                 {rank && (
                   <div className="flex items-center space-x-2">
@@ -119,12 +122,12 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
         {/* Custom Friction Point Input */}
         <div className="mt-6 p-4 border border-dashed border-primary/30 rounded-lg">
           <div className="space-y-3">
-            <label className="text-sm font-medium">Add your own friction point:</label>
+            <label className="text-sm font-medium">Add your own productivity bottleneck:</label>
             <div className="flex space-x-2">
               <Input
                 value={customFriction}
                 onChange={(e) => setCustomFriction(e.target.value)}
-                placeholder="Enter a custom friction point..."
+                placeholder="Enter a custom productivity bottleneck..."
                 className="flex-1"
                 disabled={(data.dailyFrictions || []).length >= 3}
               />
@@ -140,13 +143,14 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
         </div>
 
         <div className="mt-4 text-sm text-muted-foreground">
-          Selected: {(data.dailyFrictions || []).length} out of 3 friction points
+          Selected: {(data.dailyFrictions || []).length} out of 3 productivity bottlenecks
         </div>
       </Card>
 
       {/* Contact Information */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Contact</h3>
+        <h3 className="text-xl font-semibold mb-6">Contact & Leadership Context</h3>
+        <p className="text-muted-foreground mb-6">Help us understand your leadership context to personalize your AI transformation roadmap.</p>
         
         <div className="space-y-6">
           <div className="space-y-2">

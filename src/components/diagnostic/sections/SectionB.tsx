@@ -22,13 +22,14 @@ export const SectionB: React.FC<SectionBProps> = ({ data, onUpdate }) => {
   return (
     <div className="space-y-8">
       
-      {/* Decision Time Slider */}
+      {/* Personal Decision Speed */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Decision Speed</h3>
+        <h3 className="text-xl font-semibold mb-6">Personal Decision Speed</h3>
+        <p className="text-muted-foreground mb-6">How quickly do you make decisions when you have the information you need?</p>
         
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <label className="font-medium">Hours from data report to decision</label>
+            <label className="font-medium">Hours from having info to making decision</label>
             <span className="text-primary font-bold">{data.hoursToDecision || 24}h</span>
           </div>
           
@@ -50,12 +51,13 @@ export const SectionB: React.FC<SectionBProps> = ({ data, onUpdate }) => {
         </div>
       </Card>
 
-      {/* AI Trust Likert Scale */}
+      {/* Personal AI Decision Support */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">AI Trust Level</h3>
+        <h3 className="text-xl font-semibold mb-6">AI-Enhanced Decision Making</h3>
+        <p className="text-muted-foreground mb-4">How do you personally use AI to improve your decision-making process?</p>
         
         <div className="space-y-4">
-          <p className="text-base">"I trust AI insights more than gut feeling when making decisions"</p>
+          <p className="text-base">"I regularly use AI to analyze options and validate my decisions"</p>
           
           <RadioGroup
             value={data.aiTrustLevel?.toString() || '3'}

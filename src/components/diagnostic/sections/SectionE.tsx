@@ -14,28 +14,29 @@ interface SectionEProps {
 
 export const SectionE: React.FC<SectionEProps> = ({ data, onUpdate }) => {
   const getRiskDescription = (level: number): string => {
-    if (level <= 2) return 'Very Conservative - Avoid cloud AI';
-    if (level <= 4) return 'Cautious - Basic tools only';
-    if (level <= 6) return 'Moderate - Some proprietary data OK';
-    if (level <= 8) return 'Comfortable - Most use cases';
-    return 'Fully Confident - All scenarios';
+    if (level <= 2) return 'Very Cautious - Minimal AI interaction';
+    if (level <= 4) return 'Careful - Basic AI assistance only';
+    if (level <= 6) return 'Balanced - Strategic AI collaboration';
+    if (level <= 8) return 'Confident - Advanced AI partnership';
+    return 'Fully Integrated - AI as thinking partner';
   };
 
   return (
     <div className="space-y-8">
       
-      {/* AI Safety Playbook */}
+      {/* Personal AI Ethics */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">AI Safety & Governance</h3>
+        <h3 className="text-xl font-semibold mb-6">Personal AI Ethics & Responsibility</h3>
+        <p className="text-muted-foreground mb-6">How do you approach responsible AI use in your daily work?</p>
         
         <div className="space-y-6">
           <div className="flex items-center justify-between p-4 border border-border rounded-lg">
             <div className="space-y-1">
               <Label htmlFor="safety-playbook" className="text-base font-medium">
-                Do you have a personal playbook for AI usage?
+                Do you have personal guidelines for AI usage?
               </Label>
               <p className="text-sm text-muted-foreground">
-                Guidelines for responsible AI use in your role
+                Your own principles for when and how to use AI responsibly
               </p>
             </div>
             <Switch
@@ -48,23 +49,24 @@ export const SectionE: React.FC<SectionEProps> = ({ data, onUpdate }) => {
           {data.hasAiSafetyPlaybook && (
             <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
               <p className="text-sm text-primary">
-                ✓ Great! Having a safety playbook shows governance maturity.
+                ✓ Excellent! Having personal AI ethics shows mature AI leadership.
               </p>
             </div>
           )}
         </div>
       </Card>
 
-      {/* Risk Comfort Level */}
+      {/* Personal AI Balance */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Data Sharing Comfort</h3>
+        <h3 className="text-xl font-semibold mb-6">AI-Human Balance</h3>
+        <p className="text-muted-foreground mb-6">How do you balance AI assistance with maintaining your own judgment and skills?</p>
         
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <label className="font-medium">
-                  Comfort level sharing your own personal IP with a private AI tool
+                  Comfort level with AI handling your personal work content
                 </label>
                 <TooltipProvider>
                   <Tooltip>
@@ -73,7 +75,7 @@ export const SectionE: React.FC<SectionEProps> = ({ data, onUpdate }) => {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">
-                        Fractionl AI may work with you to build personal AI assistants or repositories in order to boost YOUR capabilities, but which are not company IP or property.
+                        How comfortable are you with AI tools processing your ideas, documents, and creative work to help you be more effective?
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -100,20 +102,21 @@ export const SectionE: React.FC<SectionEProps> = ({ data, onUpdate }) => {
           
           <div className="p-4 bg-muted/50 rounded-lg">
             <p className="text-sm">
-              <strong>Your stance:</strong> {getRiskDescription(data.riskComfortLevel || 5)}
+              <strong>Your AI balance:</strong> {getRiskDescription(data.riskComfortLevel || 5)}
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Risk Assessment Info */}
+      {/* AI Balance Tips */}
       <Card className="p-6 bg-muted/20 border-muted">
-        <h4 className="font-semibold mb-3">Risk Management Tips</h4>
+        <h4 className="font-semibold mb-3">Healthy AI Usage Tips</h4>
         <ul className="text-sm text-muted-foreground space-y-2">
-          <li>• Use data anonymization when possible</li>
-          <li>• Implement approval workflows for sensitive data</li>
-          <li>• Consider on-premise AI solutions for critical data</li>
-          <li>• Regular audits of AI tool usage and data flows</li>
+          <li>• Keep developing your own critical thinking skills</li>
+          <li>• Use AI to enhance, not replace, your judgment</li>
+          <li>• Regularly evaluate AI outputs for accuracy and bias</li>
+          <li>• Maintain human oversight on important decisions</li>
+          <li>• Stay updated on AI capabilities and limitations</li>
         </ul>
       </Card>
     </div>
