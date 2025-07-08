@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -16,6 +16,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   scores, 
   onRestart 
 }) => {
+  // Scroll to top when results screen loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const quickWins = generatePersonalizedQuickWins(data, scores);
 
   const getPersonaDescription = (scores: DiagnosticScores, data: DiagnosticData) => {
@@ -79,6 +84,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-body font-light">
             {getPersonaDescription(scores, data)}
+          </p>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-body font-medium">
+            For a deeper look at your personalized AI Mindmaker, book a call below.
           </p>
         </div>
 
