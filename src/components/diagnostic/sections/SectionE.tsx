@@ -43,6 +43,7 @@ export const SectionE: React.FC<SectionEProps> = ({ data, onUpdate }) => {
               id="safety-playbook"
               checked={data.hasAiSafetyPlaybook || false}
               onCheckedChange={(checked) => onUpdate({ hasAiSafetyPlaybook: checked })}
+              className="data-[state=unchecked]:border-2 data-[state=unchecked]:border-muted-foreground/30"
             />
           </div>
           
