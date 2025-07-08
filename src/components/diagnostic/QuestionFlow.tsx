@@ -9,6 +9,7 @@ import { SectionC } from './sections/SectionC';
 import { SectionD } from './sections/SectionD';
 import { SectionE } from './sections/SectionE';
 import { SectionF } from './sections/SectionF';
+import { ProgressSidebar } from './ProgressSidebar';
 
 interface QuestionFlowProps {
   data: DiagnosticData;
@@ -17,12 +18,12 @@ interface QuestionFlowProps {
 }
 
 const sections = [
-  { id: 'A', title: 'Personal Productivity', component: SectionA, required: ['deepWorkHours', 'meetingHours', 'adminHours', 'aiUseCases'] },
-  { id: 'B', title: 'Decision Velocity', component: SectionB, required: ['hoursToDecision', 'aiTrustLevel'] },
-  { id: 'C', title: 'Stakeholder Influence', component: SectionC, required: ['stakeholderAudiences', 'persuasionChallenge'] },
-  { id: 'D', title: 'Learning & Growth', component: SectionD, required: ['upskillPercentage', 'skillGaps'] },
-  { id: 'E', title: 'Risk & Governance', component: SectionE, required: ['riskComfortLevel'] },
-  { id: 'F', title: 'Priority & Contact', component: SectionF, required: ['dailyFrictions', 'firstName', 'lastName', 'email', 'company', 'title'] },
+  { id: 'A', title: 'Personal Productivity', subtitle: 'Time allocation & tools', component: SectionA, required: ['deepWorkHours', 'meetingHours', 'adminHours', 'aiUseCases'] },
+  { id: 'B', title: 'Decision Velocity', subtitle: 'Speed & confidence', component: SectionB, required: ['hoursToDecision', 'aiTrustLevel'] },
+  { id: 'C', title: 'Stakeholder Influence', subtitle: 'Communication reach', component: SectionC, required: ['stakeholderAudiences', 'persuasionChallenge'] },
+  { id: 'D', title: 'Learning & Growth', subtitle: 'Skill development', component: SectionD, required: ['upskillPercentage', 'skillGaps'] },
+  { id: 'E', title: 'Risk & Governance', subtitle: 'Risk assessment', component: SectionE, required: ['riskComfortLevel'] },
+  { id: 'F', title: 'Priority & Contact', subtitle: 'Goals & information', component: SectionF, required: ['dailyFrictions', 'firstName', 'lastName', 'email', 'company', 'title'] },
 ];
 
 export const QuestionFlow: React.FC<QuestionFlowProps> = ({ 
@@ -95,10 +96,43 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
   };
 
   const CurrentSectionComponent = sections[currentSection].component;
+  
+  // Calculate completed sections
+  const completedSections = sections.map((section, index) => {
+    if (index < currentSection) {
+      return section.required.every(field => {
+        const value = data[field as keyof typeof data];
+        if (field === 'aiUseCases') {
+          if (!Array.isArray(value) || value.length === 0) return false;
+          const hasNone = (value as any[]).some(u => u.useCase.startsWith('None -'));
+          if (hasNone) return true;
+          return (value as any[]).every(u => u.tool && u.tool.trim() !== '');
+        }
+        if (field === 'stakeholderAudiences' || field === 'skillGaps' || field === 'dailyFrictions') {
+          return Array.isArray(value) && value.length > 0;
+        }
+        if (field === 'persuasionChallenge') {
+          return typeof value === 'string' && value.trim() !== '';
+        }
+        if (field === 'hasAiSafetyPlaybook') {
+          return typeof value === 'boolean';
+        }
+        return value !== undefined && value !== null && value !== '';
+      });
+    }
+    return false;
+  });
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="diagnostic-container">
+    <div className="min-h-screen bg-background flex">
+      <ProgressSidebar 
+        currentSection={currentSection}
+        totalSections={sections.length}
+        sections={sections}
+        completedSections={completedSections}
+      />
+      <div className="flex-1">
+        <div className="diagnostic-container max-w-4xl mx-auto">
         {/* Header with progress */}
         <div className="sticky top-0 bg-background/80 backdrop-blur-sm z-10 py-6 border-b border-border/20">
           <div className="flex items-center justify-between mb-4">
@@ -180,6 +214,7 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
               {currentSection === sections.length - 1 ? 'Get Results' : 'Next'}
             </Button>
           </div>
+        </div>
         </div>
       </div>
     </div>
