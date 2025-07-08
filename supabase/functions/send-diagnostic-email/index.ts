@@ -23,6 +23,8 @@ interface DiagnosticEmailRequest {
     hasAiSafetyPlaybook?: boolean;
     riskComfortLevel?: number;
     dailyFrictions?: string[];
+    firstName?: string;
+    lastName?: string;
     email?: string;
     company?: string;
     title?: string;
@@ -58,6 +60,7 @@ const generateDetailedResults = (data: any, scores: any): string => {
 
       <div style="margin-bottom: 25px;">
         <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Contact Information</h2>
+        <p><strong>Name:</strong> ${data.firstName || ''} ${data.lastName || ''}</p>
         <p><strong>Email:</strong> ${data.email || 'Not provided'}</p>
         <p><strong>Company:</strong> ${data.company || 'Not provided'}</p>
         <p><strong>Title:</strong> ${data.title || 'Not provided'}</p>
@@ -136,6 +139,7 @@ const handler = async (req: Request): Promise<Response> => {
         
         <h3>Participant Information:</h3>
         <ul>
+          <li><strong>Name:</strong> ${data.firstName || ''} ${data.lastName || ''}</li>
           <li><strong>Email:</strong> ${data.email || 'Not provided'}</li>
           <li><strong>Company:</strong> ${data.company || 'Not provided'}</li>
           <li><strong>Title:</strong> ${data.title || 'Not provided'}</li>
