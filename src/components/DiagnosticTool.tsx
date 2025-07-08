@@ -121,19 +121,27 @@ const DiagnosticTool: React.FC = () => {
       console.log('Starting to send diagnostic email...');
       console.log('Data being sent:', { data: diagnosticData, scores: calculatedScores });
       
-      const { data: responseData, error } = await supabase.functions.invoke('send-diagnostic-email', {
-        body: {
+      // Try with explicit function call
+      const response = await fetch(`https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/send-diagnostic-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJreXV4dnNjaHV3bmd0Y2Roc3lnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDE2NzgsImV4cCI6MjA2NzU3NzY3OH0.XmOP_W7gUdBuP23p4lH-iryMXPXMI69ZshU8Dwm6ujo`
+        },
+        body: JSON.stringify({
           data: diagnosticData,
           scores: calculatedScores
-        }
+        })
       });
       
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
+      const result = await response.json();
+      console.log('Email response:', response.status, result);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to send email: ${response.status} ${JSON.stringify(result)}`);
       }
       
-      console.log('Diagnostic email sent successfully', responseData);
+      console.log('Diagnostic email sent successfully', result);
     } catch (error) {
       console.error('Failed to send diagnostic email:', error);
       // Don't block the user from seeing results even if email fails

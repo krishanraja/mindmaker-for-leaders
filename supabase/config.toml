@@ -1,1 +1,4 @@
 project_id = "bkyuxvschuwngtcdhsyg"
+
+[functions.send-diagnostic-email]
+verify_jwt = false
