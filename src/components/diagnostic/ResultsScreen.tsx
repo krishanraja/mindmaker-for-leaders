@@ -19,16 +19,16 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const quickWins = generatePersonalizedQuickWins(data, scores);
 
   const getPersonaDescription = (scores: DiagnosticScores) => {
-    if (scores.influenceQuotient > 70 && scores.decisionAgility < 50) {
-      return 'High Influence / Low Decision Agility';
+    if (scores.influenceQuotient > 50 && scores.decisionAgility < 40) {
+      return 'Strategic Accelerator - Strong influence, room for decision speed optimization';
     }
-    if (scores.productivityMultiplier > 80) {
-      return 'Productivity Powerhouse';
+    if (scores.productivityMultiplier > 50) {
+      return 'Efficiency Pioneer - High productivity, expanding leadership influence';
     }
-    if (scores.growthMindset > 75) {
-      return 'Growth-Oriented Leader';
+    if (scores.growthMindset > 50) {
+      return 'Transformation Leader - Balanced growth across all leadership dimensions';
     }
-    return 'Emerging AI Leader';
+    return 'Emerging AI Executive - Building foundation for breakthrough leadership';
   };
 
   return (
@@ -47,7 +47,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </div>
           
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-black tracking-tight leading-[0.9]">
-            Your <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">AI Mindmaker</span> Results
+            Your <span className="text-primary font-black underline decoration-primary decoration-4 underline-offset-4">AI Leadership</span> Readiness
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-body font-light">
             {getPersonaDescription(scores)}
@@ -60,7 +60,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           <Card className="question-card text-center">
             <div className="space-y-8">
               <h2 className="text-2xl font-heading font-bold tracking-tight">
-                Overall AI Mindmaker Score
+                AI Leadership Readiness
               </h2>
               
               <div className="relative">
@@ -90,15 +90,22 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                       <div className="text-4xl font-bold text-primary">
                         {scores.aiMindmakerScore}
                       </div>
-                      <div className="text-sm text-muted-foreground">/ 100</div>
+                      <div className="text-sm text-muted-foreground">/ 70</div>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <p className="text-muted-foreground">
-                You're in the top {100 - scores.aiMindmakerScore}% of AI-forward leaders
-              </p>
+              <div className="space-y-2">
+                <p className="text-muted-foreground">
+                  {scores.aiMindmakerScore >= 60 ? 'Transformation Ready' : 
+                   scores.aiMindmakerScore >= 45 ? 'AI-Forward Leader' :
+                   scores.aiMindmakerScore >= 30 ? 'Accelerating Growth' : 'Emerging AI Leader'}
+                </p>
+                <p className="text-sm text-primary font-medium">
+                  {70 - scores.aiMindmakerScore} points of breakthrough potential
+                </p>
+              </div>
             </div>
           </Card>
 
@@ -111,43 +118,58 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
               
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Productivity Multiplier</span>
-                    <span className="text-primary">{scores.productivityMultiplier}</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Productivity Multiplier</span>
+                      {scores.productivityMultiplier < 50 && <span className="text-xs text-amber-600">⚡ Speed up output by 3-5x</span>}
+                    </div>
+                    <span className={scores.productivityMultiplier >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.productivityMultiplier}</span>
                   </div>
-                  <Progress value={scores.productivityMultiplier} className="h-2" />
+                  <Progress value={(scores.productivityMultiplier / 70) * 100} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Decision Agility</span>
-                    <span className="text-primary">{scores.decisionAgility}</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Decision Agility</span>
+                      {scores.decisionAgility < 50 && <span className="text-xs text-amber-600">🎯 Cut cycles from days to hours</span>}
+                    </div>
+                    <span className={scores.decisionAgility >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.decisionAgility}</span>
                   </div>
-                  <Progress value={scores.decisionAgility} className="h-2" />
+                  <Progress value={(scores.decisionAgility / 70) * 100} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Influence Quotient</span>
-                    <span className="text-primary">{scores.influenceQuotient}</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Influence Quotient</span>
+                      {scores.influenceQuotient < 50 && <span className="text-xs text-amber-600">📈 Amplify stakeholder alignment</span>}
+                    </div>
+                    <span className={scores.influenceQuotient >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.influenceQuotient}</span>
                   </div>
-                  <Progress value={scores.influenceQuotient} className="h-2" />
+                  <Progress value={(scores.influenceQuotient / 70) * 100} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Growth Mindset</span>
-                    <span className="text-primary">{scores.growthMindset}</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Growth Mindset</span>
+                      {scores.growthMindset < 50 && <span className="text-xs text-amber-600">🚀 Accelerate competitive positioning</span>}
+                    </div>
+                    <span className={scores.growthMindset >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.growthMindset}</span>
                   </div>
-                  <Progress value={scores.growthMindset} className="h-2" />
+                  <Progress value={(scores.growthMindset / 70) * 100} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Governance Confidence</span>
-                    <span className="text-primary">{scores.governanceConfidence}</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Governance Confidence</span>
+                      {scores.governanceConfidence < 50 && <span className="text-xs text-amber-600">🛡️ Build AI governance mastery</span>}
+                    </div>
+                    <span className={scores.governanceConfidence >= 50 ? "text-green-600 font-bold" : "text-primary"}>{scores.governanceConfidence}</span>
                   </div>
-                  <Progress value={scores.governanceConfidence} className="h-2" />
+                  <Progress value={(scores.governanceConfidence / 70) * 100} className="h-2" />
                 </div>
               </div>
             </div>
@@ -158,10 +180,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         <Card className="question-card mt-8">
           <div className="space-y-6">
             <h2 className="text-2xl font-heading font-bold tracking-tight text-center">
-              Your Quick Wins
+              Your Leadership Enhancement Roadmap
             </h2>
             <p className="text-center text-muted-foreground">
-              5 AI tricks/tools mapped to your daily frictions
+              5 AI-powered tools to accelerate your leadership effectiveness
             </p>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -185,10 +207,10 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
         {/* CTA Section */}
         <div className="text-center space-y-6 mt-12">
           <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
-            Ready to 10× your leadership impact?
+            Transform Your Leadership in 90 Days
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Book a 30 minute consult to scope out your tailored 90-day agentic AI sprint.
+            Unlock your {70 - scores.aiMindmakerScore} points of leadership potential with a tailored AI strategy sprint.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
