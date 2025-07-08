@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { DiagnosticData, DiagnosticScores } from '../DiagnosticTool';
+import { generatePersonalizedQuickWins } from '@/utils/quickWinsGenerator';
 
 interface ResultsScreenProps {
   data: DiagnosticData;
@@ -15,13 +16,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   scores, 
   onRestart 
 }) => {
-  const quickWins = [
-    'Meeting-recap agent → saves 3 h/wk',
-    'Email triage AI → cuts inbox time 60%',
-    'Decision dashboard → faster insights',
-    'Automated slide generation → 2x speed',
-    'AI research assistant → deeper analysis'
-  ];
+  const quickWins = generatePersonalizedQuickWins(data, scores);
 
   const getPersonaDescription = (scores: DiagnosticScores) => {
     if (scores.influenceQuotient > 70 && scores.decisionAgility < 50) {
