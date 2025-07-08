@@ -21,7 +21,7 @@ const sections = [
   { id: 'B', title: 'Decision Velocity', component: SectionB, required: ['hoursToDecision', 'aiTrustLevel'] },
   { id: 'C', title: 'Stakeholder Influence', component: SectionC, required: ['stakeholderAudiences', 'persuasionChallenge'] },
   { id: 'D', title: 'Learning & Growth', component: SectionD, required: ['upskillPercentage', 'skillGaps'] },
-  { id: 'E', title: 'Risk & Governance', component: SectionE, required: ['hasAiSafetyPlaybook', 'riskComfortLevel'] },
+  { id: 'E', title: 'Risk & Governance', component: SectionE, required: ['riskComfortLevel'] },
   { id: 'F', title: 'Priority & Contact', component: SectionF, required: ['dailyFrictions', 'email', 'company', 'title'] },
 ];
 
