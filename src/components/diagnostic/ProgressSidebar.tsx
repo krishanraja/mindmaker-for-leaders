@@ -80,12 +80,12 @@ export const ProgressSidebar: React.FC<ProgressSidebarProps> = ({
               </div>
               
               <div className="flex-1">
-                <h3 className={`font-medium ${
+                <h3 className={`text-sm font-medium ${
                   isCurrent ? 'text-white' : isCompleted ? 'text-white' : 'text-gray-400'
                 }`}>
                   {section.title}
                 </h3>
-                <p className={`text-sm ${
+                <p className={`text-xs ${
                   isCurrent ? 'text-primary-foreground/70' : isCompleted ? 'text-gray-300' : 'text-gray-500'
                 }`}>
                   {section.subtitle}
