@@ -38,127 +38,82 @@ interface DiagnosticEmailRequest {
   };
 }
 
-const generatePDFContent = (data: any, scores: any): string => {
-  const formatArray = (arr: any[]) => arr ? arr.join(', ') : 'Not specified';
-  const formatBoolean = (val: boolean) => val ? 'Yes' : 'No';
-  
+const formatArray = (arr: any[]) => arr ? arr.join(', ') : 'Not specified';
+const formatBoolean = (val: boolean) => val ? 'Yes' : 'No';
+
+const generateDetailedResults = (data: any, scores: any): string => {
   return `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>AI Leadership Diagnostic Results</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px; }
-        .section { margin-bottom: 25px; }
-        .section h2 { color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
-        .scores { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .score-item { background: #f8fafc; padding: 15px; border-radius: 8px; }
-        .score-value { font-size: 24px; font-weight: bold; color: #6366f1; }
-        .main-score { text-align: center; background: #6366f1; color: white; padding: 20px; border-radius: 10px; margin: 20px 0; }
-        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .data-item { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-        .label { font-weight: bold; color: #4b5563; }
-    </style>
-</head>
-<body>
-    <div class="header">
+    <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+      
+      <div style="text-align: center; border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 30px;">
         <h1>${data.company || 'Organization'} - AI Sprint for Leaders</h1>
         <p>AI Leadership Diagnostic Results</p>
         <p>Generated on ${new Date().toLocaleDateString()}</p>
-    </div>
+      </div>
 
-    <div class="main-score">
+      <div style="text-align: center; background: #6366f1; color: white; padding: 20px; border-radius: 10px; margin: 20px 0;">
         <h2>AI Mindmaker Score</h2>
         <div style="font-size: 48px; font-weight: bold;">${scores.aiMindmakerScore}/100</div>
-    </div>
+      </div>
 
-    <div class="section">
-        <h2>Contact Information</h2>
-        <div class="data-grid">
-            <div class="data-item"><span class="label">Email:</span> ${data.email || 'Not provided'}</div>
-            <div class="data-item"><span class="label">Company:</span> ${data.company || 'Not provided'}</div>
-            <div class="data-item"><span class="label">Title:</span> ${data.title || 'Not provided'}</div>
-            <div class="data-item"><span class="label">LinkedIn:</span> ${data.linkedinUrl || 'Not provided'}</div>
-        </div>
-    </div>
+      <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Contact Information</h2>
+        <p><strong>Email:</strong> ${data.email || 'Not provided'}</p>
+        <p><strong>Company:</strong> ${data.company || 'Not provided'}</p>
+        <p><strong>Title:</strong> ${data.title || 'Not provided'}</p>
+        <p><strong>LinkedIn:</strong> ${data.linkedinUrl || 'Not provided'}</p>
+      </div>
 
-    <div class="section">
-        <h2>Dimension Scores</h2>
-        <div class="scores">
-            <div class="score-item">
-                <div class="label">AI Tool Fluency</div>
-                <div class="score-value">${scores.aiToolFluency}</div>
-            </div>
-            <div class="score-item">
-                <div class="label">AI Decision Making</div>
-                <div class="score-value">${scores.aiDecisionMaking}</div>
-            </div>
-            <div class="score-item">
-                <div class="label">AI Communication</div>
-                <div class="score-value">${scores.aiCommunication}</div>
-            </div>
-            <div class="score-item">
-                <div class="label">AI Learning & Growth</div>
-                <div class="score-value">${scores.aiLearningGrowth}</div>
-            </div>
-            <div class="score-item">
-                <div class="label">AI Ethics & Balance</div>
-                <div class="score-value">${scores.aiEthicsBalance}</div>
-            </div>
-        </div>
-    </div>
+      <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Dimension Scores</h2>
+        <ul>
+          <li><strong>AI Tool Fluency:</strong> ${scores.aiToolFluency}</li>
+          <li><strong>AI Decision Making:</strong> ${scores.aiDecisionMaking}</li>
+          <li><strong>AI Communication:</strong> ${scores.aiCommunication}</li>
+          <li><strong>AI Learning & Growth:</strong> ${scores.aiLearningGrowth}</li>
+          <li><strong>AI Ethics & Balance:</strong> ${scores.aiEthicsBalance}</li>
+        </ul>
+      </div>
 
-    <div class="section">
-        <h2>Personal Productivity</h2>
-        <div class="data-grid">
-            <div class="data-item"><span class="label">Deep Work Hours/Week:</span> ${data.deepWorkHours || 'Not specified'}</div>
-            <div class="data-item"><span class="label">Meeting Hours/Week:</span> ${data.meetingHours || 'Not specified'}</div>
-            <div class="data-item"><span class="label">Admin Hours/Week:</span> ${data.adminHours || 'Not specified'}</div>
-        </div>
-        <div class="data-item">
-            <span class="label">AI Use Cases:</span><br>
-            ${data.aiUseCases ? data.aiUseCases.map((uc: any) => `• ${uc.useCase} (Tool: ${uc.tool})`).join('<br>') : 'None specified'}
-        </div>
-    </div>
+      <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Personal Productivity</h2>
+        <p><strong>Deep Work Hours/Week:</strong> ${data.deepWorkHours || 'Not specified'}</p>
+        <p><strong>Meeting Hours/Week:</strong> ${data.meetingHours || 'Not specified'}</p>
+        <p><strong>Admin Hours/Week:</strong> ${data.adminHours || 'Not specified'}</p>
+        <p><strong>AI Use Cases:</strong><br>
+        ${data.aiUseCases ? data.aiUseCases.map((uc: any) => `• ${uc.useCase} (Tool: ${uc.tool || 'None'})`).join('<br>') : 'None specified'}</p>
+      </div>
 
-    <div class="section">
-        <h2>Decision Making & Trust</h2>
-        <div class="data-grid">
-            <div class="data-item"><span class="label">Hours to Make Decisions:</span> ${data.hoursToDecision || 'Not specified'}</div>
-            <div class="data-item"><span class="label">AI Trust Level (1-5):</span> ${data.aiTrustLevel || 'Not specified'}</div>
-        </div>
-    </div>
+      <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Decision Making & Trust</h2>
+        <p><strong>Hours to Make Decisions:</strong> ${data.hoursToDecision || 'Not specified'}</p>
+        <p><strong>AI Trust Level (1-5):</strong> ${data.aiTrustLevel || 'Not specified'}</p>
+      </div>
 
-    <div class="section">
-        <h2>Stakeholder Influence</h2>
-        <div class="data-item"><span class="label">Stakeholder Audiences:</span> ${formatArray(data.stakeholderAudiences)}</div>
-        <div class="data-item"><span class="label">Persuasion Challenge:</span> ${data.persuasionChallenge || 'Not specified'}</div>
-    </div>
+      <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Stakeholder Influence</h2>
+        <p><strong>Stakeholder Audiences:</strong> ${formatArray(data.stakeholderAudiences)}</p>
+        <p><strong>Persuasion Challenge:</strong> ${data.persuasionChallenge || 'Not specified'}</p>
+      </div>
 
-    <div class="section">
-        <h2>Learning & Growth</h2>
-        <div class="data-grid">
-            <div class="data-item"><span class="label">Upskill Time (%):</span> ${data.upskillPercentage || 'Not specified'}%</div>
-        </div>
-        <div class="data-item"><span class="label">Skill Gaps:</span> ${formatArray(data.skillGaps)}</div>
-    </div>
+      <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Learning & Growth</h2>
+        <p><strong>Upskill Time (%):</strong> ${data.upskillPercentage || 'Not specified'}%</p>
+        <p><strong>Skill Gaps:</strong> ${formatArray(data.skillGaps)}</p>
+      </div>
 
-    <div class="section">
-        <h2>Risk & Governance</h2>
-        <div class="data-grid">
-            <div class="data-item"><span class="label">Has AI Safety Playbook:</span> ${formatBoolean(data.hasAiSafetyPlaybook)}</div>
-            <div class="data-item"><span class="label">Risk Comfort Level (1-10):</span> ${data.riskComfortLevel || 'Not specified'}</div>
-        </div>
-    </div>
+      <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Risk & Governance</h2>
+        <p><strong>Has AI Safety Playbook:</strong> ${formatBoolean(data.hasAiSafetyPlaybook)}</p>
+        <p><strong>Risk Comfort Level (1-10):</strong> ${data.riskComfortLevel || 'Not specified'}</p>
+      </div>
 
-    <div class="section">
-        <h2>Daily Challenges</h2>
-        <div class="data-item"><span class="label">Daily Frictions:</span> ${formatArray(data.dailyFrictions)}</div>
+      <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Daily Challenges</h2>
+        <p><strong>Daily Frictions:</strong> ${formatArray(data.dailyFrictions)}</p>
+      </div>
     </div>
-</body>
-</html>`;
+  `;
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -171,10 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Generating diagnostic email for:", data.email);
 
-    // Generate HTML content
-    const htmlContent = generatePDFContent(data, scores);
-
-    // Send email
+    // Send email with detailed HTML content
     const emailResponse = await resend.emails.send({
       from: "AI Mindmaker <onboarding@resend.dev>",
       to: ["krish@fractionl.ai"],
@@ -201,15 +153,10 @@ const handler = async (req: Request): Promise<Response> => {
           <li>AI Ethics & Balance: ${scores.aiEthicsBalance}</li>
         </ul>
 
-        <p>Please find the complete diagnostic results attached as a PDF.</p>
+        <hr style="margin: 30px 0;">
+        
+        ${generateDetailedResults(data, scores)}
       `,
-      attachments: [
-        {
-          filename: `${data.company || 'Diagnostic'}_AI_Leadership_Results.pdf`,
-          content: Buffer.from(htmlContent).toString('base64'),
-          contentType: 'text/html'
-        }
-      ]
     });
 
     console.log("Email sent successfully:", emailResponse);
