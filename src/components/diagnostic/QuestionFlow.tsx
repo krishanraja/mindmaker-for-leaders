@@ -10,6 +10,7 @@ import { SectionD } from './sections/SectionD';
 import { SectionE } from './sections/SectionE';
 import { SectionF } from './sections/SectionF';
 import { ProgressSidebar } from './ProgressSidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface QuestionFlowProps {
   data: DiagnosticData;
@@ -32,6 +33,7 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
   onComplete 
 }) => {
   const [currentSection, setCurrentSection] = useState(0);
+  const isMobile = useIsMobile();
   const progress = ((currentSection + 1) / sections.length) * 100;
 
   const isCurrentSectionComplete = () => {
@@ -124,99 +126,196 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <ProgressSidebar 
-        currentSection={currentSection}
-        totalSections={sections.length}
-        sections={sections}
-        completedSections={completedSections}
-      />
-      <div className="flex-1">
-        <div className="diagnostic-container max-w-4xl mx-auto">
-        {/* Header with progress */}
-        <div className="sticky top-0 bg-background/80 backdrop-blur-sm z-10 py-6 border-b border-border/20">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-heading font-bold tracking-tight">
-              AI Leader Mindmaker
-            </h1>
-            <div className="text-sm text-muted-foreground">
-              Section {currentSection + 1} of {sections.length}
+    <div className="min-h-screen bg-background">
+      {/* Mobile: Full width layout */}
+      {isMobile ? (
+        <div className="w-full">
+          {/* Mobile Header with progress */}
+          <div className="sticky top-0 bg-background/80 backdrop-blur-sm z-10 px-4 py-4 border-b border-border/20">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg font-heading font-bold tracking-tight">
+                  AI Leader Mindmaker
+                </h1>
+                <div className="text-xs text-muted-foreground">
+                  {currentSection + 1}/{sections.length}
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground truncate">
+                    {sections[currentSection].title}
+                  </span>
+                  <span className="text-primary font-medium ml-2">
+                    {Math.round(progress)}%
+                  </span>
+                </div>
+                <Progress 
+                  value={progress} 
+                  className="h-2 purple-glow"
+                />
+              </div>
             </div>
           </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                {sections[currentSection].title}
-              </span>
-              <span className="text-primary font-medium">
-                {Math.round(progress)}% Complete
-              </span>
+
+          {/* Mobile Content */}
+          <div className="px-4 py-6">
+            <Card className="question-card">
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h2 className="text-xl md:text-2xl font-heading font-bold tracking-tight">
+                    Section {sections[currentSection].id}: {sections[currentSection].title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Help us understand your current leadership patterns
+                  </p>
+                </div>
+
+                <CurrentSectionComponent 
+                  data={data}
+                  onUpdate={onDataUpdate}
+                />
+              </div>
+            </Card>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="sticky bottom-0 bg-background/90 backdrop-blur-sm px-4 py-4 border-t border-border/20">
+            <div className="space-y-4">
+              {/* Progress dots */}
+              <div className="flex justify-center space-x-2">
+                {sections.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index <= currentSection 
+                        ? 'bg-primary purple-glow' 
+                        : 'bg-muted'
+                    }`}
+                  />
+                ))}
+              </div>
+              
+              {/* Navigation buttons */}
+              <div className="flex justify-between items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={currentSection === 0}
+                  className="flex-1 py-3 text-sm"
+                >
+                  Previous
+                </Button>
+
+                <Button
+                  onClick={handleNext}
+                  disabled={!isCurrentSectionComplete()}
+                  className="btn-primary flex-1 py-3 text-sm"
+                >
+                  {currentSection === sections.length - 1 ? 'Get Results' : 'Next'}
+                </Button>
+              </div>
             </div>
-            <Progress 
-              value={progress} 
-              className="h-2 purple-glow"
-            />
           </div>
         </div>
-
-        {/* Current section content */}
-        <div className="py-8">
-          <Card className="question-card">
-            <div className="space-y-8">
-              <div className="text-center space-y-2">
-                <h2 className="text-3xl font-heading font-bold tracking-tight">
-                  Section {sections[currentSection].id}: {sections[currentSection].title}
-                </h2>
-                <p className="text-muted-foreground">
-                  Help us understand your current leadership patterns
-                </p>
+      ) : (
+        /* Desktop: Sidebar layout */
+        <div className="flex">
+          <ProgressSidebar 
+            currentSection={currentSection}
+            totalSections={sections.length}
+            sections={sections}
+            completedSections={completedSections}
+          />
+          <div className="flex-1">
+            <div className="diagnostic-container max-w-4xl mx-auto">
+              {/* Desktop Header with progress */}
+              <div className="sticky top-0 bg-background/80 backdrop-blur-sm z-10 py-6 border-b border-border/20">
+                <div className="flex items-center justify-between mb-4">
+                  <h1 className="text-2xl font-heading font-bold tracking-tight">
+                    AI Leader Mindmaker
+                  </h1>
+                  <div className="text-sm text-muted-foreground">
+                    Section {currentSection + 1} of {sections.length}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {sections[currentSection].title}
+                    </span>
+                    <span className="text-primary font-medium">
+                      {Math.round(progress)}% Complete
+                    </span>
+                  </div>
+                  <Progress 
+                    value={progress} 
+                    className="h-2 purple-glow"
+                  />
+                </div>
               </div>
 
-              <CurrentSectionComponent 
-                data={data}
-                onUpdate={onDataUpdate}
-              />
+              {/* Desktop Current section content */}
+              <div className="py-8">
+                <Card className="question-card">
+                  <div className="space-y-8">
+                    <div className="text-center space-y-2">
+                      <h2 className="text-3xl font-heading font-bold tracking-tight">
+                        Section {sections[currentSection].id}: {sections[currentSection].title}
+                      </h2>
+                      <p className="text-muted-foreground">
+                        Help us understand your current leadership patterns
+                      </p>
+                    </div>
+
+                    <CurrentSectionComponent 
+                      data={data}
+                      onUpdate={onDataUpdate}
+                    />
+                  </div>
+                </Card>
+              </div>
+
+              {/* Desktop Navigation */}
+              <div className="sticky bottom-0 bg-background/80 backdrop-blur-sm py-6 border-t border-border/20">
+                <div className="flex justify-between items-center">
+                  <Button
+                    variant="outline"
+                    onClick={handlePrevious}
+                    disabled={currentSection === 0}
+                    className="px-8 py-3"
+                  >
+                    Previous
+                  </Button>
+
+                  <div className="flex space-x-2">
+                    {sections.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          index <= currentSection 
+                            ? 'bg-primary purple-glow' 
+                            : 'bg-muted'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <Button
+                    onClick={handleNext}
+                    disabled={!isCurrentSectionComplete()}
+                    className="btn-primary px-8 py-3"
+                  >
+                    {currentSection === sections.length - 1 ? 'Get Results' : 'Next'}
+                  </Button>
+                </div>
+              </div>
             </div>
-          </Card>
-        </div>
-
-        {/* Navigation */}
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-sm py-6 border-t border-border/20">
-          <div className="flex justify-between items-center">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentSection === 0}
-              className="px-8 py-3"
-            >
-              Previous
-            </Button>
-
-            <div className="flex space-x-2">
-              {sections.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index <= currentSection 
-                      ? 'bg-primary purple-glow' 
-                      : 'bg-muted'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <Button
-              onClick={handleNext}
-              disabled={!isCurrentSectionComplete()}
-              className="btn-primary px-8 py-3"
-            >
-              {currentSection === sections.length - 1 ? 'Get Results' : 'Next'}
-            </Button>
           </div>
         </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
