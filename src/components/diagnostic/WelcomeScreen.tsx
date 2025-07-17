@@ -77,7 +77,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         {/* Trust indicators */}
         <div className="pt-8 md:pt-12 space-y-4">
           <p className="text-sm text-muted-foreground">
-            Join leaders from around the globe levelling up.
+            Designed specifically for non-AI native business leaders ready to unlock their potential with AI.
           </p>
           <div className="flex flex-col md:flex-row justify-center text-xs text-muted-foreground/60 space-y-1 md:space-y-0 md:space-x-8">
             <span>✓ No Spam</span>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { WelcomeScreen } from './diagnostic/WelcomeScreen';
 import { QuestionFlow } from './diagnostic/QuestionFlow';
+import { LoadingScreen } from './diagnostic/LoadingScreen';
 import { ResultsScreen } from './diagnostic/ResultsScreen';
 import { supabase } from '@/integrations/supabase/client';
 
-export type DiagnosticStep = 'welcome' | 'questions' | 'results';
+export type DiagnosticStep = 'welcome' | 'questions' | 'loading' | 'results';
 
 export interface AIUseCase {
   useCase: string;
@@ -112,7 +113,12 @@ const DiagnosticTool: React.FC = () => {
   const handleComplete = async () => {
     const calculatedScores = calculateScores(diagnosticData);
     setScores(calculatedScores);
-    setCurrentStep('results');
+    setCurrentStep('loading');
+    
+    // Show loading for 3 seconds for anticipation
+    setTimeout(() => {
+      setCurrentStep('results');
+    }, 3000);
     
     // Send email with diagnostic results
     try {
@@ -158,6 +164,10 @@ const DiagnosticTool: React.FC = () => {
           onDataUpdate={handleDataUpdate}
           onComplete={handleComplete}
         />
+      )}
+      
+      {currentStep === 'loading' && (
+        <LoadingScreen />
       )}
       
       {currentStep === 'results' && scores && (
