@@ -195,6 +195,9 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
               onChange={(e) => onUpdate({ email: e.target.value })}
               className="w-full"
             />
+            <p className="text-xs text-muted-foreground">
+              By submitting your email address, you agree to receive occasional useful updates from Fractional AI. Your details will not be shared with any 3rd parties, ever.
+            </p>
           </div>
           
           <div className="space-y-2">
