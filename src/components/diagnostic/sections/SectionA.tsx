@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { DiagnosticData, AIUseCase } from '../../DiagnosticTool';
 import { AIUseCaseInput } from '../AIUseCaseInput';
 
@@ -77,6 +79,14 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
       setCustomUseCase('');
     }
   };
+
+  const likertOptions = [
+    { value: 1, label: 'Strongly Disagree' },
+    { value: 2, label: 'Disagree' },
+    { value: 3, label: 'Neutral' },
+    { value: 4, label: 'Agree' },
+    { value: 5, label: 'Strongly Agree' },
+  ];
 
   return (
     <div className="space-y-8">
@@ -193,6 +203,43 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
               ⚠️ Please fill in the tool name for all selected use cases to continue
             </div>
           )}
+        </div>
+      </Card>
+
+      {/* AI-Enhanced Decision Making */}
+      <Card className="p-6 bg-secondary/10 border-primary/20">
+        <h3 className="text-xl font-semibold mb-6">AI-Enhanced Decision Making</h3>
+        <p className="text-muted-foreground mb-4">How do you personally use AI to improve your decision-making process?</p>
+        
+        <div className="space-y-4">
+          <p className="text-base">"I regularly use AI to analyze options and validate my decisions"</p>
+          
+          <RadioGroup
+            value={data.aiTrustLevel?.toString() || '3'}
+            onValueChange={(value) => onUpdate({ aiTrustLevel: parseInt(value) })}
+            className="space-y-3"
+          >
+            {likertOptions.map((option) => (
+              <div key={option.value} className="flex items-center space-x-3">
+                <RadioGroupItem 
+                  value={option.value.toString()} 
+                  id={`trust-${option.value}`}
+                />
+                <Label 
+                  htmlFor={`trust-${option.value}`}
+                  className="text-sm font-medium cursor-pointer flex-1"
+                >
+                  <span className="font-bold text-primary">{option.value}</span> - {option.label}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+          
+          <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              <strong>Your selection:</strong> {likertOptions.find(o => o.value === (data.aiTrustLevel || 3))?.label}
+            </p>
+          </div>
         </div>
       </Card>
     </div>

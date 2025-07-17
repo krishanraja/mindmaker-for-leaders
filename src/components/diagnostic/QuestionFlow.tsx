@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { DiagnosticData } from '../DiagnosticTool';
 import { SectionA } from './sections/SectionA';
-import { SectionB } from './sections/SectionB';
 import { SectionC } from './sections/SectionC';
 import { SectionD } from './sections/SectionD';
 import { SectionE } from './sections/SectionE';
@@ -18,12 +17,11 @@ interface QuestionFlowProps {
 }
 
 const sections = [
-  { id: 'A', title: 'Personal Productivity', subtitle: 'Time allocation & tools', component: SectionA, required: ['deepWorkHours', 'meetingHours', 'adminHours', 'aiUseCases'] },
-  { id: 'B', title: 'Decision Velocity', subtitle: 'Speed & confidence', component: SectionB, required: ['hoursToDecision', 'aiTrustLevel'] },
-  { id: 'C', title: 'Stakeholder Influence', subtitle: 'Communication reach', component: SectionC, required: ['stakeholderAudiences', 'persuasionChallenge'] },
-  { id: 'D', title: 'Learning & Growth', subtitle: 'Skill development', component: SectionD, required: ['upskillPercentage', 'skillGaps'] },
-  { id: 'E', title: 'Risk & Governance', subtitle: 'Risk assessment', component: SectionE, required: ['riskComfortLevel'] },
-  { id: 'F', title: 'Priority & Contact', subtitle: 'Goals & information', component: SectionF, required: ['dailyFrictions', 'firstName', 'lastName', 'email', 'company', 'title'] },
+  { id: 'A', title: 'Personal AI Effectiveness', subtitle: 'Time allocation, tools & decision-making', component: SectionA, required: ['deepWorkHours', 'meetingHours', 'adminHours', 'aiUseCases', 'aiTrustLevel'] },
+  { id: 'B', title: 'Stakeholder Influence', subtitle: 'Communication reach', component: SectionC, required: ['stakeholderAudiences', 'persuasionChallenge'] },
+  { id: 'C', title: 'Learning & Growth', subtitle: 'Skill development', component: SectionD, required: ['upskillPercentage', 'skillGaps'] },
+  { id: 'D', title: 'Risk & Governance', subtitle: 'Risk assessment', component: SectionE, required: ['riskComfortLevel'] },
+  { id: 'E', title: 'Priority & Contact', subtitle: 'Goals & information', component: SectionF, required: ['dailyFrictions', 'firstName', 'lastName', 'email', 'company', 'title'] },
 ];
 
 export const QuestionFlow: React.FC<QuestionFlowProps> = ({ 
