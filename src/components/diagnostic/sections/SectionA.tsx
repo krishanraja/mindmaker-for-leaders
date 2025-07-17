@@ -133,7 +133,7 @@ export const SectionA: React.FC<SectionAProps> = ({ data, onUpdate }) => {
           </div>
 
           <div className="text-sm text-muted-foreground text-center">
-            Total work hours: {totalHours}h • Remaining: {24 - totalHours}h (personal time)
+            Total: {totalHours}h
           </div>
         </div>
       </Card>

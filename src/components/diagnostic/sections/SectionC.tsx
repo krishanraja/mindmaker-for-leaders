@@ -34,8 +34,11 @@ export const SectionC: React.FC<SectionCProps> = ({ data, onUpdate }) => {
       {/* Communication Enhancement */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
         <h3 className="text-xl font-semibold mb-6">AI-Enhanced Communication</h3>
-        <p className="text-muted-foreground mb-6">
-          Which audiences do you communicate with regularly where AI could help you be more effective?
+        <p className="text-muted-foreground mb-4">
+          Which audiences do you communicate with regularly OR want to better communicate with using AI?
+        </p>
+        <p className="text-xs text-muted-foreground mb-6">
+          Select either current communication audiences or those you'd like to improve your communication with using AI assistance.
         </p>
         
         <div className="grid md:grid-cols-2 gap-4">
@@ -69,7 +72,7 @@ export const SectionC: React.FC<SectionCProps> = ({ data, onUpdate }) => {
         </p>
         
         <Textarea
-          placeholder="e.g., 'Crafting compelling presentations that resonate with executives' or 'Creating thought leadership content that stands out' or 'Explaining complex topics in simple terms'"
+          placeholder="e.g., 'I want to craft compelling presentations that resonate with executives' or 'I need help creating thought leadership content that stands out' or 'I want to better explain complex topics in simple terms to my team'"
           value={data.persuasionChallenge || ''}
           onChange={(e) => onUpdate({ persuasionChallenge: e.target.value })}
           className="min-h-[120px] resize-none"

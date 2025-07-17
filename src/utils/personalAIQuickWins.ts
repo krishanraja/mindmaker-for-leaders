@@ -285,11 +285,11 @@ export function generatePersonalizedQuickWins(
     
     if (scores.aiDecisionMaking < 50) {
       lowScoreSolutions.push({
-        title: 'Lightning Decision Framework',
-        description: `Reduce decision time from ${data.hoursToDecision || 24}h to 2h with AI`,
-        impact: 'Make decisions 10x faster',
+        title: 'AI-Enhanced Decision Framework',
+        description: 'Build trust in AI decision support to make faster, better decisions',
+        impact: 'Make decisions 10x faster with AI assistance',
         priority: 2,
-        reason: `Current decision time: ${data.hoursToDecision || 24} hours`
+        reason: `Current AI trust level: ${data.aiTrustLevel || 3}/5`
       });
     }
     

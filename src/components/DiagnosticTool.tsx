@@ -19,7 +19,6 @@ export interface DiagnosticData {
   aiUseCases?: AIUseCase[];
   
   // Section B - Decision Velocity
-  hoursToDecision?: number;
   aiTrustLevel?: number;
   
   // Section C - Stakeholder Influence
@@ -72,10 +71,9 @@ const DiagnosticTool: React.FC = () => {
     const deepWorkOptimization = Math.min(1, (data.deepWorkHours || 0) / 10);
     const aiToolFluency = Math.min(70, (toolCount / 9) * 40 + deepWorkOptimization * 30);
     
-    // AI-Enhanced Decision Making (25%) - Based on decision speed and AI trust
-    const decisionSpeed = Math.min(1, (48 - (data.hoursToDecision || 48)) / 48);
+    // AI-Enhanced Decision Making (25%) - Based on AI trust level
     const aiTrust = ((data.aiTrustLevel || 3) - 1) / 4; // Normalize 1-5 to 0-1
-    const aiDecisionMaking = Math.min(70, (decisionSpeed * 35) + (aiTrust * 35));
+    const aiDecisionMaking = Math.min(70, aiTrust * 70);
     
     // AI-Enhanced Communication (20%) - Based on audience reach and communication challenges
     const audienceCount = (data.stakeholderAudiences?.length || 0);
