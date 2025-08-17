@@ -349,6 +349,42 @@ export type Database = {
           },
         ]
       }
+      google_sheets_sync_log: {
+        Row: {
+          created_at: string
+          data_count: number | null
+          error_message: string | null
+          id: string
+          status: string
+          sync_data: Json | null
+          sync_metadata: Json | null
+          sync_type: string
+          synced_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          data_count?: number | null
+          error_message?: string | null
+          id?: string
+          status?: string
+          sync_data?: Json | null
+          sync_metadata?: Json | null
+          sync_type: string
+          synced_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          data_count?: number | null
+          error_message?: string | null
+          id?: string
+          status?: string
+          sync_data?: Json | null
+          sync_metadata?: Json | null
+          sync_type?: string
+          synced_at?: string | null
+        }
+        Relationships: []
+      }
       lead_qualification_scores: {
         Row: {
           business_readiness_score: number | null
@@ -579,6 +615,14 @@ export type Database = {
           conversion_rate: number
           high_value_conversions: number
           total_sessions: number
+        }[]
+      }
+      trigger_google_sheets_sync: {
+        Args: { sync_type_param?: string }
+        Returns: {
+          records_prepared: number
+          sync_id: string
+          sync_status: string
         }[]
       }
     }
