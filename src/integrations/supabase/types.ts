@@ -626,6 +626,10 @@ export type Database = {
           total_sessions: number
         }[]
       }
+      schedule_sync_processing: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       sync_lead_to_sheets: {
         Args: {
           lead_session_id?: string
