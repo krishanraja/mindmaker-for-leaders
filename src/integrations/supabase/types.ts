@@ -355,6 +355,9 @@ export type Database = {
           data_count: number | null
           error_message: string | null
           id: string
+          last_updated_at: string | null
+          lead_id: string | null
+          sheet_row_id: string | null
           status: string
           sync_data: Json | null
           sync_metadata: Json | null
@@ -366,6 +369,9 @@ export type Database = {
           data_count?: number | null
           error_message?: string | null
           id?: string
+          last_updated_at?: string | null
+          lead_id?: string | null
+          sheet_row_id?: string | null
           status?: string
           sync_data?: Json | null
           sync_metadata?: Json | null
@@ -377,6 +383,9 @@ export type Database = {
           data_count?: number | null
           error_message?: string | null
           id?: string
+          last_updated_at?: string | null
+          lead_id?: string | null
+          sheet_row_id?: string | null
           status?: string
           sync_data?: Json | null
           sync_metadata?: Json | null
@@ -616,6 +625,14 @@ export type Database = {
           high_value_conversions: number
           total_sessions: number
         }[]
+      }
+      sync_lead_to_sheets: {
+        Args: {
+          lead_session_id?: string
+          lead_user_id: string
+          sync_type_param?: string
+        }
+        Returns: string
       }
       trigger_google_sheets_sync: {
         Args: { sync_type_param?: string }
