@@ -97,12 +97,20 @@ async function getGoogleToken(supabase: any): Promise<string> {
   }
 }
 
-// Create or get Google Spreadsheet
+// Get specific Google Spreadsheet and ensure required tabs exist
 async function getOrCreateSpreadsheet(accessToken: string): Promise<string> {
   try {
-    // First, try to find existing spreadsheet
-    const listResponse = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=name='${SPREADSHEET_NAME}' and mimeType='application/vnd.google-apps.spreadsheet'`,
+    // Use the specific spreadsheet ID from environment variable
+    const spreadsheetId = Deno.env.get('GOOGLE_SHEETS_SPREADSHEET_ID');
+    if (!spreadsheetId) {
+      throw new Error('GOOGLE_SHEETS_SPREADSHEET_ID not configured in environment variables');
+    }
+    
+    console.log(`Using specific Google Spreadsheet ID: ${spreadsheetId}`);
+    
+    // Get current spreadsheet info to check existing tabs
+    const getResponse = await fetch(
+      `${GOOGLE_SHEETS_API_URL}/${spreadsheetId}`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -111,48 +119,56 @@ async function getOrCreateSpreadsheet(accessToken: string): Promise<string> {
       }
     );
     
-    if (!listResponse.ok) {
-      throw new Error(`Failed to search for spreadsheet: ${listResponse.statusText}`);
+    if (!getResponse.ok) {
+      throw new Error(`Failed to access spreadsheet: ${getResponse.statusText}`);
     }
     
-    const listData = await listResponse.json();
+    const spreadsheetData = await getResponse.json();
+    const existingSheets = spreadsheetData.sheets.map((sheet: any) => sheet.properties.title);
     
-    if (listData.files && listData.files.length > 0) {
-      return listData.files[0].id;
-    }
+    // Required tabs for our data
+    const requiredTabs = ['Bookings', 'Lead Scores', 'Analytics'];
+    const missingTabs = requiredTabs.filter(tab => !existingSheets.includes(tab));
     
-    // Create new spreadsheet if it doesn't exist
-    const createResponse = await fetch(
-      `${GOOGLE_SHEETS_API_URL}`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+    // Create missing tabs if needed
+    if (missingTabs.length > 0) {
+      console.log(`Creating missing tabs: ${missingTabs.join(', ')}`);
+      
+      const requests = missingTabs.map(tabName => ({
+        addSheet: {
           properties: {
-            title: SPREADSHEET_NAME,
+            title: tabName,
+            gridProperties: { 
+              rowCount: 1000, 
+              columnCount: tabName === 'Bookings' ? 20 : (tabName === 'Lead Scores' ? 15 : 12)
+            }
+          }
+        }
+      }));
+      
+      const batchUpdateResponse = await fetch(
+        `${GOOGLE_SHEETS_API_URL}/${spreadsheetId}:batchUpdate`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
           },
-          sheets: [
-            { properties: { title: 'Bookings', gridProperties: { rowCount: 1000, columnCount: 20 } } },
-            { properties: { title: 'Lead Scores', gridProperties: { rowCount: 1000, columnCount: 15 } } },
-            { properties: { title: 'Analytics', gridProperties: { rowCount: 1000, columnCount: 12 } } }
-          ]
-        }),
+          body: JSON.stringify({ requests }),
+        }
+      );
+      
+      if (!batchUpdateResponse.ok) {
+        console.warn(`Failed to create missing tabs: ${batchUpdateResponse.statusText}`);
+      } else {
+        console.log(`Successfully created missing tabs: ${missingTabs.join(', ')}`);
       }
-    );
-    
-    if (!createResponse.ok) {
-      throw new Error(`Failed to create spreadsheet: ${createResponse.statusText}`);
     }
     
-    const createData = await createResponse.json();
-    console.log(`Created new Google Spreadsheet: ${SPREADSHEET_NAME}`);
-    return createData.spreadsheetId;
+    return spreadsheetId;
     
   } catch (error) {
-    console.error('Error managing spreadsheet:', error);
+    console.error('Error accessing spreadsheet:', error);
     throw error;
   }
 }
