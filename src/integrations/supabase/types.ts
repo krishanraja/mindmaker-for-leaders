@@ -91,6 +91,80 @@ export type Database = {
           },
         ]
       }
+      booking_requests: {
+        Row: {
+          company_name: string | null
+          contact_email: string
+          contact_name: string
+          created_at: string
+          id: string
+          lead_score: number | null
+          notes: string | null
+          phone: string | null
+          preferred_time: string | null
+          priority: string | null
+          role: string | null
+          scheduled_date: string | null
+          service_title: string
+          service_type: string
+          session_id: string | null
+          specific_needs: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          contact_email: string
+          contact_name: string
+          created_at?: string
+          id?: string
+          lead_score?: number | null
+          notes?: string | null
+          phone?: string | null
+          preferred_time?: string | null
+          priority?: string | null
+          role?: string | null
+          scheduled_date?: string | null
+          service_title: string
+          service_type: string
+          session_id?: string | null
+          specific_needs?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          contact_email?: string
+          contact_name?: string
+          created_at?: string
+          id?: string
+          lead_score?: number | null
+          notes?: string | null
+          phone?: string | null
+          preferred_time?: string | null
+          priority?: string | null
+          role?: string | null
+          scheduled_date?: string | null
+          service_title?: string
+          service_type?: string
+          session_id?: string | null
+          specific_needs?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -99,6 +173,7 @@ export type Database = {
           insights: Json | null
           message_type: string
           metadata: Json | null
+          role: string | null
           session_id: string | null
           user_id: string | null
         }
@@ -109,6 +184,7 @@ export type Database = {
           insights?: Json | null
           message_type: string
           metadata?: Json | null
+          role?: string | null
           session_id?: string | null
           user_id?: string | null
         }
@@ -119,6 +195,7 @@ export type Database = {
           insights?: Json | null
           message_type?: string
           metadata?: Json | null
+          role?: string | null
           session_id?: string | null
           user_id?: string | null
         }
@@ -171,6 +248,107 @@ export type Database = {
         }
         Relationships: []
       }
+      conversion_analytics: {
+        Row: {
+          conversion_metadata: Json | null
+          conversion_type: string
+          conversion_value: number | null
+          created_at: string
+          id: string
+          insights_generated: number | null
+          lead_score: number | null
+          messages_exchanged: number | null
+          service_type: string | null
+          session_duration: number | null
+          session_id: string | null
+          source_channel: string | null
+          topics_explored: number | null
+          user_id: string | null
+        }
+        Insert: {
+          conversion_metadata?: Json | null
+          conversion_type: string
+          conversion_value?: number | null
+          created_at?: string
+          id?: string
+          insights_generated?: number | null
+          lead_score?: number | null
+          messages_exchanged?: number | null
+          service_type?: string | null
+          session_duration?: number | null
+          session_id?: string | null
+          source_channel?: string | null
+          topics_explored?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          conversion_metadata?: Json | null
+          conversion_type?: string
+          conversion_value?: number | null
+          created_at?: string
+          id?: string
+          insights_generated?: number | null
+          lead_score?: number | null
+          messages_exchanged?: number | null
+          service_type?: string | null
+          session_duration?: number | null
+          session_id?: string | null
+          source_channel?: string | null
+          topics_explored?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversion_analytics_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      engagement_analytics: {
+        Row: {
+          event_data: Json | null
+          event_type: string
+          id: string
+          session_id: string | null
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          session_id?: string | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          session_id?: string | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "engagement_analytics_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "engagement_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_qualification_scores: {
         Row: {
           business_readiness_score: number | null
@@ -217,6 +395,54 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_qualifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          indicators: Json | null
+          qualification_type: string
+          qualified_at: string | null
+          score: number
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          indicators?: Json | null
+          qualification_type: string
+          qualified_at?: string | null
+          score: number
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          indicators?: Json | null
+          qualification_type?: string
+          qualified_at?: string | null
+          score?: number
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_qualifications_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_qualifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -302,12 +528,59 @@ export type Database = {
         }
         Relationships: []
       }
+      users: {
+        Row: {
+          auth_user_id: string | null
+          company_name: string | null
+          company_size: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          industry: string | null
+          role_title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auth_user_id?: string | null
+          company_name?: string | null
+          company_size?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          industry?: string | null
+          role_title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auth_user_id?: string | null
+          company_name?: string | null
+          company_size?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          industry?: string | null
+          role_title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_conversion_metrics: {
+        Args: { session_uuid: string }
+        Returns: {
+          avg_lead_score: number
+          conversion_rate: number
+          high_value_conversions: number
+          total_sessions: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
