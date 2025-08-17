@@ -77,24 +77,15 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
 
   const initializeSession = async () => {
     try {
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to continue with the assessment.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setUserId(user.id);
-
-      // Create new conversation session
+      // Generate anonymous session ID
+      const anonymousSessionId = crypto.randomUUID();
+      setUserId(null); // No user authentication required
+      
+      // Create new anonymous conversation session
       const { data: session, error: sessionError } = await supabase
         .from('conversation_sessions')
         .insert({
-          user_id: user.id,
+          user_id: null, // Anonymous session
           session_title: 'AI Assessment Chat',
           status: 'active',
           business_context: {}
@@ -136,7 +127,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
 
   const sendMessage = async (messageContent?: string) => {
     const content = messageContent || inputMessage.trim();
-    if (!content || !sessionId || !userId || isLoading) return;
+    if (!content || !sessionId || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -167,7 +158,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
         body: {
           message: content,
           sessionId: sessionId,
-          userId: userId,
+          userId: null, // Anonymous session
           context: conversationContext
         }
       });
@@ -562,7 +553,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                       recommendations={leadScore.recommendations}
                       leadScore={leadScore}
                       sessionId={sessionId || ''}
-                      userId={userId || ''}
+                      userId={userId} // Pass null for anonymous users
                     />
                   ) : (
                     <Card>

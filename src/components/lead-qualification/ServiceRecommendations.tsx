@@ -26,7 +26,7 @@ interface ServiceRecommendationsProps {
   recommendations: ServiceRecommendation[];
   leadScore: LeadScore;
   sessionId: string;
-  userId: string;
+  userId: string | null; // Allow null for anonymous users
 }
 
 interface BookingForm {
@@ -94,27 +94,30 @@ const ServiceRecommendations: React.FC<ServiceRecommendationsProps> = ({
 
     setIsSubmitting(true);
     try {
-      // TODO: Save booking request to database - temporarily disabled until types regenerate
-      // const { error } = await supabase
-      //   .from('booking_requests')
-      //   .insert({
-      //     session_id: sessionId,
-      //     user_id: userId,
-      //     service_type: selectedService.type,
-      //     service_title: selectedService.title,
-      //     contact_name: bookingForm.name,
-      //     contact_email: bookingForm.email,
-      //     company_name: bookingForm.company,
-      //     role: bookingForm.role,
-      //     phone: bookingForm.phone,
-      //     preferred_time: bookingForm.preferredTime,
-      //     specific_needs: bookingForm.specificNeeds,
-      //     lead_score: leadScore.overall,
-      //     priority: selectedService.priority,
-      //     status: 'pending'
-      //   });
+      // Save booking request to database for anonymous users  
+      const { error } = await supabase
+        .from('booking_requests')
+        .insert({
+          session_id: sessionId,
+          user_id: userId, // Can be null for anonymous users
+          service_type: selectedService.type,
+          service_title: selectedService.title,
+          contact_name: bookingForm.name,
+          contact_email: bookingForm.email,
+          company_name: bookingForm.company,
+          role: bookingForm.role,
+          phone: bookingForm.phone,
+          preferred_time: bookingForm.preferredTime,
+          specific_needs: bookingForm.specificNeeds,
+          lead_score: leadScore.overall,
+          priority: selectedService.priority,
+          status: 'pending'
+        });
 
-      // if (error) throw error;
+      if (error) {
+        console.error('Database insertion error:', error);
+        // Continue with email sending even if database fails
+      }
 
       // Send notification email via edge function
       await supabase.functions.invoke('send-booking-notification', {

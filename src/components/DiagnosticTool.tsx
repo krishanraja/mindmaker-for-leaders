@@ -115,17 +115,75 @@ const DiagnosticTool: React.FC = () => {
     setScores(calculatedScores);
     setCurrentStep('loading');
     
+    // Generate anonymous session ID for tracking
+    const anonymousSessionId = crypto.randomUUID();
+    
+    // Store diagnostic results anonymously in database
+    try {
+      // Store lead qualification scores
+      const { data: leadScoreData, error: leadScoreError } = await supabase
+        .from('lead_qualification_scores')
+        .insert({
+          user_id: null, // Anonymous
+          session_id: anonymousSessionId,
+          total_score: calculatedScores.aiMindmakerScore,
+          engagement_score: Math.round((calculatedScores.aiToolFluency + calculatedScores.aiDecisionMaking) / 2),
+          business_readiness_score: Math.round((calculatedScores.aiCommunication + calculatedScores.aiLearningGrowth) / 2),
+          implementation_readiness: calculatedScores.aiEthicsBalance,
+          qualification_notes: `AI Mindmaker Score: ${calculatedScores.aiMindmakerScore}/100`
+        })
+        .select()
+        .single();
+
+      if (leadScoreError) {
+        console.error('Error storing lead score:', leadScoreError);
+      } else {
+        console.log('Lead score stored successfully:', leadScoreData);
+      }
+
+      // Store business context if we have contact info
+      if (diagnosticData.email || diagnosticData.company) {
+        const { data: contextData, error: contextError } = await supabase
+          .from('user_business_context')
+          .insert({
+            user_id: null, // Anonymous
+            ai_readiness_score: calculatedScores.aiMindmakerScore,
+            context_data: JSON.parse(JSON.stringify({
+              diagnostic_results: calculatedScores,
+              contact_info: {
+                name: `${diagnosticData.firstName || ''} ${diagnosticData.lastName || ''}`.trim(),
+                email: diagnosticData.email,
+                company: diagnosticData.company,
+                title: diagnosticData.title,
+                linkedin: diagnosticData.linkedinUrl
+              },
+              diagnostic_data: diagnosticData
+            })),
+            business_name: diagnosticData.company,
+            business_description: `AI diagnostic completed with score: ${calculatedScores.aiMindmakerScore}/100`
+          });
+
+        if (contextError) {
+          console.error('Error storing business context:', contextError);
+        } else {
+          console.log('Business context stored successfully:', contextData);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error storing diagnostic results:', error);
+    }
+    
     // Show loading for 3 seconds for anticipation
     setTimeout(() => {
       setCurrentStep('results');
     }, 3000);
     
-    // Send email with diagnostic results
+    // Send email with diagnostic results (keep existing email functionality)
     try {
       console.log('Starting to send diagnostic email...');
       console.log('Data being sent:', { data: diagnosticData, scores: calculatedScores });
       
-      // Try with explicit function call
       const response = await fetch(`https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/send-diagnostic-email`, {
         method: 'POST',
         headers: {
@@ -134,7 +192,8 @@ const DiagnosticTool: React.FC = () => {
         },
         body: JSON.stringify({
           data: diagnosticData,
-          scores: calculatedScores
+          scores: calculatedScores,
+          sessionId: anonymousSessionId
         })
       });
       
