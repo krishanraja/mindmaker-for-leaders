@@ -63,7 +63,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         </div>
 
         {/* CTA Button - mobile optimized */}
-        <div className="pt-4">
+        <div className="pt-4 space-y-4">
           <Button 
             onClick={onStart}
             size="lg"
@@ -72,6 +72,20 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             Start your Mindmaking Diagnostic
             <div className="ml-3 text-xl md:text-2xl">✨</div>
           </Button>
+          
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-3">
+              Or try our new AI-powered conversation experience:
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/chat-assessment'}
+              variant="outline"
+              size="lg"
+              className="font-semibold py-3 px-6 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 w-full max-w-sm md:max-w-none md:w-auto mx-auto"
+            >
+              Chat with AI Advisor
+            </Button>
+          </div>
         </div>
 
         {/* Trust indicators */}
