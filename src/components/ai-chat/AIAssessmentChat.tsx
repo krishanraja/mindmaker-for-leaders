@@ -7,10 +7,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, MessageCircle, Brain, TrendingUp, User, Sparkles } from 'lucide-react';
+import { Send, MessageCircle, Brain, TrendingUp, User, Sparkles, Target } from 'lucide-react';
 import { useConversationFlow } from '@/hooks/useConversationFlow';
+import { useLeadQualification } from '@/hooks/useLeadQualification';
 import InsightEngine from './InsightEngine';
 import ConversationFlow from './ConversationFlow';
+import ServiceRecommendations from '../lead-qualification/ServiceRecommendations';
 
 interface Message {
   id: string;
@@ -53,6 +55,15 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     getSuggestedQuestions,
     updateAssessmentData
   } = useConversationFlow();
+
+  const {
+    qualificationData,
+    leadScore,
+    updateQualificationData,
+    calculateLeadScore,
+    saveLeadScore,
+    setLeadScore
+  } = useLeadQualification();
 
   // Initialize session and user
   useEffect(() => {
@@ -177,6 +188,9 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       // Extract and process insights
       await processInsights(content, data.response);
 
+      // Update lead qualification based on conversation
+      await updateLeadQualification(content, data.response);
+
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -196,6 +210,86 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const updateLeadQualification = async (userInput: string, aiResponse: string) => {
+    // Extract qualification indicators from conversation
+    const qualificationUpdates: any = {};
+
+    // Analyze user input for qualification signals
+    const input = userInput.toLowerCase();
+    const response = aiResponse.toLowerCase();
+
+    // Budget signals
+    if (input.includes('budget') || input.includes('investment') || input.includes('cost')) {
+      if (input.includes('million') || input.includes('large budget')) {
+        qualificationUpdates.budgetRange = 'enterprise_100k+';
+      } else if (input.includes('thousand') || input.includes('50k') || input.includes('100k')) {
+        qualificationUpdates.budgetRange = 'medium_25k-100k';
+      }
+    }
+
+    // Authority signals
+    if (input.includes('ceo') || input.includes('founder') || input.includes('president')) {
+      qualificationUpdates.decisionAuthority = 'full';
+    } else if (input.includes('manager') || input.includes('director') || input.includes('vp')) {
+      qualificationUpdates.decisionAuthority = 'shared';
+    }
+
+    // Timeline signals
+    if (input.includes('immediately') || input.includes('urgent') || input.includes('asap')) {
+      qualificationUpdates.timelineUrgency = 'immediate';
+    } else if (input.includes('this quarter') || input.includes('3 months')) {
+      qualificationUpdates.timelineUrgency = 'within_3_months';
+    } else if (input.includes('this year') || input.includes('6 months')) {
+      qualificationUpdates.timelineUrgency = 'within_6_months';
+    }
+
+    // Organization size signals
+    if (input.includes('startup') || input.includes('small company')) {
+      qualificationUpdates.organizationSize = 'startup';
+    } else if (input.includes('enterprise') || input.includes('large company')) {
+      qualificationUpdates.organizationSize = 'enterprise';
+    }
+
+    // AI maturity signals
+    if (input.includes('new to ai') || input.includes('beginner')) {
+      qualificationUpdates.aiMaturityLevel = 'beginner';
+    } else if (input.includes('experienced with ai') || input.includes('using ai')) {
+      qualificationUpdates.aiMaturityLevel = 'intermediate';
+    }
+
+    // Pain points
+    const painPoints = [];
+    if (input.includes('efficiency') || input.includes('productivity')) painPoints.push('productivity');
+    if (input.includes('decision') || input.includes('data')) painPoints.push('decision-making');
+    if (input.includes('communication') || input.includes('collaboration')) painPoints.push('communication');
+    if (input.includes('time') || input.includes('manual')) painPoints.push('manual-processes');
+
+    if (painPoints.length > 0) {
+      qualificationUpdates.primaryPainPoints = [...(qualificationData.primaryPainPoints || []), ...painPoints];
+    }
+
+    // Update qualification data
+    if (Object.keys(qualificationUpdates).length > 0) {
+      updateQualificationData(qualificationUpdates);
+    }
+
+    // Calculate lead score if we have enough data
+    const sessionDuration = (Date.now() - (messages[0]?.timestamp.getTime() || Date.now())) / 1000;
+    const engagementData = {
+      sessionDuration,
+      messageCount: messages.length,
+      topicsExplored: conversationState.completedTopics.length
+    };
+
+    const newLeadScore = calculateLeadScore({ ...qualificationData, ...qualificationUpdates }, engagementData);
+    setLeadScore(newLeadScore);
+
+    // Save to database if session exists and score is meaningful
+    if (sessionId && newLeadScore.overall > 10) {
+      await saveLeadScore(sessionId, newLeadScore);
     }
   };
 
@@ -346,7 +440,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
           </div>
 
           <Tabs defaultValue="chat" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="chat" className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
                 Chat
@@ -357,6 +451,15 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                 {insights.length > 0 && (
                   <Badge variant="secondary" className="ml-1 text-xs">
                     {insights.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="services" className="flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Services
+                {leadScore && leadScore.recommendations.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {leadScore.recommendations.length}
                   </Badge>
                 )}
               </TabsTrigger>
@@ -451,6 +554,29 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                     insights={insights} 
                     progress={assessmentProgress}
                   />
+                </TabsContent>
+
+                <TabsContent value="services" className="mt-0">
+                  {leadScore && leadScore.recommendations.length > 0 ? (
+                    <ServiceRecommendations
+                      recommendations={leadScore.recommendations}
+                      leadScore={leadScore}
+                      sessionId={sessionId || ''}
+                      userId={userId || ''}
+                    />
+                  ) : (
+                    <Card>
+                      <CardContent className="text-center py-8">
+                        <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                          Service Recommendations Coming Soon
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Continue our conversation to receive personalized service recommendations based on your needs and AI readiness.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="progress" className="mt-0">
