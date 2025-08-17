@@ -7,14 +7,301 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_conversations: {
+        Row: {
+          business_context: Json | null
+          created_at: string
+          id: string
+          insights_generated: string[] | null
+          question: string
+          response: string
+          session_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          business_context?: Json | null
+          created_at?: string
+          id?: string
+          insights_generated?: string[] | null
+          question: string
+          response: string
+          session_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          business_context?: Json | null
+          created_at?: string
+          id?: string
+          insights_generated?: string[] | null
+          question?: string
+          response?: string
+          session_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_insights_generated: {
+        Row: {
+          business_context: Json | null
+          created_at: string
+          id: string
+          insight_content: string
+          insight_type: string
+          relevance_score: number | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          business_context?: Json | null
+          created_at?: string
+          id?: string
+          insight_content: string
+          insight_type: string
+          relevance_score?: number | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          business_context?: Json | null
+          created_at?: string
+          id?: string
+          insight_content?: string
+          insight_type?: string
+          relevance_score?: number | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_insights_generated_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          insights: Json | null
+          message_type: string
+          metadata: Json | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          insights?: Json | null
+          message_type: string
+          metadata?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          insights?: Json | null
+          message_type?: string
+          metadata?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_sessions: {
+        Row: {
+          business_context: Json | null
+          completed_at: string | null
+          id: string
+          last_activity: string
+          lead_qualification_score: number | null
+          session_summary: string | null
+          session_title: string | null
+          started_at: string
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          business_context?: Json | null
+          completed_at?: string | null
+          id?: string
+          last_activity?: string
+          lead_qualification_score?: number | null
+          session_summary?: string | null
+          session_title?: string | null
+          started_at?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          business_context?: Json | null
+          completed_at?: string | null
+          id?: string
+          last_activity?: string
+          lead_qualification_score?: number | null
+          session_summary?: string | null
+          session_title?: string | null
+          started_at?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      lead_qualification_scores: {
+        Row: {
+          business_readiness_score: number | null
+          created_at: string
+          engagement_score: number | null
+          id: string
+          implementation_readiness: number | null
+          pain_point_severity: number | null
+          qualification_notes: string | null
+          session_id: string | null
+          total_score: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          business_readiness_score?: number | null
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          implementation_readiness?: number | null
+          pain_point_severity?: number | null
+          qualification_notes?: string | null
+          session_id?: string | null
+          total_score?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          business_readiness_score?: number | null
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          implementation_readiness?: number | null
+          pain_point_severity?: number | null
+          qualification_notes?: string | null
+          session_id?: string | null
+          total_score?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_qualification_scores_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_business_context: {
+        Row: {
+          ai_readiness_score: number | null
+          business_description: string | null
+          business_name: string | null
+          company_size: string | null
+          context_data: Json | null
+          created_at: string
+          id: string
+          industry: string | null
+          primary_challenges: string[] | null
+          updated_at: string
+          user_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          ai_readiness_score?: number | null
+          business_description?: string | null
+          business_name?: string | null
+          company_size?: string | null
+          context_data?: Json | null
+          created_at?: string
+          id?: string
+          industry?: string | null
+          primary_challenges?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          ai_readiness_score?: number | null
+          business_description?: string | null
+          business_name?: string | null
+          company_size?: string | null
+          context_data?: Json | null
+          created_at?: string
+          id?: string
+          industry?: string | null
+          primary_challenges?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
