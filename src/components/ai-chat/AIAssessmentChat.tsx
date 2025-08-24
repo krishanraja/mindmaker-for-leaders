@@ -10,9 +10,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Send, MessageCircle, Brain, TrendingUp, User, Sparkles, Target } from 'lucide-react';
 import { useConversationFlow } from '@/hooks/useConversationFlow';
 import { useLeadQualification } from '@/hooks/useLeadQualification';
+import { useStructuredAssessment } from '@/hooks/useStructuredAssessment';
 import InsightEngine from './InsightEngine';
 import ConversationFlow from './ConversationFlow';
 import ServiceRecommendations from '../lead-qualification/ServiceRecommendations';
+import QuickSelectButtons from './QuickSelectButtons';
+import AssessmentProgress from './AssessmentProgress';
 
 interface Message {
   id: string;
@@ -47,14 +50,15 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   const { toast } = useToast();
   
   const {
-    topics,
-    conversationState,
-    updateTopicProgress,
-    setCurrentTopic,
-    getNextTopic,
-    getSuggestedQuestions,
-    updateAssessmentData
-  } = useConversationFlow();
+    assessmentState,
+    getCurrentQuestion,
+    answerQuestion,
+    setSelectedOption,
+    getProgressData,
+    getAssessmentData,
+    resetAssessment,
+    totalQuestions
+  } = useStructuredAssessment();
 
   const {
     qualificationData,
@@ -105,15 +109,27 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
 
       setSessionId(session.id);
 
-      // Send welcome message from AI
+      // Send welcome message from AI with first structured question
       const welcomeMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: "Hello! I'm your AI Literacy Advisor. I'm here to help you assess your organization's AI readiness and identify strategic opportunities.\n\nI'll guide you through 5 key areas that are crucial for AI success:\n\n🕒 **Time & Productivity** - How you manage your time and efficiency\n🧠 **AI Experience** - Your current AI adoption and team readiness\n👥 **Communication** - Stakeholder management and information flow\n📚 **Learning & Development** - Investment in AI skills and knowledge\n🎯 **Strategic Decision Making** - Your decision-making processes and data usage\n\nWe can explore these areas in any order you prefer. What would you like to start with, or do you have a specific challenge you'd like to discuss?",
+        content: "Hello! I'm your AI Literacy Advisor. I'll help you assess your AI readiness through a focused conversation.\n\nI'll ask you 15 specific questions across 3 key areas:\n• **Current State** - Your time management and AI experience\n• **Pain Points** - Challenges and bottlenecks you're facing\n• **Vision & Goals** - Your timeline, budget, and success metrics\n\nThis will take about 10-15 minutes and you'll get personalized insights and recommendations.\n\nLet's start with the first question:",
         timestamp: new Date()
       };
 
-      setMessages([welcomeMessage]);
+      // Add the first structured question
+      const firstQuestion = getCurrentQuestion();
+      if (firstQuestion) {
+        const questionMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: firstQuestion.question,
+          timestamp: new Date()
+        };
+        setMessages([welcomeMessage, questionMessage]);
+      } else {
+        setMessages([welcomeMessage]);
+      }
 
     } catch (error) {
       console.error('Error initializing session:', error);
@@ -133,25 +149,27 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       id: Date.now().toString(),
       role: 'user',
       content,
-      timestamp: new Date(),
-      topicId: conversationState.currentTopic || undefined
+      timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
 
+    // Record the structured answer
+    answerQuestion(content);
+
     try {
-      // Enhanced context for AI
+      // Enhanced context for AI with structured assessment data
+      const progressData = getProgressData();
+      const assessmentData = getAssessmentData();
       const conversationContext = {
-        currentTopic: conversationState.currentTopic,
-        completedTopics: conversationState.completedTopics,
-        overallProgress: conversationState.overallProgress,
-        assessmentData: conversationState.assessmentData,
-        topicInsights: topics.reduce((acc, topic) => {
-          acc[topic.id] = topic.insights;
-          return acc;
-        }, {} as Record<string, string[]>)
+        currentQuestion: progressData.currentQuestion,
+        totalQuestions: progressData.totalQuestions,
+        phase: progressData.phase,
+        completedAnswers: progressData.completedAnswers,
+        assessmentData: assessmentData,
+        isComplete: assessmentState.isComplete
       };
 
       const { data, error } = await supabase.functions.invoke('ai-assessment-chat', {
@@ -269,10 +287,11 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
 
     // Calculate lead score if we have enough data
     const sessionDuration = (Date.now() - (messages[0]?.timestamp.getTime() || Date.now())) / 1000;
+    const progressData = getProgressData();
     const engagementData = {
       sessionDuration,
       messageCount: messages.length,
-      topicsExplored: conversationState.completedTopics.length
+      topicsExplored: progressData.completedAnswers
     };
 
     const newLeadScore = calculateLeadScore({ ...qualificationData, ...qualificationUpdates }, engagementData);
@@ -295,20 +314,6 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
         );
         return [...prev, ...newInsights];
       });
-    }
-
-    // Update topic progress if we're in a specific topic
-    if (conversationState.currentTopic) {
-      const topicInsights = extractedInsights.filter(insight => 
-        insight.category === conversationState.currentTopic
-      );
-      
-      if (topicInsights.length > 0) {
-        updateTopicProgress(
-          conversationState.currentTopic, 
-          topicInsights.map(i => i.content)
-        );
-      }
     }
   };
 
@@ -357,7 +362,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
         title: generateInsightTitle(trimmed, type),
         content: trimmed,
         priority,
-        category: conversationState.currentTopic || 'general',
+        category: assessmentState.phase || 'general',
         actionable: type === 'quick_win' || trimmed.includes('implement') || trimmed.includes('start')
       });
     });
@@ -384,13 +389,9 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     }
   };
 
-  const handleTopicSelect = (topicId: string) => {
-    setCurrentTopic(topicId);
-    const topic = topics.find(t => t.id === topicId);
-    if (topic) {
-      const message = `I'd like to explore ${topic.name}. ${topic.description}.`;
-      sendMessage(message);
-    }
+  const handleQuickSelect = (option: string) => {
+    setSelectedOption(option);
+    sendMessage(option);
   };
 
   const handleSuggestedQuestion = (question: string) => {
@@ -401,21 +402,12 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     setMessages([]);
     setInsights([]);
     setSessionId(null);
+    resetAssessment();
     initializeSession();
   };
 
-  const currentTopicSuggestions = getSuggestedQuestions(conversationState.currentTopic || undefined);
-
-  const assessmentProgress = {
-    overallScore: Math.round(conversationState.overallProgress),
-    topicScores: topics.reduce((acc, topic) => {
-      acc[topic.id] = topic.completed ? 100 : 0;
-      return acc;
-    }, {} as Record<string, number>),
-    completedTopics: conversationState.completedTopics.length,
-    totalTopics: topics.length,
-    engagementLevel: (messages.length > 10 ? 'high' : messages.length > 5 ? 'medium' : 'low') as 'high' | 'medium' | 'low'
-  };
+  const progressData = getProgressData();
+  const currentQuestion = getCurrentQuestion();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -469,11 +461,9 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                         <span className="flex items-center gap-2">
                           <User className="h-5 w-5" />
                           AI Assessment Conversation
-                          {conversationState.currentTopic && (
-                            <Badge variant="outline" className="ml-2">
-                              {topics.find(t => t.id === conversationState.currentTopic)?.name}
-                            </Badge>
-                          )}
+                          <Badge variant="outline" className="ml-2">
+                            {progressData.phase} - Q{progressData.currentQuestion}/{progressData.totalQuestions}
+                          </Badge>
                         </span>
                         <Button variant="outline" size="sm" onClick={startNewAssessment}>
                           New Assessment
@@ -519,12 +509,24 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                         </div>
                       </ScrollArea>
                       
+                      {/* Quick Select Buttons for current question */}
+                      {currentQuestion && currentQuestion.type === 'multiple_choice' && !isLoading && (
+                        <div className="mt-4">
+                          <QuickSelectButtons
+                            options={currentQuestion.options}
+                            onSelect={handleQuickSelect}
+                            disabled={isLoading}
+                            selectedOption={assessmentState.selectedOption || undefined}
+                          />
+                        </div>
+                      )}
+                      
                       <div className="flex gap-2 mt-4">
                         <Input
                           value={inputMessage}
                           onChange={(e) => setInputMessage(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          placeholder="Type your message..."
+                          placeholder="Type your message or use quick select above..."
                           disabled={isLoading || !sessionId}
                           className="flex-1"
                         />
@@ -543,7 +545,13 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                 <TabsContent value="insights" className="mt-0">
                   <InsightEngine 
                     insights={insights} 
-                    progress={assessmentProgress}
+                    progress={{
+                      overallScore: progressData.progressPercentage,
+                      topicScores: {},
+                      completedTopics: progressData.completedAnswers,
+                      totalTopics: progressData.totalQuestions,
+                      engagementLevel: messages.length > 10 ? 'high' : messages.length > 5 ? 'medium' : 'low'
+                    }}
                   />
                 </TabsContent>
 
@@ -571,13 +579,12 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                 </TabsContent>
 
                 <TabsContent value="progress" className="mt-0">
-                  <ConversationFlow
-                    topics={topics}
-                    currentTopic={conversationState.currentTopic}
-                    overallProgress={conversationState.overallProgress}
-                    onTopicSelect={handleTopicSelect}
-                    onSuggestedQuestion={handleSuggestedQuestion}
-                    suggestedQuestions={currentTopicSuggestions}
+                  <AssessmentProgress
+                    currentQuestion={progressData.currentQuestion}
+                    totalQuestions={progressData.totalQuestions}
+                    phase={progressData.phase}
+                    completedAnswers={progressData.completedAnswers}
+                    estimatedTimeRemaining={progressData.estimatedTimeRemaining}
                   />
                 </TabsContent>
               </div>
@@ -585,13 +592,12 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
               {/* Sidebar for all tabs */}
               <div className="lg:col-span-1">
                 <div className="sticky top-8">
-                  <ConversationFlow
-                    topics={topics}
-                    currentTopic={conversationState.currentTopic}
-                    overallProgress={conversationState.overallProgress}
-                    onTopicSelect={handleTopicSelect}
-                    onSuggestedQuestion={handleSuggestedQuestion}
-                    suggestedQuestions={currentTopicSuggestions}
+                  <AssessmentProgress
+                    currentQuestion={progressData.currentQuestion}
+                    totalQuestions={progressData.totalQuestions}
+                    phase={progressData.phase}
+                    completedAnswers={progressData.completedAnswers}
+                    estimatedTimeRemaining={progressData.estimatedTimeRemaining}
                   />
                 </div>
               </div>
