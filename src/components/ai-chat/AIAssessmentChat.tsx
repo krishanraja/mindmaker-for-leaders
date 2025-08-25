@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { flushSync } from 'react-dom';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,7 +47,6 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
-  const [isProcessingResponse, setIsProcessingResponse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
@@ -303,7 +302,9 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
 
   const sendMessage = useCallback(async (messageContent?: string) => {
     const content = messageContent || inputMessage.trim();
-    if (!content || !sessionId || isLoading || isProcessingResponse) return;
+    if (!content || !sessionId || isLoading) return;
+
+    console.log('=== SEND MESSAGE START ===', { content, isLoading });
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -312,13 +313,10 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       timestamp: new Date()
     };
 
-    // Use flushSync to ensure DOM updates synchronously
-    flushSync(() => {
-      setMessages(prev => [...prev, userMessage]);
-      setInputMessage('');
-      setIsLoading(true);
-      setIsProcessingResponse(true);
-    });
+    // Immediately update state
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setIsLoading(true);
 
     // Record the structured answer
     answerQuestion(content);
@@ -356,20 +354,17 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
         timestamp: new Date()
       };
 
-      // Use flushSync to ensure UI updates immediately with new message and enabled buttons
-      flushSync(() => {
-        setMessages(prev => [...prev, aiMessage]);
-        setIsLoading(false);
-        setIsProcessingResponse(false);
-      });
+      // Add AI response and immediately enable buttons
+      setMessages(prev => [...prev, aiMessage]);
+      setIsLoading(false);
       
-      // Process insights and lead qualification in background without blocking UI
-      Promise.all([
-        processInsights(content, data.response),
-        updateLeadQualification(content, data.response)
-      ]).catch(error => {
-        console.error('Error processing background tasks:', error);
-      });
+      console.log('=== BUTTONS SHOULD BE ENABLED NOW ===');
+      
+      // Process insights and lead qualification in background
+      setTimeout(() => {
+        processInsights(content, data.response).catch(console.error);
+        updateLeadQualification(content, data.response).catch(console.error);
+      }, 0);
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -379,7 +374,6 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
         variant: "destructive",
       });
 
-      // Add error message with flushSync
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -387,13 +381,10 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
         timestamp: new Date()
       };
 
-      flushSync(() => {
-        setMessages(prev => [...prev, errorMessage]);
-        setIsLoading(false);
-        setIsProcessingResponse(false);
-      });
+      setMessages(prev => [...prev, errorMessage]);
+      setIsLoading(false);
     }
-  }, [inputMessage, sessionId, isLoading, isProcessingResponse, answerQuestion, getProgressData, getAssessmentData, assessmentState.isComplete, toast, processInsights, updateLeadQualification]);
+  }, [inputMessage, sessionId, isLoading, answerQuestion, getProgressData, getAssessmentData, assessmentState.isComplete, toast, processInsights, updateLeadQualification]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -403,9 +394,14 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   }, [sendMessage]);
 
   const handleQuickSelect = useCallback((option: string) => {
+    console.log('=== QUICK SELECT CLICKED ===', { option, isLoading });
+    if (isLoading) {
+      console.log('Ignoring - still loading');
+      return;
+    }
     setSelectedOption(option);
     sendMessage(option);
-  }, [setSelectedOption, sendMessage]);
+  }, [setSelectedOption, sendMessage, isLoading]);
 
   const handleSuggestedQuestion = useCallback((question: string) => {
     sendMessage(question);
@@ -489,10 +485,9 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-3">Quick responses:</p>
                     <QuickSelectButtons
-                      key={`quick-select-${currentQuestion.id}`}
                       options={currentQuestion.options}
                       onSelect={handleQuickSelect}
-                      disabled={isLoading || isProcessingResponse}
+                      disabled={isLoading}
                       selectedOption={assessmentState.selectedOption || undefined}
                     />
                   </div>
@@ -505,16 +500,16 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
                     placeholder="Type your response or use the quick options above..."
-                    disabled={isLoading || isProcessingResponse}
+                    disabled={isLoading}
                     className="flex-1"
                   />
                   <Button 
                     onClick={() => sendMessage()} 
-                    disabled={isLoading || isProcessingResponse || !inputMessage.trim()}
+                    disabled={isLoading || !inputMessage.trim()}
                     size="icon"
                     className="px-4"
                   >
-                    {(isLoading || isProcessingResponse) ? (
+                    {isLoading ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     ) : (
                       <Send className="h-4 w-4" />
