@@ -13,7 +13,8 @@ import { Send, MessageCircle, Brain, TrendingUp, User, Sparkles, Target } from '
 import { useConversationFlow } from '@/hooks/useConversationFlow';
 import { useLeadQualification } from '@/hooks/useLeadQualification';
 import { useStructuredAssessment } from '@/hooks/useStructuredAssessment';
-import InsightEngine from './InsightEngine';
+import ExecutiveAssessmentReport from './ExecutiveAssessmentReport';
+import { useExecutiveInsights } from '@/hooks/useExecutiveInsights';
 import ConversationFlow from './ConversationFlow';
 import ServiceRecommendations from '../lead-qualification/ServiceRecommendations';
 import QuickSelectButtons from './QuickSelectButtons';
@@ -72,6 +73,12 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     saveLeadScore,
     setLeadScore
   } = useLeadQualification();
+
+  const {
+    insights: executiveInsights,
+    assessmentData: executiveAssessmentData,
+    generateExecutiveInsights
+  } = useExecutiveInsights();
 
   // Initialize session and user
   useEffect(() => {
@@ -378,6 +385,17 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       requestIdleCallback(() => {
         processInsights(content, data.response).catch(console.error);
         updateLeadQualification(content, data.response).catch(console.error);
+        
+        // Generate executive insights if assessment is complete or has enough data
+        if (assessmentState.isComplete || progressData.completedAnswers >= 10) {
+          generateExecutiveInsights(
+            conversationContext,
+            assessmentData,
+            qualificationData.organizationSize,
+            'technology', // Default industry
+            'executive' // Default role
+          );
+        }
       });
 
     } catch (error) {
@@ -667,18 +685,29 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                </Card>
              </TabsContent>
 
-             <TabsContent value="insights" className="mt-6">
-               <InsightEngine 
-                 insights={insights} 
-                 progress={{
-                   overallScore: progressData.progressPercentage,
-                   topicScores: {},
-                   completedTopics: progressData.completedAnswers,
-                   totalTopics: progressData.totalQuestions,
-                   engagementLevel: messages.length > 10 ? 'high' : messages.length > 5 ? 'medium' : 'low'
-                 }}
-               />
-             </TabsContent>
+              <TabsContent value="insights" className="mt-6">
+                {executiveAssessmentData && executiveInsights.length > 0 ? (
+                  <ExecutiveAssessmentReport
+                    assessmentData={executiveAssessmentData}
+                    insights={executiveInsights}
+                    companyName="Your Organization"
+                    executiveName="Executive"
+                  />
+                ) : (
+                  <div className="text-center py-12 space-y-4">
+                    <Brain className="h-16 w-16 text-muted-foreground mx-auto" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">Executive Assessment In Progress</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        Continue the conversation to generate your comprehensive executive assessment report with strategic insights and ROI projections.
+                      </p>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {progressData.completedAnswers}/15 strategic questions completed
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
 
              <TabsContent value="services" className="mt-6">
                {leadScore && leadScore.recommendations.length > 0 ? (
