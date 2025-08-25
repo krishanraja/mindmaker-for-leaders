@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { flushSync } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +47,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
+  const [isProcessingResponse, setIsProcessingResponse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
@@ -76,153 +78,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
 
   // Remove auto-scroll behavior - keep user anchored at top
 
-  const initializeSession = async () => {
-    try {
-      // Generate anonymous session ID
-      const anonymousSessionId = crypto.randomUUID();
-      setUserId(null); // No user authentication required
-      
-      // Create new anonymous conversation session
-      const { data: session, error: sessionError } = await supabase
-        .from('conversation_sessions')
-        .insert({
-          user_id: null, // Anonymous session
-          session_title: 'AI Assessment Chat',
-          status: 'active',
-          business_context: {}
-        })
-        .select()
-        .single();
-
-      if (sessionError) {
-        console.error('Error creating session:', sessionError);
-        toast({
-          title: "Setup Error",
-          description: "Failed to initialize chat session. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setSessionId(session.id);
-
-      // Send welcome message from AI with first structured question
-      const welcomeMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: "Hello! I'm your AI Literacy Advisor. I'll help you assess your AI readiness through a focused conversation.\n\nI'll ask you 15 specific questions across 3 key areas:\n• **Current State** - Your time management and AI experience\n• **Pain Points** - Challenges and bottlenecks you're facing\n• **Vision & Goals** - Your timeline, budget, and success metrics\n\nThis will take about 10-15 minutes and you'll get personalized insights and recommendations.\n\nLet's start with the first question:",
-        timestamp: new Date()
-      };
-
-      // Add the first structured question
-      const firstQuestion = getCurrentQuestion();
-      if (firstQuestion) {
-        const questionMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: firstQuestion.question,
-          timestamp: new Date()
-        };
-        setMessages([welcomeMessage, questionMessage]);
-      } else {
-        setMessages([welcomeMessage]);
-      }
-
-    } catch (error) {
-      console.error('Error initializing session:', error);
-      toast({
-        title: "Initialization Error",
-        description: "Failed to set up the assessment. Please refresh and try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const sendMessage = async (messageContent?: string) => {
-    const content = messageContent || inputMessage.trim();
-    if (!content || !sessionId || isLoading) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
-    setIsLoading(true);
-
-    // Record the structured answer
-    answerQuestion(content);
-
-    try {
-      // Enhanced context for AI with structured assessment data
-      const progressData = getProgressData();
-      const assessmentData = getAssessmentData();
-      const conversationContext = {
-        currentQuestion: progressData.currentQuestion,
-        totalQuestions: progressData.totalQuestions,
-        phase: progressData.phase,
-        completedAnswers: progressData.completedAnswers,
-        assessmentData: assessmentData,
-        isComplete: assessmentState.isComplete
-      };
-
-      const { data, error } = await supabase.functions.invoke('ai-assessment-chat', {
-        body: {
-          message: content,
-          sessionId: sessionId,
-          userId: null, // Anonymous session
-          context: conversationContext
-        }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
-      
-      // Enable buttons immediately after response is received
-      setIsLoading(false);
-      
-      // Process insights and lead qualification in background without blocking UI
-      Promise.all([
-        processInsights(content, data.response),
-        updateLeadQualification(content, data.response)
-      ]).catch(error => {
-        console.error('Error processing background tasks:', error);
-      });
-
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Communication Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-
-      // Add error message
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: "I apologize, but I'm having trouble processing your message right now. Please try again in a moment.",
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-      setIsLoading(false);
-    }
-  };
-
+  // Define helper functions first before useCallback dependencies
   const updateLeadQualification = async (userInput: string, aiResponse: string) => {
     // Extract qualification indicators from conversation
     const qualificationUpdates: any = {};
@@ -383,21 +239,177 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     return `${titlePrefixes[type]}: ${firstWords}...`;
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const initializeSession = async () => {
+    try {
+      // Generate anonymous session ID
+      const anonymousSessionId = crypto.randomUUID();
+      setUserId(null); // No user authentication required
+      
+      // Create new anonymous conversation session
+      const { data: session, error: sessionError } = await supabase
+        .from('conversation_sessions')
+        .insert({
+          user_id: null, // Anonymous session
+          session_title: 'AI Assessment Chat',
+          status: 'active',
+          business_context: {}
+        })
+        .select()
+        .single();
+
+      if (sessionError) {
+        console.error('Error creating session:', sessionError);
+        toast({
+          title: "Setup Error",
+          description: "Failed to initialize chat session. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSessionId(session.id);
+
+      // Send welcome message from AI with first structured question
+      const welcomeMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: "Hello! I'm your AI Literacy Advisor. I'll help you assess your AI readiness through a focused conversation.\n\nI'll ask you 15 specific questions across 3 key areas:\n• **Current State** - Your time management and AI experience\n• **Pain Points** - Challenges and bottlenecks you're facing\n• **Vision & Goals** - Your timeline, budget, and success metrics\n\nThis will take about 10-15 minutes and you'll get personalized insights and recommendations.\n\nLet's start with the first question:",
+        timestamp: new Date()
+      };
+
+      // Add the first structured question
+      const firstQuestion = getCurrentQuestion();
+      if (firstQuestion) {
+        const questionMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: firstQuestion.question,
+          timestamp: new Date()
+        };
+        setMessages([welcomeMessage, questionMessage]);
+      } else {
+        setMessages([welcomeMessage]);
+      }
+
+    } catch (error) {
+      console.error('Error initializing session:', error);
+      toast({
+        title: "Initialization Error",
+        description: "Failed to set up the assessment. Please refresh and try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const sendMessage = useCallback(async (messageContent?: string) => {
+    const content = messageContent || inputMessage.trim();
+    if (!content || !sessionId || isLoading || isProcessingResponse) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content,
+      timestamp: new Date()
+    };
+
+    // Use flushSync to ensure DOM updates synchronously
+    flushSync(() => {
+      setMessages(prev => [...prev, userMessage]);
+      setInputMessage('');
+      setIsLoading(true);
+      setIsProcessingResponse(true);
+    });
+
+    // Record the structured answer
+    answerQuestion(content);
+
+    try {
+      // Enhanced context for AI with structured assessment data
+      const progressData = getProgressData();
+      const assessmentData = getAssessmentData();
+      const conversationContext = {
+        currentQuestion: progressData.currentQuestion,
+        totalQuestions: progressData.totalQuestions,
+        phase: progressData.phase,
+        completedAnswers: progressData.completedAnswers,
+        assessmentData: assessmentData,
+        isComplete: assessmentState.isComplete
+      };
+
+      const { data, error } = await supabase.functions.invoke('ai-assessment-chat', {
+        body: {
+          message: content,
+          sessionId: sessionId,
+          userId: null, // Anonymous session
+          context: conversationContext
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.response,
+        timestamp: new Date()
+      };
+
+      // Use flushSync to ensure UI updates immediately with new message and enabled buttons
+      flushSync(() => {
+        setMessages(prev => [...prev, aiMessage]);
+        setIsLoading(false);
+        setIsProcessingResponse(false);
+      });
+      
+      // Process insights and lead qualification in background without blocking UI
+      Promise.all([
+        processInsights(content, data.response),
+        updateLeadQualification(content, data.response)
+      ]).catch(error => {
+        console.error('Error processing background tasks:', error);
+      });
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Communication Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+
+      // Add error message with flushSync
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I apologize, but I'm having trouble processing your message right now. Please try again in a moment.",
+        timestamp: new Date()
+      };
+
+      flushSync(() => {
+        setMessages(prev => [...prev, errorMessage]);
+        setIsLoading(false);
+        setIsProcessingResponse(false);
+      });
+    }
+  }, [inputMessage, sessionId, isLoading, isProcessingResponse, answerQuestion, getProgressData, getAssessmentData, assessmentState.isComplete, toast, processInsights, updateLeadQualification]);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
-  };
+  }, [sendMessage]);
 
-  const handleQuickSelect = (option: string) => {
+  const handleQuickSelect = useCallback((option: string) => {
     setSelectedOption(option);
     sendMessage(option);
-  };
+  }, [setSelectedOption, sendMessage]);
 
-  const handleSuggestedQuestion = (question: string) => {
+  const handleSuggestedQuestion = useCallback((question: string) => {
     sendMessage(question);
-  };
+  }, [sendMessage]);
 
   const startNewAssessment = () => {
     setMessages([]);
@@ -407,19 +419,21 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     initializeSession();
   };
 
-  const progressData = getProgressData();
-  const currentQuestion = getCurrentQuestion();
+  const progressData = useMemo(() => getProgressData(), [getProgressData]);
+  const currentQuestion = useMemo(() => getCurrentQuestion(), [getCurrentQuestion]);
   
-  // Get current question and previous messages for reverse order display
-  const currentQuestionMessage = currentQuestion ? {
+  // Memoized current question to prevent unnecessary re-renders
+  const currentQuestionMessage = useMemo(() => currentQuestion ? {
     id: 'current-question',
     role: 'assistant' as const,
     content: currentQuestion.question,
     timestamp: new Date()
-  } : null;
+  } : null, [currentQuestion]);
   
-  // Filter out the most recent assistant message if it's a question we're showing at top
-  const previousMessages = messages.slice(0, -1).reverse(); // Show in reverse order (most recent first)
+  // Memoized previous messages for performance
+  const previousMessages = useMemo(() => {
+    return messages.slice(0, -1).reverse(); // Show in reverse order (most recent first)
+  }, [messages]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -475,10 +489,11 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-3">Quick responses:</p>
                     <QuickSelectButtons
+                      key={`quick-select-${currentQuestion.id}`}
                       options={currentQuestion.options}
                       onSelect={handleQuickSelect}
-                      disabled={isLoading}
-                      selectedOption={assessmentState.selectedOption}
+                      disabled={isLoading || isProcessingResponse}
+                      selectedOption={assessmentState.selectedOption || undefined}
                     />
                   </div>
                 )}
@@ -488,17 +503,22 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     placeholder="Type your response or use the quick options above..."
-                    disabled={isLoading}
+                    disabled={isLoading || isProcessingResponse}
                     className="flex-1"
                   />
                   <Button 
                     onClick={() => sendMessage()} 
-                    disabled={!inputMessage.trim() || isLoading}
+                    disabled={isLoading || isProcessingResponse || !inputMessage.trim()}
                     size="icon"
+                    className="px-4"
                   >
-                    <Send className="h-4 w-4" />
+                    {(isLoading || isProcessingResponse) ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </CardContent>
