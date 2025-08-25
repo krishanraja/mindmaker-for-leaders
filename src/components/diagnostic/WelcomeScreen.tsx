@@ -39,34 +39,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           </p>
         </div>
 
-        {/* Animated elements - responsive */}
-        <div className="relative py-4 md:py-6">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-32 md:w-48 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-60"></div>
-          </div>
-          
-          <div className="relative bg-background px-4 md:px-8 py-4">
-            <div className="flex flex-col md:flex-row items-center justify-center text-muted-foreground space-y-2 md:space-y-0 md:space-x-4 text-sm md:text-base">
-              <span className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <span>7 minutes</span>
-              </span>
-              <span className="hidden md:block w-px h-4 bg-border"></span>
-              <span className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                <span>Personalized insights</span>
-              </span>
-              <span className="hidden md:block w-px h-4 bg-border"></span>
-              <span className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <span>Actionable roadmap</span>
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* Pathway Selection Cards */}
-        <div className="pt-4">
+        <div className="pt-6">
           <p className="text-lg text-muted-foreground mb-8">
             Choose your assessment pathway:
           </p>
@@ -154,8 +128,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                 
                 <Button 
                   onClick={() => window.location.href = '/chat-assessment'}
-                  variant="outline"
-                  className="w-full group-hover:scale-105 transition-transform duration-300 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  className="w-full group-hover:scale-105 transition-transform duration-300"
                   size="lg"
                 >
                   Start AI Consultation
