@@ -190,12 +190,17 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
-
-      // Extract and process insights
-      await processInsights(content, data.response);
-
-      // Update lead qualification based on conversation
-      await updateLeadQualification(content, data.response);
+      
+      // Enable buttons immediately after response is received
+      setIsLoading(false);
+      
+      // Process insights and lead qualification in background without blocking UI
+      Promise.all([
+        processInsights(content, data.response),
+        updateLeadQualification(content, data.response)
+      ]).catch(error => {
+        console.error('Error processing background tasks:', error);
+      });
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -214,7 +219,6 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       };
 
       setMessages(prev => [...prev, errorMessage]);
-    } finally {
       setIsLoading(false);
     }
   };
