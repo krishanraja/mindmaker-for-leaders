@@ -45,9 +45,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             Choose your assessment pathway:
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
             {/* Quick Form Assessment Card */}
-            <Card className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-card/50 backdrop-blur-sm">
+            <Card className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-card/50 backdrop-blur-sm flex flex-col h-full">
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-4">
                   <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
@@ -59,8 +59,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                   Structured questionnaire with comprehensive analysis
                 </p>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
+              <CardContent className="space-y-4 flex-grow flex flex-col">
+                <div className="space-y-2 flex-grow">
                   <div className="flex items-center text-sm text-muted-foreground">
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                     Proven methodology
@@ -75,24 +75,26 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                   </div>
                 </div>
                 
-                <Button 
-                  onClick={onStart}
-                  className="w-full group-hover:scale-105 transition-transform duration-300"
-                  size="lg"
-                >
-                  Take Assessment
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-                
-                <div className="flex items-center justify-center text-xs text-muted-foreground/60 pt-2">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Traditional diagnostic • 7 minutes
+                <div className="space-y-4 mt-auto">
+                  <Button 
+                    onClick={onStart}
+                    className="w-full group-hover:scale-105 transition-transform duration-300"
+                    size="lg"
+                  >
+                    Take Assessment
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  
+                  <div className="flex items-center justify-center text-xs text-muted-foreground/60">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Traditional diagnostic • 7 minutes
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* AI Business Consultant Card */}
-            <Card className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-card/50 backdrop-blur-sm">
+            <Card className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-card/50 backdrop-blur-sm flex flex-col h-full">
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-4">
                   <div className="relative p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
@@ -110,8 +112,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                   Interactive conversation-based discovery with real-time insights
                 </p>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
+              <CardContent className="space-y-4 flex-grow flex flex-col">
+                <div className="space-y-2 flex-grow">
                   <div className="flex items-center text-sm text-muted-foreground">
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                     Natural conversation flow
@@ -126,18 +128,20 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                   </div>
                 </div>
                 
-                <Button 
-                  onClick={() => window.location.href = '/chat-assessment'}
-                  className="w-full group-hover:scale-105 transition-transform duration-300"
-                  size="lg"
-                >
-                  Start AI Consultation
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-                
-                <div className="flex items-center justify-center text-xs text-muted-foreground/60 pt-2">
-                  <Clock className="w-3 h-3 mr-1" />
-                  No account required • 10-15 minutes
+                <div className="space-y-4 mt-auto">
+                  <Button 
+                    onClick={() => window.location.href = '/chat-assessment'}
+                    className="w-full group-hover:scale-105 transition-transform duration-300"
+                    size="lg"
+                  >
+                    Start AI Consultation
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  
+                  <div className="flex items-center justify-center text-xs text-muted-foreground/60">
+                    <Clock className="w-3 h-3 mr-1" />
+                    No account required • 10-15 minutes
+                  </div>
                 </div>
               </CardContent>
             </Card>
