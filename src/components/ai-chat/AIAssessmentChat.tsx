@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { flushSync } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,10 +45,12 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [clickingButton, setClickingButton] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const emergencyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   
   const {
@@ -354,17 +357,28 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
         timestamp: new Date()
       };
 
-      // Add AI response and immediately enable buttons
+      // Add AI response and FORCE immediate button enabling
       setMessages(prev => [...prev, aiMessage]);
-      setIsLoading(false);
       
-      console.log('=== BUTTONS SHOULD BE ENABLED NOW ===');
+      // Force synchronous DOM update to make buttons clickable immediately
+      flushSync(() => {
+        setIsLoading(false);
+        setClickingButton(null);
+      });
       
-      // Process insights and lead qualification in background
-      setTimeout(() => {
+      console.log('=== BUTTONS FORCE ENABLED ===', { isLoading: false });
+      
+      // Clear emergency timeout
+      if (emergencyTimeoutRef.current) {
+        clearTimeout(emergencyTimeoutRef.current);
+        emergencyTimeoutRef.current = null;
+      }
+      
+      // Process insights and lead qualification in background without blocking UI
+      requestIdleCallback(() => {
         processInsights(content, data.response).catch(console.error);
         updateLeadQualification(content, data.response).catch(console.error);
-      }, 0);
+      });
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -382,7 +396,10 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       };
 
       setMessages(prev => [...prev, errorMessage]);
-      setIsLoading(false);
+      flushSync(() => {
+        setIsLoading(false);
+        setClickingButton(null);
+      });
     }
   }, [inputMessage, sessionId, isLoading, answerQuestion, getProgressData, getAssessmentData, assessmentState.isComplete, toast, processInsights, updateLeadQualification]);
 
@@ -394,14 +411,30 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   }, [sendMessage]);
 
   const handleQuickSelect = useCallback((option: string) => {
-    console.log('=== QUICK SELECT CLICKED ===', { option, isLoading });
-    if (isLoading) {
-      console.log('Ignoring - still loading');
+    console.log('=== QUICK SELECT CLICKED ===', { option, isLoading, clickingButton });
+    
+    // Immediate visual feedback
+    setClickingButton(option);
+    
+    // Don't block if already processing this specific option
+    if (isLoading && clickingButton !== option) {
+      console.log('Ignoring - different option loading');
+      setClickingButton(null);
       return;
     }
+    
+    // Emergency timeout to force enable buttons after 1 second
+    emergencyTimeoutRef.current = setTimeout(() => {
+      console.log('=== EMERGENCY TIMEOUT - FORCE ENABLING BUTTONS ===');
+      flushSync(() => {
+        setIsLoading(false);
+        setClickingButton(null);
+      });
+    }, 1000);
+    
     setSelectedOption(option);
     sendMessage(option);
-  }, [setSelectedOption, sendMessage, isLoading]);
+  }, [setSelectedOption, sendMessage, isLoading, clickingButton]);
 
   const handleSuggestedQuestion = useCallback((question: string) => {
     sendMessage(question);
@@ -487,7 +520,9 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                     <QuickSelectButtons
                       options={currentQuestion.options}
                       onSelect={handleQuickSelect}
-                      disabled={isLoading}
+                      disabled={false}
+                      isLoading={isLoading}
+                      clickingButton={clickingButton}
                       selectedOption={assessmentState.selectedOption || undefined}
                     />
                   </div>
