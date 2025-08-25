@@ -74,10 +74,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     initializeSession();
   }, []);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  // Remove auto-scroll behavior - keep user anchored at top
 
   const initializeSession = async () => {
     try {
@@ -408,27 +405,139 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
 
   const progressData = getProgressData();
   const currentQuestion = getCurrentQuestion();
+  
+  // Get current question and previous messages for reverse order display
+  const currentQuestionMessage = currentQuestion ? {
+    id: 'current-question',
+    role: 'assistant' as const,
+    content: currentQuestion.question,
+    timestamp: new Date()
+  } : null;
+  
+  // Filter out the most recent assistant message if it's a question we're showing at top
+  const previousMessages = messages.slice(0, -1).reverse(); // Show in reverse order (most recent first)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-      <div className="container mx-auto py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              AI Assessment Chat
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Your personal AI literacy advisor for strategic business guidance
-            </p>
+      {/* Fixed Progress Header */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold text-foreground">AI Assessment</h1>
+            <Button variant="outline" size="sm" onClick={startNewAssessment}>
+              New Assessment
+            </Button>
           </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{progressData.phase}</span>
+              <span>Question {progressData.currentQuestion} of {progressData.totalQuestions}</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${(progressData.currentQuestion / progressData.totalQuestions) * 100}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{progressData.completedAnswers} completed</span>
+              <span>~{Math.max(1, Math.ceil((progressData.totalQuestions - progressData.currentQuestion) * 1.5))} min remaining</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <Tabs defaultValue="chat" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="chat" className="flex items-center gap-2">
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          
+          {/* Current Question Section - Always at top */}
+          {currentQuestionMessage && !assessmentState.isComplete && (
+            <Card className="border-2 border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Target className="h-5 w-5" />
+                  Current Question
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-background rounded-lg p-4 border">
+                  <p className="text-lg font-medium leading-relaxed">
+                    {currentQuestionMessage.content}
+                  </p>
+                </div>
+                
+                {/* Quick Select Options */}
+                {currentQuestion?.options && currentQuestion.options.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-3">Quick responses:</p>
+                    <QuickSelectButtons
+                      options={currentQuestion.options}
+                      onSelect={handleQuickSelect}
+                      disabled={isLoading}
+                      selectedOption={assessmentState.selectedOption}
+                    />
+                  </div>
+                )}
+                
+                {/* Input Section */}
+                <div className="flex gap-2 mt-4">
+                  <Input
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type your response or use the quick options above..."
+                    disabled={isLoading}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={() => sendMessage()} 
+                    disabled={!inputMessage.trim() || isLoading}
+                    size="icon"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Assessment Complete Message */}
+          {assessmentState.isComplete && (
+            <Card className="border-2 border-green-500/20 bg-green-500/5">
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Sparkles className="h-6 w-6 text-green-600" />
+                  <h2 className="text-2xl font-bold text-green-700">Assessment Complete!</h2>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Great job! You've completed all {progressData.totalQuestions} questions. 
+                  Check out your insights and recommendations below.
+                </p>
+                <div className="flex justify-center gap-4">
+                  <Button onClick={() => document.getElementById('insights-tab')?.click()}>
+                    View Insights
+                  </Button>
+                  <Button variant="outline" onClick={() => document.getElementById('services-tab')?.click()}>
+                    See Recommendations
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tabs for Additional Content */}
+          <Tabs defaultValue="history" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="history" className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
-                Chat
+                Previous Q&A
+                {previousMessages.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {Math.floor(previousMessages.length / 2)}
+                  </Badge>
+                )}
               </TabsTrigger>
-              <TabsTrigger value="insights" className="flex items-center gap-2">
+              <TabsTrigger value="insights" id="insights-tab" className="flex items-center gap-2">
                 <Brain className="h-4 w-4" />
                 Insights
                 {insights.length > 0 && (
@@ -437,7 +546,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="services" className="flex items-center gap-2">
+              <TabsTrigger value="services" id="services-tab" className="flex items-center gap-2">
                 <Target className="h-4 w-4" />
                 Services
                 {leadScore && leadScore.recommendations.length > 0 && (
@@ -446,166 +555,104 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="progress" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Progress
-              </TabsTrigger>
             </TabsList>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-              <div className="lg:col-span-3">
-                <TabsContent value="chat" className="mt-0">
-                  <Card className="h-[700px] flex flex-col">
-                    <CardHeader className="flex-shrink-0">
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="flex items-center gap-2">
-                          <User className="h-5 w-5" />
-                          AI Assessment Conversation
-                          <Badge variant="outline" className="ml-2">
-                            {progressData.phase} - Q{progressData.currentQuestion}/{progressData.totalQuestions}
-                          </Badge>
-                        </span>
-                        <Button variant="outline" size="sm" onClick={startNewAssessment}>
-                          New Assessment
-                        </Button>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col">
-                      <ScrollArea className="flex-1 pr-4">
-                        <div className="space-y-4">
-                          {messages.map((message) => (
-                            <div
-                              key={message.id}
-                              className={`flex ${
-                                message.role === 'user' ? 'justify-end' : 'justify-start'
-                              }`}
-                            >
-                              <div
-                                className={`max-w-[85%] p-4 rounded-lg ${
-                                  message.role === 'user'
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted text-muted-foreground'
-                                }`}
-                              >
-                                <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                                <p className="text-xs opacity-70 mt-2">
-                                  {message.timestamp.toLocaleTimeString()}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                          {isLoading && (
-                            <div className="flex justify-start">
-                              <div className="bg-muted text-muted-foreground p-4 rounded-lg">
-                                <div className="flex items-center gap-2">
-                                  <Sparkles className="animate-pulse h-4 w-4" />
-                                  <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></div>
-                                  Analyzing and generating insights...
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          <div ref={messagesEndRef} />
-                        </div>
-                      </ScrollArea>
-                      
-                      {/* Quick Select Buttons for current question */}
-                      {currentQuestion && currentQuestion.type === 'multiple_choice' && !isLoading && (
-                        <div className="mt-4">
-                          <QuickSelectButtons
-                            options={currentQuestion.options}
-                            onSelect={handleQuickSelect}
-                            disabled={isLoading}
-                            selectedOption={assessmentState.selectedOption || undefined}
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="flex gap-2 mt-4">
-                        <Input
-                          value={inputMessage}
-                          onChange={(e) => setInputMessage(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          placeholder="Type your message or use quick select above..."
-                          disabled={isLoading || !sessionId}
-                          className="flex-1"
-                        />
-                        <Button
-                          onClick={() => sendMessage()}
-                          disabled={isLoading || !inputMessage.trim() || !sessionId}
-                          className="px-4"
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+            {/* Previous Q&A History */}
+            <TabsContent value="history" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Previous Questions & Answers</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Review your responses (most recent first)
+                  </p>
+                </CardHeader>
+                 <CardContent>
+                   {previousMessages.length === 0 ? (
+                     <p className="text-muted-foreground text-center py-8">
+                       Your conversation history will appear here as you progress through the assessment.
+                     </p>
+                   ) : (
+                     <ScrollArea className="h-96">
+                       <div className="space-y-4 pr-4">
+                         {previousMessages.map((message) => (
+                           <div
+                             key={message.id}
+                             className={`flex ${
+                               message.role === 'user' ? 'justify-end' : 'justify-start'
+                             }`}
+                           >
+                             <div
+                               className={`max-w-[85%] p-4 rounded-lg ${
+                                 message.role === 'user'
+                                   ? 'bg-primary text-primary-foreground'
+                                   : 'bg-muted'
+                               }`}
+                             >
+                               <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                               <p className="text-xs opacity-70 mt-2">
+                                 {message.timestamp.toLocaleTimeString()}
+                               </p>
+                             </div>
+                           </div>
+                         ))}
+                         {isLoading && (
+                           <div className="flex justify-start">
+                             <div className="bg-muted p-4 rounded-lg">
+                               <div className="flex items-center gap-2">
+                                 <Sparkles className="animate-pulse h-4 w-4" />
+                                 <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></div>
+                                 Analyzing and generating insights...
+                               </div>
+                             </div>
+                           </div>
+                         )}
+                       </div>
+                     </ScrollArea>
+                   )}
+                 </CardContent>
+               </Card>
+             </TabsContent>
 
-                <TabsContent value="insights" className="mt-0">
-                  <InsightEngine 
-                    insights={insights} 
-                    progress={{
-                      overallScore: progressData.progressPercentage,
-                      topicScores: {},
-                      completedTopics: progressData.completedAnswers,
-                      totalTopics: progressData.totalQuestions,
-                      engagementLevel: messages.length > 10 ? 'high' : messages.length > 5 ? 'medium' : 'low'
-                    }}
-                  />
-                </TabsContent>
+             <TabsContent value="insights" className="mt-6">
+               <InsightEngine 
+                 insights={insights} 
+                 progress={{
+                   overallScore: progressData.progressPercentage,
+                   topicScores: {},
+                   completedTopics: progressData.completedAnswers,
+                   totalTopics: progressData.totalQuestions,
+                   engagementLevel: messages.length > 10 ? 'high' : messages.length > 5 ? 'medium' : 'low'
+                 }}
+               />
+             </TabsContent>
 
-                <TabsContent value="services" className="mt-0">
-                  {leadScore && leadScore.recommendations.length > 0 ? (
-                    <ServiceRecommendations
-                      recommendations={leadScore.recommendations}
-                      leadScore={leadScore}
-                      sessionId={sessionId || ''}
-                      userId={userId} // Pass null for anonymous users
-                    />
-                  ) : (
-                    <Card>
-                      <CardContent className="text-center py-8">
-                        <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                          Service Recommendations Coming Soon
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Continue our conversation to receive personalized service recommendations based on your needs and AI readiness.
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </TabsContent>
+             <TabsContent value="services" className="mt-6">
+               {leadScore && leadScore.recommendations.length > 0 ? (
+                 <ServiceRecommendations
+                   recommendations={leadScore.recommendations}
+                   leadScore={leadScore}
+                   sessionId={sessionId || ''}
+                   userId={userId}
+                 />
+               ) : (
+                 <Card>
+                   <CardContent className="text-center py-8">
+                     <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                     <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                       Service Recommendations Coming Soon
+                     </h3>
+                     <p className="text-sm text-muted-foreground">
+                       Continue our conversation to receive personalized service recommendations based on your needs and AI readiness.
+                     </p>
+                   </CardContent>
+                 </Card>
+               )}
+             </TabsContent>
+           </Tabs>
+         </div>
+       </div>
+     </div>
 
-                <TabsContent value="progress" className="mt-0">
-                  <AssessmentProgress
-                    currentQuestion={progressData.currentQuestion}
-                    totalQuestions={progressData.totalQuestions}
-                    phase={progressData.phase}
-                    completedAnswers={progressData.completedAnswers}
-                    estimatedTimeRemaining={progressData.estimatedTimeRemaining}
-                  />
-                </TabsContent>
-              </div>
-
-              {/* Sidebar for all tabs */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-8">
-                  <AssessmentProgress
-                    currentQuestion={progressData.currentQuestion}
-                    totalQuestions={progressData.totalQuestions}
-                    phase={progressData.phase}
-                    completedAnswers={progressData.completedAnswers}
-                    estimatedTimeRemaining={progressData.estimatedTimeRemaining}
-                  />
-                </div>
-              </div>
-            </div>
-          </Tabs>
-        </div>
-      </div>
-    </div>
   );
 };
 
