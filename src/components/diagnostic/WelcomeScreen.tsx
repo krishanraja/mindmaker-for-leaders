@@ -1,5 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { BarChart3, MessageSquare, ArrowRight, Clock, CheckCircle } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -62,29 +65,109 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           </div>
         </div>
 
-        {/* CTA Button - mobile optimized */}
-        <div className="pt-4 space-y-4">
-          <Button 
-            onClick={onStart}
-            size="lg"
-            className="btn-primary hover:scale-105 transition-transform duration-300 text-lg md:text-xl px-8 md:px-12 py-4 md:py-6 w-full max-w-sm md:max-w-none md:w-auto mx-auto"
-          >
-            Start your Mindmaking Diagnostic
-            <div className="ml-3 text-xl md:text-2xl">✨</div>
-          </Button>
+        {/* Pathway Selection Cards */}
+        <div className="pt-4">
+          <p className="text-lg text-muted-foreground mb-8">
+            Choose your assessment pathway:
+          </p>
           
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground mb-3">
-              Or try our new AI-powered conversation experience:
-            </p>
-            <Button 
-              onClick={() => window.location.href = '/chat-assessment'}
-              variant="outline"
-              size="lg"
-              className="font-semibold py-3 px-6 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 w-full max-w-sm md:max-w-none md:w-auto mx-auto"
-            >
-              Chat with AI Advisor
-            </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Quick Form Assessment Card */}
+            <Card className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="text-center pb-4">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <BarChart3 className="w-8 h-8 text-primary" />
+                  </div>
+                </div>
+                <CardTitle className="text-xl font-bold">Quick Form Assessment</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Structured questionnaire with comprehensive analysis
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <CheckCircle className="w-4 h-4 mr-2 text-primary" />
+                    Proven methodology
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <CheckCircle className="w-4 h-4 mr-2 text-primary" />
+                    Comprehensive scoring
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <CheckCircle className="w-4 h-4 mr-2 text-primary" />
+                    Detailed results
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={onStart}
+                  className="w-full group-hover:scale-105 transition-transform duration-300"
+                  size="lg"
+                >
+                  Take Assessment
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                
+                <div className="flex items-center justify-center text-xs text-muted-foreground/60 pt-2">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Traditional diagnostic • 7 minutes
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* AI Business Consultant Card */}
+            <Card className="group cursor-pointer border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="text-center pb-4">
+                <div className="flex justify-center mb-4">
+                  <div className="relative p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <MessageSquare className="w-8 h-8 text-primary" />
+                    <Badge 
+                      variant="secondary" 
+                      className="absolute -top-1 -right-1 text-xs bg-primary text-primary-foreground"
+                    >
+                      BETA
+                    </Badge>
+                  </div>
+                </div>
+                <CardTitle className="text-xl font-bold">AI Business Consultant</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Interactive conversation-based discovery with real-time insights
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <CheckCircle className="w-4 h-4 mr-2 text-primary" />
+                    Natural conversation flow
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <CheckCircle className="w-4 h-4 mr-2 text-primary" />
+                    Personalized guidance
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <CheckCircle className="w-4 h-4 mr-2 text-primary" />
+                    Immediate insights
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={() => window.location.href = '/chat-assessment'}
+                  variant="outline"
+                  className="w-full group-hover:scale-105 transition-transform duration-300 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  size="lg"
+                >
+                  Start AI Consultation
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                
+                <div className="flex items-center justify-center text-xs text-muted-foreground/60 pt-2">
+                  <Clock className="w-3 h-3 mr-1" />
+                  No account required • 10-15 minutes
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
