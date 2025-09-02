@@ -1,5 +1,5 @@
-import { pdfMake } from "./pdf";
-import { initializePdfMake, createPdf } from "./pdfAlternative";
+import { initializePdfMake } from "./pdf";
+import { createPdf } from "./pdfAlternative";
 import { resolveBusinessLogoDataUrl } from "./pdfLogo";
 import { inferNames } from "./naming";
 import { chunkArray } from "./chunk";
@@ -182,7 +182,8 @@ export async function buildProposalPdf(opts: {
   };
 
   try {
-    // Try the main pdfMake instance first
+    // Initialize pdfMake first
+    const pdfMake = await initializePdfMake();
     pdfMake.createPdf(docDefinition).download(filename);
   } catch (error) {
     console.warn("Main pdfMake failed, trying alternative:", error);
@@ -196,7 +197,7 @@ export async function buildProposalPdf(opts: {
     }
   }
 
-  // Optionally update any UI button label to the resolved title
+  // Update UI button label
   const btn = document.querySelector('[data-pdf-button]');
   if (btn) (btn as HTMLButtonElement).textContent = `Download: ${title}`;
 }

@@ -1,27 +1,45 @@
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
+// Lazy-loaded pdfMake to prevent app startup issues
+let pdfMakeInstance: any = null;
 
-// Handle different pdfmake versions and bundler configurations
-try {
-  // Try the most common structure first
-  if (pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
-    pdfMake.vfs = pdfFonts.pdfMake.vfs;
-  } else if (pdfFonts.vfs) {
-    // Alternative structure
-    pdfMake.vfs = pdfFonts.vfs;
-  } else if ((pdfFonts as any).default && (pdfFonts as any).default.vfs) {
-    // ES6 default export structure
-    pdfMake.vfs = (pdfFonts as any).default.vfs;
-  } else if ((pdfFonts as any).default && (pdfFonts as any).default.pdfMake) {
-    // Another common structure
-    pdfMake.vfs = (pdfFonts as any).default.pdfMake.vfs;
-  } else {
-    throw new Error("Could not find VFS in pdfFonts object");
+export const initializePdfMake = async () => {
+  if (pdfMakeInstance) {
+    return pdfMakeInstance;
   }
-} catch (error) {
-  console.error("pdfmake VFS setup failed:", error);
-  console.log("pdfFonts object structure:", pdfFonts);
-  throw new Error("Failed to initialize pdfmake VFS. Check console for details.");
-}
 
-export { pdfMake };
+  try {
+    // Dynamic imports to prevent blocking app startup
+    const [pdfMakeModule, pdfFontsModule] = await Promise.all([
+      import("pdfmake/build/pdfmake"),
+      import("pdfmake/build/vfs_fonts")
+    ]);
+
+    const pdfMake = pdfMakeModule.default || pdfMakeModule;
+    const pdfFonts = pdfFontsModule.default || pdfFontsModule;
+
+    // Try different VFS structures
+    if (pdfFonts?.pdfMake?.vfs) {
+      pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    } else if (pdfFonts?.vfs) {
+      pdfMake.vfs = pdfFonts.vfs;
+    } else if (pdfFonts?.default?.vfs) {
+      pdfMake.vfs = pdfFonts.default.vfs;
+    } else if (pdfFonts?.default?.pdfMake?.vfs) {
+      pdfMake.vfs = pdfFonts.default.pdfMake.vfs;
+    } else {
+      console.warn("VFS not found, PDF generation may not work");
+    }
+
+    pdfMakeInstance = pdfMake;
+    return pdfMake;
+  } catch (error) {
+    console.error("Failed to load pdfMake:", error);
+    throw new Error("PDF generation unavailable");
+  }
+};
+
+// Export a placeholder for immediate use
+export const pdfMake = {
+  createPdf: () => {
+    throw new Error("PDF not initialized. Call initializePdfMake() first.");
+  }
+};

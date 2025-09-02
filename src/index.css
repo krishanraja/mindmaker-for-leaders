@@ -266,3 +266,20 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Ensure UI renders */
+#root {
+  min-height: 100vh;
+}
+
+/* Fallback for broken CSS variables */
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Emergency fallback styles */
+.emergency-fallback {
+  background: #fafafa !important;
+  color: #111111 !important;
+  font-family: system-ui, sans-serif !important;
+}

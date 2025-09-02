@@ -11,17 +11,26 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   return (
-    <div className="min-h-screen bg-background bg-dots flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background bg-dots flex items-center justify-center p-4 relative overflow-hidden emergency-fallback">
       {/* Header with theme toggle */}
-      <div className="absolute top-6 right-6">
+      <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>
       
-      {/* Animated background accents */}
-      <div className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl opacity-10 animate-pulse"
-           style={{ background: 'var(--gradient-primary)' }}></div>
-      <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full blur-3xl opacity-8 animate-pulse"
-           style={{ background: 'var(--gradient-primary)', animationDelay: '1s' }}></div>
+      {/* Animated background accents - with fallback */}
+      <div 
+        className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl opacity-10 animate-pulse"
+        style={{ 
+          background: 'var(--gradient-primary, linear-gradient(135deg, #7c3aed, #a855f7))',
+        }}
+      ></div>
+      <div 
+        className="absolute bottom-20 right-10 w-96 h-96 rounded-full blur-3xl opacity-8 animate-pulse"
+        style={{ 
+          background: 'var(--gradient-primary, linear-gradient(135deg, #7c3aed, #a855f7))', 
+          animationDelay: '1s' 
+        }}
+      ></div>
       
       <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10 animate-fade-in-up">
         
@@ -36,9 +45,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
 
           {/* Main headline */}
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display tracking-tight text-balance">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display tracking-tight text-balance" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
               Become a{' '}
-              <span className="text-primary">10× leader</span>
+              <span className="text-primary" style={{ color: 'hsl(250 100% 63%)' }}>10× leader</span>
               .
             </h1>
             
@@ -56,12 +65,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {/* Quick Form Assessment Card */}
-              <Card className="p-8 text-center rounded-3xl bg-surface shadow-sm hover-lift group cursor-pointer flex flex-col h-full">
+              <Card className="p-8 text-center rounded-3xl bg-surface shadow-sm hover-lift group cursor-pointer flex flex-col h-full" style={{ background: 'white' }}>
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple group-hover:shadow-lg transition-all"
-                         style={{ background: 'var(--gradient-primary)' }}>
-                      <BarChart3 className="h-8 w-8 text-primary-foreground" />
+                    <div 
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple group-hover:shadow-lg transition-all"
+                      style={{ background: 'linear-gradient(135deg, hsl(250 100% 63%), hsl(248 100% 70%))' }}
+                    >
+                      <BarChart3 className="h-8 w-8" style={{ color: 'white' }} />
                     </div>
                   </div>
                   <CardTitle className="text-xl font-heading">Quick Form Assessment</CardTitle>
@@ -86,11 +97,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                 </div>
                 
                   <div className="space-y-4 mt-auto">
-                    <Button 
-                      onClick={onStart}
-                      className="text-primary-foreground px-8 py-6 rounded-2xl shadow-purple hover-scale font-heading w-full"
-                      style={{ background: 'var(--gradient-primary)' }}
-                      size="lg"
+                  <Button 
+                    onClick={onStart}
+                    className="w-full rounded-2xl px-8 py-6 font-heading"
+                    style={{ 
+                      background: 'linear-gradient(135deg, hsl(250 100% 63%), hsl(248 100% 70%))',
+                      color: 'white'
+                    }}
+                    size="lg"
                     >
                       Take Assessment
                       <ArrowRight className="w-4 h-4 ml-2" />
@@ -105,16 +119,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             </Card>
 
               {/* AI Business Consultant Card */}
-              <Card className="p-8 text-center rounded-3xl bg-surface shadow-sm hover-lift group cursor-pointer flex flex-col h-full">
+              <Card className="p-8 text-center rounded-3xl bg-surface shadow-sm hover-lift group cursor-pointer flex flex-col h-full" style={{ background: 'white' }}>
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple group-hover:shadow-lg transition-all"
-                         style={{ background: 'var(--gradient-primary)' }}>
-                      <MessageSquare className="h-8 w-8 text-primary-foreground" />
+                    <div 
+                      className="relative w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple group-hover:shadow-lg transition-all"
+                      style={{ background: 'linear-gradient(135deg, hsl(250 100% 63%), hsl(248 100% 70%))' }}
+                    >
+                      <MessageSquare className="h-8 w-8" style={{ color: 'white' }} />
                       <Badge 
                         variant="secondary" 
                         className="absolute -top-1 -right-1 text-xs px-2 py-1 text-primary-foreground"
-                        style={{ background: 'hsl(var(--warning))' }}
+                        style={{ background: 'hsl(38 92% 50%)', color: 'white' }}
                       >
                         BETA
                       </Badge>
@@ -144,8 +160,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                 <div className="space-y-4 mt-auto">
                   <Button 
                     onClick={() => window.location.href = '/chat-assessment'}
-                    className="text-primary-foreground px-8 py-6 rounded-2xl shadow-purple hover-scale font-heading w-full"
-                    style={{ background: 'var(--gradient-primary)' }}
+                    className="w-full rounded-2xl px-8 py-6 font-heading"
+                    style={{ 
+                      background: 'linear-gradient(135deg, hsl(250 100% 63%), hsl(248 100% 70%))',
+                      color: 'white'
+                    }}
                     size="lg"
                   >
                     Start AI Consultation
