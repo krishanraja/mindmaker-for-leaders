@@ -35,7 +35,7 @@ export const Navigation: React.FC = () => {
           {/* Logo Section */}
           <div className="flex flex-col">
             <img 
-              src="/lovable-uploads/0eb86765-1d7a-4d88-aa3f-c4524638c942.png" 
+              src="/lovable-uploads/1099d766-4e79-4de3-ba1e-8bf0813f0b90.png" 
               alt="FRACTIONL/AI" 
               className="h-8 md:h-10 w-auto object-contain"
             />
@@ -43,7 +43,7 @@ export const Navigation: React.FC = () => {
               className="hidden md:block text-xs mt-1"
               style={{ color: 'hsl(var(--foreground-secondary))' }}
             >
-              AI Leadership Solutions
+              Become an AI leader.
             </span>
           </div>
 
