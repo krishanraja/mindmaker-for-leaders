@@ -17,17 +17,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         <ThemeToggle />
       </div>
       
-      {/* Animated background accents - with fallback */}
+      {/* Animated background accents - with updated purple color */}
       <div 
         className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl opacity-10 animate-pulse"
         style={{ 
-          background: 'var(--gradient-primary, linear-gradient(135deg, #7c3aed, #a855f7))',
+          background: 'linear-gradient(135deg, hsl(270 70% 60%), hsl(248 100% 70%))',
         }}
       ></div>
       <div 
         className="absolute bottom-20 right-10 w-96 h-96 rounded-full blur-3xl opacity-8 animate-pulse"
         style={{ 
-          background: 'var(--gradient-primary, linear-gradient(135deg, #7c3aed, #a855f7))', 
+          background: 'linear-gradient(135deg, hsl(270 70% 60%), hsl(248 100% 70%))', 
           animationDelay: '1s' 
         }}
       ></div>
@@ -45,10 +45,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
 
           {/* Main headline */}
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display tracking-tight text-balance" style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}>
-              Become a{' '}
-              <span className="text-primary" style={{ color: 'hsl(250 100% 63%)' }}>10× leader</span>
-              .
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-8 leading-tight mt-8">
+              Become a
+              <br />
+              10×{' '}
+              <span className="text-primary">
+                leader
+              </span>
             </h1>
             
             <p className="text-lg md:text-xl leading-relaxed text-foreground-secondary max-w-2xl mx-auto text-balance font-body">
@@ -70,7 +73,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                   <div className="flex justify-center mb-4">
                     <div 
                       className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple group-hover:shadow-lg transition-all"
-                      style={{ background: 'linear-gradient(135deg, hsl(250 100% 63%), hsl(248 100% 70%))' }}
+                      style={{ background: 'linear-gradient(135deg, hsl(270 70% 60%), hsl(248 100% 70%))' }}
                     >
                       <BarChart3 className="h-8 w-8" style={{ color: 'white' }} />
                     </div>
@@ -101,7 +104,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                     onClick={onStart}
                     className="w-full rounded-2xl px-8 py-6 font-heading"
                     style={{ 
-                      background: 'linear-gradient(135deg, hsl(250 100% 63%), hsl(248 100% 70%))',
+                      background: 'linear-gradient(135deg, hsl(270 70% 60%), hsl(248 100% 70%))',
                       color: 'white'
                     }}
                     size="lg"
@@ -124,7 +127,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                   <div className="flex justify-center mb-4">
                     <div 
                       className="relative w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple group-hover:shadow-lg transition-all"
-                      style={{ background: 'linear-gradient(135deg, hsl(250 100% 63%), hsl(248 100% 70%))' }}
+                      style={{ background: 'linear-gradient(135deg, hsl(270 70% 60%), hsl(248 100% 70%))' }}
                     >
                       <MessageSquare className="h-8 w-8" style={{ color: 'white' }} />
                       <Badge 
@@ -162,7 +165,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                     onClick={() => window.location.href = '/chat-assessment'}
                     className="w-full rounded-2xl px-8 py-6 font-heading"
                     style={{ 
-                      background: 'linear-gradient(135deg, hsl(250 100% 63%), hsl(248 100% 70%))',
+                      background: 'linear-gradient(135deg, hsl(270 70% 60%), hsl(248 100% 70%))',
                       color: 'white'
                     }}
                     size="lg"

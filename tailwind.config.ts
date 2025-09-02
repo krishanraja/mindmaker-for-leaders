@@ -25,7 +25,10 @@ export default {
 				sans: ['Inter', 'system-ui', 'sans-serif'], // Default
 			},
 			colors: {
-				primary: "hsl(var(--primary))",
+				primary: {
+					DEFAULT: "hsl(var(--primary))",
+				},
+				foreground: "hsl(var(--foreground))",
 				"primary-light": "hsl(var(--primary-light))",
 				"primary-foreground": "hsl(var(--primary-foreground))",
 				accent: "hsl(var(--accent))",
@@ -33,7 +36,6 @@ export default {
 				background: "hsl(var(--background))",
 				surface: "hsl(var(--surface))",
 				"surface-muted": "hsl(var(--surface-muted))",
-				foreground: "hsl(var(--foreground))",
 				"foreground-secondary": "hsl(var(--foreground-secondary))",
 				"foreground-muted": "hsl(var(--foreground-muted))",
 				success: "hsl(var(--success))",

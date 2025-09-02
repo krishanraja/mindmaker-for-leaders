@@ -4,7 +4,8 @@
 
 :root {
   /* Color palette - HSL for Tailwind hsl(var(--token)) usage */
-  --primary: 250 100% 63%;
+  --primary: 270 70% 60%;        /* Purple accent */
+  --foreground: 0 0% 3.9%;       /* Main text color */
   --primary-light: 248 100% 70%;
   --primary-foreground: 0 0% 100%;
 
@@ -15,7 +16,7 @@
   --surface: 0 0% 100%;
   --surface-muted: 0 0% 96.5%;
 
-  --foreground: 0 0% 6.7%;
+  --foreground: 0 0% 3.9%;       /* Main text color */
   --foreground-secondary: 0 0% 45.1%;
   --foreground-muted: 0 0% 57.8%;
 
@@ -25,7 +26,7 @@
 
   --border: 0 0% 89.8%;
   --input: 0 0% 89.8%;
-  --ring: 250 100% 63%;
+  --ring: 270 70% 60%;
 
   /* Existing shadcn variables for compatibility */
   --muted: 0 0% 96.5%;
@@ -46,10 +47,13 @@
   --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
   --shadow-purple: 0 10px 30px -10px hsl(250 100% 63% / 0.3);
 
-  /* Gradients */
+  /* Gradients - updated with new primary color */
   --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
   --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
   --gradient-accent: linear-gradient(135deg, hsl(var(--primary-light)), hsl(var(--primary)));
+
+  /* Shadow with new primary color */
+  --shadow-purple: 0 10px 30px -10px hsl(270 70% 60% / 0.3);
 
   /* Transitions */
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -58,12 +62,12 @@
   /* Sidebar variables */
   --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 0 0% 6.7%;
-  --sidebar-primary: 250 100% 63%;
+  --sidebar-primary: 270 70% 60%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 0 0% 96.5%;
   --sidebar-accent-foreground: 0 0% 6.7%;
   --sidebar-border: 0 0% 89.8%;
-  --sidebar-ring: 250 100% 63%;
+  --sidebar-ring: 270 70% 60%;
 }
 
 /* Dark mode variables */
@@ -72,7 +76,7 @@
   --surface: 0 0% 8%;
   --surface-muted: 0 0% 12%;
 
-  --foreground: 0 0% 98%;
+  --foreground: 0 0% 98%;         /* Light text on dark */
   --foreground-secondary: 0 0% 60%;
   --foreground-muted: 0 0% 45%;
 
@@ -95,7 +99,7 @@
   --sidebar-border: 0 0% 15%;
 }
 
-/* Typography */
+/* Typography - exact specification */
 .font-display { 
   font-family: 'Outfit', system-ui, sans-serif; 
   font-weight: 700; 
