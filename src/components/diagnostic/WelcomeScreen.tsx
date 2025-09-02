@@ -35,13 +35,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10 animate-fade-in-up">
         
         {/* Logo */}
-        <div className="flex justify-center mb-6 md:mb-8">
-          <img 
-            src="/lovable-uploads/0eb86765-1d7a-4d88-aa3f-c4524638c942.png" 
-            alt="AI Mindmaker Logo" 
-            className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
-          />
-        </div>
+        <img 
+          src="/lovable-uploads/0eb86765-1d7a-4d88-aa3f-c4524638c942.png" 
+          alt="AI Mindmaker Logo" 
+          className="h-8 w-auto mx-auto mb-8 object-contain"
+        />
 
           {/* Main headline */}
           <div className="space-y-6">
