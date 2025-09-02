@@ -11,14 +11,19 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   return (
-    <div className="min-h-screen section-editorial bg-background">
+    <div className="min-h-screen bg-background bg-dots flex items-center justify-center p-4 relative overflow-hidden">
       {/* Header with theme toggle */}
       <div className="absolute top-6 right-6">
         <ThemeToggle />
       </div>
       
-      <div className="container-editorial flex items-center justify-center min-h-screen">
-        <div className="max-w-4xl mx-auto text-center space-y-8 fade-in-up">
+      {/* Animated background accents */}
+      <div className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl opacity-10 animate-pulse"
+           style={{ background: 'var(--gradient-primary)' }}></div>
+      <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full blur-3xl opacity-8 animate-pulse"
+           style={{ background: 'var(--gradient-primary)', animationDelay: '1s' }}></div>
+      
+      <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10 animate-fade-in-up">
         
         {/* Logo */}
         <div className="flex justify-center mb-6 md:mb-8">
@@ -31,13 +36,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
 
           {/* Main headline */}
           <div className="space-y-6">
-            <h1 className="headline-xl text-balance">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display tracking-tight text-balance">
               Become a{' '}
-              <span className="text-primary link-underline">10× leader</span>
+              <span className="text-primary">10× leader</span>
               .
             </h1>
             
-            <p className="body-lg text-muted-foreground max-w-2xl mx-auto text-balance">
+            <p className="text-lg md:text-xl leading-relaxed text-foreground-secondary max-w-2xl mx-auto text-balance font-body">
               Discover your leadership advantage with AI. 
               Transform how you work, decide, and influence in just 7 minutes.
             </p>
@@ -51,29 +56,30 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {/* Quick Form Assessment Card */}
-              <Card className="card-editorial card-hover group cursor-pointer border border-border/50 hover:border-primary/30 flex flex-col h-full">
+              <Card className="p-8 text-center rounded-3xl bg-surface shadow-sm hover-lift group cursor-pointer flex flex-col h-full">
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                      <BarChart3 className="w-6 h-6 text-primary" />
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple group-hover:shadow-lg transition-all"
+                         style={{ background: 'var(--gradient-primary)' }}>
+                      <BarChart3 className="h-8 w-8 text-primary-foreground" />
                     </div>
                   </div>
-                  <CardTitle className="headline-md">Quick Form Assessment</CardTitle>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <CardTitle className="text-xl font-heading">Quick Form Assessment</CardTitle>
+                  <p className="text-foreground-secondary leading-relaxed font-body">
                     Structured questionnaire with comprehensive analysis
                   </p>
                 </CardHeader>
               <CardContent className="space-y-4 flex-grow flex flex-col">
                 <div className="space-y-2 flex-grow">
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <div className="flex items-center text-sm text-foreground-secondary font-body">
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                     Proven methodology
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <div className="flex items-center text-sm text-foreground-secondary font-body">
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                     Comprehensive scoring
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <div className="flex items-center text-sm text-foreground-secondary font-body">
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                     Detailed results
                   </div>
@@ -82,14 +88,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
                   <div className="space-y-4 mt-auto">
                     <Button 
                       onClick={onStart}
-                      className="btn-editorial w-full"
+                      className="text-primary-foreground px-8 py-6 rounded-2xl shadow-purple hover-scale font-heading w-full"
+                      style={{ background: 'var(--gradient-primary)' }}
                       size="lg"
                     >
                       Take Assessment
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                     
-                    <div className="flex items-center justify-center text-xs text-muted-foreground">
+                    <div className="flex items-center justify-center text-xs text-foreground-muted font-body">
                       <Clock className="w-3 h-3 mr-1" />
                       Traditional diagnostic • 7 minutes
                     </div>
@@ -98,69 +105,71 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             </Card>
 
               {/* AI Business Consultant Card */}
-              <Card className="card-editorial card-hover group cursor-pointer border border-border/50 hover:border-primary/30 flex flex-col h-full">
+              <Card className="p-8 text-center rounded-3xl bg-surface shadow-sm hover-lift group cursor-pointer flex flex-col h-full">
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="relative p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                      <MessageSquare className="w-6 h-6 text-primary" />
+                    <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple group-hover:shadow-lg transition-all"
+                         style={{ background: 'var(--gradient-primary)' }}>
+                      <MessageSquare className="h-8 w-8 text-primary-foreground" />
                       <Badge 
                         variant="secondary" 
-                        className="absolute -top-1 -right-1 text-xs bg-primary text-primary-foreground px-2 py-1"
+                        className="absolute -top-1 -right-1 text-xs px-2 py-1 text-primary-foreground"
+                        style={{ background: 'hsl(var(--warning))' }}
                       >
                         BETA
                       </Badge>
                     </div>
                   </div>
-                  <CardTitle className="headline-md">AI Business Consultant</CardTitle>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <CardTitle className="text-xl font-heading">AI Business Consultant</CardTitle>
+                  <p className="text-foreground-secondary leading-relaxed font-body">
                     Interactive conversation-based discovery with real-time insights
                   </p>
                 </CardHeader>
               <CardContent className="space-y-4 flex-grow flex flex-col">
                 <div className="space-y-2 flex-grow">
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <div className="flex items-center text-sm text-foreground-secondary font-body">
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                     Natural conversation flow
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <div className="flex items-center text-sm text-foreground-secondary font-body">
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                     Personalized guidance
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <div className="flex items-center text-sm text-foreground-secondary font-body">
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                     Immediate insights
                   </div>
                 </div>
                 
-                  <div className="space-y-4 mt-auto">
-                    <Button 
-                      onClick={() => window.location.href = '/chat-assessment'}
-                      className="btn-editorial w-full"
-                      size="lg"
-                    >
-                      Start AI Consultation
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                    
-                    <div className="flex items-center justify-center text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3 mr-1" />
-                      No account required • 10-15 minutes
-                    </div>
+                <div className="space-y-4 mt-auto">
+                  <Button 
+                    onClick={() => window.location.href = '/chat-assessment'}
+                    className="text-primary-foreground px-8 py-6 rounded-2xl shadow-purple hover-scale font-heading w-full"
+                    style={{ background: 'var(--gradient-primary)' }}
+                    size="lg"
+                  >
+                    Start AI Consultation
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  
+                  <div className="flex items-center justify-center text-xs text-foreground-muted font-body">
+                    <Clock className="w-3 h-3 mr-1" />
+                    No account required • 10-15 minutes
                   </div>
+                </div>
               </CardContent>
-                </Card>
-            </div>
+            </Card>
           </div>
+        </div>
 
-          {/* Trust indicators */}
-          <div className="space-y-4">
-            <p className="text-muted-foreground max-w-2xl mx-auto text-balance">
-              Designed specifically for non-AI native business leaders ready to unlock their potential with AI.
-            </p>
-            <div className="flex flex-col md:flex-row justify-center text-sm text-muted-foreground space-y-1 md:space-y-0 md:space-x-8">
-              <span>✓ No Spam</span>
-              <span>✓ Instant Results</span>
-            </div>
+        {/* Trust indicators */}
+        <div className="space-y-4">
+          <p className="text-foreground-secondary max-w-2xl mx-auto text-balance font-body">
+            Designed specifically for non-AI native business leaders ready to unlock their potential with AI.
+          </p>
+          <div className="flex flex-col md:flex-row justify-center text-sm text-foreground-secondary space-y-1 md:space-y-0 md:space-x-8 font-body">
+            <span>✓ No Spam</span>
+            <span>✓ Instant Results</span>
           </div>
         </div>
       </div>

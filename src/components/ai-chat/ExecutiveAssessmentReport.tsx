@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { 
   Brain, 
   TrendingUp, 
@@ -14,8 +15,10 @@ import {
   AlertTriangle,
   BarChart3,
   Briefcase,
-  Shield
+  Shield,
+  Download
 } from 'lucide-react';
+import { buildProposalPdf } from '@/lib/pdf/buildProposalPdf';
 
 interface ExecutiveInsight {
   id: string;
@@ -57,6 +60,76 @@ const ExecutiveAssessmentReport: React.FC<ExecutiveAssessmentReportProps> = ({
   companyName = "Your Organization",
   executiveName = "Executive"
 }) => {
+  const handleDownloadPDF = async () => {
+    // Set window globals for inference
+    (window as any).__HEADER_BRAND__ = "Fractionl";
+    (window as any).__PAGE_H1__ = "AI Assessment";
+    (window as any).__ROUTE_NAME__ = "ai-assessment";
+    
+    const quickWins = insights.filter(i => i.type === 'quick_win');
+    const strategic = insights.filter(i => i.type === 'strategic_opportunity');
+    const risks = insights.filter(i => i.type === 'risk_mitigation');
+    const competitive = insights.filter(i => i.type === 'competitive_advantage');
+
+    await buildProposalPdf({
+      businessLogo: "/lovable-uploads/fb8a0a2a-5abb-4fc1-bf6b-a217670a9a39.png", // Fractionl logo
+      context: {
+        businessName: "Fractionl",
+        toolName: "AI Readiness Assessment",
+        audience: companyName
+      },
+      sections: [
+        {
+          kind: "exec",
+          title: "Executive Summary",
+          problem: `${companyName} is positioned as ${assessmentData.competitivePosition} in AI readiness with an overall score of ${assessmentData.overallScore}/100.`,
+          solution: assessmentData.executiveSummary,
+          roi: `Estimated efficiency gains of 15-40% through strategic AI implementation.`,
+          kpis: [
+            { label: "Overall Readiness", value: `${assessmentData.overallScore}/100` },
+            { label: "Industry Position", value: assessmentData.competitivePosition },
+            { label: "Quick Wins Available", value: `${quickWins.length}` },
+            { label: "ROI Potential", value: "15-40%" }
+          ]
+        },
+        {
+          kind: "analysis",
+          title: "AI Readiness Matrix Analysis",
+          narrative: `Detailed breakdown of ${companyName}'s AI readiness across four key dimensions:`,
+          table: {
+            columns: ["Dimension", "Score", "Status", "Priority Action"],
+            rows: Object.entries(assessmentData.readinessMatrix).map(([dim, score]) => [
+              dim.charAt(0).toUpperCase() + dim.slice(1).replace('_', ' '),
+              `${score}%`,
+              score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Developing' : 'Needs Attention',
+              score < 60 ? 'Immediate focus required' : 'Continue optimization'
+            ])
+          }
+        },
+        {
+          kind: "plan",
+          title: "Strategic Implementation Roadmap",
+          priorities: [
+            ...quickWins.map(i => ({ level: "HIGH" as const, item: i.title })),
+            ...strategic.slice(0, 3).map(i => ({ level: "MEDIUM" as const, item: i.title })),
+            ...risks.slice(0, 2).map(i => ({ level: "HIGH" as const, item: i.title }))
+          ],
+          timeline: [
+            "Phase 1 (1-4 weeks): Execute quick wins for immediate impact",
+            "Phase 2 (1-6 months): Implement strategic opportunities",
+            "Phase 3 (6-12 months): Build competitive advantages",
+            "Ongoing: Monitor and optimize AI implementations"
+          ],
+          nextSteps: [
+            "Review and approve recommended quick wins",
+            "Allocate resources for priority initiatives",
+            "Establish AI governance framework",
+            "Schedule quarterly progress reviews"
+          ]
+        }
+      ]
+    });
+  };
   const getCompetitiveColor = (position: string) => {
     switch (position) {
       case 'leader': return 'text-green-600 bg-green-50 border-green-200';
@@ -89,58 +162,78 @@ const ExecutiveAssessmentReport: React.FC<ExecutiveAssessmentReportProps> = ({
   return (
     <div className="space-y-8 bg-background">
       {/* Executive Summary Header */}
-      <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
+      <Card className="p-8 text-center rounded-3xl bg-surface shadow-purple hover-lift border-0" style={{ background: 'var(--gradient-primary)' }}>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-2xl font-bold text-foreground">
+              <CardTitle className="text-2xl font-display text-primary-foreground">
                 AI Readiness Assessment
               </CardTitle>
-              <p className="text-lg text-muted-foreground mt-1">
+              <p className="text-lg text-primary-foreground/80 mt-1">
                 {companyName} • Executive Summary for {executiveName}
               </p>
             </div>
             <div className="text-right">
-              <div className="text-4xl font-bold text-primary">{assessmentData.overallScore}/100</div>
-              <div className="text-sm text-muted-foreground">Overall Readiness Score</div>
+              <div className="text-4xl font-bold text-primary-foreground">{assessmentData.overallScore}/100</div>
+              <div className="text-sm text-primary-foreground/80">Overall Readiness Score</div>
             </div>
+          </div>
+          <div className="mt-6">
+            <Button 
+              onClick={handleDownloadPDF}
+              data-pdf-button
+              className="text-primary-foreground px-8 py-6 rounded-2xl shadow-purple hover-scale"
+              style={{ background: 'var(--gradient-accent)' }}
+            >
+              <Download className="h-5 w-5 mr-2" />
+              Download Executive Report
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Industry Position</span>
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple"
+                     style={{ background: 'var(--gradient-primary)' }}>
+                  <BarChart3 className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <span className="font-heading text-primary-foreground">Industry Position</span>
               </div>
-              <div className={`inline-flex px-3 py-1 rounded-lg border font-medium capitalize ${getCompetitiveColor(assessmentData.competitivePosition)}`}>
+              <span className="px-2 py-1 rounded-lg text-primary-foreground" style={{ background: 'hsl(var(--success))' }}>
                 {assessmentData.competitivePosition}
-              </div>
-              <p className="text-sm text-muted-foreground">
+              </span>
+              <p className="text-sm text-primary-foreground/80">
                 vs. {assessmentData.industryBenchmark}% industry average
               </p>
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="font-semibold">Quick Wins</span>
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple"
+                     style={{ background: 'var(--gradient-primary)' }}>
+                  <CheckCircle className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <span className="font-heading text-primary-foreground">Quick Wins</span>
               </div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-primary-foreground">
                 {insights.filter(i => i.type === 'quick_win').length}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-primary-foreground/80">
                 Immediate opportunities identified
               </p>
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-primary" />
-                <span className="font-semibold">ROI Potential</span>
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple"
+                     style={{ background: 'var(--gradient-primary)' }}>
+                  <DollarSign className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <span className="font-heading text-primary-foreground">ROI Potential</span>
               </div>
-              <div className="text-2xl font-bold text-primary">15-40%</div>
-              <p className="text-sm text-muted-foreground">
+              <div className="text-2xl font-bold text-primary-foreground">15-40%</div>
+              <p className="text-sm text-primary-foreground/80">
                 Estimated efficiency gains
               </p>
             </div>
@@ -149,15 +242,18 @@ const ExecutiveAssessmentReport: React.FC<ExecutiveAssessmentReportProps> = ({
       </Card>
 
       {/* Executive Summary */}
-      <Card>
+      <Card className="p-8 text-center rounded-3xl bg-surface shadow-sm hover-lift">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 font-heading">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-purple"
+                 style={{ background: 'var(--gradient-primary)' }}>
+              <Briefcase className="h-8 w-8 text-primary-foreground" />
+            </div>
             Executive Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-lg leading-relaxed text-foreground">
+          <p className="text-lg leading-relaxed text-foreground font-body">
             {assessmentData.executiveSummary}
           </p>
         </CardContent>

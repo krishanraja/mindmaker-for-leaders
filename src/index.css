@@ -2,271 +2,267 @@
 @tailwind components;
 @tailwind utilities;
 
-/* NYC Editorial Design System */
+:root {
+  /* Color palette - HSL for Tailwind hsl(var(--token)) usage */
+  --primary: 250 100% 63%;
+  --primary-light: 248 100% 70%;
+  --primary-foreground: 0 0% 100%;
 
-@layer base {
-  :root {
-    /* NYC Editorial Color System - Light Theme */
-    --background: 0 0% 98%;           /* #FAFAFA - Almost white background */
-    --foreground: 0 0% 6.7%;          /* #111111 - Near black text */
-    --primary: 221 100% 58%;          /* #2A6AFF - Bright blue accent */
-    --primary-foreground: 0 0% 100%;  /* White text on blue */
-    
-    --secondary: 0 0% 95%;            /* #F2F2F2 - Light secondary */
-    --secondary-foreground: 0 0% 6.7%;
-    
-    --muted: 0 0% 96%;               /* #F5F5F5 - Subtle backgrounds */
-    --muted-foreground: 0 0% 45%;    /* #737373 - Secondary text */
-    
-    --accent: 221 100% 58%;          /* Same as primary */
-    --accent-foreground: 0 0% 100%;
-    
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 0 0% 90%;              /* #E5E5E5 - Subtle borders */
-    --input: 0 0% 96%;               /* Light input backgrounds */
-    --ring: 221 100% 58%;            /* Blue focus ring */
-    --card: 0 0% 100%;               /* Pure white cards */
-    --card-foreground: 0 0% 6.7%;
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 6.7%;
-    
-    --radius: 0.5rem;
-    
-    /* Editorial spacing system */
-    --section-padding: clamp(4rem, 8vw, 8rem);
-    --content-width: 1200px;
-    
-    /* Professional shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-    --shadow-medium: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.06);
-    
-    /* Typography variables */
-    --font-display: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-    
-    /* Smooth transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  }
+  --accent: 248 100% 70%;
+  --accent-foreground: 0 0% 100%;
 
-  .dark {
-    /* NYC Editorial Color System - Dark Theme */
-    --background: 0 0% 6.7%;          /* #111111 - Dark background */
-    --foreground: 0 0% 98%;           /* #FAFAFA - Light text */
-    --primary: 221 100% 58%;          /* #2A6AFF - Same blue accent */
-    --primary-foreground: 0 0% 100%;
-    
-    --secondary: 0 0% 12%;            /* #1F1F1F - Dark secondary */
-    --secondary-foreground: 0 0% 98%;
-    
-    --muted: 0 0% 12%;               /* #1F1F1F - Dark muted backgrounds */
-    --muted-foreground: 0 0% 60%;    /* #999999 - Dark secondary text */
-    
-    --accent: 221 100% 58%;
-    --accent-foreground: 0 0% 100%;
-    
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 0 0% 15%;              /* #262626 - Dark borders */
-    --input: 0 0% 12%;               /* Dark input backgrounds */
-    --ring: 221 100% 58%;
-    --card: 0 0% 8%;                 /* #141414 - Dark cards */
-    --card-foreground: 0 0% 98%;
-    
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 98%;
-    
-    /* Dark mode shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-medium: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -1px hsl(0 0% 0% / 0.3);
-  }
+  --background: 0 0% 98%;
+  --surface: 0 0% 100%;
+  --surface-muted: 0 0% 96.5%;
+
+  --foreground: 0 0% 6.7%;
+  --foreground-secondary: 0 0% 45.1%;
+  --foreground-muted: 0 0% 57.8%;
+
+  --success: 160 84% 39%;
+  --warning: 38 92% 50%;
+  --destructive: 0 84% 60%;
+
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 250 100% 63%;
+
+  /* Existing shadcn variables for compatibility */
+  --muted: 0 0% 96.5%;
+  --muted-foreground: 0 0% 45.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 6.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 6.7%;
+  --secondary: 0 0% 96.5%;
+  --secondary-foreground: 0 0% 6.7%;
+
+  /* Radius and shadows */
+  --radius: 1rem;
+  --radius-lg: 1.5rem;
+
+  --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+  --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
+  --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+  --shadow-purple: 0 10px 30px -10px hsl(250 100% 63% / 0.3);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+  --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+  --gradient-accent: linear-gradient(135deg, hsl(var(--primary-light)), hsl(var(--primary)));
+
+  /* Transitions */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Sidebar variables */
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 0 0% 6.7%;
+  --sidebar-primary: 250 100% 63%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 96.5%;
+  --sidebar-accent-foreground: 0 0% 6.7%;
+  --sidebar-border: 0 0% 89.8%;
+  --sidebar-ring: 250 100% 63%;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+/* Dark mode variables */
+.dark {
+  --background: 0 0% 6.7%;
+  --surface: 0 0% 8%;
+  --surface-muted: 0 0% 12%;
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-body);
-    font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04'; /* Inter modern features */
-  }
-  
-  /* NYC Editorial Typography System */
-  .font-display {
-    font-family: var(--font-display);
-  }
-  
-  .font-body {
-    font-family: var(--font-body);
-  }
-  
-  /* Editorial headline hierarchy */
-  .headline-xl {
-    @apply text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight;
-    line-height: 1.2;
-    letter-spacing: -0.025em;
-  }
+  --foreground: 0 0% 98%;
+  --foreground-secondary: 0 0% 60%;
+  --foreground-muted: 0 0% 45%;
 
-  .headline-lg {
-    @apply text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight;
-    line-height: 1.2;
-  }
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
 
-  .headline-md {
-    @apply text-2xl md:text-3xl font-semibold tracking-tight;
-    line-height: 1.2;
-  }
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 60%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 98%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 98%;
 
-  /* Body text system */
-  .body-lg {
-    @apply text-lg md:text-xl leading-relaxed;
-  }
-
-  .body-md {
-    @apply text-base md:text-lg leading-relaxed;
-  }
-  
-  /* Text balance for better headline wrapping */
-  .text-balance {
-    text-wrap: balance;
-  }
-  
-  /* Default typography */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
-    @apply font-semibold tracking-tight;
-    line-height: 1.2;
-  }
-  
-  h1 {
-    @apply headline-xl;
-  }
-  
-  h2 {
-    @apply headline-lg;
-  }
-  
-  h3 {
-    @apply headline-md;
-  }
-  
-  p, span, div {
-    font-family: var(--font-body);
-    @apply leading-relaxed;
-  }
-  
-  button {
-    font-family: var(--font-body);
-    @apply font-medium;
-  }
-  
-  /* NYC Editorial Layout System */
-  .section-padding {
-    padding: var(--section-padding) 0;
-  }
-
-  .container-width {
-    max-width: var(--content-width);
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-  
-  /* Professional interaction utilities */
-  .link-underline {
-    @apply relative inline-block;
-  }
-
-  .link-underline::after {
-    content: '';
-    @apply absolute bottom-0 left-0 w-full h-px bg-current scale-x-0 origin-right;
-    transition: transform 0.3s var(--transition-smooth);
-  }
-
-  .link-underline:hover::after {
-    @apply scale-x-100 origin-left;
-  }
-
-  .card-hover {
-    transition: var(--transition-smooth);
-  }
-
-  .card-hover:hover {
-    transform: scale(1.01);
-    box-shadow: var(--shadow-medium);
-  }
-
-  .fade-in-up {
-    animation: fade-in-up 0.6s ease-out forwards;
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  
-  /* Focus states for accessibility */
-  *:focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
-  }
+  --sidebar-background: 0 0% 8%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-accent: 0 0% 12%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 0 0% 15%;
 }
 
-@layer components {
-  .btn-editorial {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 
-           transition-all duration-300 px-6 py-3 rounded-lg 
-           font-medium text-base border-0;
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .btn-editorial:hover {
-    box-shadow: var(--shadow-medium);
-    transform: scale(1.01);
-  }
-  
-  .card-editorial {
-    @apply bg-card text-card-foreground border-0 rounded-lg p-6;
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .card-editorial:hover {
-    box-shadow: var(--shadow-medium);
-  }
-  
-  .section-editorial {
-    @apply section-padding;
-  }
-  
-  .container-editorial {
-    @apply container-width;
-  }
+/* Typography */
+.font-display { 
+  font-family: 'Outfit', system-ui, sans-serif; 
+  font-weight: 700; 
+  letter-spacing: -0.02em; 
 }
 
-/* NYC Editorial Animations */
-@keyframes fade-in-up {
+.font-heading { 
+  font-family: 'Outfit', system-ui, sans-serif; 
+  font-weight: 600; 
+  letter-spacing: -0.01em; 
+}
+
+.font-body { 
+  font-family: 'Inter', system-ui, sans-serif; 
+  font-optical-sizing: auto; 
+}
+
+/* Base styles */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Animations */
+@keyframes fadeInUp { 
   from {
     opacity: 0;
-    transform: translateY(20px);
-  }
+    transform: translateY(30px);
+  } 
   to {
     opacity: 1;
     transform: translateY(0);
+  } 
+}
+
+@keyframes confetti { 
+  0% {
+    transform: scale(.8) rotate(0);
+    opacity: 0;
+  } 
+  50% {
+    transform: scale(1.1) rotate(5deg);
+    opacity: 1;
+  } 
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  } 
+}
+
+@keyframes accordion-down { 
+  from {
+    height: 0
+  } 
+  to {
+    height: var(--radix-accordion-content-height)
+  } 
+}
+
+@keyframes accordion-up { 
+  from {
+    height: var(--radix-accordion-content-height)
+  } 
+  to {
+    height: 0
+  } 
+}
+
+.animate-fade-in-up { 
+  animation: fadeInUp .6s ease-out forwards; 
+}
+
+.confetti-burst { 
+  animation: confetti .8s ease-out; 
+}
+
+.animate-accordion-down { 
+  animation: accordion-down .2s ease-out; 
+}
+
+.animate-accordion-up { 
+  animation: accordion-up .2s ease-out; 
+}
+
+.transition-smooth { 
+  transition: var(--transition-smooth); 
+}
+
+.transition-bounce { 
+  transition: var(--transition-bounce); 
+}
+
+.hover-lift { 
+  transition: var(--transition-smooth); 
+}
+
+.hover-lift:hover { 
+  transform: translateY(-2px) scale(1.01); 
+  box-shadow: var(--shadow-lg); 
+}
+
+.hover-scale { 
+  transition: var(--transition-bounce); 
+}
+
+.hover-scale:hover { 
+  transform: scale(1.02); 
+}
+
+/* Subtle dotted background utility */
+.bg-dots {
+  background-image: radial-gradient(circle at 2px 2px, hsl(var(--primary) / 0.1) 1px, transparent 0);
+  background-size: 60px 60px;
+}
+
+/* Focus states */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--ring));
+}
+
+/* Section utilities */
+.section-padding {
+  padding: 4rem 0;
+}
+
+@media (min-width: 640px) {
+  .section-padding {
+    padding: 5rem 0;
   }
 }
 
-/* Reduced motion support */
+@media (min-width: 1024px) {
+  .section-padding {
+    padding: 6rem 0;
+  }
+}
+
+/* Container utility */
+.container-width {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-width {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-width {
+    padding: 0 2rem;
+  }
+}
+
+/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-  
-  .fade-in-up {
-    animation: none;
-    opacity: 1;
-    transform: translateY(0);
   }
 }
