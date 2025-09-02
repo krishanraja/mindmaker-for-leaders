@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, MessageSquare, ArrowRight, Clock, CheckCircle } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Navigation } from '@/components/Navigation';
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -11,11 +12,17 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   return (
-    <div className="min-h-screen bg-background bg-dots flex items-center justify-center p-4 relative overflow-hidden emergency-fallback">
-      {/* Header with theme toggle */}
-      <div className="absolute top-6 right-6 z-50">
+    <div className="min-h-screen bg-background bg-dots relative overflow-hidden emergency-fallback">
+      {/* Navigation Bar */}
+      <Navigation />
+      
+      {/* Theme toggle moved to top right with navigation space */}
+      <div className="absolute top-6 right-6 z-40">
         <ThemeToggle />
       </div>
+      
+      {/* Main Content with top padding for fixed navigation */}
+      <div className="pt-16 md:pt-20 flex items-center justify-center p-4 min-h-screen">
       
       {/* Animated background accents - with updated purple color */}
       <div 
@@ -32,7 +39,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         }}
       ></div>
       
-      <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10 animate-fade-in-up">
+      <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10 animate-fade-in-up" id="assessment">
         
         {/* Logo */}
         <img 
@@ -191,6 +198,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             <span>✓ No Spam</span>
             <span>✓ Instant Results</span>
           </div>
+        </div>
         </div>
       </div>
     </div>
