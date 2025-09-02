@@ -37,8 +37,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         {/* Logo */}
         <div className="flex justify-center mb-6 md:mb-8">
           <img 
-            src="/lovable-uploads/d8a8f60a-af0d-4247-8a66-e088bc097885.png" 
-            alt="Company Logo" 
+            src="/lovable-uploads/0eb86765-1d7a-4d88-aa3f-c4524638c942.png" 
+            alt="AI Mindmaker Logo" 
             className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
           />
         </div>

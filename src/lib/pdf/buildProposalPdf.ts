@@ -162,7 +162,7 @@ export async function buildProposalPdf(opts: {
   const docDefinition: any = {
     pageSize: "A4",
     pageMargins: [40, 60, 40, 60],
-    info: { title, subject: "Executive Report", creator: "Fractionl" },
+    info: { title, subject: "Executive Report", creator: "AI Mindmaker" },
     header: () => ({
       columns: [
         { image: logoDataUrl, fit: [120, 32], margin: [40, 20, 0, 0] },
