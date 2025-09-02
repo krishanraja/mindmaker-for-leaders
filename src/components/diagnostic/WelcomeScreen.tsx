@@ -45,7 +45,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         <img 
           src="/lovable-uploads/0eb86765-1d7a-4d88-aa3f-c4524638c942.png" 
           alt="AI Mindmaker Logo" 
-          className="h-8 w-auto mx-auto mb-8 object-contain"
+          className="h-8 w-auto mx-auto mb-8 mt-16 object-contain"
         />
 
           {/* Main headline */}

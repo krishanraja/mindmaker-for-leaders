@@ -43,7 +43,7 @@ export const Navigation: React.FC = () => {
               className="hidden md:block text-xs mt-1"
               style={{ color: 'hsl(var(--foreground-secondary))' }}
             >
-              Become an AI leader.
+              Become an AI-forward leader.
             </span>
           </div>
 
