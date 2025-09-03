@@ -20,7 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ExecutiveInsight {
   id: string;
-  type: 'quick_win' | 'strategic_opportunity' | 'risk_mitigation' | 'competitive_advantage';
+  type: 'quick_win' | 'strategic_opportunity' | 'risk_mitigation' | 'competitive_advantage' | 'leadership_differentiation';
   title: string;
   description: string;
   impact: 'high' | 'medium' | 'low';
@@ -62,41 +62,47 @@ const LLMInsightEngine: React.FC<LLMInsightEngineProps> = ({
     try {
       const { data, error } = await supabase.functions.invoke('ai-assessment-chat', {
         body: {
-          message: `EXECUTIVE INSIGHT ANALYSIS REQUEST:
-          
-Please analyze this conversation and assessment data to generate executive-level strategic insights:
+          message: `PERSONAL AI LEADERSHIP DEVELOPMENT ANALYSIS:
 
-CONVERSATION CONTEXT:
+Analyze this executive's responses to generate personalized AI leadership development insights focused on HUMAN CAPABILITY ENHANCEMENT, not enterprise systems.
+
+CONVERSATION DATA:
 ${JSON.stringify(conversationData, null, 2)}
 
-ASSESSMENT DATA:
+ASSESSMENT DATA: 
 ${JSON.stringify(assessmentData, null, 2)}
 
-Generate exactly 4-6 strategic insights in this JSON format:
+Generate insights in this JSON format:
 {
   "insights": [
     {
-      "type": "quick_win|strategic_opportunity|risk_mitigation|competitive_advantage",
-      "title": "Clear, executive-level title",
-      "description": "Detailed business impact description",
+      "type": "quick_win|strategic_opportunity|risk_mitigation|leadership_differentiation",
+      "title": "Clear leadership development title",
+      "description": "How this develops the PERSON as an AI-forward leader",
       "impact": "high|medium|low",
-      "effort": "low|medium|high", 
-      "timeline": "1-2 weeks|1-3 months|3-6 months|6+ months",
-      "roi_estimate": "Specific ROI estimate with reasoning",
-      "implementation_steps": ["Step 1", "Step 2", "Step 3"],
-      "success_metrics": ["Metric 1", "Metric 2"]
+      "effort": "low|medium|high",
+      "timeline": "1-2 weeks|1-3 months|3-6 months|6+ months", 
+      "roi_estimate": "Personal productivity/leadership impact",
+      "implementation_steps": ["Personal action 1", "Personal action 2", "Personal action 3"],
+      "success_metrics": ["Leadership metric 1", "Personal metric 2"]
     }
   ],
-  "overall_readiness_score": 75
+  "overall_readiness_score": 75,
+  "leadership_summary": "Executive summary of their AI leadership potential and development path"
 }
 
-Focus on:
-- Concrete business impact and ROI
-- Executive-level strategic thinking
-- Actionable recommendations
-- Industry-specific insights
-- Competitive positioning
-- Risk mitigation strategies
+FOCUS ON PERSONAL AI LEADERSHIP DEVELOPMENT:
+- AI-enhanced decision making and strategic thinking
+- AI literacy and communication credibility  
+- Personal productivity and time management with AI
+- Leading teams through AI transformation
+- Building AI-forward leadership presence
+- Risk: Leadership credibility in AI era
+- Opportunity: Becoming an AI-savvy executive who can guide others
+
+AVOID: Enterprise infrastructure, technical implementations, IT systems
+
+Generate 4-6 insights focused on developing THIS PERSON as an AI-forward leader.
 
 Return ONLY the JSON, no other text.`,
           sessionId: sessionId,
@@ -157,26 +163,38 @@ Return ONLY the JSON, no other text.`,
       {
         id: 'fallback-1',
         type: 'quick_win',
-        title: 'Implement AI Email Assistant',
-        description: 'Deploy AI-powered email drafting and response tools to reduce administrative overhead',
-        impact: 'medium',
+        title: 'Master AI-Enhanced Communication',
+        description: 'Develop your ability to articulate AI concepts and strategy to stakeholders with confidence',
+        impact: 'high',
         effort: 'low',
         timeline: '1-2 weeks',
-        roi_estimate: '15-25% reduction in email processing time',
-        implementation_steps: ['Select AI email tool', 'Pilot with leadership team', 'Roll out to organization'],
-        success_metrics: ['Email response time', 'Administrative time savings']
+        roi_estimate: 'Increased leadership credibility and stakeholder confidence',
+        implementation_steps: ['Practice AI terminology in meetings', 'Share AI insights in leadership updates', 'Ask strategic AI questions'],
+        success_metrics: ['Stakeholder confidence in AI discussions', 'Quality of AI-related decisions']
       },
       {
         id: 'fallback-2',
         type: 'strategic_opportunity',
-        title: 'AI-Driven Decision Intelligence',
-        description: 'Implement AI analytics to enhance data-driven decision making across the organization',
+        title: 'AI-Powered Strategic Thinking',
+        description: 'Use AI tools to enhance your strategic analysis and decision-making processes',
+        impact: 'high',
+        effort: 'medium',
+        timeline: '1-3 months',
+        roi_estimate: '25-40% improvement in strategic decision quality and speed',
+        implementation_steps: ['Integrate AI into daily planning', 'Use AI for market analysis', 'Apply AI insights to strategy sessions'],
+        success_metrics: ['Decision cycle time', 'Strategic outcome quality', 'Personal productivity gains']
+      },
+      {
+        id: 'fallback-3',
+        type: 'leadership_differentiation',
+        title: 'Become the AI-Forward Leader',
+        description: 'Position yourself as a leader who can guide others through AI transformation with confidence',
         impact: 'high',
         effort: 'medium',
         timeline: '3-6 months',
-        roi_estimate: '20-40% improvement in decision speed and accuracy',
-        implementation_steps: ['Audit current data sources', 'Select AI analytics platform', 'Train decision makers'],
-        success_metrics: ['Decision cycle time', 'Forecast accuracy', 'Strategic outcome achievement']
+        roi_estimate: 'Enhanced leadership presence and team performance',
+        implementation_steps: ['Develop AI leadership narrative', 'Mentor others on AI adoption', 'Lead by example in AI usage'],
+        success_metrics: ['Team AI adoption rates', 'Leadership effectiveness scores', 'Innovation outcomes']
       }
     ];
     
@@ -193,6 +211,7 @@ Return ONLY the JSON, no other text.`,
       case 'risk_mitigation':
         return <AlertTriangle className="h-5 w-5 text-orange-500" />;
       case 'competitive_advantage':
+      case 'leadership_differentiation':
         return <Target className="h-5 w-5 text-purple-500" />;
       default:
         return <Brain className="h-5 w-5" />;
@@ -258,7 +277,7 @@ Return ONLY the JSON, no other text.`,
   const quickWins = insights.filter(i => i.type === 'quick_win');
   const strategicOps = insights.filter(i => i.type === 'strategic_opportunity');
   const riskMitigation = insights.filter(i => i.type === 'risk_mitigation');
-  const competitiveAdvantage = insights.filter(i => i.type === 'competitive_advantage');
+  const leadershipDiff = insights.filter(i => i.type === 'competitive_advantage' || i.type === 'leadership_differentiation');
 
   return (
     <div className="space-y-6">
@@ -285,8 +304,8 @@ Return ONLY the JSON, no other text.`,
               <div className="text-sm text-muted-foreground">Strategic Opportunities</div>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{insights.filter(i => i.impact === 'high').length}</div>
-              <div className="text-sm text-muted-foreground">High Impact Items</div>
+              <div className="text-2xl font-bold text-purple-600">{leadershipDiff.length}</div>
+              <div className="text-sm text-muted-foreground">Leadership Opportunities</div>
             </div>
           </div>
         </CardContent>
@@ -422,7 +441,7 @@ Return ONLY the JSON, no other text.`,
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />
-              Risk Mitigation
+              Leadership Credibility Risks
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -478,18 +497,18 @@ Return ONLY the JSON, no other text.`,
         </Card>
       )}
 
-      {/* Competitive Advantage */}
-      {competitiveAdvantage.length > 0 && (
+      {/* Leadership Differentiation */}
+      {leadershipDiff.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-purple-500" />
-              Competitive Advantage Opportunities
+              Leadership Differentiation Opportunities
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {competitiveAdvantage.map((insight) => (
+              {leadershipDiff.map((insight) => (
                 <div key={insight.id} className="p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border-l-4 border-purple-500">
                   <div className="flex items-start justify-between mb-3">
                     <h4 className="font-semibold text-purple-900 dark:text-purple-100">{insight.title}</h4>

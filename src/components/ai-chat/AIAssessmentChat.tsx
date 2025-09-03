@@ -20,6 +20,7 @@ import ServiceRecommendations from '../lead-qualification/ServiceRecommendations
 import QuickSelectButtons from './QuickSelectButtons';
 import AssessmentProgress from './AssessmentProgress';
 import LLMInsightEngine from './LLMInsightEngine';
+import ExecutiveLoadingScreen from './ExecutiveLoadingScreen';
 
 interface Message {
   id: string;
@@ -51,6 +52,9 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
+  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [insightProgress, setInsightProgress] = useState(0);
+  const [insightPhase, setInsightPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emergencyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
@@ -86,7 +90,42 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     initializeSession();
   }, []);
 
-  // Remove auto-scroll behavior - keep user anchored at top
+  // Handle insight generation when assessment completes
+  useEffect(() => {
+    if (assessmentState.isComplete && !isGeneratingInsights) {
+      startInsightGeneration();
+    }
+  }, [assessmentState.isComplete]);
+
+  const startInsightGeneration = async () => {
+    setIsGeneratingInsights(true);
+    setInsightPhase('analyzing');
+    setInsightProgress(10);
+
+    // Simulate progress for better UX
+    const progressInterval = setInterval(() => {
+      setInsightProgress(prev => {
+        if (prev < 90) return prev + 10;
+        return prev;
+      });
+    }, 500);
+
+    setTimeout(() => {
+      setInsightPhase('generating');
+      setInsightProgress(50);
+    }, 2000);
+
+    setTimeout(() => {
+      setInsightPhase('finalizing');
+      setInsightProgress(80);
+    }, 4000);
+
+    setTimeout(() => {
+      setInsightProgress(100);
+      clearInterval(progressInterval);
+      setIsGeneratingInsights(false);
+    }, 6000);
+  };
 
   // Define helper functions first before useCallback dependencies
   const updateLeadQualification = async (userInput: string, aiResponse: string) => {
@@ -260,7 +299,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
         .from('conversation_sessions')
         .insert({
           user_id: null, // Anonymous session
-          session_title: 'AI Assessment Chat',
+          session_title: 'AI Leadership Assessment',
           status: 'active',
           business_context: {}
         })
@@ -283,7 +322,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
       const welcomeMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: "Hello! I'm your AI Literacy Advisor. I'll help you assess your AI readiness through a focused conversation.\n\nI'll ask you 15 specific questions across 3 key areas:\n• **Current State** - Your time management and AI experience\n• **Pain Points** - Challenges and bottlenecks you're facing\n• **Vision & Goals** - Your timeline, budget, and success metrics\n\nThis will take about 10-15 minutes and you'll get personalized insights and recommendations.\n\nLet's start with the first question:",
+        content: "Hello! I'm your Personal AI Leadership Development Advisor. I'll help you assess and enhance your readiness to lead in the AI era.\n\nI'll ask you 15 focused questions across 3 key areas:\n• **Current AI Relationship** - Your personal AI adoption and comfort level\n• **Leadership Challenges** - Communication, decision-making, and efficiency gaps\n• **Development Goals** - Skills you want to build and outcomes you seek\n\nThis will take about 10-15 minutes and you'll get personalized insights to help you become a more AI-forward leader.\n\nLet's start with the first question:",
         timestamp: new Date()
       };
 
@@ -460,6 +499,8 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     setMessages([]);
     setInsights([]);
     setSessionId(null);
+    setIsGeneratingInsights(false);
+    setInsightProgress(0);
     resetAssessment();
     initializeSession();
   };
@@ -480,76 +521,195 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     return messages.slice(0, -1).reverse(); // Show in reverse order (most recent first)
   }, [messages]);
 
+  // Show loading screen during insight generation
+  if (isGeneratingInsights) {
+    return (
+      <ExecutiveLoadingScreen 
+        progress={insightProgress} 
+        phase={insightPhase} 
+      />
+    );
+  }
+
+  // Show results when assessment is complete and insights are generated
+  if (assessmentState.isComplete && !isGeneratingInsights) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+        <div className="container mx-auto px-4 py-8">
+          <Tabs defaultValue="insights" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger 
+                value="insights" 
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                AI Leadership Insights
+              </TabsTrigger>
+              <TabsTrigger 
+                value="history" 
+                className="flex items-center gap-2 opacity-60"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Q&A History
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="insights" className="space-y-6">
+              {/* LLM Insight Engine - Primary Results */}
+              <LLMInsightEngine
+                conversationData={{
+                  ...getProgressData(),
+                  totalQuestions,
+                  assessmentData: getAssessmentData(),
+                  messages: messages
+                }}
+                assessmentData={getAssessmentData()}
+                sessionId={sessionId}
+                isComplete={assessmentState.isComplete}
+              />
+
+              {/* Action Button */}
+              <Card className="text-center p-8">
+                <CardContent>
+                  <h3 className="text-2xl font-bold mb-4">Ready to Start Your AI Leadership Journey?</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Take the next step in becoming an AI-forward leader with personalized coaching and implementation support.
+                  </p>
+                  <div className="flex justify-center gap-4">
+                    <Button size="lg" onClick={startNewAssessment} variant="outline">
+                      Retake Assessment
+                    </Button>
+                    <Button size="lg">
+                      Book a Strategy Call
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="history" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Assessment Q&A History</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Review your responses (most recent first)
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {previousMessages.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      No conversation history available.
+                    </p>
+                  ) : (
+                    <ScrollArea className="h-96">
+                      <div className="space-y-4 pr-4">
+                        {previousMessages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${
+                              message.role === 'user' ? 'justify-end' : 'justify-start'
+                            }`}
+                          >
+                            <div
+                              className={`max-w-[85%] p-4 rounded-lg ${
+                                message.role === 'user'
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted'
+                              }`}
+                            >
+                              <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                              <p className="text-xs opacity-70 mt-2">
+                                {message.timestamp.toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    );
+  }
+
+  // Assessment in progress
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       {/* Fixed Progress Header */}
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl font-bold text-foreground">AI Assessment</h1>
-            <Button variant="outline" size="sm" onClick={startNewAssessment}>
-              New Assessment
-            </Button>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{progressData.phase}</span>
-              <span>Question {progressData.currentQuestion} of {progressData.totalQuestions}</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all duration-300" 
-                style={{ width: `${(progressData.currentQuestion / progressData.totalQuestions) * 100}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{progressData.completedAnswers} completed</span>
-              <span>~{Math.max(1, Math.ceil((progressData.totalQuestions - progressData.currentQuestion) * 1.5))} min remaining</span>
-            </div>
-          </div>
+          <AssessmentProgress
+            currentQuestion={progressData.currentQuestion}
+            totalQuestions={progressData.totalQuestions}
+            phase={progressData.phase}
+            completedAnswers={progressData.completedAnswers}
+            estimatedTimeRemaining={Math.max(1, (totalQuestions - progressData.completedAnswers) * 1.5)}
+          />
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          
-          {/* Current Question Section - Always at top */}
-          {currentQuestionMessage && !assessmentState.isComplete && (
+      {/* Assessment Interface */}
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        
+        {/* Current Conversation */}
+        <div className="space-y-6">
+          {/* Current Question Card */}
+          {currentQuestionMessage && (
             <Card className="border-2 border-primary/20 bg-primary/5">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  <Target className="h-5 w-5" />
-                  Current Question
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-background rounded-lg p-4 border">
-                  <p className="text-lg font-medium leading-relaxed">
-                    {currentQuestionMessage.content}
-                  </p>
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">Question {progressData.currentQuestion} of {progressData.totalQuestions}</CardTitle>
                 </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg leading-relaxed mb-6">{currentQuestionMessage.content}</p>
                 
                 {/* Quick Select Options */}
-                {currentQuestion?.options && currentQuestion.options.length > 0 && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-3">Quick responses:</p>
-                    <QuickSelectButtons
-                      options={currentQuestion.options}
-                      onSelect={handleQuickSelect}
-                      disabled={false}
-                      isLoading={isLoading}
-                      clickingButton={clickingButton}
-                      selectedOption={assessmentState.selectedOption || undefined}
-                    />
-                  </div>
+                {currentQuestion && (
+                  <QuickSelectButtons
+                    options={currentQuestion.options}
+                    onSelect={handleQuickSelect}
+                    isLoading={isLoading}
+                    clickingButton={clickingButton}
+                  />
                 )}
-                
-                {/* Input Section */}
-                <div className="flex gap-2 mt-4">
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recent AI Response */}
+          {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+            <Card className="bg-muted/50">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <Brain className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="whitespace-pre-wrap leading-relaxed">
+                      {messages[messages.length - 1].content}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Custom Response Input */}
+          {!assessmentState.isComplete && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Or provide your own response:</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={handleKeyPress}
+                    onKeyPress={handleKeyPress}
                     placeholder="Type your response or use the quick options above..."
                     disabled={isLoading}
                     className="flex-1"
@@ -570,171 +730,9 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
               </CardContent>
             </Card>
           )}
-          
-          {/* Assessment Complete Message */}
-          {assessmentState.isComplete && (
-            <Card className="border-2 border-green-500/20 bg-green-500/5">
-              <CardContent className="p-6 text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Sparkles className="h-6 w-6 text-green-600" />
-                  <h2 className="text-2xl font-bold text-green-700">Assessment Complete!</h2>
-                </div>
-                <p className="text-muted-foreground mb-4">
-                  Great job! You've completed all {progressData.totalQuestions} questions. 
-                  Check out your insights and recommendations below.
-                </p>
-                <div className="flex justify-center gap-4">
-                  <Button onClick={() => document.getElementById('insights-tab')?.click()}>
-                    View Insights
-                  </Button>
-                  <Button variant="outline" onClick={() => document.getElementById('services-tab')?.click()}>
-                    See Recommendations
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Tabs for Additional Content */}
-          <Tabs defaultValue={insights.length > 0 || assessmentState.isComplete ? "insights" : "history"} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="history" className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4" />
-                Previous Q&A
-                {previousMessages.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {Math.floor(previousMessages.length / 2)}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="insights" id="insights-tab" className="flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                Insights
-                {insights.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {insights.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="services" id="services-tab" className="flex items-center gap-2">
-                <Target className="h-4 w-4" />
-                Services
-                {leadScore && leadScore.recommendations.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {leadScore.recommendations.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Previous Q&A History */}
-            <TabsContent value="history" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Previous Questions & Answers</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Review your responses (most recent first)
-                  </p>
-                </CardHeader>
-                 <CardContent>
-                   {previousMessages.length === 0 ? (
-                     <p className="text-muted-foreground text-center py-8">
-                       Your conversation history will appear here as you progress through the assessment.
-                     </p>
-                   ) : (
-                     <ScrollArea className="h-96">
-                       <div className="space-y-4 pr-4">
-                         {previousMessages.map((message) => (
-                           <div
-                             key={message.id}
-                             className={`flex ${
-                               message.role === 'user' ? 'justify-end' : 'justify-start'
-                             }`}
-                           >
-                             <div
-                               className={`max-w-[85%] p-4 rounded-lg ${
-                                 message.role === 'user'
-                                   ? 'bg-primary text-primary-foreground'
-                                   : 'bg-muted'
-                               }`}
-                             >
-                               <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                               <p className="text-xs opacity-70 mt-2">
-                                 {message.timestamp.toLocaleTimeString()}
-                               </p>
-                             </div>
-                           </div>
-                         ))}
-                         {isLoading && (
-                           <div className="flex justify-start">
-                             <div className="bg-muted p-4 rounded-lg">
-                               <div className="flex items-center gap-2">
-                                 <Sparkles className="animate-pulse h-4 w-4" />
-                                 <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></div>
-                                 Analyzing and generating insights...
-                               </div>
-                             </div>
-                           </div>
-                         )}
-                       </div>
-                     </ScrollArea>
-                   )}
-                 </CardContent>
-               </Card>
-             </TabsContent>
-
-              <TabsContent value="insights" className="mt-6">
-                <LLMInsightEngine
-                  conversationData={{
-                    messages: messages,
-                    progressData: progressData,
-                    qualificationData: qualificationData,
-                    leadScore: leadScore
-                  }}
-                  assessmentData={getAssessmentData()}
-                  sessionId={sessionId}
-                  isComplete={assessmentState.isComplete}
-                />
-                
-                {executiveAssessmentData && executiveInsights.length > 0 && (
-                  <div className="mt-6">
-                    <ExecutiveAssessmentReport
-                      assessmentData={executiveAssessmentData}
-                      insights={executiveInsights}
-                      companyName="Your Organization"
-                      executiveName="Executive"
-                    />
-                  </div>
-                )}
-              </TabsContent>
-
-             <TabsContent value="services" className="mt-6">
-               {leadScore && leadScore.recommendations.length > 0 ? (
-                 <ServiceRecommendations
-                   recommendations={leadScore.recommendations}
-                   leadScore={leadScore}
-                   sessionId={sessionId || ''}
-                   userId={userId}
-                 />
-               ) : (
-                 <Card>
-                   <CardContent className="text-center py-8">
-                     <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                     <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                       Service Recommendations Coming Soon
-                     </h3>
-                     <p className="text-sm text-muted-foreground">
-                       Continue our conversation to receive personalized service recommendations based on your needs and AI readiness.
-                     </p>
-                   </CardContent>
-                 </Card>
-               )}
-             </TabsContent>
-           </Tabs>
-         </div>
-       </div>
-     </div>
-
+        </div>
+      </div>
+    </div>
   );
 };
 
