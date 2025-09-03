@@ -579,7 +579,10 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                     <Button size="lg" onClick={startNewAssessment} variant="outline">
                       Retake Assessment
                     </Button>
-                    <Button size="lg">
+                    <Button 
+                      size="lg"
+                      onClick={() => window.open('https://calendly.com/krish-raja', '_blank')}
+                    >
                       Book a Strategy Call
                     </Button>
                   </div>

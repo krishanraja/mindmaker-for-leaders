@@ -315,9 +315,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           }`}>
             <Button 
               className={`btn-primary ${isMobile ? 'w-full' : ''}`}
-              onClick={() => window.open('https://calendly.com/krish-raja/krish-raja', '_blank')}
+              onClick={() => window.open('https://calendly.com/krish-raja', '_blank')}
             >
-              Book a call
+              Book a Strategy Call
             </Button>
             <Button 
               variant="outline" 

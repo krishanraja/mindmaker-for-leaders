@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { WelcomeScreen } from './diagnostic/WelcomeScreen';
+import { AssessmentChoiceScreen } from './diagnostic/AssessmentChoiceScreen';
 import { QuestionFlow } from './diagnostic/QuestionFlow';
 import { LoadingScreen } from './diagnostic/LoadingScreen';
 import { ResultsScreen } from './diagnostic/ResultsScreen';
+import QuickFormAssessment from './diagnostic/QuickFormAssessment';
+import QuickFormResults from './diagnostic/QuickFormResults';
 import { supabase } from '@/integrations/supabase/client';
 
-export type DiagnosticStep = 'welcome' | 'questions' | 'loading' | 'results';
+export type DiagnosticStep = 'welcome' | 'assessment_choice' | 'quick_form' | 'quick_results' | 'questions' | 'loading' | 'results';
 
 export interface AIUseCase {
   useCase: string;
@@ -57,6 +60,8 @@ const DiagnosticTool: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<DiagnosticStep>('welcome');
   const [diagnosticData, setDiagnosticData] = useState<DiagnosticData>({});
   const [scores, setScores] = useState<DiagnosticScores | null>(null);
+  const [quickFormData, setQuickFormData] = useState<any>(null);
+  const [quickFormScore, setQuickFormScore] = useState<number>(0);
 
   const handleStepChange = (step: DiagnosticStep) => {
     setCurrentStep(step);
@@ -214,7 +219,38 @@ const DiagnosticTool: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       {currentStep === 'welcome' && (
-        <WelcomeScreen onStart={() => handleStepChange('questions')} />
+        <WelcomeScreen 
+          onStart={() => handleStepChange('assessment_choice')}
+        />
+      )}
+
+      {currentStep === 'assessment_choice' && (
+        <AssessmentChoiceScreen 
+          onChooseQuickForm={() => handleStepChange('quick_form')}
+          onChooseFullAssessment={() => handleStepChange('questions')}
+        />
+      )}
+
+      {currentStep === 'quick_form' && (
+        <QuickFormAssessment 
+          onComplete={(data, score) => {
+            setQuickFormData(data);
+            setQuickFormScore(score);
+            setCurrentStep('quick_results');
+          }}
+        />
+      )}
+
+      {currentStep === 'quick_results' && quickFormData && (
+        <QuickFormResults
+          data={quickFormData}
+          score={quickFormScore}
+          onRestart={() => {
+            setCurrentStep('welcome');
+            setQuickFormData(null);
+            setQuickFormScore(0);
+          }}
+        />
       )}
       
       {currentStep === 'questions' && (

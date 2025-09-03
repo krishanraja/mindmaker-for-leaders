@@ -397,25 +397,34 @@ async function formatBookingData(supabase: any, additionalData?: any) {
   }
 
   return bookings.map((booking: any) => ({
-    'Booking ID': booking.id,
-    'Date Created': booking.created_at,
-    'Contact Name': booking.contact_name,
+    'Lead ID': booking.id,
+    'Date Created': new Date(booking.created_at).toLocaleDateString(),
+    'Source': booking.session_id ? 'AI Chat Assessment' : 'Quick Form Assessment',
+    'Full Name': booking.contact_name,
     'Email': booking.contact_email,
     'Company': booking.company_name,
-    'Role': booking.role,
+    'Role/Title': booking.role,
     'Phone': booking.phone || '',
-    'Service Type': booking.service_type,
-    'Service Title': booking.service_title,
-    'Priority': booking.priority,
-    'Status': booking.status,
-    'Lead Score': booking.lead_score || 0,
-    'Preferred Time': booking.preferred_time || '',
-    'Specific Needs': booking.specific_needs || '',
-    'Session Started': booking.conversation_sessions?.[0]?.started_at || '',
-    'Session Status': booking.conversation_sessions?.[0]?.status || '',
-    'Engagement Score': booking.lead_qualification_scores?.[0]?.engagement_score || 0,
-    'Business Readiness': booking.lead_qualification_scores?.[0]?.business_readiness_score || 0,
-    'Scheduled Date': booking.scheduled_date || '',
+    'LinkedIn': '', // To be populated from business context
+    'AI Readiness Score': booking.lead_score || 0,
+    'Current AI Usage Level': '', // Derived from assessment data
+    'Decision Authority': '', // Derived from assessment responses
+    'Budget Range': '', // Derived from assessment responses
+    'Implementation Timeline': booking.preferred_time || '',
+    'Team Readiness': '', // Derived from assessment data
+    'Top 3 Productivity Bottlenecks': booking.specific_needs?.substring(0, 100) || '',
+    'Pain Point Severity': booking.priority || '',
+    'Time Spent (minutes)': Math.round((booking.conversation_sessions?.[0]?.business_context?.session_duration || 0) / 60),
+    'Questions Answered': booking.conversation_sessions?.[0]?.business_context?.questions_answered || 0,
+    'Messages Exchanged': booking.conversation_sessions?.[0]?.business_context?.message_count || 0,
+    'Insight Categories Generated': '', // To be derived from insights
+    'Booking Request Status': booking.status,
+    'Business Readiness Score': booking.lead_qualification_scores?.[0]?.business_readiness_score || 0,
+    'Implementation Readiness': booking.lead_qualification_scores?.[0]?.implementation_readiness || 0,
+    'Lead Quality Score': booking.lead_score >= 70 ? 'High' : booking.lead_score >= 50 ? 'Medium' : 'Low',
+    'Recommended Service Type': booking.service_type,
+    'Follow-up Priority': booking.priority || 'medium',
+    'Scheduled Date': booking.scheduled_date ? new Date(booking.scheduled_date).toLocaleDateString() : '',
     'Notes': booking.notes || ''
   }));
 }
@@ -448,7 +457,7 @@ async function formatAnalyticsData(supabase: any) {
 }
 
 async function formatLeadScoreData(supabase: any) {
-  // Get lead qualification scores with session data
+  // Get lead qualification scores with session data and business context
   const { data: scores, error } = await supabase
     .from('lead_qualification_scores')
     .select(`
@@ -457,6 +466,12 @@ async function formatLeadScoreData(supabase: any) {
         session_title,
         started_at,
         business_context
+      ),
+      user_business_context!inner (
+        context_data,
+        business_name,
+        industry,
+        company_size
       )
     `)
     .order('created_at', { ascending: false })
@@ -468,15 +483,21 @@ async function formatLeadScoreData(supabase: any) {
   }
 
   return scores.map((score: any) => ({
-    'Date': score.created_at,
-    'Session ID': score.session_id,
-    'Total Score': score.total_score || 0,
+    'Date': new Date(score.created_at).toLocaleDateString(),
+    'Session ID': score.session_id?.substring(0, 8) || 'N/A',
+    'Source': score.session_id ? 'AI Chat Assessment' : 'Quick Form Assessment',
+    'Total AI Readiness Score': score.total_score || 0,
     'Engagement Score': score.engagement_score || 0,
     'Business Readiness Score': score.business_readiness_score || 0,
     'Pain Point Severity': score.pain_point_severity || 0,
     'Implementation Readiness': score.implementation_readiness || 0,
+    'Company': score.user_business_context?.business_name || '',
+    'Industry': score.user_business_context?.industry || '',
+    'Company Size': score.user_business_context?.company_size || '',
+    'Lead Quality': score.total_score >= 70 ? 'High Priority' : score.total_score >= 50 ? 'Medium Priority' : 'Low Priority',
+    'Session Duration (min)': Math.round((score.conversation_sessions?.[0]?.business_context?.session_duration || 0) / 60),
     'Qualification Notes': score.qualification_notes || '',
-    'Session Started': score.conversation_sessions?.[0]?.started_at || '',
-    'Business Context': JSON.stringify(score.conversation_sessions?.[0]?.business_context || {})
+    'Business Context Summary': score.user_business_context?.context_data ? 
+      JSON.stringify(score.user_business_context.context_data).substring(0, 200) + '...' : ''
   }));
 }

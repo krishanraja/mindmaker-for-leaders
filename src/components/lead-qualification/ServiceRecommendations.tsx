@@ -347,8 +347,7 @@ const ServiceRecommendations: React.FC<ServiceRecommendationsProps> = ({
           <Mail className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
           <h3 className="font-medium mb-2">Prefer to discuss directly?</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Email us at <a href="mailto:hello@fractional-ai.com" className="text-primary hover:underline">hello@fractional-ai.com</a> or call{' '}
-            <a href="tel:+1234567890" className="text-primary hover:underline">+1 (234) 567-8900</a>
+            Schedule a strategy call: <a href="https://calendly.com/krish-raja" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Book with Krish</a>
           </p>
         </CardContent>
       </Card>
