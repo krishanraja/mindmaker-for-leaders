@@ -40,8 +40,7 @@ const QuickSelectButtons: React.FC<QuickSelectButtonsProps> = React.memo(({
               cursor-pointer pointer-events-auto
             `}
             onClick={() => onSelect(option)}
-            disabled={false}
-            style={{ pointerEvents: 'auto' }}
+            disabled={disabled || isLoading}
           >
             <div className="flex items-start gap-3 w-full">
               {isSelected && (

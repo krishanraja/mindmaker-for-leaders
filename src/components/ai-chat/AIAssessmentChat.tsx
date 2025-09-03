@@ -19,6 +19,7 @@ import ConversationFlow from './ConversationFlow';
 import ServiceRecommendations from '../lead-qualification/ServiceRecommendations';
 import QuickSelectButtons from './QuickSelectButtons';
 import AssessmentProgress from './AssessmentProgress';
+import LLMInsightEngine from './LLMInsightEngine';
 
 interface Message {
   id: string;
@@ -429,30 +430,27 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   }, [sendMessage]);
 
   const handleQuickSelect = useCallback((option: string) => {
-    console.log('=== QUICK SELECT CLICKED ===', { option, isLoading, clickingButton });
+    if (isLoading) return; // Prevent double-clicks
     
     // Immediate visual feedback
     setClickingButton(option);
+    setSelectedOption(option);
     
-    // Don't block if already processing this specific option
-    if (isLoading && clickingButton !== option) {
-      console.log('Ignoring - different option loading');
-      setClickingButton(null);
-      return;
+    // Clear any existing timeout
+    if (emergencyTimeoutRef.current) {
+      clearTimeout(emergencyTimeoutRef.current);
     }
     
-    // Emergency timeout to force enable buttons after 1 second
+    // Emergency timeout reduced to 300ms for better UX
     emergencyTimeoutRef.current = setTimeout(() => {
-      console.log('=== EMERGENCY TIMEOUT - FORCE ENABLING BUTTONS ===');
       flushSync(() => {
         setIsLoading(false);
         setClickingButton(null);
       });
-    }, 1000);
+    }, 300);
     
-    setSelectedOption(option);
     sendMessage(option);
-  }, [setSelectedOption, sendMessage, isLoading, clickingButton]);
+  }, [setSelectedOption, sendMessage, isLoading]);
 
   const handleSuggestedQuestion = useCallback((question: string) => {
     sendMessage(question);
@@ -598,7 +596,7 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
           )}
 
           {/* Tabs for Additional Content */}
-          <Tabs defaultValue="history" className="w-full">
+          <Tabs defaultValue={insights.length > 0 || assessmentState.isComplete ? "insights" : "history"} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="history" className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
@@ -686,25 +684,26 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
              </TabsContent>
 
               <TabsContent value="insights" className="mt-6">
-                {executiveAssessmentData && executiveInsights.length > 0 ? (
-                  <ExecutiveAssessmentReport
-                    assessmentData={executiveAssessmentData}
-                    insights={executiveInsights}
-                    companyName="Your Organization"
-                    executiveName="Executive"
-                  />
-                ) : (
-                  <div className="text-center py-12 space-y-4">
-                    <Brain className="h-16 w-16 text-muted-foreground mx-auto" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground mb-2">Executive Assessment In Progress</h3>
-                      <p className="text-muted-foreground max-w-md mx-auto">
-                        Continue the conversation to generate your comprehensive executive assessment report with strategic insights and ROI projections.
-                      </p>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {progressData.completedAnswers}/15 strategic questions completed
-                    </div>
+                <LLMInsightEngine
+                  conversationData={{
+                    messages: messages,
+                    progressData: progressData,
+                    qualificationData: qualificationData,
+                    leadScore: leadScore
+                  }}
+                  assessmentData={getAssessmentData()}
+                  sessionId={sessionId}
+                  isComplete={assessmentState.isComplete}
+                />
+                
+                {executiveAssessmentData && executiveInsights.length > 0 && (
+                  <div className="mt-6">
+                    <ExecutiveAssessmentReport
+                      assessmentData={executiveAssessmentData}
+                      insights={executiveInsights}
+                      companyName="Your Organization"
+                      executiveName="Executive"
+                    />
                   </div>
                 )}
               </TabsContent>
