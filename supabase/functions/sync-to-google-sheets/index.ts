@@ -173,17 +173,24 @@ async function getOrCreateSpreadsheet(accessToken: string): Promise<string> {
   }
 }
 
-// Sync data to Google Sheets
+// Sync data to Google Sheets with proper headers and append functionality
 async function syncToGoogleSheets(spreadsheetId: string, accessToken: string, sheetName: string, data: any[]): Promise<void> {
   if (data.length === 0) return;
   
-  const headers = Object.keys(data[0]);
-  const values = [headers, ...data.map(row => headers.map(header => row[header] || ''))];
+  // Define systematic column headers for lead tracking
+  const systematicHeaders = [
+    'Lead ID', 'Date Created', 'Source', 'Full Name', 'Email', 'Company', 'Role/Title', 'Phone', 'LinkedIn',
+    'AI Readiness Score', 'Current AI Usage Level', 'Decision Authority', 'Budget Range', 'Implementation Timeline',
+    'Team Readiness', 'Top 3 Productivity Bottlenecks', 'Pain Point Severity', 'Time Spent (minutes)',
+    'Questions Answered', 'Messages Exchanged', 'Insight Categories Generated', 'Booking Request Status',
+    'Business Readiness Score', 'Implementation Readiness', 'Lead Quality Score', 'Recommended Service Type',
+    'Follow-up Priority', 'Scheduled Date', 'Notes'
+  ];
   
-  const response = await fetch(
-    `${GOOGLE_SHEETS_API_URL}/${spreadsheetId}/values/${sheetName}!A1:clear`,
+  // Check if headers exist
+  const checkHeadersResponse = await fetch(
+    `${GOOGLE_SHEETS_API_URL}/${spreadsheetId}/values/${sheetName}!1:1`,
     {
-      method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
@@ -191,12 +198,60 @@ async function syncToGoogleSheets(spreadsheetId: string, accessToken: string, sh
     }
   );
   
-  if (!response.ok) {
-    console.warn(`Failed to clear sheet ${sheetName}: ${response.statusText}`);
+  let needsHeaders = true;
+  if (checkHeadersResponse.ok) {
+    const headerData = await checkHeadersResponse.json();
+    needsHeaders = !headerData.values || headerData.values.length === 0 || headerData.values[0].length === 0;
   }
   
-  const updateResponse = await fetch(
-    `${GOOGLE_SHEETS_API_URL}/${spreadsheetId}/values/${sheetName}!A1?valueInputOption=RAW`,
+  // Add headers if needed
+  if (needsHeaders) {
+    const headerResponse = await fetch(
+      `${GOOGLE_SHEETS_API_URL}/${spreadsheetId}/values/${sheetName}!A1?valueInputOption=RAW`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          values: [systematicHeaders]
+        }),
+      }
+    );
+    
+    if (!headerResponse.ok) {
+      console.warn(`Failed to add headers to sheet ${sheetName}: ${headerResponse.statusText}`);
+    } else {
+      console.log(`Added headers to sheet ${sheetName}`);
+    }
+  }
+  
+  // Find the next empty row to append data
+  const rangeResponse = await fetch(
+    `${GOOGLE_SHEETS_API_URL}/${spreadsheetId}/values/${sheetName}!A:A`,
+    {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  
+  let nextRow = 2; // Start after headers
+  if (rangeResponse.ok) {
+    const rangeData = await rangeResponse.json();
+    if (rangeData.values && rangeData.values.length > 0) {
+      nextRow = rangeData.values.length + 1;
+    }
+  }
+  
+  // Format data to match systematic headers
+  const formattedData = data.map(row => systematicHeaders.map(header => row[header] || ''));
+  
+  // Append the new data
+  const appendResponse = await fetch(
+    `${GOOGLE_SHEETS_API_URL}/${spreadsheetId}/values/${sheetName}!A${nextRow}?valueInputOption=RAW`,
     {
       method: 'PUT',
       headers: {
@@ -204,14 +259,16 @@ async function syncToGoogleSheets(spreadsheetId: string, accessToken: string, sh
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        values: values
+        values: formattedData
       }),
     }
   );
   
-  if (!updateResponse.ok) {
-    throw new Error(`Failed to update sheet ${sheetName}: ${updateResponse.statusText}`);
+  if (!appendResponse.ok) {
+    throw new Error(`Failed to append data to sheet ${sheetName}: ${appendResponse.statusText}`);
   }
+  
+  console.log(`Successfully appended ${formattedData.length} rows to sheet ${sheetName} starting at row ${nextRow}`);
 }
 
 serve(async (req) => {
@@ -379,13 +436,15 @@ async function formatBookingData(supabase: any, additionalData?: any) {
       conversation_sessions (
         session_title,
         started_at,
+        completed_at,
         status,
         business_context
       ),
       lead_qualification_scores (
         total_score,
         engagement_score,
-        business_readiness_score
+        business_readiness_score,
+        implementation_readiness
       )
     `)
     .order('created_at', { ascending: false })
@@ -396,37 +455,56 @@ async function formatBookingData(supabase: any, additionalData?: any) {
     return [];
   }
 
-  return bookings.map((booking: any) => ({
-    'Lead ID': booking.id,
-    'Date Created': new Date(booking.created_at).toLocaleDateString(),
-    'Source': booking.session_id ? 'AI Chat Assessment' : 'Quick Form Assessment',
-    'Full Name': booking.contact_name,
-    'Email': booking.contact_email,
-    'Company': booking.company_name,
-    'Role/Title': booking.role,
-    'Phone': booking.phone || '',
-    'LinkedIn': '', // To be populated from business context
-    'AI Readiness Score': booking.lead_score || 0,
-    'Current AI Usage Level': '', // Derived from assessment data
-    'Decision Authority': '', // Derived from assessment responses
-    'Budget Range': '', // Derived from assessment responses
-    'Implementation Timeline': booking.preferred_time || '',
-    'Team Readiness': '', // Derived from assessment data
-    'Top 3 Productivity Bottlenecks': booking.specific_needs?.substring(0, 100) || '',
-    'Pain Point Severity': booking.priority || '',
-    'Time Spent (minutes)': Math.round((booking.conversation_sessions?.[0]?.business_context?.session_duration || 0) / 60),
-    'Questions Answered': booking.conversation_sessions?.[0]?.business_context?.questions_answered || 0,
-    'Messages Exchanged': booking.conversation_sessions?.[0]?.business_context?.message_count || 0,
-    'Insight Categories Generated': '', // To be derived from insights
-    'Booking Request Status': booking.status,
-    'Business Readiness Score': booking.lead_qualification_scores?.[0]?.business_readiness_score || 0,
-    'Implementation Readiness': booking.lead_qualification_scores?.[0]?.implementation_readiness || 0,
-    'Lead Quality Score': booking.lead_score >= 70 ? 'High' : booking.lead_score >= 50 ? 'Medium' : 'Low',
-    'Recommended Service Type': booking.service_type,
-    'Follow-up Priority': booking.priority || 'medium',
-    'Scheduled Date': booking.scheduled_date ? new Date(booking.scheduled_date).toLocaleDateString() : '',
-    'Notes': booking.notes || ''
-  }));
+  return bookings.map((booking: any) => {
+    // Parse assessment data from specific_needs field
+    let assessmentData = {};
+    try {
+      if (booking.specific_needs && booking.specific_needs.includes('Assessment data:')) {
+        const jsonMatch = booking.specific_needs.match(/Assessment data: ({.*})/);
+        if (jsonMatch) {
+          assessmentData = JSON.parse(jsonMatch[1]);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse assessment data:', e);
+    }
+
+    // Extract key metrics from assessment data
+    const qualificationData = assessmentData.qualificationData || {};
+    const phaseResponses = assessmentData.phaseResponses || {};
+    
+    return {
+      'Lead ID': booking.id.substring(0, 8),
+      'Date Created': new Date(booking.created_at).toLocaleDateString(),
+      'Source': booking.session_id ? 'Rich AI Assessment' : 'Quick Form Assessment',
+      'Full Name': booking.contact_name,
+      'Email': booking.contact_email,
+      'Company': booking.company_name,
+      'Role/Title': booking.role,
+      'Phone': booking.phone || '',
+      'LinkedIn': '', // Could be extracted from contact info if available
+      'AI Readiness Score': booking.lead_score || assessmentData.totalScore || 0,
+      'Current AI Usage Level': phaseResponses.aiUseCases ? `${phaseResponses.aiUseCases.length} use cases identified` : 'Not assessed',
+      'Decision Authority': booking.role && (booking.role.toLowerCase().includes('ceo') || booking.role.toLowerCase().includes('cto') || booking.role.toLowerCase().includes('founder')) ? 'High' : 'Medium',
+      'Budget Range': 'Not specified', // Could be derived from company size and role
+      'Implementation Timeline': booking.preferred_time || 'Not specified',
+      'Team Readiness': phaseResponses.upskillPercentage ? `${phaseResponses.upskillPercentage}% ready for upskilling` : 'Not assessed',
+      'Top 3 Productivity Bottlenecks': phaseResponses.dailyFrictions ? phaseResponses.dailyFrictions.join(', ').substring(0, 100) : booking.specific_needs?.substring(0, 100) || '',
+      'Pain Point Severity': booking.priority || 'medium',
+      'Time Spent (minutes)': qualificationData.meetingHours ? qualificationData.meetingHours * 60 : 0,
+      'Questions Answered': Object.keys(phaseResponses).length || 0,
+      'Messages Exchanged': booking.conversation_sessions?.[0]?.business_context?.message_count || 0,
+      'Insight Categories Generated': phaseResponses.stakeholderAudiences ? phaseResponses.stakeholderAudiences.join(', ') : '',
+      'Booking Request Status': booking.status,
+      'Business Readiness Score': booking.lead_qualification_scores?.[0]?.business_readiness_score || 0,
+      'Implementation Readiness': booking.lead_qualification_scores?.[0]?.implementation_readiness || 0,
+      'Lead Quality Score': booking.lead_score >= 70 ? 'High' : booking.lead_score >= 50 ? 'Medium' : 'Low',
+      'Recommended Service Type': booking.service_type,
+      'Follow-up Priority': booking.priority || 'medium',
+      'Scheduled Date': booking.scheduled_date ? new Date(booking.scheduled_date).toLocaleDateString() : '',
+      'Notes': `Service: ${booking.service_title}. Skills gaps: ${phaseResponses.skillGaps ? phaseResponses.skillGaps.join(', ') : 'Not specified'}`
+    };
+  });
 }
 
 async function formatAnalyticsData(supabase: any) {
