@@ -2,353 +2,315 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import ContactCollectionModal from '../ContactCollectionModal';
 import { 
-  Calendar, 
-  Users, 
-  Target, 
-  Rocket, 
+  TrendingUp, 
+  Clock, 
+  DollarSign, 
   CheckCircle, 
-  ArrowRight,
-  Clock,
-  Phone,
-  Mail,
+  Zap,
+  Target,
+  Users,
+  Calendar,
+  ExternalLink,
   Star
 } from 'lucide-react';
-import { ServiceRecommendation, LeadScore } from '@/hooks/useLeadQualification';
 
 interface ServiceRecommendationsProps {
-  recommendations: ServiceRecommendation[];
-  leadScore: LeadScore;
-  sessionId: string;
-  userId: string | null; // Allow null for anonymous users
-}
-
-interface BookingForm {
-  name: string;
-  email: string;
-  company: string;
-  role: string;
-  phone: string;
-  preferredTime: string;
-  specificNeeds: string;
-  serviceType: string;
+  qualificationData: any;
+  leadScore: any;
+  insights: any[];
+  sessionId?: string;
 }
 
 const ServiceRecommendations: React.FC<ServiceRecommendationsProps> = ({
-  recommendations,
+  qualificationData,
   leadScore,
-  sessionId,
-  userId
+  insights,
+  sessionId
 }) => {
-  const [bookingForm, setBookingForm] = useState<BookingForm>({
-    name: '',
-    email: '',
-    company: '',
-    role: '',
-    phone: '',
-    preferredTime: '',
-    specificNeeds: '',
-    serviceType: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedService, setSelectedService] = useState<ServiceRecommendation | null>(null);
-  const { toast } = useToast();
-
-  const getServiceIcon = (type: ServiceRecommendation['type']) => {
-    switch (type) {
-      case 'consultation':
-        return <Phone className="h-5 w-5" />;
-      case 'workshop':
-        return <Users className="h-5 w-5" />;
-      case 'assessment':
-        return <Target className="h-5 w-5" />;
-      case 'implementation':
-        return <Rocket className="h-5 w-5" />;
-      default:
-        return <CheckCircle className="h-5 w-5" />;
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactActionType, setContactActionType] = useState<'learn_more' | 'book_call'>('book_call');
+  
+  // Get service recommendations based on lead score and data
+  const getServiceRecommendations = () => {
+    const overallScore = leadScore.overall || 0;
+    const engagementScore = leadScore.engagement || 0;
+    const businessScore = leadScore.business || 0;
+    
+    const recommendations = [];
+    
+    if (overallScore >= 70) {
+      recommendations.push({
+        title: "AI Leadership Accelerator Program",
+        description: "Comprehensive 12-week program to become an AI-forward executive leader",
+        price: "Custom pricing",
+        duration: "12 weeks",
+        features: [
+          "1:1 AI leadership coaching",
+          "Custom AI strategy development",
+          "Executive AI toolkit implementation",
+          "Team transformation guidance",
+          "ROI measurement framework"
+        ],
+        priority: "high",
+        icon: <Star className="h-6 w-6" />
+      });
     }
+    
+    if (businessScore >= 60 || qualificationData.budgetRange === 'enterprise_100k+') {
+      recommendations.push({
+        title: "AI Strategy & Implementation Consulting",
+        description: "Strategic consulting to develop and implement your AI transformation roadmap",
+        price: "Starting at $15,000",
+        duration: "8-16 weeks",
+        features: [
+          "AI readiness assessment",
+          "Custom AI strategy roadmap",
+          "Implementation planning",
+          "Change management support",
+          "Executive team training"
+        ],
+        priority: "high",
+        icon: <Target className="h-6 w-6" />
+      });
+    }
+    
+    if (engagementScore >= 50) {
+      recommendations.push({
+        title: "Executive AI Coaching Package",
+        description: "Personal coaching to rapidly develop your AI leadership capabilities",
+        price: "Starting at $5,000",
+        duration: "6 weeks",
+        features: [
+          "6 x 1-hour coaching sessions",
+          "Personal AI toolkit setup",
+          "Communication framework",
+          "Quick wins implementation",
+          "90-day action plan"
+        ],
+        priority: "medium",
+        icon: <Users className="h-6 w-6" />
+      });
+    }
+    
+    // Always include the strategy call option
+    recommendations.push({
+      title: "AI Leadership Strategy Call",
+      description: "60-minute strategy session to identify your highest-impact AI opportunities",
+      price: "Complimentary",
+      duration: "60 minutes",
+      features: [
+        "Personal AI assessment review",
+        "Tailored quick wins strategy",
+        "Implementation roadmap",
+        "Resource recommendations",
+        "Next steps planning"
+      ],
+      priority: "immediate",
+      icon: <Calendar className="h-6 w-6" />
+    });
+    
+    return recommendations;
   };
 
-  const getPriorityColor = (priority: ServiceRecommendation['priority']) => {
+  const recommendations = getServiceRecommendations();
+  const topInsights = insights.slice(0, 3);
+
+  const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'high': return 'destructive';
+      case 'medium': return 'default';
+      case 'immediate': return 'secondary';
+      default: return 'outline';
     }
   };
 
-  const handleBookingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedService) return;
-
-    setIsSubmitting(true);
-    try {
-      // Save booking request to database for anonymous users  
-      const { error } = await supabase
-        .from('booking_requests')
-        .insert({
-          session_id: sessionId,
-          user_id: userId, // Can be null for anonymous users
-          service_type: selectedService.type,
-          service_title: selectedService.title,
-          contact_name: bookingForm.name,
-          contact_email: bookingForm.email,
-          company_name: bookingForm.company,
-          role: bookingForm.role,
-          phone: bookingForm.phone,
-          preferred_time: bookingForm.preferredTime,
-          specific_needs: bookingForm.specificNeeds,
-          lead_score: leadScore.overall,
-          priority: selectedService.priority,
-          status: 'pending'
-        });
-
-      if (error) {
-        console.error('Database insertion error:', error);
-        // Continue with email sending even if database fails
-      }
-
-      // Send notification email via edge function
-      await supabase.functions.invoke('send-booking-notification', {
-        body: {
-          booking: bookingForm,
-          service: selectedService,
-          leadScore: leadScore,
-          sessionId: sessionId
-        }
-      });
-
-      toast({
-        title: "Booking Request Submitted!",
-        description: `We'll contact you within 24 hours to schedule your ${selectedService.title}.`,
-      });
-
-      // Reset form
-      setBookingForm({
-        name: '', email: '', company: '', role: '', phone: '',
-        preferredTime: '', specificNeeds: '', serviceType: ''
-      });
-      setSelectedService(null);
-
-    } catch (error) {
-      console.error('Error submitting booking:', error);
-      toast({
-        title: "Submission Error",
-        description: "Please try again or contact us directly.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'Recommended';
+      case 'medium': return 'Good Fit';
+      case 'immediate': return 'Start Here';
+      default: return 'Available';
     }
   };
-
-  const openBookingDialog = (service: ServiceRecommendation) => {
-    setSelectedService(service);
-    setBookingForm(prev => ({ ...prev, serviceType: service.type }));
-  };
-
-  if (recommendations.length === 0) {
-    return (
-      <Card>
-        <CardContent className="text-center py-8">
-          <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-muted-foreground mb-2">
-            Continue the Conversation
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Keep chatting to get personalized service recommendations based on your needs.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <h2 className="text-2xl font-bold">Your Personalized AI Leadership Path</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Based on your assessment results and lead score of {leadScore.overall || 0}/100, 
+          here are the recommended next steps to accelerate your AI leadership journey.
+        </p>
+      </div>
+
       {/* Lead Score Summary */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-primary" />
-            Your AI Readiness Score: {leadScore.overall}/100
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-3 bg-background rounded-lg">
-              <div className="text-xl font-bold text-primary">
-                {leadScore.qualification.budget + leadScore.qualification.authority + 
-                 leadScore.qualification.need + leadScore.qualification.timeline}/100
-              </div>
-              <div className="text-xs text-muted-foreground">Business Readiness</div>
+      <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-primary">{leadScore.overall || 0}</div>
+              <div className="text-sm text-muted-foreground">Overall Readiness</div>
             </div>
-            <div className="text-center p-3 bg-background rounded-lg">
-              <div className="text-xl font-bold text-blue-600">
-                {leadScore.readiness.aiMaturity + leadScore.readiness.teamReadiness + 
-                 leadScore.readiness.organizationSize}/50
-              </div>
-              <div className="text-xs text-muted-foreground">AI Readiness</div>
+            <div>
+              <div className="text-2xl font-bold text-blue-600">{leadScore.engagement || 0}</div>
+              <div className="text-sm text-muted-foreground">Engagement Score</div>
             </div>
-            <div className="text-center p-3 bg-background rounded-lg">
-              <div className="text-xl font-bold text-green-600">
-                {Math.min(leadScore.engagement.sessionDuration + leadScore.engagement.messageCount + 
-                 leadScore.engagement.topicsExplored, 30)}/30
-              </div>
-              <div className="text-xs text-muted-foreground">Engagement Level</div>
+            <div>
+              <div className="text-2xl font-bold text-green-600">{leadScore.business || 0}</div>
+              <div className="text-sm text-muted-foreground">Business Readiness</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Service Recommendations */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Recommended Next Steps</h3>
-        
-        {recommendations.map((service, index) => (
-          <Card key={index} className="border-l-4 border-l-primary">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    {getServiceIcon(service.type)}
+      {/* Key Insights */}
+      {topInsights.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Key Insights from Your Assessment
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {topInsights.map((insight, index) => (
+                <div key={index} className="flex gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-primary">{index + 1}</span>
                   </div>
                   <div>
-                    <CardTitle className="text-lg">{service.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {service.description}
-                    </p>
+                    <h4 className="font-medium text-sm">{insight.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{insight.content}</p>
                   </div>
                 </div>
-                <Badge className={`${getPriorityColor(service.priority)} border`}>
-                  {service.priority} priority
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium text-sm mb-2">Why this is recommended:</h4>
-                <p className="text-sm text-muted-foreground">{service.reasoning}</p>
-              </div>
-              
-              <div>
-                <h4 className="font-medium text-sm mb-2">What's included:</h4>
-                <ul className="space-y-1">
-                  {service.nextSteps.map((step, stepIndex) => (
-                    <li key={stepIndex} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      {step}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-              <div className="flex items-center justify-between pt-4 border-t">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  Response within 24 hours
+      {/* Service Recommendations */}
+      <div className="space-y-6">
+        <h3 className="text-xl font-semibold">Recommended Services</h3>
+        
+        <div className="grid gap-6">
+          {recommendations.map((service, index) => (
+            <Card key={index} className={`${
+              service.priority === 'immediate' ? 'border-primary/50 bg-primary/5' : ''
+            }`}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-primary">{service.icon}</div>
+                    <div>
+                      <CardTitle className="text-lg">{service.title}</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {service.description}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={getPriorityColor(service.priority)}>
+                    {getPriorityLabel(service.priority)}
+                  </Badge>
                 </div>
-                
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      onClick={() => openBookingDialog(service)}
-                      className="flex items-center gap-2"
-                    >
-                      Book Now
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Book Your {service.title}</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleBookingSubmit} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          placeholder="Full Name"
-                          value={bookingForm.name}
-                          onChange={(e) => setBookingForm(prev => ({ ...prev, name: e.target.value }))}
-                          required
-                        />
-                        <Input
-                          type="email"
-                          placeholder="Email"
-                          value={bookingForm.email}
-                          onChange={(e) => setBookingForm(prev => ({ ...prev, email: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          placeholder="Company"
-                          value={bookingForm.company}
-                          onChange={(e) => setBookingForm(prev => ({ ...prev, company: e.target.value }))}
-                          required
-                        />
-                        <Input
-                          placeholder="Your Role"
-                          value={bookingForm.role}
-                          onChange={(e) => setBookingForm(prev => ({ ...prev, role: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <Input
-                        type="tel"
-                        placeholder="Phone Number"
-                        value={bookingForm.phone}
-                        onChange={(e) => setBookingForm(prev => ({ ...prev, phone: e.target.value }))}
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4" />
+                      <span>{service.price}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{service.duration}</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-2">What's Included:</h4>
+                    <ul className="space-y-1">
+                      {service.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {service.priority === 'immediate' && (
+                    <div className="pt-4">
+                      <ContactCollectionModal
+                        isOpen={showContactModal}
+                        onClose={() => setShowContactModal(false)}
+                        actionType={contactActionType}
+                        sessionId={sessionId}
+                        assessmentData={{ 
+                          source: 'AI Chat Assessment',
+                          ...qualificationData,
+                          insights: insights
+                        }}
                       />
-                      <Select 
-                        value={bookingForm.preferredTime} 
-                        onValueChange={(value) => setBookingForm(prev => ({ ...prev, preferredTime: value }))}
+                      
+                      <Button 
+                        size="lg" 
+                        className="w-full"
+                        onClick={() => {
+                          setContactActionType('book_call');
+                          setShowContactModal(true);
+                        }}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Preferred time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="morning">Morning (9AM - 12PM)</SelectItem>
-                          <SelectItem value="afternoon">Afternoon (12PM - 5PM)</SelectItem>
-                          <SelectItem value="evening">Evening (5PM - 7PM)</SelectItem>
-                          <SelectItem value="flexible">Flexible</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Textarea
-                        placeholder="Specific needs or questions..."
-                        value={bookingForm.specificNeeds}
-                        onChange={(e) => setBookingForm(prev => ({ ...prev, specificNeeds: e.target.value }))}
-                        rows={3}
-                      />
-                      <Button type="submit" disabled={isSubmitting} className="w-full">
-                        {isSubmitting ? "Submitting..." : "Submit Booking Request"}
+                        <Calendar className="h-5 w-5 mr-2" />
+                        Book Strategy Call
                       </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
-      {/* Contact Alternative */}
-      <Card className="bg-muted/50">
-        <CardContent className="text-center py-6">
-          <Mail className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-          <h3 className="font-medium mb-2">Prefer to discuss directly?</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Schedule a strategy call: <a href="https://calendly.com/krish-raja" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Book with Krish</a>
+      {/* Final CTA */}
+      <Card className="text-center bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+        <CardContent className="p-8">
+          <h3 className="text-xl font-semibold mb-4">Ready to Begin Your AI Leadership Transformation?</h3>
+          <p className="text-muted-foreground mb-6">
+            Start with a complimentary strategy call to create your personalized AI leadership action plan.
           </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg"
+              onClick={() => {
+                setContactActionType('book_call');
+                setShowContactModal(true);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Calendar className="h-5 w-5" />
+              Book Free Strategy Call
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => {
+                setContactActionType('learn_more');
+                setShowContactModal(true);
+              }}
+              className="flex items-center gap-2"
+            >
+              <ExternalLink className="h-5 w-5" />
+              Learn More About Services
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

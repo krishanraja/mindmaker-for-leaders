@@ -168,9 +168,22 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.choices[0]?.message?.content || '';
 
     console.log('Received AI response, length:', aiResponse.length);
+    
+    // Handle empty responses from OpenAI
+    if (!aiResponse || aiResponse.length === 0) {
+      console.warn('Empty response from OpenAI, using fallback');
+      const fallbackResponse = "I understand you're looking to enhance your AI leadership capabilities. Could you tell me more about your current role and how you're thinking about AI in your work?";
+      return new Response(JSON.stringify({ 
+        response: fallbackResponse,
+        sessionId: sessionId,
+        fallback: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Save user message to database
     const { error: userMessageError } = await supabase
@@ -186,13 +199,13 @@ serve(async (req) => {
       console.error('Error saving user message:', userMessageError);
     }
 
-    // Save AI response to database
+    // Save AI response to database (fixing constraint: use 'ai' not 'assistant')
     const { error: aiMessageError } = await supabase
       .from('chat_messages')
       .insert({
         session_id: sessionId,
-        message_type: 'assistant',
-        content: aiResponse,
+        message_type: 'ai',
+        content: aiResponse || '',  // Ensure content is never null
         metadata: { model: 'gpt-5-2025-08-07' }
       });
 

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ContactCollectionModal from '../ContactCollectionModal';
 import { 
   Target, 
   TrendingUp, 
@@ -12,6 +13,7 @@ import {
   CheckCircle,
   ArrowRight,
   Calendar,
+  ExternalLink,
   Sparkles
 } from 'lucide-react';
 
@@ -40,6 +42,8 @@ const QuickFormResults: React.FC<QuickFormResultsProps> = ({
   onRestart 
 }) => {
   const isMobile = useIsMobile();
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactActionType, setContactActionType] = useState<'learn_more' | 'book_call'>('book_call');
 
   const getScoreCategory = (score: number) => {
     if (score >= 80) return { label: 'AI Leadership Ready', color: 'text-green-600', description: 'You\'re positioned for rapid AI transformation' };
@@ -49,249 +53,295 @@ const QuickFormResults: React.FC<QuickFormResultsProps> = ({
   };
 
   const getAIUsageLabel = (level: string) => {
-    const labels: Record<string, string> = {
-      'never': 'AI Newcomer',
-      'experimental': 'AI Explorer', 
-      'occasional': 'AI Adopter',
-      'regular': 'AI User',
-      'power_user': 'AI Power User'
-    };
-    return labels[level] || 'AI Professional';
+    switch (level) {
+      case 'never': return 'New to AI';
+      case 'sometimes': return 'Occasional User';
+      case 'frequently': return 'Regular User';
+      case 'advanced': return 'Power User';
+      default: return 'Not specified';
+    }
   };
 
   const getTimelineUrgency = (timeline: string) => {
-    const urgency: Record<string, { label: string; priority: 'high' | 'medium' | 'low' }> = {
-      'immediate': { label: 'Immediate Action Required', priority: 'high' },
-      'within_3_months': { label: 'Near-term Priority', priority: 'high' },
-      'within_6_months': { label: 'Strategic Planning Phase', priority: 'medium' },
-      'this_year': { label: 'Long-term Development', priority: 'low' }
-    };
-    return urgency[timeline] || { label: 'Strategic Planning', priority: 'medium' };
+    switch (timeline) {
+      case 'immediately': return { label: 'Immediate', priority: 'high' };
+      case '1-3 months': return { label: 'Near-term', priority: 'medium' };
+      case '6-12 months': return { label: 'Planned', priority: 'low' };
+      default: return { label: 'Flexible', priority: 'low' };
+    }
   };
 
-  const getQuickWins = () => {
+  const getQuickWins = (data: QuickFormData, score: number) => {
     const wins = [];
     
-    if (data.timeAllocation >= 4) {
-      wins.push('🚀 High-impact AI automation opportunities in your daily work');
-    }
-    if (data.aiUsageLevel === 'power_user') {
-      wins.push('💡 Advanced AI strategies to multiply your current expertise');
-    } else if (data.aiUsageLevel === 'never') {
-      wins.push('⚡ Essential AI tools that will transform your productivity immediately');
-    }
-    if (data.decisionAuthority === 'full') {
-      wins.push('🎯 Executive AI implementation roadmap tailored to your authority');
+    if (data.aiUsageLevel === 'never' || data.aiUsageLevel === 'sometimes') {
+      wins.push({
+        icon: <Target className="h-5 w-5" />,
+        title: 'Start with AI Communication Basics',
+        description: 'Build vocabulary and confidence to discuss AI strategy with stakeholders'
+      });
     }
     
-    // Always include 2-3 default wins
-    wins.push('📈 Personal AI leadership positioning strategy for competitive advantage');
-    wins.push('🛡️ AI ethics and governance framework for confident decision-making');
+    if (data.timeAllocation >= 40) {
+      wins.push({
+        icon: <Clock className="h-5 w-5" />,
+        title: 'Optimize High-Value Time',
+        description: 'Use AI to automate routine tasks and focus on strategic leadership'
+      });
+    }
     
-    return wins.slice(0, 4);
+    if (data.implementationTimeline === 'immediately') {
+      wins.push({
+        icon: <TrendingUp className="h-5 w-5" />,
+        title: 'Quick Impact AI Tools',
+        description: 'Implement 2-3 AI tools this week for immediate productivity gains'
+      });
+    }
+    
+    wins.push({
+      icon: <Users className="h-5 w-5" />,
+      title: 'Become the AI-Forward Leader',
+      description: 'Position yourself as the executive who guides others through AI transformation'
+    });
+    
+    return wins.slice(0, 3);
   };
 
   const scoreCategory = getScoreCategory(score);
-  const urgency = getTimelineUrgency(data.implementationTimeline);
-  const quickWins = getQuickWins();
+  const quickWins = getQuickWins(data, score);
+  const timelineInfo = getTimelineUrgency(data.implementationTimeline);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
-          
-          {/* Header with Logo */}
-          <div className="text-center space-y-4">
-            <div className="flex justify-center mb-6">
-              <img 
-                src="/lovable-uploads/2819589c-814c-4ec7-9e78-0d2a80b89243.png" 
-                alt="AI Mindmaker Logo" 
-                className={`w-auto ${isMobile ? 'h-12' : 'h-16'}`}
-              />
+    <div className={`min-h-screen bg-gradient-to-br from-background via-background to-muted ${
+      isMobile ? 'p-4' : 'p-8'
+    }`}>
+      <div className={`mx-auto space-y-8 ${isMobile ? 'max-w-lg' : 'max-w-4xl'}`}>
+        
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">Your AI Leadership Assessment</h1>
+          </div>
+          <p className="text-lg text-muted-foreground">
+            Personalized insights for your AI transformation journey
+          </p>
+        </div>
+
+        {/* AI Leadership Score */}
+        <Card className="text-center">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center gap-2">
+              <Target className="h-6 w-6" />
+              AI Leadership Score
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="relative">
+              <div className="mx-auto w-40 h-40 relative">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="transparent"
+                    className="text-muted"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="transparent"
+                    strokeDasharray={`${2 * Math.PI * 40}`}
+                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - score / 100)}`}
+                    className="text-primary"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold">{score}</div>
+                    <div className="text-sm text-muted-foreground">/ 100</div>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <h1 className={`font-bold tracking-tight ${
-              isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'
-            }`}>
-              AI Leadership Score for <span className="text-primary underline">{data.firstName}</span>
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Your personalized AI leadership development roadmap is ready
-            </p>
-          </div>
+            <div className="space-y-2">
+              <h3 className={`text-xl font-semibold ${scoreCategory.color}`}>
+                {scoreCategory.label}
+              </h3>
+              <p className="text-muted-foreground">{scoreCategory.description}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
-            
-            {/* Main Score */}
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle>Your AI Leadership Score</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="relative">
-                  <div className={`mx-auto ${isMobile ? 'w-32 h-32' : 'w-40 h-40'}`}>
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        stroke="hsl(var(--muted))"
-                        strokeWidth="8"
-                        fill="none"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        stroke="hsl(var(--primary))"
-                        strokeWidth="8"
-                        fill="none"
-                        strokeDasharray={`${(score / 100) * 251.2} 251.2`}
-                        className="transition-all duration-1000"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className={`font-bold text-primary ${
-                          isMobile ? 'text-2xl' : 'text-3xl'
-                        }`}>
-                          {score}
-                        </div>
-                        <div className="text-sm text-muted-foreground">/ 100</div>
-                      </div>
-                    </div>
+        {/* Profile Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Leadership Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Current AI Usage:</span>
+                  <Badge variant="outline">{getAIUsageLabel(data.aiUsageLevel)}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Implementation Timeline:</span>
+                  <Badge variant={timelineInfo.priority === 'high' ? 'destructive' : 'default'}>
+                    {timelineInfo.label}
+                  </Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Time for AI Enhancement:</span>
+                  <Badge variant="secondary">{data.timeAllocation}% of work time</Badge>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Decision Authority:</span>
+                  <Badge variant="outline">{data.decisionAuthority}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Budget Range:</span>
+                  <Badge variant="secondary">{data.budgetRange}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Readiness Level:</span>
+                  <Badge variant={score >= 60 ? 'default' : 'outline'}>
+                    {score >= 80 ? 'High' : score >= 60 ? 'Medium' : 'Building'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Wins */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Your Personal Quick Wins
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Start with these high-impact, low-effort actions
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {quickWins.map((win, index) => (
+                <div key={index} className="flex gap-3 p-4 rounded-lg bg-muted/50 border">
+                  <div className="text-primary">{win.icon}</div>
+                  <div className="flex-1 space-y-1">
+                    <h4 className="font-medium">{win.title}</h4>
+                    <p className="text-sm text-muted-foreground">{win.description}</p>
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <p className={`font-semibold ${scoreCategory.color}`}>
-                    {scoreCategory.label}
-                  </p>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Next Steps */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recommended Next Steps</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary">1</span>
+                </div>
+                <div>
+                  <h4 className="font-medium">Build AI Leadership Vocabulary</h4>
                   <p className="text-sm text-muted-foreground">
-                    {scoreCategory.description}
+                    Develop confidence in AI discussions with stakeholders
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Profile Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Your AI Leadership Profile
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Company:</span>
-                    <p className="font-medium">{data.company}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Role:</span>
-                    <p className="font-medium">{data.role}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">AI Experience:</span>
-                    <p className="font-medium">{getAIUsageLabel(data.aiUsageLevel)}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Daily AI Opportunity:</span>
-                    <p className="font-medium">{data.timeAllocation} hours</p>
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Timeline:</span>
-                    <Badge variant={urgency.priority === 'high' ? 'destructive' : urgency.priority === 'medium' ? 'default' : 'secondary'}>
-                      {urgency.label}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Wins */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                Your Personalized Quick Wins
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Immediate opportunities to accelerate your AI leadership journey
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                {quickWins.map((win, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-start gap-3 p-3 bg-secondary/20 rounded-lg border"
-                  >
-                    <div className="bg-primary rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-primary-foreground flex-shrink-0">
-                      {index + 1}
-                    </div>
-                    <p className="text-sm">{win}</p>
-                  </div>
-                ))}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Next Steps */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Recommended Next Steps
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="text-center p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <Calendar className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">1. Strategy Call</h3>
-                  <p className="text-xs text-muted-foreground">30-min personalized AI leadership consultation</p>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary">2</span>
                 </div>
-                <div className="text-center p-4 bg-secondary/10 rounded-lg border">
-                  <TrendingUp className="h-8 w-8 text-secondary-foreground mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">2. Custom Roadmap</h3>
-                  <p className="text-xs text-muted-foreground">Tailored 90-day AI transformation plan</p>
-                </div>
-                <div className="text-center p-4 bg-secondary/10 rounded-lg border">
-                  <CheckCircle className="h-8 w-8 text-secondary-foreground mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">3. Implementation</h3>
-                  <p className="text-xs text-muted-foreground">Execute with ongoing coaching support</p>
+                <div>
+                  <h4 className="font-medium">Implement Personal AI Tools</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Start with 2-3 tools that address your biggest time drains
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary">3</span>
+                </div>
+                <div>
+                  <h4 className="font-medium">Develop AI Strategy Vision</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Create a roadmap for leading your team through AI transformation
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* CTA Section */}
-          <div className="text-center space-y-6 pt-8">
-            <h2 className={`font-bold tracking-tight ${
-              isMobile ? 'text-xl' : 'text-2xl md:text-3xl'
-            }`}>
-              Transform Your Leadership in 90 Days
+        {/* Call to Action */}
+        <Card className="text-center bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+          <CardContent className="p-8">
+            <h2 className="text-2xl font-bold mb-4">
+              Unlock Your {100 - score} Points of Untapped Potential
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Unlock your {100 - score} points of untapped AI leadership potential with a personalized strategy session.
+            <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+              Get personalized guidance to implement these insights and accelerate your AI leadership transformation.
             </p>
+            
+            <ContactCollectionModal
+              isOpen={showContactModal}
+              onClose={() => setShowContactModal(false)}
+              actionType={contactActionType}
+              assessmentData={{ 
+                source: 'Quick Form Assessment',
+                score: score,
+                data: data
+              }}
+            />
             
             <div className={`flex gap-4 justify-center ${
               isMobile ? 'flex-col max-w-sm mx-auto' : 'flex-row'
             }`}>
               <Button 
                 size="lg"
-                onClick={() => window.open('https://calendly.com/krish-raja', '_blank')}
+                onClick={() => {
+                  setContactActionType('book_call');
+                  setShowContactModal(true);
+                }}
                 className="flex items-center gap-2"
               >
+                <Calendar className="h-4 w-4" />
                 Book a Strategy Call
                 <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => {
+                  setContactActionType('learn_more');
+                  setShowContactModal(true);
+                }}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Learn More
               </Button>
               <Button 
                 variant="outline" 
@@ -301,8 +351,8 @@ const QuickFormResults: React.FC<QuickFormResultsProps> = ({
                 Retake Assessment
               </Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

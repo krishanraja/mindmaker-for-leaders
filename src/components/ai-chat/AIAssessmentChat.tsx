@@ -21,6 +21,7 @@ import QuickSelectButtons from './QuickSelectButtons';
 import AssessmentProgress from './AssessmentProgress';
 import LLMInsightEngine from './LLMInsightEngine';
 import ExecutiveLoadingScreen from './ExecutiveLoadingScreen';
+import ContactCollectionModal from '../ContactCollectionModal';
 
 interface Message {
   id: string;
@@ -55,6 +56,8 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
   const [insightProgress, setInsightProgress] = useState(0);
   const [insightPhase, setInsightPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactActionType, setContactActionType] = useState<'learn_more' | 'book_call'>('book_call');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emergencyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
@@ -579,9 +582,23 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
                     <Button size="lg" onClick={startNewAssessment} variant="outline">
                       Retake Assessment
                     </Button>
+                    <ContactCollectionModal
+                      isOpen={showContactModal}
+                      onClose={() => setShowContactModal(false)}
+                      actionType={contactActionType}
+                      sessionId={sessionId}
+                      assessmentData={{ 
+                        source: 'AI Chat Assessment',
+                        ...getAssessmentData(),
+                        insights: insights
+                      }}
+                    />
                     <Button 
                       size="lg"
-                      onClick={() => window.open('https://calendly.com/krish-raja', '_blank')}
+                      onClick={() => {
+                        setContactActionType('book_call');
+                        setShowContactModal(true);
+                      }}
                     >
                       Book a Strategy Call
                     </Button>

@@ -1,10 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { DiagnosticData, DiagnosticScores } from '../DiagnosticTool';
 import { generatePersonalizedQuickWins } from '@/utils/personalAIQuickWins';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ContactCollectionModal from '../ContactCollectionModal';
+import { 
+  CheckCircle, 
+  TrendingUp, 
+  Lightbulb, 
+  Target, 
+  Clock,
+  Calendar,
+  ExternalLink,
+  Gauge,
+  Zap,
+  Users,
+  BarChart3,
+  Star
+} from 'lucide-react';
 
 interface ResultsScreenProps {
   data: DiagnosticData;
@@ -18,6 +33,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   onRestart 
 }) => {
   const isMobile = useIsMobile();
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactActionType, setContactActionType] = useState<'learn_more' | 'book_call'>('book_call');
   
   // Scroll to top when results screen loads
   useEffect(() => {
@@ -48,286 +65,299 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     if (data.aiUseCases && data.aiUseCases.length > 0) {
       const topTools = data.aiUseCases.map(u => u.tool).filter(t => t).slice(0, 3);
       if (topTools.length > 0) {
-        insights.push(`You're currently using ${topTools.join(', ')} for your AI-powered work.`);
+        insights.push({
+          icon: <Zap className="h-5 w-5 text-yellow-600" />,
+          title: "AI Tool Stack Active",
+          content: `You're already using ${topTools.join(', ')}. This shows strong AI adoption momentum - expand this foundation strategically.`
+        });
       }
     }
     
     if (data.dailyFrictions && data.dailyFrictions.length > 0) {
-      insights.push(`Your biggest productivity challenge is ${data.dailyFrictions[0].toLowerCase()}.`);
+      insights.push({
+        icon: <Target className="h-5 w-5 text-red-600" />,
+        title: "Productivity Friction Points",
+        content: `Your top friction points are ${data.dailyFrictions.slice(0, 2).join(' and ')}. These are prime candidates for AI automation.`
+      });
     }
     
-    if (data.persuasionChallenge) {
-      insights.push(`Your communication challenge: "${data.persuasionChallenge}"`);
+    if (data.upskillPercentage && data.upskillPercentage > 0) {
+      insights.push({
+        icon: <TrendingUp className="h-5 w-5 text-blue-600" />,
+        title: "Learning Commitment",
+        content: `Your ${data.upskillPercentage}% weekly learning commitment shows strong AI development potential.`
+      });
     }
     
-    if (data.upskillPercentage) {
-      insights.push(`You're investing ${data.upskillPercentage}% of your time in AI skill development.`);
+    if (scores.aiMindmakerScore < 50) {
+      insights.push({
+        icon: <Star className="h-5 w-5 text-purple-600" />,
+        title: "High Growth Potential",
+        content: `With ${100 - scores.aiMindmakerScore} points of untapped potential, you're positioned for significant AI leadership gains.`
+      });
     }
     
-    return insights;
+    return insights.slice(0, 4);
   };
 
+  const personaDescription = getPersonaDescription(scores, data);
+  const personalizedInsights = generatePersonalizedInsights();
+  const topQuickWins = quickWins.slice(0, 3);
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className={`diagnostic-container ${isMobile ? 'px-4 py-8' : 'py-12'}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-background via-background to-muted ${
+      isMobile ? 'p-4' : 'p-8'
+    }`}>
+      <div className={`mx-auto space-y-8 ${isMobile ? 'max-w-lg' : 'max-w-6xl'}`}>
         
-        {/* Header */}
-        <div className={`text-center space-y-4 md:space-y-6 ${isMobile ? 'mb-8' : 'mb-12'}`}>
-          {/* Logo */}
-          <div className={`flex justify-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
-            <img 
-              src="/lovable-uploads/2819589c-814c-4ec7-9e78-0d2a80b89243.png" 
-              alt="AI Mindmaker Logo" 
-              className={`w-auto ${isMobile ? 'h-12' : 'h-16'}`}
-            />
+        {/* Header Section */}
+        <div className="text-center space-y-6">
+          <div className="flex items-center justify-center gap-3">
+            <Gauge className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl font-bold">Your AI Readiness Report</h1>
           </div>
-          
-          <h1 className={`font-display font-black tracking-tight leading-[0.9] px-2 ${
-            isMobile 
-              ? 'text-2xl sm:text-3xl' 
-              : 'text-3xl md:text-4xl lg:text-5xl'
-          }`}>
-            AI Readiness for <span className={`text-primary font-black underline decoration-primary underline-offset-2 md:underline-offset-4 ${
-              isMobile ? 'decoration-2' : 'decoration-4'
-            }`}>{data.firstName || 'You'}</span>
-          </h1>
-          <p className={`text-muted-foreground max-w-2xl mx-auto font-body font-light px-4 ${
-            isMobile ? 'text-base' : 'text-xl'
-          }`}>
-            {getPersonaDescription(scores, data)}
-          </p>
-          <p className={`text-muted-foreground max-w-2xl mx-auto font-body font-medium px-4 ${
-            isMobile ? 'text-sm' : 'text-lg'
-          }`}>
-            For a deeper look at your personalized AI Mindmaker, book a call below.
-          </p>
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-xl text-muted-foreground mb-2">
+              {data.firstName ? `${data.firstName}, ` : ''}
+              {personaDescription}
+            </h2>
+            <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>AI Leadership Assessment</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setContactActionType('book_call');
+                  setShowContactModal(true);
+                }}
+                className="flex items-center gap-2"
+              >
+                <Calendar className="h-4 w-4" />
+                Book Strategy Call
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <div className={`grid gap-6 md:gap-8 ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-2'}`}>
+        {/* Results Grid */}
+        <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}>
           
-          {/* Main Score Gauge */}
-          <Card className="question-card text-center">
-            <div className={`space-y-6 md:space-y-8`}>
-              <h2 className={`font-heading font-bold tracking-tight ${
-                isMobile ? 'text-xl' : 'text-2xl'
-              }`}>
-                Your Results
-              </h2>
-              
-              <div className="relative">
-                <div className={`mx-auto ${isMobile ? 'w-36 h-36' : 'w-48 h-48'}`}>
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="hsl(var(--muted))"
-                      strokeWidth="8"
-                      fill="none"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeDasharray={`${(scores.aiMindmakerScore / 100) * 251.2} 251.2`}
-                      className="purple-glow transition-all duration-1000"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className={`font-bold text-primary ${
-                        isMobile ? 'text-3xl' : 'text-4xl'
-                      }`}>
-                        {scores.aiMindmakerScore}
-                      </div>
-                      <div className="text-sm text-muted-foreground">/ 100</div>
-                    </div>
+          {/* AI Readiness Score */}
+          <Card className="col-span-1 text-center p-6 bg-gradient-to-br from-primary/10 to-primary/5">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Overall AI Readiness</h3>
+              <div className="relative w-32 h-32 mx-auto">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="transparent"
+                    className="text-muted"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="transparent"
+                    strokeDasharray={`${2 * Math.PI * 40}`}
+                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - scores.aiMindmakerScore / 100)}`}
+                    className="text-primary"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold">{scores.aiMindmakerScore}</div>
+                    <div className="text-xs text-muted-foreground">/100</div>
                   </div>
                 </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {scores.aiMindmakerScore >= 75 ? 'AI Leadership Ready' :
+                 scores.aiMindmakerScore >= 50 ? 'Strong Foundation' : 
+                 'High Growth Potential'}
+              </p>
+            </div>
+          </Card>
+
+          {/* Personal AI Mastery Dimensions */}
+          <Card className="col-span-2 p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Personal AI Mastery Dimensions
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>AI Tool Fluency</span>
+                  <span className="font-medium">{scores.aiToolFluency}/100</span>
+                </div>
+                <Progress value={scores.aiToolFluency} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  {scores.aiToolFluency >= 60 ? 'Strong toolkit mastery' : 'Focus on core AI tools first'}
+                </p>
               </div>
               
               <div className="space-y-2">
-                <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
-                  {scores.aiMindmakerScore >= 60 ? 'Transformation Ready' : 
-                   scores.aiMindmakerScore >= 45 ? 'AI-Forward Leader' :
-                   scores.aiMindmakerScore >= 30 ? 'Accelerating Growth' : 'Emerging AI Leader'}
-                </p>
-                <p className="text-sm text-primary font-medium">
-                  {100 - scores.aiMindmakerScore} points of breakthrough potential
+                <div className="flex justify-between text-sm">
+                  <span>AI-Enhanced Decision Making</span>
+                  <span className="font-medium">{scores.aiDecisionMaking}/100</span>
+                </div>
+                <Progress value={scores.aiDecisionMaking} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  {scores.aiDecisionMaking >= 60 ? 'Confident AI-informed decisions' : 'Build AI decision frameworks'}
                 </p>
               </div>
-            </div>
-          </Card>
-
-          {/* Radar Chart - Dimensions */}
-          <Card className="question-card">
-            <div className="space-y-6">
-              <h2 className={`font-heading font-bold tracking-tight text-center ${
-                isMobile ? 'text-xl' : 'text-2xl'
-              }`}>
-                Personal AI Mastery Dimensions
-              </h2>
               
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex items-start space-x-2 flex-1">
-                      <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>AI Tool Fluency</span>
-                      {scores.aiToolFluency < 50 && !isMobile && <span className="text-xs text-amber-600">⚡ Master more AI tools for 10X output</span>}
-                    </div>
-                    <span className={`${scores.aiToolFluency >= 50 ? "text-green-600 font-bold" : "text-primary"} ${isMobile ? 'text-sm' : ''}`}>{scores.aiToolFluency}</span>
-                  </div>
-                  <Progress value={scores.aiToolFluency} className="h-2" />
-                  {scores.aiToolFluency < 50 && isMobile && <p className="text-xs text-amber-600">⚡ Master more AI tools for 10X output</p>}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>AI Communication & Influence</span>
+                  <span className="font-medium">{scores.aiCommunication}/100</span>
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex items-start space-x-2 flex-1">
-                      <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>AI-Enhanced Decision Making</span>
-                      {scores.aiDecisionMaking < 50 && !isMobile && <span className="text-xs text-amber-600">🎯 Make decisions in hours, not days</span>}
-                    </div>
-                    <span className={`${scores.aiDecisionMaking >= 50 ? "text-green-600 font-bold" : "text-primary"} ${isMobile ? 'text-sm' : ''}`}>{scores.aiDecisionMaking}</span>
-                  </div>
-                  <Progress value={scores.aiDecisionMaking} className="h-2" />
-                  {scores.aiDecisionMaking < 50 && isMobile && <p className="text-xs text-amber-600">🎯 Make decisions in hours, not days</p>}
+                <Progress value={scores.aiCommunication} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  {scores.aiCommunication >= 60 ? 'Strong AI thought leadership' : 'Develop AI communication skills'}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>AI Learning & Growth</span>
+                  <span className="font-medium">{scores.aiLearningGrowth}/100</span>
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex items-start space-x-2 flex-1">
-                      <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>AI-Powered Communication</span>
-                      {scores.aiCommunication < 50 && !isMobile && <span className="text-xs text-amber-600">📈 Amplify your influence with AI</span>}
-                    </div>
-                    <span className={`${scores.aiCommunication >= 50 ? "text-green-600 font-bold" : "text-primary"} ${isMobile ? 'text-sm' : ''}`}>{scores.aiCommunication}</span>
-                  </div>
-                  <Progress value={scores.aiCommunication} className="h-2" />
-                  {scores.aiCommunication < 50 && isMobile && <p className="text-xs text-amber-600">📈 Amplify your influence with AI</p>}
+                <Progress value={scores.aiLearningGrowth} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  {scores.aiLearningGrowth >= 60 ? 'Excellent growth mindset' : 'Increase AI learning commitment'}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>AI Ethics & Balance</span>
+                  <span className="font-medium">{scores.aiEthicsBalance}/100</span>
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex items-start space-x-2 flex-1">
-                      <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>AI Learning & Growth</span>
-                      {scores.aiLearningGrowth < 50 && !isMobile && <span className="text-xs text-amber-600">🚀 Stay ahead of AI curve</span>}
-                    </div>
-                    <span className={`${scores.aiLearningGrowth >= 50 ? "text-green-600 font-bold" : "text-primary"} ${isMobile ? 'text-sm' : ''}`}>{scores.aiLearningGrowth}</span>
-                  </div>
-                  <Progress value={scores.aiLearningGrowth} className="h-2" />
-                  {scores.aiLearningGrowth < 50 && isMobile && <p className="text-xs text-amber-600">🚀 Stay ahead of AI curve</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex items-start space-x-2 flex-1">
-                      <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>AI Ethics & Balance</span>
-                      {scores.aiEthicsBalance < 50 && !isMobile && <span className="text-xs text-amber-600">🛡️ Build responsible AI practices</span>}
-                    </div>
-                    <span className={`${scores.aiEthicsBalance >= 50 ? "text-green-600 font-bold" : "text-primary"} ${isMobile ? 'text-sm' : ''}`}>{scores.aiEthicsBalance}</span>
-                  </div>
-                  <Progress value={scores.aiEthicsBalance} className="h-2" />
-                  {scores.aiEthicsBalance < 50 && isMobile && <p className="text-xs text-amber-600">🛡️ Build responsible AI practices</p>}
-                </div>
+                <Progress value={scores.aiEthicsBalance} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  {scores.aiEthicsBalance >= 60 ? 'Thoughtful AI approach' : 'Develop AI governance thinking'}
+                </p>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* We heard you section */}
-        <Card className="question-card mt-6 md:mt-8">
-          <div className="space-y-6">
-            <h2 className={`font-heading font-bold tracking-tight text-center ${
-              isMobile ? 'text-xl' : 'text-2xl'
-            }`}>
-              We Heard You
-            </h2>
-            <p className={`text-center text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
-              Based on your specific inputs, here's what we understand about your AI journey
+        {/* We Heard You Section */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Lightbulb className="h-5 w-5" />
+            We Heard You: Personalized Insights
+          </h3>
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            {personalizedInsights.map((insight, index) => (
+              <div key={index} className="flex gap-3 p-4 rounded-lg bg-muted/50 border">
+                <div className="flex-shrink-0">{insight.icon}</div>
+                <div className="space-y-1">
+                  <h4 className="font-medium">{insight.title}</h4>
+                  <p className="text-sm text-muted-foreground">{insight.content}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Your Next Steps */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Your Next Steps: Top Quick Wins
+          </h3>
+          <div className="space-y-4">
+            {topQuickWins.map((win, index) => (
+              <div key={index} className="flex gap-4 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary">{index + 1}</span>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium">{typeof win === 'string' ? win : win.title}</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {typeof win === 'string' ? 'Personalized recommendation based on your assessment' : win.description}
+                  </p>
+                  <div className="flex gap-2 text-xs">
+                    <span className="px-2 py-1 bg-primary/10 rounded text-primary">
+                      High Impact
+                    </span>
+                    <span className="px-2 py-1 bg-muted rounded">
+                      1-2 weeks
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Call to Action */}
+        <Card className="p-6 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold mb-4">Ready to Accelerate Your AI Leadership Journey?</h3>
+            <p className="text-muted-foreground mb-6">
+              Get personalized guidance to implement these insights and transform your leadership approach.
             </p>
             
-            <div className="space-y-4">
-              {generatePersonalizedInsights().map((insight, index) => (
-                <div key={index} className={`bg-secondary/10 rounded-lg border border-primary/20 ${
-                  isMobile ? 'p-3' : 'p-4'
-                }`}>
-                  <p className="text-sm text-muted-foreground italic">"{insight}"</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        {/* Quick Wins */}
-        <Card className="question-card mt-6 md:mt-8">
-          <div className="space-y-6">
-            <h2 className={`font-heading font-bold tracking-tight text-center ${
-              isMobile ? 'text-xl' : 'text-2xl'
-            }`}>
-              Your Next Steps
-            </h2>
+            <ContactCollectionModal
+              isOpen={showContactModal}
+              onClose={() => setShowContactModal(false)}
+              actionType={contactActionType}
+              assessmentData={{ 
+                source: 'Full Assessment',
+                data: data,
+                scores: scores
+              }}
+            />
             
-            <div className={`grid gap-4 md:gap-6 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
-              {quickWins.slice(0, 4).map((win, index) => {
-                const [title, impact] = win.split(' → ');
-                return (
-                  <div 
-                    key={index}
-                    className={`bg-secondary/20 rounded-lg border border-primary/20 ${
-                      isMobile ? 'p-3' : 'p-4'
-                    }`}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className={`bg-primary rounded-full flex items-center justify-center text-sm font-bold text-primary-foreground ${
-                        isMobile ? 'w-6 h-6 text-xs' : 'w-8 h-8'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className={`font-semibold mb-1 ${isMobile ? 'text-xs' : 'text-sm'}`}>{title}</h3>
-                        <p className="text-xs text-muted-foreground">{impact?.split(' (')[0]}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  setContactActionType('book_call');
+                  setShowContactModal(true);
+                }}
+              >
+                <Calendar className="h-5 w-5" />
+                Book Strategy Call
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="flex items-center gap-2"
+                onClick={() => {
+                  setContactActionType('learn_more');
+                  setShowContactModal(true);
+                }}
+              >
+                <ExternalLink className="h-5 w-5" />
+                Learn More
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg" 
+                onClick={onRestart}
+              >
+                Retake Assessment
+              </Button>
             </div>
           </div>
         </Card>
-
-        {/* CTA Section */}
-        <div className={`text-center space-y-4 md:space-y-6 ${isMobile ? 'mt-8' : 'mt-12'}`}>
-          <h2 className={`font-heading font-bold tracking-tight px-2 ${
-            isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'
-          }`}>
-            Transform Your Leadership in 90 Days
-          </h2>
-          <p className={`text-muted-foreground max-w-xl mx-auto px-4 ${
-            isMobile ? 'text-base' : 'text-lg'
-          }`}>
-            Unlock your {100 - scores.aiMindmakerScore} points of leadership potential with a tailored AI strategy sprint.
-          </p>
-          
-          <div className={`flex gap-4 justify-center px-4 ${
-            isMobile ? 'flex-col' : 'flex-col sm:flex-row'
-          }`}>
-            <Button 
-              className={`btn-primary ${isMobile ? 'w-full' : ''}`}
-              onClick={() => window.open('https://calendly.com/krish-raja', '_blank')}
-            >
-              Book a Strategy Call
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={onRestart}
-              className={isMobile ? 'w-full' : ''}
-            >
-              Retake Diagnostic
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -47,17 +47,38 @@ const LLMInsightEngine: React.FC<LLMInsightEngineProps> = ({
   const [insights, setInsights] = useState<ExecutiveInsight[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [overallScore, setOverallScore] = useState(0);
+  const [hasGeneratedInsights, setHasGeneratedInsights] = useState(false);
 
+  // Load cached insights from sessionStorage
   useEffect(() => {
-    if (isComplete && sessionId && Object.keys(assessmentData).length > 5) {
+    if (sessionId) {
+      const cacheKey = `insights-${sessionId}`;
+      const cachedData = sessionStorage.getItem(cacheKey);
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          setInsights(parsed.insights || []);
+          setOverallScore(parsed.overallScore || 0);
+          setHasGeneratedInsights(true);
+        } catch (error) {
+          console.error('Error loading cached insights:', error);
+        }
+      }
+    }
+  }, [sessionId]);
+
+  // Only generate insights once when assessment completes
+  useEffect(() => {
+    if (isComplete && sessionId && !hasGeneratedInsights && Object.keys(assessmentData).length > 5) {
       generateExecutiveInsights();
     }
-  }, [isComplete, sessionId, assessmentData]);
+  }, [isComplete, sessionId, hasGeneratedInsights]); // Removed assessmentData dependency
 
   const generateExecutiveInsights = async () => {
-    if (isGenerating) return;
+    if (isGenerating || hasGeneratedInsights) return;
     
     setIsGenerating(true);
+    setHasGeneratedInsights(true);
     
     try {
       const { data, error } = await supabase.functions.invoke('ai-assessment-chat', {
@@ -132,33 +153,192 @@ Return ONLY the JSON, no other text.`,
             
             setInsights(formattedInsights);
             setOverallScore(parsedData.overall_readiness_score || 0);
+            
+            // Cache insights to sessionStorage
+            if (sessionId) {
+              const cacheKey = `insights-${sessionId}`;
+              sessionStorage.setItem(cacheKey, JSON.stringify({
+                insights: formattedInsights,
+                overallScore: parsedData.overall_readiness_score || 0,
+                timestamp: Date.now()
+              }));
+            }
           }
         } else {
           // Fallback: try to parse the entire response
           const fallbackData = JSON.parse(response);
           if (fallbackData.insights) {
-            setInsights(fallbackData.insights.map((insight: any, index: number) => ({
+            const formattedFallbackInsights = fallbackData.insights.map((insight: any, index: number) => ({
               id: `llm-insight-${Date.now()}-${index}`,
               ...insight
-            })));
+            }));
+            setInsights(formattedFallbackInsights);
             setOverallScore(fallbackData.overall_readiness_score || 0);
+            
+            // Cache fallback insights too
+            if (sessionId) {
+              const cacheKey = `insights-${sessionId}`;
+              sessionStorage.setItem(cacheKey, JSON.stringify({
+                insights: formattedFallbackInsights,
+                overallScore: fallbackData.overall_readiness_score || 0,
+                timestamp: Date.now()
+              }));
+            }
           }
         }
       } catch (parseError) {
-        console.error('Failed to parse insight response:', parseError);
-        // Fallback to basic insights if LLM parsing fails
-        generateFallbackInsights();
+        console.error('Failed to parse insight response:', parseError, 'Response was:', data.response);
+        // Enhanced error handling: show actual response for debugging
+        generatePersonalizedFallbackInsights();
       }
 
     } catch (error) {
       console.error('Error generating LLM insights:', error);
-      generateFallbackInsights();
+      generatePersonalizedFallbackInsights();
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const generateFallbackInsights = () => {
+  const generatePersonalizedFallbackInsights = () => {
+    // Create personalized insights based on assessment data
+    const hasAssessmentData = Object.keys(assessmentData).length > 0;
+    const userResponses = hasAssessmentData ? Object.values(assessmentData).join(' ').toLowerCase() : '';
+    
+    // Analyze user responses for personalization
+    const isNewToAI = userResponses.includes('new to ai') || userResponses.includes('beginner') || userResponses.includes('not using');
+    const isExperienced = userResponses.includes('experienced') || userResponses.includes('advanced') || userResponses.includes('already using');
+    const hasCommunicationNeeds = userResponses.includes('communication') || userResponses.includes('stakeholder') || userResponses.includes('board');
+    const hasProductivityNeeds = userResponses.includes('productivity') || userResponses.includes('efficiency') || userResponses.includes('time');
+    const hasDecisionNeeds = userResponses.includes('decision') || userResponses.includes('strategy') || userResponses.includes('analysis');
+    
+    const personalizedInsights: ExecutiveInsight[] = [];
+    
+    // Add relevant insights based on user responses
+    if (isNewToAI || !isExperienced) {
+      personalizedInsights.push({
+        id: 'personalized-1',
+        type: 'quick_win',
+        title: 'Start with AI Communication Confidence',
+        description: 'Build your AI vocabulary and communication skills to discuss AI strategy credibly with stakeholders and team members',
+        impact: 'high',
+        effort: 'low',
+        timeline: '1-2 weeks',
+        roi_estimate: 'Immediate credibility boost in AI discussions',
+        implementation_steps: [
+          'Practice AI terminology in daily conversations',
+          'Subscribe to 2-3 AI leadership newsletters',
+          'Ask strategic AI questions in your next team meeting'
+        ],
+        success_metrics: ['Confidence in AI discussions', 'Stakeholder engagement quality']
+      });
+    }
+    
+    if (hasProductivityNeeds) {
+      personalizedInsights.push({
+        id: 'personalized-2',
+        type: 'quick_win',
+        title: 'Personal AI Productivity Stack',
+        description: 'Implement AI tools for your specific productivity bottlenecks to save 5-10 hours per week',
+        impact: 'high',
+        effort: 'low',
+        timeline: '1-2 weeks',
+        roi_estimate: '5-10 hours saved weekly for strategic work',
+        implementation_steps: [
+          'Choose 1-2 AI tools for your biggest time drains',
+          'Spend 30 minutes daily learning these tools',
+          'Track time saved and redirect to strategic priorities'
+        ],
+        success_metrics: ['Hours saved per week', 'Quality of strategic focus time']
+      });
+    }
+    
+    if (hasDecisionNeeds || isExperienced) {
+      personalizedInsights.push({
+        id: 'personalized-3',
+        type: 'strategic_opportunity',
+        title: 'AI-Enhanced Strategic Decision Making',
+        description: 'Integrate AI insights into your strategic decision process to improve quality and speed',
+        impact: 'high',
+        effort: 'medium',
+        timeline: '1-3 months',
+        roi_estimate: '25-40% faster strategic decisions with better outcomes',
+        implementation_steps: [
+          'Use AI for market research and trend analysis',
+          'Apply AI insights to strategic planning sessions',
+          'Create AI-enhanced decision frameworks'
+        ],
+        success_metrics: ['Decision cycle time', 'Strategic outcome quality', 'Team confidence in decisions']
+      });
+    }
+    
+    if (hasCommunicationNeeds) {
+      personalizedInsights.push({
+        id: 'personalized-4',
+        type: 'leadership_differentiation',
+        title: 'Become the AI-Forward Executive',
+        description: 'Position yourself as the leader who can guide others through AI transformation with confidence and vision',
+        impact: 'high',
+        effort: 'medium',
+        timeline: '3-6 months',
+        roi_estimate: 'Enhanced leadership presence and competitive differentiation',
+        implementation_steps: [
+          'Develop your personal AI leadership narrative',
+          'Share AI insights regularly with your network',
+          'Mentor others on practical AI adoption'
+        ],
+        success_metrics: ['Leadership effectiveness scores', 'Team AI adoption rates', 'Industry recognition']
+      });
+    }
+    
+    // Add risk mitigation if they seem cautious
+    if (userResponses.includes('concern') || userResponses.includes('risk') || userResponses.includes('careful')) {
+      personalizedInsights.push({
+        id: 'personalized-5',
+        type: 'risk_mitigation',
+        title: 'Maintain Leadership Credibility in AI Era',
+        description: 'Avoid being left behind as AI transforms leadership expectations and industry standards',
+        impact: 'high',
+        effort: 'low',
+        timeline: '1-3 months',
+        roi_estimate: 'Protected leadership position and enhanced future readiness',
+        implementation_steps: [
+          'Stay informed on AI trends in your industry',
+          'Build basic AI fluency before it becomes critical',
+          'Prepare for AI-related board and stakeholder questions'
+        ],
+        success_metrics: ['Stakeholder confidence', 'Industry AI awareness', 'Future readiness score']
+      });
+    }
+    
+    // Fallback to basic insights if no personalization possible
+    if (personalizedInsights.length === 0) {
+      personalizedInsights.push(...getBasicFallbackInsights());
+    }
+    
+    // Calculate personalized score based on responses
+    let personalizedScore = 50; // Base score
+    if (isExperienced) personalizedScore += 20;
+    if (hasProductivityNeeds) personalizedScore += 10;
+    if (hasDecisionNeeds) personalizedScore += 10;
+    if (hasCommunicationNeeds) personalizedScore += 10;
+    
+    setInsights(personalizedInsights.slice(0, 4)); // Limit to 4 insights
+    setOverallScore(Math.min(personalizedScore, 85)); // Cap at 85 for fallback
+    
+    // Cache personalized insights
+    if (sessionId) {
+      const cacheKey = `insights-${sessionId}`;
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        insights: personalizedInsights.slice(0, 4),
+        overallScore: Math.min(personalizedScore, 85),
+        timestamp: Date.now(),
+        personalized: true
+      }));
+    }
+  };
+
+  const getBasicFallbackInsights = () => {
     const fallbackInsights: ExecutiveInsight[] = [
       {
         id: 'fallback-1',
@@ -198,8 +378,7 @@ Return ONLY the JSON, no other text.`,
       }
     ];
     
-    setInsights(fallbackInsights);
-    setOverallScore(65);
+    return fallbackInsights;
   };
 
   const getTypeIcon = (type: ExecutiveInsight['type']) => {

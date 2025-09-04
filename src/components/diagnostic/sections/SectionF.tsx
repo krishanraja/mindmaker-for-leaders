@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CheckCircle } from 'lucide-react';
 import { DiagnosticData } from '../../DiagnosticTool';
 
 interface SectionFProps {
@@ -147,99 +148,19 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
         </div>
       </Card>
 
-      {/* Contact Information */}
+      {/* Leadership Context - Contact Collection Removed */}
       <Card className="p-6 bg-secondary/10 border-primary/20">
-        <h3 className="text-xl font-semibold mb-6">Contact & Leadership Context</h3>
-        <p className="text-muted-foreground mb-6">Help us understand your leadership context to personalize your AI transformation roadmap.</p>
+        <h3 className="text-xl font-semibold mb-6">Assessment Complete</h3>
+        <p className="text-muted-foreground mb-6">
+          You've completed the core assessment. Your personalized insights and recommendations 
+          will be generated based on your responses. Contact information will be collected 
+          only when you're ready to take the next step.
+        </p>
         
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-base font-medium">
-                First Name
-              </Label>
-              <Input
-                id="firstName"
-                type="text"
-                placeholder="First name"
-                value={data.firstName || ''}
-                onChange={(e) => onUpdate({ firstName: e.target.value })}
-                className="w-full"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-base font-medium">
-                Last Name
-              </Label>
-              <Input
-                id="lastName"
-                type="text"
-                placeholder="Last name"
-                value={data.lastName || ''}
-                onChange={(e) => onUpdate({ lastName: e.target.value })}
-                className="w-full"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-base font-medium">
-              Email Address
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your.email@company.com"
-              value={data.email || ''}
-              onChange={(e) => onUpdate({ email: e.target.value })}
-              className="w-full"
-            />
-            <p className="text-xs text-muted-foreground">
-              By submitting your email address, you agree to receive occasional useful updates from Fractional AI. Your details will not be shared with any 3rd parties, ever.
-            </p>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="company" className="text-base font-medium">
-              Company
-            </Label>
-            <Input
-              id="company"
-              type="text"
-              placeholder="Your company name"
-              value={data.company || ''}
-              onChange={(e) => onUpdate({ company: e.target.value })}
-              className="w-full"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-base font-medium">
-              Title
-            </Label>
-            <Input
-              id="title"
-              type="text"
-              placeholder="Your job title"
-              value={data.title || ''}
-              onChange={(e) => onUpdate({ title: e.target.value })}
-              className="w-full"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="linkedin" className="text-base font-medium">
-              LinkedIn Profile URL
-            </Label>
-            <Input
-              id="linkedin"
-              type="url"
-              placeholder="https://linkedin.com/in/yourprofile"
-              value={data.linkedinUrl || ''}
-              onChange={(e) => onUpdate({ linkedinUrl: e.target.value })}
-              className="w-full"
-            />
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+            <CheckCircle className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">Assessment Data Captured</span>
           </div>
         </div>
       </Card>
