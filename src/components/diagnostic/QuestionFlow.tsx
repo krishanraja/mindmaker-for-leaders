@@ -21,7 +21,7 @@ const sections = [
   { id: 'B', title: 'Stakeholder Influence', subtitle: 'Communication reach', component: SectionC, required: ['stakeholderAudiences', 'persuasionChallenge'] },
   { id: 'C', title: 'Learning & Growth', subtitle: 'Skill development', component: SectionD, required: ['upskillPercentage', 'skillGaps'] },
   { id: 'D', title: 'Risk & Governance', subtitle: 'Risk assessment', component: SectionE, required: ['riskComfortLevel'] },
-  { id: 'E', title: 'Priority & Contact', subtitle: 'Goals & information', component: SectionF, required: ['dailyFrictions', 'firstName', 'lastName', 'email', 'company', 'title'] },
+  { id: 'E', title: 'Priority Bottlenecks', subtitle: 'Your key challenges', component: SectionF, required: ['dailyFrictions'] },
 ];
 
 export const QuestionFlow: React.FC<QuestionFlowProps> = ({ 
@@ -61,11 +61,6 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
       }
       if (field === 'persuasionChallenge') {
         return typeof value === 'string' && value.trim() !== '';
-      }
-      if (field === 'hasAiSafetyPlaybook') {
-        const hasValue = typeof value === 'boolean';
-        console.log(`hasAiSafetyPlaybook validation: ${hasValue}, value: ${value}`);
-        return hasValue;
       }
       const isValid = value !== undefined && value !== null && value !== '';
       console.log(`Field ${field} validation result:`, isValid, 'value:', value);
@@ -113,9 +108,6 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
         }
         if (field === 'persuasionChallenge') {
           return typeof value === 'string' && value.trim() !== '';
-        }
-        if (field === 'hasAiSafetyPlaybook') {
-          return typeof value === 'boolean';
         }
         return value !== undefined && value !== null && value !== '';
       });

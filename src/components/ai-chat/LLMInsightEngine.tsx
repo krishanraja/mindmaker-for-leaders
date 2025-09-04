@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -14,7 +14,8 @@ import {
   Users,
   DollarSign,
   Calendar,
-  Lightbulb
+  Lightbulb,
+  Sparkles
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -67,16 +68,16 @@ const LLMInsightEngine: React.FC<LLMInsightEngineProps> = ({
     }
   }, [sessionId]);
 
-  // Only generate insights once when assessment completes
-  useEffect(() => {
-    if (isComplete && sessionId && !hasGeneratedInsights && Object.keys(assessmentData).length > 5) {
+  // Manual insight generation trigger only
+  const generateInsights = useCallback(() => {
+    if (!hasGeneratedInsights && sessionId) {
       const cacheKey = `insights-${sessionId}`;
       const cachedData = sessionStorage.getItem(cacheKey);
       if (!cachedData) {
         generateExecutiveInsights();
       }
     }
-  }, [isComplete, sessionId, hasGeneratedInsights]); // assessmentData dependency removed to prevent re-generation
+  }, [sessionId, hasGeneratedInsights]);
 
   const generateExecutiveInsights = async () => {
     if (isGenerating || hasGeneratedInsights) return;
@@ -436,6 +437,30 @@ Return ONLY the JSON, no other text.`,
               <p className="text-sm text-muted-foreground">Our AI is generating personalized strategic insights</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (insights.length === 0 && !isComplete) {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">Complete the assessment to generate your personalized AI leadership insights.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (insights.length === 0 && isComplete) {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <Button onClick={generateInsights} disabled={isGenerating} className="mt-4">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Generate My AI Leadership Insights
+          </Button>
         </CardContent>
       </Card>
     );
