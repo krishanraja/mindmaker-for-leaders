@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { WelcomeScreen } from './diagnostic/WelcomeScreen';
-import { UnifiedAssessment } from './UnifiedAssessment';
+import RichConversationalAssessment from './RichConversationalAssessment';
 import { supabase } from '@/integrations/supabase/client';
 
 export type DiagnosticStep = 'welcome' | 'assessment' | 'loading' | 'results';
@@ -73,7 +73,7 @@ const DiagnosticTool: React.FC = () => {
       )}
 
       {currentStep === 'assessment' && (
-        <UnifiedAssessment 
+        <RichConversationalAssessment 
           onComplete={handleAssessmentComplete}
         />
       )}

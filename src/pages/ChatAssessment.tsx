@@ -1,8 +1,8 @@
 import React from 'react';
-import { UnifiedAssessment } from '@/components/UnifiedAssessment';
+import RichConversationalAssessment from '@/components/RichConversationalAssessment';
 
 const ChatAssessment = () => {
-  return <UnifiedAssessment />;
+  return <RichConversationalAssessment />;
 };
 
 export default ChatAssessment;
