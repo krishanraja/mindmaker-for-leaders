@@ -267,8 +267,8 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
             <img 
-              src="/lovable-uploads/fca98b39-1001-47cb-a3fa-bb06464bd77c.png" 
-              alt="Logo" 
+              src="/lovable-uploads/92f9bead-d2c6-4715-8e9e-234eb66fd5e3.png" 
+              alt="AI Mindmaker Logo" 
               className="h-16 mx-auto mb-6"
             />
             <h1 className="text-4xl font-bold text-foreground mb-4">
@@ -893,8 +893,8 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
         {/* Header */}
         <div className="text-center mb-8">
           <img 
-            src="/lovable-uploads/fca98b39-1001-47cb-a3fa-bb06464bd77c.png" 
-            alt="Logo" 
+            src="/lovable-uploads/92f9bead-d2c6-4715-8e9e-234eb66fd5e3.png" 
+            alt="AI Mindmaker Logo" 
             className="h-16 mx-auto mb-6"
           />
           <h1 className="text-3xl font-bold text-foreground mb-2">
