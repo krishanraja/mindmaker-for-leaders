@@ -372,6 +372,16 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
           isOpen={showContactModal}
           onClose={() => setShowContactModal(false)}
           actionType={contactActionType}
+          sessionId={sessionId}
+          assessmentData={{
+            source: 'Rich AI Assessment',
+            currentPhase,
+            phaseResponses: diagnosticData,
+            totalScore: leadScore?.overall || 0,
+            qualificationData: diagnosticData,
+            insights: insights,
+            completed_at: new Date().toISOString()
+          }}
         />
       </div>
     );

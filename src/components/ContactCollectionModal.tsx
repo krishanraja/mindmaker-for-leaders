@@ -69,8 +69,8 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Save contact data and sync to Google Sheets
-      const { error: insertError } = await supabase
+      // Save contact data to database - sync will be triggered automatically via database trigger
+      const { data: insertData, error: insertError } = await supabase
         .from('booking_requests')
         .insert({
           session_id: sessionId,
@@ -84,31 +84,41 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
           service_title: actionType === 'book_call' ? 'AI Leadership Strategy Call' : 'Learn More Request',
           status: 'pending',
           priority: 'high',
-          specific_needs: `Assessment completed via ${assessmentData?.source || 'AI Chat'}. Contact request type: ${actionType}`,
-          notes: `LinkedIn: ${contactData.linkedin || 'Not provided'}`
-        });
+          specific_needs: `Assessment completed via ${assessmentData?.source || 'AI Chat'}. Contact request type: ${actionType}. Assessment data: ${JSON.stringify(assessmentData || {})}`,
+          notes: `LinkedIn: ${contactData.linkedin || 'Not provided'}`,
+          lead_score: assessmentData?.totalScore || 0
+        })
+        .select()
+        .single();
 
       if (insertError) {
-        throw insertError;
+        console.error('Database insert error:', insertError);
+        throw new Error(`Failed to save contact information: ${insertError.message}`);
       }
 
-      // Trigger Google Sheets sync
-      await supabase.functions.invoke('sync-to-google-sheets', {
-        body: {
-          type: 'booking',
-          trigger_type: 'contact_collection',
-          data: {
-            contact_data: contactData,
+      console.log('Contact data saved successfully:', insertData);
+
+      // Create engagement analytics entry
+      if (sessionId) {
+        await supabase
+          .from('engagement_analytics')
+          .insert({
             session_id: sessionId,
-            assessment_data: assessmentData,
-            action_type: actionType
-          }
-        }
-      });
+            user_id: null,
+            event_type: 'contact_collection',
+            event_data: {
+              action_type: actionType,
+              contact_email: contactData.email,
+              company_name: contactData.company,
+              assessment_completion: true,
+              timestamp: new Date().toISOString()
+            }
+          });
+      }
 
       toast({
         title: "Success!",
-        description: "Your information has been saved. Redirecting you now...",
+        description: "Your information has been saved and synced. Redirecting you now...",
       });
 
       // Close modal and redirect
@@ -122,9 +132,12 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
 
     } catch (error) {
       console.error('Error saving contact data:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       toast({
         title: "Error",
-        description: "Failed to save your information. Please try again.",
+        description: `Failed to save your information: ${errorMessage}. Please try again.`,
         variant: "destructive",
       });
     } finally {
