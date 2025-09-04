@@ -280,7 +280,7 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
           </div>
 
           {/* AI Mindmaker Score */}
-          <Card className="mb-8">
+          <Card className="mb-8 max-w-4xl mx-auto">
             <CardContent className="pt-6">
               <div className="text-center mb-6">
                 <div className="inline-flex items-center gap-2 mb-2">
