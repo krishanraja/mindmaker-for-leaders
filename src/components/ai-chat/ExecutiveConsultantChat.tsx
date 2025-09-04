@@ -10,7 +10,7 @@ import { useStructuredAssessment } from '@/hooks/useStructuredAssessment';
 import { useToast } from '@/components/ui/use-toast';
 import ExecutiveLoadingScreen from './ExecutiveLoadingScreen';
 import LLMInsightEngine from './LLMInsightEngine';
-import ContactCollectionModal from '../ContactCollectionModal';
+
 
 interface Message {
   id: string;
@@ -30,8 +30,6 @@ const ExecutiveConsultantChat: React.FC<ExecutiveConsultantChatProps> = ({ onCom
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
   const [insightProgress, setInsightProgress] = useState(0);
   const [insightPhase, setInsightPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [contactActionType, setContactActionType] = useState<'learn_more' | 'book_call'>('book_call');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
@@ -219,10 +217,6 @@ const ExecutiveConsultantChat: React.FC<ExecutiveConsultantChatProps> = ({ onCom
     }, 8000);
   };
 
-  const handleContactAction = (actionType: 'learn_more' | 'book_call') => {
-    setContactActionType(actionType);
-    setShowContactModal(true);
-  };
 
   if (isGeneratingInsights) {
     return (
@@ -263,35 +257,13 @@ const ExecutiveConsultantChat: React.FC<ExecutiveConsultantChatProps> = ({ onCom
                 These insights are just the beginning. Let's discuss how to implement your personalized AI leadership development plan.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  onClick={() => handleContactAction('book_call')}
-                  size="lg"
-                  className="flex items-center gap-2"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  Book Strategic Consultation
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleContactAction('learn_more')}
-                  size="lg"
-                  className="flex items-center gap-2"
-                >
-                  <Brain className="h-5 w-5" />
-                  Learn More About Our Programs
-                </Button>
-              </div>
+              <p className="text-muted-foreground">
+                Complete the consultation to access your personalized recommendations and next steps.
+              </p>
             </div>
           </div>
         </div>
 
-        <ContactCollectionModal
-          isOpen={showContactModal}
-          onClose={() => setShowContactModal(false)}
-          actionType={contactActionType}
-        />
       </div>
     );
   }

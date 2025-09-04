@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import ContactCollectionModal from '../ContactCollectionModal';
+
 import { 
   TrendingUp, 
   Clock, 
@@ -29,8 +29,6 @@ const ServiceRecommendations: React.FC<ServiceRecommendationsProps> = ({
   insights,
   sessionId
 }) => {
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [contactActionType, setContactActionType] = useState<'learn_more' | 'book_call'>('book_call');
   
   // Get service recommendations based on lead score and data
   const getServiceRecommendations = () => {
@@ -245,29 +243,9 @@ const ServiceRecommendations: React.FC<ServiceRecommendationsProps> = ({
                   
                   {service.priority === 'immediate' && (
                     <div className="pt-4">
-                      <ContactCollectionModal
-                        isOpen={showContactModal}
-                        onClose={() => setShowContactModal(false)}
-                        actionType={contactActionType}
-                        sessionId={sessionId}
-                        assessmentData={{ 
-                          source: 'AI Chat Assessment',
-                          ...qualificationData,
-                          insights: insights
-                        }}
-                      />
-                      
-                      <Button 
-                        size="lg" 
-                        className="w-full"
-                        onClick={() => {
-                          setContactActionType('book_call');
-                          setShowContactModal(true);
-                        }}
-                      >
-                        <Calendar className="h-5 w-5 mr-2" />
-                        Book Strategy Call
-                      </Button>
+                      <p className="text-sm text-muted-foreground italic">
+                        Complete the main assessment to book your strategy call
+                      </p>
                     </div>
                   )}
                 </div>
@@ -285,32 +263,9 @@ const ServiceRecommendations: React.FC<ServiceRecommendationsProps> = ({
             Start with a complimentary strategy call to create your personalized AI leadership action plan.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg"
-              onClick={() => {
-                setContactActionType('book_call');
-                setShowContactModal(true);
-              }}
-              className="flex items-center gap-2"
-            >
-              <Calendar className="h-5 w-5" />
-              Book Free Strategy Call
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => {
-                setContactActionType('learn_more');
-                setShowContactModal(true);
-              }}
-              className="flex items-center gap-2"
-            >
-              <ExternalLink className="h-5 w-5" />
-              Learn More About Services
-            </Button>
-          </div>
+          <p className="text-muted-foreground">
+            Return to the main assessment to access contact options and book your strategy call.
+          </p>
         </CardContent>
       </Card>
     </div>
