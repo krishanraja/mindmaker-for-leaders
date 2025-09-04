@@ -157,7 +157,7 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
   const getPhaseProgress = () => {
     const phases = ['intro', 'time-ai', 'communication-skills', 'decision-ethics', 'bottlenecks'];
     const currentIndex = phases.indexOf(currentPhase);
-    return ((currentIndex + 1) / phases.length) * 100;
+    return (currentIndex / phases.length) * 100;
   };
 
   const updateDiagnosticData = (updates: Partial<DiagnosticData>) => {
@@ -266,6 +266,11 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted p-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
+            <img 
+              src="/lovable-uploads/fca98b39-1001-47cb-a3fa-bb06464bd77c.png" 
+              alt="Logo" 
+              className="h-16 mx-auto mb-6"
+            />
             <h1 className="text-4xl font-bold text-foreground mb-4">
               Your Personalized AI Leadership Insights
             </h1>
@@ -338,7 +343,7 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
 
           {/* Call to Action */}
           <div className="text-center">
-            <div className="max-w-2xl mx-auto bg-card p-8 rounded-lg border shadow-sm">
+            <div className="max-w-4xl mx-auto bg-card p-8 rounded-lg border shadow-sm">
               <h3 className="text-2xl font-semibold mb-4">Ready to Implement Your AI Leadership Plan?</h3>
               <p className="text-muted-foreground mb-6">
                 These insights are tailored specifically to your current situation and goals. Let's discuss how to turn these recommendations into results.
@@ -842,38 +847,10 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
                   </p>
                 </div>
 
-                <div className="border-t pt-6">
-                  <h4 className="font-medium mb-4">Optional: Contact Information</h4>
-                  <p className="text-sm text-muted-foreground mb-4">To personalize your insights further (optional):</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input
-                      placeholder="First Name"
-                      value={diagnosticData.firstName || ''}
-                      onChange={(e) => updateDiagnosticData({ firstName: e.target.value })}
-                    />
-                    <Input
-                      placeholder="Last Name"
-                      value={diagnosticData.lastName || ''}
-                      onChange={(e) => updateDiagnosticData({ lastName: e.target.value })}
-                    />
-                    <Input
-                      placeholder="Email"
-                      type="email"
-                      value={diagnosticData.email || ''}
-                      onChange={(e) => updateDiagnosticData({ email: e.target.value })}
-                    />
-                    <Input
-                      placeholder="Company"
-                      value={diagnosticData.company || ''}
-                      onChange={(e) => updateDiagnosticData({ company: e.target.value })}
-                    />
-                  </div>
-                </div>
 
                 <Button 
                   onClick={() => handlePhaseComplete(
-                    `My main productivity bottlenecks are: ${(diagnosticData.dailyFrictions || []).join(', ')}. ${diagnosticData.firstName ? `My name is ${diagnosticData.firstName} ${diagnosticData.lastName}` : 'I prefer to remain anonymous'}.`,
+                    `My main productivity bottlenecks are: ${(diagnosticData.dailyFrictions || []).join(', ')}.`,
                     diagnosticData
                   )}
                   className="w-full"
@@ -916,9 +893,9 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
         {/* Header */}
         <div className="text-center mb-8">
           <img 
-            src="/lovable-uploads/2819589c-814c-4ec7-9e78-0d2a80b89243.png" 
-            alt="AI Mindmaker Logo" 
-            className="h-12 w-auto mx-auto mb-6"
+            src="/lovable-uploads/fca98b39-1001-47cb-a3fa-bb06464bd77c.png" 
+            alt="Logo" 
+            className="h-16 mx-auto mb-6"
           />
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Rich AI Leadership Assessment
