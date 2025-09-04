@@ -187,6 +187,9 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
       const nextPhase = phases[currentIndex + 1];
       setCurrentPhase(nextPhase);
 
+      // Smooth scroll to top for better UX flow
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       if (nextPhase === 'insights') {
         startInsightGeneration();
       } else {
@@ -936,6 +939,9 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
             </CardContent>
           </Card>
 
+          {/* Interactive Phase Content */}
+          {currentPhase !== 'insights' && renderPhaseContent()}
+
           {/* Conversation */}
           <Card className="mb-6">
             <CardContent className="pt-6">
@@ -971,9 +977,6 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
               </ScrollArea>
             </CardContent>
           </Card>
-
-          {/* Interactive Phase Content */}
-          {currentPhase !== 'insights' && renderPhaseContent()}
         </div>
       </div>
     </div>
