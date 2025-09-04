@@ -1,8 +1,8 @@
 import React from 'react';
-import AIAssessmentChat from '@/components/ai-chat/AIAssessmentChat';
+import { UnifiedAssessment } from '@/components/UnifiedAssessment';
 
 const ChatAssessment = () => {
-  return <AIAssessmentChat />;
+  return <UnifiedAssessment />;
 };
 
 export default ChatAssessment;
