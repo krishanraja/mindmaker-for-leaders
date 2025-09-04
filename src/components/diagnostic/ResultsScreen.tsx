@@ -285,9 +285,9 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                   <span className="text-sm font-bold text-primary">{index + 1}</span>
                 </div>
                 <div className="space-y-2">
-                  <h4 className="font-medium">{typeof win === 'string' ? win : win.title}</h4>
+                  <h4 className="font-medium">{win.title}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {typeof win === 'string' ? 'Personalized recommendation based on your assessment' : win.description}
+                    {win.description}
                   </p>
                   <div className="flex gap-2 text-xs">
                     <span className="px-2 py-1 bg-primary/10 rounded text-primary">

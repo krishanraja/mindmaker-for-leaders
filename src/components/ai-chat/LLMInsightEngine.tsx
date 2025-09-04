@@ -70,9 +70,13 @@ const LLMInsightEngine: React.FC<LLMInsightEngineProps> = ({
   // Only generate insights once when assessment completes
   useEffect(() => {
     if (isComplete && sessionId && !hasGeneratedInsights && Object.keys(assessmentData).length > 5) {
-      generateExecutiveInsights();
+      const cacheKey = `insights-${sessionId}`;
+      const cachedData = sessionStorage.getItem(cacheKey);
+      if (!cachedData) {
+        generateExecutiveInsights();
+      }
     }
-  }, [isComplete, sessionId, hasGeneratedInsights]); // Removed assessmentData dependency
+  }, [isComplete, sessionId, hasGeneratedInsights]); // assessmentData dependency removed to prevent re-generation
 
   const generateExecutiveInsights = async () => {
     if (isGenerating || hasGeneratedInsights) return;

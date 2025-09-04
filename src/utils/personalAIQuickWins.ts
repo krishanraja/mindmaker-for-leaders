@@ -232,7 +232,7 @@ const SCORE_BASED_SOLUTIONS: PersonalQuickWin[] = [
 export function generatePersonalizedQuickWins(
   data: DiagnosticData, 
   scores: DiagnosticScores
-): string[] {
+): PersonalQuickWin[] {
   const selectedWins: PersonalQuickWin[] = [];
   const usedTitles = new Set<string>();
   
@@ -325,9 +325,8 @@ export function generatePersonalizedQuickWins(
       });
   }
   
-  // Format as strings with clear connection to inputs
+  // Return PersonalQuickWin objects instead of strings
   return selectedWins
     .sort((a, b) => a.priority - b.priority)
-    .slice(0, 5)
-    .map(win => `${win.title} → ${win.impact} (${win.reason})`);
+    .slice(0, 5);
 }

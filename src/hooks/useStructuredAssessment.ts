@@ -174,6 +174,7 @@ export const useStructuredAssessment = () => {
     setAssessmentState(prev => {
       const newResponses = [...prev.responses.filter(r => r.questionId !== currentQ.id), response];
       const nextQuestion = prev.currentQuestion + 1;
+      // Only mark complete when we've answered ALL questions and moved past the last one
       const isComplete = nextQuestion > ASSESSMENT_QUESTIONS.length;
       
       const nextPhase = isComplete ? 'Complete' : 

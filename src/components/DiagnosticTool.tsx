@@ -226,8 +226,8 @@ const DiagnosticTool: React.FC = () => {
 
       {currentStep === 'assessment_choice' && (
         <AssessmentChoiceScreen 
-          onChooseQuickForm={() => handleStepChange('quick_form')}
-          onChooseFullAssessment={() => handleStepChange('questions')}
+          onChooseQuickForm={() => setCurrentStep('quick_form')}
+          onChooseFullAssessment={() => setCurrentStep('questions')}
         />
       )}
 

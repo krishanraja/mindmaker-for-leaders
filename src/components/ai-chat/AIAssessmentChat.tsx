@@ -93,30 +93,41 @@ const AIAssessmentChat: React.FC<AIAssessmentChatProps> = ({ onComplete }) => {
     initializeSession();
   }, []);
 
-  // Handle insight generation when assessment completes
+  // Handle insight generation when assessment truly completes (all questions answered)
   useEffect(() => {
-    if (assessmentState.isComplete && !isGeneratingInsights) {
+    const progressData = getProgressData();
+    const hasAnsweredAllQuestions = progressData.completedAnswers >= totalQuestions;
+    
+    if (assessmentState.isComplete && hasAnsweredAllQuestions && !isGeneratingInsights) {
       startInsightGeneration();
     }
-  }, [assessmentState.isComplete]);
+  }, [assessmentState.isComplete, getProgressData, totalQuestions]);
 
   const startInsightGeneration = async () => {
     setIsGeneratingInsights(true);
     setInsightPhase('analyzing');
     setInsightProgress(10);
 
-    // Simulate progress for better UX
+    // Professional progress simulation with clear phases
     const progressInterval = setInterval(() => {
       setInsightProgress(prev => {
-        if (prev < 90) return prev + 10;
+        if (prev < 30) return prev + 5;
+        if (prev < 60) return prev + 3;
+        if (prev < 85) return prev + 2;
         return prev;
       });
-    }, 500);
+    }, 800);
 
+    // Phase transitions with realistic timing
     setTimeout(() => {
       setInsightPhase('generating');
-      setInsightProgress(50);
-    }, 2000);
+      setInsightProgress(40);
+    }, 3000);
+
+    setTimeout(() => {
+      setInsightPhase('finalizing');
+      setInsightProgress(75);
+    }, 5000);
 
     setTimeout(() => {
       setInsightPhase('finalizing');

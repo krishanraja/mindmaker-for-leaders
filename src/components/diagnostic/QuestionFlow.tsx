@@ -63,10 +63,12 @@ export const QuestionFlow: React.FC<QuestionFlowProps> = ({
         return typeof value === 'string' && value.trim() !== '';
       }
       if (field === 'hasAiSafetyPlaybook') {
-        return typeof value === 'boolean';
+        const hasValue = typeof value === 'boolean';
+        console.log(`hasAiSafetyPlaybook validation: ${hasValue}, value: ${value}`);
+        return hasValue;
       }
       const isValid = value !== undefined && value !== null && value !== '';
-      console.log(`Field ${field} validation result:`, isValid);
+      console.log(`Field ${field} validation result:`, isValid, 'value:', value);
       return isValid;
     });
   };
