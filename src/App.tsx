@@ -6,6 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import ChatAssessment from "./pages/ChatAssessment";
 import NotFound from "./pages/NotFound";
+import { testGoogleSheetsSync, testMainSyncFunction } from "./utils/testGoogleSheetsSync";
+
+// Temporarily expose test functions to global scope for debugging
+(window as any).testGoogleSheetsSync = testGoogleSheetsSync;
+(window as any).testMainSyncFunction = testMainSyncFunction;
 
 const queryClient = new QueryClient();
 
