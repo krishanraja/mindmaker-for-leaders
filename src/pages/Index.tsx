@@ -1,7 +1,7 @@
-import DiagnosticTool from '@/components/DiagnosticTool';
+import ExecutiveDiagnosticTool from '@/components/ExecutiveDiagnosticTool';
 
 const Index = () => {
-  return <DiagnosticTool />;
+  return <ExecutiveDiagnosticTool />;
 };
 
 export default Index;

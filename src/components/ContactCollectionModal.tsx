@@ -69,25 +69,31 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Save contact data to database - sync will be triggered automatically via database trigger
+      console.log('Starting contact data submission...');
+      
+      // Save contact data to database
+      const bookingPayload = {
+        session_id: sessionId,
+        user_id: null,
+        contact_name: `${contactData.firstName} ${contactData.lastName}`,
+        contact_email: contactData.email,
+        company_name: contactData.company,
+        role: contactData.role,
+        phone: contactData.phone || null,
+        service_type: actionType === 'book_call' ? 'strategy_call' : 'learn_more',
+        service_title: actionType === 'book_call' ? 'AI Leadership Strategy Call' : 'Learn More Request',
+        status: 'pending',
+        priority: 'high',
+        specific_needs: `Assessment completed via ${assessmentData?.source || 'Executive Assessment'}. Contact request type: ${actionType}. Assessment data: ${JSON.stringify(assessmentData || {})}`,
+        notes: `LinkedIn: ${contactData.linkedin || 'Not provided'}`,
+        lead_score: assessmentData?.scores?.aiMindmakerScore || 0
+      };
+
+      console.log('Inserting booking request:', bookingPayload);
+
       const { data: insertData, error: insertError } = await supabase
         .from('booking_requests')
-        .insert({
-          session_id: sessionId,
-          user_id: null,
-          contact_name: `${contactData.firstName} ${contactData.lastName}`,
-          contact_email: contactData.email,
-          company_name: contactData.company,
-          role: contactData.role,
-          phone: contactData.phone || null,
-          service_type: actionType === 'book_call' ? 'strategy_call' : 'learn_more',
-          service_title: actionType === 'book_call' ? 'AI Leadership Strategy Call' : 'Learn More Request',
-          status: 'pending',
-          priority: 'high',
-          specific_needs: `Assessment completed via ${assessmentData?.source || 'AI Chat'}. Contact request type: ${actionType}. Assessment data: ${JSON.stringify(assessmentData || {})}`,
-          notes: `LinkedIn: ${contactData.linkedin || 'Not provided'}`,
-          lead_score: assessmentData?.totalScore || 0
-        })
+        .insert(bookingPayload)
         .select()
         .single();
 
@@ -98,7 +104,7 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
 
       console.log('Contact data saved successfully:', insertData);
 
-      // Send email notification with assessment data
+      // Send email notification directly via Edge Function
       try {
         const emailPayload = {
           data: {
@@ -108,14 +114,16 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
             company: contactData.company,
             title: contactData.role,
             linkedinUrl: contactData.linkedin,
-            ...assessmentData
+            ...assessmentData?.responses
           },
           scores: assessmentData?.scores || {},
           contactType: actionType,
           sessionId: sessionId
         };
 
-        const { error: emailError } = await supabase.functions.invoke('send-diagnostic-email', {
+        console.log('Sending email notification:', emailPayload);
+
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-diagnostic-email', {
           body: emailPayload
         });
 
@@ -123,11 +131,58 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
           console.error('Email sending failed:', emailError);
           // Don't fail the whole process if email fails
         } else {
-          console.log('Email notification sent successfully');
+          console.log('Email notification sent successfully:', emailData);
         }
       } catch (emailError) {
         console.error('Email sending exception:', emailError);
         // Don't fail the whole process if email fails
+      }
+
+      // Manually trigger Google Sheets sync by calling the Edge Function directly
+      try {
+        console.log('Triggering Google Sheets sync...');
+        
+        const syncPayload = {
+          type: 'booking',
+          trigger_type: 'contact_collection',
+          booking_id: insertData.id,
+          data: {
+            contact_info: {
+              full_name: `${contactData.firstName} ${contactData.lastName}`,
+              email: contactData.email,
+              company_name: contactData.company,
+              role: contactData.role,
+              phone: contactData.phone,
+              linkedin: contactData.linkedin
+            },
+            business_context: {
+              ai_readiness_score: assessmentData?.scores?.aiMindmakerScore || 0,
+              service_type: actionType === 'book_call' ? 'strategy_call' : 'learn_more',
+              service_title: actionType === 'book_call' ? 'AI Leadership Strategy Call' : 'Learn More Request',
+              priority: 'high'
+            },
+            assessment_data: assessmentData?.responses || {},
+            scores: assessmentData?.scores || {},
+            sync_metadata: {
+              booking_id: insertData.id,
+              session_id: sessionId,
+              sync_timestamp: new Date().toISOString(),
+              trigger_source: 'contact_collection_modal'
+            }
+          }
+        };
+
+        const { data: syncData, error: syncError } = await supabase.functions.invoke('sync-to-google-sheets', {
+          body: syncPayload
+        });
+
+        if (syncError) {
+          console.error('Google Sheets sync failed:', syncError);
+        } else {
+          console.log('Google Sheets sync triggered successfully:', syncData);
+        }
+      } catch (syncError) {
+        console.error('Google Sheets sync exception:', syncError);
       }
 
       // Create engagement analytics entry
@@ -150,7 +205,7 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
 
       toast({
         title: "Success!",
-        description: "Your information has been saved and synced. Redirecting you now...",
+        description: "Your information has been saved and sent to our team. Redirecting you now...",
       });
 
       // Close modal and redirect
@@ -163,7 +218,7 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
       }
 
     } catch (error) {
-      console.error('Error saving contact data:', error);
+      console.error('Error during contact submission:', error);
       
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
@@ -178,16 +233,16 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
   };
 
   const modalTitle = actionType === 'learn_more' 
-    ? 'Learn More About AI Leadership'
-    : 'Book Your Strategy Call';
+    ? 'Get AI Leadership Resources'
+    : 'Schedule Your Strategy Call';
 
   const modalDescription = actionType === 'learn_more'
-    ? 'Before we take you to our detailed resources, please provide your contact information:'
-    : 'Before we schedule your personalized AI leadership strategy call, please provide your contact information:';
+    ? 'Get personalized resources and insights sent directly to you:'
+    : 'Schedule your personalized AI leadership strategy session:';
 
   const buttonText = actionType === 'learn_more' 
-    ? 'Continue to Learn More'
-    : 'Continue to Book Call';
+    ? 'Get Resources'
+    : 'Schedule Call';
 
   const buttonIcon = actionType === 'learn_more' 
     ? <ExternalLink className="h-4 w-4" />
@@ -296,8 +351,7 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            Your information will only be used to provide you with relevant AI leadership resources. 
-            We never share your data with third parties.
+            Your information is secure and only used to provide relevant AI leadership resources.
           </p>
         </div>
       </DialogContent>
