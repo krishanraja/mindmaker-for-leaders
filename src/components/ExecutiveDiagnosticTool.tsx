@@ -146,7 +146,7 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                (diagnosticData.aiUseCases?.length || 0) > 0;
       case 'communication-skills':
         return (diagnosticData.stakeholderAudiences?.length || 0) > 0 && 
-               diagnosticData.persuasionChallenge?.trim();
+               Boolean(diagnosticData.persuasionChallenge?.trim());
       case 'decision-ethics':
         return diagnosticData.aiTrustLevel !== undefined && 
                diagnosticData.aiTrustLevel !== undefined &&
