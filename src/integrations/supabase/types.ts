@@ -626,6 +626,14 @@ export type Database = {
           total_sessions: number
         }[]
       }
+      process_pending_sync_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          error_count: number
+          processed_count: number
+          success_count: number
+        }[]
+      }
       schedule_sync_processing: {
         Args: Record<PropertyKey, never>
         Returns: undefined
