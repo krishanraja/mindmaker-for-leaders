@@ -137,7 +137,7 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
     return steps.indexOf(currentStep) + 1;
   };
 
-  const isStepComplete = () => {
+  const isStepComplete = (): boolean => {
     switch (currentStep) {
       case 'time-ai':
         return diagnosticData.deepWorkHours !== undefined && 
