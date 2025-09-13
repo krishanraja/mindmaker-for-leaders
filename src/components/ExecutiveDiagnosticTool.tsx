@@ -24,7 +24,12 @@ interface ExecutiveDiagnosticToolProps {
 const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState<'intro' | 'time-ai' | 'communication-skills' | 'decision-ethics' | 'priorities' | 'results'>('intro');
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [diagnosticData, setDiagnosticData] = useState<DiagnosticData>({});
+  const [diagnosticData, setDiagnosticData] = useState<DiagnosticData>({
+    deepWorkHours: 20,
+    meetingHours: 15,
+    adminHours: 10,
+    aiUseCases: []
+  });
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactActionType, setContactActionType] = useState<'learn_more' | 'book_call'>('book_call');
   const [customUseCase, setCustomUseCase] = useState('');
@@ -134,7 +139,8 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
 
   const getStepNumber = () => {
     const steps = ['intro', 'time-ai', 'communication-skills', 'decision-ethics', 'priorities'];
-    return steps.indexOf(currentStep) + 1;
+    const currentIndex = steps.indexOf(currentStep);
+    return currentIndex === 0 ? 1 : currentIndex;
   };
 
   const isStepComplete = (): boolean => {
@@ -144,10 +150,7 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                            diagnosticData.meetingHours !== undefined && 
                            diagnosticData.adminHours !== undefined;
         const hasAiUseCases = diagnosticData.aiUseCases && diagnosticData.aiUseCases.length > 0;
-        const validAiUseCases = hasAiUseCases && diagnosticData.aiUseCases.every(useCase => 
-          typeof useCase === 'object' && useCase.useCase && useCase.useCase.trim() !== ''
-        );
-        return hasTimeData && validAiUseCases;
+        return hasTimeData && hasAiUseCases;
       case 'communication-skills':
         return (diagnosticData.stakeholderAudiences?.length || 0) > 0 && 
                Boolean(diagnosticData.persuasionChallenge?.trim());
@@ -330,10 +333,10 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
         {currentStep === 'intro' && (
           <Card className="mb-8">
             <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <User className="h-6 w-6" />
-              Ready to Transform Your Leadership with AI?
-            </CardTitle>
+             <CardTitle className="flex items-center gap-2 text-2xl">
+               <User className="h-6 w-6" />
+               Transform Your Leadership with AI
+             </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -440,25 +443,21 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                   <div className="grid grid-cols-2 gap-3">
                     {aiUseCases.map((useCase) => (
                       <div key={useCase} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={useCase}
-                          checked={(diagnosticData.aiUseCases || []).some(item => 
-                            typeof item === 'string' ? item === useCase : item.useCase === useCase
-                          )}
-                          onCheckedChange={(checked) => {
-                            const current = diagnosticData.aiUseCases || [];
-                            if (checked) {
-                              updateDiagnosticData({ 
-                                aiUseCases: [...current, { useCase, tool: '' }] 
-                              });
-                            } else {
-                              updateDiagnosticData({ 
-                                aiUseCases: current.filter(item => 
-                                  typeof item === 'string' ? item !== useCase : item.useCase !== useCase
-                                ) 
-                              });
-                            }
-                          }}
+                         <Checkbox
+                           id={useCase}
+                           checked={(diagnosticData.aiUseCases || []).some(item => item.useCase === useCase)}
+                           onCheckedChange={(checked) => {
+                             const current = diagnosticData.aiUseCases || [];
+                             if (checked) {
+                               updateDiagnosticData({ 
+                                 aiUseCases: [...current, { useCase, tool: 'ChatGPT' }] 
+                               });
+                             } else {
+                               updateDiagnosticData({ 
+                                 aiUseCases: current.filter(item => item.useCase !== useCase) 
+                               });
+                             }
+                           }}
                         />
                         <Label htmlFor={useCase} className="text-sm cursor-pointer">
                           {useCase}
