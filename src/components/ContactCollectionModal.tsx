@@ -98,6 +98,38 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
 
       console.log('Contact data saved successfully:', insertData);
 
+      // Send email notification with assessment data
+      try {
+        const emailPayload = {
+          data: {
+            firstName: contactData.firstName,
+            lastName: contactData.lastName,
+            email: contactData.email,
+            company: contactData.company,
+            title: contactData.role,
+            linkedinUrl: contactData.linkedin,
+            ...assessmentData
+          },
+          scores: assessmentData?.scores || {},
+          contactType: actionType,
+          sessionId: sessionId
+        };
+
+        const { error: emailError } = await supabase.functions.invoke('send-diagnostic-email', {
+          body: emailPayload
+        });
+
+        if (emailError) {
+          console.error('Email sending failed:', emailError);
+          // Don't fail the whole process if email fails
+        } else {
+          console.log('Email notification sent successfully');
+        }
+      } catch (emailError) {
+        console.error('Email sending exception:', emailError);
+        // Don't fail the whole process if email fails
+      }
+
       // Create engagement analytics entry
       if (sessionId) {
         await supabase

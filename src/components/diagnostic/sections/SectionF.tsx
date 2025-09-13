@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { DiagnosticData } from '../../DiagnosticTool';
 
 interface SectionFProps {
@@ -69,22 +69,23 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
       <Card className="p-6 bg-secondary/10 border-primary/20">
         <h3 className="text-xl font-semibold mb-6">Personal Productivity Bottlenecks</h3>
         <p className="text-muted-foreground mb-6">
-          What are your top 3 productivity bottlenecks where AI could help you become 10X more effective?
+          Select and rank your top 3 productivity bottlenecks where AI could help you become 10X more effective. Use the arrows to order them by priority (1st = highest priority).
         </p>
         
-        <div className="space-y-4">
+        {/* Available Options */}
+        <div className="space-y-4 mb-6">
+          <h4 className="text-lg font-medium">Available Options</h4>
           {getAllFrictionOptions().map((bottleneck) => {
             const isSelected = (data.dailyFrictions || []).includes(bottleneck);
             const selectionCount = (data.dailyFrictions || []).length;
             const isDisabled = !isSelected && selectionCount >= 3;
-            const rank = isSelected ? (data.dailyFrictions || []).indexOf(bottleneck) + 1 : null;
             
             return (
               <div 
                 key={bottleneck} 
                 className={`flex items-center space-x-3 p-4 rounded-lg border transition-all duration-200 ${
                   isSelected 
-                    ? 'border-primary/50 bg-primary/10 cursor-move' 
+                    ? 'border-primary/50 bg-primary/10' 
                     : isDisabled 
                       ? 'border-muted bg-muted/20 opacity-50' 
                       : 'border-border hover:border-primary/30'
@@ -104,20 +105,66 @@ export const SectionF: React.FC<SectionFProps> = ({ data, onUpdate }) => {
                 >
                   {bottleneck}
                 </label>
-                {rank && (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">
-                      #{rank}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {rank === 1 ? 'Highest' : rank === 2 ? 'Medium' : 'Lower'} priority
-                    </div>
+                {isSelected && (
+                  <div className="text-xs text-primary font-medium">
+                    Selected
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+
+        {/* Priority Ranking Section */}
+        {(data.dailyFrictions || []).length > 0 && (
+          <div className="space-y-4 p-4 bg-secondary/20 rounded-lg border-2 border-primary/30">
+            <h4 className="text-lg font-medium text-primary">Your Top 3 Priorities (Drag to Reorder)</h4>
+            <p className="text-sm text-muted-foreground">
+              Drag and drop to rank your selections in order of priority. #1 = most important.
+            </p>
+            <div className="space-y-2">
+              {(data.dailyFrictions || []).map((friction, index) => (
+                <div 
+                  key={friction}
+                  className="flex items-center space-x-3 p-4 bg-background rounded-lg border border-primary/20 shadow-sm"
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                      #{index + 1}
+                    </div>
+                    <div className="text-xs font-medium text-primary">
+                      {index === 0 ? 'Highest' : index === 1 ? 'Medium' : 'Lower'} Priority
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 text-sm font-medium">
+                    {friction}
+                  </div>
+                  
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => index > 0 && moveItem(index, index - 1)}
+                      disabled={index === 0}
+                      className="p-1 hover:bg-primary/10 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Move up"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => index < (data.dailyFrictions || []).length - 1 && moveItem(index, index + 1)}
+                      disabled={index === (data.dailyFrictions || []).length - 1}
+                      className="p-1 hover:bg-primary/10 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Move down"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                    <GripVertical className="h-4 w-4 text-muted-foreground ml-2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         
         {/* Custom Friction Point Input */}

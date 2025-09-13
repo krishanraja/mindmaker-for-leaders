@@ -30,14 +30,16 @@ interface DiagnosticEmailRequest {
     title?: string;
     linkedinUrl?: string;
   };
-  scores: {
-    aiToolFluency: number;
-    aiDecisionMaking: number;
-    aiCommunication: number;
-    aiLearningGrowth: number;
-    aiEthicsBalance: number;
-    aiMindmakerScore: number;
+  scores?: {
+    aiToolFluency?: number;
+    aiDecisionMaking?: number;
+    aiCommunication?: number;
+    aiLearningGrowth?: number;
+    aiEthicsBalance?: number;
+    aiMindmakerScore?: number;
   };
+  contactType?: string;
+  sessionId?: string;
 }
 
 const formatArray = (arr: any[]) => arr ? arr.join(', ') : 'Not specified';
@@ -111,9 +113,14 @@ const generateDetailedResults = (data: any, scores: any): string => {
         <p><strong>Risk Comfort Level (1-10):</strong> ${data.riskComfortLevel || 'Not specified'}</p>
       </div>
 
-      <div style="margin-bottom: 25px;">
-        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Daily Challenges</h2>
-        <p><strong>Daily Frictions:</strong> ${formatArray(data.dailyFrictions)}</p>
+        <div style="margin-bottom: 25px;">
+        <h2 style="color: #6366f1; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Daily Challenges (Priority Order)</h2>
+        <p><strong>Top 3 Productivity Bottlenecks (ranked by priority):</strong></p>
+        <ol style="margin-left: 20px;">
+          ${data.dailyFrictions ? data.dailyFrictions.map((friction: string, index: number) => 
+            `<li style="margin-bottom: 5px;"><strong>#${index + 1} Priority:</strong> ${friction}</li>`
+          ).join('') : '<li>Not specified</li>'}
+        </ol>
       </div>
     </div>
   `;
@@ -125,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { data, scores }: DiagnosticEmailRequest = await req.json();
+    const { data, scores, contactType, sessionId }: DiagnosticEmailRequest = await req.json();
 
     console.log("Generating diagnostic email for:", data.email);
 
@@ -133,29 +140,46 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "AI Mindmaker <no-reply@fractionl.ai>",
       to: ["krish@fractionl.ai"],
-      subject: `${data.company || 'New Participant'} - AI Sprint for Leaders`,
+      subject: `New Lead: ${data.firstName || ''} ${data.lastName || ''} from ${data.company || 'Unknown Company'} - ${contactType === 'book_call' ? 'Strategy Call' : 'Learn More'} Request`,
       html: `
-        <h2>New AI Leadership Diagnostic Completed</h2>
+        <h2>🎯 New Lead: ${contactType === 'book_call' ? 'Strategy Call Request' : 'Learn More Request'}</h2>
         
-        <h3>Participant Information:</h3>
-        <ul>
-          <li><strong>Name:</strong> ${data.firstName || ''} ${data.lastName || ''}</li>
-          <li><strong>Email:</strong> ${data.email || 'Not provided'}</li>
-          <li><strong>Company:</strong> ${data.company || 'Not provided'}</li>
-          <li><strong>Title:</strong> ${data.title || 'Not provided'}</li>
-          <li><strong>LinkedIn URL:</strong> ${data.linkedinUrl || 'Not provided'}</li>
-        </ul>
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>👤 Contact Information:</h3>
+          <ul>
+            <li><strong>Name:</strong> ${data.firstName || ''} ${data.lastName || ''}</li>
+            <li><strong>Email:</strong> ${data.email || 'Not provided'}</li>
+            <li><strong>Company:</strong> ${data.company || 'Not provided'}</li>
+            <li><strong>Title:</strong> ${data.title || 'Not provided'}</li>
+            <li><strong>LinkedIn URL:</strong> ${data.linkedinUrl || 'Not provided'}</li>
+            <li><strong>Action Type:</strong> ${contactType === 'book_call' ? '📞 Strategy Call Request' : '📚 Learn More Request'}</li>
+            <li><strong>Session ID:</strong> ${sessionId || 'Not provided'}</li>
+          </ul>
+        </div>
 
-        <h3>AI Mindmaker Score: ${scores.aiMindmakerScore}/100</h3>
+        ${scores && scores.aiMindmakerScore ? `<h3>🎯 AI Mindmaker Score: ${scores.aiMindmakerScore}/100</h3>` : ''}
 
-        <h3>Dimension Breakdown:</h3>
+        ${scores && Object.keys(scores).length > 1 ? `
+        <h3>📊 Dimension Breakdown:</h3>
         <ul>
-          <li>AI Tool Fluency: ${scores.aiToolFluency}</li>
-          <li>AI Decision Making: ${scores.aiDecisionMaking}</li>
-          <li>AI Communication: ${scores.aiCommunication}</li>
-          <li>AI Learning & Growth: ${scores.aiLearningGrowth}</li>
-          <li>AI Ethics & Balance: ${scores.aiEthicsBalance}</li>
+          ${scores.aiToolFluency ? `<li>AI Tool Fluency: ${scores.aiToolFluency}</li>` : ''}
+          ${scores.aiDecisionMaking ? `<li>AI Decision Making: ${scores.aiDecisionMaking}</li>` : ''}
+          ${scores.aiCommunication ? `<li>AI Communication: ${scores.aiCommunication}</li>` : ''}
+          ${scores.aiLearningGrowth ? `<li>AI Learning & Growth: ${scores.aiLearningGrowth}</li>` : ''}
+          ${scores.aiEthicsBalance ? `<li>AI Ethics & Balance: ${scores.aiEthicsBalance}</li>` : ''}
         </ul>
+        ` : ''}
+
+        ${data.dailyFrictions && data.dailyFrictions.length > 0 ? `
+        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h3>🔥 Top Priority Pain Points (ranked in order):</h3>
+          <ol>
+            ${data.dailyFrictions.map((friction: string, index: number) => 
+              `<li style="margin-bottom: 8px; font-weight: bold;">#${index + 1} Priority: ${friction}</li>`
+            ).join('')}
+          </ol>
+        </div>
+        ` : ''}
 
         <hr style="margin: 30px 0;">
         

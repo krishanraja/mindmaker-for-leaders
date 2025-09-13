@@ -7,10 +7,12 @@ import Index from "./pages/Index";
 import ChatAssessment from "./pages/ChatAssessment";
 import NotFound from "./pages/NotFound";
 import { testGoogleSheetsSync, testMainSyncFunction } from "./utils/testGoogleSheetsSync";
+import { processPendingSyncs } from "./utils/processPendingSyncs";
 
 // Temporarily expose test functions to global scope for debugging
 (window as any).testGoogleSheetsSync = testGoogleSheetsSync;
 (window as any).testMainSyncFunction = testMainSyncFunction;
+(window as any).processPendingSyncs = processPendingSyncs;
 
 const queryClient = new QueryClient();
 
