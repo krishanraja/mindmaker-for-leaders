@@ -13,6 +13,7 @@ import { Brain, Target, Lightbulb, ArrowRight, CheckCircle, User, Clock, Trendin
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { DiagnosticData, DiagnosticScores } from './DiagnosticTool';
+import { EnhancedLoadingScreen } from './ai-chat/EnhancedLoadingScreen';
 import { generatePersonalizedQuickWins } from '@/utils/personalAIQuickWins';
 import ContactCollectionModal from './ContactCollectionModal';
 import PriorityOrderingSection from './diagnostic/PriorityOrderingSection';
@@ -22,13 +23,17 @@ interface ExecutiveDiagnosticToolProps {
 }
 
 const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onComplete }) => {
-  const [currentStep, setCurrentStep] = useState<'intro' | 'time-ai' | 'communication-skills' | 'decision-ethics' | 'priorities' | 'results'>('intro');
+  const [currentStep, setCurrentStep] = useState<'intro' | 'time-ai' | 'communication-skills' | 'decision-ethics' | 'priorities' | 'loading' | 'results'>('intro');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [diagnosticData, setDiagnosticData] = useState<DiagnosticData>({
     deepWorkHours: 20,
     meetingHours: 15,
     adminHours: 10,
-    aiUseCases: []
+    aiUseCases: [],
+    decisionMakingSpeed: 3,
+    aiTrustLevel: 3,
+    upskillPercentage: 10,
+    allChallenges: []
   });
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactActionType, setContactActionType] = useState<'learn_more' | 'book_call'>('book_call');
@@ -151,22 +156,25 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                            diagnosticData.adminHours !== undefined;
         const hasAiUseCases = diagnosticData.aiUseCases && diagnosticData.aiUseCases.length > 0;
         return hasTimeData && hasAiUseCases;
-      case 'communication-skills':
-        return (diagnosticData.stakeholderAudiences?.length || 0) > 0 && 
-               Boolean(diagnosticData.persuasionChallenge?.trim());
-      case 'decision-ethics':
-        return diagnosticData.aiTrustLevel !== undefined && 
-               diagnosticData.aiTrustLevel !== undefined &&
-               diagnosticData.upskillPercentage !== undefined &&
-               (diagnosticData.skillGaps?.length || 0) > 0 &&
-               diagnosticData.hasAiSafetyPlaybook !== undefined &&
-               diagnosticData.riskComfortLevel !== undefined;
-      case 'priorities':
-        return (diagnosticData.dailyFrictions?.length || 0) >= 3;
+       case 'communication-skills':
+         return (diagnosticData.stakeholderAudiences?.length || 0) > 0 && 
+                Boolean(diagnosticData.persuasionChallenge?.trim());
+       case 'decision-ethics':
+         return diagnosticData.decisionMakingSpeed !== undefined && 
+                diagnosticData.aiTrustLevel !== undefined &&
+                diagnosticData.upskillPercentage !== undefined &&
+                (diagnosticData.skillGaps?.length || 0) > 0 &&
+                Boolean(diagnosticData.specificNeeds?.trim());
+       case 'priorities':
+         return (diagnosticData.prioritizedStrategies?.length || 0) >= 3;
       default:
         return true;
     }
   };
+
+  if (currentStep === 'loading') {
+    return <EnhancedLoadingScreen onComplete={() => setCurrentStep('results')} />;
+  }
 
   if (currentStep === 'results') {
     const scores = calculateScores();
@@ -577,22 +585,22 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                 <div className="space-y-4">
                   <h4 className="font-semibold text-lg">Decision Making Process</h4>
                   
-                  <div>
-                    <Label className="font-medium">Decision making speed (1-5 scale)</Label>
-                    <div className="flex justify-between items-center mt-2 mb-2">
-                      <span className="text-sm text-muted-foreground">Slow</span>
-                      <span className="text-primary font-bold">{diagnosticData.aiTrustLevel || 3}</span>
-                      <span className="text-sm text-muted-foreground">Fast</span>
-                    </div>
-                    <Slider
-                      value={[diagnosticData.aiTrustLevel || 3]}
-                      onValueChange={(value) => updateDiagnosticData({ aiTrustLevel: value[0] })}
-                      max={5}
-                      min={1}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
+                   <div>
+                     <Label className="font-medium">Decision making speed (1-5 scale)</Label>
+                     <div className="flex justify-between items-center mt-2 mb-2">
+                       <span className="text-sm text-muted-foreground">Slow</span>
+                       <span className="text-primary font-bold">{diagnosticData.decisionMakingSpeed || 3}</span>
+                       <span className="text-sm text-muted-foreground">Fast</span>
+                     </div>
+                     <Slider
+                       value={[diagnosticData.decisionMakingSpeed || 3]}
+                       onValueChange={(value) => updateDiagnosticData({ decisionMakingSpeed: value[0] })}
+                       max={5}
+                       min={1}
+                       step={1}
+                       className="w-full"
+                     />
+                   </div>
 
                   <div>
                     <Label className="font-medium">Trust in AI-assisted decisions (1-5 scale)</Label>

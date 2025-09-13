@@ -18,11 +18,13 @@ export interface DiagnosticData {
   aiUseCases?: AIUseCase[];
   
   // Section B - Decision Velocity
+  decisionMakingSpeed?: number;
   aiTrustLevel?: number;
   
   // Section C - Stakeholder Influence
   stakeholderAudiences?: string[];
   persuasionChallenge?: string;
+  customAudience?: string;
   
   // Section D - Learning & Growth
   upskillPercentage?: number;
@@ -40,6 +42,9 @@ export interface DiagnosticData {
   company?: string;
   title?: string;
   linkedinUrl?: string;
+  specificNeeds?: string;
+  prioritizedStrategies?: string[];
+  allChallenges?: string[];
 }
 
 export interface DiagnosticScores {
