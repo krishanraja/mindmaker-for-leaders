@@ -140,10 +140,14 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
   const isStepComplete = (): boolean => {
     switch (currentStep) {
       case 'time-ai':
-        return diagnosticData.deepWorkHours !== undefined && 
-               diagnosticData.meetingHours !== undefined && 
-               diagnosticData.adminHours !== undefined &&
-               (diagnosticData.aiUseCases?.length || 0) > 0;
+        const hasTimeData = diagnosticData.deepWorkHours !== undefined && 
+                           diagnosticData.meetingHours !== undefined && 
+                           diagnosticData.adminHours !== undefined;
+        const hasAiUseCases = diagnosticData.aiUseCases && diagnosticData.aiUseCases.length > 0;
+        const validAiUseCases = hasAiUseCases && diagnosticData.aiUseCases.every(useCase => 
+          typeof useCase === 'object' && useCase.useCase && useCase.useCase.trim() !== ''
+        );
+        return hasTimeData && validAiUseCases;
       case 'communication-skills':
         return (diagnosticData.stakeholderAudiences?.length || 0) > 0 && 
                Boolean(diagnosticData.persuasionChallenge?.trim());
@@ -326,32 +330,32 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
         {currentStep === 'intro' && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <User className="h-6 w-6" />
-                Welcome, Executive Leader
-              </CardTitle>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <User className="h-6 w-6" />
+              Ready to Transform Your Leadership with AI?
+            </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-lg">
-                  This 5-minute assessment will analyze your AI readiness and provide personalized recommendations.
+                  Get your personalized AI Mindmaker Score and discover specific actions to accelerate your leadership impact.
                 </p>
                 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="text-center p-4 border rounded-lg">
                     <Clock className="h-8 w-8 mx-auto mb-2 text-primary" />
                     <h3 className="font-semibold">5 Minutes</h3>
-                    <p className="text-sm text-muted-foreground">Quick completion</p>
+                    <p className="text-sm text-muted-foreground">Executive-focused</p>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
                     <Brain className="h-8 w-8 mx-auto mb-2 text-primary" />
-                    <h3 className="font-semibold">AI Score</h3>
-                    <p className="text-sm text-muted-foreground">Personal AI readiness</p>
+                    <h3 className="font-semibold">Your AI Score</h3>
+                    <p className="text-sm text-muted-foreground">Leadership readiness</p>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
                     <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
-                    <h3 className="font-semibold">Action Plan</h3>
-                    <p className="text-sm text-muted-foreground">Tailored recommendations</p>
+                    <h3 className="font-semibold">Quick Wins</h3>
+                    <p className="text-sm text-muted-foreground">Immediate actions</p>
                   </div>
                 </div>
 
@@ -371,14 +375,14 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
         {currentStep === 'time-ai' && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Time & AI Usage</CardTitle>
-              <p className="text-muted-foreground">How do you spend your time and use AI tools?</p>
+              <CardTitle>Your Current Leadership Focus</CardTitle>
+              <p className="text-muted-foreground">Help us understand how you allocate time and leverage AI tools</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 {/* Time Allocation */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-lg">Weekly Time Allocation</h4>
+                  <h4 className="font-semibold text-lg">How do you spend your week? (hours)</h4>
                   
                   <div className="space-y-4">
                     <div>
@@ -430,8 +434,8 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
 
                 {/* AI Use Cases */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-lg">Current AI Tools & Use Cases</h4>
-                  <p className="text-sm text-muted-foreground">Select all that apply:</p>
+                  <h4 className="font-semibold text-lg">Which AI capabilities do you currently use?</h4>
+                  <p className="text-sm text-muted-foreground">Check all that apply to your current workflow:</p>
                   
                   <div className="grid grid-cols-2 gap-3">
                     {aiUseCases.map((useCase) => (
