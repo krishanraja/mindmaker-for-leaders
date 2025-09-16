@@ -159,12 +159,13 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
        case 'communication-skills':
          return (diagnosticData.stakeholderAudiences?.length || 0) > 0 && 
                 Boolean(diagnosticData.persuasionChallenge?.trim());
-       case 'decision-ethics':
-         return diagnosticData.decisionMakingSpeed !== undefined && 
-                diagnosticData.aiTrustLevel !== undefined &&
-                diagnosticData.upskillPercentage !== undefined &&
-                (diagnosticData.skillGaps?.length || 0) > 0 &&
-                Boolean(diagnosticData.specificNeeds?.trim());
+    case 'decision-ethics':
+      return diagnosticData.decisionMakingSpeed !== undefined && 
+             diagnosticData.aiTrustLevel !== undefined &&
+             diagnosticData.upskillPercentage !== undefined &&
+             (diagnosticData.skillGaps?.length || 0) > 0 &&
+             diagnosticData.hasAiSafetyPlaybook !== undefined &&
+             diagnosticData.riskComfortLevel !== undefined;
        case 'priorities':
          return (diagnosticData.prioritizedStrategies?.length || 0) >= 3;
       default:
