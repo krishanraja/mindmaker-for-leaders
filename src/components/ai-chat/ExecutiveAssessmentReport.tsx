@@ -18,7 +18,7 @@ import {
   Shield,
   Download
 } from 'lucide-react';
-import { buildProposalPdf } from '@/lib/pdf/buildProposalPdf';
+// PDF generation removed - conversion optimized experience
 
 interface ExecutiveInsight {
   id: string;
@@ -60,79 +60,9 @@ const ExecutiveAssessmentReport: React.FC<ExecutiveAssessmentReportProps> = ({
   companyName = "Your Organization",
   executiveName = "Executive"
 }) => {
-  const handleDownloadPDF = async () => {
-    try {
-      // Set window globals for inference
-      (window as any).__HEADER_BRAND__ = "AI Leadership Assessment";
-      (window as any).__PAGE_H1__ = "AI Assessment";
-      (window as any).__ROUTE_NAME__ = "ai-assessment";
-      
-      const quickWins = insights.filter(i => i.type === 'quick_win');
-      const strategic = insights.filter(i => i.type === 'strategic_opportunity');
-      const risks = insights.filter(i => i.type === 'risk_mitigation');
-      const competitive = insights.filter(i => i.type === 'competitive_advantage');
-
-      await buildProposalPdf({
-        context: {
-          businessName: "AI Leadership Assessment",
-          toolName: "AI Readiness Assessment",
-          audience: companyName
-        },
-        sections: [
-          {
-            kind: "exec",
-            title: "Executive Summary",
-            problem: `${companyName} is positioned as ${assessmentData.competitivePosition} in AI readiness with an overall score of ${assessmentData.overallScore}/100.`,
-            solution: assessmentData.executiveSummary,
-            roi: `Estimated efficiency gains of 15-40% through strategic AI implementation.`,
-            kpis: [
-              { label: "Overall Readiness", value: `${assessmentData.overallScore}/100` },
-              { label: "Industry Position", value: assessmentData.competitivePosition },
-              { label: "Quick Wins Available", value: `${quickWins.length}` },
-              { label: "ROI Potential", value: "15-40%" }
-            ]
-          },
-          {
-            kind: "analysis",
-            title: "AI Readiness Matrix Analysis",
-            narrative: `Detailed breakdown of ${companyName}'s AI readiness across four key dimensions:`,
-            table: {
-              columns: ["Dimension", "Score", "Status", "Priority Action"],
-              rows: Object.entries(assessmentData.readinessMatrix).map(([dim, score]) => [
-                dim.charAt(0).toUpperCase() + dim.slice(1).replace('_', ' '),
-                `${score}%`,
-                score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Developing' : 'Needs Attention',
-                score < 60 ? 'Immediate focus required' : 'Continue optimization'
-              ])
-            }
-          },
-          {
-            kind: "plan",
-            title: "Strategic Implementation Roadmap",
-            priorities: [
-              ...quickWins.map(i => ({ level: "HIGH" as const, item: i.title })),
-              ...strategic.slice(0, 3).map(i => ({ level: "MEDIUM" as const, item: i.title })),
-              ...risks.slice(0, 2).map(i => ({ level: "HIGH" as const, item: i.title }))
-            ],
-            timeline: [
-              "Phase 1 (1-4 weeks): Execute quick wins for immediate impact",
-              "Phase 2 (1-6 months): Implement strategic opportunities",
-              "Phase 3 (6-12 months): Build competitive advantages",
-              "Ongoing: Monitor and optimize AI implementations"
-            ],
-            nextSteps: [
-              "Review and approve recommended quick wins",
-              "Allocate resources for priority initiatives",
-              "Establish AI governance framework",
-              "Schedule quarterly progress reviews"
-            ]
-          }
-        ]
-      });
-    } catch (error) {
-      console.error("PDF generation failed:", error);
-      alert("PDF generation is temporarily unavailable. Please try refreshing the page and trying again.");
-    }
+  const handleBookConsultation = () => {
+    // Redirect to booking or show booking modal
+    window.open('https://calendly.com/ai-leadership-consultation', '_blank');
   };
   const getCompetitiveColor = (position: string) => {
     switch (position) {
@@ -182,15 +112,14 @@ const ExecutiveAssessmentReport: React.FC<ExecutiveAssessmentReportProps> = ({
               <div className="text-sm text-primary-foreground/80">Overall Readiness Score</div>
             </div>
           </div>
-          <div className="mt-6">
+            <div className="mt-6">
             <Button 
-              onClick={handleDownloadPDF}
-              data-pdf-button
+              onClick={handleBookConsultation}
               className="text-primary-foreground px-8 py-6 rounded-2xl shadow-purple hover-scale"
               style={{ background: 'var(--gradient-accent)' }}
             >
-              <Download className="h-5 w-5 mr-2" />
-              Download Executive Report
+              <ArrowRight className="h-5 w-5 mr-2" />
+              Book Strategy Consultation
             </Button>
           </div>
         </CardHeader>
