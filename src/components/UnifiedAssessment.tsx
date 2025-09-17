@@ -290,41 +290,6 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
             </CardContent>
           </Card>
 
-          {/* Conversation - Mobile Optimized */}
-          <Card className="glass-card-dark border-white/20 mb-4 sm:mb-6">
-            <CardContent className="p-3 sm:pt-6 sm:px-6 sm:pb-6">
-              <ScrollArea className="h-64 sm:h-80 pr-2 sm:pr-4">
-                <div className="space-y-3 sm:space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[90%] sm:max-w-[85%] p-3 sm:p-4 rounded-lg ${
-                          message.role === 'user'
-                            ? 'bg-primary text-white'
-                            : 'bg-white/10 border border-white/20'
-                        }`}
-                      >
-                        <div className="flex items-start gap-2">
-                          {message.role === 'assistant' && (
-                            <Brain className="h-4 w-4 text-purple-200 mt-1 flex-shrink-0" />
-                          )}
-                          {message.role === 'user' && (
-                            <User className="h-4 w-4 text-white mt-1 flex-shrink-0" />
-                          )}
-                          <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed text-white">
-                            {message.content}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
 
           {/* Current Question - Mobile Optimized */}
           {currentQuestion && (
