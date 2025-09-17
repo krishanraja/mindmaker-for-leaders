@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import AdvisorySprintModal from './AdvisorySprintModal';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Brain, 
   Target, 
@@ -31,7 +32,7 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
   sessionId,
   onBack
 }) => {
-  const [isAdvisorySprintModalOpen, setIsAdvisorySprintModalOpen] = useState(false);
+  const { toast } = useToast();
   // Calculate AI literacy score based on actual responses
   const calculateLiteracyScore = () => {
     const responses = Object.values(assessmentData);
@@ -119,6 +120,48 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
     }
   ];
 
+  const handleAdvisorySprintBooking = async () => {
+    try {
+      console.log('Sending anonymous advisory sprint notification...');
+      
+      // Send assessment data via background email
+      const { data, error } = await supabase.functions.invoke('send-advisory-sprint-notification', {
+        body: {
+          assessmentData,
+          sessionId: sessionId || '',
+          scores: {
+            aiMindmakerScore: calculateLiteracyScore(),
+            aiToolFluency: Math.min(100, calculateLiteracyScore() + 10),
+            aiDecisionMaking: Math.min(100, calculateLiteracyScore() - 5),
+            aiCommunication: Math.min(100, calculateLiteracyScore() + 5),
+            aiLearningGrowth: Math.min(100, calculateLiteracyScore() - 10),
+            aiEthicsBalance: Math.min(100, calculateLiteracyScore() + 15)
+          },
+          isAnonymous: true
+        }
+      });
+
+      if (error) {
+        console.error('Background email error:', error);
+        // Don't show error to user, still open Calendly
+      } else {
+        console.log('Background email sent successfully');
+      }
+
+    } catch (error) {
+      console.error('Advisory Sprint background process error:', error);
+      // Continue with Calendly regardless
+    }
+
+    // Always open Calendly
+    window.open('https://calendly.com/krish-raja/mindmaker-leaders', '_blank');
+    
+    toast({
+      title: "Calendly Opening",
+      description: "Your assessment data has been sent to Krish for session preparation. Please complete your booking on Calendly.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background decoration */}
@@ -159,8 +202,8 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
         </div>
 
         {/* Literacy Score Dashboard */}
-        <Card className="glass-card mb-12 max-w-6xl mx-auto">
-          <CardContent className="p-12">
+        <Card className="mb-12 max-w-6xl mx-auto border-0 bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm shadow-2xl">
+          <CardContent className="p-8 lg:p-12">
             <div className="grid lg:grid-cols-3 gap-12 items-center">
               {/* Primary Score */}
               <div className="text-center lg:text-left">
@@ -355,7 +398,7 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
             <Button 
               size="lg"
               className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white px-12 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-              onClick={() => setIsAdvisorySprintModalOpen(true)}
+              onClick={handleAdvisorySprintBooking}
             >
               <BookOpen className="h-5 w-5 mr-3" />
               Book Advisory Sprint
@@ -375,21 +418,6 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
           </CardContent>
         </Card>
       </div>
-
-      <AdvisorySprintModal
-        isOpen={isAdvisorySprintModalOpen}
-        onClose={() => setIsAdvisorySprintModalOpen(false)}
-        assessmentData={assessmentData}
-        sessionId={sessionId || ''}
-        scores={{
-          aiMindmakerScore: calculateLiteracyScore(),
-          aiToolFluency: Math.min(100, calculateLiteracyScore() + 10),
-          aiDecisionMaking: Math.min(100, calculateLiteracyScore() - 5),
-          aiCommunication: Math.min(100, calculateLiteracyScore() + 5),
-          aiLearningGrowth: Math.min(100, calculateLiteracyScore() - 10),
-          aiEthicsBalance: Math.min(100, calculateLiteracyScore() + 15)
-        }}
-      />
     </div>
   );
 };

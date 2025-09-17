@@ -11,7 +11,7 @@ const corsHeaders = {
 };
 
 interface AdvisorySprintRequest {
-  contactData: {
+  contactData?: {
     firstName: string;
     lastName: string;
     email: string;
@@ -23,13 +23,13 @@ interface AdvisorySprintRequest {
   assessmentData: any;
   sessionId: string;
   scores: any;
+  isAnonymous?: boolean;
 }
 
 const formatAssessmentData = (data: any): string => {
   const sections = [];
   
   if (data) {
-    // Convert assessment responses to readable format
     const keys = Object.keys(data);
     
     keys.forEach(key => {
@@ -68,75 +68,96 @@ serve(async (req) => {
   }
 
   try {
-    const { contactData, assessmentData, sessionId, scores }: AdvisorySprintRequest = await req.json();
+    const { contactData, assessmentData, sessionId, scores, isAnonymous }: AdvisorySprintRequest = await req.json();
 
-    console.log('Processing Advisory Sprint booking notification for:', contactData.email);
+    console.log('Processing Advisory Sprint notification - Anonymous:', !!isAnonymous);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Save to booking_requests table
-    const { data: bookingData, error: bookingError } = await supabase
-      .from('booking_requests')
-      .insert({
-        session_id: sessionId,
-        contact_name: `${contactData.firstName} ${contactData.lastName}`,
-        contact_email: contactData.email,
-        company_name: contactData.company,
-        role: contactData.role,
-        phone: contactData.phone || null,
-        service_type: 'advisory_sprint',
-        service_title: 'AI Advisory Sprint - 90 Min Leadership Session',
-        status: 'pending',
-        priority: 'high',
-        specific_needs: `AI Literacy for Leaders inquiry - Complete assessment data included. Assessment responses: ${JSON.stringify(assessmentData)}`,
-        notes: `LinkedIn: ${contactData.linkedin || 'Not provided'} | Source: AI Literacy for Leaders Report`,
-        lead_score: scores?.aiMindmakerScore || 0
-      })
-      .select()
-      .single();
+    let bookingData = null;
 
-    if (bookingError) {
-      console.error('Booking save error:', bookingError);
-      throw new Error(`Failed to save booking: ${bookingError.message}`);
+    // Only save to booking_requests if we have contact data
+    if (contactData && !isAnonymous) {
+      const { data, error: bookingError } = await supabase
+        .from('booking_requests')
+        .insert({
+          session_id: sessionId,
+          contact_name: `${contactData.firstName} ${contactData.lastName}`,
+          contact_email: contactData.email,
+          company_name: contactData.company,
+          role: contactData.role,
+          phone: contactData.phone || null,
+          service_type: 'strategy_call', // Fixed: use allowed service_type
+          service_title: 'AI Advisory Sprint - 90 Min Leadership Session',
+          status: 'pending',
+          priority: 'high',
+          specific_needs: `AI Literacy for Leaders inquiry - Complete assessment data included. Assessment responses: ${JSON.stringify(assessmentData)}`,
+          notes: `LinkedIn: ${contactData.linkedin || 'Not provided'} | Source: AI Literacy for Leaders Report`,
+          lead_score: scores?.aiMindmakerScore || 0
+        })
+        .select()
+        .single();
+
+      if (bookingError) {
+        console.error('Booking save error:', bookingError);
+        throw new Error(`Failed to save booking: ${bookingError.message}`);
+      }
+      bookingData = data;
     }
+
+    // Prepare email content based on whether it's anonymous or not
+    const emailSubject = isAnonymous 
+      ? `🚀 ANONYMOUS AI LITERACY ASSESSMENT - Advisory Sprint Interest`
+      : `🚀 NEW ADVISORY SPRINT BOOKING: ${contactData?.firstName} ${contactData?.lastName} from ${contactData?.company}`;
+
+    const contactSection = isAnonymous ? `
+      <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <p style="margin: 0; font-weight: bold; color: #f59e0b;">📋 Anonymous Assessment Submission</p>
+        <p style="margin: 5px 0 0; color: #92400e;">User will provide contact details when booking via Calendly</p>
+        <p style="margin: 5px 0 0;"><strong>📅 Calendly Link:</strong> <a href="https://calendly.com/krish-raja/mindmaker-leaders" target="_blank">https://calendly.com/krish-raja/mindmaker-leaders</a></p>
+        <p style="margin: 5px 0 0;"><strong>📋 Session ID:</strong> ${sessionId}</p>
+      </div>
+    ` : `
+      <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">👤 Contact Information</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div>
+            <p><strong>Name:</strong> ${contactData?.firstName} ${contactData?.lastName}</p>
+            <p><strong>Email:</strong> <a href="mailto:${contactData?.email}">${contactData?.email}</a></p>
+            <p><strong>Company:</strong> ${contactData?.company}</p>
+          </div>
+          <div>
+            <p><strong>Role/Title:</strong> ${contactData?.role}</p>
+            <p><strong>Phone:</strong> ${contactData?.phone || 'Not provided'}</p>
+            <p><strong>LinkedIn:</strong> ${contactData?.linkedin ? `<a href="${contactData.linkedin}" target="_blank">${contactData.linkedin}</a>` : 'Not provided'}</p>
+          </div>
+        </div>
+        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 15px;">
+          <p style="margin: 0;"><strong>🎯 Service Requested:</strong> AI Advisory Sprint (90-minute focused session)</p>
+          <p style="margin: 5px 0 0;"><strong>📋 Session ID:</strong> ${sessionId}</p>
+          <p style="margin: 5px 0 0;"><strong>📅 Calendly Link:</strong> <a href="https://calendly.com/krish-raja/mindmaker-leaders" target="_blank">https://calendly.com/krish-raja/mindmaker-leaders</a></p>
+        </div>
+      </div>
+    `;
 
     // Send comprehensive email to krish@fractionl.ai
     const emailResponse = await resend.emails.send({
       from: "AI Literacy for Leaders <no-reply@fractionl.ai>",
       to: ["krish@fractionl.ai"],
-      subject: `🚀 NEW ADVISORY SPRINT BOOKING: ${contactData.firstName} ${contactData.lastName} from ${contactData.company}`,
+      subject: emailSubject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9fafb;">
           
           <div style="text-align: center; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
             <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🚀 AI LITERACY FOR LEADERS INQUIRY</h1>
-            <p style="margin: 10px 0 0; font-size: 18px; opacity: 0.9;">Advisory Sprint Booking Request</p>
+            <p style="margin: 10px 0 0; font-size: 18px; opacity: 0.9;">${isAnonymous ? 'Anonymous Assessment Submission' : 'Advisory Sprint Booking Request'}</p>
             <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.8;">Generated: ${new Date().toLocaleString()}</p>
           </div>
 
-          <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">👤 Contact Information</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-              <div>
-                <p><strong>Name:</strong> ${contactData.firstName} ${contactData.lastName}</p>
-                <p><strong>Email:</strong> <a href="mailto:${contactData.email}">${contactData.email}</a></p>
-                <p><strong>Company:</strong> ${contactData.company}</p>
-              </div>
-              <div>
-                <p><strong>Role/Title:</strong> ${contactData.role}</p>
-                <p><strong>Phone:</strong> ${contactData.phone || 'Not provided'}</p>
-                <p><strong>LinkedIn:</strong> ${contactData.linkedin ? `<a href="${contactData.linkedin}" target="_blank">${contactData.linkedin}</a>` : 'Not provided'}</p>
-              </div>
-            </div>
-            <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 15px;">
-              <p style="margin: 0;"><strong>🎯 Service Requested:</strong> AI Advisory Sprint (90-minute focused session)</p>
-              <p style="margin: 5px 0 0;"><strong>📋 Session ID:</strong> ${sessionId}</p>
-              <p style="margin: 5px 0 0;"><strong>📅 Calendly Link:</strong> <a href="https://calendly.com/krish-raja/mindmaker-leaders" target="_blank">https://calendly.com/krish-raja/mindmaker-leaders</a></p>
-            </div>
-          </div>
+          ${contactSection}
 
           ${formatScores(scores)}
 
@@ -149,16 +170,19 @@ serve(async (req) => {
             <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">🎯 Next Steps</h2>
             <ul style="color: #374151; line-height: 1.6;">
               <li><strong>Immediate:</strong> Review this comprehensive assessment data</li>
-              <li><strong>Follow-up:</strong> Contact ${contactData.firstName} at ${contactData.email} or ${contactData.phone || 'email only'}</li>
+              ${isAnonymous 
+                ? '<li><strong>Follow-up:</strong> User will book via Calendly and provide contact details</li>'
+                : `<li><strong>Follow-up:</strong> Contact ${contactData?.firstName} at ${contactData?.email} or ${contactData?.phone || 'email only'}</li>`
+              }
               <li><strong>Preparation:</strong> Use assessment insights to customize the Advisory Sprint session</li>
-              <li><strong>Calendar:</strong> Expect them to book via the Calendly link above</li>
+              <li><strong>Calendar:</strong> Watch for booking via the Calendly link above</li>
             </ul>
           </div>
 
           <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f3f4f6; border-radius: 8px;">
             <p style="margin: 0; color: #6b7280; font-size: 14px;">
               This is an automated notification from the AI Literacy for Leaders assessment platform.<br>
-              All data has been securely stored in the CRM system.
+              ${isAnonymous ? 'Anonymous assessment data provided - contact details will come via Calendly booking.' : 'All data has been securely stored in the CRM system.'}
             </p>
           </div>
         </div>
@@ -171,22 +195,24 @@ serve(async (req) => {
     await supabase
       .from('security_audit_log')
       .insert({
-        action: 'advisory_sprint_booking',
-        resource_type: 'booking_request',
-        resource_id: bookingData.id,
+        action: isAnonymous ? 'anonymous_advisory_sprint_interest' : 'advisory_sprint_booking',
+        resource_type: 'assessment_submission',
+        resource_id: bookingData?.id || null,
         details: {
-          contact_email: contactData.email,
-          company: contactData.company,
+          contact_email: contactData?.email || 'anonymous',
+          company: contactData?.company || 'anonymous',
           service_type: 'advisory_sprint',
           ai_mindmaker_score: scores?.aiMindmakerScore,
-          session_id: sessionId
+          session_id: sessionId,
+          is_anonymous: !!isAnonymous
         }
       });
 
     return new Response(JSON.stringify({ 
       success: true, 
       emailId: emailResponse.data?.id,
-      bookingId: bookingData.id 
+      bookingId: bookingData?.id || null,
+      isAnonymous: !!isAnonymous
     }), {
       status: 200,
       headers: {
