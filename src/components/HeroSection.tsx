@@ -52,7 +52,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
               <h3 className="font-heading text-lg font-semibold mb-2">
                 COGNITIVE FRAMEWORKS
               </h3>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-white">
                 Learn systematic thinking patterns for AI collaboration
               </p>
             </CardContent>
@@ -64,7 +64,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
               <h3 className="font-heading text-lg font-semibold mb-2">
                 STRATEGIC LITERACY
               </h3>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-white">
                 Build executive-level understanding beyond tool usage
               </p>
             </CardContent>
@@ -76,7 +76,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
               <h3 className="font-heading text-lg font-semibold mb-2">
                 LEADERSHIP READINESS
               </h3>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-white">
                 Prepare to become an AI orchestrator and leader
               </p>
             </CardContent>
