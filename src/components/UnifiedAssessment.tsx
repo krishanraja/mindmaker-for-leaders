@@ -244,26 +244,27 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
 
   return (
     <div className="bg-hero-clouds min-h-screen relative overflow-hidden">
-      {/* Floating Glass Back Button */}
-      {onBack && (
-        <div className="absolute top-6 left-6 z-20">
-          <Button
-            variant="glass"
-            onClick={onBack}
-            className="glass-button text-white hover:bg-white/20"
-          >
-            ← Back to Selection
-          </Button>
-        </div>
-      )}
+        {/* Floating Glass Back Button - Mobile Optimized */}
+        {onBack && (
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
+            <Button
+              variant="glass"
+              onClick={onBack}
+              className="glass-button text-white hover:bg-white/20 text-sm sm:text-base"
+              aria-label="Go back to home page"
+            >
+              ← Back to Selection
+            </Button>
+          </div>
+        )}
 
-      <div className="container-width relative z-10 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+      <div className="container-width relative z-10 py-6 sm:py-8 px-4 sm:px-6">
+        {/* Header - Mobile Optimized */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 leading-tight">
             AI Leadership Assessment
           </h1>
-          <p className="text-white/80 mb-6">
+          <p className="text-sm sm:text-base text-white/80 mb-4 sm:mb-6 leading-relaxed">
             Discover your leadership potential with AI-guided insights
           </p>
         </div>
@@ -289,18 +290,18 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
             </CardContent>
           </Card>
 
-          {/* Conversation */}
-          <Card className="glass-card-dark border-white/20 mb-6">
-            <CardContent className="pt-6">
-              <ScrollArea className="h-80 pr-4">
-                <div className="space-y-4">
+          {/* Conversation - Mobile Optimized */}
+          <Card className="glass-card-dark border-white/20 mb-4 sm:mb-6">
+            <CardContent className="p-3 sm:pt-6 sm:px-6 sm:pb-6">
+              <ScrollArea className="h-64 sm:h-80 pr-2 sm:pr-4">
+                <div className="space-y-3 sm:space-y-4">
                   {messages.map((message) => (
                     <div
                       key={message.id}
                       className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[85%] p-4 rounded-lg ${
+                        className={`max-w-[90%] sm:max-w-[85%] p-3 sm:p-4 rounded-lg ${
                           message.role === 'user'
                             ? 'bg-primary text-white'
                             : 'bg-white/10 border border-white/20'
@@ -313,7 +314,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
                           {message.role === 'user' && (
                             <User className="h-4 w-4 text-white mt-1 flex-shrink-0" />
                           )}
-                          <div className="text-sm whitespace-pre-wrap leading-relaxed text-white">
+                          <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed text-white">
                             {message.content}
                           </div>
                         </div>
@@ -325,32 +326,33 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
             </CardContent>
           </Card>
 
-          {/* Current Question */}
+          {/* Current Question - Mobile Optimized */}
           {currentQuestion && (
             <Card className="glass-card-dark border-white/20">
-              <CardContent className="pt-6">
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-white mb-2">
+              <CardContent className="p-3 sm:pt-6 sm:px-6 sm:pb-6">
+                <div className="mb-4 sm:mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 leading-tight">
                     Question {currentQuestion.id} of {totalQuestions}
                   </h3>
-                  <p className="text-lg text-white mb-4">
+                  <p className="text-base sm:text-lg text-white mb-3 sm:mb-4 leading-relaxed">
                     {currentQuestion.question}
                   </p>
                 </div>
                 
-                <div className="space-y-3">
-                  <h4 className="font-medium text-white/70 mb-4">
+                <div className="space-y-2 sm:space-y-3">
+                  <h4 className="font-medium text-white/70 mb-3 sm:mb-4 text-sm sm:text-base">
                     Select your answer:
                   </h4>
                   {currentQuestion.options.map((option, index) => (
                     <Button
                       key={index}
                       variant="outline"
-                      className="w-full p-4 h-auto text-left justify-start bg-white/5 border-white/20 text-white hover:bg-white/10 transition-colors"
+                      className="w-full p-3 sm:p-4 h-auto text-left justify-start bg-white/5 border-white/20 text-white hover:bg-white/10 transition-colors min-h-[48px] touch-manipulation"
                       onClick={() => handleOptionSelect(option)}
+                      aria-label={`Select option: ${option}`}
                     >
-                      <ArrowRight className="h-4 w-4 mr-3 flex-shrink-0 text-purple-200" />
-                      <span className="text-sm text-white">{option}</span>
+                      <ArrowRight className="h-4 w-4 mr-2 sm:mr-3 flex-shrink-0 text-purple-200" />
+                      <span className="text-xs sm:text-sm text-white leading-relaxed text-left">{option}</span>
                     </Button>
                   ))}
                 </div>

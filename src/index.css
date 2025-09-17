@@ -167,6 +167,53 @@
     transform: scale(1.05);
   }
 
+  /* Mobile Touch Optimization */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Mobile-Friendly Button Sizes */
+  .btn-touch {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px 16px;
+  }
+
+  /* Responsive Text Utilities */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm md:text-base;
+  }
+
+  .text-responsive-sm {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+
+  .text-responsive-base {
+    @apply text-base sm:text-lg md:text-xl;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  /* Mobile-First Spacing */
+  .spacing-mobile {
+    @apply space-y-3 sm:space-y-4 md:space-y-6;
+  }
+
+  .padding-mobile {
+    @apply p-3 sm:p-4 md:p-6 lg:p-8;
+  }
+
+  .margin-mobile {
+    @apply m-3 sm:m-4 md:m-6 lg:m-8;
+  }
+
   /* Hero Section Background */
   .bg-hero-clouds {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

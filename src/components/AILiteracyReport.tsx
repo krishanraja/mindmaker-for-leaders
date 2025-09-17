@@ -174,42 +174,43 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
 
-      {/* Back Button */}
+      {/* Back Button - Mobile Optimized */}
       {onBack && (
-        <div className="absolute top-8 left-8 z-20">
+        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8 z-20">
           <Button
             variant="outline"
             onClick={onBack}
-            className="bg-card/80 backdrop-blur-sm"
+            className="bg-card/80 backdrop-blur-sm text-sm sm:text-base"
+            aria-label="Go back to assessment"
           >
             ← Back to Assessment
           </Button>
         </div>
       )}
 
-      <div className="container-width relative z-10 section-padding">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-caption mb-6">
-            <GraduationCap className="h-4 w-4" />
+      <div className="container-width relative z-10 py-6 sm:py-8 md:py-12 lg:py-16 px-4 sm:px-6">
+        {/* Header - Mobile Optimized */}
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-caption mb-4 sm:mb-6">
+            <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
             AI Literacy Assessment Results
           </div>
           
-          <h1 className="font-display text-5xl lg:text-6xl text-foreground mb-6 tracking-tight">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-foreground mb-4 sm:mb-6 tracking-tight leading-tight">
             {contactData.fullName.split(' ')[0]}'s AI Learning
             <span className="block text-primary">Journey</span>
           </h1>
           
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-2">
             Hello {contactData.fullName} from {contactData.companyName}! Here are your personalized insights and recommendations to accelerate your AI literacy 
             and unlock new possibilities in your work and learning.
           </p>
         </div>
 
-        {/* Literacy Score Dashboard */}
-        <Card className="mb-12 max-w-6xl mx-auto border-0 bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm shadow-2xl">
-          <CardContent className="p-8 lg:p-12">
-            <div className="grid lg:grid-cols-3 gap-12 items-center">
+        {/* Literacy Score Dashboard - Mobile Optimized */}
+        <Card className="mb-8 sm:mb-12 max-w-6xl mx-auto border-0 bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm shadow-2xl">
+          <CardContent className="p-4 sm:p-6 md:p-8 lg:p-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 items-center">
               {/* Primary Score */}
               <div className="text-center lg:text-left">
                 <div className="relative inline-block mb-6">
@@ -284,10 +285,10 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {learningInsights.map((insight, index) => (
               <Card key={index} className="glass-card group hover:scale-105 transition-all duration-300">
-                <CardContent className="p-8">
+                <CardContent className="p-4 sm:p-6 lg:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <insight.icon className="h-8 w-8 text-primary" />
                     <Badge 
