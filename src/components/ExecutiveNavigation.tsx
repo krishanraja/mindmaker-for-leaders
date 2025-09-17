@@ -31,9 +31,9 @@ export function ExecutiveNavigation({ onBack, showBack = false, title }: Executi
                 <Brain className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="font-display text-lg font-bold">MindMaker</h1>
+                <h1 className="font-display text-lg font-bold text-white">MindMaker</h1>
                 {title && (
-                  <p className="text-sm text-muted-foreground -mt-1">{title}</p>
+                  <p className="text-sm text-white/70 -mt-1">{title}</p>
                 )}
               </div>
             </div>

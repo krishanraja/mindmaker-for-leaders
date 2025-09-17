@@ -271,10 +271,10 @@ const RichConversationalAssessment: React.FC<RichConversationalAssessmentProps> 
               alt="AI Mindmaker Logo" 
               className="h-16 mx-auto mb-6"
             />
-            <h1 className="text-4xl font-bold text-foreground mb-4">
+            <h1 className="text-4xl font-bold text-white mb-4">
               Your Personalized AI Leadership Insights
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl text-white/80 max-w-3xl mx-auto">
               Based on your specific data, here are your custom recommendations and scores.
             </p>
           </div>

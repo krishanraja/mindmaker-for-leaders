@@ -242,8 +242,9 @@
     @apply border-border;
   }
   
-  body {
-    @apply bg-background text-foreground font-body;
+  html, body {
+    @apply bg-hero-clouds font-body text-white;
+    min-height: 100vh;
   }
 }
 

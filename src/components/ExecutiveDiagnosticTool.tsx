@@ -190,21 +190,21 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
               alt="AI Mindmaker Logo" 
               className="h-16 mx-auto mb-6"
             />
-            <h1 className="text-4xl font-bold text-foreground mb-4">
+            <h1 className="text-4xl font-bold text-white mb-4">
               Your AI Leadership Report
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-white/80">
               Personalized insights based on your responses
             </p>
           </div>
 
           {/* AI Mindmaker Score */}
-          <Card className="mb-8">
+          <Card className="mb-8 glass-card-dark border-white/20">
             <CardContent className="pt-6">
               <div className="text-center mb-6">
                 <div className="inline-flex items-center gap-2 mb-2">
                   <Brain className="h-8 w-8 text-primary" />
-                  <h2 className="text-2xl font-bold">AI Mindmaker Score</h2>
+                  <h2 className="text-2xl font-bold text-white">AI Mindmaker Score</h2>
                 </div>
                 <div className="text-5xl font-bold text-primary mb-2">
                   {Math.round(scores.aiMindmakerScore)}
@@ -215,44 +215,44 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{Math.round(scores.aiToolFluency)}</div>
-                  <div className="text-sm text-muted-foreground">AI Tool Fluency</div>
+                  <div className="text-sm text-white/70">AI Tool Fluency</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{Math.round(scores.aiDecisionMaking)}</div>
-                  <div className="text-sm text-muted-foreground">AI Decision Making</div>
+                  <div className="text-sm text-white/70">AI Decision Making</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{Math.round(scores.aiCommunication)}</div>
-                  <div className="text-sm text-muted-foreground">AI Communication</div>
+                  <div className="text-sm text-white/70">AI Communication</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{Math.round(scores.aiLearningGrowth)}</div>
-                  <div className="text-sm text-muted-foreground">AI Learning</div>
+                  <div className="text-sm text-white/70">AI Learning</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{Math.round(scores.aiEthicsBalance)}</div>
-                  <div className="text-sm text-muted-foreground">AI Ethics</div>
+                  <div className="text-sm text-white/70">AI Ethics</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Quick Wins */}
-          <Card className="mb-8">
+          <Card className="mb-8 glass-card-dark border-white/20">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-6">
                 <Lightbulb className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold">Your Quick Wins</h2>
+                <h2 className="text-2xl font-bold text-white">Your Quick Wins</h2>
               </div>
               
               <div className="space-y-4">
                 {quickWins.map((win, index) => (
-                  <div key={index} className="border rounded-lg p-4">
+                  <div key={index} className="border border-white/20 rounded-lg p-4 glass-card-dark">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-lg">{win.title}</h3>
+                      <h3 className="font-semibold text-lg text-white">{win.title}</h3>
                       <Badge variant="outline">{win.impact}</Badge>
                     </div>
-                    <p className="text-muted-foreground mb-2">{win.description}</p>
+                    <p className="text-white/80 mb-2">{win.description}</p>
                     <p className="text-sm text-primary italic">{win.reason}</p>
                   </div>
                 ))}
@@ -262,9 +262,9 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
 
           {/* Call to Action */}
           <div className="text-center">
-            <Card className="p-8">
-              <h3 className="text-2xl font-semibold mb-4">Ready to Implement Your AI Plan?</h3>
-              <p className="text-muted-foreground mb-6">
+            <Card className="p-8 glass-card-dark border-white/20">
+              <h3 className="text-2xl font-semibold mb-4 text-white">Ready to Implement Your AI Plan?</h3>
+              <p className="text-white/80 mb-6">
                 These insights are tailored to your situation. Let's discuss implementation.
               </p>
               
@@ -319,17 +319,17 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
             alt="AI Mindmaker Logo" 
             className="h-16 mx-auto mb-6"
           />
-          <h1 className="text-4xl font-bold text-foreground mb-4">
+          <h1 className="text-4xl font-bold text-white mb-4">
             AI Leadership Assessment
           </h1>
-          <p className="text-xl text-muted-foreground mb-6">
+          <p className="text-xl text-white/80 mb-6">
             Get personalized insights for your AI transformation
           </p>
           
           {/* Progress */}
           {currentStep !== 'intro' && (
             <div className="max-w-md mx-auto mb-8">
-              <div className="flex justify-between text-sm text-muted-foreground mb-2">
+              <div className="flex justify-between text-sm text-white/70 mb-2">
                 <span>Step {getStepNumber()} of 5</span>
                 <span>{Math.round(getStepProgress())}% Complete</span>
               </div>
@@ -340,9 +340,9 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
 
         {/* Content */}
         {currentStep === 'intro' && (
-          <Card className="mb-8">
+          <Card className="mb-8 glass-card-dark border-white/20">
             <CardHeader>
-             <CardTitle className="flex items-center gap-2 text-2xl">
+             <CardTitle className="flex items-center gap-2 text-2xl text-white">
                <User className="h-6 w-6" />
                Transform Your Leadership with AI
              </CardTitle>
@@ -356,18 +356,18 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="text-center p-4 border rounded-lg">
                     <Clock className="h-8 w-8 mx-auto mb-2 text-primary" />
-                    <h3 className="font-semibold">5 Minutes</h3>
-                    <p className="text-sm text-muted-foreground">Executive-focused</p>
+                    <h3 className="font-semibold text-white">5 Minutes</h3>
+                    <p className="text-sm text-white/70">Executive-focused</p>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
                     <Brain className="h-8 w-8 mx-auto mb-2 text-primary" />
-                    <h3 className="font-semibold">Your AI Score</h3>
-                    <p className="text-sm text-muted-foreground">Leadership readiness</p>
+                    <h3 className="font-semibold text-white">Your AI Score</h3>
+                    <p className="text-sm text-white/70">Leadership readiness</p>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
                     <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
-                    <h3 className="font-semibold">Quick Wins</h3>
-                    <p className="text-sm text-muted-foreground">Immediate actions</p>
+                    <h3 className="font-semibold text-white">Quick Wins</h3>
+                    <p className="text-sm text-white/70">Immediate actions</p>
                   </div>
                 </div>
 
@@ -385,10 +385,10 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
         )}
 
         {currentStep === 'time-ai' && (
-          <Card className="mb-8">
+          <Card className="mb-8 glass-card-dark border-white/20">
             <CardHeader>
-              <CardTitle>Your Current Leadership Focus</CardTitle>
-              <p className="text-muted-foreground">Help us understand how you allocate time and leverage AI tools</p>
+              <CardTitle className="text-white">Your Current Leadership Focus</CardTitle>
+              <p className="text-white/80">Help us understand how you allocate time and leverage AI tools</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -446,8 +446,8 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
 
                 {/* AI Use Cases */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-lg">Which AI capabilities do you currently use?</h4>
-                  <p className="text-sm text-muted-foreground">Check all that apply to your current workflow:</p>
+                  <h4 className="font-semibold text-lg text-white">Which AI capabilities do you currently use?</h4>
+                  <p className="text-sm text-white/70">Check all that apply to your current workflow:</p>
                   
                   <div className="grid grid-cols-2 gap-3">
                     {aiUseCases.map((useCase) => (
@@ -515,16 +515,16 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
         )}
 
         {currentStep === 'communication-skills' && (
-          <Card className="mb-8">
+          <Card className="mb-8 glass-card-dark border-white/20">
             <CardHeader>
-              <CardTitle>Communication & Influence</CardTitle>
-              <p className="text-muted-foreground">Who do you communicate with and what challenges do you face?</p>
+              <CardTitle className="text-white">Communication & Influence</CardTitle>
+              <p className="text-white/80">Who do you communicate with and what challenges do you face?</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-lg">Key Stakeholder Audiences</h4>
-                  <p className="text-sm text-muted-foreground">Select all that you regularly communicate with:</p>
+                  <h4 className="font-semibold text-lg text-white">Key Stakeholder Audiences</h4>
+                  <p className="text-sm text-white/70">Select all that you regularly communicate with:</p>
                   
                   <div className="grid grid-cols-2 gap-3">
                     {communicationAudiences.map((audience) => (
@@ -575,23 +575,23 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
         )}
 
         {currentStep === 'decision-ethics' && (
-          <Card className="mb-8">
+          <Card className="mb-8 glass-card-dark border-white/20">
             <CardHeader>
-              <CardTitle>Decision Making & AI Ethics</CardTitle>
-              <p className="text-muted-foreground">How do you make decisions and approach AI governance?</p>
+              <CardTitle className="text-white">Decision Making & AI Ethics</CardTitle>
+              <p className="text-white/80">How do you make decisions and approach AI governance?</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 {/* Decision Making */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-lg">Decision Making Process</h4>
+                  <h4 className="font-semibold text-lg text-white">Decision Making Process</h4>
                   
                    <div>
-                     <Label className="font-medium">Decision making speed (1-5 scale)</Label>
+                     <Label className="font-medium text-white">Decision making speed (1-5 scale)</Label>
                      <div className="flex justify-between items-center mt-2 mb-2">
-                       <span className="text-sm text-muted-foreground">Slow</span>
+                       <span className="text-sm text-white/70">Slow</span>
                        <span className="text-primary font-bold">{diagnosticData.decisionMakingSpeed || 3}</span>
-                       <span className="text-sm text-muted-foreground">Fast</span>
+                       <span className="text-sm text-white/70">Fast</span>
                      </div>
                      <Slider
                        value={[diagnosticData.decisionMakingSpeed || 3]}
@@ -604,11 +604,11 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                    </div>
 
                   <div>
-                    <Label className="font-medium">Trust in AI-assisted decisions (1-5 scale)</Label>
+                    <Label className="font-medium text-white">Trust in AI-assisted decisions (1-5 scale)</Label>
                     <div className="flex justify-between items-center mt-2 mb-2">
-                      <span className="text-sm text-muted-foreground">Low trust</span>
+                      <span className="text-sm text-white/70">Low trust</span>
                       <span className="text-primary font-bold">{diagnosticData.aiTrustLevel || 3}</span>
-                      <span className="text-sm text-muted-foreground">High trust</span>
+                      <span className="text-sm text-white/70">High trust</span>
                     </div>
                     <Slider
                       value={[diagnosticData.aiTrustLevel || 3]}
@@ -626,11 +626,11 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                   <h4 className="font-semibold text-lg">Learning & Development</h4>
                   
                   <div>
-                    <Label className="font-medium">Time spent on upskilling (% of work time)</Label>
+                    <Label className="font-medium text-white">Time spent on upskilling (% of work time)</Label>
                     <div className="flex justify-between items-center mt-2 mb-2">
-                      <span className="text-sm text-muted-foreground">0%</span>
+                      <span className="text-sm text-white/70">0%</span>
                       <span className="text-primary font-bold">{diagnosticData.upskillPercentage || 10}%</span>
-                      <span className="text-sm text-muted-foreground">50%</span>
+                      <span className="text-sm text-white/70">50%</span>
                     </div>
                     <Slider
                       value={[diagnosticData.upskillPercentage || 10]}
@@ -716,11 +716,11 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
                   </div>
 
                   <div>
-                    <Label className="font-medium">Risk comfort level (1-10 scale)</Label>
+                    <Label className="font-medium text-white">Risk comfort level (1-10 scale)</Label>
                     <div className="flex justify-between items-center mt-2 mb-2">
-                      <span className="text-sm text-muted-foreground">Conservative</span>
+                      <span className="text-sm text-white/70">Conservative</span>
                       <span className="text-primary font-bold">{diagnosticData.riskComfortLevel || 5}</span>
-                      <span className="text-sm text-muted-foreground">High risk tolerance</span>
+                      <span className="text-sm text-white/70">High risk tolerance</span>
                     </div>
                     <Slider
                       value={[diagnosticData.riskComfortLevel || 5]}

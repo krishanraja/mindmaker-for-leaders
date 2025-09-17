@@ -256,7 +256,7 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
             {buttonIcon}
             {modalTitle}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/80">
             {modalDescription}
           </p>
         </DialogHeader>
@@ -350,7 +350,7 @@ const ContactCollectionModal: React.FC<ContactCollectionModalProps> = ({
             </Button>
           </div>
 
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-xs text-white/70 text-center">
             Your information is secure and only used to provide relevant AI leadership resources.
           </p>
         </div>

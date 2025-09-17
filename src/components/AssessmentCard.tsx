@@ -34,7 +34,7 @@ export function AssessmentCard({
 
   return (
     <Card className={cn(
-      "flex flex-col h-full transition-smooth hover:shadow-lg",
+      "flex flex-col h-full transition-smooth hover:shadow-lg glass-card-dark border-white/20",
       isActive && "ring-2 ring-primary",
       className
     )}>
@@ -50,24 +50,24 @@ export function AssessmentCard({
             <CheckCircle2 className="h-5 w-5 text-green-600" />
           )}
         </div>
-        <h3 className="font-heading text-xl font-semibold leading-tight">
+        <h3 className="font-heading text-xl font-semibold leading-tight text-white">
           {title}
         </h3>
       </CardHeader>
 
       <CardContent className="flex-1">
-        <p className="text-muted-foreground mb-4 leading-relaxed">
+        <p className="text-white/80 mb-4 leading-relaxed">
           {description}
         </p>
         
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        <div className="flex items-center gap-2 text-sm text-white/70 mb-4">
           <Clock className="h-4 w-4" />
           <span>{estimatedTime}</span>
         </div>
 
         {isActive && currentStep && totalSteps && (
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-sm text-white/80">
               <span>Progress</span>
               <span>{currentStep} of {totalSteps}</span>
             </div>
