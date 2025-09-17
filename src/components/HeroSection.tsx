@@ -87,7 +87,9 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
         {/* Philosophy Statement */}
         <div className="mt-16 max-w-3xl animate-fade-in-up">
           <blockquote className="text-lg font-medium italic opacity-90 border-l-4 border-purple-200 pl-6">
-            "Being AI literate is the critical pre-game before you become an AI orchestrator or AI leader"
+            "Being AI literate is the critical pre-game before you become{" "}
+            <br />
+            an AI orchestrator or AI leader"
           </blockquote>
         </div>
       </div>
