@@ -107,8 +107,8 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background decoration */}
+    <div className="min-h-screen bg-hero-clouds relative overflow-hidden">
+      {/* Background decoration - now using hero clouds */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
@@ -134,19 +134,19 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
             Executive Intelligence Report
           </div>
           
-          <h1 className="font-display text-5xl lg:text-6xl text-foreground mb-6 tracking-tight">
+          <h1 className="font-display text-5xl lg:text-6xl hero-text-muted mb-6 tracking-tight">
             AI Leadership
             <span className="block text-primary">Assessment</span>
           </h1>
           
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl hero-text-muted max-w-3xl mx-auto leading-relaxed">
             Comprehensive analysis of your organization's AI readiness, strategic positioning, 
             and competitive advantages in the digital transformation landscape.
           </p>
         </div>
 
         {/* Executive Score Dashboard */}
-        <Card className="glass-card mb-12 max-w-6xl mx-auto">
+        <Card className="glass-card-dark mb-12 max-w-6xl mx-auto">
           <CardContent className="p-12">
             <div className="grid lg:grid-cols-3 gap-12 items-center">
               {/* Primary Score */}
@@ -162,7 +162,7 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
                   </div>
                 </div>
                 
-                <h2 className="text-2xl font-display text-foreground mb-2">
+                <h2 className="text-2xl font-display hero-text-muted mb-2">
                   {executiveProfile.level}
                 </h2>
                 
@@ -174,29 +174,29 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
 
               {/* Key Metrics */}
               <div className="space-y-6">
-                <div className="glass-card p-6">
+                <div className="glass-card-dark p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-caption text-muted-foreground">Competitive Position</span>
+                    <span className="font-caption hero-text-secondary">Competitive Position</span>
                     <TrendingUp className="h-5 w-5 text-green-500" />
                   </div>
-                  <div className="text-2xl font-bold text-foreground">+{competitiveAdvantage} points</div>
-                  <p className="text-sm text-muted-foreground">above industry average</p>
+                  <div className="text-2xl font-bold hero-text-muted">+{competitiveAdvantage} points</div>
+                  <p className="text-sm hero-text-secondary">above industry average</p>
                 </div>
 
-                <div className="glass-card p-6">
+                <div className="glass-card-dark p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-caption text-muted-foreground">Strategic Readiness</span>
+                    <span className="font-caption hero-text-secondary">Strategic Readiness</span>
                     <Target className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="text-2xl font-bold text-foreground">Executive Level</div>
-                  <p className="text-sm text-muted-foreground">ready for implementation</p>
+                  <div className="text-2xl font-bold hero-text-muted">Executive Level</div>
+                  <p className="text-sm hero-text-secondary">ready for implementation</p>
                 </div>
               </div>
 
               {/* Executive Summary */}
-              <div className="glass-card p-8">
-                <h3 className="font-display text-xl text-foreground mb-4">Executive Summary</h3>
-                <p className="text-muted-foreground leading-relaxed mb-6">
+              <div className="glass-card-dark p-8">
+                <h3 className="font-display text-xl hero-text-muted mb-4">Executive Summary</h3>
+                <p className="hero-text-secondary leading-relaxed mb-6">
                   Your assessment demonstrates exceptional strategic vision and readiness for AI transformation. 
                   You're positioned in the top {100 - percentileRank}% of executives globally, with clear opportunities 
                   for competitive differentiation.
@@ -213,8 +213,8 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
         {/* Strategic Insights */}
         <div className="mb-12">
           <div className="text-center mb-10">
-            <h2 className="font-display text-3xl text-foreground mb-4">Strategic Intelligence</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <h2 className="font-display text-3xl hero-text-muted mb-4">Strategic Intelligence</h2>
+            <p className="hero-text-secondary max-w-2xl mx-auto">
               Data-driven insights to accelerate your competitive advantage and strategic positioning
             </p>
           </div>

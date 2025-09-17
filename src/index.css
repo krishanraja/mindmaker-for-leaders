@@ -29,6 +29,11 @@
     --card: 0 0% 100%;               /* White cards */
     --card-foreground: 222 47% 11%;  /* Dark text on cards */
     
+    /* Hero section text colors */
+    --hero-text: 0 0% 100%;          /* Pure white text */
+    --hero-text-muted: 0 0% 80%;     /* Light grey text */
+    --hero-text-secondary: 0 0% 70%; /* Darker grey text */
+    
     /* Additional semantic colors */
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
@@ -196,6 +201,23 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 1rem;
     box-shadow: 0 8px 32px rgba(108, 64, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .glass-card-dark * {
+    color: inherit;
+  }
+  
+  .glass-card-dark h1,
+  .glass-card-dark h2,
+  .glass-card-dark h3,
+  .glass-card-dark h4 {
+    color: rgba(255, 255, 255, 0.95);
+  }
+  
+  .glass-card-dark p,
+  .glass-card-dark span {
+    color: rgba(255, 255, 255, 0.8);
   }
 
   .glass-button {
@@ -227,6 +249,15 @@
   .hero-title {
     font-size: clamp(2.5rem, 5vw, 4.5rem);
     line-height: 1.1;
+    color: hsl(var(--hero-text)) !important;
+  }
+
+  .hero-text-muted {
+    color: hsl(var(--hero-text-muted)) !important;
+  }
+  
+  .hero-text-secondary {
+    color: hsl(var(--hero-text-secondary)) !important;
   }
 
   .section-header {
@@ -242,8 +273,9 @@
   }
   
   html, body {
-    @apply bg-background font-body text-foreground;
+    @apply bg-background font-body;
     min-height: 100vh;
+    color: hsl(var(--foreground));
   }
 }
 

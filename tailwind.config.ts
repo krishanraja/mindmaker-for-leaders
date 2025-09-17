@@ -66,6 +66,11 @@ export default {
 					DEFAULT: "hsl(var(--secondary))",
 					foreground: "hsl(var(--secondary-foreground))",
 				},
+				hero: {
+					text: "hsl(var(--hero-text))",
+					"text-muted": "hsl(var(--hero-text-muted))",
+					"text-secondary": "hsl(var(--hero-text-secondary))",
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
