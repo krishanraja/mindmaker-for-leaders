@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { HeroSection } from './HeroSection';
 import { StreamlinedAssessment } from './StreamlinedAssessment';
+import ExecutiveIntelligenceReport from './ExecutiveIntelligenceReport';
 
 type Screen = 'landing' | 'assessment' | 'results';
 
+interface AssessmentData {
+  [key: string]: any;
+}
+
 export default function ExecutiveDiagnosticToolRevamped() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
+  const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const handleStartAssessment = () => {
     setCurrentScreen('assessment');
@@ -15,7 +22,9 @@ export default function ExecutiveDiagnosticToolRevamped() {
     setCurrentScreen('landing');
   };
 
-  const handleAssessmentComplete = () => {
+  const handleAssessmentComplete = (data: AssessmentData, session: string | null) => {
+    setAssessmentData(data);
+    setSessionId(session);
     setCurrentScreen('results');
   };
 
@@ -36,19 +45,15 @@ export default function ExecutiveDiagnosticToolRevamped() {
     );
   }
 
-  // Results or other assessment types would go here
-  return (
-    <div className="bg-hero-clouds min-h-screen relative overflow-hidden">
-      <div className="container-width relative z-10 flex flex-col items-center justify-center min-h-screen text-center text-white">
-        <div className="section-padding">
-          <h1 className="section-header font-display font-bold mb-4 text-white">
-            Assessment Complete
-          </h1>
-          <p className="text-lg text-white/80">
-            Your personalized AI literacy insights are being generated...
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  if (currentScreen === 'results') {
+    return (
+      <ExecutiveIntelligenceReport 
+        assessmentData={assessmentData}
+        sessionId={sessionId}
+        onBack={handleBackToLanding}
+      />
+    );
+  }
+
+  return null;
 }

@@ -20,9 +20,11 @@ export default {
 		extend: {
 			fontFamily: {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
-				display: ['Inter', 'system-ui', 'sans-serif'],
+				display: ['Inter Tight', 'Inter', 'system-ui', 'sans-serif'],
+				executive: ['Inter Tight', 'Inter', 'system-ui', 'sans-serif'],
 				heading: ['Inter', 'system-ui', 'sans-serif'], 
 				body: ['Inter', 'system-ui', 'sans-serif'],
+				caption: ['Inter', 'system-ui', 'sans-serif'],
 			},
 			colors: {
 				primary: {
@@ -36,7 +38,14 @@ export default {
 				accent: {
 					DEFAULT: "hsl(var(--accent))",
 					400: "hsl(var(--accent-400))",
+					secondary: "hsl(var(--accent-secondary))",
 					foreground: "hsl(var(--accent-foreground))",
+				},
+				executive: {
+					charcoal: "hsl(var(--executive-charcoal))",
+					slate: "hsl(var(--executive-slate))",
+					gray: "hsl(var(--executive-gray))",
+					platinum: "hsl(var(--executive-platinum))",
 				},
 				background: "hsl(var(--background))",
 				foreground: "hsl(var(--foreground))",

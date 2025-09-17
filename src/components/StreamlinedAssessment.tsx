@@ -11,7 +11,7 @@ import ExecutiveLoadingScreen from './ai-chat/ExecutiveLoadingScreen';
 import ConversionOptimizedResults from './ConversionOptimizedResults';
 
 interface StreamlinedAssessmentProps {
-  onComplete?: (sessionData: any) => void;
+  onComplete?: (assessmentData: any, sessionId: string | null) => void;
   onBack?: () => void;
 }
 
@@ -137,6 +137,13 @@ export const StreamlinedAssessment: React.FC<StreamlinedAssessmentProps> = ({ on
   if (assessmentState.isComplete && !isGeneratingInsights) {
     const assessmentData = getAssessmentData();
     
+    // Call onComplete to let parent handle results
+    if (onComplete) {
+      onComplete(assessmentData, sessionId);
+      return null;
+    }
+    
+    // Fallback if no onComplete handler
     return (
       <ConversionOptimizedResults 
         assessmentData={assessmentData}
