@@ -78,16 +78,16 @@
   }
 }
 
-/* Typography System - Inter Only */
+/* Professional Typography System - Outfit + Inter */
 @layer base {
   .font-display {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Outfit', system-ui, sans-serif;
     font-weight: 700;
     letter-spacing: -0.025em;
   }
 
   .font-heading {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Outfit', system-ui, sans-serif;
     font-weight: 600;
     letter-spacing: -0.02em;
   }
