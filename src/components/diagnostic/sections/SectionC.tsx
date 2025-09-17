@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { DiagnosticData } from '../../DiagnosticTool';
+import { DiagnosticData } from '../../../types/diagnostic';
 
 interface SectionCProps {
   data: DiagnosticData;

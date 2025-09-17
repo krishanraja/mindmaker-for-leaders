@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import { DiagnosticData } from '../../DiagnosticTool';
+import { DiagnosticData } from '../../../types/diagnostic';
 
 interface SectionDProps {
   data: DiagnosticData;

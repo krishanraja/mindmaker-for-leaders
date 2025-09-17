@@ -41,12 +41,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       
       <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10 animate-fade-in-up" id="assessment">
         
-        {/* Logo */}
-        <img 
-          src="/lovable-uploads/0eb86765-1d7a-4d88-aa3f-c4524638c942.png" 
-          alt="AI Mindmaker Logo" 
-          className="h-8 w-auto mx-auto mb-8 mt-16 object-contain"
-        />
 
           {/* Main headline */}
           <div className="space-y-6">

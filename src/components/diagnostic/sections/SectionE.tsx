@@ -5,7 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
-import { DiagnosticData } from '../../DiagnosticTool';
+import { DiagnosticData } from '../../../types/diagnostic';
 
 interface SectionEProps {
   data: DiagnosticData;

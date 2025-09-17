@@ -15,7 +15,7 @@ export function inferNames(ctx?: {
     headerBrand ||
     (docTitle && docTitle.split("|")[0].trim()) ||
     pkgName ||
-    "AI Mindmaker";
+    "AI Leadership Assessment";
 
   const toolName =
     ctx?.toolName ||

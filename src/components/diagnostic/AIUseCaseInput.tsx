@@ -1,7 +1,7 @@
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { AIUseCase } from '../DiagnosticTool';
+import { AIUseCase } from '../../types/diagnostic';
 
 interface AIUseCaseInputProps {
   useCase: string;
@@ -18,7 +18,7 @@ export const AIUseCaseInput: React.FC<AIUseCaseInputProps> = ({
   
   const handleCheckboxChange = (checked: boolean) => {
     if (checked) {
-      onChange({ useCase, tool: '' });
+      onChange({ useCase, tool: '', frequency: 'weekly' });
     } else {
       onChange(null);
     }

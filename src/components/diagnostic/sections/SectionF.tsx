@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
-import { DiagnosticData } from '../../DiagnosticTool';
+import { DiagnosticData } from '../../../types/diagnostic';
 
 interface SectionFProps {
   data: DiagnosticData;

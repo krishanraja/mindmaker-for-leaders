@@ -1,6 +1,6 @@
 import { initializePdfMake } from "./pdf";
 import { createPdf } from "./pdfAlternative";
-import { resolveBusinessLogoDataUrl } from "./pdfLogo";
+
 import { inferNames } from "./naming";
 import { chunkArray } from "./chunk";
 
@@ -8,8 +8,6 @@ type KPI = { label: string; value: string };
 type TableDef = { columns: string[]; rows: (string | number)[][] };
 
 export async function buildProposalPdf(opts: {
-  // pass the actual business logo object or path used in the header
-  businessLogo: { base64?: string; src?: string } | string;
 
   // optional explicit context; when omitted, naming.ts will infer
   context?: { businessName?: string; toolName?: string; audience?: string };
@@ -47,7 +45,7 @@ export async function buildProposalPdf(opts: {
   >;
 }) {
   const { title, filename } = inferNames(opts.context);
-  const logoDataUrl = await resolveBusinessLogoDataUrl(opts.businessLogo);
+  
 
   const styles = {
     h1: { fontSize: 16, bold: true, color: "#1E293B" },
@@ -162,10 +160,10 @@ export async function buildProposalPdf(opts: {
   const docDefinition: any = {
     pageSize: "A4",
     pageMargins: [40, 60, 40, 60],
-    info: { title, subject: "Executive Report", creator: "AI Mindmaker" },
+    info: { title, subject: "Executive Report", creator: "AI Leadership Assessment" },
     header: () => ({
       columns: [
-        { image: logoDataUrl, fit: [120, 32], margin: [40, 20, 0, 0] },
+        
         { text: title, style: "h1", alignment: "right", margin: [0, 22, 40, 0] }
       ]
     }),

@@ -63,7 +63,7 @@ const ExecutiveAssessmentReport: React.FC<ExecutiveAssessmentReportProps> = ({
   const handleDownloadPDF = async () => {
     try {
       // Set window globals for inference
-      (window as any).__HEADER_BRAND__ = "AI Mindmaker";
+      (window as any).__HEADER_BRAND__ = "AI Leadership Assessment";
       (window as any).__PAGE_H1__ = "AI Assessment";
       (window as any).__ROUTE_NAME__ = "ai-assessment";
       
@@ -73,9 +73,8 @@ const ExecutiveAssessmentReport: React.FC<ExecutiveAssessmentReportProps> = ({
       const competitive = insights.filter(i => i.type === 'competitive_advantage');
 
       await buildProposalPdf({
-        businessLogo: "/lovable-uploads/0eb86765-1d7a-4d88-aa3f-c4524638c942.png", // AI Mindmaker logo
         context: {
-          businessName: "AI Mindmaker",
+          businessName: "AI Leadership Assessment",
           toolName: "AI Readiness Assessment",
           audience: companyName
         },

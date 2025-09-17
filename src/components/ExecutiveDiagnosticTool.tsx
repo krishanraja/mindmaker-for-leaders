@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Brain, Target, Lightbulb, ArrowRight, CheckCircle, User, Clock, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { DiagnosticData, DiagnosticScores } from './DiagnosticTool';
+import { DiagnosticData, DiagnosticScores } from '../types/diagnostic';
 import { EnhancedLoadingScreen } from './ai-chat/EnhancedLoadingScreen';
 import { generatePersonalizedQuickWins } from '@/utils/personalAIQuickWins';
 import ContactCollectionModal from './ContactCollectionModal';
@@ -133,7 +133,13 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
       aiCommunication: communicationScore,
       aiLearningGrowth: learningScore,
       aiEthicsBalance,
-      aiMindmakerScore
+      aiMindmakerScore,
+      overallScore: aiMindmakerScore,
+      readinessScore: aiToolFluency,
+      collaborationScore: communicationScore,
+      strategicScore: aiDecisionMaking,
+      ethicsScore: aiEthicsBalance,
+      productivityScore: learningScore
     };
   };
 
@@ -185,11 +191,6 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/50 p-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <img 
-              src="/lovable-uploads/92f9bead-d2c6-4715-8e9e-234eb66fd5e3.png" 
-              alt="AI Mindmaker Logo" 
-              className="h-16 mx-auto mb-6"
-            />
             <h1 className="text-4xl font-bold text-white mb-4">
               Your AI Leadership Report
             </h1>
@@ -204,7 +205,7 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
               <div className="text-center mb-6">
                 <div className="inline-flex items-center gap-2 mb-2">
                   <Brain className="h-8 w-8 text-primary" />
-                  <h2 className="text-2xl font-bold text-white">AI Mindmaker Score</h2>
+                  <h2 className="text-2xl font-bold text-white">AI Leadership Score</h2>
                 </div>
                 <div className="text-5xl font-bold text-primary mb-2">
                   {Math.round(scores.aiMindmakerScore)}
@@ -314,11 +315,6 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <img 
-            src="/lovable-uploads/92f9bead-d2c6-4715-8e9e-234eb66fd5e3.png" 
-            alt="AI Mindmaker Logo" 
-            className="h-16 mx-auto mb-6"
-          />
           <h1 className="text-4xl font-bold text-white mb-4">
             AI Leadership Assessment
           </h1>
@@ -350,7 +346,7 @@ const ExecutiveDiagnosticTool: React.FC<ExecutiveDiagnosticToolProps> = ({ onCom
             <CardContent>
               <div className="space-y-4">
                 <p className="text-lg">
-                  Get your personalized AI Mindmaker Score and discover specific actions to accelerate your leadership impact.
+                  Get your personalized AI Leadership Score and discover specific actions to accelerate your leadership impact.
                 </p>
                 
                 <div className="grid md:grid-cols-3 gap-4">

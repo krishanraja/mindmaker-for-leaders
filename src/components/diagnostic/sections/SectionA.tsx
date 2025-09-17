@@ -4,7 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { DiagnosticData, AIUseCase } from '../../DiagnosticTool';
+import { DiagnosticData, AIUseCase } from '../../../types/diagnostic';
 import { AIUseCaseInput } from '../AIUseCaseInput';
 
 interface SectionAProps {

@@ -23,11 +23,6 @@ export const AssessmentChoiceScreen: React.FC<AssessmentChoiceScreenProps> = ({
           {/* Header */}
           <div className="text-center space-y-6 mb-12">
             <div className="flex justify-center mb-8">
-              <img 
-                src="/lovable-uploads/2819589c-814c-4ec7-9e78-0d2a80b89243.png" 
-                alt="AI Mindmaker Logo" 
-                className="h-16 w-auto"
-              />
             </div>
             
             <h1 className={`font-bold tracking-tight ${

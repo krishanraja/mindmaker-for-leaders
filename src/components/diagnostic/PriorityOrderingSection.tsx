@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, GripVertical, Plus, Target } from 'lucide-react';
-import { DiagnosticData } from '../DiagnosticTool';
+import { DiagnosticData } from '../../types/diagnostic';
 
 interface PriorityOrderingSectionProps {
   data: DiagnosticData;

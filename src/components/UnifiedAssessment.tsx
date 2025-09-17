@@ -52,10 +52,10 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     const progressData = getProgressData();
     const hasAnsweredAllQuestions = progressData.completedAnswers >= totalQuestions;
     
-    if (assessmentState.isComplete && hasAnsweredAllQuestions && !isGeneratingInsights) {
+    if (assessmentState.isComplete && hasAnsweredAllQuestions && !isGeneratingInsights && insightProgress === 0) {
       startInsightGeneration();
     }
-  }, [assessmentState.isComplete, getProgressData, totalQuestions]);
+  }, [assessmentState.isComplete, getProgressData, totalQuestions, isGeneratingInsights, insightProgress]);
 
   const initializeAssessmentSession = async () => {
     try {
@@ -278,11 +278,6 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       <div className="container-width relative z-10 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <img 
-            src="/lovable-uploads/2819589c-814c-4ec7-9e78-0d2a80b89243.png" 
-            alt="AI Mindmaker Logo" 
-            className="h-12 w-auto mx-auto mb-6"
-          />
           <h1 className="text-3xl font-bold text-white mb-2">
             AI Leadership Assessment
           </h1>

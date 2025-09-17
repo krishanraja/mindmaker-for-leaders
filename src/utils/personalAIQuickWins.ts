@@ -1,4 +1,4 @@
-import { DiagnosticData, DiagnosticScores } from '../components/DiagnosticTool';
+import { DiagnosticData, DiagnosticScores } from '../types/diagnostic';
 
 interface PersonalQuickWin {
   title: string;
