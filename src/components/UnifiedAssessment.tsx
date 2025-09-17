@@ -21,9 +21,10 @@ interface Message {
 
 interface UnifiedAssessmentProps {
   onComplete?: (sessionData: any) => void;
+  onBack?: () => void;
 }
 
-export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete }) => {
+export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete, onBack }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -206,13 +207,26 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     const assessmentData = getAssessmentData();
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted p-4">
-        <div className="max-w-6xl mx-auto">
+      <div className="bg-hero-clouds min-h-screen relative overflow-hidden">
+        {/* Floating Glass Back Button */}
+        {onBack && (
+          <div className="absolute top-6 left-6 z-20">
+            <Button
+              variant="glass"
+              onClick={onBack}
+              className="glass-button text-white hover:bg-white/20"
+            >
+              ← Back to Selection
+            </Button>
+          </div>
+        )}
+
+        <div className="container-width relative z-10 py-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
+            <h1 className="text-4xl font-bold text-white mb-4">
               Your AI Leadership Assessment Results
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl text-white/80 max-w-3xl mx-auto">
               Based on your responses, here are personalized insights to accelerate your AI leadership journey.
             </p>
           </div>
@@ -225,19 +239,20 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
           />
 
           <div className="mt-12 text-center">
-            <div className="max-w-2xl mx-auto bg-card p-8 rounded-lg border shadow-sm">
-              <h3 className="text-2xl font-semibold mb-4">Ready to Transform Your Leadership?</h3>
-              <p className="text-muted-foreground mb-6">
-                These insights are customized for your leadership profile. Let's discuss how to implement your development plan.
-              </p>
-              
-              <p className="text-muted-foreground">
-                Complete the assessment to access your personalized AI leadership development plan and recommendations.
-              </p>
-            </div>
+            <Card className="glass-card-dark border-white/20 max-w-2xl mx-auto">
+              <CardContent className="p-8">
+                <h3 className="text-2xl font-semibold mb-4 text-white">Ready to Transform Your Leadership?</h3>
+                <p className="text-white/80 mb-6">
+                  These insights are customized for your leadership profile. Let's discuss how to implement your development plan.
+                </p>
+                
+                <p className="text-white/70">
+                  Complete the assessment to access your personalized AI leadership development plan and recommendations.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
-
       </div>
     );
   }
@@ -246,8 +261,21 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const currentQuestion = getCurrentQuestion();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-      <div className="container mx-auto px-4 py-8">
+    <div className="bg-hero-clouds min-h-screen relative overflow-hidden">
+      {/* Floating Glass Back Button */}
+      {onBack && (
+        <div className="absolute top-6 left-6 z-20">
+          <Button
+            variant="glass"
+            onClick={onBack}
+            className="glass-button text-white hover:bg-white/20"
+          >
+            ← Back to Selection
+          </Button>
+        </div>
+      )}
+
+      <div className="container-width relative z-10 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <img 
@@ -255,21 +283,21 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
             alt="AI Mindmaker Logo" 
             className="h-12 w-auto mx-auto mb-6"
           />
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             AI Leadership Assessment
           </h1>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-white/80 mb-6">
             Discover your leadership potential with AI-guided insights
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto">
           {/* Progress Section */}
-          <Card className="mb-6">
+          <Card className="glass-card-dark border-white/20 mb-6">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-foreground">Assessment Progress</h2>
-                <Badge variant="outline" className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-white">Assessment Progress</h2>
+                <Badge variant="outline" className="flex items-center gap-2 bg-white/10 text-white border-white/20">
                   <Clock className="h-3 w-3" />
                   Question {progressData.currentQuestion} of {totalQuestions}
                 </Badge>
@@ -277,7 +305,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
               
               <Progress value={progressData.progressPercentage} className="h-3 mb-2" />
               
-              <div className="flex justify-between text-sm text-muted-foreground">
+              <div className="flex justify-between text-sm text-white/70">
                 <span>Phase: {progressData.phase}</span>
                 <span>{Math.round(progressData.estimatedTimeRemaining)} min remaining</span>
               </div>
@@ -285,7 +313,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
           </Card>
 
           {/* Conversation */}
-          <Card className="mb-6">
+          <Card className="glass-card-dark border-white/20 mb-6">
             <CardContent className="pt-6">
               <ScrollArea className="h-80 pr-4">
                 <div className="space-y-4">
@@ -297,18 +325,18 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
                       <div
                         className={`max-w-[85%] p-4 rounded-lg ${
                           message.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
+                            ? 'bg-primary text-white'
+                            : 'bg-white/10 border border-white/20'
                         }`}
                       >
                         <div className="flex items-start gap-2">
                           {message.role === 'assistant' && (
-                            <Brain className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                            <Brain className="h-4 w-4 text-purple-200 mt-1 flex-shrink-0" />
                           )}
                           {message.role === 'user' && (
-                            <User className="h-4 w-4 text-primary-foreground mt-1 flex-shrink-0" />
+                            <User className="h-4 w-4 text-white mt-1 flex-shrink-0" />
                           )}
-                          <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                          <div className="text-sm whitespace-pre-wrap leading-relaxed text-white">
                             {message.content}
                           </div>
                         </div>
@@ -322,30 +350,30 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
 
           {/* Current Question */}
           {currentQuestion && (
-            <Card>
+            <Card className="glass-card-dark border-white/20">
               <CardContent className="pt-6">
                 <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                  <h3 className="text-xl font-semibold text-white mb-2">
                     Question {currentQuestion.id} of {totalQuestions}
                   </h3>
-                  <p className="text-lg text-foreground mb-4">
+                  <p className="text-lg text-white mb-4">
                     {currentQuestion.question}
                   </p>
                 </div>
                 
                 <div className="space-y-3">
-                  <h4 className="font-medium text-muted-foreground mb-4">
+                  <h4 className="font-medium text-white/70 mb-4">
                     Select your answer:
                   </h4>
                   {currentQuestion.options.map((option, index) => (
                     <Button
                       key={index}
                       variant="outline"
-                      className="w-full p-4 h-auto text-left justify-start hover:bg-muted/50 transition-colors"
+                      className="w-full p-4 h-auto text-left justify-start bg-white/5 border-white/20 text-white hover:bg-white/10 transition-colors"
                       onClick={() => handleOptionSelect(option)}
                     >
-                      <ArrowRight className="h-4 w-4 mr-3 flex-shrink-0 text-primary" />
-                      <span className="text-sm text-foreground">{option}</span>
+                      <ArrowRight className="h-4 w-4 mr-3 flex-shrink-0 text-purple-200" />
+                      <span className="text-sm text-white">{option}</span>
                     </Button>
                   ))}
                 </div>
