@@ -1,140 +1,103 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Inter+Tight:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* MindMaker AI Literacy Brand System */
 @layer base {
   :root {
-    /* Executive Brand Colors - Deep Sophistication */
-    --primary: 230 85% 8%;             /* Deep Navy #0A1628 */
-    --primary-100: 230 25% 95%;        /* Very light navy */
-    --primary-200: 230 30% 85%;        /* Light navy */
-    --primary-400: 230 50% 35%;        /* Medium navy */
-    --primary-600: 230 70% 15%;        /* Dark navy */
-    --primary-foreground: 0 0% 100%;   /* White text on primary */
-    
-    /* Luxury accent colors */
-    --accent: 45 100% 70%;             /* Gold #FFD700 */
-    --accent-400: 45 95% 60%;          /* Darker gold */
-    --accent-secondary: 210 100% 45%;  /* Premium blue */
-    --accent-foreground: 230 85% 8%;   /* Navy text on accent */
-    
-    /* Executive grayscale */
-    --executive-charcoal: 230 20% 12%; /* #1A1D2B */
-    --executive-slate: 230 15% 25%;    /* #3A3F4F */
-    --executive-gray: 230 10% 50%;     /* #75798A */
-    --executive-platinum: 230 5% 85%;  /* #D6D8DC */
-    
+    /* Brand purple system */
+    --primary: 262 100% 63%;         /* #6C40FF - Main brand color */
+    --primary-100: 262 100% 97%;     /* Very light purple */
+    --primary-200: 262 100% 90%;     /* Light purple */
+    --primary-400: 262 100% 70%;     /* Medium purple */
+    --primary-600: 260 100% 55%;     /* Dark purple */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+
+    /* Accents */
+    --accent: 286 90% 66%;           /* Complementary purple-pink */
+    --accent-400: 286 85% 60%;       /* Darker accent */
+    --accent-foreground: 0 0% 100%;  /* White text on accent */
+
     /* Base colors */
-    --background: 230 25% 4%;          /* Deep charcoal background */
-    --foreground: 0 0% 98%;            /* Near white text */
-    --muted: 210 40% 96%;              /* Light gray */
-    --muted-foreground: 215 28% 25%;   /* Medium gray */
-    --border: 214 32% 91%;             /* Light border */
-    --input: 214 32% 91%;              /* Input border */
-    --ring: 262 100% 63%;              /* Focus ring */
-    --card: 0 0% 100%;                 /* White cards */
-    --card-foreground: 222 47% 11%;    /* Card text */
+    --background: 0 0% 100%;         /* Pure white */
+    --foreground: 222 47% 11%;       /* Dark charcoal */
+    --muted: 210 40% 96%;            /* Light gray */
+    --muted-foreground: 215 28% 25%; /* Medium gray */
+    --border: 214 32% 91%;           /* Light border */
+    --card: 0 0% 100%;               /* White cards */
+    --card-foreground: 222 47% 11%;  /* Dark text on cards */
     
-    /* Shadcn compatibility */
+    /* Additional semantic colors */
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --input: 214 32% 91%;
+    --ring: 262 100% 63%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 210 40% 98%;
     
-    /* Sidebar compatibility */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 222 47% 15%;
-    --sidebar-primary: 262 100% 63%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 262 100% 63%;
-    
-    /* Design tokens */
+    /* Spacing & Layout */
     --radius: 0.75rem;
     --radius-lg: 1rem;
     
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-purple: 0 4px 12px rgba(108, 64, 255, 0.25);
     --shadow-purple-lg: 0 8px 24px rgba(108, 64, 255, 0.3);
-    
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-brand: linear-gradient(135deg, hsl(var(--primary-200)) 0%, hsl(var(--primary-400)) 50%, hsl(var(--accent-400)) 100%);
-    
-    /* Transitions */
-    --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
+  /* Dark mode support */
   .dark {
-    --background: 222 47% 7%;          /* Dark background */
-    --foreground: 210 40% 98%;         /* Light text */
-    --card: 222 47% 9%;                /* Dark cards */
-    --card-foreground: 210 40% 98%;    /* Light card text */
-    --border: 222 28% 18%;             /* Dark borders */
-    --input: 222 28% 18%;              /* Dark input borders */
-    --muted: 222 28% 18%;              /* Dark muted */
-    --muted-foreground: 215 28% 65%;   /* Medium light gray */
+    --background: 222 47% 7%;      /* Dark background */
+    --foreground: 210 40% 98%;     /* Light text */
+    --card: 222 47% 9%;            /* Dark cards */
+    --border: 222 28% 18%;         /* Dark borders */
+    --muted: 222 47% 11%;
+    --muted-foreground: 215 28% 65%;
     --popover: 222 47% 9%;
     --popover-foreground: 210 40% 98%;
-    --secondary: 222 28% 18%;
+    --secondary: 222 47% 11%;
     --secondary-foreground: 210 40% 98%;
-    --sidebar-background: 222 47% 9%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-accent: 222 28% 18%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 28% 18%;
-    /* Keep primary colors same for brand consistency */
+    --input: 222 28% 18%;
+    /* Primary colors maintained */
   }
 }
 
-/* Executive Typography System */
+/* Typography System - Inter Only */
 @layer base {
-  .font-executive {
-    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    text-rendering: optimizeLegibility;
-  }
-  
   .font-display {
-    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-weight: 700;
     letter-spacing: -0.025em;
-    text-rendering: optimizeLegibility;
   }
-  
+
   .font-heading {
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 600;
     letter-spacing: -0.02em;
   }
-  
+
   .font-body {
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
-    letter-spacing: -0.01em;
     line-height: 1.6;
   }
-  
+
   .font-caption {
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 500;
+    font-size: 0.875rem;
     letter-spacing: 0.025em;
     text-transform: uppercase;
-    font-size: 0.75rem;
   }
 }
 
-/* Animations */
+/* Animation System */
 @layer base {
   @keyframes fade-in-up {
     from {
@@ -166,6 +129,7 @@
 
 /* Utility Classes */
 @layer utilities {
+  /* Animations */
   .animate-fade-in-up {
     animation: fade-in-up 0.6s ease-out forwards;
     opacity: 0;
@@ -184,29 +148,20 @@
     opacity: 0;
   }
 
+  /* Transitions */
   .transition-smooth {
-    transition: var(--transition-smooth);
-  }
-
-  .transition-bounce {
-    transition: var(--transition-bounce);
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-4px);
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .hover-scale:hover {
     transform: scale(1.05);
   }
 
-  .bg-brand-gradient {
-    background-image: var(--gradient-brand);
-  }
-
+  /* Hero Section Background */
   .bg-hero-clouds {
-    background: var(--gradient-hero);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     position: relative;
+    min-height: 100vh;
   }
 
   .bg-hero-clouds::before {
@@ -219,6 +174,14 @@
     animation: float 6s ease-in-out infinite;
   }
 
+  .bg-brand-gradient {
+    background-image: linear-gradient(135deg,
+      hsl(var(--primary-200)) 0%,
+      hsl(var(--primary-400)) 50%,
+      hsl(var(--accent-400)) 100%);
+  }
+
+  /* Glass Effects & Cards */
   .glass-card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
@@ -228,35 +191,28 @@
   }
 
   .glass-card-dark {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 1rem;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
-  }
-  
-  .executive-card {
-    background: linear-gradient(145deg, rgba(26, 29, 43, 0.9), rgba(16, 18, 30, 0.95));
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 215, 0, 0.1);
-    border-radius: 1rem;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 215, 0, 0.05);
-  }
-  
-  .metric-card {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.05));
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 0.75rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(108, 64, 255, 0.1);
   }
 
   .glass-button {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    transition: all 0.3s ease;
   }
 
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Layout Utilities */
   .section-padding {
     padding: clamp(4rem, 8vw, 8rem) 0;
   }
@@ -267,6 +223,7 @@
     padding: 0 1.5rem;
   }
 
+  /* Text Utilities */
   .hero-title {
     font-size: clamp(2.5rem, 5vw, 4.5rem);
     line-height: 1.1;
@@ -274,21 +231,23 @@
 
   .section-header {
     font-size: clamp(1.875rem, 4vw, 2.25rem);
+    line-height: 1.2;
   }
 }
 
+/* Base element styling */
 @layer base {
   * {
     @apply border-border;
   }
   
   html, body {
-    @apply bg-hero-clouds font-body text-white;
+    @apply bg-background font-body text-foreground;
     min-height: 100vh;
   }
 }
 
-/* Accessibility */
+/* Accessibility Considerations */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;

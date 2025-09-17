@@ -43,10 +43,10 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
   const competitiveAdvantage = score - industryBenchmark;
 
   const getExecutiveLevel = (score: number) => {
-    if (score >= 88) return { level: 'Visionary Leader', tier: 'platinum', color: 'text-amber-400' };
-    if (score >= 82) return { level: 'Strategic Pioneer', tier: 'gold', color: 'text-yellow-500' };
-    if (score >= 75) return { level: 'Digital Accelerator', tier: 'silver', color: 'text-blue-400' };
-    return { level: 'Transformation Catalyst', tier: 'bronze', color: 'text-purple-400' };
+    if (score >= 88) return { level: 'Visionary Leader', tier: 'platinum', color: 'text-primary' };
+    if (score >= 82) return { level: 'Strategic Pioneer', tier: 'gold', color: 'text-primary' };
+    if (score >= 75) return { level: 'Digital Accelerator', tier: 'silver', color: 'text-accent' };
+    return { level: 'Transformation Catalyst', tier: 'bronze', color: 'text-accent' };
   };
 
   const executiveProfile = getExecutiveLevel(score);
@@ -107,11 +107,11 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
-      {/* Sophisticated background elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-blue-500/5"></div>
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
 
       {/* Back Button */}
       {onBack && (
@@ -119,54 +119,54 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
           <Button
             variant="outline"
             onClick={onBack}
-            className="bg-white/5 border-white/20 text-white hover:bg-white/10 backdrop-blur-sm"
+            className="bg-primary text-white hover:bg-primary/90"
           >
             ← Assessment
           </Button>
         </div>
       )}
 
-      <div className="container-width relative z-10 py-12">
+      <div className="container-width relative z-10 section-padding">
         {/* Executive Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-300 px-4 py-2 rounded-full text-sm font-caption mb-6">
+          <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-4 py-2 rounded-full text-sm font-caption mb-6">
             <Briefcase className="h-4 w-4" />
             Executive Intelligence Report
           </div>
           
-          <h1 className="font-executive text-5xl lg:text-6xl text-white mb-6 tracking-tight">
+          <h1 className="font-display text-5xl lg:text-6xl text-foreground mb-6 tracking-tight">
             AI Leadership
-            <span className="block text-amber-400">Assessment</span>
+            <span className="block text-primary">Assessment</span>
           </h1>
           
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Comprehensive analysis of your organization's AI readiness, strategic positioning, 
             and competitive advantages in the digital transformation landscape.
           </p>
         </div>
 
         {/* Executive Score Dashboard */}
-        <Card className="executive-card mb-12 max-w-6xl mx-auto">
+        <Card className="glass-card mb-12 max-w-6xl mx-auto">
           <CardContent className="p-12">
             <div className="grid lg:grid-cols-3 gap-12 items-center">
               {/* Primary Score */}
               <div className="text-center lg:text-left">
                 <div className="relative inline-block mb-6">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center relative">
-                    <span className="text-4xl font-executive text-slate-900">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-primary-600 flex items-center justify-center relative">
+                    <span className="text-4xl font-display text-white">
                       {score}
                     </span>
                     <div className="absolute -top-3 -right-3">
-                      <Award className="h-8 w-8 text-amber-400" />
+                      <Award className="h-8 w-8 text-primary" />
                     </div>
                   </div>
                 </div>
                 
-                <h2 className="text-2xl font-display text-white mb-2">
+                <h2 className="text-2xl font-display text-foreground mb-2">
                   {executiveProfile.level}
                 </h2>
                 
-                <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 px-4 py-2">
+                <Badge className="bg-primary/20 text-primary border-primary/30 px-4 py-2">
                   <Star className="h-4 w-4 mr-2" />
                   {percentileRank}th Percentile
                 </Badge>
@@ -174,34 +174,34 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
 
               {/* Key Metrics */}
               <div className="space-y-6">
-                <div className="metric-card p-6">
+                <div className="glass-card p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-caption text-slate-400">Competitive Position</span>
-                    <TrendingUp className="h-5 w-5 text-green-400" />
+                    <span className="font-caption text-muted-foreground">Competitive Position</span>
+                    <TrendingUp className="h-5 w-5 text-green-500" />
                   </div>
-                  <div className="text-2xl font-bold text-white">+{competitiveAdvantage} points</div>
-                  <p className="text-sm text-slate-400">above industry average</p>
+                  <div className="text-2xl font-bold text-foreground">+{competitiveAdvantage} points</div>
+                  <p className="text-sm text-muted-foreground">above industry average</p>
                 </div>
 
-                <div className="metric-card p-6">
+                <div className="glass-card p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-caption text-slate-400">Strategic Readiness</span>
-                    <Target className="h-5 w-5 text-blue-400" />
+                    <span className="font-caption text-muted-foreground">Strategic Readiness</span>
+                    <Target className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="text-2xl font-bold text-white">Executive Level</div>
-                  <p className="text-sm text-slate-400">ready for implementation</p>
+                  <div className="text-2xl font-bold text-foreground">Executive Level</div>
+                  <p className="text-sm text-muted-foreground">ready for implementation</p>
                 </div>
               </div>
 
               {/* Executive Summary */}
-              <div className="bg-slate-800/50 rounded-xl p-8">
-                <h3 className="font-display text-xl text-white mb-4">Executive Summary</h3>
-                <p className="text-slate-300 leading-relaxed mb-6">
+              <div className="glass-card p-8">
+                <h3 className="font-display text-xl text-foreground mb-4">Executive Summary</h3>
+                <p className="text-muted-foreground leading-relaxed mb-6">
                   Your assessment demonstrates exceptional strategic vision and readiness for AI transformation. 
                   You're positioned in the top {100 - percentileRank}% of executives globally, with clear opportunities 
                   for competitive differentiation.
                 </p>
-                <div className="flex items-center text-amber-400 text-sm">
+                <div className="flex items-center text-primary text-sm">
                   <Lightbulb className="h-4 w-4 mr-2" />
                   Strategic recommendations generated
                 </div>
@@ -213,45 +213,45 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
         {/* Strategic Insights */}
         <div className="mb-12">
           <div className="text-center mb-10">
-            <h2 className="font-display text-3xl text-white mb-4">Strategic Intelligence</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
+            <h2 className="font-display text-3xl text-foreground mb-4">Strategic Intelligence</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
               Data-driven insights to accelerate your competitive advantage and strategic positioning
             </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {strategicInsights.map((insight, index) => (
-              <Card key={index} className="metric-card group hover:scale-105 transition-all duration-300">
+              <Card key={index} className="glass-card group hover:scale-105 transition-all duration-300">
                 <CardContent className="p-8">
                   <div className="flex items-center justify-between mb-6">
-                    <insight.icon className="h-8 w-8 text-amber-400" />
+                    <insight.icon className="h-8 w-8 text-primary" />
                     <Badge 
                       variant="outline" 
                       className={`
-                        ${insight.priority === 'Critical' ? 'border-red-500/50 text-red-400 bg-red-500/10' : ''}
-                        ${insight.priority === 'High' ? 'border-amber-500/50 text-amber-400 bg-amber-500/10' : ''}
-                        ${insight.priority === 'Medium' ? 'border-blue-500/50 text-blue-400 bg-blue-500/10' : ''}
+                        ${insight.priority === 'Critical' ? 'border-red-500/50 text-red-500 bg-red-500/10' : ''}
+                        ${insight.priority === 'High' ? 'border-primary/50 text-primary bg-primary/10' : ''}
+                        ${insight.priority === 'Medium' ? 'border-accent/50 text-accent bg-accent/10' : ''}
                       `}
                     >
                       {insight.priority}
                     </Badge>
                   </div>
                   
-                  <h3 className="font-heading text-xl text-white mb-3">{insight.insight}</h3>
-                  <p className="text-slate-300 mb-6 leading-relaxed">{insight.description}</p>
+                  <h3 className="font-heading text-xl text-foreground mb-3">{insight.insight}</h3>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">{insight.description}</p>
                   
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <div className="text-lg font-bold text-white">{insight.timeline}</div>
-                      <div className="text-xs text-slate-400 font-caption">Timeline</div>
+                      <div className="text-lg font-bold text-foreground">{insight.timeline}</div>
+                      <div className="text-xs text-muted-foreground font-caption">Timeline</div>
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-white">{insight.impact}</div>
-                      <div className="text-xs text-slate-400 font-caption">Impact</div>
+                      <div className="text-lg font-bold text-foreground">{insight.impact}</div>
+                      <div className="text-xs text-muted-foreground font-caption">Impact</div>
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-amber-400">{insight.roi}</div>
-                      <div className="text-xs text-slate-400 font-caption">Projected ROI</div>
+                      <div className="text-lg font-bold text-primary">{insight.roi}</div>
+                      <div className="text-xs text-muted-foreground font-caption">Projected ROI</div>
                     </div>
                   </div>
                 </CardContent>
@@ -261,11 +261,11 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
         </div>
 
         {/* Implementation Roadmap */}
-        <Card className="executive-card mb-12">
+        <Card className="glass-card mb-12">
           <CardContent className="p-12">
             <div className="text-center mb-10">
-              <h2 className="font-display text-3xl text-white mb-4">Strategic Implementation Roadmap</h2>
-              <p className="text-slate-400 max-w-2xl mx-auto">
+              <h2 className="font-display text-3xl text-foreground mb-4">Strategic Implementation Roadmap</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
                 Phased approach to maximize competitive advantage and minimize organizational risk
               </p>
             </div>
@@ -274,22 +274,22 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
               {implementationRoadmap.map((phase, index) => (
                 <div key={index} className="relative">
                   {index < implementationRoadmap.length - 1 && (
-                    <div className="hidden lg:block absolute top-8 left-full w-8 h-0.5 bg-gradient-to-r from-amber-500 to-transparent z-10"></div>
+                    <div className="hidden lg:block absolute top-8 left-full w-8 h-0.5 bg-gradient-to-r from-primary to-transparent z-10"></div>
                   )}
                   
-                  <div className="metric-card p-8 relative">
-                    <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-slate-900 font-bold text-lg mb-6">
+                  <div className="glass-card p-8 relative">
+                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-lg mb-6">
                       {index + 1}
                     </div>
                     
-                    <h3 className="font-heading text-xl text-white mb-2">{phase.phase}</h3>
-                    <div className="text-amber-400 font-caption mb-4">{phase.duration}</div>
-                    <p className="text-slate-300 mb-6">{phase.focus}</p>
+                    <h3 className="font-heading text-xl text-foreground mb-2">{phase.phase}</h3>
+                    <div className="text-primary font-caption mb-4">{phase.duration}</div>
+                    <p className="text-muted-foreground mb-6">{phase.focus}</p>
                     
                     <div className="space-y-2">
                       {phase.deliverables.map((deliverable, idx) => (
-                        <div key={idx} className="flex items-center text-sm text-slate-400">
-                          <CheckCircle className="h-4 w-4 text-green-400 mr-3 flex-shrink-0" />
+                        <div key={idx} className="flex items-center text-sm text-muted-foreground">
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
                           {deliverable}
                         </div>
                       ))}
@@ -302,23 +302,23 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
         </Card>
 
         {/* Exclusive Consultation CTA */}
-        <Card className="executive-card max-w-4xl mx-auto">
+        <Card className="glass-card max-w-4xl mx-auto">
           <CardContent className="p-12 text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-8">
-              <Users className="h-10 w-10 text-slate-900" />
+            <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-600 rounded-full flex items-center justify-center mx-auto mb-8">
+              <Users className="h-10 w-10 text-white" />
             </div>
             
-            <h3 className="font-display text-3xl text-white mb-6">
+            <h3 className="font-display text-3xl text-foreground mb-6">
               Strategic Consultation
             </h3>
             
-            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               Transform these insights into competitive advantage. Schedule an exclusive strategic session 
               to develop your personalized AI implementation blueprint.
             </p>
             
-            <div className="bg-slate-800/50 rounded-xl p-8 mb-10">
-              <h4 className="font-heading text-lg text-white mb-6">Strategic Session Includes:</h4>
+            <div className="glass-card p-8 mb-10">
+              <h4 className="font-heading text-lg text-foreground mb-6">Strategic Session Includes:</h4>
               <div className="grid md:grid-cols-2 gap-6 text-left">
                 {[
                   'Personalized competitive analysis',
@@ -329,8 +329,8 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
                   '90-day quick wins roadmap'
                 ].map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-300">{item}</span>
+                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{item}</span>
                   </div>
                 ))}
               </div>
@@ -338,20 +338,20 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
 
             <Button 
               size="lg"
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 px-12 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+              className="bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary text-white px-12 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
             >
               <Clock className="h-5 w-5 mr-3" />
               Schedule Strategic Session
               <ArrowRight className="h-5 w-5 ml-3" />
             </Button>
             
-            <div className="flex items-center justify-center gap-4 mt-6 text-slate-400 text-sm">
+            <div className="flex items-center justify-center gap-4 mt-6 text-muted-foreground text-sm">
               <div className="flex items-center">
-                <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
+                <AlertTriangle className="h-4 w-4 mr-2 text-primary" />
                 Limited quarterly availability
               </div>
               <div className="flex items-center">
-                <Shield className="h-4 w-4 mr-2 text-green-400" />
+                <Shield className="h-4 w-4 mr-2 text-green-500" />
                 Confidential & strategic focused
               </div>
             </div>
@@ -360,19 +360,19 @@ const ExecutiveIntelligenceReport: React.FC<ExecutiveIntelligenceReportProps> = 
 
         {/* Executive Validation */}
         <div className="text-center mt-16">
-          <p className="text-slate-500 text-sm mb-4 font-caption">
+          <p className="text-muted-foreground text-sm mb-4 font-caption">
             Trusted by Fortune 500 executives and industry leaders
           </p>
           <div className="flex justify-center space-x-1 mb-4">
             {[1, 2, 3, 4, 5].map((star) => (
-              <Star key={star} className="h-5 w-5 text-amber-400 fill-current" />
+              <Star key={star} className="h-5 w-5 text-primary fill-current" />
             ))}
           </div>
-          <blockquote className="text-slate-400 italic max-w-2xl mx-auto">
+          <blockquote className="text-muted-foreground italic max-w-2xl mx-auto">
             "This assessment provided the strategic clarity we needed to position ourselves 
             as AI leaders in our industry. The ROI has been exceptional."
           </blockquote>
-          <p className="text-slate-500 text-sm mt-3">
+          <p className="text-muted-foreground text-sm mt-3">
             — Chief Executive Officer, Technology Sector
           </p>
         </div>
