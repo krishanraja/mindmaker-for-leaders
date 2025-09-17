@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Brain, Target, Users } from "lucide-react";
+import mindmakerLogo from "@/assets/mindmaker-logo.png";
 
 interface HeroSectionProps {
   onStartAssessment: () => void;
@@ -12,6 +13,11 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
       {/* Hero Content */}
       <div className="container-width relative z-10 flex flex-col items-center justify-center min-h-screen text-center text-white">
         <div className="animate-fade-in-up">
+          <img 
+            src={mindmakerLogo} 
+            alt="Mindmaker Logo" 
+            className="w-64 h-16 mx-auto mb-8 object-contain"
+          />
           <h1 className="hero-title font-display font-bold mb-6">
             Transform How You
             <span className="block bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
