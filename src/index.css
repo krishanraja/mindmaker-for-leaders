@@ -201,23 +201,6 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 1rem;
     box-shadow: 0 8px 32px rgba(108, 64, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
-  }
-  
-  .glass-card-dark * {
-    color: inherit;
-  }
-  
-  .glass-card-dark h1,
-  .glass-card-dark h2,
-  .glass-card-dark h3,
-  .glass-card-dark h4 {
-    color: rgba(255, 255, 255, 0.95);
-  }
-  
-  .glass-card-dark p,
-  .glass-card-dark span {
-    color: rgba(255, 255, 255, 0.8);
   }
 
   .glass-button {
@@ -249,15 +232,15 @@
   .hero-title {
     font-size: clamp(2.5rem, 5vw, 4.5rem);
     line-height: 1.1;
-    color: hsl(var(--hero-text)) !important;
+    color: hsl(var(--hero-text));
   }
 
   .hero-text-muted {
-    color: hsl(var(--hero-text-muted)) !important;
+    color: hsl(var(--hero-text-muted));
   }
   
   .hero-text-secondary {
-    color: hsl(var(--hero-text-secondary)) !important;
+    color: hsl(var(--hero-text-secondary));
   }
 
   .section-header {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { HeroSection } from './HeroSection';
 import { StreamlinedAssessment } from './StreamlinedAssessment';
-import ExecutiveIntelligenceReport from './ExecutiveIntelligenceReport';
+import AILiteracyReport from './AILiteracyReport';
 
 type Screen = 'landing' | 'assessment' | 'results';
 
@@ -47,7 +47,7 @@ export default function ExecutiveDiagnosticToolRevamped() {
 
   if (currentScreen === 'results') {
     return (
-      <ExecutiveIntelligenceReport 
+      <AILiteracyReport 
         assessmentData={assessmentData}
         sessionId={sessionId}
         onBack={handleBackToLanding}
