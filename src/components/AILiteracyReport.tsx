@@ -315,32 +315,32 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
           </CardContent>
         </Card>
 
-        {/* Learning Support CTA */}
-        <Card className="glass-card max-w-4xl mx-auto">
+        {/* Advisory Sprint CTA */}
+        <Card className="glass-card">
           <CardContent className="p-12 text-center">
             <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center mx-auto mb-8">
               <Users className="h-10 w-10 text-white" />
             </div>
             
             <h3 className="font-display text-3xl text-foreground mb-6">
-              Accelerate Your AI Learning
+              Book Your AI Advisory Sprint
             </h3>
             
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Ready to put your learning plan into action? Get personalized guidance to master AI tools 
-              and techniques that will transform how you work.
+              Ready to accelerate your AI transformation? Get personalized strategic guidance to implement 
+              AI solutions that drive real business impact.
             </p>
             
             <div className="glass-card p-8 mb-10">
-              <h4 className="font-heading text-lg text-foreground mb-6">Learning Support Includes:</h4>
+              <h4 className="font-heading text-lg text-foreground mb-6">Advisory Sprint Includes:</h4>
               <div className="grid md:grid-cols-2 gap-6 text-left">
                 {[
-                  'Hands-on AI tool training',
-                  'Personalized skill development plan',
-                  'Practical project guidance',
-                  'AI ethics and best practices',
-                  'Ongoing progress tracking',
-                  'Community learning support'
+                  'AI strategy roadmap for your role',
+                  'Custom tool recommendations',
+                  'Implementation priority matrix',
+                  'ROI measurement framework',
+                  'Change management guidance',
+                  '30-day action plan'
                 ].map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
@@ -353,20 +353,23 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
             <Button 
               size="lg"
               className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white px-12 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+              asChild
             >
-              <BookOpen className="h-5 w-5 mr-3" />
-              Start Learning Journey
-              <ArrowRight className="h-5 w-5 ml-3" />
+              <a href="https://calendly.com/krish-raja/mindmaker-leaders" target="_blank" rel="noopener noreferrer">
+                <BookOpen className="h-5 w-5 mr-3" />
+                Book Advisory Sprint
+                <ArrowRight className="h-5 w-5 ml-3" />
+              </a>
             </Button>
             
             <div className="flex items-center justify-center gap-4 mt-6 text-muted-foreground text-sm">
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-2 text-primary" />
-                Self-paced learning
+                90-minute focused session
               </div>
               <div className="flex items-center">
                 <Star className="h-4 w-4 mr-2 text-emerald-500" />
-                Practical, hands-on approach
+                Actionable strategic outcomes
               </div>
             </div>
           </CardContent>
