@@ -12,7 +12,8 @@ import {
   testAIAssessmentChat, 
   testExecutiveInsightsGeneration,
   testCompleteOpenAIIntegration,
-  diagnoseOpenAIIssues 
+  diagnoseOpenAIIssues,
+  testAdvisorySprintNotification
 } from "./utils/testOpenAIIntegration";
 
 // Temporarily expose test functions to global scope for debugging
@@ -24,6 +25,7 @@ import {
 (window as any).testExecutiveInsightsGeneration = testExecutiveInsightsGeneration;
 (window as any).testCompleteOpenAIIntegration = testCompleteOpenAIIntegration;
 (window as any).diagnoseOpenAIIssues = diagnoseOpenAIIssues;
+(window as any).testAdvisorySprintNotification = testAdvisorySprintNotification;
 
 const queryClient = new QueryClient();
 

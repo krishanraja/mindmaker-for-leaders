@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import AdvisorySprintModal from './AdvisorySprintModal';
 import { 
   Brain, 
   Target, 
@@ -30,6 +31,7 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
   sessionId,
   onBack
 }) => {
+  const [isAdvisorySprintModalOpen, setIsAdvisorySprintModalOpen] = useState(false);
   // Calculate AI literacy score based on actual responses
   const calculateLiteracyScore = () => {
     const responses = Object.values(assessmentData);
@@ -353,13 +355,11 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
             <Button 
               size="lg"
               className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white px-12 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-              asChild
+              onClick={() => setIsAdvisorySprintModalOpen(true)}
             >
-              <a href="https://calendly.com/krish-raja/mindmaker-leaders" target="_blank" rel="noopener noreferrer">
-                <BookOpen className="h-5 w-5 mr-3" />
-                Book Advisory Sprint
-                <ArrowRight className="h-5 w-5 ml-3" />
-              </a>
+              <BookOpen className="h-5 w-5 mr-3" />
+              Book Advisory Sprint
+              <ArrowRight className="h-5 w-5 ml-3" />
             </Button>
             
             <div className="flex items-center justify-center gap-4 mt-6 text-muted-foreground text-sm">
@@ -375,6 +375,21 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
           </CardContent>
         </Card>
       </div>
+
+      <AdvisorySprintModal
+        isOpen={isAdvisorySprintModalOpen}
+        onClose={() => setIsAdvisorySprintModalOpen(false)}
+        assessmentData={assessmentData}
+        sessionId={sessionId || ''}
+        scores={{
+          aiMindmakerScore: calculateLiteracyScore(),
+          aiToolFluency: Math.min(100, calculateLiteracyScore() + 10),
+          aiDecisionMaking: Math.min(100, calculateLiteracyScore() - 5),
+          aiCommunication: Math.min(100, calculateLiteracyScore() + 5),
+          aiLearningGrowth: Math.min(100, calculateLiteracyScore() - 10),
+          aiEthicsBalance: Math.min(100, calculateLiteracyScore() + 15)
+        }}
+      />
     </div>
   );
 };

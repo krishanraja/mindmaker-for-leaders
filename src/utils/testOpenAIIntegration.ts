@@ -40,6 +40,15 @@ const mockUserResponses = [
   }
 ];
 
+const mockScores = {
+  aiMindmakerScore: 85,
+  aiToolFluency: 75,
+  aiDecisionMaking: 80,
+  aiCommunication: 90,
+  aiLearningGrowth: 70,
+  aiEthicsBalance: 95
+};
+
 const mockConversationData = {
   sessionId: "test-session-123",
   messages: mockUserResponses,
@@ -296,6 +305,41 @@ export const diagnoseOpenAIIssues = async () => {
   }
 };
 
+// Test Advisory Sprint email notification
+export const testAdvisorySprintNotification = async (): Promise<void> => {
+  console.log('📧 TESTING ADVISORY SPRINT EMAIL NOTIFICATION');
+  
+  try {
+    const testData = {
+      contactData: {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        company: 'Test Company',
+        role: 'CEO',
+        phone: '+1234567890',
+        linkedin: 'https://linkedin.com/in/testuser'
+      },
+      assessmentData: mockAssessmentData,
+      sessionId: 'test-session-123',
+      scores: mockScores
+    };
+
+    const response = await supabase.functions.invoke('send-advisory-sprint-notification', {
+      body: testData
+    });
+
+    if (response.error) {
+      throw response.error;
+    }
+
+    console.log('✅ Advisory Sprint notification sent successfully:', response.data);
+  } catch (error) {
+    console.error('❌ Advisory Sprint notification test failed:', error);
+    throw error;
+  }
+};
+
 // Auto-expose to global scope for testing
 if (typeof window !== 'undefined') {
   (window as any).testBasicOpenAIConnection = testBasicOpenAIConnection;
@@ -303,4 +347,5 @@ if (typeof window !== 'undefined') {
   (window as any).testExecutiveInsightsGeneration = testExecutiveInsightsGeneration;
   (window as any).testCompleteOpenAIIntegration = testCompleteOpenAIIntegration;
   (window as any).diagnoseOpenAIIssues = diagnoseOpenAIIssues;
+  (window as any).testAdvisorySprintNotification = testAdvisorySprintNotification;
 }
