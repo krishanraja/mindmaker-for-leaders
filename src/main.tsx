@@ -9,7 +9,7 @@ if (!root) throw new Error("Root element not found");
 
 createRoot(root).render(
   <ErrorBoundary>
-    <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="mindmaker-theme">
       <App />
     </ThemeProvider>
   </ErrorBoundary>
