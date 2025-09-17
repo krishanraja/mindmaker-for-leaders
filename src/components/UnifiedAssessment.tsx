@@ -10,6 +10,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { useStructuredAssessment } from '@/hooks/useStructuredAssessment';
 import ExecutiveLoadingScreen from './ai-chat/ExecutiveLoadingScreen';
 import LLMInsightEngine from './ai-chat/LLMInsightEngine';
+import { ContactCollectionForm, ContactData } from './ContactCollectionForm';
+import AILiteracyReport from './AILiteracyReport';
 
 
 interface Message {
@@ -31,6 +33,9 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
   const [insightProgress, setInsightProgress] = useState(0);
   const [insightPhase, setInsightPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactData, setContactData] = useState<ContactData | null>(null);
+  const [showResults, setShowResults] = useState(false);
   const { toast } = useToast();
   
   const {
@@ -52,10 +57,10 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     const progressData = getProgressData();
     const hasAnsweredAllQuestions = progressData.completedAnswers >= totalQuestions;
     
-    if (assessmentState.isComplete && hasAnsweredAllQuestions && !isGeneratingInsights && insightProgress === 0) {
-      startInsightGeneration();
+    if (assessmentState.isComplete && hasAnsweredAllQuestions && !showContactForm && !contactData && !isGeneratingInsights && insightProgress === 0) {
+      setShowContactForm(true);
     }
-  }, [assessmentState.isComplete, getProgressData, totalQuestions, isGeneratingInsights, insightProgress]);
+  }, [assessmentState.isComplete, getProgressData, totalQuestions, showContactForm, contactData, isGeneratingInsights, insightProgress]);
 
   const initializeAssessmentSession = async () => {
     try {
@@ -190,9 +195,26 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       setInsightProgress(100);
       clearInterval(progressInterval);
       setIsGeneratingInsights(false);
+      setShowResults(true);
     }, 8000);
   };
 
+  const handleContactSubmit = (data: ContactData) => {
+    setContactData(data);
+    setShowContactForm(false);
+    startInsightGeneration();
+  };
+
+
+  // Show contact form after assessment completion
+  if (showContactForm) {
+    return (
+      <ContactCollectionForm
+        onSubmit={handleContactSubmit}
+        onBack={onBack}
+      />
+    );
+  }
 
   if (isGeneratingInsights) {
     return (
@@ -203,57 +225,17 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     );
   }
 
-  if (assessmentState.isComplete && !isGeneratingInsights) {
+  // Show personalized results with contact data
+  if (showResults && contactData) {
     const assessmentData = getAssessmentData();
     
     return (
-      <div className="bg-hero-clouds min-h-screen relative overflow-hidden">
-        {/* Floating Glass Back Button */}
-        {onBack && (
-          <div className="absolute top-6 left-6 z-20">
-            <Button
-              variant="glass"
-              onClick={onBack}
-              className="glass-button text-white hover:bg-white/20"
-            >
-              ← Back to Selection
-            </Button>
-          </div>
-        )}
-
-        <div className="container-width relative z-10 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-4">
-              Your AI Leadership Assessment Results
-            </h1>
-            <p className="text-xl text-white/80 max-w-3xl mx-auto">
-              Based on your responses, here are personalized insights to accelerate your AI leadership journey.
-            </p>
-          </div>
-
-          <LLMInsightEngine
-            conversationData={messages}
-            assessmentData={assessmentData}
-            sessionId={sessionId}
-            isComplete={true}
-          />
-
-          <div className="mt-12 text-center">
-            <Card className="glass-card-dark border-white/20 max-w-2xl mx-auto">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-semibold mb-4 text-white">Ready to Transform Your Leadership?</h3>
-                <p className="text-white/80 mb-6">
-                  These insights are customized for your leadership profile. Let's discuss how to implement your development plan.
-                </p>
-                
-                <p className="text-white/70">
-                  Complete the assessment to access your personalized AI leadership development plan and recommendations.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+      <AILiteracyReport
+        assessmentData={assessmentData}
+        sessionId={sessionId}
+        contactData={contactData}
+        onBack={onBack}
+      />
     );
   }
 

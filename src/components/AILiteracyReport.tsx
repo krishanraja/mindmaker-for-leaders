@@ -21,15 +21,19 @@ import {
   TrendingUp
 } from 'lucide-react';
 
+import { ContactData } from './ContactCollectionForm';
+
 interface AILiteracyReportProps {
   assessmentData: any;
   sessionId: string | null;
+  contactData: ContactData;
   onBack?: () => void;
 }
 
 const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
   assessmentData,
   sessionId,
+  contactData,
   onBack
 }) => {
   const { toast } = useToast();
@@ -122,11 +126,12 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
 
   const handleAdvisorySprintBooking = async () => {
     try {
-      console.log('Sending anonymous advisory sprint notification...');
+      console.log('Sending personalized advisory sprint notification...');
       
-      // Send assessment data via background email
+      // Send assessment data with contact information via background email
       const { data, error } = await supabase.functions.invoke('send-advisory-sprint-notification', {
         body: {
+          contactData,
           assessmentData,
           sessionId: sessionId || '',
           scores: {
@@ -137,7 +142,7 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
             aiLearningGrowth: Math.min(100, calculateLiteracyScore() - 10),
             aiEthicsBalance: Math.min(100, calculateLiteracyScore() + 15)
           },
-          isAnonymous: true
+          isAnonymous: false
         }
       });
 
@@ -158,7 +163,7 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
     
     toast({
       title: "Calendly Opening",
-      description: "Your assessment data has been sent to Krish for session preparation. Please complete your booking on Calendly.",
+      description: `Hi ${contactData.fullName}! Your personalized assessment data has been sent to Krish for session preparation. Please complete your booking on Calendly.`,
     });
   };
 
@@ -191,12 +196,12 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
           </div>
           
           <h1 className="font-display text-5xl lg:text-6xl text-foreground mb-6 tracking-tight">
-            Your AI Learning
+            {contactData.fullName.split(' ')[0]}'s AI Learning
             <span className="block text-primary">Journey</span>
           </h1>
           
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Personalized insights and recommendations to accelerate your AI literacy 
+            Hello {contactData.fullName} from {contactData.companyName}! Here are your personalized insights and recommendations to accelerate your AI literacy 
             and unlock new possibilities in your work and learning.
           </p>
         </div>
@@ -255,9 +260,9 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
 
               {/* Learning Summary */}
               <div className="glass-card p-8">
-                <h3 className="font-display text-xl text-foreground mb-4">Your Learning Profile</h3>
+                <h3 className="font-display text-xl text-foreground mb-4">{contactData.fullName.split(' ')[0]}'s Learning Profile</h3>
                 <p className="text-muted-foreground leading-relaxed mb-6">
-                  Based on your responses, you're positioned to make significant progress in AI literacy. 
+                  Based on your responses, {contactData.fullName.split(' ')[0]}, you're positioned to make significant progress in AI literacy at {contactData.companyName}. 
                   Your current level shows {score < 40 ? 'strong potential for rapid improvement' : 
                   score < 70 ? 'solid foundation for advanced learning' : 'readiness for expert-level applications'}.
                 </p>

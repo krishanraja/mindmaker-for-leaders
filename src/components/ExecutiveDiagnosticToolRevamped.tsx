@@ -50,6 +50,11 @@ export default function ExecutiveDiagnosticToolRevamped() {
       <AILiteracyReport 
         assessmentData={assessmentData}
         sessionId={sessionId}
+        contactData={{
+          fullName: 'Executive User',
+          companyName: 'Your Organization',
+          email: 'user@company.com'
+        }}
         onBack={handleBackToLanding}
       />
     );

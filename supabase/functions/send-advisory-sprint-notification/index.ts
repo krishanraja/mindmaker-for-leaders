@@ -12,11 +12,13 @@ const corsHeaders = {
 
 interface AdvisorySprintRequest {
   contactData?: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    company: string;
-    role: string;
+    fullName?: string;
+    companyName?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    company?: string;
+    role?: string;
     phone?: string;
     linkedin?: string;
   };
@@ -85,10 +87,10 @@ serve(async (req) => {
         .from('booking_requests')
         .insert({
           session_id: sessionId,
-          contact_name: `${contactData.firstName} ${contactData.lastName}`,
-          contact_email: contactData.email,
-          company_name: contactData.company,
-          role: contactData.role,
+          contact_name: contactData.fullName || `${contactData.firstName || ''} ${contactData.lastName || ''}`.trim() || 'Unknown',
+          contact_email: contactData.email || 'Unknown',
+          company_name: contactData.companyName || contactData.company || 'Unknown',
+          role: contactData.role || 'Leadership Role',
           phone: contactData.phone || null,
           service_type: 'strategy_call', // Fixed: use allowed service_type
           service_title: 'AI Advisory Sprint - 90 Min Leadership Session',
@@ -111,7 +113,7 @@ serve(async (req) => {
     // Prepare email content based on whether it's anonymous or not
     const emailSubject = isAnonymous 
       ? `🚀 ANONYMOUS AI LITERACY ASSESSMENT - Advisory Sprint Interest`
-      : `🚀 NEW ADVISORY SPRINT BOOKING: ${contactData?.firstName} ${contactData?.lastName} from ${contactData?.company}`;
+      : `🚀 NEW ADVISORY SPRINT BOOKING: ${contactData?.fullName || `${contactData?.firstName || ''} ${contactData?.lastName || ''}`.trim() || 'Unknown'} from ${contactData?.companyName || contactData?.company || 'Unknown'}`;
 
     const contactSection = isAnonymous ? `
       <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -125,12 +127,12 @@ serve(async (req) => {
         <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">👤 Contact Information</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div>
-            <p><strong>Name:</strong> ${contactData?.firstName} ${contactData?.lastName}</p>
+            <p><strong>Name:</strong> ${contactData?.fullName || `${contactData?.firstName || ''} ${contactData?.lastName || ''}`.trim() || 'Unknown'}</p>
             <p><strong>Email:</strong> <a href="mailto:${contactData?.email}">${contactData?.email}</a></p>
-            <p><strong>Company:</strong> ${contactData?.company}</p>
+            <p><strong>Company:</strong> ${contactData?.companyName || contactData?.company || 'Unknown'}</p>
           </div>
           <div>
-            <p><strong>Role/Title:</strong> ${contactData?.role}</p>
+            <p><strong>Role/Title:</strong> ${contactData?.role || 'Leadership Role'}</p>
             <p><strong>Phone:</strong> ${contactData?.phone || 'Not provided'}</p>
             <p><strong>LinkedIn:</strong> ${contactData?.linkedin ? `<a href="${contactData.linkedin}" target="_blank">${contactData.linkedin}</a>` : 'Not provided'}</p>
           </div>
@@ -170,10 +172,10 @@ serve(async (req) => {
             <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">🎯 Next Steps</h2>
             <ul style="color: #374151; line-height: 1.6;">
               <li><strong>Immediate:</strong> Review this comprehensive assessment data</li>
-              ${isAnonymous 
+               ${isAnonymous 
                 ? '<li><strong>Follow-up:</strong> User will book via Calendly and provide contact details</li>'
-                : `<li><strong>Follow-up:</strong> Contact ${contactData?.firstName} at ${contactData?.email} or ${contactData?.phone || 'email only'}</li>`
-              }
+                : `<li><strong>Follow-up:</strong> Contact ${contactData?.fullName || contactData?.firstName || 'User'} at ${contactData?.email} or ${contactData?.phone || 'email only'}</li>`
+               }
               <li><strong>Preparation:</strong> Use assessment insights to customize the Advisory Sprint session</li>
               <li><strong>Calendar:</strong> Watch for booking via the Calendly link above</li>
             </ul>
