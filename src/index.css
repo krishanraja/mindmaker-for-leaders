@@ -71,6 +71,11 @@
     --input: 222 28% 18%;
     /* Primary colors maintained */
   }
+
+  /* Hero section card overrides */
+  .bg-hero-clouds .glass-card-dark {
+    --card-foreground: 0 0% 100%; /* Force white text in hero cards */
+  }
 }
 
 /* Typography System - Inter Only */
