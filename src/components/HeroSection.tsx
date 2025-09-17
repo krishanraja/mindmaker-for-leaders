@@ -19,19 +19,16 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             className="w-64 h-16 mx-auto mb-8 object-contain"
           />
           <h1 className="hero-title font-display font-bold mb-6">
-            Transform How You
-            <span className="block bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
-              Think About AI
-            </span>
+            AI Literacy for Business Leaders
           </h1>
         </div>
         
         <div className="animate-fade-in-up max-w-2xl mb-8">
           <p className="text-xl font-medium mb-4 opacity-90">
-            AI has learned human language, but humans haven't learned AI's way of thinking
+            AI Literacy precedes AI leadership.
           </p>
           <p className="text-lg opacity-75">
-            Build the cognitive frameworks and mental models to think, reason, and collaborate effectively with AI systems
+            Take our 5 minute AI literacy assessment to get started on your journey.
           </p>
         </div>
 
@@ -40,7 +37,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             variant="hero" 
             size="xl" 
             onClick={onStartAssessment}
-            className="group"
+            className="group border border-gray-300/50"
           >
             Start Your AI Literacy Assessment
             <ArrowRight className="group-hover:translate-x-1 transition-transform" />
@@ -55,7 +52,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
               <h3 className="font-heading text-lg font-semibold mb-2">
                 COGNITIVE FRAMEWORKS
               </h3>
-              <p className="text-sm opacity-80">
+              <p className="text-sm text-gray-300">
                 Learn systematic thinking patterns for AI collaboration
               </p>
             </CardContent>
@@ -67,7 +64,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
               <h3 className="font-heading text-lg font-semibold mb-2">
                 STRATEGIC LITERACY
               </h3>
-              <p className="text-sm opacity-80">
+              <p className="text-sm text-gray-300">
                 Build executive-level understanding beyond tool usage
               </p>
             </CardContent>
@@ -79,7 +76,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
               <h3 className="font-heading text-lg font-semibold mb-2">
                 LEADERSHIP READINESS
               </h3>
-              <p className="text-sm opacity-80">
+              <p className="text-sm text-gray-300">
                 Prepare to become an AI orchestrator and leader
               </p>
             </CardContent>
