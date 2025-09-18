@@ -19,7 +19,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             className="w-48 h-12 sm:w-56 sm:h-14 md:w-64 md:h-16 mx-auto mb-6 sm:mb-8 object-contain"
           />
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold mb-4 sm:mb-6 leading-tight">
-            Business Leaders'
+            Business Leaders
           </h1>
         </div>
         
