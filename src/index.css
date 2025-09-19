@@ -104,6 +104,12 @@
 
 /* Animation System - CONFLICT-FREE */
 @layer components {
+  /* Custom Button Shadows */
+  --shadow-purple: 0 4px 12px hsl(248 73% 67% / 0.25);
+  --shadow-purple-lg: 0 8px 24px hsl(248 73% 67% / 0.35);
+  --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.08);
+  --shadow-elegant: 0 10px 30px -10px hsl(248 73% 67% / 0.3);
+
   /* Bulletproof component styles with !important for effects */
   .glass-card {
     background: hsl(var(--background) / 0.95) !important;
@@ -119,6 +125,23 @@
     border: 1px solid hsl(var(--border) / 0.2) !important;
     border-radius: 1rem !important;
     box-shadow: 0 8px 32px hsl(var(--primary) / 0.1) !important;
+  }
+
+  /* Hero Button Styling */
+  .btn-hero-primary {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-semibold text-white;
+    background: linear-gradient(to right, hsl(248, 73%, 67%), hsl(264, 35%, 46%));
+    box-shadow: var(--shadow-lg);
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 12px 32px;
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+
+  .btn-hero-primary:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-elegant);
   }
   
   /* Hero text shimmer effect */

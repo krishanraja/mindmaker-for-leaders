@@ -30,11 +30,11 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
         <div className="fade-in-up mb-8 sm:mb-12 w-full max-w-sm sm:max-w-md">
           <Button 
             onClick={onStartAssessment}
-            className="btn-hero-primary mobile-button w-full group"
+            className="btn-hero-primary px-8 py-3 text-lg font-medium group"
             aria-label="Start AI Literacy Assessment"
           >
             Start Assessment
-            <ArrowRight className="animated-arrow ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </div>
 

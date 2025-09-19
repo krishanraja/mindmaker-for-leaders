@@ -5,29 +5,29 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-purple hover:shadow-purple-lg hover:scale-105 min-h-[44px]",
+        default: "bg-[hsl(248,73%,67%)] text-white hover:bg-[hsl(248,73%,67%)]/90",
+        primary: "bg-[hsl(248,73%,67%)] text-white font-semibold shadow-purple hover:bg-[hsl(248,73%,67%)]/90 hover:scale-105 transition-all duration-300",
+        hero: "bg-[hsl(248,73%,67%)] text-white font-semibold shadow-purple-lg hover:bg-[hsl(248,73%,67%)]/90 hover:scale-105 transition-all duration-300",
+        glass: "bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 min-h-[44px]",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground min-h-[44px]",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 min-h-[44px]",
-        ghost: "hover:bg-accent hover:text-accent-foreground min-h-[44px]",
-        link: "text-primary underline-offset-4 hover:underline min-h-[44px]",
-        hero: "btn-hero-primary text-base font-bold py-3 px-8 min-h-[48px]",
-        "hero-secondary": "btn-hero-secondary text-base font-bold py-3 px-8 min-h-[48px]",
-        glass: "glass-card-dark text-white border border-white/20 backdrop-blur-md min-h-[44px]",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2 min-h-[44px]",
-        sm: "h-9 rounded-md px-3 min-h-[40px]",
-        lg: "h-11 rounded-lg px-8 min-h-[48px]",
-        xl: "h-12 rounded-lg px-10 text-base min-h-[48px]",
-        icon: "h-10 w-10 min-h-[44px] min-w-[44px]",
+        default: "h-10 px-4 py-2",
+        sm: "h-9 px-3 rounded-md",
+        lg: "h-11 px-8 rounded-md",
+        xl: "h-14 px-8 py-6 text-base font-semibold rounded-lg",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: {
