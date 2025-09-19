@@ -37,7 +37,6 @@ export default {
 				accent: {
 					DEFAULT: "hsl(var(--accent))",
 					400: "hsl(var(--accent-400))",
-					secondary: "hsl(var(--accent-secondary))",
 					foreground: "hsl(var(--accent-foreground))",
 				},
 				background: "hsl(var(--background))",
@@ -66,11 +65,6 @@ export default {
 					DEFAULT: "hsl(var(--secondary))",
 					foreground: "hsl(var(--secondary-foreground))",
 				},
-				hero: {
-					text: "hsl(var(--hero-text))",
-					"text-muted": "hsl(var(--hero-text-muted))",
-					"text-secondary": "hsl(var(--hero-text-secondary))",
-				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -94,8 +88,8 @@ export default {
 				sm: "var(--shadow-sm)",
 				md: "var(--shadow-md)",
 				lg: "var(--shadow-lg)",
-				purple: "var(--shadow-purple)",
-				'purple-lg': "var(--shadow-purple-lg)",
+				elegant: "var(--shadow-elegant)",
+				glow: "var(--shadow-glow)",
 			},
 			spacing: {
 				18: "4.5rem",
