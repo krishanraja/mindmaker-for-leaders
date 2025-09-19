@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Brain, Target, Users } from "lucide-react";
+import mindmakerLogo from "@/assets/mindmaker-logo-white.png";
 
 interface HeroSectionProps {
   onStartAssessment: () => void;
@@ -12,10 +13,11 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
       {/* Hero Content - Optimized for new design system */}
       <div className="container-width relative z-10 flex flex-col items-center justify-center min-h-screen text-center">
         <div className="fade-in-up">
-          {/* Placeholder for logo */}
-          <div className="w-40 h-10 sm:w-48 sm:h-12 md:w-56 md:h-14 lg:w-64 lg:h-16 mx-auto mb-6 sm:mb-8 bg-white/20 rounded-lg flex items-center justify-center">
-            <span className="text-white/80 text-sm font-medium">LOGO</span>
-          </div>
+          <img 
+            src={mindmakerLogo} 
+            alt="MindMaker Logo" 
+            className="h-16 mx-auto mb-6 sm:mb-8"
+          />
           <h1 className="hero-heading hero-text-shimmer mb-4 sm:mb-6">
             Business Leaders
           </h1>
