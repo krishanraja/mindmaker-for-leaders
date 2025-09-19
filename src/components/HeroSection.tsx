@@ -17,7 +17,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             <span className="text-white/80 text-sm font-medium">LOGO</span>
           </div>
           <h1 className="hero-heading hero-text-shimmer mb-4 sm:mb-6">
-            AI Literacy Assessment
+            Business Leaders
           </h1>
         </div>
         
@@ -33,47 +33,11 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             className="btn-hero-primary mobile-button w-full group"
             aria-label="Start AI Literacy Assessment"
           >
-            Start Your AI Literacy Assessment
+            Start Assessment
             <ArrowRight className="animated-arrow ml-2 h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
 
-        {/* Feature Cards - Clean and minimal */}
-        <div className="responsive-grid max-w-3xl animate-scale-in mobile-padding">
-          <Card className="glass-card-dark hover-scale">
-            <CardContent className="mobile-padding text-center">
-              <Brain className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3" />
-              <h3 className="font-heading mobile-text-base font-semibold text-white">
-                Learn
-              </h3>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card-dark hover-scale">
-            <CardContent className="mobile-padding text-center">
-              <Target className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3" />
-              <h3 className="font-heading mobile-text-base font-semibold text-white">
-                Build
-              </h3>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card-dark hover-scale">
-            <CardContent className="mobile-padding text-center">
-              <Users className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3" />
-              <h3 className="font-heading mobile-text-base font-semibold text-white">
-                Lead
-              </h3>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Philosophy Statement */}
-        <div className="mt-12 sm:mt-16 max-w-2xl sm:max-w-3xl fade-in-up mobile-padding">
-          <blockquote className="mobile-text-base font-medium italic text-white/90 border-l-4 border-white/30 pl-4 sm:pl-6 leading-relaxed">
-            "Being AI literate is the critical pre-game before you become an AI orchestrator or AI leader"
-          </blockquote>
-        </div>
       </div>
     </div>
   );

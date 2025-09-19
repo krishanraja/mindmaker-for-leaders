@@ -216,9 +216,16 @@
 
   /* Hero headings - progressively larger */
   .hero-heading {
-    @apply text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl;
-    @apply font-bold tracking-[0.1em] sm:tracking-[0.15em];
-    @apply leading-[1.1] sm:leading-tight;
+    @apply font-display font-black leading-[1.1];
+    font-size: 2.25rem; /* 36px mobile */
+    letter-spacing: -0.03em;
+  }
+
+  @media (min-width: 768px) {
+    .hero-heading {
+      font-size: 3rem; /* 48px desktop */
+      letter-spacing: -0.035em;
+    }
   }
 
   /* Section headings */
