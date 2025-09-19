@@ -17,16 +17,13 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             <span className="text-white/80 text-sm font-medium">LOGO</span>
           </div>
           <h1 className="hero-heading hero-text-shimmer mb-4 sm:mb-6">
-            Business Leaders
+            AI Literacy Assessment
           </h1>
         </div>
         
-        <div className="fade-in-up max-w-lg sm:max-w-2xl mb-6 sm:mb-8 mobile-padding">
-          <p className="mobile-text-lg font-medium mb-3 sm:mb-4 text-white/90 leading-relaxed">
-            AI Literacy precedes AI leadership.
-          </p>
-          <p className="mobile-text-base text-white/75 leading-relaxed">
-            Take our 5 minute AI literacy assessment to get started on your journey.
+        <div className="fade-in-up max-w-2xl mb-6 sm:mb-8 mobile-padding">
+          <p className="mobile-text-lg text-white/90 leading-relaxed">
+            Take our 5-minute assessment to evaluate your AI readiness.
           </p>
         </div>
 
@@ -41,41 +38,32 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
           </Button>
         </div>
 
-        {/* Feature Cards - Updated with bulletproof glass morphism */}
-        <div className="responsive-grid max-w-4xl animate-scale-in mobile-padding">
+        {/* Feature Cards - Clean and minimal */}
+        <div className="responsive-grid max-w-3xl animate-scale-in mobile-padding">
           <Card className="glass-card-dark hover-scale">
             <CardContent className="mobile-padding text-center">
-              <Brain className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3 sm:mb-4" />
-              <h3 className="font-heading mobile-text-base font-semibold mb-2 leading-tight text-white">
-                COGNITIVE FRAMEWORKS
+              <Brain className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3" />
+              <h3 className="font-heading mobile-text-base font-semibold text-white">
+                Learn
               </h3>
-              <p className="mobile-text-sm text-white/80 leading-relaxed">
-                Learn systematic thinking patterns for AI collaboration
-              </p>
             </CardContent>
           </Card>
 
           <Card className="glass-card-dark hover-scale">
             <CardContent className="mobile-padding text-center">
-              <Target className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3 sm:mb-4" />
-              <h3 className="font-heading mobile-text-base font-semibold mb-2 leading-tight text-white">
-                STRATEGIC LITERACY
+              <Target className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3" />
+              <h3 className="font-heading mobile-text-base font-semibold text-white">
+                Build
               </h3>
-              <p className="mobile-text-sm text-white/80 leading-relaxed">
-                Build executive-level understanding beyond tool usage
-              </p>
             </CardContent>
           </Card>
 
-          <Card className="glass-card-dark hover-scale sm:col-span-2 lg:col-span-1">
+          <Card className="glass-card-dark hover-scale">
             <CardContent className="mobile-padding text-center">
-              <Users className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3 sm:mb-4" />
-              <h3 className="font-heading mobile-text-base font-semibold mb-2 leading-tight text-white">
-                LEADERSHIP READINESS
+              <Users className="h-8 w-8 sm:h-10 sm:w-10 text-white/70 mx-auto mb-3" />
+              <h3 className="font-heading mobile-text-base font-semibold text-white">
+                Lead
               </h3>
-              <p className="mobile-text-sm text-white/80 leading-relaxed">
-                Prepare to become an AI orchestrator and leader
-              </p>
             </CardContent>
           </Card>
         </div>
