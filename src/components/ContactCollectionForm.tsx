@@ -61,13 +61,13 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
 
   return (
     <div className="bg-hero-clouds min-h-screen relative overflow-hidden">
-      {/* Back Button - Mobile Optimized */}
+      {/* Back Button - Mobile App Optimized */}
       {onBack && (
-        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
+        <div className="absolute top-safe-5 left-5 sm:top-6 sm:left-6 z-20">
           <Button
             variant="glass"
             onClick={onBack}
-            className="glass-button text-white hover:bg-white/20 text-sm sm:text-base"
+            className="glass-button text-white hover:bg-white/20 mobile-button rounded-xl"
             aria-label="Go back to assessment"
           >
             ← Back
@@ -75,25 +75,25 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
         </div>
       )}
 
-      <div className="container-width relative z-10 py-6 sm:py-8">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          {/* Header - Mobile Optimized */}
-          <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4 leading-tight">
+      <div className="safe-area-padding relative z-10 py-6 sm:py-8">
+        <div className="max-w-lg sm:max-w-2xl mx-auto">
+          {/* Header - Mobile App Optimized */}
+          <div className="text-center mobile-section">
+            <h1 className="text-mobile-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4 leading-tight">
               Almost Done!
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-3xl mx-auto leading-relaxed px-2">
+            <p className="text-mobile-base sm:text-lg text-white/80 max-w-md sm:max-w-2xl mx-auto leading-relaxed">
               Please provide your contact details to personalize your results and receive your custom AI leadership development plan.
             </p>
           </div>
 
-        {/* Contact Form - Mobile Optimized */}
-        <Card className="glass-card-dark border-white/20">
-          <CardContent className="p-4 sm:p-6 md:p-8">
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        {/* Contact Form - Mobile App Optimized */}
+        <Card className="glass-card-dark border-white/20 rounded-xl">
+          <CardContent className="touch-padding">
+            <form onSubmit={handleSubmit} className="touch-spacing">
               {/* Full Name */}
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-white font-medium text-sm sm:text-base">
+              <div className="space-y-3">
+                <Label htmlFor="fullName" className="text-white font-medium text-mobile-base">
                   <User className="h-4 w-4 inline mr-2" />
                   Full Name
                 </Label>
@@ -102,19 +102,19 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
                   type="text"
                   value={contactData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-base"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 touch-target text-mobile-base rounded-xl"
                   placeholder="Enter your full name"
                   autoComplete="name"
                   aria-describedby={errors.fullName ? "fullName-error" : undefined}
                 />
                 {errors.fullName && (
-                  <p id="fullName-error" className="text-red-400 text-sm" role="alert">{errors.fullName}</p>
+                  <p id="fullName-error" className="text-red-400 text-mobile-sm" role="alert">{errors.fullName}</p>
                 )}
               </div>
 
               {/* Company Name */}
-              <div className="space-y-2">
-                <Label htmlFor="companyName" className="text-white font-medium text-sm sm:text-base">
+              <div className="space-y-3">
+                <Label htmlFor="companyName" className="text-white font-medium text-mobile-base">
                   <Building className="h-4 w-4 inline mr-2" />
                   Company Name
                 </Label>
@@ -123,19 +123,19 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
                   type="text"
                   value={contactData.companyName}
                   onChange={(e) => handleInputChange('companyName', e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-base"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 touch-target text-mobile-base rounded-xl"
                   placeholder="Enter your company name"
                   autoComplete="organization"
                   aria-describedby={errors.companyName ? "companyName-error" : undefined}
                 />
                 {errors.companyName && (
-                  <p id="companyName-error" className="text-red-400 text-sm" role="alert">{errors.companyName}</p>
+                  <p id="companyName-error" className="text-red-400 text-mobile-sm" role="alert">{errors.companyName}</p>
                 )}
               </div>
 
               {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-white font-medium text-sm sm:text-base">
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-white font-medium text-mobile-base">
                   <Mail className="h-4 w-4 inline mr-2" />
                   Email Address
                 </Label>
@@ -144,20 +144,20 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
                   type="email"
                   value={contactData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-base"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 touch-target text-mobile-base rounded-xl"
                   placeholder="Enter your email address"
                   autoComplete="email"
                   aria-describedby={errors.email ? "email-error" : undefined}
                 />
                 {errors.email && (
-                  <p id="email-error" className="text-red-400 text-sm" role="alert">{errors.email}</p>
+                  <p id="email-error" className="text-red-400 text-mobile-sm" role="alert">{errors.email}</p>
                 )}
               </div>
 
-              {/* Submit Button - Mobile Optimized */}
+              {/* Submit Button - Mobile App Optimized */}
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 min-h-[48px]"
+                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white mobile-button text-mobile-base sm:text-lg font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-xl"
                 aria-label="Submit contact information to view personalized results"
               >
                 View My Personalized Results
@@ -166,7 +166,7 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
             </form>
 
               {/* Privacy Note */}
-              <p className="text-white/60 text-sm text-center mt-6">
+              <p className="text-white/60 text-mobile-xs text-center mt-6 leading-relaxed">
                 Your information is secure and will only be used to personalize your assessment results and provide relevant AI leadership insights.
               </p>
             </CardContent>

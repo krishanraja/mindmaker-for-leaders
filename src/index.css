@@ -201,13 +201,54 @@
     @apply text-xl sm:text-2xl md:text-3xl;
   }
 
-  /* Mobile-First Spacing */
+  /* Mobile-First Spacing - Enhanced for native app feel */
   .spacing-mobile {
     @apply space-y-3 sm:space-y-4 md:space-y-6;
   }
 
   .padding-mobile {
     @apply p-3 sm:p-4 md:p-6 lg:p-8;
+  }
+
+  /* Mobile-specific safe area utilities */
+  .safe-area-padding {
+    @apply px-5 sm:px-6 md:px-8;
+    padding-top: max(1.25rem, env(safe-area-inset-top));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+
+  /* Mobile typography scale */
+  .text-mobile-xs { @apply text-xs leading-4 tracking-wide; }
+  .text-mobile-sm { @apply text-sm leading-5 tracking-normal; }
+  .text-mobile-base { @apply text-sm sm:text-base leading-6 tracking-normal; }
+  .text-mobile-lg { @apply text-base sm:text-lg leading-6 tracking-normal; }
+  .text-mobile-xl { @apply text-lg sm:text-xl leading-7 tracking-tight; }
+  .text-mobile-2xl { @apply text-xl sm:text-2xl leading-8 tracking-tight; }
+  .text-mobile-3xl { @apply text-2xl sm:text-3xl leading-9 tracking-tight; }
+
+  /* Touch-friendly spacing */
+  .touch-spacing { @apply space-y-3 sm:space-y-4; }
+  .touch-padding { @apply p-4 sm:p-6; }
+  .touch-target { @apply min-h-[48px] min-w-[48px]; }
+
+  /* Mobile card improvements */
+  .mobile-card {
+    @apply rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8;
+    @apply bg-card/95 backdrop-blur border-border/50;
+  }
+
+  /* Mobile button enhancements */
+  .mobile-button {
+    @apply touch-target px-6 sm:px-8 py-3 sm:py-4;
+    @apply text-sm sm:text-base font-medium;
+    @apply rounded-xl transition-all duration-200;
+  }
+
+  /* Improved breathing room */
+  .mobile-section { @apply mb-8 sm:mb-12 md:mb-16; }
+  .mobile-content { @apply space-y-4 sm:space-y-6 md:space-y-8; }
   }
 
   .margin-mobile {
@@ -299,7 +340,6 @@
     font-size: clamp(1.875rem, 4vw, 2.25rem);
     line-height: 1.2;
   }
-}
 
 /* Base element styling */
 @layer base {

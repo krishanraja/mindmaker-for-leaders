@@ -101,6 +101,20 @@ export default {
 				18: "4.5rem",
 				88: "22rem",
 				128: "32rem",
+				// Mobile-optimized spacing
+				"safe-4": "max(1rem, env(safe-area-inset-top))",
+				"safe-5": "max(1.25rem, env(safe-area-inset-top))",
+				"safe-6": "max(1.5rem, env(safe-area-inset-top))",
+			},
+			fontSize: {
+				// Mobile-optimized typography scale
+				'mobile-xs': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.025em' }],
+				'mobile-sm': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0' }],
+				'mobile-base': ['0.875rem', { lineHeight: '1.5rem', letterSpacing: '0' }],
+				'mobile-lg': ['1rem', { lineHeight: '1.5rem', letterSpacing: '0' }],
+				'mobile-xl': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.025em' }],
+				'mobile-2xl': ['1.25rem', { lineHeight: '2rem', letterSpacing: '-0.025em' }],
+				'mobile-3xl': ['1.5rem', { lineHeight: '2.25rem', letterSpacing: '-0.025em' }],
 			},
 			keyframes: {
 				'accordion-down': {

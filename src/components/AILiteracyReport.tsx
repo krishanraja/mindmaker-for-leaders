@@ -174,13 +174,13 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
 
-      {/* Back Button - Mobile Optimized */}
+      {/* Back Button - Mobile App Optimized */}
       {onBack && (
-        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8 z-20">
+        <div className="absolute top-safe-5 left-5 sm:top-6 sm:left-6 md:top-8 md:left-8 z-20">
           <Button
             variant="outline"
             onClick={onBack}
-            className="bg-card/80 backdrop-blur-sm text-sm sm:text-base"
+            className="bg-card/80 backdrop-blur-sm mobile-button rounded-xl"
             aria-label="Go back to assessment"
           >
             ← Back to Assessment
@@ -188,28 +188,28 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
         </div>
       )}
 
-      <div className="container-width relative z-10 py-6 sm:py-8 md:py-12 lg:py-16 px-4 sm:px-6">
-        {/* Header - Mobile Optimized */}
-        <div className="text-center mb-8 sm:mb-12 md:mb-16">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-caption mb-4 sm:mb-6">
+      <div className="safe-area-padding relative z-10 py-6 sm:py-8 md:py-12 lg:py-16">
+        {/* Header - Mobile App Optimized */}
+        <div className="text-center mobile-section">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 sm:px-4 py-2 rounded-full text-mobile-xs sm:text-sm font-caption mb-4 sm:mb-6">
             <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
             AI Literacy Assessment Results
           </div>
           
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-foreground mb-4 sm:mb-6 tracking-tight leading-tight">
+          <h1 className="font-display text-mobile-2xl sm:text-3xl md:text-4xl lg:text-5xl text-foreground mb-4 sm:mb-6 tracking-tight leading-tight">
             {contactData.fullName.split(' ')[0]}'s AI Learning
             <span className="block text-primary">Journey</span>
           </h1>
           
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-2">
+          <p className="text-mobile-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto leading-relaxed">
             Hello {contactData.fullName} from {contactData.companyName}! Here are your personalized insights and recommendations to accelerate your AI literacy 
             and unlock new possibilities in your work and learning.
           </p>
         </div>
 
-        {/* Literacy Score Dashboard - Mobile Optimized */}
-        <Card className="mb-8 sm:mb-12 max-w-6xl mx-auto border-0 bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm shadow-2xl">
-          <CardContent className="p-4 sm:p-6 md:p-8 lg:p-12">
+        {/* Literacy Score Dashboard - Mobile App Optimized */}
+        <Card className="mobile-section max-w-4xl sm:max-w-6xl mx-auto border-0 bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm shadow-2xl rounded-xl">
+          <CardContent className="touch-padding md:p-8 lg:p-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 items-center">
               {/* Primary Score */}
               <div className="text-center lg:text-left">
@@ -277,18 +277,18 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
         </Card>
 
         {/* Learning Insights */}
-        <div className="mb-12">
-          <div className="text-center mb-10">
-            <h2 className="font-display text-3xl text-foreground mb-4">Your Learning Opportunities</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+        <div className="mobile-section">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="font-display text-mobile-2xl sm:text-3xl text-foreground mb-3 sm:mb-4">Your Learning Opportunities</h2>
+            <p className="text-mobile-sm sm:text-base text-muted-foreground max-w-xl sm:max-w-2xl mx-auto leading-relaxed">
               Targeted recommendations to improve your AI literacy and practical skills
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
             {learningInsights.map((insight, index) => (
-              <Card key={index} className="glass-card group hover:scale-105 transition-all duration-300">
-                <CardContent className="p-4 sm:p-6 lg:p-8">
+              <Card key={index} className="glass-card group hover:scale-105 transition-all duration-300 rounded-xl">
+                <CardContent className="touch-padding lg:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <insight.icon className="h-8 w-8 text-primary" />
                     <Badge 
@@ -302,21 +302,21 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
                     </Badge>
                   </div>
                   
-                  <h3 className="font-heading text-xl text-foreground mb-3">{insight.insight}</h3>
-                  <p className="text-muted-foreground mb-6 leading-relaxed">{insight.description}</p>
+                  <h3 className="font-heading text-mobile-lg sm:text-xl text-foreground mb-3">{insight.insight}</h3>
+                  <p className="text-mobile-sm sm:text-base text-muted-foreground mb-6 leading-relaxed">{insight.description}</p>
                   
-                  <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
                     <div>
-                      <div className="text-lg font-bold text-foreground">{insight.timeline}</div>
-                      <div className="text-xs text-muted-foreground font-caption">Timeline</div>
+                      <div className="text-mobile-base sm:text-lg font-bold text-foreground">{insight.timeline}</div>
+                      <div className="text-mobile-xs text-muted-foreground font-caption">Timeline</div>
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-foreground">{insight.impact}</div>
-                      <div className="text-xs text-muted-foreground font-caption">Impact</div>
+                      <div className="text-mobile-base sm:text-lg font-bold text-foreground">{insight.impact}</div>
+                      <div className="text-mobile-xs text-muted-foreground font-caption">Impact</div>
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-primary">{insight.improvement}</div>
-                      <div className="text-xs text-muted-foreground font-caption">Improvement</div>
+                      <div className="text-mobile-base sm:text-lg font-bold text-primary">{insight.improvement}</div>
+                      <div className="text-mobile-xs text-muted-foreground font-caption">Improvement</div>
                     </div>
                   </div>
                 </CardContent>
