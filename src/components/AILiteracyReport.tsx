@@ -188,28 +188,28 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
         </div>
       )}
 
-      <div className="safe-area-padding relative z-10 py-6 sm:py-8 md:py-12 lg:py-16">
+      <div className="container-width relative z-10 py-6 sm:py-8 md:py-12 lg:py-16">
         {/* Header - Mobile App Optimized */}
         <div className="text-center mobile-section">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 sm:px-4 py-2 rounded-full text-mobile-xs sm:text-sm font-caption mb-4 sm:mb-6">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-caption mb-4 sm:mb-6">
             <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
             AI Literacy Assessment Results
           </div>
           
-          <h1 className="font-display text-mobile-2xl sm:text-3xl md:text-4xl lg:text-5xl text-foreground mb-4 sm:mb-6 tracking-tight leading-tight">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-foreground mb-4 sm:mb-6 tracking-tight leading-tight">
             {contactData.fullName.split(' ')[0]}'s AI Learning
             <span className="block text-primary">Journey</span>
           </h1>
           
-          <p className="text-mobile-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto leading-relaxed">
             Hello {contactData.fullName} from {contactData.companyName}! Here are your personalized insights and recommendations to accelerate your AI literacy 
             and unlock new possibilities in your work and learning.
           </p>
         </div>
 
         {/* Literacy Score Dashboard - Mobile App Optimized */}
-        <Card className="mobile-section max-w-4xl sm:max-w-6xl mx-auto border-0 bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm shadow-2xl rounded-xl">
-          <CardContent className="touch-padding md:p-8 lg:p-12">
+        <Card className="mobile-section max-w-4xl mx-auto border-0 bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm shadow-2xl rounded-xl">
+          <CardContent className="p-6 md:p-8 lg:p-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 items-center">
               {/* Primary Score */}
               <div className="text-center lg:text-left">

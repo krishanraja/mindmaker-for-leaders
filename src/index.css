@@ -144,17 +144,17 @@
     box-shadow: var(--shadow-elegant);
   }
   
-  /* Hero text shimmer effect */
+  /* Hero text shimmer effect - FIXED to preserve white text */
   .hero-text-shimmer {
+    color: white !important;
     background: linear-gradient(90deg, 
-      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.8) 0%,
       rgba(255, 255, 255, 1) 50%,
-      rgba(255, 255, 255, 0.4) 100%) !important;
-    background-size: 400% 100% !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    animation: hero-text-shimmer 3s ease-in-out infinite !important;
+      rgba(255, 255, 255, 0.8) 100%);
+    background-size: 400% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: hero-text-shimmer 3s ease-in-out infinite;
   }
   
   @keyframes hero-text-shimmer {
@@ -171,19 +171,7 @@
     ) !important;
   }
 
-  /* Button System - BULLETPROOF VARIANTS */
-  .btn-hero-primary {
-    background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent))) !important;
-    color: white !important;
-    box-shadow: var(--shadow-elegant) !important;
-    transform: scale(1) !important;
-    transition: all 0.3s ease !important;
-  }
-  
-  .btn-hero-primary:hover {
-    box-shadow: var(--shadow-glow) !important;
-    transform: scale(1.05) !important;
-  }
+  /* REMOVED DUPLICATE BUTTON DEFINITION - Using single definition above */
   
   .btn-hero-secondary {
     background: transparent !important;
