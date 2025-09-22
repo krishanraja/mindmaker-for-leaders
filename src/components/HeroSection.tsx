@@ -18,7 +18,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             alt="MindMaker Logo" 
             className="h-16 mx-auto mb-6 sm:mb-8"
           />
-          <h1 className="hero-heading hero-text-shimmer mb-4 sm:mb-6">
+          <h1 className="hero-heading hero-text-shimmer text-white mb-4 sm:mb-6">
             Business Leaders
           </h1>
         </div>
