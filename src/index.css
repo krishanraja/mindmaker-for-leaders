@@ -144,17 +144,9 @@
     box-shadow: var(--shadow-elegant);
   }
   
-  /* Hero text shimmer effect - FIXED to preserve white text */
+  /* Hero text - simple white text without shimmer */
   .hero-text-shimmer {
     color: white !important;
-    background: linear-gradient(90deg, 
-      rgba(255, 255, 255, 0.8) 0%,
-      rgba(255, 255, 255, 1) 50%,
-      rgba(255, 255, 255, 0.8) 100%);
-    background-size: 400% 100%;
-    background-clip: text;
-    -webkit-background-clip: text;
-    animation: hero-text-shimmer 3s ease-in-out infinite;
   }
   
   @keyframes hero-text-shimmer {
