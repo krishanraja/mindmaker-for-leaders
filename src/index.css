@@ -144,9 +144,25 @@
     box-shadow: var(--shadow-elegant);
   }
   
-  /* Hero text - simple white text without shimmer */
+  /* CONSOLIDATED HERO TEXT STYLING - WHITE TEXT ENFORCED */
   .hero-text-shimmer {
     color: white !important;
+  }
+  
+  .hero-heading {
+    color: white !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-weight: 900 !important;
+    font-size: 2.25rem !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.03em !important;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-heading {
+      font-size: 3rem !important;
+      letter-spacing: -0.035em !important;
+    }
   }
   
   @keyframes hero-text-shimmer {
@@ -217,19 +233,7 @@
   .mobile-text-lg { @apply text-lg sm:text-xl md:text-2xl; }
   .mobile-text-xl { @apply text-xl sm:text-2xl md:text-3xl; }
 
-  /* Hero headings - progressively larger */
-  .hero-heading {
-    @apply font-display font-black leading-[1.1];
-    font-size: 2.25rem; /* 36px mobile */
-    letter-spacing: -0.03em;
-  }
-
-  @media (min-width: 768px) {
-    .hero-heading {
-      font-size: 3rem; /* 48px desktop */
-      letter-spacing: -0.035em;
-    }
-  }
+  /* REMOVED DUPLICATE - Using components layer definition above */
 
   /* Section headings */
   .section-heading {
@@ -370,6 +374,10 @@
   html, body {
     @apply bg-background font-body;
     min-height: 100vh;
+  }
+  
+  /* Scope dark text to non-hero sections */
+  body:not(.hero-section) {
     color: hsl(var(--foreground));
   }
 }
