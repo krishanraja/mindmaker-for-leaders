@@ -390,7 +390,7 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
               </p>
             </div>
             
-            <div className="glass-card mobile-padding mb-6 sm:mb-10 container-width max-w-2xl">
+            <div className="mb-6 sm:mb-10">
               <h4 className="font-heading mobile-text-base text-foreground mb-4 sm:mb-6">Strategic Advisory Session Includes:</h4>
               {[
                 'AI strategy roadmap for your role',
