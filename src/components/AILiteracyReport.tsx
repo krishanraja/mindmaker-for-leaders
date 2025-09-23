@@ -405,7 +405,7 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
               className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-medium group transform hover:scale-105 transition-all shadow-lg rounded-xl w-full sm:w-auto"
               aria-label="Book strategic consultation with Krish"
             >
-              Book Your Strategic Consultation
+              Book a 1-1 with Krish
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             
