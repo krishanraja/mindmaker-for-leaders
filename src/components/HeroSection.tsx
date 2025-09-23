@@ -9,7 +9,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onStartAssessment }: HeroSectionProps) {
   return (
-    <div className="hero-section bg-hero-clouds min-h-screen relative overflow-hidden">
+    <div className="hero-section bg-background min-h-screen relative overflow-hidden">
       {/* Hero Content - Optimized for new design system */}
       <div className="container-width relative z-10 flex flex-col items-center justify-center min-h-screen text-center">
         <div className="fade-in-up">
@@ -18,13 +18,13 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             alt="MindMaker Logo" 
             className="h-16 mx-auto mb-6 sm:mb-8"
           />
-          <h1 className="!text-white text-4xl md:text-5xl font-black tracking-tight mb-4 sm:mb-6">
+          <h1 className="text-foreground text-4xl md:text-5xl font-black tracking-tight mb-4 sm:mb-6">
             Business Leaders
           </h1>
         </div>
         
         <div className="fade-in-up max-w-2xl mb-6 sm:mb-8 mobile-padding">
-          <p className="!text-white/90 text-lg sm:text-xl md:text-2xl leading-relaxed">
+          <p className="text-muted-foreground text-lg sm:text-xl md:text-2xl leading-relaxed">
             Take our 5-minute assessment to evaluate your AI readiness.
           </p>
         </div>
@@ -32,11 +32,11 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
         <div className="fade-in-up mb-8 sm:mb-12 w-full max-w-sm sm:max-w-md">
           <Button 
             onClick={onStartAssessment}
-            className="!text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-3 text-lg font-medium group transform hover:scale-105 transition-all shadow-lg"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg font-medium group transform hover:scale-105 transition-all shadow-lg"
             aria-label="Start AI Literacy Assessment"
           >
             Start Assessment
-            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1 !text-white" />
+            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </div>
 

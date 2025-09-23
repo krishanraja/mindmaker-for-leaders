@@ -258,9 +258,9 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
           </div>
         )}
 
-      <div className="safe-area-padding relative z-10 py-6 sm:py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-6 sm:py-8">
         {/* Header - Clean Mobile Design */}
-        <div className="text-center mb-8 sm:mb-12 pt-12 sm:pt-16">
+        <div className="text-center mb-6 sm:mb-8 pt-12 sm:pt-16">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm mb-6">
             <Brain className="h-4 w-4" />
             AI Leadership Assessment
@@ -276,15 +276,15 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {/* Progress Section - Clean Design */}
-          <Card className="mb-8 sm:mb-12 shadow-sm border rounded-xl">
-            <CardContent className="p-6 sm:p-8">
+          <Card className="mb-6 sm:mb-8 shadow-sm border rounded-xl">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-foreground">Assessment Progress</h2>
-                <Badge variant="outline" className="flex items-center gap-2 bg-primary/10 text-primary border-primary/20 px-3 py-1">
+                <h2 className="text-base sm:text-lg font-semibold text-foreground">Assessment Progress</h2>
+                <Badge variant="outline" className="flex items-center gap-2 bg-primary/10 text-primary border-primary/20 px-3 py-1 whitespace-nowrap">
                   <Clock className="h-3 w-3" />
-                  <span className="text-sm">{progressData.currentQuestion} of {totalQuestions}</span>
+                  <span className="text-sm">{progressData.currentQuestion}/{totalQuestions}</span>
                 </Badge>
               </div>
               
@@ -301,7 +301,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
           {/* Current Question - Clean Design */}
           {currentQuestion && (
             <Card className="shadow-sm border rounded-xl">
-              <CardContent className="p-6 sm:p-8">
+              <CardContent className="p-4 sm:p-6">
                 <div className="mb-6">
                   <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-3 leading-tight">
                     Question {currentQuestion.id} of {totalQuestions}
