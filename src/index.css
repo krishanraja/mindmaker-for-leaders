@@ -110,23 +110,8 @@
   --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.08);
   --shadow-elegant: 0 10px 30px -10px hsl(248 73% 67% / 0.3);
 
-  /* Bulletproof component styles with !important for effects */
-  .glass-card {
-    background: hsl(var(--background) / 0.95) !important;
-    backdrop-filter: blur(12px) !important;
-    border: 1px solid hsl(var(--border) / 0.3) !important;
-    border-radius: 1rem !important;
-    box-shadow: 0 8px 32px hsl(var(--foreground) / 0.08) !important;
-  }
+  /* Removed glass card styles - using standard card component */
   
-  .glass-card-dark {
-    background: hsl(var(--card) / 0.1) !important;
-    backdrop-filter: blur(12px) !important;
-    border: 1px solid hsl(var(--border) / 0.2) !important;
-    border-radius: 1rem !important;
-    box-shadow: 0 8px 32px hsl(var(--primary) / 0.1) !important;
-  }
-
   /* FORCE WHITE TEXT FOR ALL ELEMENTS IN HERO */
   .hero-section h1,
   .hero-section p,
@@ -144,8 +129,6 @@
     ) !important;
   }
 
-  /* REMOVED DUPLICATE BUTTON DEFINITION - Using single definition above */
-  
   .btn-hero-secondary {
     background: transparent !important;
     color: white !important;
@@ -292,23 +275,8 @@
   .mobile-content { @apply space-y-4 sm:space-y-6 md:space-y-8; }
 }
 
-  /* Hero Section Background - Updated with new gradient */
-  .bg-hero-clouds {
-    background: var(--gradient-brand);
-    position: relative;
-    min-height: 100vh;
-  }
-
-  .bg-hero-clouds::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: 
-      radial-gradient(circle at 20% 80%, hsl(var(--primary) / 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(var(--accent) / 0.3) 0%, transparent 50%);
-    animation: float 6s ease-in-out infinite;
-  }
-
+  /* Removed hero background - using standard background */
+  
   .bg-brand-gradient {
     background: var(--gradient-brand);
   }
@@ -352,28 +320,7 @@
   }
 }
 
-/* Contact Form White Text Override - Fix CSS variable conflicts */
-.contact-form-white {
-  --foreground: 0 0% 100% !important;
-  --muted-foreground: 0 0% 90% !important;
-  --input: 0 0% 100% !important;
-}
-
-.contact-form-white * {
-  color: white !important;
-}
-
-.contact-form-white .text-red-400 {
-  color: #f87171 !important;
-}
-
-.contact-form-white input {
-  color: white !important;
-}
-
-.contact-form-white label {
-  color: white !important;
-}
+/* Removed contact form overrides - using standard semantic tokens */
 
 /* Accessibility Considerations */
 @media (prefers-reduced-motion: reduce) {
