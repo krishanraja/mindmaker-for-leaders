@@ -352,6 +352,29 @@
   }
 }
 
+/* Contact Form White Text Override - Fix CSS variable conflicts */
+.contact-form-white {
+  --foreground: 0 0% 100% !important;
+  --muted-foreground: 0 0% 90% !important;
+  --input: 0 0% 100% !important;
+}
+
+.contact-form-white * {
+  color: white !important;
+}
+
+.contact-form-white .text-red-400 {
+  color: #f87171 !important;
+}
+
+.contact-form-white input {
+  color: white !important;
+}
+
+.contact-form-white label {
+  color: white !important;
+}
+
 /* Accessibility Considerations */
 @media (prefers-reduced-motion: reduce) {
   * { 

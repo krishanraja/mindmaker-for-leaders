@@ -88,7 +88,7 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
           </div>
 
         {/* Contact Form - Mobile App Optimized */}
-        <Card className="glass-card-dark border-white/20 rounded-xl">
+        <Card className="glass-card-dark border-white/20 rounded-xl contact-form-white">
           <CardContent className="touch-padding">
             <form onSubmit={handleSubmit} className="touch-spacing">
               {/* Full Name */}
