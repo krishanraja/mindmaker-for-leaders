@@ -168,19 +168,14 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
-
-      {/* Back Button - Mobile App Optimized */}
+    <div className="min-h-screen bg-background">
+      {/* Back Button - Mobile Optimized */}
       {onBack && (
-        <div className="absolute top-safe-5 left-5 sm:top-6 sm:left-6 md:top-8 md:left-8 z-20">
+        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
           <Button
             variant="outline"
             onClick={onBack}
-            className="bg-card/80 backdrop-blur-sm mobile-button rounded-xl"
+            className="rounded-xl"
             aria-label="Go back to assessment"
           >
             ← Back to Assessment
@@ -188,29 +183,29 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
         </div>
       )}
 
-      <div className="container-width relative z-10 py-6 sm:py-8 md:py-12 lg:py-16">
-        {/* Header - Mobile App Optimized */}
-        <div className="text-center mobile-section">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-caption mb-4 sm:mb-6">
-            <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
+      <div className="px-4 sm:px-6 py-6 sm:py-8">
+        {/* Header - Clean Mobile Design */}
+        <div className="text-center mb-8 sm:mb-12 pt-12 sm:pt-16">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm mb-6">
+            <GraduationCap className="h-4 w-4" />
             AI Literacy Assessment Results
           </div>
           
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-foreground mb-4 sm:mb-6 tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight leading-tight">
             {contactData.fullName.split(' ')[0]}'s AI Learning
             <span className="block text-primary">Journey</span>
           </h1>
           
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
             Hello {contactData.fullName} from {contactData.companyName}! Here are your personalized insights and recommendations to accelerate your AI literacy 
             and unlock new possibilities in your work and learning.
           </p>
         </div>
 
-        {/* Literacy Score Dashboard - Mobile App Optimized */}
-        <Card className="mobile-section max-w-4xl mx-auto border-0 bg-gradient-to-br from-background via-background/95 to-background/90 backdrop-blur-sm shadow-2xl rounded-xl">
-          <CardContent className="p-6 md:p-8 lg:p-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 items-center">
+        {/* Literacy Score Dashboard - Clean Design */}
+        <Card className="mb-8 sm:mb-12 max-w-4xl mx-auto shadow-sm border rounded-xl">
+          <CardContent className="p-6 sm:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
               {/* Primary Score */}
               <div className="text-center lg:text-left">
                 <div className="relative inline-block mb-6">
@@ -235,34 +230,34 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
               </div>
 
               {/* Key Metrics */}
-              <div className="space-y-6">
-                <div className="glass-card p-6">
+              <div className="space-y-4">
+                <Card className="p-4 sm:p-6 shadow-sm border">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-caption text-muted-foreground">vs. Benchmark</span>
+                    <span className="text-sm text-muted-foreground">vs. Benchmark</span>
                     <BarChart3 className="h-5 w-5 text-blue-500" />
                   </div>
-                  <div className="text-2xl font-bold text-foreground">
+                  <div className="text-xl sm:text-2xl font-bold text-foreground">
                     {score > benchmarkScore ? '+' : ''}{score - benchmarkScore} points
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {score > benchmarkScore ? 'above' : 'below'} average literacy
                   </p>
-                </div>
+                </Card>
 
-                <div className="glass-card p-6">
+                <Card className="p-4 sm:p-6 shadow-sm border">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-caption text-muted-foreground">Learning Stage</span>
+                    <span className="text-sm text-muted-foreground">Learning Stage</span>
                     <BookOpen className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="text-2xl font-bold text-foreground">{literacyProfile.tier}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-foreground">{literacyProfile.tier}</div>
                   <p className="text-sm text-muted-foreground">ready for next level</p>
-                </div>
+                </Card>
               </div>
 
               {/* Learning Summary */}
-              <div className="glass-card p-8">
-                <h3 className="font-display text-xl text-foreground mb-4">{contactData.fullName.split(' ')[0]}'s Learning Profile</h3>
-                <p className="text-muted-foreground leading-relaxed mb-6">
+              <Card className="p-6 sm:p-8 shadow-sm border">
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4">{contactData.fullName.split(' ')[0]}'s Learning Profile</h3>
+                <p className="text-muted-foreground leading-relaxed mb-6 text-sm sm:text-base">
                   Based on your responses, {contactData.fullName.split(' ')[0]}, you're positioned to make significant progress in AI literacy at {contactData.companyName}. 
                   Your current level shows {score < 40 ? 'strong potential for rapid improvement' : 
                   score < 70 ? 'solid foundation for advanced learning' : 'readiness for expert-level applications'}.
@@ -271,24 +266,24 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
                   <Lightbulb className="h-4 w-4 mr-2" />
                   Personalized learning path created
                 </div>
-              </div>
+              </Card>
             </div>
           </CardContent>
         </Card>
 
         {/* Learning Insights */}
-        <div className="mobile-section">
-          <div className="text-center mb-8 sm:mb-10">
-            <h2 className="font-display text-mobile-2xl sm:text-3xl text-foreground mb-3 sm:mb-4">Your Learning Opportunities</h2>
-            <p className="text-mobile-sm sm:text-base text-muted-foreground max-w-xl sm:max-w-2xl mx-auto leading-relaxed">
+        <div className="mb-8 sm:mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-4">Your Learning Opportunities</h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
               Targeted recommendations to improve your AI literacy and practical skills
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {learningInsights.map((insight, index) => (
-              <Card key={index} className="glass-card group hover:scale-105 transition-all duration-300 rounded-xl">
-                <CardContent className="touch-padding lg:p-8">
+              <Card key={index} className="group hover:shadow-md transition-all duration-300 rounded-xl border shadow-sm">
+                <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-6">
                     <insight.icon className="h-8 w-8 text-primary" />
                     <Badge 
@@ -302,21 +297,21 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
                     </Badge>
                   </div>
                   
-                  <h3 className="font-heading text-mobile-lg sm:text-xl text-foreground mb-3">{insight.insight}</h3>
-                  <p className="text-mobile-sm sm:text-base text-muted-foreground mb-6 leading-relaxed">{insight.description}</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-3">{insight.insight}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-6 leading-relaxed">{insight.description}</p>
                   
-                  <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
+                  <div className="grid grid-cols-3 gap-3 text-center">
                     <div>
-                      <div className="text-mobile-base sm:text-lg font-bold text-foreground">{insight.timeline}</div>
-                      <div className="text-mobile-xs text-muted-foreground font-caption">Timeline</div>
+                      <div className="text-sm sm:text-base font-bold text-foreground">{insight.timeline}</div>
+                      <div className="text-xs text-muted-foreground">Timeline</div>
                     </div>
                     <div>
-                      <div className="text-mobile-base sm:text-lg font-bold text-foreground">{insight.impact}</div>
-                      <div className="text-mobile-xs text-muted-foreground font-caption">Impact</div>
+                      <div className="text-sm sm:text-base font-bold text-foreground">{insight.impact}</div>
+                      <div className="text-xs text-muted-foreground">Impact</div>
                     </div>
                     <div>
-                      <div className="text-mobile-base sm:text-lg font-bold text-primary">{insight.improvement}</div>
-                      <div className="text-mobile-xs text-muted-foreground font-caption">Improvement</div>
+                      <div className="text-sm sm:text-base font-bold text-primary">{insight.improvement}</div>
+                      <div className="text-xs text-muted-foreground">Improvement</div>
                     </div>
                   </div>
                 </CardContent>
@@ -326,40 +321,40 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
         </div>
 
         {/* Learning Path */}
-        <Card className="glass-card mb-12">
-          <CardContent className="p-12">
-            <div className="text-center mb-10">
-              <h2 className="font-display text-3xl text-foreground mb-4">Your Personalized Learning Path</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+        <Card className="mb-8 sm:mb-12 shadow-sm border rounded-xl">
+          <CardContent className="p-6 sm:p-8">
+            <div className="text-center mb-8">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-4">Your Personalized Learning Path</h2>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto px-4">
                 A structured approach to building your AI literacy from current level to advanced proficiency
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
               {learningPath.map((phase, index) => (
                 <div key={index} className="relative">
                   {index < learningPath.length - 1 && (
                     <div className="hidden lg:block absolute top-8 left-full w-8 h-0.5 bg-gradient-to-r from-primary to-transparent z-10"></div>
                   )}
                   
-                  <div className="glass-card p-8 relative">
-                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-lg mb-6">
+                  <Card className="p-6 sm:p-8 relative shadow-sm border">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg mb-4 sm:mb-6">
                       {index + 1}
                     </div>
                     
-                    <h3 className="font-heading text-xl text-foreground mb-2">{phase.phase}</h3>
-                    <div className="text-primary font-caption mb-4">{phase.duration}</div>
-                    <p className="text-muted-foreground mb-6">{phase.focus}</p>
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">{phase.phase}</h3>
+                    <div className="text-primary text-sm mb-4">{phase.duration}</div>
+                    <p className="text-muted-foreground mb-6 text-sm sm:text-base">{phase.focus}</p>
                     
                     <div className="space-y-2">
                       {phase.activities.map((activity, idx) => (
-                        <div key={idx} className="flex items-center text-sm text-muted-foreground">
-                          <CheckCircle className="h-4 w-4 text-emerald-500 mr-3 flex-shrink-0" />
-                          {activity}
+                        <div key={idx} className="flex items-start text-sm text-muted-foreground">
+                          <CheckCircle className="h-4 w-4 text-emerald-500 mr-3 flex-shrink-0 mt-0.5" />
+                          <span>{activity}</span>
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </Card>
                 </div>
               ))}
             </div>
@@ -367,31 +362,29 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
         </Card>
 
         {/* Strategic Consultation CTA */}
-        <Card className="glass-card">
-          <CardContent className="mobile-padding text-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
-              <Users className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+        <Card className="shadow-sm border rounded-xl">
+          <CardContent className="p-6 sm:p-8 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="h-8 w-8 text-white" />
             </div>
 
             {/* AI Attribution */}
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm font-caption mb-4 sm:mb-6">
-              <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm mb-6">
+              <Brain className="h-4 w-4" />
               AI-Powered Assessment Results
             </div>
             
-            <h3 className="font-display mobile-text-xl sm:text-2xl md:text-3xl text-foreground mb-4 sm:mb-6">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-6">
               Book Your Strategy Consultation
             </h3>
             
-            <div className="container-width max-w-2xl">
-              <p className="mobile-text-base text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
-                Ready to transform these insights into strategic action? Get expert guidance to implement 
-                AI solutions that drive measurable business impact for your organization.
-              </p>
-            </div>
+            <p className="text-sm sm:text-base text-muted-foreground mb-8 leading-relaxed max-w-2xl mx-auto px-4">
+              Ready to transform these insights into strategic action? Get expert guidance to implement 
+              AI solutions that drive measurable business impact for your organization.
+            </p>
             
-            <div className="mb-6 sm:mb-10">
-              <h4 className="font-heading mobile-text-base text-foreground mb-4 sm:mb-6">Strategic Advisory Session Includes:</h4>
+            <div className="mb-8">
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-6">Strategic Advisory Session Includes:</h4>
               {[
                 'AI strategy roadmap for your role',
                 'Custom tool recommendations', 
@@ -408,16 +401,15 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
             </div>
 
             <Button 
-              size="lg"
-              className="mobile-button bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto"
               onClick={handleAdvisorySprintBooking}
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-medium group transform hover:scale-105 transition-all shadow-lg rounded-xl w-full sm:w-auto"
+              aria-label="Book strategic consultation with Krish"
             >
-              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3" />
-              Book Expert Consultation
-              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2 sm:ml-3" />
+              Book Your Strategic Consultation
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             
-            <div className="flex items-center justify-center gap-4 mt-6 text-muted-foreground text-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 text-muted-foreground text-sm">
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-2 text-primary" />
                 90-minute focused session
