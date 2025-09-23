@@ -157,7 +157,8 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full h-auto text-left justify-center hover:bg-primary/10 transition-colors rounded-xl p-4"
+                variant="primary"
+                className="w-full rounded-xl p-4"
                 aria-label="Submit contact information to view personalized results"
               >
                 View My Personalized Results
