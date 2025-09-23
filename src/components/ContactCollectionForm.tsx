@@ -75,7 +75,7 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
         </div>
       )}
 
-      <div className="safe-area-padding relative z-10 py-6 sm:py-8">
+      <div className="safe-area-padding relative z-10 py-6 sm:py-8 pt-12 sm:pt-16">
         <div className="max-w-lg sm:max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mobile-section">

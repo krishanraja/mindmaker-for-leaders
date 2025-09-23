@@ -41,7 +41,7 @@ const ExecutiveLoadingScreen: React.FC<ExecutiveLoadingScreenProps> = ({
             <h2 className="text-3xl font-bold text-foreground">
               Creating Your AI Leadership Insights
             </h2>
-            <div className="min-h-[3.5rem] flex items-center justify-center">
+            <div className="min-h-[4.5rem] flex items-center justify-center">
               <p className="text-lg text-muted-foreground">
                 {phaseMessages[phase]}
               </p>
