@@ -127,47 +127,12 @@
     box-shadow: 0 8px 32px hsl(var(--primary) / 0.1) !important;
   }
 
-  /* Hero Button Styling */
-  .btn-hero-primary {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-semibold text-white;
-    background: linear-gradient(to right, hsl(248, 73%, 67%), hsl(264, 35%, 46%));
-    box-shadow: var(--shadow-lg);
-    transform: translateY(0);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 12px 32px;
-    font-size: 1.125rem;
-    font-weight: 500;
-  }
-
-  .btn-hero-primary:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: var(--shadow-elegant);
-  }
-  
-  /* CONSOLIDATED HERO TEXT STYLING - WHITE TEXT ENFORCED */
-  .hero-text-shimmer {
-    color: white !important;
-  }
-  
-  .hero-heading {
-    color: white !important;
-    font-family: 'Inter', system-ui, sans-serif !important;
-    font-weight: 900 !important;
-    font-size: 2.25rem !important;
-    line-height: 1.1 !important;
-    letter-spacing: -0.03em !important;
-  }
-  
-  @media (min-width: 768px) {
-    .hero-heading {
-      font-size: 3rem !important;
-      letter-spacing: -0.035em !important;
-    }
-  }
-  
-  @keyframes hero-text-shimmer {
-    0%, 100% { background-position: 200% 0; }
-    50% { background-position: -200% 0; }
+  /* FORCE WHITE TEXT FOR ALL ELEMENTS IN HERO */
+  .hero-section h1,
+  .hero-section p,
+  .hero-section button,
+  .hero-section svg {
+    color: #ffffff !important;
   }
 
   /* Hero section signature gradient */
@@ -376,24 +341,14 @@
     min-height: 100vh;
   }
   
-  /* Scope dark text to non-hero sections - CRITICAL FIX */
+  /* Force all text colors in hero section to white */
+  .hero-section * {
+    color: #ffffff !important;
+  }
+  
+  /* Scope dark text only to non-hero sections */
   body:not(.hero-section) {
     color: hsl(var(--foreground));
-  }
-  
-  /* FORCE WHITE TEXT IN HERO SECTIONS */
-  .hero-section,
-  .hero-section * {
-    color: white !important;
-  }
-  
-  /* Specific hero element overrides */
-  .hero-section .hero-heading {
-    color: white !important;
-  }
-  
-  .hero-section .btn-hero-primary {
-    color: white !important;
   }
 }
 
