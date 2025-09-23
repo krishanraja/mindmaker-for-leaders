@@ -9,7 +9,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onStartAssessment }: HeroSectionProps) {
   return (
-    <div className="bg-hero-clouds min-h-screen relative overflow-hidden">
+    <div className="hero-section bg-hero-clouds min-h-screen relative overflow-hidden">
       {/* Hero Content - Optimized for new design system */}
       <div className="container-width relative z-10 flex flex-col items-center justify-center min-h-screen text-center">
         <div className="fade-in-up">

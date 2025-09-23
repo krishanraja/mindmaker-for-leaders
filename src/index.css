@@ -376,9 +376,24 @@
     min-height: 100vh;
   }
   
-  /* Scope dark text to non-hero sections */
+  /* Scope dark text to non-hero sections - CRITICAL FIX */
   body:not(.hero-section) {
     color: hsl(var(--foreground));
+  }
+  
+  /* FORCE WHITE TEXT IN HERO SECTIONS */
+  .hero-section,
+  .hero-section * {
+    color: white !important;
+  }
+  
+  /* Specific hero element overrides */
+  .hero-section .hero-heading {
+    color: white !important;
+  }
+  
+  .hero-section .btn-hero-primary {
+    color: white !important;
   }
 }
 
