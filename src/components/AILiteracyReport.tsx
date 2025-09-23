@@ -387,7 +387,7 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
               <h4 className="text-base sm:text-lg font-semibold text-foreground mb-6">Strategic Advisory Session Includes:</h4>
               
               {/* Mobile: Full width, Desktop: Centered container with left-aligned content */}
-              <div className="max-w-md mx-auto">
+              <div className="max-w-md mx-auto ml-0 sm:ml-20">
                 {[
                   'AI strategy roadmap for your role',
                   'Custom tool recommendations', 
