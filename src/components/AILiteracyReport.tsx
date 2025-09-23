@@ -385,19 +385,23 @@ const AILiteracyReport: React.FC<AILiteracyReportProps> = ({
             
             <div className="mb-8">
               <h4 className="text-base sm:text-lg font-semibold text-foreground mb-6">Strategic Advisory Session Includes:</h4>
-              {[
-                'AI strategy roadmap for your role',
-                'Custom tool recommendations', 
-                'Implementation priority matrix',
-                'ROI measurement framework',
-                'Change management guidance',
-                '30-day action plan'
-              ].map((item, index) => (
-                <div key={index} className="flex items-start gap-3 mb-3 sm:mb-4">
-                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base text-muted-foreground">{item}</span>
-                </div>
-              ))}
+              
+              {/* Mobile: Full width, Desktop: Centered container with left-aligned content */}
+              <div className="max-w-md mx-auto">
+                {[
+                  'AI strategy roadmap for your role',
+                  'Custom tool recommendations', 
+                  'Implementation priority matrix',
+                  'ROI measurement framework',
+                  'Change management guidance',
+                  '30-day action plan'
+                ].map((item, index) => (
+                  <div key={index} className="flex items-start gap-3 mb-3 sm:mb-4 text-left">
+                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm sm:text-base text-muted-foreground">{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <Button 
