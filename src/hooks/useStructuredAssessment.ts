@@ -201,7 +201,7 @@ export const useStructuredAssessment = () => {
   const getProgressData = useCallback(() => {
     const totalQuestions = ASSESSMENT_QUESTIONS.length;
     const completedAnswers = assessmentState.responses.length;
-    const estimatedTimeRemaining = Math.max(0, (totalQuestions - completedAnswers) * 1.5); // 1.5 min per question
+    const estimatedTimeRemaining = Math.max(0, (totalQuestions - completedAnswers) * 0.33); // 0.33 min per question
 
     return {
       currentQuestion: assessmentState.currentQuestion,
