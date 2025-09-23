@@ -75,20 +75,20 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
         </div>
       )}
 
-      <div className="safe-area-padding relative z-10 pt-12 sm:pt-16 pb-6 sm:pb-8">
-        <div className="max-w-lg sm:max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mobile-section">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
-              Almost Done!
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-md sm:max-w-2xl mx-auto leading-relaxed">
-              Please provide your contact details to personalize your results and receive your custom AI leadership development plan.
-            </p>
-          </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-6 sm:py-8">
+        {/* Header */}
+        <div className="text-center mb-6 sm:mb-8 pt-12 sm:pt-16">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
+            Almost Done!
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-md sm:max-w-2xl mx-auto leading-relaxed">
+            Please provide your contact details to personalize your results and receive your custom AI leadership development plan.
+          </p>
+        </div>
 
-        {/* Contact Form */}
-        <Card className="shadow-sm border rounded-xl">
+        <div className="max-w-lg sm:max-w-2xl mx-auto">
+          {/* Contact Form */}
+          <Card className="shadow-sm border rounded-xl">
           <CardContent className="p-6 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Full Name */}
