@@ -243,14 +243,14 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const currentQuestion = getCurrentQuestion();
 
   return (
-    <div className="bg-hero-clouds min-h-screen relative overflow-hidden">
-        {/* Floating Glass Back Button - Mobile App Optimized */}
+    <div className="bg-background min-h-screen relative overflow-hidden">
+        {/* Back Button - Mobile Optimized */}
         {onBack && (
-          <div className="absolute top-safe-5 left-5 sm:top-6 sm:left-6 z-20">
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
             <Button
-              variant="glass"
+              variant="outline"
               onClick={onBack}
-              className="glass-button text-white hover:bg-white/20 mobile-button rounded-xl"
+              className="rounded-xl"
               aria-label="Go back to home page"
             >
               ← Back to Selection
@@ -259,31 +259,38 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
         )}
 
       <div className="safe-area-padding relative z-10 py-6 sm:py-8">
-        {/* Header - Mobile App Optimized */}
-        <div className="text-center mobile-section">
-          <h1 className="text-mobile-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 leading-tight">
+        {/* Header - Clean Mobile Design */}
+        <div className="text-center mb-8 sm:mb-12 pt-12 sm:pt-16">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm mb-6">
+            <Brain className="h-4 w-4" />
             AI Leadership Assessment
+          </div>
+          
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight leading-tight">
+            Discover Your Leadership 
+            <span className="block text-primary">Potential</span>
           </h1>
-          <p className="text-mobile-sm sm:text-base text-white/80 leading-relaxed max-w-md mx-auto">
-            Discover your leadership potential with AI-guided insights
+          
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
+            Get AI-guided insights to unlock your strategic thinking and leadership capabilities
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto">
-          {/* Progress Section - Mobile App Optimized */}
-          <Card className="glass-card-dark border-white/20 mobile-section rounded-xl">
-            <CardContent className="touch-padding">
+          {/* Progress Section - Clean Design */}
+          <Card className="mb-8 sm:mb-12 shadow-sm border rounded-xl">
+            <CardContent className="p-6 sm:p-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-mobile-lg font-semibold text-white">Assessment Progress</h2>
-                <Badge variant="outline" className="flex items-center gap-2 bg-white/10 text-white border-white/20 px-3 py-1">
+                <h2 className="text-lg font-semibold text-foreground">Assessment Progress</h2>
+                <Badge variant="outline" className="flex items-center gap-2 bg-primary/10 text-primary border-primary/20 px-3 py-1">
                   <Clock className="h-3 w-3" />
-                  <span className="text-mobile-xs">{progressData.currentQuestion} of {totalQuestions}</span>
+                  <span className="text-sm">{progressData.currentQuestion} of {totalQuestions}</span>
                 </Badge>
               </div>
               
               <Progress value={progressData.progressPercentage} className="h-3 mb-3" />
               
-              <div className="flex justify-between text-mobile-xs text-white/70">
+              <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Phase: {progressData.phase}</span>
                 <span>{Math.round(progressData.estimatedTimeRemaining)} min remaining</span>
               </div>
@@ -291,33 +298,33 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
           </Card>
 
 
-          {/* Current Question - Mobile App Optimized */}
+          {/* Current Question - Clean Design */}
           {currentQuestion && (
-            <Card className="glass-card-dark border-white/20 rounded-xl">
-              <CardContent className="touch-padding">
-                <div className="mobile-content">
-                  <h3 className="text-mobile-lg sm:text-xl font-semibold text-white mb-3 leading-tight">
+            <Card className="shadow-sm border rounded-xl">
+              <CardContent className="p-6 sm:p-8">
+                <div className="mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-3 leading-tight">
                     Question {currentQuestion.id} of {totalQuestions}
                   </h3>
-                  <p className="text-mobile-base sm:text-lg text-white mb-4 leading-relaxed">
+                  <p className="text-sm sm:text-base text-muted-foreground mb-4 leading-relaxed">
                     {currentQuestion.question}
                   </p>
                 </div>
                 
-                <div className="touch-spacing">
-                  <h4 className="font-medium text-white/70 mb-4 text-mobile-sm">
+                <div className="space-y-3">
+                  <h4 className="font-medium text-foreground mb-4 text-sm">
                     Select your answer:
                   </h4>
                   {currentQuestion.options.map((option, index) => (
                     <Button
                       key={index}
                       variant="outline"
-                      className="w-full mobile-button h-auto text-left justify-start bg-white/5 border-white/20 text-white hover:bg-white/10 transition-colors rounded-xl"
+                      className="w-full h-auto text-left justify-start hover:bg-primary/10 transition-colors rounded-xl p-4"
                       onClick={() => handleOptionSelect(option)}
                       aria-label={`Select option: ${option}`}
                     >
-                      <ArrowRight className="h-4 w-4 mr-3 flex-shrink-0 text-purple-200" />
-                      <span className="text-mobile-sm text-white leading-relaxed text-left">{option}</span>
+                      <ArrowRight className="h-4 w-4 mr-3 flex-shrink-0 text-primary" />
+                      <span className="text-sm text-foreground leading-relaxed text-left">{option}</span>
                     </Button>
                   ))}
                 </div>

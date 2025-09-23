@@ -30,7 +30,7 @@ import {
 const queryClient = new QueryClient();
 
 const App = () => (
-  <div className="min-h-screen bg-hero-clouds">
+  <div className="min-h-screen bg-background">
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
