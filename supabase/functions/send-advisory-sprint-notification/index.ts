@@ -1,9 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,39 +26,108 @@ interface AdvisorySprintRequest {
 }
 
 const formatAssessmentData = (data: any): string => {
-  const sections = [];
+  const questionMap = {
+    'industry_impact': 'I can clearly explain AI\'s impact on our industry in growth terms.',
+    'business_acceleration': 'I know which areas of our business can be accelerated by AI-first workflows.',
+    'team_alignment': 'My leadership team shares a common AI growth narrative.',
+    'external_positioning': 'AI is part of our external positioning (investors, market).',
+    'kpi_connection': 'I connect AI adoption directly to KPIs (margin, speed, risk-adjusted growth).',
+    'coaching_champions': 'I actively coach emerging AI champions in my org.'
+  };
   
-  if (data) {
-    const keys = Object.keys(data);
-    
-    keys.forEach(key => {
-      if (data[key] && data[key] !== '') {
-        sections.push(`<li><strong>${key}:</strong> ${data[key]}</li>`);
+  const sections: string[] = [];
+  
+  if (data && Object.keys(data).length > 0) {
+    Object.entries(data).forEach(([category, answer]) => {
+      const question = questionMap[category as keyof typeof questionMap];
+      if (question && answer) {
+        sections.push(`
+          <div style="margin-bottom: 15px; padding: 15px; background: #f8fafc; border-left: 4px solid #6366f1; border-radius: 4px;">
+            <p style="margin: 0 0 8px; font-weight: bold; color: #374151;">${question}</p>
+            <p style="margin: 0; color: #6366f1; font-weight: 600;">${answer}</p>
+          </div>
+        `);
       }
     });
   }
   
-  return sections.length > 0 ? `<ul>${sections.join('')}</ul>` : 'No assessment data provided';
+  return sections.length > 0 ? sections.join('') : '<p style="color: #6b7280; font-style: italic;">No assessment responses captured</p>';
 };
 
 const formatScores = (scores: any): string => {
-  if (!scores || Object.keys(scores).length === 0) {
-    return 'No scores available';
+  if (!scores || typeof scores.total !== 'number') {
+    return '<p style="color: #6b7280; font-style: italic;">Leadership scoring not available</p>';
   }
   
+  const total = scores.total || 0;
+  const tier = getTierClassification(total);
+  
   return `
-    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
-      <h3>📊 AI Leadership Assessment Scores</h3>
-      <ul>
-        ${scores.aiMindmakerScore ? `<li><strong>Overall AI Mindmaker Score:</strong> ${scores.aiMindmakerScore}/100</li>` : ''}
-        ${scores.aiToolFluency ? `<li><strong>AI Tool Fluency:</strong> ${scores.aiToolFluency}/100</li>` : ''}
-        ${scores.aiDecisionMaking ? `<li><strong>AI Decision Making:</strong> ${scores.aiDecisionMaking}/100</li>` : ''}
-        ${scores.aiCommunication ? `<li><strong>AI Communication:</strong> ${scores.aiCommunication}/100</li>` : ''}
-        ${scores.aiLearningGrowth ? `<li><strong>AI Learning & Growth:</strong> ${scores.aiLearningGrowth}/100</li>` : ''}
-        ${scores.aiEthicsBalance ? `<li><strong>AI Ethics & Balance:</strong> ${scores.aiEthicsBalance}/100</li>` : ''}
-      </ul>
+    <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">🎯 AI Leadership Growth Benchmark Results</h2>
+      
+      <div style="text-align: center; background: ${tier.color}; color: white; padding: 20px; border-radius: 8px; margin: 15px 0;">
+        <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px;">${total}/30</div>
+        <div style="font-size: 18px; font-weight: 600;">${tier.name}</div>
+        <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">${tier.description}</div>
+      </div>
+      
+      <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 15px;">
+        <h4 style="margin: 0 0 10px; color: #374151;">🎯 Strategic Growth Focus Areas:</h4>
+        <ul style="margin: 0; color: #6b7280;">
+          ${tier.focus.map((focus: string) => `<li>${focus}</li>`).join('')}
+        </ul>
+      </div>
     </div>
   `;
+};
+
+const getTierClassification = (score: number) => {
+  if (score >= 25) {
+    return {
+      name: 'AI-Orchestrator',
+      description: 'Leading organizational AI transformation',
+      color: '#059669',
+      focus: [
+        'Scale AI adoption across all business units',
+        'Build competitive moats through AI innovation',
+        'Develop proprietary AI capabilities and IP'
+      ]
+    };
+  } else if (score >= 20) {
+    return {
+      name: 'AI-Confident',
+      description: 'Strong foundation with strategic gaps',
+      color: '#2563eb',
+      focus: [
+        'Accelerate team-wide AI implementation',
+        'Connect AI initiatives to measurable business outcomes',
+        'Build internal AI expertise and culture'
+      ]
+    };
+  } else if (score >= 15) {
+    return {
+      name: 'AI-Aware',
+      description: 'Understanding value but lacking execution clarity',
+      color: '#f59e0b',
+      focus: [
+        'Develop concrete AI adoption roadmap',
+        'Align leadership team on AI strategy',
+        'Identify highest-impact AI use cases'
+      ]
+    };
+  } else {
+    return {
+      name: 'AI-Confused',
+      description: 'Significant opportunity for strategic AI leadership',
+      color: '#dc2626',
+      focus: [
+        'Build foundational AI literacy across leadership',
+        'Clarify AI\'s role in business strategy',
+        'Start with quick wins to build confidence'
+      ]
+    };
+  }
 };
 
 serve(async (req) => {
@@ -96,8 +162,8 @@ serve(async (req) => {
           service_title: 'AI Advisory Sprint - 90 Min Leadership Session',
           status: 'pending',
           priority: 'high',
-          specific_needs: `AI Literacy for Leaders inquiry - Complete assessment data included. Assessment responses: ${JSON.stringify(assessmentData)}`,
-          notes: `LinkedIn: ${contactData.linkedin || 'Not provided'} | Source: AI Literacy for Leaders Report`,
+          specific_needs: `AI Leadership Growth Benchmark inquiry - Complete 6-question assessment data included. Leadership tier and responses: ${JSON.stringify(assessmentData)}`,
+          notes: `LinkedIn: ${contactData.linkedin || 'Not provided'} | Source: AI Leadership Growth Benchmark Report`,
           lead_score: scores?.aiMindmakerScore || 0
         })
         .select()
@@ -112,8 +178,8 @@ serve(async (req) => {
 
     // Prepare email content based on whether it's anonymous or not
     const emailSubject = isAnonymous 
-      ? `🚀 ANONYMOUS AI LITERACY ASSESSMENT - Advisory Sprint Interest`
-      : `🚀 NEW ADVISORY SPRINT BOOKING: ${contactData?.fullName || `${contactData?.firstName || ''} ${contactData?.lastName || ''}`.trim() || 'Unknown'} from ${contactData?.companyName || contactData?.company || 'Unknown'}`;
+      ? `🎯 ANONYMOUS AI LEADERSHIP BENCHMARK - Executive Advisory Interest`
+      : `🎯 NEW EXECUTIVE INQUIRY: ${contactData?.fullName || `${contactData?.firstName || ''} ${contactData?.lastName || ''}`.trim() || 'Unknown'} from ${contactData?.companyName || contactData?.company || 'Unknown'} - AI Leadership Advisory`;
 
     const contactSection = isAnonymous ? `
       <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -145,17 +211,28 @@ serve(async (req) => {
       </div>
     `;
 
-    // Send comprehensive email to krish@fractionl.ai
-    const emailResponse = await resend.emails.send({
-      from: "AI Literacy for Leaders <no-reply@fractionl.ai>",
-      to: ["krish@fractionl.ai"],
-      subject: emailSubject,
+    // Send comprehensive email to krish@fractionl.ai using Resend API
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY not configured');
+    }
+
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: "AI Leadership Growth Benchmark <no-reply@fractionl.ai>",
+        to: ["krish@fractionl.ai"],
+        subject: emailSubject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9fafb;">
           
           <div style="text-align: center; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
-            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🚀 AI LITERACY FOR LEADERS INQUIRY</h1>
-            <p style="margin: 10px 0 0; font-size: 18px; opacity: 0.9;">${isAnonymous ? 'Anonymous Assessment Submission' : 'Advisory Sprint Booking Request'}</p>
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🎯 AI LEADERSHIP GROWTH BENCHMARK</h1>
+            <p style="margin: 10px 0 0; font-size: 18px; opacity: 0.9;">${isAnonymous ? 'Anonymous Executive Assessment' : 'Executive Advisory Inquiry'}</p>
             <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.8;">Generated: ${new Date().toLocaleString()}</p>
           </div>
 
@@ -164,34 +241,48 @@ serve(async (req) => {
           ${formatScores(scores)}
 
           <div style="background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">📋 Complete Assessment Responses</h2>
+            <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">📋 Complete AI Leadership Assessment Responses</h2>
+            <p style="color: #6b7280; margin-bottom: 20px; font-style: italic;">
+              6-question leadership benchmark measuring AI strategic capabilities across key growth dimensions.
+              Each response scored 1-5 scale (Strongly Disagree to Strongly Agree).
+            </p>
             ${formatAssessmentData(assessmentData)}
           </div>
 
           <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">🎯 Next Steps</h2>
+            <h2 style="color: #6366f1; margin-top: 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">🎯 Executive Advisory Next Steps</h2>
             <ul style="color: #374151; line-height: 1.6;">
-              <li><strong>Immediate:</strong> Review this comprehensive assessment data</li>
+              <li><strong>Assessment Review:</strong> This leader completed our 6-dimension AI Growth Benchmark</li>
                ${isAnonymous 
-                ? '<li><strong>Follow-up:</strong> User will book via Calendly and provide contact details</li>'
-                : `<li><strong>Follow-up:</strong> Contact ${contactData?.fullName || contactData?.firstName || 'User'} at ${contactData?.email} or ${contactData?.phone || 'email only'}</li>`
+                ? '<li><strong>Follow-up Process:</strong> Executive will book 90-minute session via Calendly and provide contact details</li>'
+                : `<li><strong>Executive Contact:</strong> Reach out to ${contactData?.fullName || contactData?.firstName || 'Executive'} at ${contactData?.email} or ${contactData?.phone || 'email only'}</li>`
                }
-              <li><strong>Preparation:</strong> Use assessment insights to customize the Advisory Sprint session</li>
-              <li><strong>Calendar:</strong> Watch for booking via the Calendly link above</li>
+              <li><strong>Session Prep:</strong> Customize Executive Primer based on tier classification and focus areas above</li>
+              <li><strong>Strategic Focus:</strong> Tailor discussion to their specific leadership growth gaps and organizational AI readiness</li>
+              <li><strong>Booking Portal:</strong> <a href="https://calendly.com/krish-raja/mindmaker-leaders" target="_blank">Executive Advisory Session Booking</a></li>
             </ul>
           </div>
 
           <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f3f4f6; border-radius: 8px;">
             <p style="margin: 0; color: #6b7280; font-size: 14px;">
-              This is an automated notification from the AI Literacy for Leaders assessment platform.<br>
-              ${isAnonymous ? 'Anonymous assessment data provided - contact details will come via Calendly booking.' : 'All data has been securely stored in the CRM system.'}
+              This notification is from the AI Leadership Growth Benchmark platform.<br>
+              ${isAnonymous ? 'Anonymous executive assessment completed - contact details will be provided via Calendly booking.' : 'Executive contact data and assessment results have been securely stored in the CRM system.'}
             </p>
           </div>
         </div>
-      `,
+      `
+      })
     });
 
-    console.log("Advisory Sprint notification sent successfully:", emailResponse);
+    if (!emailResponse.ok) {
+      const errorData = await emailResponse.text();
+      console.error('Resend API error:', errorData);
+      throw new Error(`Email sending failed: ${emailResponse.status}`);
+    }
+
+    const emailResult = await emailResponse.json();
+
+    console.log("Advisory Sprint notification sent successfully:", emailResult.id);
 
     // Log security audit
     await supabase
@@ -212,7 +303,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      emailId: emailResponse.data?.id,
+      emailId: emailResult.id,
       bookingId: bookingData?.id || null,
       isAnonymous: !!isAnonymous
     }), {
@@ -223,10 +314,11 @@ serve(async (req) => {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in send-advisory-sprint-notification:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
