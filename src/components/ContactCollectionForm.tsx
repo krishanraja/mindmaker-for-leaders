@@ -157,7 +157,7 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
               {/* Submit Button */}
               <Button
                 type="submit"
-                variant="primary"
+                variant="cta"
                 className="w-full rounded-xl p-4"
                 aria-label="Submit contact information to view personalized results"
               >

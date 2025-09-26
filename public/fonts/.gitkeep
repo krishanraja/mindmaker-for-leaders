@@ -1,0 +1,3 @@
+# Fonts Directory
+# Place Gobold_Bold.otf here for the custom font integration
+# The @font-face declaration in src/index.css expects this structure

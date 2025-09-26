@@ -1,118 +1,240 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@font-face {
+  font-family: 'Gobold';
+  src: url('/fonts/Gobold_Bold.otf') format('opentype');
+  font-weight: bold;
+  font-display: swap;
+  font-size-adjust: 0.9;
+}
+
+@layer base, components, utilities;
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 🎯 MINDMAKER BULLETPROOF DESIGN SYSTEM */
+/* ========================================
+   MINDMAKER DESIGN SYSTEM - UNIVERSAL
+   Complete replacement for any project
+   ======================================== */
+
 @layer base {
   :root {
-    /* Core Brand Colors (HSL Format) */
-    --primary: 248 73% 67%;          /* #667eea - Main brand color */
-    --primary-100: 248 73% 97%;      /* Very light variant */
-    --primary-200: 248 73% 90%;      /* Light variant */
-    --primary-400: 248 73% 75%;      /* Medium variant */
-    --primary-600: 248 73% 55%;      /* Dark variant */
-    --primary-foreground: 0 0% 100%; /* White text on primary */
-    
-    /* Brand Accent */
-    --accent: 264 35% 46%;           /* #764ba2 - Secondary brand color */
-    --accent-400: 264 35% 56%;       /* Lighter accent */
-    --accent-foreground: 0 0% 100%;  /* White text on accent */
-    
-    /* Surface Colors */
-    --background: 0 0% 100%;         /* Pure white backgrounds */
-    --foreground: 222 47% 11%;       /* Dark text */
-    --card: 0 0% 100%;               /* Card backgrounds */
-    --muted: 210 40% 96%;            /* Subtle backgrounds */
-    --muted-foreground: 215 28% 25%; /* Muted text */
-    --border: 214 32% 91%;           /* Border color */
-    
-    /* Additional semantic colors */
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --input: 214 32% 91%;
-    --ring: 248 73% 67%;
-    --destructive: 0 62% 50%;
+    /* === BASE COLORS === */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 28% 25%;
+
+    /* === BRAND SYSTEM - Purple/Violet === */
+    --primary: 248 73% 67%;          /* #667eea */
+    --primary-100: 248 73% 97%;
+    --primary-200: 248 73% 90%;
+    --primary-400: 248 73% 75%;
+    --primary-600: 248 73% 55%;
+
+    /* === BRAND ACCENT === */
+    --accent: 264 35% 46%;           /* #764ba2 */
+    --accent-400: 264 35% 56%;
+    --accent-foreground: 0 0% 100%;
+
+    /* === SEMANTIC COLORS === */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
+    --success: 142 76% 36%;
+    --success-foreground: 355 100% 100%;
+
+    /* === SURFACE COLORS === */
+    --card: 0 0% 100%;
+    --card-foreground: var(--foreground);
+    --border: 214 32% 91%;
+    --ring: 262 100% 63%;
+    --radius: 0.75rem;
+
+    /* === INPUT & POPOVER === */
+    --input: 214 32% 91%;
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--foreground);
     
-    /* Gradients */
+    /* === SECONDARY SYSTEM === */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: var(--foreground);
+
+    /* === BRAND GRADIENTS === */
     --gradient-brand: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
     --gradient-subtle: linear-gradient(135deg, hsl(var(--primary-200)) 0%, hsl(var(--primary-400)) 100%);
-    
-    /* Shadows */
-    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
-    --shadow-glow: 0 0 40px hsl(var(--primary-100) / 0.4);
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    
-    /* Spacing & Layout */
-    --radius: 0.75rem;
-    --radius-lg: 1rem;
   }
-  
+
   .dark {
     --background: 222 47% 7%;
-    --foreground: 213 31% 91%;
-    --card: 217 33% 17%;
-    --border: 215 28% 17%;
-    --muted: 222 47% 11%;
-    --muted-foreground: 215 28% 65%;
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 210 40% 98%;
+    --foreground: 210 40% 98%;
+    --muted: 222 32% 12%;
+    --muted-foreground: 215 20% 75%;
+    --card: 222 47% 9%;
+    --card-foreground: var(--foreground);
+    --border: 222 28% 18%;
+    --ring: 262 100% 63%;
     --input: 222 28% 18%;
+    --popover: 222 47% 9%;
+    --popover-foreground: var(--foreground);
+    --secondary: 222 32% 12%;
+    --secondary-foreground: var(--foreground);
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 142 84% 24%;
+    --success-foreground: 355 100% 100%;
   }
 }
 
-/* Professional Typography System */
-@layer base {
-  .font-primary { 
-    font-family: 'Inter', system-ui, sans-serif; 
-  }
-  
-  .font-display { 
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-  }
+/* ========================================
+   GLOBAL BASE STYLES
+   ======================================== */
 
-  .font-heading {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-
-  .font-body {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 400;
-    line-height: 1.6;
-  }
-
-  .font-caption {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-weight: 500;
-    font-size: 0.875rem;
-    letter-spacing: 0.025em;
-    text-transform: uppercase;
-  }
+* {
+  border-color: hsl(var(--border));
 }
 
-/* Animation System - CONFLICT-FREE */
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', system-ui, sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+/* ========================================
+   COMPONENT LAYER - DESIGN SYSTEM CLASSES
+   ======================================== */
+
 @layer components {
-  /* Custom Button Shadows */
-  --shadow-purple: 0 4px 12px hsl(248 73% 67% / 0.25);
-  --shadow-purple-lg: 0 8px 24px hsl(248 73% 67% / 0.35);
-  --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.08);
-  --shadow-elegant: 0 10px 30px -10px hsl(248 73% 67% / 0.3);
-
-  /* Removed glass card styles - using standard card component */
   
-  /* FORCE WHITE TEXT FOR ALL ELEMENTS IN HERO */
+  /* === LAYOUT UTILITIES === */
+  .section-padding { 
+    @apply py-8 sm:py-12 md:py-20 lg:py-24;
+  }
+
+  .container-width { 
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* === MOBILE-FIRST TYPOGRAPHY === */
+  .mobile-text-sm {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+
+  .mobile-text-base {
+    @apply text-base sm:text-lg md:text-xl;
+  }
+
+  .mobile-text-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+
+  .mobile-text-xl {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  /* === MOBILE SPACING UTILITIES === */
+  .mobile-spacing {
+    @apply space-y-4 sm:space-y-6 md:space-y-8;
+  }
+
+  .mobile-padding {
+    @apply p-4 sm:p-6 md:p-8;
+  }
+
+  /* === SAFE AREA UTILITIES === */
+  .pt-safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .pt-safe-area-top {
+    padding-top: max(5rem, env(safe-area-inset-top, 5rem));
+  }
+
+  .pb-safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  /* === CARD PATTERNS === */
+  .card {
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px hsl(var(--foreground) / 0.08);
+  }
+
+  /* === GLASS MORPHISM UTILITIES === */
+  .glass-card {
+    background: hsl(var(--background) / 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid hsl(var(--border) / 0.3) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 8px 32px hsl(var(--foreground) / 0.08) !important;
+  }
+
+  .glass-card-dark {
+    background: hsl(var(--card) / 0.1) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid hsl(var(--border) / 0.2) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 8px 32px hsl(var(--primary) / 0.1) !important;
+  }
+
+  /* === TEXT EFFECTS === */
+  .hero-text-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.8) 20%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.8) 80%,
+      rgba(255, 255, 255, 0.4) 100%
+    ) !important;
+    background-size: 400% 100% !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    animation: hero-text-shimmer 10s linear 2s 1 !important;
+    animation-fill-mode: forwards !important;
+  }
+
+  /* === BRAND GRADIENT UTILITY === */
+  .bg-brand-gradient {
+    background-image: var(--gradient-brand) !important;
+  }
+
+  /* === ANIMATION CLASSES === */
+  .fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  .number-update {
+    animation: subtle-glow 0.5s ease-out;
+  }
+
+  .animate-stats-enter {
+    animation: stats-fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-stats-exit {
+    animation: stats-fade-out 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-collapsible-down {
+    animation: collapsible-down 0.3s ease-out;
+  }
+  
+  .animate-collapsible-up {
+    animation: collapsible-up 0.3s ease-out;
+  }
+
+  /* === HERO SECTION OVERRIDES === */
   .hero-section h1,
   .hero-section p,
   .hero-section button,
@@ -120,7 +242,6 @@
     color: #ffffff !important;
   }
 
-  /* Hero section signature gradient */
   .hero-gradient {
     background: linear-gradient(to bottom right, 
       hsl(248 100% 12% / 0.95),      /* Deep indigo */
@@ -143,189 +264,112 @@
   }
 }
 
-@layer base {
-  /* Entrance animations */
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+/* ========================================
+   ANIMATION KEYFRAMES
+   ======================================== */
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-
-  @keyframes scale-in {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Utility Classes */
-@layer utilities {
-  /* Mobile-first responsive typography */
-  .mobile-text-sm { @apply text-sm sm:text-base md:text-lg; }
-  .mobile-text-base { @apply text-base sm:text-lg md:text-xl; }
-  .mobile-text-lg { @apply text-lg sm:text-xl md:text-2xl; }
-  .mobile-text-xl { @apply text-xl sm:text-2xl md:text-3xl; }
-
-  /* REMOVED DUPLICATE - Using components layer definition above */
-
-  /* Section headings */
-  .section-heading {
-    @apply text-2xl sm:text-3xl md:text-4xl;
-    @apply font-semibold tracking-tight;
+@keyframes hero-text-shimmer {
+  0% { 
+    background-position: -200% center;
   }
-
-  /* Base responsive utilities */
-  .section-padding { @apply py-8 sm:py-12 md:py-20 lg:py-24; }
-  .container-width { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
-  .mobile-spacing { @apply space-y-4 sm:space-y-6 md:space-y-8; }
-  .mobile-padding { @apply p-4 sm:p-6 md:p-8; }
-
-  /* Safe area support for mobile */
-  .pt-safe-area-top {
-    padding-top: max(5rem, env(safe-area-inset-top, 5rem));
+  100% { 
+    background-position: 200% center;
   }
-  .pb-safe-bottom {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
+}
 
-  /* Progressive grid enhancement */
-  .responsive-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
-    @apply gap-4 sm:gap-6 lg:gap-8;
+@keyframes subtle-glow {
+  0%, 100% { 
+    transform: scale(1);
+    filter: brightness(1);
   }
-
-  /* Mobile-optimized buttons */
-  .mobile-button {
-    @apply min-h-[48px] sm:min-h-[44px];
-    @apply px-6 md:px-8;
-    @apply text-sm sm:text-base md:text-lg;
-    @apply rounded-lg sm:rounded-md;
+  50% { 
+    transform: scale(1.02);
+    filter: brightness(1.1);
   }
+}
 
-  /* Animation utilities */
-  .fade-in-up {
-    animation: fade-in-up 0.6s ease-out forwards;
+@keyframes stats-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes stats-fade-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.98);
+  }
+}
+
+@keyframes collapsible-down {
+  from {
+    height: 0;
     opacity: 0;
   }
-
-  .fade-in-up:nth-child(1) { animation-delay: 0s; }
-  .fade-in-up:nth-child(2) { animation-delay: 0.2s; }
-  .fade-in-up:nth-child(3) { animation-delay: 0.4s; }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
   }
+}
 
-  .animate-scale-in {
-    animation: scale-in 0.6s ease-out forwards;
+@keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
     opacity: 0;
   }
-
-  /* Interaction patterns */
-  .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
-  }
-
-  .animated-arrow {
-    @apply group-hover:translate-x-1 transition-transform;
-  }
-
-  /* Touch optimization */
-  .touch-manipulation {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Mobile-specific safe area utilities */
-  .safe-area-padding {
-    @apply px-5 sm:px-6 md:px-8;
-    padding-top: max(1.25rem, env(safe-area-inset-top));
-    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
-    padding-left: max(1.25rem, env(safe-area-inset-left));
-    padding-right: max(1.25rem, env(safe-area-inset-right));
-  }
-
-  /* Touch-friendly spacing */
-  .touch-spacing { @apply space-y-3 sm:space-y-4; }
-  .touch-padding { @apply p-4 sm:p-6; }
-  .touch-target { @apply min-h-[48px] min-w-[48px]; }
-
-  /* Mobile card improvements */
-  .mobile-card {
-    @apply rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8;
-  }
-
-  /* Improved breathing room */
-  .mobile-section { @apply mb-8 sm:mb-12 md:mb-16; }
-  .mobile-content { @apply space-y-4 sm:space-y-6 md:space-y-8; }
 }
 
-  /* Removed hero background - using standard background */
-  
-  .bg-brand-gradient {
-    background: var(--gradient-brand);
-  }
+/* ========================================
+   ACCESSIBILITY & FOCUS STATES
+   ======================================== */
 
-  /* Layout Utilities */
-  .section-padding {
-    padding: clamp(4rem, 8vw, 8rem) 0;
-  }
-
-  /* Text Utilities */
-  .hero-title {
-    font-size: clamp(2.5rem, 5vw, 4.5rem);
-    line-height: 1.1;
-    color: white;
-  }
-
-  .section-header {
-    font-size: clamp(1.875rem, 4vw, 2.25rem);
-    line-height: 1.2;
-  }
-
-/* Base element styling */
-@layer base {
-  * {
-    @apply border-border;
-  }
-  
-  html, body {
-    @apply bg-background font-body;
-    min-height: 100vh;
-  }
-  
-  /* Force all text colors in hero section to white */
-  .hero-section * {
-    color: #ffffff !important;
-  }
-  
-  /* Scope dark text only to non-hero sections */
-  body:not(.hero-section) {
-    color: hsl(var(--foreground));
-  }
-}
-
-/* Removed contact form overrides - using standard semantic tokens */
-
-/* Accessibility Considerations */
 @media (prefers-reduced-motion: reduce) {
   * { 
     animation-duration: 0.01ms !important; 
     animation-iteration-count: 1 !important; 
   }
+}
+
+button:focus-visible, 
+a:focus-visible, 
+input:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px hsl(var(--ring)) !important;
+}
+
+/* ========================================
+   DROPDOWN FIX - PREVENT TRANSPARENCY
+   ======================================== */
+
+[role="menu"],
+[role="listbox"],
+.dropdown-content,
+[data-radix-popper-content-wrapper] {
+  background: hsl(var(--popover)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  z-index: 50 !important;
 }
