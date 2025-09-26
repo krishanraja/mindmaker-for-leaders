@@ -19,7 +19,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             className="h-16 mx-auto mb-6 sm:mb-8"
           />
           <h1 className="!text-white text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4 sm:mb-6 leading-tight">
-            Is your AI literacy driving growth—<span className="block">or just buzzwords?</span>
+            AI Literacy for Leaders
           </h1>
         </div>
         
