@@ -81,21 +81,24 @@ serve(async (req) => {
               })
               .eq('id', log.id);
           }
-        } catch (error) {
+        } catch (error: unknown) {
           errorCount++;
           console.error(`Exception processing sync log ${log.id}:`, error);
+          
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+          const errorStack = error instanceof Error ? error.stack : undefined;
           
           // Update the log with error status
           await supabase
             .from('google_sheets_sync_log')
             .update({
               status: 'batch_failed',
-              error_message: error.message,
+              error_message: errorMessage,
               last_updated_at: new Date().toISOString(),
               sync_metadata: {
                 ...log.sync_metadata,
                 batch_error_at: new Date().toISOString(),
-                batch_error_details: error.stack
+                batch_error_details: errorStack
               }
             })
             .eq('id', log.id);
@@ -115,11 +118,12 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in batch processing:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({
       error: 'Batch processing failed',
-      details: error.message
+      details: errorMessage
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

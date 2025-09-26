@@ -384,14 +384,16 @@ serve(async (req) => {
         
         // Update sync log with error
         if (syncLog) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+          const errorStack = error instanceof Error ? error.stack : undefined;
           await supabase
             .from('google_sheets_sync_log')
             .update({
               status: 'failed',
-              error_message: error.message,
+              error_message: errorMessage,
               sync_metadata: {
                 ...syncLog.sync_metadata,
-                error_details: error.stack
+                error_details: errorStack
               }
             })
             .eq('id', syncLog.id);
@@ -430,11 +432,12 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in background Google Sheets sync:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ 
       error: 'Background sync failed',
-      details: error.message 
+      details: errorMessage 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -485,8 +488,8 @@ async function formatBookingData(supabase: any, additionalData?: any) {
     }
 
     // Extract key metrics from assessment data
-    const qualificationData = assessmentData.qualificationData || {};
-    const phaseResponses = assessmentData.phaseResponses || {};
+    const qualificationData = (assessmentData as any).qualificationData || {};
+    const phaseResponses = (assessmentData as any).phaseResponses || {};
     
     return {
       'Lead ID': booking.id.substring(0, 8),
@@ -498,7 +501,7 @@ async function formatBookingData(supabase: any, additionalData?: any) {
       'Role/Title': booking.role,
       'Phone': booking.phone || '',
       'LinkedIn': '', // Could be extracted from contact info if available
-      'AI Readiness Score': booking.lead_score || assessmentData.totalScore || 0,
+      'AI Readiness Score': booking.lead_score || (assessmentData as any).totalScore || 0,
       'Current AI Usage Level': phaseResponses.aiUseCases ? `${phaseResponses.aiUseCases.length} use cases identified` : 'Not assessed',
       'Decision Authority': booking.role && (booking.role.toLowerCase().includes('ceo') || booking.role.toLowerCase().includes('cto') || booking.role.toLowerCase().includes('founder')) ? 'High' : 'Medium',
       'Budget Range': 'Not specified', // Could be derived from company size and role

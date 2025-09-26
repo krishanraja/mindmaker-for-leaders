@@ -55,20 +55,20 @@ serve(async (req) => {
     }
 
     // Prepare email content
-    const serviceTypeMap = {
+    const serviceTypeMap: Record<string, string> = {
       consultation: 'Executive AI Strategy Session',
       workshop: 'AI Leadership Workshop',
       assessment: 'AI Readiness Assessment',
       implementation: 'AI Implementation Partnership'
     };
 
-    const priorityEmoji = {
+    const priorityEmoji: Record<string, string> = {
       high: '🔥',
       medium: '⭐',
       low: '📋'
     };
 
-    const emailSubject = `${priorityEmoji[service.priority]} New ${serviceTypeMap[service.type]} Booking Request - Lead Score: ${leadScore.overall}`;
+    const emailSubject = `${priorityEmoji[service.priority] || '📋'} New ${serviceTypeMap[service.type] || 'Service'} Booking Request - Lead Score: ${leadScore.overall}`;
 
     const emailHtml = `
       <h2>New Booking Request</h2>
@@ -76,7 +76,7 @@ serve(async (req) => {
       <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3>Service Details</h3>
         <p><strong>Service:</strong> ${service.title}</p>
-        <p><strong>Priority:</strong> ${service.priority.toUpperCase()} ${priorityEmoji[service.priority]}</p>
+        <p><strong>Priority:</strong> ${service.priority.toUpperCase()} ${priorityEmoji[service.priority] || '📋'}</p>
         <p><strong>Lead Score:</strong> ${leadScore.overall}/100</p>
       </div>
 
@@ -112,7 +112,7 @@ serve(async (req) => {
         
         <h4>Recommended Next Steps:</h4>
         <ul>
-          ${service.nextSteps.map(step => `<li>${step}</li>`).join('')}
+          ${service.nextSteps.map((step: string) => `<li>${step}</li>`).join('')}
         </ul>
       </div>
 
@@ -158,7 +158,7 @@ serve(async (req) => {
       <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3>What's Next?</h3>
         <ul>
-          ${service.nextSteps.map(step => `<li>${step}</li>`).join('')}
+          ${service.nextSteps.map((step: string) => `<li>${step}</li>`).join('')}
         </ul>
       </div>
       
@@ -205,11 +205,12 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in booking notification function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ 
       error: 'Failed to process booking notification',
-      details: error.message 
+      details: errorMessage 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

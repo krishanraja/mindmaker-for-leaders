@@ -38,7 +38,7 @@ ASSESSMENT DATA:
 - AI Trust Level: ${diagnosticData.aiTrustLevel}/5
 - Learning Investment: ${diagnosticData.upskillPercentage}% of time
 - Key Challenges: ${diagnosticData.allChallenges?.join(', ') || 'None specified'}
-- AI Use Cases: ${diagnosticData.aiUseCases?.map(uc => uc.useCase).join(', ') || 'None specified'}
+- AI Use Cases: ${diagnosticData.aiUseCases?.map((uc: any) => uc.useCase).join(', ') || 'None specified'}
 - Skill Gaps: ${diagnosticData.skillGaps?.join(', ') || 'None specified'}
 
 Generate 4-6 highly specific, actionable insights that would impress a seasoned executive. Each insight should:
@@ -105,11 +105,12 @@ Format as JSON array with: type, title, description, impact, effort, timeline, i
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in generate-executive-insights:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ 
-      error: error.message,
-      insights: getFallbackInsights(diagnosticData)
+      error: errorMessage,
+      insights: getFallbackInsights({})
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
