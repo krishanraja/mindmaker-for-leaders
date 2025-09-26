@@ -18,14 +18,14 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             alt="MindMaker Logo" 
             className="h-16 mx-auto mb-6 sm:mb-8"
           />
-          <h1 className="!text-white text-4xl md:text-5xl font-black tracking-tight mb-4 sm:mb-6">
-            Business Leaders
+          <h1 className="!text-white text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4 sm:mb-6 leading-tight">
+            Is your AI literacy driving growth—<span className="block">or just buzzwords?</span>
           </h1>
         </div>
         
         <div className="fade-in-up max-w-2xl mb-6 sm:mb-8 mobile-padding">
           <p className="!text-white/90 text-lg sm:text-xl md:text-2xl leading-relaxed">
-            Take our 5-minute assessment to evaluate your AI readiness.
+            Take 2 minutes to benchmark your AI leadership capability.
           </p>
         </div>
 
@@ -33,9 +33,9 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
           <Button 
             onClick={onStartAssessment}
             className="btn-hero-secondary px-8 py-3 text-lg font-medium group transform hover:scale-105 transition-all shadow-lg"
-            aria-label="Start AI Literacy Assessment"
+            aria-label="Start the AI Leadership Growth Benchmark"
           >
-            Start Assessment
+            Start the Benchmark
             <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1 !text-white" />
           </Button>
         </div>

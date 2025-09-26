@@ -11,7 +11,7 @@ import { useStructuredAssessment } from '@/hooks/useStructuredAssessment';
 import ExecutiveLoadingScreen from './ai-chat/ExecutiveLoadingScreen';
 import LLMInsightEngine from './ai-chat/LLMInsightEngine';
 import { ContactCollectionForm, ContactData } from './ContactCollectionForm';
-import AILiteracyReport from './AILiteracyReport';
+import AILeadershipBenchmark from './AILeadershipBenchmark';
 
 
 interface Message {
@@ -70,7 +70,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
         .from('conversation_sessions')
         .insert({
           user_id: null,
-          session_title: 'AI Leadership Assessment',
+          session_title: 'AI Leadership Growth Benchmark',
           status: 'active',
           business_context: {}
         })
@@ -85,7 +85,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       const welcomeMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: `Welcome to your AI Leadership Assessment. I'll guide you through ${totalQuestions} strategic questions designed to evaluate your AI leadership potential.\n\nThis assessment will help you:\n• **Identify your current AI leadership strengths**\n• **Discover key development opportunities**\n• **Create a personalized action plan**\n\nEach question builds on the previous one to create a comprehensive picture of your leadership profile. Let's begin with your first question.`,
+        content: `Welcome to your AI Leadership Growth Benchmark. I'll guide you through ${totalQuestions} strategic questions designed to evaluate how your AI literacy drives growth—not just buzzwords.\n\nThis benchmark will help you:\n• **Assess your AI leadership capability**\n• **Identify growth acceleration opportunities**\n• **Benchmark against other executives**\n• **Create a strategic roadmap**\n\nEach question evaluates a different dimension of AI leadership. Let's begin your benchmark.`,
         timestamp: new Date()
       };
 
@@ -230,7 +230,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     const assessmentData = getAssessmentData();
     
     return (
-      <AILiteracyReport
+      <AILeadershipBenchmark
         assessmentData={assessmentData}
         sessionId={sessionId}
         contactData={contactData}
@@ -263,16 +263,16 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
         <div className="text-center mb-6 sm:mb-8 pt-12 sm:pt-16">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm mb-6">
             <Brain className="h-4 w-4" />
-            AI Leadership Assessment
+            AI Leadership Growth Benchmark
           </div>
           
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight leading-tight">
-            Discover Your Leadership 
-            <span className="block text-primary">Potential</span>
+            Benchmark Your AI
+            <span className="block text-primary">Leadership Growth</span>
           </h1>
           
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
-            Get AI-guided insights to unlock your strategic thinking and leadership capabilities
+            Evaluate how your AI literacy drives strategic growth and competitive advantage
           </p>
         </div>
 
@@ -281,7 +281,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
           <Card className="mb-6 sm:mb-8 shadow-sm border rounded-xl">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base sm:text-lg font-semibold text-foreground">Assessment Progress</h2>
+                <h2 className="text-base sm:text-lg font-semibold text-foreground">Benchmark Progress</h2>
                 <Badge variant="outline" className="flex items-center gap-2 bg-primary/10 text-primary border-primary/20 px-3 py-1 whitespace-nowrap">
                   <Clock className="h-3 w-3" />
                   <span className="text-sm">{progressData.currentQuestion}/{totalQuestions}</span>
