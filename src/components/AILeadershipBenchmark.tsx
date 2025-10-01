@@ -158,7 +158,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
     }
 
     // Open Calendly for Executive Primer
-    window.open('https://calendly.com/krish-raja/mindmaker-meeting', '_blank');
+    window.open('https://calendly.com/krish-raja/mindmaker-leaders', '_blank');
     
     toast({
       title: "Executive Primer Booking",
