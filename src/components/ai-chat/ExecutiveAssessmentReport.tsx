@@ -62,7 +62,7 @@ const ExecutiveAssessmentReport: React.FC<ExecutiveAssessmentReportProps> = ({
 }) => {
   const handleBookConsultation = () => {
     // Redirect to booking or show booking modal
-    window.open('https://calendly.com/ai-leadership-consultation', '_blank');
+    window.open('https://calendly.com/krish-raja/mindmaker-meeting', '_blank');
   };
   const getCompetitiveColor = (position: string) => {
     switch (position) {
