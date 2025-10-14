@@ -177,6 +177,18 @@ html {
     box-shadow: 0 8px 32px hsl(var(--foreground) / 0.08) !important;
   }
 
+  /* Hero Section Glassmorphism */
+  .hero-glass-container {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 1.5rem;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
   .glass-card-dark {
     background: hsl(var(--card) / 0.1) !important;
     backdrop-filter: blur(12px) !important;
