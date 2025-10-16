@@ -9,37 +9,31 @@ interface HeroSectionProps {
 
 export function HeroSection({ onStartAssessment }: HeroSectionProps) {
   return (
-    <div className="hero-section hero-gradient min-h-screen relative overflow-hidden">
-      {/* Hero Content - Optimized for new design system */}
-      <div className="container-width relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-4">
-        <div className="hero-glass-container w-full max-w-4xl mx-auto p-6 sm:p-8 md:p-10 lg:p-12">
-          <div className="fade-in-up">
-            <img 
-              src={mindmakerLogo} 
-              alt="MindMaker Logo" 
-              className="h-16 mx-auto mb-6 sm:mb-8"
-            />
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4 sm:mb-6 leading-tight">
-              AI Literacy for Leaders
-            </h1>
-          </div>
+    <div className="hero-section-clean min-h-screen relative overflow-hidden">
+      <div className="container-width relative z-10 flex flex-col items-center justify-center text-center px-4 py-20 md:py-28 lg:py-32">
+        <div className="w-full max-w-6xl mx-auto">
+          <img 
+            src={mindmakerLogo} 
+            alt="MindMaker Logo" 
+            className="h-12 md:h-14 mx-auto mb-8 md:mb-10"
+          />
           
-          <div className="fade-in-up max-w-2xl mx-auto mb-6 sm:mb-8">
-            <p className="text-muted-foreground text-lg sm:text-xl md:text-2xl leading-relaxed">
-              Take 2 minutes to benchmark your AI leadership capability.
-            </p>
-          </div>
+          <h1 className="text-foreground text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6 md:mb-8 leading-tight">
+            AI Literacy for Leaders
+          </h1>
+          
+          <p className="text-foreground/70 text-xl md:text-2xl lg:text-3xl leading-relaxed max-w-3xl mx-auto mb-10 md:mb-12">
+            Take 2 minutes to benchmark your AI leadership capability.
+          </p>
 
-          <div className="fade-in-up mb-8 sm:mb-12 w-full max-w-sm sm:max-w-md mx-auto">
-            <Button 
-              onClick={onStartAssessment}
-              className="btn-hero-cta px-8 py-3 text-lg font-medium group w-full"
-              aria-label="Start the AI Leadership Growth Benchmark"
-            >
-              Start the Benchmark
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </div>
+          <Button 
+            onClick={onStartAssessment}
+            className="btn-hero-cta group"
+            aria-label="Start the AI Leadership Growth Benchmark"
+          >
+            Start the Benchmark
+            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+          </Button>
         </div>
       </div>
     </div>

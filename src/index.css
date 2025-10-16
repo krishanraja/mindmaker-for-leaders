@@ -177,96 +177,96 @@ html {
     box-shadow: 0 8px 32px hsl(var(--foreground) / 0.08) !important;
   }
 
-  /* Hero Section Glassmorphism */
-  .hero-glass-container {
-    background: hsl(var(--card) / 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border) / 0.3);
-    border-radius: 1.5rem;
-    box-shadow: 
-      0 8px 32px hsl(var(--foreground) / 0.08),
-      inset 0 1px 0 hsl(var(--foreground) / 0.05);
-  }
-
   .glass-card-dark {
-    background: hsl(var(--card) / 0.1) !important;
-    backdrop-filter: blur(12px) !important;
-    border: 1px solid hsl(var(--border) / 0.2) !important;
-    border-radius: 1rem !important;
-    box-shadow: 0 8px 32px hsl(var(--primary) / 0.1) !important;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  /* === TEXT EFFECTS === */
+  /* Text Effects */
   .hero-text-shimmer {
     background: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.4) 0%,
-      rgba(255, 255, 255, 0.8) 20%,
-      rgba(255, 255, 255, 1) 50%,
-      rgba(255, 255, 255, 0.8) 80%,
-      rgba(255, 255, 255, 0.4) 100%
-    ) !important;
-    background-size: 400% 100% !important;
-    background-clip: text !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    animation: hero-text-shimmer 10s linear 2s 1 !important;
-    animation-fill-mode: forwards !important;
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary-light)) 50%,
+      hsl(var(--primary)) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: hero-text-shimmer 3s ease-in-out infinite;
   }
 
-  /* === BRAND GRADIENT UTILITY === */
+  /* Background Gradients */
   .bg-brand-gradient {
-    background-image: var(--gradient-brand) !important;
+    background: linear-gradient(135deg, var(--gradient-primary));
   }
 
-  /* === ANIMATION CLASSES === */
+  /* Animations */
   .fade-in-up {
-    animation: fade-in-up 0.6s ease-out forwards;
-    opacity: 0;
+    animation: fade-in-up 0.6s ease-out;
   }
 
   .number-update {
-    animation: subtle-glow 0.5s ease-out;
+    animation: number-update 0.3s ease-out;
   }
 
-  .animate-stats-enter {
-    animation: stats-fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  .animate-stats-fade-in {
+    animation: stats-fade-in 0.3s ease-out;
   }
 
-  .animate-stats-exit {
-    animation: stats-fade-out 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  .animate-stats-fade-out {
+    animation: stats-fade-out 0.3s ease-out;
   }
 
   .animate-collapsible-down {
     animation: collapsible-down 0.3s ease-out;
   }
-  
+
   .animate-collapsible-up {
     animation: collapsible-up 0.3s ease-out;
   }
 
   /* === HERO SECTION === */
-  .hero-gradient {
-    background: linear-gradient(to bottom right, 
-      hsl(var(--primary) / 0.15),
-      hsl(var(--accent) / 0.10),
-      hsl(var(--background))
+  .hero-section-clean {
+    background: hsl(var(--background));
+    position: relative;
+  }
+  
+  .hero-section-clean::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 50%;
+    background: radial-gradient(
+      circle at center,
+      hsl(var(--primary) / 0.03) 0%,
+      transparent 70%
     );
+    pointer-events: none;
   }
 
   .btn-hero-cta {
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    border: 2px solid hsl(var(--primary));
+    border: none;
+    padding: 1.25rem 3rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.2);
   }
   
   .btn-hero-cta:hover {
     background: hsl(var(--primary-600));
-    border-color: hsl(var(--primary-600));
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px hsl(var(--primary) / 0.3);
+    box-shadow: 0 12px 24px hsl(var(--primary) / 0.25);
   }
 }
 
