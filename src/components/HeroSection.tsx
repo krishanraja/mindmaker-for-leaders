@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Brain, Target, Users } from "lucide-react";
-import mindmakerLogo from "@/assets/mindmaker-logo-white.png";
+import { ArrowRight } from "lucide-react";
+import mindmakerLogo from "@/assets/mindmaker-logo.png";
 
 interface HeroSectionProps {
   onStartAssessment: () => void;
@@ -9,31 +8,38 @@ interface HeroSectionProps {
 
 export function HeroSection({ onStartAssessment }: HeroSectionProps) {
   return (
-    <div className="hero-section-clean min-h-screen relative overflow-hidden">
-      <div className="container-width relative z-10 flex flex-col items-center justify-center text-center px-4 py-20 md:py-28 lg:py-32">
-        <div className="w-full max-w-6xl mx-auto">
+    <div className="hero-section-premium relative overflow-hidden">
+      <div className="container-width relative z-10 flex flex-col items-center justify-center text-center px-6 py-20 md:py-32 lg:py-40">
+        <div className="w-full max-w-4xl mx-auto space-y-8 md:space-y-10">
           <img 
             src={mindmakerLogo} 
             alt="MindMaker Logo" 
-            className="h-12 md:h-14 mx-auto mb-8 md:mb-10"
+            className="h-8 md:h-10 mx-auto mb-12 md:mb-16"
           />
           
-          <h1 className="text-foreground text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6 md:mb-8 leading-tight">
-            AI Literacy for Leaders
+          <div className="inline-block premium-badge mb-8">
+            AI Leadership Assessment
+          </div>
+          
+          <h1 className="text-foreground text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight leading-tight max-w-3xl mx-auto">
+            Benchmark Your AI Leadership
           </h1>
           
-          <p className="text-foreground/70 text-xl md:text-2xl lg:text-3xl leading-relaxed max-w-3xl mx-auto mb-10 md:mb-12">
-            Take 2 minutes to benchmark your AI leadership capability.
+          <p className="text-muted-foreground text-lg md:text-xl lg:text-2xl leading-relaxed max-w-2xl mx-auto font-light">
+            Take 2 minutes to discover your AI literacy score and unlock personalized insights for executive growth.
           </p>
 
-          <Button 
-            onClick={onStartAssessment}
-            className="btn-hero-cta group"
-            aria-label="Start the AI Leadership Growth Benchmark"
-          >
-            Start the Benchmark
-            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-          </Button>
+          <div className="pt-4">
+            <Button 
+              onClick={onStartAssessment}
+              className="btn-hero-cta group"
+              size="lg"
+              aria-label="Start the AI Leadership Benchmark"
+            >
+              Start Here
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

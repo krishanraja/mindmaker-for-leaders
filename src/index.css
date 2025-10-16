@@ -19,49 +19,53 @@
 
 @layer base {
   :root {
-    /* === BASE COLORS === */
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 28% 25%;
+    /* === BASE COLORS - Soft Premium Palette === */
+    --background: 252 100% 98%;        /* Soft lavender white #F8F7FF */
+    --foreground: 240 18% 20%;         /* Deep charcoal */
+    --muted: 252 60% 96%;              /* Very light lavender */
+    --muted-foreground: 240 12% 45%;   /* Muted gray */
 
-    /* === BRAND SYSTEM - Purple/Violet === */
-    --primary: 248 73% 67%;          /* #667eea */
-    --primary-100: 248 73% 97%;
-    --primary-200: 248 73% 90%;
-    --primary-400: 248 73% 75%;
-    --primary-600: 248 73% 55%;
+    /* === BRAND SYSTEM - Premium Purple === */
+    --primary: 252 71% 70%;            /* Soft purple #8B7FEA */
+    --primary-100: 252 80% 97%;        /* Ultra light purple */
+    --primary-200: 252 75% 92%;        /* Very light purple */
+    --primary-300: 252 73% 85%;        /* Light purple */
+    --primary-400: 252 72% 78%;        /* Medium-light purple */
+    --primary-600: 252 70% 62%;        /* Medium purple */
+    --primary-700: 252 68% 54%;        /* Darker purple */
+    --primary-foreground: 0 0% 100%;   /* White */
 
     /* === BRAND ACCENT === */
-    --accent: 264 35% 46%;           /* #764ba2 */
-    --accent-400: 264 35% 56%;
+    --accent: 264 42% 52%;             /* Deep purple */
+    --accent-400: 264 40% 62%;
     --accent-foreground: 0 0% 100%;
 
     /* === SEMANTIC COLORS === */
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
     --success: 142 76% 36%;
-    --success-foreground: 355 100% 100%;
+    --success-foreground: 0 0% 100%;
 
-    /* === SURFACE COLORS === */
-    --card: 0 0% 100%;
+    /* === SURFACE COLORS - Premium Cards === */
+    --card: 0 0% 100%;                 /* Pure white */
     --card-foreground: var(--foreground);
-    --border: 214 32% 91%;
-    --ring: 262 100% 63%;
-    --radius: 0.75rem;
+    --border: 252 40% 92%;             /* Soft purple border */
+    --ring: 252 71% 70%;
+    --radius: 1.25rem;                 /* Generous rounded corners */
 
     /* === INPUT & POPOVER === */
-    --input: 214 32% 91%;
+    --input: 252 40% 92%;
     --popover: 0 0% 100%;
     --popover-foreground: var(--foreground);
     
     /* === SECONDARY SYSTEM === */
-    --secondary: 210 40% 96%;
+    --secondary: 252 60% 96%;          /* Soft lavender */
     --secondary-foreground: var(--foreground);
 
-    /* === BRAND GRADIENTS === */
-    --gradient-brand: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
-    --gradient-subtle: linear-gradient(135deg, hsl(var(--primary-200)) 0%, hsl(var(--primary-400)) 100%);
+    /* === PREMIUM EFFECTS === */
+    --shadow-sm: 0 2px 8px hsl(252 71% 70% / 0.08);
+    --shadow-md: 0 4px 16px hsl(252 71% 70% / 0.12);
+    --shadow-lg: 0 8px 32px hsl(252 71% 70% / 0.16);
   }
 
   .dark {
@@ -159,13 +163,30 @@ html {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
-  /* === CARD PATTERNS === */
+  /* === PREMIUM CARD PATTERNS === */
   .card {
     background-color: hsl(var(--card));
     color: hsl(var(--card-foreground));
-    border: 1px solid hsl(var(--border));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  /* === ICON BADGE === */
+  .icon-badge {
+    background: hsl(var(--primary-100));
+    color: hsl(var(--primary));
     border-radius: 1rem;
-    box-shadow: 0 4px 12px hsl(var(--foreground) / 0.08);
+    padding: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   /* === GLASS MORPHISM UTILITIES === */
@@ -229,44 +250,41 @@ html {
     animation: collapsible-up 0.3s ease-out;
   }
 
-  /* === HERO SECTION === */
-  .hero-section-clean {
+  /* === PREMIUM HERO SECTION === */
+  .hero-section-premium {
     background: hsl(var(--background));
     position: relative;
-  }
-  
-  .hero-section-clean::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 50%;
-    background: radial-gradient(
-      circle at center,
-      hsl(var(--primary) / 0.03) 0%,
-      transparent 70%
-    );
-    pointer-events: none;
+    min-height: 100vh;
   }
 
   .btn-hero-cta {
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     border: none;
-    padding: 1.25rem 3rem;
-    font-size: 1.25rem;
+    padding: 1rem 2.5rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    border-radius: 0.75rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px hsl(var(--primary) / 0.2);
+    border-radius: 9999px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px hsl(var(--primary) / 0.2);
   }
   
   .btn-hero-cta:hover {
     background: hsl(var(--primary-600));
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px hsl(var(--primary) / 0.25);
+    box-shadow: 0 8px 24px hsl(var(--primary) / 0.3);
+  }
+
+  /* === PREMIUM BADGE/TAG === */
+  .premium-badge {
+    background: hsl(var(--primary-200));
+    color: hsl(var(--primary));
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
   }
 }
 
