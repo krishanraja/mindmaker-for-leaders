@@ -286,6 +286,45 @@ html {
     letter-spacing: 0.025em;
     text-transform: uppercase;
   }
+
+  /* === PREMIUM HERO TEXT WITH SHIMMER === */
+  .premium-hero-text {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    text-align: center;
+    max-width: 42rem;
+    margin-left: auto;
+    margin-right: auto;
+    
+    background: linear-gradient(
+      110deg,
+      hsl(var(--primary)),
+      45%,
+      hsl(var(--primary-400)),
+      55%,
+      hsl(var(--primary))
+    );
+    background-size: 250% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 8s ease-in-out infinite;
+  }
+
+  @media (min-width: 640px) {
+    .premium-hero-text {
+      font-size: 1.875rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .premium-hero-text {
+      font-size: 2.25rem;
+    }
+  }
 }
 
 /* ========================================
