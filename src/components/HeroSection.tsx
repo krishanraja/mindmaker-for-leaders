@@ -14,9 +14,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
           <img 
             src={mindmakerLogo} 
             alt="MindMaker Logo" 
-            className="w-[380px] h-[72px] max-w-none mx-auto mb-6"
-            width="380"
-            height="72"
+            className="h-12 md:h-16 lg:h-[72px] w-auto mx-auto mb-6"
           />
           
           <h1 className="premium-hero-text mb-6 md:mb-8">
