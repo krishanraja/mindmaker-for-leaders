@@ -14,12 +14,10 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
           <img 
             src={mindmakerLogo} 
             alt="MindMaker Logo" 
-            className="w-[380px] h-[72px] mx-auto mb-12 md:mb-16"
+            className="w-[380px] h-[72px] max-w-none mx-auto mb-6"
+            width="380"
+            height="72"
           />
-          
-          <div className="inline-block premium-badge mb-8">
-            AI Leadership Assessment
-          </div>
           
           <h1 className="premium-hero-text mb-6 md:mb-8">
             Benchmark Your AI Leadership
