@@ -9,6 +9,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onStartAssessment }: HeroSectionProps) {
   const [displayedText, setDisplayedText] = useState("");
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
   const fullText = "Benchmark Your AI Leadership";
   
   useEffect(() => {
@@ -18,6 +19,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
         setDisplayedText(fullText.slice(0, currentIndex));
         currentIndex++;
       } else {
+        setIsTypingComplete(true);
         clearInterval(interval);
       }
     }, 80);
@@ -34,10 +36,14 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             className="w-[190px] h-auto mx-auto mb-6"
           />
           
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-wide text-primary mb-6 md:mb-10 min-h-[6rem] sm:min-h-[7rem] md:min-h-[8rem] lg:min-h-[10rem]">
-            {displayedText}
-            <span className="inline-block w-0.5 h-[0.9em] bg-primary ml-1 animate-[blink_1s_step-end_infinite] align-middle" />
-          </h1>
+          <div className="flex justify-center w-full min-h-[6rem] sm:min-h-[7rem] md:min-h-[8rem] lg:min-h-[10rem]">
+            <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-wide text-primary mb-6 md:mb-10 transition-all duration-300 ${isTypingComplete ? 'text-center' : 'text-left'}`}>
+              <span className="inline-block">
+                {displayedText}
+                <span className="inline-block w-0.5 h-[0.9em] bg-primary ml-1 animate-[blink_1s_step-end_infinite] align-middle" />
+              </span>
+            </h1>
+          </div>
           
           <p className="text-muted-foreground text-xs md:text-sm font-normal leading-relaxed max-w-2xl mx-auto mb-4 md:mb-6">
             Take 2 minutes to discover your AI literacy score and unlock personalized insights for executive growth.
