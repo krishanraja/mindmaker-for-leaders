@@ -23,10 +23,10 @@
     --background: 252 100% 98%;        /* Soft lavender white #F8F7FF */
     --foreground: 240 18% 20%;         /* Deep charcoal */
     --muted: 252 60% 96%;              /* Very light lavender */
-    --muted-foreground: 240 12% 45%;   /* Muted gray */
+    --muted-foreground: 215 28% 25%;   /* Muted gray #2e3a4d */
 
     /* === BRAND SYSTEM - Premium Purple === */
-    --primary: 252 71% 70%;            /* Soft purple #8B7FEA */
+    --primary: 248 73% 67%;            /* Primary purple #667eea */
     --primary-100: 252 80% 97%;        /* Ultra light purple */
     --primary-200: 252 75% 92%;        /* Very light purple */
     --primary-300: 252 73% 85%;        /* Light purple */
@@ -403,6 +403,21 @@ html {
   to {
     height: 0;
     opacity: 0;
+  }
+}
+
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
   }
 }
 
