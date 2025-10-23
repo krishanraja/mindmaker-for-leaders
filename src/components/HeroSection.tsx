@@ -32,7 +32,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
           <img 
             src={mindmakerLogo} 
             alt="MindMaker Logo" 
-            className="w-[190px] h-auto mb-6"
+            className="w-[190px] h-auto"
           />
           
           <div className="min-h-[4rem] sm:min-h-[5rem] md:min-h-[6rem] lg:min-h-[7rem]">
