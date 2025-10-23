@@ -34,7 +34,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             className="w-[190px] h-auto mx-auto mb-6"
           />
           
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-wide text-primary mb-6 md:mb-10 min-h-[3rem] sm:min-h-[3.5rem] md:min-h-[4rem] lg:min-h-[5rem]">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-wide text-primary mb-6 md:mb-10 min-h-[6rem] sm:min-h-[7rem] md:min-h-[8rem] lg:min-h-[10rem]">
             {displayedText}
             <span className="inline-block w-0.5 h-[0.9em] bg-primary ml-1 animate-[blink_1s_step-end_infinite] align-middle" />
           </h1>
