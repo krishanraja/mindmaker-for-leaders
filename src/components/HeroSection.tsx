@@ -9,7 +9,6 @@ interface HeroSectionProps {
 
 export function HeroSection({ onStartAssessment }: HeroSectionProps) {
   const [displayedText, setDisplayedText] = useState("");
-  const [isTypingComplete, setIsTypingComplete] = useState(false);
   const fullText = "Benchmark Your AI Leadership";
   
   useEffect(() => {
@@ -19,37 +18,35 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
         setDisplayedText(fullText.slice(0, currentIndex));
         currentIndex++;
       } else {
-        setIsTypingComplete(true);
         clearInterval(interval);
       }
     }, 80);
     
     return () => clearInterval(interval);
   }, []);
+  
   return (
     <div className="hero-section-premium relative overflow-hidden">
-      <div className="container-width relative z-10 flex flex-col items-center justify-center text-center px-6 py-20 md:py-32 lg:py-40">
-        <div className="w-full max-w-4xl mx-auto space-y-8 md:space-y-10">
+      <div className="container-width relative z-10 px-6 py-20 md:py-32 lg:py-40">
+        <div className="glass-card p-8 md:p-12 lg:p-16 max-w-3xl space-y-8 md:space-y-10">
           <img 
             src={mindmakerLogo} 
             alt="MindMaker Logo" 
-            className="w-[190px] h-auto mx-auto mb-6"
+            className="w-[190px] h-auto mb-6"
           />
           
-          <div className="flex justify-center w-full min-h-[6rem] sm:min-h-[7rem] md:min-h-[8rem] lg:min-h-[10rem]">
-            <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-wide text-primary mb-6 md:mb-10 transition-all duration-300 ${isTypingComplete ? 'text-center' : 'text-left'}`}>
-              <span className="inline-block">
-                {displayedText}
-                <span className="inline-block w-0.5 h-[0.9em] bg-primary ml-1 animate-[blink_1s_step-end_infinite] align-middle" />
-              </span>
+          <div className="min-h-[4rem] sm:min-h-[5rem] md:min-h-[6rem] lg:min-h-[7rem]">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-wide text-primary mb-6 md:mb-10 text-left">
+              {displayedText}
+              <span className="inline-block w-0.5 h-[0.9em] bg-primary ml-1 animate-[blink_1s_step-end_infinite] align-middle" />
             </h1>
           </div>
           
-          <p className="text-muted-foreground text-xs md:text-sm font-normal leading-relaxed max-w-2xl mx-auto mb-4 md:mb-6">
+          <p className="text-muted-foreground text-xs md:text-sm font-normal leading-relaxed text-left mb-4 md:mb-6">
             Take 2 minutes to discover your AI literacy score and unlock personalized insights for executive growth.
           </p>
 
-          <div className="pt-4">
+          <div className="pt-4 flex justify-start">
             <Button 
               onClick={onStartAssessment}
               className="btn-hero-cta group"
