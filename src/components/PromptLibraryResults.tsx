@@ -387,7 +387,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {library.recommendedProjects.map((project, idx) => (
               <CarouselItem key={idx} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[640px] flex flex-col">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[760px] flex flex-col">
                   <CardContent className="p-6 flex flex-col h-full">
                     {/* Header */}
                     <div className="flex-shrink-0 flex items-center justify-between mb-4">
