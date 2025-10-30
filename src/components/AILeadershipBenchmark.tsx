@@ -227,7 +227,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               <div className="space-y-6">
                 {/* Desktop Grid - 3 Cards */}
                 <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[160px] flex flex-col">
+                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                       <BarChart3 className="h-6 w-6 text-primary" />
@@ -240,7 +240,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     </p>
                   </Card>
 
-                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[160px] flex flex-col">
+                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                       <Target className="h-6 w-6 text-primary" />
@@ -251,7 +251,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     <p className="text-sm text-muted-foreground">Advancement pathway identified</p>
                   </Card>
 
-                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[160px] flex flex-col">
+                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
                       <Lightbulb className="h-6 w-6 text-primary" />
@@ -272,9 +272,14 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     }}
                     className="w-full max-w-sm mx-auto"
                   >
+                    <div className="flex justify-center gap-2 mb-4">
+                      <CarouselPrevious className="relative static translate-y-0 bg-white/20 hover:bg-white/30 border-border" />
+                      <CarouselNext className="relative static translate-y-0 bg-white/20 hover:bg-white/30 border-border" />
+                    </div>
+                    
                     <CarouselContent className="-ml-4">
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[160px] flex flex-col">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[200px] flex flex-col">
                           <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                             <BarChart3 className="h-6 w-6 text-primary" />
@@ -289,7 +294,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[160px] flex flex-col">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[200px] flex flex-col">
                           <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                             <Target className="h-6 w-6 text-primary" />
@@ -302,7 +307,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[160px] flex flex-col">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[200px] flex flex-col">
                           <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
                             <Lightbulb className="h-6 w-6 text-primary" />
@@ -314,10 +319,6 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </Card>
                       </CarouselItem>
                     </CarouselContent>
-                    <div className="flex justify-center gap-2 mt-4">
-                      <CarouselPrevious className="relative static translate-y-0 bg-white/20 hover:bg-white/30 border-border" />
-                      <CarouselNext className="relative static translate-y-0 bg-white/20 hover:bg-white/30 border-border" />
-                    </div>
                   </Carousel>
                 </div>
               </div>
