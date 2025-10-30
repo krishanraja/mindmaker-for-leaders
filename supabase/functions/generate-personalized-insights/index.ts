@@ -77,12 +77,12 @@ serve(async (req) => {
                   items: {
                     type: "object",
                     properties: {
-                      title: { type: "string" },
-                      description: { type: "string", description: "Detailed description with specific context" },
-                      basedOn: { type: "array", items: { type: "string" }, description: "What user data this is based on" },
-                      impact: { type: "string", description: "Quantified impact metric" },
-                      timeline: { type: "string" },
-                      growthMetric: { type: "string", description: "SHORT growth metric ONLY (5-15 chars). Examples: '10% faster', '20% gain', '$2M revenue', '15-25%', '3x speed'. MUST be concise number/percentage/metric, NOT a sentence." }
+                      title: { type: "string", description: "Clear title (max 60 chars)", maxLength: 60 },
+                      description: { type: "string", description: "Concise description (max 180 chars) with specific context", maxLength: 180 },
+                      basedOn: { type: "array", items: { type: "string", maxLength: 50 }, description: "What user data this is based on (max 50 chars each)", maxItems: 3 },
+                      impact: { type: "string", description: "Quantified impact metric (max 40 chars)", maxLength: 40 },
+                      timeline: { type: "string", description: "Timeline (max 20 chars)", maxLength: 20 },
+                      growthMetric: { type: "string", description: "SHORT growth metric ONLY (5-15 chars). Examples: '10% faster', '20% gain', '$2M revenue', '15-25%', '3x speed'. MUST be concise number/percentage/metric, NOT a sentence.", maxLength: 15 }
                     },
                     required: ["title", "description", "basedOn", "impact", "timeline", "growthMetric"]
                   },
@@ -221,9 +221,16 @@ TASK: Generate personalized AI leadership insights that:
    - Include quantified impact based on their time waste % and work breakdown
    - Timeline should match their stated timeline
    - Should align with their role and industry
-   - **CRITICAL: growthMetric must be EXTREMELY SHORT (5-15 characters) - just a number/percentage like '15%' or '10% faster' or '$500K', NOT a description or sentence**
+   
+**CRITICAL CHARACTER LIMITS - NO EXCEPTIONS:**
+- title: 60 characters maximum
+- description: 180 characters maximum (2-3 punchy sentences)
+- basedOn: 50 characters each, max 3 items
+- impact: 40 characters maximum
+- timeline: 20 characters maximum  
+- growthMetric: 5-15 characters (just number/percentage like '15%' or '$500K')
 
-BE SPECIFIC. Use their actual words and numbers. Don't be generic.`;
+Write in executive-level, punchy language. Every word must add value. No filler. Be SPECIFIC using their actual data, words, and numbers.`;
 
   return prompt;
 }

@@ -456,14 +456,14 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           </div>
                         </div>
                         
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-3 flex-1 line-clamp-4">
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-3 flex-1">
                           {insight.description}
                         </p>
                         
                         {insight.basedOn && insight.basedOn.length > 0 && (
                           <div className="mb-3 p-2.5 bg-primary/10 rounded-lg">
                             <div className="text-xs font-semibold text-primary mb-1">Based on:</div>
-                            <div className="text-xs text-muted-foreground line-clamp-2">
+                            <div className="text-xs text-muted-foreground">
                               {insight.basedOn.join(' • ')}
                             </div>
                           </div>
