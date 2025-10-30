@@ -307,41 +307,41 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     </div>
                   ) : (
                     <>
-                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[220px] flex flex-col">
+                        <div className="flex items-center justify-between mb-3">
                           <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                           <BarChart3 className="h-6 w-6 text-primary" />
                         </div>
-                        <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
+                        <div className="text-xl font-bold text-foreground mb-3">
                           {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-3">
+                        <p className="text-sm text-muted-foreground">
                           {personalizedInsights?.growthReadiness.insight || 'Revenue acceleration potential'}
                         </p>
                       </Card>
 
-                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[220px] flex flex-col">
+                        <div className="flex items-center justify-between mb-3">
                           <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                           <Target className="h-6 w-6 text-primary" />
                         </div>
-                        <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
+                        <div className="text-xl font-bold text-foreground mb-3">
                           {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-3">
+                        <p className="text-sm text-muted-foreground">
                           {personalizedInsights?.leadershipStage.nextStep || 'Advancement pathway identified'}
                         </p>
                       </Card>
 
-                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[220px] flex flex-col">
+                        <div className="flex items-center justify-between mb-3">
                           <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
                           <Lightbulb className="h-6 w-6 text-primary" />
                         </div>
-                        <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
+                        <div className="text-xl font-bold text-foreground mb-3">
                           {personalizedInsights?.keyFocus.title || 'Key Focus'}
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-3">
+                        <p className="text-sm text-muted-foreground">
                           {personalizedInsights?.keyFocus.insight || leadershipProfile.message}
                         </p>
                       </Card>
@@ -365,12 +365,12 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     
                     <CarouselContent className="-ml-4">
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[200px] flex flex-col">
-                          <div className="flex items-center justify-between mb-4">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[220px] flex flex-col">
+                          <div className="flex items-center justify-between mb-3">
                             <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                             <BarChart3 className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
+                          <div className="text-xl font-bold text-foreground mb-3">
                             {score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing'}
                           </div>
                           <p className="text-sm text-muted-foreground">
@@ -380,12 +380,12 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[200px] flex flex-col">
-                          <div className="flex items-center justify-between mb-4">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[220px] flex flex-col">
+                          <div className="flex items-center justify-between mb-3">
                             <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                             <Target className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
+                          <div className="text-xl font-bold text-foreground mb-3">
                             {score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging'}
                           </div>
                           <p className="text-sm text-muted-foreground">Advancement pathway identified</p>
@@ -393,12 +393,12 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[200px] flex flex-col">
-                          <div className="flex items-center justify-between mb-4">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[220px] flex flex-col">
+                          <div className="flex items-center justify-between mb-3">
                             <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
                             <Lightbulb className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
+                          <div className="text-xl font-bold text-foreground mb-3">
                             Key Focus
                           </div>
                           <p className="text-sm text-muted-foreground">{leadershipProfile.message}</p>

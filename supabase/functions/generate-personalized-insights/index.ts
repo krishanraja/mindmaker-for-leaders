@@ -52,7 +52,7 @@ serve(async (req) => {
                   type: "object",
                   properties: {
                     level: { type: "string", enum: ["High", "Medium-High", "Medium", "Developing"] },
-                    insight: { type: "string", description: "Specific insight referencing their answers" }
+                    insight: { type: "string", description: "Specific insight (max 120 chars)", maxLength: 120 }
                   },
                   required: ["level", "insight"]
                 },
@@ -60,15 +60,15 @@ serve(async (req) => {
                   type: "object",
                   properties: {
                     stage: { type: "string", enum: ["Orchestrator", "Confident", "Aware", "Emerging"] },
-                    nextStep: { type: "string", description: "Concrete next action to advance" }
+                    nextStep: { type: "string", description: "Concrete next action (max 120 chars)", maxLength: 120 }
                   },
                   required: ["stage", "nextStep"]
                 },
                 keyFocus: {
                   type: "object",
                   properties: {
-                    title: { type: "string", description: "One key focus area" },
-                    insight: { type: "string", description: "Specific insight addressing their stated challenge" }
+                    title: { type: "string", description: "One key focus area (max 45 chars)", maxLength: 45 },
+                    insight: { type: "string", description: "Specific insight (max 120 chars)", maxLength: 120 }
                   },
                   required: ["title", "insight"]
                 },
@@ -222,7 +222,15 @@ TASK: Generate personalized AI leadership insights that:
    - Timeline should match their stated timeline
    - Should align with their role and industry
    
-**CRITICAL CHARACTER LIMITS - NO EXCEPTIONS:**
+**CRITICAL CHARACTER LIMITS - STRICT ENFORCEMENT:**
+
+TOP CARDS (Growth, Leadership, Focus):
+- growthReadiness.insight: 120 characters max (1-2 punchy sentences)
+- leadershipStage.nextStep: 120 characters max (1-2 actionable sentences)
+- keyFocus.title: 45 characters max (short, clear focus area)
+- keyFocus.insight: 120 characters max (1-2 specific sentences)
+
+ROADMAP INITIATIVES:
 - title: 60 characters maximum
 - description: 180 characters maximum (2-3 punchy sentences)
 - basedOn: 50 characters each, max 3 items
@@ -230,7 +238,7 @@ TASK: Generate personalized AI leadership insights that:
 - timeline: 20 characters maximum  
 - growthMetric: 5-15 characters (just number/percentage like '15%' or '$500K')
 
-Write in executive-level, punchy language. Every word must add value. No filler. Be SPECIFIC using their actual data, words, and numbers.`;
+Write in executive-level, punchy language. Every word must add value. NO filler. Be SPECIFIC using their actual data, words, and numbers.`;
 
   return prompt;
 }
