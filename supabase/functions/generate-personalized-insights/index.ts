@@ -32,6 +32,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
+        max_completion_tokens: 2000,
         messages: [
           { 
             role: 'system', 
@@ -106,14 +107,35 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log('AI Gateway response received');
+    
+    // Log token usage for monitoring
+    if (data.usage) {
+      console.log('Token usage:', data.usage);
+    }
 
     // Extract the function call result
     const toolCall = data.choices[0]?.message?.tool_calls?.[0];
     if (!toolCall || !toolCall.function?.arguments) {
+      console.error('No tool call found in response:', JSON.stringify(data.choices[0]?.message));
       throw new Error('No tool call in response');
     }
 
     const personalizedInsights = JSON.parse(toolCall.function.arguments);
+    
+    // Validate response completeness
+    if (!personalizedInsights.roadmapInitiatives || personalizedInsights.roadmapInitiatives.length === 0) {
+      console.error('Incomplete roadmap initiatives in response');
+      throw new Error('Incomplete insights generated');
+    }
+    
+    // Check that all roadmap items have complete data
+    for (const initiative of personalizedInsights.roadmapInitiatives) {
+      if (!initiative.description || initiative.description.length < 20 || 
+          !initiative.impact || initiative.impact.length < 10) {
+        console.error('Truncated initiative detected:', initiative);
+        throw new Error('Truncated insights - falling back');
+      }
+    }
 
     return new Response(
       JSON.stringify({ personalizedInsights }),
@@ -122,9 +144,16 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error generating personalized insights:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
     
     // Return fallback insights on error
     const fallbackInsights = generateFallbackInsights();
+    console.log('Returning fallback insights due to error');
+    
     return new Response(
       JSON.stringify({ personalizedInsights: fallbackInsights }),
       { 
