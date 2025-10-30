@@ -61,143 +61,169 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     }
   };
 
-  // Extract key insights from executive profile
-  const extractKeyTraits = (summary: string): string[] => {
-    const sentences = summary.split(/[.!?]+/).filter(s => s.trim().length > 10);
-    return sentences.slice(0, 3).map(s => s.trim());
+  // Extract executive traits - concise bullets under 12 words each
+  const extractExecutiveTraits = (summary: string): string[] => {
+    const sentences = summary.split(/[.!?]+/).filter(s => s.trim().length > 15);
+    
+    // Process into concise executive insights
+    return sentences.slice(0, 4).map(sentence => {
+      const words = sentence.trim().split(' ');
+      // Keep under 12 words for scannability
+      if (words.length > 12) {
+        return words.slice(0, 12).join(' ') + '...';
+      }
+      return sentence.trim();
+    });
   };
 
-  // Format project with impact metric
-  const formatProjectImpact = (project: typeof library.recommendedProjects[0]): { title: string; impact: string } => {
-    const purposeText = project?.purpose || '';
+  // Format priority project with one-line value prop and impact
+  const formatPriorityProject = (project: typeof library.recommendedProjects[0]) => {
+    if (!project) return { name: 'Custom AI Project', valueProp: 'Streamline workflows', impact: 'High-impact' };
     
-    // Extract time/efficiency mentions
-    const timeMatch = purposeText.match(/(\d+)\s*(hours?|minutes?|%|days?)/i);
-    const impactMetric = timeMatch ? `Save ${timeMatch[0]} weekly` : 'High-impact automation';
+    const purposeText = project.purpose || '';
     
-    // Create concise title - take first sentence or up to 60 chars
+    // Extract quantifiable impact
+    const timeMatch = purposeText.match(/(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
+    const percentMatch = purposeText.match(/(\d+)%/);
+    
+    let impact = 'High-impact automation';
+    if (timeMatch) {
+      impact = `${timeMatch[1]}${timeMatch[2].slice(0, 2)}/week saved`;
+    } else if (percentMatch) {
+      impact = `${percentMatch[0]} faster`;
+    }
+    
+    // Create one-line value proposition (max 15 words)
     const firstSentence = purposeText.split(/[.!?]/)[0].trim();
-    const title = firstSentence.length > 60 ? firstSentence.slice(0, 57) + '...' : firstSentence;
+    const words = firstSentence.split(' ');
+    const valueProp = words.length > 15 
+      ? words.slice(0, 15).join(' ') + '...'
+      : firstSentence;
     
-    return { title, impact: impactMetric };
+    return { name: project.name, valueProp, impact };
   };
 
-  // Extract opportunity with metric
-  const formatOpportunity = (text: string): { statement: string; benefit: string } => {
+  // Synthesize transformation opportunity - clear before/after with outcome
+  const synthesizeOpportunity = (text: string) => {
     const sentences = text.split(/[.!?]+/).filter(s => s.trim());
     
-    // Look for metrics or time savings
-    const metricMatch = text.match(/(\d+)\s*(hours?|%|x|times)/i);
-    const benefit = metricMatch ? `${metricMatch[0]} time savings` : 'Strategic impact';
+    // Extract metric
+    const timeMatch = text.match(/(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
+    const percentMatch = text.match(/(\d+)%/);
+    const multiplierMatch = text.match(/(\d+)x/i);
     
-    // Take first sentence for statement, max 80 chars
-    const statement = sentences[0]?.trim().slice(0, 80) || text.slice(0, 80);
+    let outcome = 'Strategic efficiency gain';
+    if (timeMatch) {
+      outcome = `${timeMatch[1]}+ hours saved weekly`;
+    } else if (percentMatch) {
+      outcome = `${percentMatch[0]} productivity boost`;
+    } else if (multiplierMatch) {
+      outcome = `${multiplierMatch[0]} faster delivery`;
+    }
     
-    return { statement, benefit };
+    // Create clear opportunity statement (max 20 words)
+    const mainStatement = sentences[0]?.trim() || text;
+    const words = mainStatement.split(' ');
+    const statement = words.length > 20
+      ? words.slice(0, 20).join(' ') + '...'
+      : mainStatement;
+    
+    return { statement, outcome };
   };
 
-  const keyTraits = extractKeyTraits(library.executiveProfile.summary);
-  const projectImpact = formatProjectImpact(library.recommendedProjects[0]);
-  const opportunity = formatOpportunity(library.executiveProfile.transformationOpportunity);
+  const executiveTraits = extractExecutiveTraits(library.executiveProfile.summary);
+  const priorityProject = formatPriorityProject(library.recommendedProjects[0]);
+  const opportunity = synthesizeOpportunity(library.executiveProfile.transformationOpportunity);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* Top Takeaways - Swipeable Cards */}
-      <div className="mb-12">
-        <Carousel
-          opts={{
-            align: "center",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-4">
-            {/* Card 1: How You Work Best */}
-            <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-              <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
-                <CardContent className="p-8 h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-6 flex-shrink-0">
-                    <Brain className="h-10 w-10 text-primary" />
+      {/* About You - Executive Profile Summary */}
+      <section className="space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold text-foreground">About You</h2>
+          <p className="text-base text-muted-foreground">Based on your responses, here's your executive profile</p>
+        </div>
+        
+        <Card className="shadow-lg border rounded-2xl bg-card">
+          <CardContent className="p-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              
+              {/* Column 1: Your Working Style */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Brain className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-6 flex-shrink-0">
-                    How You Work Best
-                  </h3>
-                  <div className="space-y-3 w-full">
-                    {keyTraits.map((trait, idx) => (
-                      <div key={idx} className="flex items-start gap-3 text-left">
-                        <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
-                        <p className="text-base text-foreground leading-relaxed flex-1">
-                          {trait}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </CarouselItem>
-            
-            {/* Card 2: Your Top AI Project */}
-            <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-              <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
-                <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-6 flex-shrink-0">
-                    <Target className="h-10 w-10 text-primary" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-2 flex-shrink-0">
-                    Your Priority Project
-                  </h3>
-                  <p className="text-xl font-semibold text-primary mb-6">
-                    {library.recommendedProjects[0]?.name || 'Custom AI Project'}
-                  </p>
-                  <div className="space-y-4 w-full">
-                    <p className="text-base text-foreground leading-relaxed px-4">
-                      {projectImpact.title}
-                    </p>
-                    <div className="flex items-center justify-center gap-2 pt-4 border-t border-primary/20">
-                      <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
-                      <span className="text-lg font-bold text-primary">
-                        {projectImpact.impact}
-                      </span>
+                  <h3 className="text-xl font-semibold text-foreground">Your Working Style</h3>
+                </div>
+                <div className="space-y-3">
+                  {executiveTraits.map((trait, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-2" />
+                      <p className="text-base text-muted-foreground leading-relaxed">{trait}</p>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Column 2: Priority Focus */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Target className="h-8 w-8 text-primary" />
                   </div>
-                </CardContent>
-              </Card>
-            </CarouselItem>
-            
-            {/* Card 3: Transformation Opportunity */}
-            <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-              <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
-                <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-6 flex-shrink-0">
-                    <TrendingUp className="h-10 w-10 text-primary" />
+                  <h3 className="text-xl font-semibold text-foreground">Priority Focus</h3>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-lg font-bold text-foreground mb-2">{priorityProject.name}</h4>
+                    <p className="text-base text-muted-foreground leading-relaxed">{priorityProject.valueProp}</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-6 flex-shrink-0">
-                    Your Biggest Opportunity
-                  </h3>
-                  <div className="space-y-6 w-full px-2">
-                    <p className="text-base text-foreground leading-relaxed">
-                      {opportunity.statement}
-                    </p>
-                    <div className="pt-4 border-t border-primary/20">
-                      <Badge className="bg-primary text-primary-foreground text-base px-4 py-2">
-                        {opportunity.benefit}
-                      </Badge>
-                    </div>
+                  <div className="flex items-center gap-2 pt-2">
+                    <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Badge variant="secondary" className="text-sm font-semibold">
+                      {priorityProject.impact}
+                    </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            </CarouselItem>
-          </CarouselContent>
-          
-          <div className="flex justify-center gap-2 mt-6">
-            <CarouselPrevious className="relative static translate-y-0" />
-            <CarouselNext className="relative static translate-y-0" />
-          </div>
-        </Carousel>
-      </div>
+                </div>
+              </div>
+
+              {/* Column 3: Transformation Opportunity */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <TrendingUp className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground">Transformation Opportunity</h3>
+                </div>
+                <div className="space-y-4">
+                  <p className="text-base text-muted-foreground leading-relaxed">{opportunity.statement}</p>
+                  <div className="space-y-3">
+                    <Badge className="bg-primary text-primary-foreground text-sm px-3 py-1.5">
+                      {opportunity.outcome}
+                    </Badge>
+                    <Button 
+                      variant="outline" 
+                      className="w-full flex items-center justify-center gap-2 mt-2"
+                      onClick={() => {
+                        const masterPromptsSection = document.getElementById('master-prompts');
+                        masterPromptsSection?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                    >
+                      <span>See your toolkit</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
       {/* Master Prompts Section - Horizontal Carousel */}
-      <div className="space-y-6">
+      <div id="master-prompts" className="space-y-6 scroll-mt-8">
         <div className="flex items-center gap-2">
           <Rocket className="h-6 w-6 text-primary flex-shrink-0" />
           <h2 className="text-2xl font-bold text-foreground">Master Prompts</h2>
