@@ -136,7 +136,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-4">
           <Rocket className="h-6 w-6 text-primary flex-shrink-0" />
-          <h2 className="text-2xl font-bold text-foreground">Your Prompt Library</h2>
+          <h2 className="text-2xl font-bold text-foreground">Master Prompts</h2>
         </div>
         
         <Accordion type="single" collapsible className="space-y-4">
@@ -346,7 +346,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           </div>
           <div className="flex items-start gap-3">
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</span>
-            <p>Copy the "Master Instructions" from your chosen project above</p>
+            <p>Copy the "Master Instructions" from your chosen master prompt above</p>
           </div>
           <div className="flex items-start gap-3">
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</span>
