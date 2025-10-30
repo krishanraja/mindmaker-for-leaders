@@ -56,12 +56,15 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
   const handleNext = () => {
     console.log('handleNext called - currentStep:', currentStep, 'totalSteps:', totalSteps);
     
-    if (currentStep === totalSteps) {
-      console.log('Completing questionnaire with data:', profileData);
+    if (currentStep >= totalSteps) {
+      console.log('Completing questionnaire');
       onComplete(profileData);
-    } else if (currentStep < totalSteps) {
+      return;
+    }
+    
+    if (currentStep < totalSteps) {
       console.log('Moving to next step:', currentStep + 1);
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
     }
   };
 
@@ -133,7 +136,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, thinkingProcess: option.value }));
                     console.log('Question 1 answered, auto-advancing in 800ms');
-                    setTimeout(() => handleNext(), 800);
+                    if (currentStep === 1) {
+                      setTimeout(() => handleNext(), 800);
+                    }
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
@@ -272,7 +277,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, transformationGoal: option.value }));
                     console.log('Question 5 answered, auto-advancing in 800ms');
-                    setTimeout(() => handleNext(), 800);
+                    if (currentStep === 5) {
+                      setTimeout(() => handleNext(), 800);
+                    }
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
@@ -413,7 +420,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, biggestChallenge: option.value }));
                     console.log('Question 9 answered, auto-advancing in 800ms');
-                    setTimeout(() => handleNext(), 800);
+                    if (currentStep === 9) {
+                      setTimeout(() => handleNext(), 800);
+                    }
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
@@ -514,33 +523,36 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
             <CardContent className="p-6 sm:p-8">
               {renderQuestion()}
 
-              {/* Navigation */}
-              <div className="flex gap-3 mt-8 pt-6 border-t">
-                <Button
-                  variant="outline"
-                  onClick={handleBack}
-                  className="rounded-xl"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-                <Button
-                  variant="cta"
-                  onClick={handleNext}
-                  disabled={!canProceed()}
-                  className="flex-1 rounded-xl text-sm sm:text-base"
-                >
-                  {currentStep === totalSteps ? (
-                    <>
-                      <span className="hidden sm:inline">Generate My AI Toolkit</span>
-                      <span className="sm:hidden">Generate Toolkit</span>
-                    </>
-                  ) : (
-                    'Next'
-                  )}
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </div>
+              {/* Navigation - Only show for non-auto-advance questions */}
+              {![1, 5, 9].includes(currentStep) && (
+                <div className="flex gap-3 mt-8 pt-6 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    disabled={currentStep === 1}
+                    className="rounded-xl"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                  <Button
+                    variant="cta"
+                    onClick={handleNext}
+                    disabled={!canProceed()}
+                    className="flex-1 rounded-xl text-sm sm:text-base"
+                  >
+                    {currentStep === totalSteps ? (
+                      <>
+                        <span className="hidden sm:inline">Generate My AI Toolkit</span>
+                        <span className="sm:hidden">Generate Toolkit</span>
+                      </>
+                    ) : (
+                      'Next'
+                    )}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -9,7 +9,6 @@ import {
   Target, 
   TrendingUp,
   ArrowRight,
-  ArrowLeft,
   CheckCircle,
   Lightbulb,
   BarChart3,
@@ -19,8 +18,10 @@ import {
   Crown,
   Rocket,
   Sparkles,
-  Award
+  Award,
+  Calendar
 } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 import { ContactData } from './ContactCollectionForm';
 
@@ -177,28 +178,6 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Back Button */}
-      {onBack && (
-        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
-          <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 max-w-7xl mx-auto">
-            <Button
-              variant="ghost"
-              onClick={onBack}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Go back to benchmark"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to Benchmark</span>
-              <span className="sm:hidden">Back</span>
-            </Button>
-            <Badge variant="outline" className="flex items-center gap-2">
-              <Award className="h-4 w-4" />
-              Leadership Score
-            </Badge>
-          </div>
-        </div>
-      )}
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         {/* Header */}
         <div className="text-center mb-16 sm:mb-20 pt-12 sm:pt-16">
@@ -300,7 +279,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
           </CardContent>
         </Card>
 
-        {/* Strategic Growth Opportunities - 90-Day Roadmap */}
+        {/* Strategic Growth Opportunities - Horizontal Swipe */}
         <div className="mb-20 sm:mb-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6 tracking-tight">
@@ -311,58 +290,62 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {strategicInsights.map((insight, index) => {
-              const priorityStyles = insight.priority === 'High' 
-                ? 'from-[hsl(var(--gold-accent))]/10 to-[hsl(var(--gold-accent))]/5 border-[hsl(var(--gold-accent))]/30' 
-                : 'from-primary/10 to-primary/5 border-primary/30';
-              
-              return (
-                <Card key={index} className={`group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 rounded-2xl border-2 shadow-lg bg-gradient-to-br ${priorityStyles}`}>
-                  <CardContent className="p-8 lg:p-10">
-                    {/* Icon & Priority Badge */}
-                    <div className="flex items-start justify-between mb-8">
-                      <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${leadershipProfile.gradient} flex items-center justify-center shadow-lg`}>
-                        <insight.icon className="h-8 w-8 text-white" />
+          <Carousel
+            opts={{
+              align: "start",
+              loop: false,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-4">
+              {strategicInsights.map((insight, index) => (
+                <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-[320px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+                    <CardContent className="p-6 flex flex-col h-full">
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${leadershipProfile.gradient} flex-shrink-0`}>
+                          <insight.icon className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-foreground text-base leading-tight">
+                            {insight.insight}
+                          </h3>
+                        </div>
                       </div>
-                      <Badge 
-                        className={`
-                          ${insight.priority === 'High' ? 'bg-[hsl(var(--gold-accent))]/20 text-[hsl(var(--gold-accent))] border-[hsl(var(--gold-accent))]/50' : ''}
-                          ${insight.priority === 'Medium' ? 'bg-primary/20 text-primary border-primary/50' : ''}
-                          border-2 px-4 py-1.5 text-sm font-semibold shadow-md
-                        `}
-                      >
-                        {insight.priority} Impact
-                      </Badge>
-                    </div>
-                    
-                    {/* Content */}
-                    <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-4 leading-tight">{insight.insight}</h3>
-                    <p className="text-base text-muted-foreground mb-8 leading-relaxed">{insight.description}</p>
-                    
-                    {/* Divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6"></div>
-                    
-                    {/* Metrics */}
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <div className="text-base font-bold text-foreground mb-1">{insight.timeline}</div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider">Timeline</div>
+                      
+                      <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1 line-clamp-4">
+                        {insight.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between pt-4 border-t mt-auto">
+                        <div>
+                          <div className={`text-base font-bold ${leadershipProfile.textColor} mb-1`}>
+                            {insight.improvement}
+                          </div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                            Growth
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-base font-bold text-foreground mb-1">
+                            {insight.timeline}
+                          </div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                            Timeline
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-base font-bold text-foreground mb-1">{insight.impact}</div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider">Impact</div>
-                      </div>
-                      <div>
-                        <div className={`text-base font-bold ${leadershipProfile.textColor} mb-1`}>{insight.improvement}</div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider">Growth</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            
+            <div className="flex justify-center gap-2 mt-6">
+              <CarouselPrevious className="relative static translate-y-0" />
+              <CarouselNext className="relative static translate-y-0" />
+            </div>
+          </Carousel>
         </div>
 
         {/* AI Toolkit CTA */}
@@ -437,15 +420,18 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 ))}
               </div>
               
-              <Button 
-                size="lg" 
-                onClick={handleExecutivePrimerBooking}
-                className="bg-white text-primary hover:bg-white/90 px-10 py-6 text-xl font-bold group transition-all rounded-2xl shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(255,255,255,0.4)] hover:scale-105"
-                aria-label="Schedule Your Strategic Session"
-              >
-                Schedule Your Strategic Session
-                <ArrowRight className="ml-3 h-6 w-6 transition-transform group-hover:translate-x-2" />
-              </Button>
+              <div className="overflow-hidden">
+                <Button 
+                  size="lg" 
+                  onClick={handleExecutivePrimerBooking}
+                  className="bg-white text-primary hover:bg-white/90 px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-xl font-bold group transition-all rounded-2xl shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(255,255,255,0.4)] hover:scale-105 max-w-full"
+                  aria-label="Schedule Your Strategic Session"
+                >
+                  <Calendar className="h-5 w-5 mr-2 flex-shrink-0" />
+                  <span className="hidden sm:inline truncate">Schedule Your Strategic AI Planning Session</span>
+                  <span className="sm:hidden">Schedule Session</span>
+                </Button>
+              </div>
               
               <div className="mt-8 text-white/80 text-sm">
                 <p className="mb-2">🚀 Join 500+ executives who've accelerated their AI leadership</p>

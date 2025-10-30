@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Brain, Copy, CheckCircle, BookOpen, Rocket, Target, ArrowRight } from 'lucide-react';
+import { Brain, Copy, CheckCircle, BookOpen, Rocket, Target, ArrowRight, TrendingUp, Sparkles } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useToast } from '@/components/ui/use-toast';
 
 interface PromptLibraryResultsProps {
@@ -62,25 +63,74 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* Executive Profile Summary */}
-      <Card className="shadow-sm border rounded-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            Your AI Leadership Profile
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-semibold text-foreground mb-2">How You Work</h3>
-            <p className="text-muted-foreground leading-relaxed">{library.executiveProfile.summary}</p>
+      {/* Top Takeaways - Swipeable Cards */}
+      <div className="mb-12">
+        <Carousel
+          opts={{
+            align: "center",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {/* Card 1: Leadership Style */}
+            <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+              <Card className="h-[320px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
+                <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-4">
+                    <Brain className="h-10 w-10 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3">
+                    Your Leadership Style
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Tailored AI prompts that match your natural thinking and communication patterns
+                  </p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+            
+            {/* Card 2: Biggest Opportunity */}
+            <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+              <Card className="h-[320px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
+                <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-4">
+                    <Target className="h-10 w-10 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3">
+                    Your Biggest Opportunity
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Custom AI projects designed for your specific challenges and business goals
+                  </p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+            
+            {/* Card 3: Transformation Opportunity */}
+            <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+              <Card className="h-[320px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
+                <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-4">
+                    <TrendingUp className="h-10 w-10 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3">
+                    Your AI Transformation
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6">
+                    {library.executiveProfile.transformationOpportunity}
+                  </p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          </CarouselContent>
+          
+          <div className="flex justify-center gap-2 mt-6">
+            <CarouselPrevious className="relative static translate-y-0" />
+            <CarouselNext className="relative static translate-y-0" />
           </div>
-          <div className="bg-primary/10 p-4 rounded-lg">
-            <h3 className="font-semibold text-primary mb-2">Your AI Transformation Opportunity</h3>
-            <p className="text-foreground leading-relaxed">{library.executiveProfile.transformationOpportunity}</p>
-          </div>
-        </CardContent>
-      </Card>
+        </Carousel>
+      </div>
 
       {/* AI Projects Section */}
       <div className="space-y-4">
