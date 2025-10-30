@@ -61,7 +61,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     }
   };
 
-  // Synthesize working style - 2-3 complete, powerful statements
+  // Synthesize working style - exactly 3 complete, powerful statements
   const synthesizeWorkingStyle = (summary: string): string[] => {
     const traits: string[] = [];
     const text = summary.toLowerCase();
@@ -95,7 +95,18 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       });
     }
     
-    return traits.slice(0, 3); // Max 3 insights
+    // ALWAYS ensure exactly 3 traits
+    const fallbacks = [
+      'You value clear communication and stakeholder alignment',
+      'You seek efficient solutions to complex challenges',
+      'You focus on measurable outcomes and strategic impact'
+    ];
+    
+    while (traits.length < 3 && fallbacks.length > 0) {
+      traits.push(fallbacks.shift()!);
+    }
+    
+    return traits.slice(0, 3); // Always exactly 3
   };
 
   // Synthesize priority project - clear name, complete value prop, impact
@@ -213,20 +224,27 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {/* Card 1: Your Working Style */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card min-h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-8 flex flex-col h-full">
-                  <div className="space-y-6 flex-1 flex flex-col">
-                    <div className="flex items-center justify-center">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                <CardContent className="p-8 flex flex-col h-full justify-between">
+                  <div className="space-y-4 flex flex-col h-full">
+                    {/* Icon - Fixed height */}
+                    <div className="flex items-center justify-center h-16 flex-shrink-0">
                       <div className="p-3 bg-primary/10 rounded-xl">
                         <Brain className="h-12 w-12 text-primary" />
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-center text-foreground">Your Working Style</h3>
-                    <div className="space-y-4 flex-1">
+                    
+                    {/* Title - Fixed height */}
+                    <h3 className="text-2xl font-bold text-center text-foreground h-12 flex-shrink-0 flex items-center justify-center">
+                      Your Working Style
+                    </h3>
+                    
+                    {/* Content - Fills remaining space */}
+                    <div className="space-y-3 flex-1 overflow-hidden flex flex-col justify-center">
                       {workingStyle.map((trait, idx) => (
-                        <div key={idx} className="flex items-start gap-3 bg-muted/30 rounded-lg p-4">
+                        <div key={idx} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3">
                           <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
-                          <p className="text-base text-foreground leading-relaxed">{trait}</p>
+                          <p className="text-sm text-foreground leading-relaxed">{trait}</p>
                         </div>
                       ))}
                     </div>
@@ -237,23 +255,30 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
             {/* Card 2: Priority Focus */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card min-h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-8 flex flex-col h-full">
-                  <div className="space-y-6 flex-1 flex flex-col">
-                    <div className="flex items-center justify-center">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                <CardContent className="p-8 flex flex-col h-full justify-between">
+                  <div className="space-y-4 flex flex-col h-full">
+                    {/* Icon - Fixed height */}
+                    <div className="flex items-center justify-center h-16 flex-shrink-0">
                       <div className="p-3 bg-primary/10 rounded-xl">
                         <Target className="h-12 w-12 text-primary" />
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-center text-foreground">Priority Focus</h3>
-                    <div className="space-y-6 flex-1 flex flex-col justify-center">
-                      <div className="space-y-3 bg-muted/30 rounded-lg p-6">
-                        <h4 className="text-xl font-bold text-foreground text-center">{priorityProject.name}</h4>
-                        <p className="text-base text-muted-foreground leading-relaxed text-center">{priorityProject.valueProp}</p>
+                    
+                    {/* Title - Fixed height */}
+                    <h3 className="text-2xl font-bold text-center text-foreground h-12 flex-shrink-0 flex items-center justify-center">
+                      Priority Focus
+                    </h3>
+                    
+                    {/* Content - Fills remaining space */}
+                    <div className="space-y-4 flex-1 flex flex-col justify-center">
+                      <div className="space-y-3 bg-muted/30 rounded-lg p-5">
+                        <h4 className="text-lg font-bold text-foreground text-center">{priorityProject.name}</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed text-center">{priorityProject.valueProp}</p>
                       </div>
-                      <div className="flex items-center justify-center gap-2 pt-2">
-                        <Sparkles className="h-6 w-6 text-primary flex-shrink-0" />
-                        <Badge variant="secondary" className="text-base font-semibold px-4 py-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
+                        <Badge variant="secondary" className="text-sm font-semibold px-3 py-1.5">
                           {priorityProject.impact}
                         </Badge>
                       </div>
@@ -265,23 +290,31 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
             {/* Card 3: Transformation Opportunity */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card min-h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-8 flex flex-col h-full">
-                  <div className="space-y-6 flex-1 flex flex-col">
-                    <div className="flex items-center justify-center">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                <CardContent className="p-8 flex flex-col h-full justify-between">
+                  <div className="space-y-4 flex flex-col h-full">
+                    {/* Icon - Fixed height */}
+                    <div className="flex items-center justify-center h-16 flex-shrink-0">
                       <div className="p-3 bg-primary/10 rounded-xl">
                         <TrendingUp className="h-12 w-12 text-primary" />
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-center text-foreground">Transformation Opportunity</h3>
-                    <div className="space-y-6 flex-1 flex flex-col justify-center">
-                      <div className="space-y-4 bg-muted/30 rounded-lg p-6">
-                        <p className="text-base text-foreground leading-relaxed text-center">{opportunity.statement}</p>
-                        <div className="flex justify-center">
-                          <Badge className="bg-primary text-primary-foreground text-base px-4 py-2">
-                            {opportunity.outcome}
-                          </Badge>
-                        </div>
+                    
+                    {/* Title - Fixed height */}
+                    <h3 className="text-2xl font-bold text-center text-foreground h-12 flex-shrink-0 flex items-center justify-center">
+                      Transformation Opportunity
+                    </h3>
+                    
+                    {/* Content - Fills remaining space */}
+                    <div className="space-y-4 flex-1 flex flex-col justify-center">
+                      <div className="bg-muted/30 rounded-lg p-5">
+                        <p className="text-sm text-foreground leading-relaxed text-center">{opportunity.statement}</p>
+                      </div>
+                      
+                      {/* Clean metric display - NO purple blob */}
+                      <div className="flex items-center justify-center gap-2 bg-muted/30 rounded-lg px-4 py-3">
+                        <TrendingUp className="h-5 w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm font-semibold text-foreground">{opportunity.outcome}</span>
                       </div>
                     </div>
                   </div>
