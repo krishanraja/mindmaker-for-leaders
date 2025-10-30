@@ -264,7 +264,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {/* Card 1: Your Working Style */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-between">
                   <div className="space-y-4 flex flex-col h-full">
                     {/* Icon - Fixed height */}
@@ -295,7 +295,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
             {/* Card 2: Priority Focus */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-between">
                   <div className="space-y-4 flex flex-col h-full">
                     {/* Icon - Fixed height */}
@@ -330,7 +330,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
             {/* Card 3: Transformation Opportunity */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-between">
                   <div className="space-y-4 flex flex-col h-full">
                     {/* Icon - Fixed height */}
@@ -387,7 +387,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {library.recommendedProjects.map((project, idx) => (
               <CarouselItem key={idx} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[760px] flex flex-col">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[840px] flex flex-col">
                   <CardContent className="p-6 flex flex-col h-full">
                     {/* Header */}
                     <div className="flex-shrink-0 flex items-center justify-between mb-4">
