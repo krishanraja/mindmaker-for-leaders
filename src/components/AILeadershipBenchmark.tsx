@@ -382,7 +382,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 Limited Spots Available This Month
               </div>
               
-              <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">
                 Ready to turn your score<br className="hidden sm:block" /> into a <span className="underline decoration-white/50">strategic roadmap</span>?
               </h3>
               
