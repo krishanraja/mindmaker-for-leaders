@@ -504,7 +504,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
               }, {} as Record<string, typeof library.promptTemplates>)
             ).map(([category, templates]) => (
               <CarouselItem key={category} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl min-h-[280px] flex flex-col">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl min-h-[200px] flex flex-col">
                   <CardHeader className="flex-shrink-0">
                     <CardTitle className="text-lg">{category}</CardTitle>
                   </CardHeader>
