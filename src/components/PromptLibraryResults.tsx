@@ -287,51 +287,69 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
         ))}
       </div>
 
-      {/* Implementation Roadmap Section - Collapsible */}
+      {/* Implementation Roadmap Section - Collapsible with Preview */}
       <Card className="shadow-sm border rounded-xl">
-        <Accordion type="single" collapsible defaultValue="roadmap">
-          <AccordionItem value="roadmap" className="border-0">
-            <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-muted/50">
-              <CardTitle className="flex items-center gap-2">
-                <Rocket className="h-5 w-5 text-primary" />
-                Your Implementation Roadmap
-              </CardTitle>
-            </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6">
-              <div className="space-y-6 pt-2">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Badge className="bg-primary text-primary-foreground">Week 1</Badge>
-                    <h3 className="font-semibold text-foreground">Quick Start</h3>
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed pl-20">
-                    {library.implementationRoadmap.week1}
-                  </p>
-                </div>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Rocket className="h-5 w-5 text-primary" />
+            Your Implementation Roadmap
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Week 1 Preview - Always Visible */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Badge className="bg-primary text-primary-foreground">Week 1</Badge>
+              <h3 className="font-semibold text-foreground">Quick Start</h3>
+            </div>
+            <p className="text-muted-foreground leading-relaxed pl-20 line-clamp-2">
+              {library.implementationRoadmap.week1}
+            </p>
+          </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Week 2-4</Badge>
-                    <h3 className="font-semibold text-foreground">Expand Usage</h3>
+          {/* Expandable Full Content */}
+          <Accordion type="single" collapsible className="border-0">
+            <AccordionItem value="roadmap" className="border-0">
+              <AccordionTrigger className="py-3 hover:no-underline text-sm text-primary hover:text-primary/80">
+                View Full Roadmap
+              </AccordionTrigger>
+              <AccordionContent className="pt-4">
+                <div className="space-y-6">
+                  {/* Full Week 1 Content */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-primary text-primary-foreground">Week 1</Badge>
+                      <h3 className="font-semibold text-foreground">Quick Start</h3>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed pl-20">
+                      {library.implementationRoadmap.week1}
+                    </p>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed pl-20">
-                    {library.implementationRoadmap.week2to4}
-                  </p>
-                </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="bg-muted text-foreground">Month 2+</Badge>
-                    <h3 className="font-semibold text-foreground">Advanced Techniques</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Week 2-4</Badge>
+                      <h3 className="font-semibold text-foreground">Expand Usage</h3>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed pl-20">
+                      {library.implementationRoadmap.week2to4}
+                    </p>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed pl-20">
-                    {library.implementationRoadmap.month2plus}
-                  </p>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="bg-muted text-foreground">Month 2+</Badge>
+                      <h3 className="font-semibold text-foreground">Advanced Techniques</h3>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed pl-20">
+                      {library.implementationRoadmap.month2plus}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </CardContent>
       </Card>
 
       {/* Setup Instructions */}
