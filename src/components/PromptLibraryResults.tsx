@@ -186,7 +186,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             {/* Card 1: Your Unique Strengths */}
             <CarouselItem className="pl-4">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-10 flex flex-col h-full justify-center">
+                <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
                     {/* Icon */}
                     <div className="p-3 bg-primary/10 rounded-xl">
@@ -203,7 +203,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       {workingStyle.map((trait, idx) => (
                         <div key={idx} className="flex items-center gap-4 justify-center">
                           <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                          <p className="text-base font-medium text-foreground">{trait}</p>
+                          <p className="text-sm font-medium text-foreground">{trait}</p>
                         </div>
                       ))}
                     </div>
@@ -215,7 +215,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             {/* Card 2: Your Biggest Opportunity */}
             <CarouselItem className="pl-4">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-10 flex flex-col h-full justify-center">
+                <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
                     {/* Icon */}
                     <div className="p-3 bg-primary/10 rounded-xl">
@@ -229,14 +229,14 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     
                     {/* Content - Project name bold, value prop, impact */}
                     <div className="space-y-6 text-center">
-                      <h4 className="text-xl font-bold text-foreground leading-snug px-4">
+                      <h4 className="text-lg font-bold text-foreground leading-snug px-2">
                         {priorityProject.name}
                       </h4>
-                      <p className="text-base text-muted-foreground leading-relaxed px-6">
+                      <p className="text-sm text-muted-foreground leading-relaxed px-4">
                         {priorityProject.valueProp}
                       </p>
                       <div className="pt-2">
-                        <Badge variant="secondary" className="text-base font-semibold px-4 py-2">
+                        <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
                           {priorityProject.impact}
                         </Badge>
                       </div>
@@ -249,7 +249,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             {/* Card 3: What Makes You Different */}
             <CarouselItem className="pl-4">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-10 flex flex-col h-full justify-center">
+                <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
                     {/* Icon */}
                     <div className="p-3 bg-primary/10 rounded-xl">
@@ -263,14 +263,14 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     
                     {/* Content - Quote-style insight */}
                     <div className="space-y-6 w-full">
-                      <div className="border-l-4 border-primary pl-6 pr-4 py-2">
-                        <p className="text-base text-foreground leading-relaxed italic">
+                      <div className="border-l-4 border-primary pl-4 pr-2 py-2">
+                        <p className="text-sm text-foreground leading-relaxed italic">
                           "{opportunity.statement}"
                         </p>
                       </div>
                       
                       <div className="text-center pt-2">
-                        <Badge variant="secondary" className="text-base font-semibold px-4 py-2">
+                        <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
                           {opportunity.outcome}
                         </Badge>
                       </div>
