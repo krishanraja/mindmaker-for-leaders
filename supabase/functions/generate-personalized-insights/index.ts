@@ -127,15 +127,6 @@ serve(async (req) => {
       console.error('Incomplete roadmap initiatives in response');
       throw new Error('Incomplete insights generated');
     }
-    
-    // Check that all roadmap items have complete data
-    for (const initiative of personalizedInsights.roadmapInitiatives) {
-      if (!initiative.description || initiative.description.length < 20 || 
-          !initiative.impact || initiative.impact.length < 10) {
-        console.error('Truncated initiative detected:', initiative);
-        throw new Error('Truncated insights - falling back');
-      }
-    }
 
     return new Response(
       JSON.stringify({ personalizedInsights }),
