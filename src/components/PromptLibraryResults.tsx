@@ -61,24 +61,50 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     }
   };
 
-  // Extract executive traits - concise bullets under 12 words each
-  const extractExecutiveTraits = (summary: string): string[] => {
-    const sentences = summary.split(/[.!?]+/).filter(s => s.trim().length > 15);
+  // Synthesize working style - 2-3 complete, powerful statements
+  const synthesizeWorkingStyle = (summary: string): string[] => {
+    const traits: string[] = [];
+    const text = summary.toLowerCase();
     
-    // Process into concise executive insights
-    return sentences.slice(0, 4).map(sentence => {
-      const words = sentence.trim().split(' ');
-      // Keep under 12 words for scannability
-      if (words.length > 12) {
-        return words.slice(0, 12).join(' ') + '...';
-      }
-      return sentence.trim();
-    });
+    // Extract key behavioral patterns and rewrite as complete insights
+    if (text.includes('data') || text.includes('historical') || text.includes('analysis')) {
+      traits.push('You prioritize data-driven insights over intuition when making decisions');
+    }
+    
+    if (text.includes('communication') || text.includes('stakeholder') || text.includes('narrative')) {
+      traits.push('You excel at translating complex analysis into compelling narratives');
+    }
+    
+    if (text.includes('strategy') || text.includes('planning') || text.includes('vision')) {
+      traits.push('You focus on strategic alignment and long-term impact');
+    }
+    
+    if (text.includes('efficiency') || text.includes('streamline') || text.includes('automate')) {
+      traits.push('You actively seek opportunities to optimize workflows');
+    }
+    
+    // Fallback to parsing first 2-3 sentences if no patterns matched
+    if (traits.length === 0) {
+      const sentences = summary.split(/[.!?]+/).filter(s => s.trim().length > 20);
+      sentences.slice(0, 2).forEach(sentence => {
+        const clean = sentence.trim();
+        // Rewrite in active voice if needed
+        if (clean.length > 10 && clean.length < 80) {
+          traits.push(clean);
+        }
+      });
+    }
+    
+    return traits.slice(0, 3); // Max 3 insights
   };
 
-  // Format priority project with one-line value prop and impact
-  const formatPriorityProject = (project: typeof library.recommendedProjects[0]) => {
-    if (!project) return { name: 'Custom AI Project', valueProp: 'Streamline workflows', impact: 'High-impact' };
+  // Synthesize priority project - clear name, complete value prop, impact
+  const synthesizePriorityProject = (project: typeof library.recommendedProjects[0]) => {
+    if (!project) return { 
+      name: 'Custom AI Project', 
+      valueProp: 'Streamline workflows and accelerate decision-making', 
+      impact: 'High-impact' 
+    };
     
     const purposeText = project.purpose || '';
     
@@ -88,138 +114,187 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     
     let impact = 'High-impact automation';
     if (timeMatch) {
-      impact = `${timeMatch[1]}${timeMatch[2].slice(0, 2)}/week saved`;
+      const num = timeMatch[1];
+      const unit = timeMatch[2].toLowerCase().includes('min') ? 'min' : 'hr';
+      impact = `${num}${unit}/week saved`;
     } else if (percentMatch) {
-      impact = `${percentMatch[0]} faster`;
+      impact = `${percentMatch[0]} faster delivery`;
     }
     
-    // Create one-line value proposition (max 15 words)
-    const firstSentence = purposeText.split(/[.!?]/)[0].trim();
-    const words = firstSentence.split(' ');
-    const valueProp = words.length > 15 
-      ? words.slice(0, 15).join(' ') + '...'
-      : firstSentence;
+    // Create complete value proposition - rewrite if too long
+    let valueProp = purposeText.split(/[.!?]/)[0].trim();
+    
+    // If too long, extract core value
+    if (valueProp.split(' ').length > 18) {
+      // Look for key phrases
+      if (valueProp.includes('transform') && valueProp.includes('into')) {
+        const match = valueProp.match(/transform\s+([^.]+?)\s+into\s+([^.]+)/i);
+        if (match) {
+          valueProp = `Transform ${match[1]} into ${match[2]}`;
+        }
+      } else if (valueProp.includes('automat')) {
+        valueProp = 'Automate ' + valueProp.split('automat')[1].split(/[,.]/)[ 0].trim();
+      } else {
+        // Take first complete clause
+        valueProp = valueProp.split(',')[0].trim();
+      }
+    }
     
     return { name: project.name, valueProp, impact };
   };
 
-  // Synthesize transformation opportunity - clear before/after with outcome
+  // Synthesize transformation opportunity - complete problem→solution statement
   const synthesizeOpportunity = (text: string) => {
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim());
-    
-    // Extract metric
+    // Extract metric first
     const timeMatch = text.match(/(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
     const percentMatch = text.match(/(\d+)%/);
     const multiplierMatch = text.match(/(\d+)x/i);
     
-    let outcome = 'Strategic efficiency gain';
+    let outcome = 'Measurable efficiency gain';
     if (timeMatch) {
-      outcome = `${timeMatch[1]}+ hours saved weekly`;
+      outcome = `${timeMatch[1]}+ hours saved per week`;
     } else if (percentMatch) {
-      outcome = `${percentMatch[0]} productivity boost`;
+      outcome = `${percentMatch[0]} productivity increase`;
     } else if (multiplierMatch) {
-      outcome = `${multiplierMatch[0]} faster delivery`;
+      outcome = `${multiplierMatch[0]} faster execution`;
     }
     
-    // Create clear opportunity statement (max 20 words)
-    const mainStatement = sentences[0]?.trim() || text;
-    const words = mainStatement.split(' ');
-    const statement = words.length > 20
-      ? words.slice(0, 20).join(' ') + '...'
-      : mainStatement;
+    // Create complete opportunity statement
+    let statement = text;
+    
+    // If starts with "automat", structure as action→benefit
+    if (text.toLowerCase().includes('automat')) {
+      const parts = text.split(/\s+to\s+/i);
+      if (parts.length > 1) {
+        statement = `${parts[0].trim()} to ${parts[1].split(/[.,]/)[0].trim()}`;
+      }
+    } 
+    // If has "from...to", extract transformation
+    else if (text.includes('from') && text.includes('to')) {
+      const match = text.match(/from\s+([^.]+?)\s+to\s+([^.]+)/i);
+      if (match) {
+        statement = `Shift from ${match[1]} to ${match[2]}`;
+      }
+    }
+    // Otherwise take first complete sentence
+    else {
+      statement = text.split(/[.!?]/)[0].trim();
+    }
+    
+    // Ensure it's complete and under 25 words
+    const words = statement.split(' ');
+    if (words.length > 25) {
+      statement = words.slice(0, 25).join(' ');
+    }
     
     return { statement, outcome };
   };
 
-  const executiveTraits = extractExecutiveTraits(library.executiveProfile.summary);
-  const priorityProject = formatPriorityProject(library.recommendedProjects[0]);
+  const workingStyle = synthesizeWorkingStyle(library.executiveProfile.summary);
+  const priorityProject = synthesizePriorityProject(library.recommendedProjects[0]);
   const opportunity = synthesizeOpportunity(library.executiveProfile.transformationOpportunity);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* About You - Executive Profile Summary */}
-      <section className="space-y-4">
+      {/* About You - Executive Profile Cards */}
+      <section className="space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-bold text-foreground">About You</h2>
           <p className="text-base text-muted-foreground">Based on your responses, here's your executive profile</p>
         </div>
         
-        <Card className="shadow-lg border rounded-2xl bg-card">
-          <CardContent className="p-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              
-              {/* Column 1: Your Working Style */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Brain className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground">Your Working Style</h3>
-                </div>
-                <div className="space-y-3">
-                  {executiveTraits.map((trait, idx) => (
-                    <div key={idx} className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-2" />
-                      <p className="text-base text-muted-foreground leading-relaxed">{trait}</p>
+        <Carousel
+          opts={{
+            align: "center",
+            loop: false,
+          }}
+          className="w-full max-w-[580px] mx-auto"
+        >
+          <CarouselContent className="-ml-4">
+            {/* Card 1: Your Working Style */}
+            <CarouselItem className="pl-4">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card min-h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                <CardContent className="p-8 flex flex-col h-full">
+                  <div className="space-y-6 flex-1 flex flex-col">
+                    <div className="flex items-center justify-center">
+                      <div className="p-3 bg-primary/10 rounded-xl">
+                        <Brain className="h-12 w-12 text-primary" />
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <h3 className="text-2xl font-bold text-center text-foreground">Your Working Style</h3>
+                    <div className="space-y-4 flex-1">
+                      {workingStyle.map((trait, idx) => (
+                        <div key={idx} className="flex items-start gap-3 bg-muted/30 rounded-lg p-4">
+                          <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+                          <p className="text-base text-foreground leading-relaxed">{trait}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </CarouselItem>
 
-              {/* Column 2: Priority Focus */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Target className="h-8 w-8 text-primary" />
+            {/* Card 2: Priority Focus */}
+            <CarouselItem className="pl-4">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card min-h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                <CardContent className="p-8 flex flex-col h-full">
+                  <div className="space-y-6 flex-1 flex flex-col">
+                    <div className="flex items-center justify-center">
+                      <div className="p-3 bg-primary/10 rounded-xl">
+                        <Target className="h-12 w-12 text-primary" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-center text-foreground">Priority Focus</h3>
+                    <div className="space-y-6 flex-1 flex flex-col justify-center">
+                      <div className="space-y-3 bg-muted/30 rounded-lg p-6">
+                        <h4 className="text-xl font-bold text-foreground text-center">{priorityProject.name}</h4>
+                        <p className="text-base text-muted-foreground leading-relaxed text-center">{priorityProject.valueProp}</p>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 pt-2">
+                        <Sparkles className="h-6 w-6 text-primary flex-shrink-0" />
+                        <Badge variant="secondary" className="text-base font-semibold px-4 py-2">
+                          {priorityProject.impact}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground">Priority Focus</h3>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-lg font-bold text-foreground mb-2">{priorityProject.name}</h4>
-                    <p className="text-base text-muted-foreground leading-relaxed">{priorityProject.valueProp}</p>
-                  </div>
-                  <div className="flex items-center gap-2 pt-2">
-                    <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
-                    <Badge variant="secondary" className="text-sm font-semibold">
-                      {priorityProject.impact}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
+            </CarouselItem>
 
-              {/* Column 3: Transformation Opportunity */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <TrendingUp className="h-8 w-8 text-primary" />
+            {/* Card 3: Transformation Opportunity */}
+            <CarouselItem className="pl-4">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card min-h-[420px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                <CardContent className="p-8 flex flex-col h-full">
+                  <div className="space-y-6 flex-1 flex flex-col">
+                    <div className="flex items-center justify-center">
+                      <div className="p-3 bg-primary/10 rounded-xl">
+                        <TrendingUp className="h-12 w-12 text-primary" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-center text-foreground">Transformation Opportunity</h3>
+                    <div className="space-y-6 flex-1 flex flex-col justify-center">
+                      <div className="space-y-4 bg-muted/30 rounded-lg p-6">
+                        <p className="text-base text-foreground leading-relaxed text-center">{opportunity.statement}</p>
+                        <div className="flex justify-center">
+                          <Badge className="bg-primary text-primary-foreground text-base px-4 py-2">
+                            {opportunity.outcome}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground">Transformation Opportunity</h3>
-                </div>
-                <div className="space-y-4">
-                  <p className="text-base text-muted-foreground leading-relaxed">{opportunity.statement}</p>
-                  <div className="space-y-3">
-                    <Badge className="bg-primary text-primary-foreground text-sm px-3 py-1.5">
-                      {opportunity.outcome}
-                    </Badge>
-                    <Button 
-                      variant="outline" 
-                      className="w-full flex items-center justify-center gap-2 mt-2"
-                      onClick={() => {
-                        const masterPromptsSection = document.getElementById('master-prompts');
-                        masterPromptsSection?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                    >
-                      <span>See your toolkit</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          </CarouselContent>
+          
+          <div className="flex justify-center gap-2 mt-6">
+            <CarouselPrevious className="relative static translate-y-0" />
+            <CarouselNext className="relative static translate-y-0" />
+          </div>
+        </Carousel>
       </section>
 
       {/* Master Prompts Section - Horizontal Carousel */}
