@@ -276,58 +276,63 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   if (showDeepProfileOptIn && contactData) {
     return (
       <div className="bg-background min-h-screen relative overflow-hidden flex items-center justify-center px-4">
-        <Card className="max-w-2xl w-full shadow-sm border rounded-xl">
-          <CardContent className="p-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm mb-6">
-              <Brain className="h-4 w-4" />
-              Bonus Opportunity
+        <Card className="max-w-3xl w-full shadow-lg border rounded-xl">
+          <CardContent className="p-8 sm:p-12">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-6 py-3 rounded-full text-base font-semibold mb-6">
+                <Brain className="h-5 w-5" />
+                Unlock $5,000 Value
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 leading-tight">
+                Get Your Personal<br />AI Command Center
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+                10 more questions = Custom AI toolkit designed for <span className="text-foreground font-semibold">YOUR</span> thinking style, 
+                <span className="text-foreground font-semibold"> YOUR</span> bottlenecks, and <span className="text-foreground font-semibold">YOUR</span> workflow.
+              </p>
             </div>
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Unlock Your Personal AI Command Center
-            </h2>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Answer 10 more questions to receive custom ChatGPT/Claude project instructions tailored to your thinking style, bottlenecks, and communication patterns.
-            </p>
-            <div className="bg-muted/50 p-6 rounded-lg mb-6 space-y-3 text-left">
-              <h3 className="font-semibold text-foreground mb-3">You'll Receive:</h3>
-              <div className="space-y-2 text-sm text-foreground">
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                  <span>3-5 custom AI project templates with master instructions</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                  <span>Personalized prompt library for your specific use cases</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                  <span>Implementation roadmap tailored to your workflow</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                  <span>Ready-to-use prompts that match your communication style</span>
-                </div>
+
+            {/* Value Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl text-center">
+                <div className="text-4xl mb-2">🎯</div>
+                <div className="font-bold text-foreground mb-1">5 Custom Projects</div>
+                <div className="text-sm text-muted-foreground">Tailored to your role</div>
+              </div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl text-center">
+                <div className="text-4xl mb-2">⚡</div>
+                <div className="font-bold text-foreground mb-1">5-10 Hours/Week</div>
+                <div className="text-sm text-muted-foreground">Time you'll save</div>
+              </div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl text-center">
+                <div className="text-4xl mb-2">🚀</div>
+                <div className="font-bold text-foreground mb-1">Ready in 1 Day</div>
+                <div className="text-sm text-muted-foreground">Start using immediately</div>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
+
+            {/* CTA Buttons */}
+            <div className="space-y-3">
               <Button 
                 variant="cta" 
-                className="flex-1 rounded-xl"
+                size="lg"
+                className="w-full rounded-xl text-lg py-6"
                 onClick={handleStartDeepProfile}
               >
-                Yes, Unlock My AI Toolkit
-                <ArrowRight className="h-4 w-4 ml-2" />
+                Yes, Build My AI Toolkit
+                <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
-              <Button 
-                variant="outline" 
-                className="rounded-xl"
+              <button 
+                className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
                 onClick={handleSkipDeepProfile}
               >
-                Skip for Now
-              </Button>
+                Skip - I'll see generic results instead
+              </button>
             </div>
-            <p className="text-xs text-muted-foreground mt-4">
-              Takes about 10 minutes · Highly personalized results
+
+            <p className="text-center text-xs text-muted-foreground mt-6">
+              ⏱️ 10 minutes · 💎 Highly personalized · 🎁 $5,000 value
             </p>
           </CardContent>
         </Card>

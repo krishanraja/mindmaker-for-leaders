@@ -70,12 +70,27 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
   };
 
   const updateWorkBreakdown = (field: keyof typeof profileData.workBreakdown, value: number) => {
+    const otherFields = Object.keys(profileData.workBreakdown).filter(k => k !== field) as (keyof typeof profileData.workBreakdown)[];
+    const remaining = 100 - value;
+    const currentOtherTotal = otherFields.reduce((sum, key) => sum + profileData.workBreakdown[key], 0);
+    
+    const newBreakdown = { ...profileData.workBreakdown, [field]: value };
+    
+    if (currentOtherTotal > 0) {
+      otherFields.forEach(key => {
+        const proportion = profileData.workBreakdown[key] / currentOtherTotal;
+        newBreakdown[key] = Math.round(remaining * proportion);
+      });
+    } else {
+      const equalShare = Math.round(remaining / otherFields.length);
+      otherFields.forEach(key => {
+        newBreakdown[key] = equalShare;
+      });
+    }
+    
     setProfileData(prev => ({
       ...prev,
-      workBreakdown: {
-        ...prev.workBreakdown,
-        [field]: value
-      }
+      workBreakdown: newBreakdown
     }));
   };
 
@@ -111,7 +126,10 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   key={option.value}
                   variant={profileData.thinkingProcess === option.value ? 'default' : 'outline'}
                   className="w-full h-auto text-left justify-start rounded-xl p-4"
-                  onClick={() => setProfileData(prev => ({ ...prev, thinkingProcess: option.value }))}
+                  onClick={() => {
+                    setProfileData(prev => ({ ...prev, thinkingProcess: option.value }));
+                    setTimeout(() => handleNext(), 800);
+                  }}
                 >
                   <span className="text-sm leading-relaxed">{option.label}</span>
                 </Button>
@@ -183,8 +201,13 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   />
                 </div>
               ))}
-              <div className="text-sm text-muted-foreground mt-4">
+              <div className={`text-sm font-medium mt-4 ${
+                Object.values(profileData.workBreakdown).reduce((a, b) => a + b, 0) === 100 
+                  ? 'text-green-600' 
+                  : 'text-orange-600'
+              }`}>
                 Total: {Object.values(profileData.workBreakdown).reduce((a, b) => a + b, 0)}%
+                {Object.values(profileData.workBreakdown).reduce((a, b) => a + b, 0) === 100 && ' ✓'}
               </div>
             </div>
           </div>
@@ -241,7 +264,10 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   key={option.value}
                   variant={profileData.transformationGoal === option.value ? 'default' : 'outline'}
                   className="w-full h-auto text-left justify-start rounded-xl p-4"
-                  onClick={() => setProfileData(prev => ({ ...prev, transformationGoal: option.value }))}
+                  onClick={() => {
+                    setProfileData(prev => ({ ...prev, transformationGoal: option.value }));
+                    setTimeout(() => handleNext(), 800);
+                  }}
                 >
                   <span className="text-sm leading-relaxed">{option.label}</span>
                 </Button>
@@ -298,12 +324,34 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
       case 8:
         return (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-foreground mb-4">
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Select exactly 3 priorities
+                </h3>
+                <div className="flex gap-2">
+                  {[1, 2, 3].map(num => (
+                    <div 
+                      key={num}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        profileData.delegateTasks.length >= num 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {num}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                {profileData.delegateTasks.length}/3 selected
+                {profileData.delegateTasks.length === 3 && ' ✓ Click Next to continue'}
+              </p>
+            </div>
+            <h4 className="text-lg font-semibold text-foreground">
               If you could delegate 3 types of work to AI, what would they be?
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Select up to 3 priorities.
-            </p>
+            </h4>
             <div className="space-y-3">
               {[
                 'Drafting initial content (emails, reports, proposals)',
@@ -325,13 +373,11 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                     }
                   }}
                   disabled={!profileData.delegateTasks.includes(option) && profileData.delegateTasks.length >= 3}
+                  title={!profileData.delegateTasks.includes(option) && profileData.delegateTasks.length >= 3 ? "Unselect one to choose this option" : ""}
                 >
                   <span className="text-sm leading-relaxed">{option}</span>
                 </Button>
               ))}
-              <p className="text-xs text-muted-foreground">
-                Selected: {profileData.delegateTasks.length}/3
-              </p>
             </div>
           </div>
         );
@@ -358,7 +404,10 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   key={option.value}
                   variant={profileData.biggestChallenge === option.value ? 'default' : 'outline'}
                   className="w-full h-auto text-left justify-start rounded-xl p-4"
-                  onClick={() => setProfileData(prev => ({ ...prev, biggestChallenge: option.value }))}
+                  onClick={() => {
+                    setProfileData(prev => ({ ...prev, biggestChallenge: option.value }));
+                    setTimeout(() => handleNext(), 800);
+                  }}
                 >
                   <span className="text-sm leading-relaxed">{option.label}</span>
                 </Button>
@@ -407,12 +456,15 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
     switch (currentStep) {
       case 1: return !!profileData.thinkingProcess;
       case 2: return profileData.communicationStyle.length > 0;
-      case 3: return true; // Always allow
+      case 3: {
+        const total = Object.values(profileData.workBreakdown).reduce((a, b) => a + b, 0);
+        return total >= 95 && total <= 105;
+      }
       case 4: return profileData.informationNeeds.length > 0;
       case 5: return !!profileData.transformationGoal;
       case 6: return true; // Always allow
       case 7: return profileData.timeWasteExamples.trim().length > 10;
-      case 8: return profileData.delegateTasks.length > 0;
+      case 8: return profileData.delegateTasks.length === 3;
       case 9: return !!profileData.biggestChallenge;
       case 10: return profileData.stakeholders.length > 0;
       default: return true;

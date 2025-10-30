@@ -115,13 +115,11 @@ Return ONLY valid JSON, no markdown formatting.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-pro',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: 'You are an expert AI implementation strategist. Generate detailed, personalized AI prompt libraries in valid JSON format.' },
           { role: 'user', content: synthesisPro }
-        ],
-        temperature: 0.7,
-        max_tokens: 4000
+        ]
       }),
     });
 
