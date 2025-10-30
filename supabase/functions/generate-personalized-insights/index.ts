@@ -81,7 +81,7 @@ serve(async (req) => {
                       basedOn: { type: "array", items: { type: "string" }, description: "What user data this is based on" },
                       impact: { type: "string", description: "Quantified impact metric" },
                       timeline: { type: "string" },
-                      growthMetric: { type: "string", description: "Percentage or quantified growth" }
+                      growthMetric: { type: "string", description: "SHORT growth metric ONLY (5-15 chars). Examples: '10% faster', '20% gain', '$2M revenue', '15-25%', '3x speed'. MUST be concise number/percentage/metric, NOT a sentence." }
                     },
                     required: ["title", "description", "basedOn", "impact", "timeline", "growthMetric"]
                   },
@@ -201,6 +201,7 @@ TASK: Generate personalized AI leadership insights that:
    - Include quantified impact based on their time waste % and work breakdown
    - Timeline should match their stated timeline
    - Should align with their role and industry
+   - **CRITICAL: growthMetric must be EXTREMELY SHORT (5-15 characters) - just a number/percentage like '15%' or '10% faster' or '$500K', NOT a description or sentence**
 
 BE SPECIFIC. Use their actual words and numbers. Don't be generic.`;
 

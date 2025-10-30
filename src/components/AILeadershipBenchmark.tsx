@@ -190,13 +190,24 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   ];
 
   // Use personalized roadmap or fallback
-  const roadmapInsights = personalizedInsights?.roadmapInitiatives?.map(initiative => ({
-    ...initiative,
-    // Sanitize growth metric text to replace field names and format properly
-    growthMetric: initiative.growthMetric?.replace(/[_-]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
-    icon: initiative.title.includes('Revenue') || initiative.title.includes('Business') ? Rocket :
-          initiative.title.includes('Leadership') || initiative.title.includes('Executive') ? Crown : Users
-  })) || defaultStrategicInsights;
+  const roadmapInsights = personalizedInsights?.roadmapInitiatives?.map(initiative => {
+    // Extract concise metric if AI generated long text (fallback pattern)
+    let cleanedMetric = initiative.growthMetric;
+    if (cleanedMetric && cleanedMetric.length > 20) {
+      // Try to extract just the number/percentage/metric from longer text
+      const metricMatch = cleanedMetric.match(/\d+[-–]?\d*%|\$\d+[KMB]?|\d+x/i);
+      if (metricMatch) {
+        cleanedMetric = metricMatch[0];
+      }
+    }
+    
+    return {
+      ...initiative,
+      growthMetric: cleanedMetric,
+      icon: initiative.title.includes('Revenue') || initiative.title.includes('Business') ? Rocket :
+            initiative.title.includes('Leadership') || initiative.title.includes('Executive') ? Crown : Users
+    };
+  }) || defaultStrategicInsights;
 
   const handleExecutivePrimerBooking = async () => {
     try {
@@ -460,10 +471,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         
                         <div className="flex items-start justify-between pt-4 border-t mt-auto gap-3">
                           <div className="flex flex-col items-start flex-1">
-                            <div className="text-xs font-bold text-primary mb-1.5 leading-tight">
-                              {insight.growthMetric.length > 180 
-                                ? `${insight.growthMetric.substring(0, 180)}...` 
-                                : insight.growthMetric}
+                            <div className="text-xs font-bold text-primary mb-1.5">
+                              {insight.growthMetric}
                             </div>
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">
                               Growth
