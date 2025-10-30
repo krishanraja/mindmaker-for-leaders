@@ -26,20 +26,19 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
     <div className="bg-background min-h-screen py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 mb-12 p-2 h-auto bg-muted/50 rounded-2xl shadow-lg">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 mb-12 gap-3 bg-transparent h-auto p-0">
             <TabsTrigger 
               value="library"
-              className="relative flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-semibold transition-all data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-foreground data-[state=inactive]:bg-primary data-[state=inactive]:text-primary-foreground"
+              className="relative flex items-center justify-center gap-3 px-8 py-5 rounded-xl text-lg font-semibold transition-all border-2 data-[state=active]:bg-primary data-[state=active]:border-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=inactive]:bg-background data-[state=inactive]:border-border data-[state=inactive]:text-foreground data-[state=inactive]:hover:border-primary/50"
             >
-              <Sparkles className="h-5 w-5" />
-              <span>AI Toolkit</span>
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full animate-pulse shadow-lg"></span>
+              <Sparkles className="h-6 w-6" />
+              <span>Prompt Toolkit</span>
             </TabsTrigger>
             <TabsTrigger 
               value="benchmark"
-              className="relative flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-semibold transition-all data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-foreground data-[state=inactive]:bg-primary data-[state=inactive]:text-primary-foreground"
+              className="relative flex items-center justify-center gap-3 px-8 py-5 rounded-xl text-lg font-semibold transition-all border-2 data-[state=active]:bg-primary data-[state=active]:border-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=inactive]:bg-background data-[state=inactive]:border-border data-[state=inactive]:text-foreground data-[state=inactive]:hover:border-primary/50"
             >
-              <Award className="h-5 w-5" />
+              <Award className="h-6 w-6" />
               <span>Leadership Score</span>
             </TabsTrigger>
           </TabsList>
