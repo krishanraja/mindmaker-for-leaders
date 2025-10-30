@@ -61,6 +61,45 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     }
   };
 
+  // Extract key insights from executive profile
+  const extractKeyTraits = (summary: string): string[] => {
+    const sentences = summary.split(/[.!?]+/).filter(s => s.trim().length > 10);
+    return sentences.slice(0, 3).map(s => s.trim());
+  };
+
+  // Format project with impact metric
+  const formatProjectImpact = (project: typeof library.recommendedProjects[0]): { title: string; impact: string } => {
+    const purposeText = project?.purpose || '';
+    
+    // Extract time/efficiency mentions
+    const timeMatch = purposeText.match(/(\d+)\s*(hours?|minutes?|%|days?)/i);
+    const impactMetric = timeMatch ? `Save ${timeMatch[0]} weekly` : 'High-impact automation';
+    
+    // Create concise title - take first sentence or up to 60 chars
+    const firstSentence = purposeText.split(/[.!?]/)[0].trim();
+    const title = firstSentence.length > 60 ? firstSentence.slice(0, 57) + '...' : firstSentence;
+    
+    return { title, impact: impactMetric };
+  };
+
+  // Extract opportunity with metric
+  const formatOpportunity = (text: string): { statement: string; benefit: string } => {
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim());
+    
+    // Look for metrics or time savings
+    const metricMatch = text.match(/(\d+)\s*(hours?|%|x|times)/i);
+    const benefit = metricMatch ? `${metricMatch[0]} time savings` : 'Strategic impact';
+    
+    // Take first sentence for statement, max 80 chars
+    const statement = sentences[0]?.trim().slice(0, 80) || text.slice(0, 80);
+    
+    return { statement, benefit };
+  };
+
+  const keyTraits = extractKeyTraits(library.executiveProfile.summary);
+  const projectImpact = formatProjectImpact(library.recommendedProjects[0]);
+  const opportunity = formatOpportunity(library.executiveProfile.transformationOpportunity);
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Top Takeaways - Swipeable Cards */}
@@ -76,16 +115,23 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             {/* Card 1: How You Work Best */}
             <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
               <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
-                <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-4 flex-shrink-0">
+                <CardContent className="p-8 h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-background to-background">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-6 flex-shrink-0">
                     <Brain className="h-10 w-10 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 flex-shrink-0">
+                  <h3 className="text-2xl font-bold text-foreground mb-6 flex-shrink-0">
                     How You Work Best
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-8 px-2">
-                    {library.executiveProfile.summary}
-                  </p>
+                  <div className="space-y-3 w-full">
+                    {keyTraits.map((trait, idx) => (
+                      <div key={idx} className="flex items-start gap-3 text-left">
+                        <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+                        <p className="text-base text-foreground leading-relaxed flex-1">
+                          {trait}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </CarouselItem>
@@ -94,15 +140,26 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
               <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
                 <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-4 flex-shrink-0">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-6 flex-shrink-0">
                     <Target className="h-10 w-10 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 line-clamp-2 flex-shrink-0">
-                    {library.recommendedProjects[0]?.name || 'Your Priority Project'}
+                  <h3 className="text-2xl font-bold text-foreground mb-2 flex-shrink-0">
+                    Your Priority Project
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-8 px-2">
-                    {library.recommendedProjects[0]?.purpose || 'Custom AI projects designed for your specific needs'}
+                  <p className="text-xl font-semibold text-primary mb-6">
+                    {library.recommendedProjects[0]?.name || 'Custom AI Project'}
                   </p>
+                  <div className="space-y-4 w-full">
+                    <p className="text-base text-foreground leading-relaxed px-4">
+                      {projectImpact.title}
+                    </p>
+                    <div className="flex items-center justify-center gap-2 pt-4 border-t border-primary/20">
+                      <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
+                      <span className="text-lg font-bold text-primary">
+                        {projectImpact.impact}
+                      </span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </CarouselItem>
@@ -111,15 +168,22 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
               <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
                 <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-4 flex-shrink-0">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-6 flex-shrink-0">
                     <TrendingUp className="h-10 w-10 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3 flex-shrink-0">
+                  <h3 className="text-2xl font-bold text-foreground mb-6 flex-shrink-0">
                     Your Biggest Opportunity
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-8 px-2">
-                    {library.executiveProfile.transformationOpportunity}
-                  </p>
+                  <div className="space-y-6 w-full px-2">
+                    <p className="text-base text-foreground leading-relaxed">
+                      {opportunity.statement}
+                    </p>
+                    <div className="pt-4 border-t border-primary/20">
+                      <Badge className="bg-primary text-primary-foreground text-base px-4 py-2">
+                        {opportunity.benefit}
+                      </Badge>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </CarouselItem>
