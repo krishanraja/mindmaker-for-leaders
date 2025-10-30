@@ -474,7 +474,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
       {/* Visual Break */}
       <div className="py-12">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-border/40 to-transparent"></div>
       </div>
 
       {/* Implementation Roadmap Section - Collapsible with Preview */}
