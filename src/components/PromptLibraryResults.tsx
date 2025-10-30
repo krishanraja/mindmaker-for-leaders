@@ -465,14 +465,14 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       </div>
 
       {/* Implementation Roadmap Section - Collapsible with Preview */}
-      <Card className="shadow-sm border rounded-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Rocket className="h-5 w-5 text-primary" />
-            Your Implementation Roadmap
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Rocket className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold text-foreground">Your Implementation Roadmap</h2>
+        </div>
+
+        <Card className="shadow-sm border rounded-xl">
+          <CardContent className="p-6 space-y-4">
           {/* Week 1 Preview - Always Visible */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -528,6 +528,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           </Accordion>
         </CardContent>
       </Card>
+      </div>
 
       {/* Setup Instructions */}
       <Card className="shadow-sm border rounded-xl bg-primary/5">
