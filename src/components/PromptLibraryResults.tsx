@@ -504,11 +504,11 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
               }, {} as Record<string, typeof library.promptTemplates>)
             ).map(([category, templates]) => (
               <CarouselItem key={category} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[450px] flex flex-col">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl min-h-[280px] flex flex-col">
                   <CardHeader className="flex-shrink-0">
                     <CardTitle className="text-lg">{category}</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex-1 overflow-y-auto custom-scrollbar">
+                  <CardContent className="flex-1">
                     <Accordion type="single" collapsible className="space-y-2">
                       {templates.map((template, idx) => (
                         <AccordionItem key={idx} value={`template-${category}-${idx}`} className="border rounded-lg">
