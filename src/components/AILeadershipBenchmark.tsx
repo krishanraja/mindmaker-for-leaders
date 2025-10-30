@@ -433,8 +433,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     <Card className="h-[380px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
                       <CardContent className="p-6 flex flex-col h-full">
                         <div className="flex items-start gap-3 mb-4">
-                          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${leadershipProfile.gradient} flex-shrink-0`}>
-                            <insight.icon className="h-5 w-5 text-white" />
+                          <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
+                            <insight.icon className="h-5 w-5 text-primary" />
                           </div>
                           <div className="flex-1">
                             <h3 className="font-bold text-foreground text-base leading-tight">
@@ -448,7 +448,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </p>
                         
                         {insight.basedOn && insight.basedOn.length > 0 && (
-                          <div className="mb-3 p-2 bg-primary/5 rounded-lg">
+                          <div className="mb-3 p-2.5 bg-primary/10 rounded-lg">
                             <div className="text-xs font-semibold text-primary mb-1">Based on:</div>
                             <div className="text-xs text-muted-foreground line-clamp-2">
                               {insight.basedOn.join(' • ')}
@@ -456,17 +456,19 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           </div>
                         )}
                         
-                        <div className="flex items-center justify-between pt-4 border-t mt-auto">
-                          <div>
-                            <div className={`text-base font-bold ${leadershipProfile.textColor} mb-1`}>
-                              {insight.growthMetric}
+                        <div className="flex items-center justify-between pt-4 border-t mt-auto gap-3">
+                          <div className="flex flex-col items-start">
+                            <div className="inline-flex items-center px-2.5 py-1 bg-primary/10 rounded-md mb-1.5">
+                              <span className="text-sm font-bold text-primary">
+                                {insight.growthMetric}
+                              </span>
                             </div>
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">
                               Growth
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-base font-bold text-foreground mb-1">
+                          <div className="flex flex-col items-end">
+                            <div className="text-sm font-bold text-foreground mb-1.5">
                               {insight.timeline}
                             </div>
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">
