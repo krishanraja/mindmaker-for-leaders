@@ -212,87 +212,86 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
         >
           <CarouselContent className="-ml-4">
             {library.recommendedProjects.map((project, idx) => (
-              <CarouselItem key={idx} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                <Card className="h-[420px] flex flex-col shadow-sm border rounded-2xl overflow-hidden">
-                  <CardContent className="p-6 flex flex-col h-full">
-                    {/* Header - Always Visible */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+              <CarouselItem key={idx} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl">
+                  <CardContent className="p-8 space-y-6">
+                    {/* Header */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-sm px-3 py-1">
                           Project {idx + 1}
                         </Badge>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopy(project.masterInstructions, `${project.name} Instructions`)}
-                          className="h-8 px-3"
+                          className="h-9 px-4"
                         >
                           {copiedItem === `${project.name} Instructions` ? (
                             <>
-                              <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                              <span className="text-xs">Copied!</span>
+                              <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                              <span className="text-sm">Copied!</span>
                             </>
                           ) : (
                             <>
-                              <Copy className="h-4 w-4 mr-1" />
-                              <span className="text-xs">Copy All</span>
+                              <Copy className="h-4 w-4 mr-2" />
+                              <span className="text-sm">Copy All</span>
                             </>
                           )}
                         </Button>
                       </div>
-                      <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2">{project.name}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{project.purpose}</p>
+                      <div>
+                        <h3 className="text-xl font-bold text-foreground mb-2">{project.name}</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{project.purpose}</p>
+                      </div>
                     </div>
 
-                    {/* Expandable Content */}
-                    <div className="flex-1 overflow-hidden">
-                      <Accordion type="single" collapsible className="space-y-3">
-                        {/* When to Use */}
-                        <AccordionItem value="when" className="border rounded-lg">
-                          <AccordionTrigger className="px-3 py-2 text-sm font-semibold hover:no-underline">
-                            When to Use
-                          </AccordionTrigger>
-                          <AccordionContent className="px-3 pb-3">
-                            <p className="text-xs text-muted-foreground">{project.whenToUse}</p>
-                          </AccordionContent>
-                        </AccordionItem>
+                    {/* Key Info - Always Visible */}
+                    <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                      <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{project.whenToUse}</p>
+                    </div>
 
-                        {/* Master Instructions */}
-                        <AccordionItem value="instructions" className="border rounded-lg">
-                          <AccordionTrigger className="px-3 py-2 text-sm font-semibold hover:no-underline">
-                            Master Instructions
-                          </AccordionTrigger>
-                          <AccordionContent className="px-3 pb-3">
-                            <div className="max-h-32 overflow-y-auto text-xs text-foreground leading-relaxed whitespace-pre-wrap">
-                              {project.masterInstructions}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
+                    {/* Expandable Details */}
+                    <Accordion type="single" collapsible className="space-y-4">
+                      {/* Master Instructions */}
+                      <AccordionItem value="instructions" className="border-2 border-primary/10 rounded-xl overflow-hidden">
+                        <AccordionTrigger className="px-5 py-4 text-base font-semibold hover:no-underline hover:bg-muted/30">
+                          Master Instructions
+                        </AccordionTrigger>
+                        <AccordionContent className="px-5 py-4 border-t">
+                          <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                            {project.masterInstructions}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
 
-                        {/* Example Prompts */}
-                        <AccordionItem value="examples" className="border rounded-lg">
-                          <AccordionTrigger className="px-3 py-2 text-sm font-semibold hover:no-underline">
-                            Example Prompts ({project.examplePrompts.length})
-                          </AccordionTrigger>
-                          <AccordionContent className="px-3 pb-3">
-                            <div className="space-y-2 max-h-32 overflow-y-auto">
-                              {project.examplePrompts.slice(0, 3).map((prompt, pIdx) => (
-                                <div key={pIdx} className="flex items-start gap-2 text-xs">
-                                  <ArrowRight className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" />
-                                  <p className="text-muted-foreground leading-relaxed">{prompt}</p>
+                      {/* Example Prompts */}
+                      <AccordionItem value="examples" className="border-2 border-primary/10 rounded-xl overflow-hidden">
+                        <AccordionTrigger className="px-5 py-4 text-base font-semibold hover:no-underline hover:bg-muted/30">
+                          Example Prompts ({project.examplePrompts.length})
+                        </AccordionTrigger>
+                        <AccordionContent className="px-5 py-4 border-t">
+                          <div className="space-y-4">
+                            {project.examplePrompts.map((prompt, pIdx) => (
+                              <div key={pIdx} className="flex items-start gap-3">
+                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <span className="text-xs font-bold text-primary">{pIdx + 1}</span>
                                 </div>
-                              ))}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
+                                <p className="text-sm text-foreground leading-relaxed flex-1">{prompt}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
 
-                    {/* Success Metrics - Always Visible at Bottom */}
-                    <div className="mt-4 pt-3 border-t">
-                      <div className="flex flex-wrap gap-1">
-                        {project.successMetrics.slice(0, 2).map((metric, mIdx) => (
-                          <Badge key={mIdx} variant="outline" className="bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 text-xs px-2 py-0.5">
+                    {/* Success Metrics */}
+                    <div className="pt-4 border-t space-y-3">
+                      <h4 className="text-sm font-semibold text-foreground">Success Metrics</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.successMetrics.map((metric, mIdx) => (
+                          <Badge key={mIdx} variant="outline" className="bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 text-sm px-3 py-1.5">
                             ✓ {metric}
                           </Badge>
                         ))}
