@@ -312,7 +312,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                           <BarChart3 className="h-6 w-6 text-primary" />
                         </div>
-                        <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                        <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
                           {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-3">
@@ -325,7 +325,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                           <Target className="h-6 w-6 text-primary" />
                         </div>
-                        <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                        <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
                           {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-3">
@@ -338,7 +338,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
                           <Lightbulb className="h-6 w-6 text-primary" />
                         </div>
-                        <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                        <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
                           {personalizedInsights?.keyFocus.title || 'Key Focus'}
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-3">
@@ -370,7 +370,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                             <BarChart3 className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                          <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
                             {score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing'}
                           </div>
                           <p className="text-sm text-muted-foreground">
@@ -385,7 +385,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                             <Target className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                          <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
                             {score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging'}
                           </div>
                           <p className="text-sm text-muted-foreground">Advancement pathway identified</p>
@@ -398,7 +398,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
                             <Lightbulb className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                          <div className="text-2xl lg:text-2xl font-bold text-foreground mb-2">
                             Key Focus
                           </div>
                           <p className="text-sm text-muted-foreground">{leadershipProfile.message}</p>
