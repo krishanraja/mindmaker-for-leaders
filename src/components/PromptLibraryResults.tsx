@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Brain, Copy, CheckCircle, BookOpen, Rocket, Target, ArrowRight } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -61,248 +61,245 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
   };
 
   return (
-    <div className="bg-background min-h-screen relative overflow-hidden py-8">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-8 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm mb-6">
-            <Brain className="h-4 w-4" />
-            Your Personal AI Command Center
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Executive Profile Summary */}
+      <Card className="shadow-sm border rounded-xl">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            Your AI Leadership Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h3 className="font-semibold text-foreground mb-2">How You Work</h3>
+            <p className="text-muted-foreground leading-relaxed">{library.executiveProfile.summary}</p>
           </div>
-          
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4 leading-tight">
-            Master Prompt Library
-          </h1>
-          
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Custom-built for {contactData.fullName}, {contactData.roleTitle} at {contactData.companyName}
-          </p>
+          <div className="bg-primary/10 p-4 rounded-lg">
+            <h3 className="font-semibold text-primary mb-2">Your AI Transformation Opportunity</h3>
+            <p className="text-foreground leading-relaxed">{library.executiveProfile.transformationOpportunity}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Projects Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Rocket className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold text-foreground">Your AI Projects</h2>
+        </div>
+        
+        <Accordion type="single" collapsible className="space-y-4">
+          {library.recommendedProjects.map((project, idx) => (
+            <AccordionItem key={idx} value={`project-${idx}`} className="border rounded-xl overflow-hidden">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-muted/50">
+                <div className="flex items-center justify-between w-full pr-4">
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold text-foreground">{project.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{project.purpose}</p>
+                  </div>
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 ml-4">
+                    Project {idx + 1}
+                  </Badge>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                <div className="space-y-4 pt-2">
+                  {/* When to Use */}
+                  <div>
+                    <h4 className="font-semibold text-sm text-foreground mb-2">When to Use This</h4>
+                    <p className="text-sm text-muted-foreground">{project.whenToUse}</p>
+                  </div>
+
+                  {/* Master Instructions */}
+                  <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-sm text-foreground">Master Instructions</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(project.masterInstructions, `${project.name} Instructions`)}
+                        className="h-8"
+                      >
+                        {copiedItem === `${project.name} Instructions` ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                            <span className="text-xs">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4 mr-2" />
+                            <span className="text-xs">Copy</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                      {project.masterInstructions}
+                    </p>
+                  </div>
+
+                  {/* Example Prompts */}
+                  <div>
+                    <h4 className="font-semibold text-sm text-foreground mb-3">Example Starter Prompts</h4>
+                    <div className="space-y-2">
+                      {project.examplePrompts.map((prompt, pIdx) => (
+                        <div key={pIdx} className="flex items-start gap-2 p-3 bg-background border rounded-lg group hover:border-primary/50 transition-colors">
+                          <ArrowRight className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                          <p className="text-sm text-foreground flex-1">{prompt}</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopy(prompt, `Example Prompt ${pIdx + 1}`)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                          >
+                            {copiedItem === `Example Prompt ${pIdx + 1}` ? (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Success Metrics */}
+                  <div>
+                    <h4 className="font-semibold text-sm text-foreground mb-2">Success Metrics</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {project.successMetrics.map((metric, mIdx) => (
+                        <Badge key={mIdx} variant="outline" className="bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">
+                          ✓ {metric}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+
+      {/* Quick Reference Templates Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-4">
+          <BookOpen className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold text-foreground">Quick Reference Templates</h2>
         </div>
 
-        {/* Executive Profile Summary */}
-        <Card className="mb-8 max-w-4xl mx-auto shadow-sm border rounded-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              Your AI Leadership Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-foreground mb-2">How You Work</h3>
-              <p className="text-muted-foreground leading-relaxed">{library.executiveProfile.summary}</p>
-            </div>
-            <div className="bg-primary/10 p-4 rounded-lg">
-              <h3 className="font-semibold text-primary mb-2">Your AI Transformation Opportunity</h3>
-              <p className="text-foreground leading-relaxed">{library.executiveProfile.transformationOpportunity}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Main Content Tabs */}
-        <div className="max-w-6xl mx-auto">
-          <Tabs defaultValue="projects" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
-              <TabsTrigger value="projects">AI Projects</TabsTrigger>
-              <TabsTrigger value="templates">Prompt Templates</TabsTrigger>
-              <TabsTrigger value="roadmap">Implementation</TabsTrigger>
-            </TabsList>
-
-            {/* AI Projects Tab */}
-            <TabsContent value="projects" className="space-y-6">
-              {library.recommendedProjects.map((project, idx) => (
-                <Card key={idx} className="shadow-sm border rounded-xl">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-xl mb-2">{project.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{project.purpose}</p>
-                      </div>
-                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                        Project {idx + 1}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* When to Use */}
-                    <div>
-                      <h4 className="font-semibold text-sm text-foreground mb-2">When to Use This</h4>
-                      <p className="text-sm text-muted-foreground">{project.whenToUse}</p>
-                    </div>
-
-                    {/* Master Instructions */}
-                    <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-sm text-foreground">Master Instructions</h4>
+        {Object.entries(
+          library.promptTemplates.reduce((acc, template) => {
+            if (!acc[template.category]) acc[template.category] = [];
+            acc[template.category].push(template);
+            return acc;
+          }, {} as Record<string, typeof library.promptTemplates>)
+        ).map(([category, templates]) => (
+          <Card key={category} className="shadow-sm border rounded-xl">
+            <CardHeader>
+              <CardTitle className="text-lg">{category}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="space-y-2">
+                {templates.map((template, idx) => (
+                  <AccordionItem key={idx} value={`template-${category}-${idx}`} className="border rounded-lg">
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <span className="font-semibold text-foreground text-left">{template.name}</span>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleCopy(project.masterInstructions, `${project.name} Instructions`)}
-                          className="h-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(template.prompt, template.name);
+                          }}
+                          className="ml-2"
                         >
-                          {copiedItem === `${project.name} Instructions` ? (
+                          {copiedItem === template.name ? (
                             <CheckCircle className="h-4 w-4 text-green-500" />
                           ) : (
                             <Copy className="h-4 w-4" />
                           )}
                         </Button>
                       </div>
-                      <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                        {project.masterInstructions}
-                      </p>
-                    </div>
-
-                    {/* Example Prompts */}
-                    <div>
-                      <h4 className="font-semibold text-sm text-foreground mb-3">Example Starter Prompts</h4>
-                      <div className="space-y-2">
-                        {project.examplePrompts.map((prompt, pIdx) => (
-                          <div key={pIdx} className="flex items-start gap-2 p-3 bg-background border rounded-lg">
-                            <ArrowRight className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-foreground flex-1">{prompt}</p>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCopy(prompt, `Example Prompt ${pIdx + 1}`)}
-                              className="h-6 w-6 p-0"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Success Metrics */}
-                    <div>
-                      <h4 className="font-semibold text-sm text-foreground mb-2">Success Metrics</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {project.successMetrics.map((metric, mIdx) => (
-                          <Badge key={mIdx} variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            ✓ {metric}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-
-            {/* Prompt Templates Tab */}
-            <TabsContent value="templates" className="space-y-4">
-              {Object.entries(
-                library.promptTemplates.reduce((acc, template) => {
-                  if (!acc[template.category]) acc[template.category] = [];
-                  acc[template.category].push(template);
-                  return acc;
-                }, {} as Record<string, typeof library.promptTemplates>)
-              ).map(([category, templates]) => (
-                <div key={category} className="space-y-3">
-                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                    {category}
-                  </h3>
-                  <div className="grid gap-3">
-                    {templates.map((template, idx) => (
-                      <Card key={idx} className="shadow-sm border rounded-xl">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-foreground mb-2">{template.name}</h4>
-                              <p className="text-sm text-muted-foreground leading-relaxed">{template.prompt}</p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCopy(template.prompt, template.name)}
-                              className="flex-shrink-0"
-                            >
-                              {copiedItem === template.name ? (
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </TabsContent>
-
-            {/* Implementation Roadmap Tab */}
-            <TabsContent value="roadmap" className="space-y-6">
-              <Card className="shadow-sm border rounded-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Rocket className="h-5 w-5 text-primary" />
-                    Your Implementation Roadmap
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Badge className="bg-primary text-primary-foreground">Week 1</Badge>
-                      <h3 className="font-semibold text-foreground">Quick Start</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed pl-20">
-                      {library.implementationRoadmap.week1}
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Week 2-4</Badge>
-                      <h3 className="font-semibold text-foreground">Expand Usage</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed pl-20">
-                      {library.implementationRoadmap.week2to4}
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="bg-muted text-foreground">Month 2+</Badge>
-                      <h3 className="font-semibold text-foreground">Advanced Techniques</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed pl-20">
-                      {library.implementationRoadmap.month2plus}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Setup Instructions */}
-              <Card className="shadow-sm border rounded-xl bg-primary/5">
-                <CardHeader>
-                  <CardTitle className="text-lg">How to Set Up Your AI Projects</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-foreground">
-                  <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</span>
-                    <p>Open ChatGPT or Claude and create a new "Project"</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</span>
-                    <p>Copy the "Master Instructions" from your chosen project above</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</span>
-                    <p>Paste into the project's custom instructions field</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">4</span>
-                    <p>Start with the example prompts to test it out</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-3">
+                      <p className="text-sm text-muted-foreground leading-relaxed">{template.prompt}</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {/* Implementation Roadmap Section */}
+      <Card className="shadow-sm border rounded-xl">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Rocket className="h-5 w-5 text-primary" />
+            Your Implementation Roadmap
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Badge className="bg-primary text-primary-foreground">Week 1</Badge>
+              <h3 className="font-semibold text-foreground">Quick Start</h3>
+            </div>
+            <p className="text-muted-foreground leading-relaxed pl-20">
+              {library.implementationRoadmap.week1}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Week 2-4</Badge>
+              <h3 className="font-semibold text-foreground">Expand Usage</h3>
+            </div>
+            <p className="text-muted-foreground leading-relaxed pl-20">
+              {library.implementationRoadmap.week2to4}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="bg-muted text-foreground">Month 2+</Badge>
+              <h3 className="font-semibold text-foreground">Advanced Techniques</h3>
+            </div>
+            <p className="text-muted-foreground leading-relaxed pl-20">
+              {library.implementationRoadmap.month2plus}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Setup Instructions */}
+      <Card className="shadow-sm border rounded-xl bg-primary/5">
+        <CardHeader>
+          <CardTitle className="text-lg">How to Set Up Your AI Projects</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-foreground">
+          <div className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</span>
+            <p>Open ChatGPT or Claude and create a new "Project"</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</span>
+            <p>Copy the "Master Instructions" from your chosen project above</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</span>
+            <p>Paste into the project's custom instructions field</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">4</span>
+            <p>Start with the example prompts to test it out</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

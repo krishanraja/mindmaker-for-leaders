@@ -27,6 +27,8 @@ serve(async (req) => {
     const personalizedPrompt = `
 You are an elite executive consultant analyzing a C-Suite leader's AI readiness assessment. Generate deeply personalized insights based on their specific responses.
 
+IMPORTANT: Use ONLY gender-neutral language (they/their/them). Never assume gender.
+
 EXECUTIVE PROFILE:
 - Role: ${userResponses?.role || 'Senior Executive'}
 - Industry: ${userResponses?.industry || 'Not specified'}

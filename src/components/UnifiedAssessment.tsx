@@ -12,7 +12,7 @@ import ExecutiveLoadingScreen from './ai-chat/ExecutiveLoadingScreen';
 import LLMInsightEngine from './ai-chat/LLMInsightEngine';
 import { ContactCollectionForm, ContactData } from './ContactCollectionForm';
 import { DeepProfileQuestionnaire, DeepProfileData } from './DeepProfileQuestionnaire';
-import { PromptLibraryResults } from './PromptLibraryResults';
+import { UnifiedResults } from './UnifiedResults';
 import AILeadershipBenchmark from './AILeadershipBenchmark';
 
 
@@ -43,6 +43,8 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const [showPromptLibrary, setShowPromptLibrary] = useState(false);
   const [promptLibrary, setPromptLibrary] = useState<any>(null);
   const [isGeneratingLibrary, setIsGeneratingLibrary] = useState(false);
+  const [libraryProgress, setLibraryProgress] = useState(0);
+  const [libraryPhase, setLibraryPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
   const { toast } = useToast();
   
   const {
@@ -225,6 +227,29 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const handleDeepProfileComplete = async (profileData: DeepProfileData) => {
     setShowDeepProfileQuestionnaire(false);
     setIsGeneratingLibrary(true);
+    setLibraryPhase('analyzing');
+    setLibraryProgress(10);
+
+    // Start progress animation
+    const progressInterval = setInterval(() => {
+      setLibraryProgress(prev => {
+        if (prev < 35) return prev + 5;
+        if (prev < 65) return prev + 3;
+        if (prev < 85) return prev + 2;
+        return prev;
+      });
+    }, 800);
+
+    // Update phases
+    setTimeout(() => {
+      setLibraryPhase('generating');
+      setLibraryProgress(40);
+    }, 2500);
+
+    setTimeout(() => {
+      setLibraryPhase('finalizing');
+      setLibraryProgress(70);
+    }, 5000);
 
     try {
       const assessmentData = getAssessmentData();
@@ -241,9 +266,15 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
 
       if (error) throw error;
 
-      setPromptLibrary(data.library);
-      setIsGeneratingLibrary(false);
-      setShowPromptLibrary(true);
+      clearInterval(progressInterval);
+      setLibraryProgress(100);
+      
+      // Wait for animation to complete
+      setTimeout(() => {
+        setPromptLibrary(data.library);
+        setIsGeneratingLibrary(false);
+        setShowPromptLibrary(true);
+      }, 500);
       
       toast({
         title: "AI Command Center Ready!",
@@ -251,6 +282,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       });
     } catch (error) {
       console.error('Error generating prompt library:', error);
+      clearInterval(progressInterval);
       setIsGeneratingLibrary(false);
       toast({
         title: "Generation Error",
@@ -357,18 +389,23 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   if (isGeneratingLibrary) {
     return (
       <ExecutiveLoadingScreen 
-        progress={75} 
-        phase="generating"
+        progress={libraryProgress} 
+        phase={libraryPhase}
       />
     );
   }
 
-  // Show prompt library results
+  // Show unified results (both benchmark and library)
   if (showPromptLibrary && promptLibrary && contactData) {
+    const assessmentData = getAssessmentData();
+    
     return (
-      <PromptLibraryResults
-        library={promptLibrary}
+      <UnifiedResults
+        assessmentData={assessmentData}
+        promptLibrary={promptLibrary}
         contactData={contactData}
+        sessionId={sessionId}
+        onBack={onBack}
       />
     );
   }

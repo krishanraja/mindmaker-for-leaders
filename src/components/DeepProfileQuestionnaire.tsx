@@ -54,10 +54,10 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
   });
 
   const handleNext = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(prev => prev + 1);
-    } else {
+    if (currentStep === totalSteps) {
       onComplete(profileData);
+    } else if (currentStep < totalSteps) {
+      setCurrentStep(prev => prev + 1);
     }
   };
 
@@ -125,13 +125,12 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                 <Button
                   key={option.value}
                   variant={profileData.thinkingProcess === option.value ? 'default' : 'outline'}
-                  className="w-full h-auto text-left justify-start rounded-xl p-4"
+                  className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, thinkingProcess: option.value }));
-                    setTimeout(() => handleNext(), 800);
                   }}
                 >
-                  <span className="text-sm leading-relaxed">{option.label}</span>
+                  <span className="text-sm sm:text-base leading-snug">{option.label}</span>
                 </Button>
               ))}
             </div>
@@ -158,10 +157,10 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                 <Button
                   key={option}
                   variant={profileData.communicationStyle.includes(option) ? 'default' : 'outline'}
-                  className="w-full h-auto text-left justify-start rounded-xl p-4"
+                  className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => toggleArrayOption('communicationStyle', option)}
                 >
-                  <span className="text-sm leading-relaxed">{option}</span>
+                  <span className="text-sm sm:text-base leading-snug">{option}</span>
                 </Button>
               ))}
             </div>
@@ -233,10 +232,10 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                 <Button
                   key={option}
                   variant={profileData.informationNeeds.includes(option) ? 'default' : 'outline'}
-                  className="w-full h-auto text-left justify-start rounded-xl p-4"
+                  className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => toggleArrayOption('informationNeeds', option)}
                 >
-                  <span className="text-sm leading-relaxed">{option}</span>
+                  <span className="text-sm sm:text-base leading-snug">{option}</span>
                 </Button>
               ))}
             </div>
@@ -263,13 +262,12 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                 <Button
                   key={option.value}
                   variant={profileData.transformationGoal === option.value ? 'default' : 'outline'}
-                  className="w-full h-auto text-left justify-start rounded-xl p-4"
+                  className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, transformationGoal: option.value }));
-                    setTimeout(() => handleNext(), 800);
                   }}
                 >
-                  <span className="text-sm leading-relaxed">{option.label}</span>
+                  <span className="text-sm sm:text-base leading-snug">{option.label}</span>
                 </Button>
               ))}
             </div>
@@ -366,7 +364,7 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                 <Button
                   key={option}
                   variant={profileData.delegateTasks.includes(option) ? 'default' : 'outline'}
-                  className="w-full h-auto text-left justify-start rounded-xl p-4"
+                  className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     if (profileData.delegateTasks.includes(option) || profileData.delegateTasks.length < 3) {
                       toggleArrayOption('delegateTasks', option);
@@ -375,7 +373,7 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   disabled={!profileData.delegateTasks.includes(option) && profileData.delegateTasks.length >= 3}
                   title={!profileData.delegateTasks.includes(option) && profileData.delegateTasks.length >= 3 ? "Unselect one to choose this option" : ""}
                 >
-                  <span className="text-sm leading-relaxed">{option}</span>
+                  <span className="text-sm sm:text-base leading-snug">{option}</span>
                 </Button>
               ))}
             </div>
@@ -403,13 +401,12 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                 <Button
                   key={option.value}
                   variant={profileData.biggestChallenge === option.value ? 'default' : 'outline'}
-                  className="w-full h-auto text-left justify-start rounded-xl p-4"
+                  className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, biggestChallenge: option.value }));
-                    setTimeout(() => handleNext(), 800);
                   }}
                 >
-                  <span className="text-sm leading-relaxed">{option.label}</span>
+                  <span className="text-sm sm:text-base leading-snug">{option.label}</span>
                 </Button>
               ))}
             </div>
@@ -437,10 +434,10 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                 <Button
                   key={option}
                   variant={profileData.stakeholders.includes(option) ? 'default' : 'outline'}
-                  className="w-full h-auto text-left justify-start rounded-xl p-4"
+                  className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => toggleArrayOption('stakeholders', option)}
                 >
-                  <span className="text-sm leading-relaxed">{option}</span>
+                  <span className="text-sm sm:text-base leading-snug">{option}</span>
                 </Button>
               ))}
             </div>

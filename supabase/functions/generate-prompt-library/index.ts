@@ -30,6 +30,8 @@ serve(async (req) => {
     // Prepare AI synthesis prompt
     const synthesisPro = `You are an expert AI implementation strategist creating a personalized "AI Command Center" for an executive.
 
+IMPORTANT: Use ONLY gender-neutral language throughout (they/their/them). Never assume the executive's gender.
+
 EXECUTIVE PROFILE:
 - Name: ${contactData.fullName}
 - Role: ${contactData.roleTitle}
