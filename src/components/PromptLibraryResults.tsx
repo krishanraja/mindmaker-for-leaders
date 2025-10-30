@@ -185,7 +185,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {/* Card 1: Your Unique Strengths */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
                     {/* Icon */}
@@ -214,7 +214,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
             {/* Card 2: Your Biggest Opportunity */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
                     {/* Icon */}
@@ -248,7 +248,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
             {/* Card 3: What Makes You Different */}
             <CarouselItem className="pl-4">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[480px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
                     {/* Icon */}
