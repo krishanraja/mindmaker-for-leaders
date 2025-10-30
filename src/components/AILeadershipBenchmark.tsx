@@ -388,10 +388,6 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
             
             <div className="relative z-10">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl">
-                <Crown className="h-10 w-10 text-white" />
-              </div>
-
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-5 py-2.5 rounded-full text-sm font-medium mb-8">
                 <Brain className="h-4 w-4" />
                 Limited Spots Available This Month
@@ -405,19 +401,50 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 Book your <span className="font-bold">Executive Primer</span> and align your AI literacy with revenue strategy in just 30 days.
               </p>
               
-              {/* Value Props in 3-Column Layout */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
+              {/* Value Props - Desktop Grid */}
+              <div className="hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
                 {[
                   { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific implementation plan' },
                   { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
                   { icon: Users, title: 'Team Activation', desc: 'Leadership & stakeholder toolkit' }
                 ].map((item, index) => (
-                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white">
+                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white h-[180px] flex flex-col">
                     <item.icon className="h-10 w-10 mx-auto mb-4" />
                     <h4 className="font-bold text-lg mb-2">{item.title}</h4>
                     <p className="text-sm text-white/80">{item.desc}</p>
                   </div>
                 ))}
+              </div>
+
+              {/* Value Props - Mobile Carousel */}
+              <div className="sm:hidden mb-12">
+                <Carousel
+                  opts={{
+                    align: "center",
+                    loop: true,
+                  }}
+                  className="w-full max-w-sm mx-auto"
+                >
+                  <CarouselContent className="-ml-4">
+                    {[
+                      { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific implementation plan' },
+                      { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
+                      { icon: Users, title: 'Team Activation', desc: 'Leadership & stakeholder toolkit' }
+                    ].map((item, index) => (
+                      <CarouselItem key={index} className="pl-4">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white h-[180px] flex flex-col">
+                          <item.icon className="h-10 w-10 mx-auto mb-4" />
+                          <h4 className="font-bold text-lg mb-2">{item.title}</h4>
+                          <p className="text-sm text-white/80">{item.desc}</p>
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <div className="flex justify-center gap-2 mt-4">
+                    <CarouselPrevious className="relative static translate-y-0 bg-white/20 hover:bg-white/30 text-white border-white/20" />
+                    <CarouselNext className="relative static translate-y-0 bg-white/20 hover:bg-white/30 text-white border-white/20" />
+                  </div>
+                </Carousel>
               </div>
               
               <div className="overflow-hidden">
