@@ -225,9 +225,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
               {/* Right: Key Metrics & Insight */}
               <div className="space-y-6">
-                {/* Two Key Metrics Side by Side */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow">
+                {/* Desktop Grid - 3 Cards */}
+                <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[160px] flex flex-col">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                       <BarChart3 className="h-6 w-6 text-primary" />
@@ -240,7 +240,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     </p>
                   </Card>
 
-                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow">
+                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[160px] flex flex-col">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                       <Target className="h-6 w-6 text-primary" />
@@ -250,20 +250,76 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     </div>
                     <p className="text-sm text-muted-foreground">Advancement pathway identified</p>
                   </Card>
+
+                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[160px] flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
+                      <Lightbulb className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                      Key Focus
+                    </div>
+                    <p className="text-sm text-muted-foreground">{leadershipProfile.message}</p>
+                  </Card>
                 </div>
 
-                {/* Executive Insight as Quote Block */}
-                <Card className="p-8 shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-                  <div className="flex items-start gap-4">
-                    <Lightbulb className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                    <div>
-                      <h3 className="text-xl font-semibold text-foreground mb-3">Executive Insight</h3>
-                      <p className="text-base leading-relaxed text-primary font-medium italic">
-                        "{leadershipProfile.message}"
-                      </p>
+                {/* Mobile Carousel - 3 Cards */}
+                <div className="sm:hidden">
+                  <Carousel
+                    opts={{
+                      align: "center",
+                      loop: true,
+                    }}
+                    className="w-full max-w-sm mx-auto"
+                  >
+                    <CarouselContent className="-ml-4">
+                      <CarouselItem className="pl-4">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[160px] flex flex-col">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
+                            <BarChart3 className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                            {score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing'}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Revenue acceleration potential
+                          </p>
+                        </Card>
+                      </CarouselItem>
+                      
+                      <CarouselItem className="pl-4">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[160px] flex flex-col">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
+                            <Target className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                            {score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging'}
+                          </div>
+                          <p className="text-sm text-muted-foreground">Advancement pathway identified</p>
+                        </Card>
+                      </CarouselItem>
+                      
+                      <CarouselItem className="pl-4">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-[160px] flex flex-col">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
+                            <Lightbulb className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                            Key Focus
+                          </div>
+                          <p className="text-sm text-muted-foreground">{leadershipProfile.message}</p>
+                        </Card>
+                      </CarouselItem>
+                    </CarouselContent>
+                    <div className="flex justify-center gap-2 mt-4">
+                      <CarouselPrevious className="relative static translate-y-0 bg-white/20 hover:bg-white/30 border-border" />
+                      <CarouselNext className="relative static translate-y-0 bg-white/20 hover:bg-white/30 border-border" />
                     </div>
-                  </div>
-                </Card>
+                  </Carousel>
+                </div>
               </div>
             </div>
           </CardContent>
