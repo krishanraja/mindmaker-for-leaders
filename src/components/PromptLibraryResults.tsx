@@ -386,10 +386,10 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {library.recommendedProjects.map((project, idx) => (
               <CarouselItem key={idx} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl">
-                  <CardContent className="p-8 space-y-6">
-                    {/* Header */}
-                    <div className="space-y-4">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[640px] flex flex-col">
+                  <CardContent className="p-8 flex flex-col h-full overflow-hidden">
+                    {/* FIXED HEADER */}
+                    <div className="flex-shrink-0 space-y-4">
                       <div className="flex items-center justify-between">
                         <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-sm px-3 py-1">
                           Project {idx + 1}
@@ -419,54 +419,60 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       </div>
                     </div>
 
-                    {/* Key Info - Always Visible */}
-                    <div className="bg-muted/50 rounded-xl p-4 space-y-2">
-                      <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{project.whenToUse}</p>
+                    {/* SCROLLABLE MIDDLE SECTION */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 py-4">
+                      {/* Key Info - Always Visible */}
+                      <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                        <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{project.whenToUse}</p>
+                      </div>
+
+                      {/* Expandable Details */}
+                      <Accordion type="single" collapsible className="space-y-4">
+                        {/* Master Instructions */}
+                        <AccordionItem value="instructions" className="border-2 border-primary/10 rounded-xl overflow-hidden">
+                          <AccordionTrigger className="px-5 py-4 text-base font-semibold hover:no-underline hover:bg-muted/30">
+                            Master Instructions
+                          </AccordionTrigger>
+                          <AccordionContent className="px-5 py-4 border-t">
+                            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                              {project.masterInstructions}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+
+                        {/* Example Prompts */}
+                        <AccordionItem value="examples" className="border-2 border-primary/10 rounded-xl overflow-hidden">
+                          <AccordionTrigger className="px-5 py-4 text-base font-semibold hover:no-underline hover:bg-muted/30">
+                            Example Prompts ({project.examplePrompts.length})
+                          </AccordionTrigger>
+                          <AccordionContent className="px-5 py-4 border-t">
+                            <div className="space-y-4">
+                              {project.examplePrompts.map((prompt, pIdx) => (
+                                <div key={pIdx} className="flex items-start gap-3">
+                                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-xs font-bold text-primary">{pIdx + 1}</span>
+                                  </div>
+                                  <p className="text-sm text-foreground leading-relaxed flex-1">{prompt}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                     </div>
 
-                    {/* Expandable Details */}
-                    <Accordion type="single" collapsible className="space-y-4">
-                      {/* Master Instructions */}
-                      <AccordionItem value="instructions" className="border-2 border-primary/10 rounded-xl overflow-hidden">
-                        <AccordionTrigger className="px-5 py-4 text-base font-semibold hover:no-underline hover:bg-muted/30">
-                          Master Instructions
-                        </AccordionTrigger>
-                        <AccordionContent className="px-5 py-4 border-t">
-                          <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                            {project.masterInstructions}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      {/* Example Prompts */}
-                      <AccordionItem value="examples" className="border-2 border-primary/10 rounded-xl overflow-hidden">
-                        <AccordionTrigger className="px-5 py-4 text-base font-semibold hover:no-underline hover:bg-muted/30">
-                          Example Prompts ({project.examplePrompts.length})
-                        </AccordionTrigger>
-                        <AccordionContent className="px-5 py-4 border-t">
-                          <div className="space-y-4">
-                            {project.examplePrompts.map((prompt, pIdx) => (
-                              <div key={pIdx} className="flex items-start gap-3">
-                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                  <span className="text-xs font-bold text-primary">{pIdx + 1}</span>
-                                </div>
-                                <p className="text-sm text-foreground leading-relaxed flex-1">{prompt}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-
-                    {/* Success Metrics */}
-                    <div className="pt-4 border-t space-y-3">
-                      <h4 className="text-sm font-semibold text-foreground">Success Metrics</h4>
-                      <div className="flex flex-wrap gap-2">
+                    {/* FIXED FOOTER - SUCCESS METRICS */}
+                    <div className="flex-shrink-0 pt-4 border-t space-y-2">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        Success Metrics
+                      </h4>
+                      <div className="space-y-1.5">
                         {project.successMetrics.map((metric, mIdx) => (
-                          <Badge key={mIdx} variant="outline" className="bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 text-sm px-3 py-1.5">
-                            ✓ {metric}
-                          </Badge>
+                          <div key={mIdx} className="flex items-start gap-2 text-sm">
+                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-foreground leading-snug">{metric}</span>
+                          </div>
                         ))}
                       </div>
                     </div>
