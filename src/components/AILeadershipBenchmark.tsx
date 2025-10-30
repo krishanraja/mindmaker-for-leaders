@@ -181,16 +181,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         {/* Header */}
         <div className="text-center mb-16 sm:mb-20 pt-12 sm:pt-16">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-5 py-2.5 rounded-full text-sm font-medium mb-8">
-            <Brain className="h-4 w-4" />
-            AI Leadership Scorecard
-          </div>
-          
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6 tracking-tight leading-tight">
-            <span className="flex items-center justify-center gap-3">
-              <Crown className="h-8 w-8 lg:h-10 lg:w-10 text-[hsl(var(--gold-accent))]" />
-              {contactData.fullName.split(' ')[0]}'s Leadership
-            </span>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6 tracking-tight leading-tight text-center">
+            {contactData.fullName.split(' ')[0]}'s Leadership
             <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent mt-2">
               AI Benchmark
             </span>
@@ -229,11 +221,6 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 <h2 className="text-3xl lg:text-4xl font-bold text-primary mb-4">
                   {leadershipProfile.tier}
                 </h2>
-                
-                <Badge className="bg-gradient-to-r from-primary to-primary/80 border-0 px-5 py-2.5 text-base text-primary-foreground">
-                  <TrendingUp className="h-5 w-5 mr-2" />
-                  Leadership Growth Track
-                </Badge>
               </div>
 
               {/* Right: Key Metrics & Insight */}
