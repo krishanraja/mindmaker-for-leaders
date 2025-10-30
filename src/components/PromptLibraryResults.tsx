@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Brain, Copy, CheckCircle, BookOpen, Rocket, Target, ArrowRight, TrendingUp, Sparkles } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useToast } from '@/components/ui/use-toast';
@@ -387,95 +388,86 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             {library.recommendedProjects.map((project, idx) => (
               <CarouselItem key={idx} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
                 <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[640px] flex flex-col">
-                  <CardContent className="p-8 flex flex-col h-full overflow-hidden">
-                    {/* FIXED HEADER */}
-                    <div className="flex-shrink-0 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-sm px-3 py-1">
-                          Project {idx + 1}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopy(project.masterInstructions, `${project.name} Instructions`)}
-                          className="h-9 px-4"
-                        >
-                          {copiedItem === `${project.name} Instructions` ? (
-                            <>
-                              <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                              <span className="text-sm">Copied!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-4 w-4 mr-2" />
-                              <span className="text-sm">Copy All</span>
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">{project.name}</h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{project.purpose}</p>
-                      </div>
+                  <CardContent className="p-6 flex flex-col h-full">
+                    {/* Header */}
+                    <div className="flex-shrink-0 flex items-center justify-between mb-4">
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-sm px-3 py-1">
+                        Project {idx + 1}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(project.masterInstructions, `${project.name} Instructions`)}
+                        className="h-9 px-4"
+                      >
+                        {copiedItem === `${project.name} Instructions` ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                            <span className="text-sm">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4 mr-2" />
+                            <span className="text-sm">Copy All</span>
+                          </>
+                        )}
+                      </Button>
                     </div>
 
-                    {/* SCROLLABLE MIDDLE SECTION */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 py-4">
-                      {/* Key Info - Always Visible */}
-                      <div className="bg-muted/50 rounded-xl p-4 space-y-2">
-                        <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{project.whenToUse}</p>
-                      </div>
+                    {/* Tabs */}
+                    <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
+                      <TabsList className="flex-shrink-0 w-full grid grid-cols-3 mb-4">
+                        <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="instructions">Instructions</TabsTrigger>
+                        <TabsTrigger value="examples">Examples</TabsTrigger>
+                      </TabsList>
 
-                      {/* Expandable Details */}
-                      <Accordion type="single" collapsible className="space-y-4">
-                        {/* Master Instructions */}
-                        <AccordionItem value="instructions" className="border-2 border-primary/10 rounded-xl overflow-hidden">
-                          <AccordionTrigger className="px-5 py-4 text-base font-semibold hover:no-underline hover:bg-muted/30">
-                            Master Instructions
-                          </AccordionTrigger>
-                          <AccordionContent className="px-5 py-4 border-t">
-                            <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                              {project.masterInstructions}
+                      {/* Overview Tab */}
+                      <TabsContent value="overview" className="flex-1 overflow-y-auto custom-scrollbar space-y-4 mt-0">
+                        <div>
+                          <h3 className="text-xl font-bold text-foreground mb-2">{project.name}</h3>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{project.purpose}</p>
+                        </div>
+
+                        <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                          <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
+                          <p className="text-sm text-muted-foreground leading-relaxed">{project.whenToUse}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            Success Metrics
+                          </h4>
+                          <div className="space-y-1.5">
+                            {project.successMetrics.map((metric, mIdx) => (
+                              <div key={mIdx} className="flex items-start gap-2 text-sm">
+                                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                                <span className="text-foreground leading-snug">{metric}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      {/* Instructions Tab */}
+                      <TabsContent value="instructions" className="flex-1 overflow-y-auto custom-scrollbar mt-0">
+                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pr-2">
+                          {project.masterInstructions}
+                        </div>
+                      </TabsContent>
+
+                      {/* Examples Tab */}
+                      <TabsContent value="examples" className="flex-1 overflow-y-auto custom-scrollbar space-y-4 mt-0">
+                        {project.examplePrompts.map((prompt, pIdx) => (
+                          <div key={pIdx} className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-xs font-bold text-primary">{pIdx + 1}</span>
                             </div>
-                          </AccordionContent>
-                        </AccordionItem>
-
-                        {/* Example Prompts */}
-                        <AccordionItem value="examples" className="border-2 border-primary/10 rounded-xl overflow-hidden">
-                          <AccordionTrigger className="px-5 py-4 text-base font-semibold hover:no-underline hover:bg-muted/30">
-                            Example Prompts ({project.examplePrompts.length})
-                          </AccordionTrigger>
-                          <AccordionContent className="px-5 py-4 border-t">
-                            <div className="space-y-4">
-                              {project.examplePrompts.map((prompt, pIdx) => (
-                                <div key={pIdx} className="flex items-start gap-3">
-                                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <span className="text-xs font-bold text-primary">{pIdx + 1}</span>
-                                  </div>
-                                  <p className="text-sm text-foreground leading-relaxed flex-1">{prompt}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
-
-                    {/* FIXED FOOTER - SUCCESS METRICS */}
-                    <div className="flex-shrink-0 pt-4 border-t space-y-2">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        Success Metrics
-                      </h4>
-                      <div className="space-y-1.5">
-                        {project.successMetrics.map((metric, mIdx) => (
-                          <div key={mIdx} className="flex items-start gap-2 text-sm">
-                            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-foreground leading-snug">{metric}</span>
+                            <p className="text-sm text-foreground leading-relaxed flex-1">{prompt}</p>
                           </div>
                         ))}
-                      </div>
-                    </div>
+                      </TabsContent>
+                    </Tabs>
                   </CardContent>
                 </Card>
               </CarouselItem>
