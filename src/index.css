@@ -72,8 +72,8 @@
     --tier-orchestrator-light: 256 92% 75%;
     --tier-confident: 211 92% 60%;
     --tier-confident-light: 211 92% 70%;
-    --tier-aware: 25 95% 53%;
-    --tier-aware-light: 25 95% 63%;
+    --tier-aware: 25 85% 55%;
+    --tier-aware-light: 25 85% 65%;
     --tier-emerging: 215 16% 47%;
     --tier-emerging-light: 215 16% 57%;
     
@@ -103,7 +103,7 @@
     /* === DARK MODE TIER COLORS === */
     --tier-orchestrator: 256 92% 70%;
     --tier-confident: 211 92% 65%;
-    --tier-aware: 25 95% 58%;
+    --tier-aware: 25 85% 60%;
     --tier-emerging: 215 20% 60%;
   }
 }
@@ -469,4 +469,26 @@ input:focus-visible {
   background: hsl(var(--popover)) !important;
   border: 1px solid hsl(var(--border)) !important;
   z-index: 50 !important;
+}
+
+/* ========================================
+   CUSTOM SCROLLBAR
+   ======================================== */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
 }

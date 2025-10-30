@@ -85,7 +85,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       {/* AI Projects Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-4">
-          <Rocket className="h-6 w-6 text-primary" />
+          <Rocket className="h-6 w-6 text-primary flex-shrink-0" />
           <h2 className="text-2xl font-bold text-foreground">Your AI Projects</h2>
         </div>
         
@@ -98,7 +98,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     <h3 className="text-lg font-semibold text-foreground">{project.name}</h3>
                     <p className="text-sm text-muted-foreground mt-1">{project.purpose}</p>
                   </div>
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 ml-4">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 ml-4 flex-shrink-0">
                     Project {idx + 1}
                   </Badge>
                 </div>
@@ -119,24 +119,26 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopy(project.masterInstructions, `${project.name} Instructions`)}
-                        className="h-8"
+                        className="h-8 px-3"
                       >
                         {copiedItem === `${project.name} Instructions` ? (
                           <>
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                            <span className="text-xs">Copied!</span>
+                            <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                            <span className="text-xs font-medium">Copied!</span>
                           </>
                         ) : (
                           <>
-                            <Copy className="h-4 w-4 mr-2" />
-                            <span className="text-xs">Copy</span>
+                            <Copy className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span className="text-xs font-medium">Copy</span>
                           </>
                         )}
                       </Button>
                     </div>
-                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                      {project.masterInstructions}
-                    </p>
+                    <div className="max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                      <p className="text-xs sm:text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                        {project.masterInstructions}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Example Prompts */}
@@ -146,12 +148,12 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       {project.examplePrompts.map((prompt, pIdx) => (
                         <div key={pIdx} className="flex items-start gap-2 p-3 bg-background border rounded-lg group hover:border-primary/50 transition-colors">
                           <ArrowRight className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                          <p className="text-sm text-foreground flex-1">{prompt}</p>
+                          <p className="text-xs sm:text-sm text-foreground flex-1 leading-relaxed">{prompt}</p>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleCopy(prompt, `Example Prompt ${pIdx + 1}`)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 flex-shrink-0"
                           >
                             {copiedItem === `Example Prompt ${pIdx + 1}` ? (
                               <CheckCircle className="h-3 w-3 text-green-500" />

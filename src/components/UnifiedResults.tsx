@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, Sparkles } from 'lucide-react';
 import AILeadershipBenchmark from './AILeadershipBenchmark';
@@ -20,14 +20,17 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
   sessionId,
   onBack
 }) => {
+  const [activeTab, setActiveTab] = useState<string>("benchmark");
+
   return (
     <div className="bg-background min-h-screen py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <Tabs defaultValue="library" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-            <TabsTrigger value="library" className="flex items-center gap-2">
+            <TabsTrigger value="library" className="flex items-center gap-2 relative">
               <Sparkles className="h-4 w-4" />
               AI Toolkit
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full animate-pulse"></span>
             </TabsTrigger>
             <TabsTrigger value="benchmark" className="flex items-center gap-2">
               <Award className="h-4 w-4" />
@@ -48,6 +51,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
               sessionId={sessionId}
               contactData={contactData}
               onBack={onBack}
+              onViewToolkit={() => setActiveTab("library")}
             />
           </TabsContent>
         </Tabs>

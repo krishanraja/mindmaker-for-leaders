@@ -128,6 +128,7 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, thinkingProcess: option.value }));
+                    setTimeout(() => handleNext(), 600);
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
@@ -265,6 +266,7 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, transformationGoal: option.value }));
+                    setTimeout(() => handleNext(), 600);
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
@@ -404,6 +406,7 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, biggestChallenge: option.value }));
+                    setTimeout(() => handleNext(), 600);
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
@@ -518,9 +521,16 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   variant="cta"
                   onClick={handleNext}
                   disabled={!canProceed()}
-                  className="flex-1 rounded-xl"
+                  className="flex-1 rounded-xl text-sm sm:text-base"
                 >
-                  {currentStep === totalSteps ? 'Generate My AI Toolkit' : 'Next'}
+                  {currentStep === totalSteps ? (
+                    <>
+                      <span className="hidden sm:inline">Generate My AI Toolkit</span>
+                      <span className="sm:hidden">Generate Toolkit</span>
+                    </>
+                  ) : (
+                    'Next'
+                  )}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>

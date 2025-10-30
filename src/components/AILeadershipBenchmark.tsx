@@ -16,7 +16,8 @@ import {
   Users,
   AlertTriangle,
   Crown,
-  Rocket
+  Rocket,
+  Sparkles
 } from 'lucide-react';
 
 import { ContactData } from './ContactCollectionForm';
@@ -26,13 +27,15 @@ interface AILeadershipBenchmarkProps {
   sessionId: string | null;
   contactData: ContactData;
   onBack?: () => void;
+  onViewToolkit?: () => void;
 }
 
 const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   assessmentData,
   sessionId,
   contactData,
-  onBack
+  onBack,
+  onViewToolkit
 }) => {
   const { toast } = useToast();
 
@@ -352,8 +355,40 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
           </div>
         </div>
 
+        {/* AI Toolkit CTA */}
+        {onViewToolkit && (
+          <Card className="mt-16 border-2 border-primary/20 shadow-lg overflow-hidden">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8 sm:p-10 text-center">
+                <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4 animate-pulse">
+                  <Sparkles className="h-4 w-4" />
+                  NEW: Personalized AI Toolkit Available
+                </div>
+                
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
+                  Ready to Put Your Score Into Action?
+                </h2>
+                
+                <p className="text-muted-foreground text-base sm:text-lg mb-6 max-w-2xl mx-auto">
+                  View your custom AI project templates, master prompts, and implementation roadmap designed specifically for your leadership style.
+                </p>
+                
+                <Button
+                  size="lg"
+                  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                  onClick={onViewToolkit}
+                >
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  View Your AI Toolkit
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Executive Primer CTA - Hero Section */}
-        <Card className={`shadow-2xl border-0 rounded-3xl overflow-hidden bg-gradient-to-br ${leadershipProfile.gradient}`}>
+        <Card className={`mt-16 shadow-2xl border-0 rounded-3xl overflow-hidden bg-gradient-to-br ${leadershipProfile.gradient}`}>
           <CardContent className="p-10 sm:p-12 lg:p-16 text-center relative">
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
