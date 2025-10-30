@@ -361,8 +361,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   onClick={onViewToolkit}
                 >
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  View Your AI Toolkit
+                  Prompt Toolkit
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </div>
