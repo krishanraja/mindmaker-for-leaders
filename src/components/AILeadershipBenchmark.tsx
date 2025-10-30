@@ -192,6 +192,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   // Use personalized roadmap or fallback
   const roadmapInsights = personalizedInsights?.roadmapInitiatives?.map(initiative => ({
     ...initiative,
+    // Sanitize growth metric text to replace field names and format properly
+    growthMetric: initiative.growthMetric?.replace(/[_-]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
     icon: initiative.title.includes('Revenue') || initiative.title.includes('Business') ? Rocket :
           initiative.title.includes('Leadership') || initiative.title.includes('Executive') ? Crown : Users
   })) || defaultStrategicInsights;
@@ -430,7 +432,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               ) : (
                 roadmapInsights.map((insight, index) => (
                   <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-[456px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+                    <Card className="h-[520px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
                       <CardContent className="p-6 flex flex-col h-full">
                         <div className="flex items-start gap-3 mb-4">
                           <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
@@ -456,18 +458,18 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           </div>
                         )}
                         
-                        <div className="flex items-center justify-between pt-4 border-t mt-auto gap-3">
-                          <div className="flex flex-col items-start">
-                            <div className="text-xs font-bold text-primary mb-1.5">
-                              {insight.growthMetric.length > 142 
-                                ? `${insight.growthMetric.substring(0, 142)}...` 
+                        <div className="flex items-start justify-between pt-4 border-t mt-auto gap-3">
+                          <div className="flex flex-col items-start flex-1">
+                            <div className="text-xs font-bold text-primary mb-1.5 leading-tight">
+                              {insight.growthMetric.length > 180 
+                                ? `${insight.growthMetric.substring(0, 180)}...` 
                                 : insight.growthMetric}
                             </div>
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">
                               Growth
                             </div>
                           </div>
-                          <div className="flex flex-col items-end">
+                          <div className="flex flex-col items-start flex-shrink-0">
                             <div className="text-xs font-bold text-foreground mb-1.5">
                               {insight.timeline}
                             </div>
