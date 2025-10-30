@@ -180,7 +180,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         {/* Header */}
-        <div className="text-center mb-16 sm:mb-20 pt-7 sm:pt-10">
+        <div className="text-center mb-16 sm:mb-20 pt-5 sm:pt-7">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6 tracking-tight leading-tight text-center">
             {contactData.fullName.split(' ')[0]}'s Leadership
             <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent mt-2">
