@@ -29,7 +29,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
           <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 mb-12 p-2 h-auto bg-muted/50 rounded-2xl shadow-lg">
             <TabsTrigger 
               value="library"
-              className="relative flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-semibold transition-all data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+              className="relative flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-semibold transition-all data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-foreground data-[state=inactive]:bg-primary data-[state=inactive]:text-primary-foreground"
             >
               <Sparkles className="h-5 w-5" />
               <span>AI Toolkit</span>
@@ -37,7 +37,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
             </TabsTrigger>
             <TabsTrigger 
               value="benchmark"
-              className="relative flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-semibold transition-all data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
+              className="relative flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-semibold transition-all data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-foreground data-[state=inactive]:bg-primary data-[state=inactive]:text-primary-foreground"
             >
               <Award className="h-5 w-5" />
               <span>Leadership Score</span>
