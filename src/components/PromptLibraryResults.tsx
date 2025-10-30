@@ -165,6 +165,9 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
   const workingStyle = synthesizeWorkingStyle(library.executiveProfile.summary);
   const priorityProject = synthesizePriorityProject(library.recommendedProjects[0]);
   const opportunity = synthesizeOpportunity(library.executiveProfile.transformationOpportunity);
+  
+  // Extract first name for personalization
+  const firstName = contactData.fullName.split(' ')[0];
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -195,7 +198,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     
                     {/* Title */}
                     <h3 className="text-2xl font-bold text-center text-foreground">
-                      Your Unique Strengths
+                      {firstName}'s Unique Strengths
                     </h3>
                     
                     {/* Content - 3 strengths with breathing room */}
