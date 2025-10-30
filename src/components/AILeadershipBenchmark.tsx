@@ -430,7 +430,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               ) : (
                 roadmapInsights.map((insight, index) => (
                   <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-[380px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+                    <Card className="h-[456px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
                       <CardContent className="p-6 flex flex-col h-full">
                         <div className="flex items-start gap-3 mb-4">
                           <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
@@ -458,17 +458,15 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         
                         <div className="flex items-center justify-between pt-4 border-t mt-auto gap-3">
                           <div className="flex flex-col items-start">
-                            <div className="inline-flex items-center px-2.5 py-1 bg-primary/10 rounded-md mb-1.5">
-                              <span className="text-sm font-bold text-primary">
-                                {insight.growthMetric}
-                              </span>
+                            <div className="text-base font-bold text-primary mb-1.5">
+                              {insight.growthMetric}
                             </div>
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">
                               Growth
                             </div>
                           </div>
                           <div className="flex flex-col items-end">
-                            <div className="text-sm font-bold text-foreground mb-1.5">
+                            <div className="text-xs font-bold text-foreground mb-1.5">
                               {insight.timeline}
                             </div>
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">
