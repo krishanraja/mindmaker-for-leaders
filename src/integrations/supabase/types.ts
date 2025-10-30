@@ -91,6 +91,60 @@ export type Database = {
           },
         ]
       }
+      ai_literacy_modules: {
+        Row: {
+          category: string
+          challenges: string[]
+          created_at: string | null
+          credits: number
+          description: string
+          icon: string
+          id: string
+          learning_styles: string[]
+          prerequisites: string[] | null
+          target_audience: string[]
+          team_sizes: string[]
+          tier: string
+          title: string
+          updated_at: string | null
+          urgency: string[]
+        }
+        Insert: {
+          category: string
+          challenges?: string[]
+          created_at?: string | null
+          credits: number
+          description: string
+          icon: string
+          id: string
+          learning_styles?: string[]
+          prerequisites?: string[] | null
+          target_audience?: string[]
+          team_sizes?: string[]
+          tier: string
+          title: string
+          updated_at?: string | null
+          urgency?: string[]
+        }
+        Update: {
+          category?: string
+          challenges?: string[]
+          created_at?: string | null
+          credits?: number
+          description?: string
+          icon?: string
+          id?: string
+          learning_styles?: string[]
+          prerequisites?: string[] | null
+          target_audience?: string[]
+          team_sizes?: string[]
+          tier?: string
+          title?: string
+          updated_at?: string | null
+          urgency?: string[]
+        }
+        Relationships: []
+      }
       booking_requests: {
         Row: {
           company_name: string | null
@@ -492,13 +546,78 @@ export type Database = {
           },
         ]
       }
+      prompt_library_profiles: {
+        Row: {
+          bottleneck_analysis: Json
+          communication_style: Json
+          created_at: string | null
+          executive_profile: Json
+          generation_model: string | null
+          generation_timestamp: string | null
+          id: string
+          implementation_roadmap: Json
+          last_updated: string | null
+          prompt_templates: Json
+          recommended_projects: Json
+          session_id: string | null
+          stakeholder_map: Json
+          trust_calibration: Json
+          user_id: string | null
+          workflow_preferences: Json
+        }
+        Insert: {
+          bottleneck_analysis?: Json
+          communication_style?: Json
+          created_at?: string | null
+          executive_profile?: Json
+          generation_model?: string | null
+          generation_timestamp?: string | null
+          id?: string
+          implementation_roadmap?: Json
+          last_updated?: string | null
+          prompt_templates?: Json
+          recommended_projects?: Json
+          session_id?: string | null
+          stakeholder_map?: Json
+          trust_calibration?: Json
+          user_id?: string | null
+          workflow_preferences?: Json
+        }
+        Update: {
+          bottleneck_analysis?: Json
+          communication_style?: Json
+          created_at?: string | null
+          executive_profile?: Json
+          generation_model?: string | null
+          generation_timestamp?: string | null
+          id?: string
+          implementation_roadmap?: Json
+          last_updated?: string | null
+          prompt_templates?: Json
+          recommended_projects?: Json
+          session_id?: string | null
+          stakeholder_map?: Json
+          trust_calibration?: Json
+          user_id?: string | null
+          workflow_preferences?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_library_profiles_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_audit_log: {
         Row: {
           action: string
           created_at: string
           details: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           resource_id: string | null
           resource_type: string
           user_agent: string | null
@@ -509,7 +628,7 @@ export type Database = {
           created_at?: string
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resource_id?: string | null
           resource_type: string
           user_agent?: string | null
@@ -520,7 +639,7 @@ export type Database = {
           created_at?: string
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resource_id?: string | null
           resource_type?: string
           user_agent?: string | null
@@ -531,45 +650,63 @@ export type Database = {
       user_business_context: {
         Row: {
           ai_readiness_score: number | null
+          ai_trust_levels: Json | null
+          bottleneck_details: Json | null
           business_description: string | null
           business_name: string | null
+          communication_style: Json | null
           company_size: string | null
           context_data: Json | null
           created_at: string
           id: string
           industry: string | null
           primary_challenges: string[] | null
+          stakeholder_audiences: Json | null
+          thinking_process: Json | null
           updated_at: string
           user_id: string | null
           website_url: string | null
+          workflow_pattern: Json | null
         }
         Insert: {
           ai_readiness_score?: number | null
+          ai_trust_levels?: Json | null
+          bottleneck_details?: Json | null
           business_description?: string | null
           business_name?: string | null
+          communication_style?: Json | null
           company_size?: string | null
           context_data?: Json | null
           created_at?: string
           id?: string
           industry?: string | null
           primary_challenges?: string[] | null
+          stakeholder_audiences?: Json | null
+          thinking_process?: Json | null
           updated_at?: string
           user_id?: string | null
           website_url?: string | null
+          workflow_pattern?: Json | null
         }
         Update: {
           ai_readiness_score?: number | null
+          ai_trust_levels?: Json | null
+          bottleneck_details?: Json | null
           business_description?: string | null
           business_name?: string | null
+          communication_style?: Json | null
           company_size?: string | null
           context_data?: Json | null
           created_at?: string
           id?: string
           industry?: string | null
           primary_challenges?: string[] | null
+          stakeholder_audiences?: Json | null
+          thinking_process?: Json | null
           updated_at?: string
           user_id?: string | null
           website_url?: string | null
+          workflow_pattern?: Json | null
         }
         Relationships: []
       }
@@ -627,17 +764,14 @@ export type Database = {
         }[]
       }
       process_pending_sync_logs: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           error_count: number
           processed_count: number
           success_count: number
         }[]
       }
-      schedule_sync_processing: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      schedule_sync_processing: { Args: never; Returns: undefined }
       sync_lead_to_sheets: {
         Args: {
           lead_session_id?: string

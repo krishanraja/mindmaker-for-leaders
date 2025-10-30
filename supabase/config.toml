@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.generate-executive-insights]
 verify_jwt = false
+
+[functions.generate-prompt-library]
+verify_jwt = false

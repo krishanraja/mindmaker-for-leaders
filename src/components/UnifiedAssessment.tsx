@@ -11,6 +11,8 @@ import { useStructuredAssessment } from '@/hooks/useStructuredAssessment';
 import ExecutiveLoadingScreen from './ai-chat/ExecutiveLoadingScreen';
 import LLMInsightEngine from './ai-chat/LLMInsightEngine';
 import { ContactCollectionForm, ContactData } from './ContactCollectionForm';
+import { DeepProfileQuestionnaire, DeepProfileData } from './DeepProfileQuestionnaire';
+import { PromptLibraryResults } from './PromptLibraryResults';
 import AILeadershipBenchmark from './AILeadershipBenchmark';
 
 
@@ -35,7 +37,12 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const [insightPhase, setInsightPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactData, setContactData] = useState<ContactData | null>(null);
+  const [showDeepProfileOptIn, setShowDeepProfileOptIn] = useState(false);
+  const [showDeepProfileQuestionnaire, setShowDeepProfileQuestionnaire] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showPromptLibrary, setShowPromptLibrary] = useState(false);
+  const [promptLibrary, setPromptLibrary] = useState<any>(null);
+  const [isGeneratingLibrary, setIsGeneratingLibrary] = useState(false);
   const { toast } = useToast();
   
   const {
@@ -202,7 +209,56 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const handleContactSubmit = (data: ContactData) => {
     setContactData(data);
     setShowContactForm(false);
+    setShowDeepProfileOptIn(true);
+  };
+
+  const handleSkipDeepProfile = () => {
+    setShowDeepProfileOptIn(false);
     startInsightGeneration();
+  };
+
+  const handleStartDeepProfile = () => {
+    setShowDeepProfileOptIn(false);
+    setShowDeepProfileQuestionnaire(true);
+  };
+
+  const handleDeepProfileComplete = async (profileData: DeepProfileData) => {
+    setShowDeepProfileQuestionnaire(false);
+    setIsGeneratingLibrary(true);
+
+    try {
+      const assessmentData = getAssessmentData();
+      
+      const { data, error } = await supabase.functions.invoke('generate-prompt-library', {
+        body: {
+          sessionId: sessionId,
+          userId: null,
+          contactData: contactData,
+          assessmentData: assessmentData,
+          profileData: profileData
+        }
+      });
+
+      if (error) throw error;
+
+      setPromptLibrary(data.library);
+      setIsGeneratingLibrary(false);
+      setShowPromptLibrary(true);
+      
+      toast({
+        title: "AI Command Center Ready!",
+        description: "Your personalized prompt library has been generated",
+      });
+    } catch (error) {
+      console.error('Error generating prompt library:', error);
+      setIsGeneratingLibrary(false);
+      toast({
+        title: "Generation Error",
+        description: "Failed to generate prompt library. Showing assessment results instead.",
+        variant: "destructive",
+      });
+      startInsightGeneration();
+    }
   };
 
 
@@ -212,6 +268,102 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       <ContactCollectionForm
         onSubmit={handleContactSubmit}
         onBack={onBack}
+      />
+    );
+  }
+
+  // Show deep profile opt-in
+  if (showDeepProfileOptIn && contactData) {
+    return (
+      <div className="bg-background min-h-screen relative overflow-hidden flex items-center justify-center px-4">
+        <Card className="max-w-2xl w-full shadow-sm border rounded-xl">
+          <CardContent className="p-8 text-center">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm mb-6">
+              <Brain className="h-4 w-4" />
+              Bonus Opportunity
+            </div>
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Unlock Your Personal AI Command Center
+            </h2>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Answer 10 more questions to receive custom ChatGPT/Claude project instructions tailored to your thinking style, bottlenecks, and communication patterns.
+            </p>
+            <div className="bg-muted/50 p-6 rounded-lg mb-6 space-y-3 text-left">
+              <h3 className="font-semibold text-foreground mb-3">You'll Receive:</h3>
+              <div className="space-y-2 text-sm text-foreground">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                  <span>3-5 custom AI project templates with master instructions</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                  <span>Personalized prompt library for your specific use cases</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                  <span>Implementation roadmap tailored to your workflow</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                  <span>Ready-to-use prompts that match your communication style</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                variant="cta" 
+                className="flex-1 rounded-xl"
+                onClick={handleStartDeepProfile}
+              >
+                Yes, Unlock My AI Toolkit
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+              <Button 
+                variant="outline" 
+                className="rounded-xl"
+                onClick={handleSkipDeepProfile}
+              >
+                Skip for Now
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Takes about 10 minutes · Highly personalized results
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show deep profile questionnaire
+  if (showDeepProfileQuestionnaire) {
+    return (
+      <DeepProfileQuestionnaire
+        onComplete={handleDeepProfileComplete}
+        onBack={() => {
+          setShowDeepProfileQuestionnaire(false);
+          setShowDeepProfileOptIn(true);
+        }}
+      />
+    );
+  }
+
+  // Show library generation loading
+  if (isGeneratingLibrary) {
+    return (
+      <ExecutiveLoadingScreen 
+        progress={75} 
+        phase="generating"
+      />
+    );
+  }
+
+  // Show prompt library results
+  if (showPromptLibrary && promptLibrary && contactData) {
+    return (
+      <PromptLibraryResults
+        library={promptLibrary}
+        contactData={contactData}
       />
     );
   }
