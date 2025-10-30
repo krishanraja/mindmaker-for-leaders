@@ -199,9 +199,9 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     </h3>
                     
                     {/* Content - 3 strengths with breathing room */}
-                    <div className="space-y-6 w-full">
+                    <div className="space-y-6 w-full max-w-xs">
                       {workingStyle.map((trait, idx) => (
-                        <div key={idx} className="flex items-center gap-4 justify-center">
+                        <div key={idx} className="flex items-center gap-4">
                           <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
                           <p className="text-sm font-medium text-foreground">{trait}</p>
                         </div>
