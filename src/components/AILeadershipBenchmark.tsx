@@ -212,22 +212,25 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   {/* Animated gradient border circle */}
                   <div className={`w-48 h-48 lg:w-56 lg:h-56 rounded-full bg-gradient-to-br ${leadershipProfile.gradient} p-1 animate-pulse`}>
                     <div className="w-full h-full rounded-full bg-background flex items-center justify-center relative">
-                      <span className={`text-6xl lg:text-7xl font-display font-bold ${leadershipProfile.textColor}`}>
-                        {score}
-                      </span>
+                      <div className="flex flex-col items-center">
+                        <span className="text-6xl lg:text-7xl font-display font-bold text-primary">
+                          {score}
+                        </span>
+                        <span className="text-sm text-muted-foreground mt-1">out of 30</span>
+                      </div>
                       <div className="absolute -top-4 -right-4 bg-background rounded-full p-2 shadow-lg">
-                        <leadershipProfile.icon className={`h-10 w-10 lg:h-12 lg:w-12 ${leadershipProfile.textColor}`} />
+                        <leadershipProfile.icon className="h-10 w-10 lg:h-12 lg:w-12 text-primary" />
                       </div>
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground mt-4">Leadership Score</div>
                 </div>
                 
-                <h2 className={`text-3xl lg:text-4xl font-bold ${leadershipProfile.textColor} mb-4`}>
+                <h2 className="text-3xl lg:text-4xl font-bold text-primary mb-4">
                   {leadershipProfile.tier}
                 </h2>
                 
-                <Badge className={`${leadershipProfile.bgGradient} border-0 px-5 py-2.5 text-base ${leadershipProfile.textColor}`}>
+                <Badge className="bg-gradient-to-r from-primary to-primary/80 border-0 px-5 py-2.5 text-base text-primary-foreground">
                   <TrendingUp className="h-5 w-5 mr-2" />
                   Leadership Growth Track
                 </Badge>
@@ -240,7 +243,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
-                      <BarChart3 className={`h-6 w-6 ${leadershipProfile.textColor}`} />
+                      <BarChart3 className="h-6 w-6 text-primary" />
                     </div>
                     <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
                       {score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing'}
@@ -253,7 +256,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
-                      <Target className={`h-6 w-6 ${leadershipProfile.textColor}`} />
+                      <Target className="h-6 w-6 text-primary" />
                     </div>
                     <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
                       {score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging'}
@@ -265,10 +268,10 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 {/* Executive Insight as Quote Block */}
                 <Card className="p-8 shadow-lg border-0 bg-card/50 backdrop-blur-sm">
                   <div className="flex items-start gap-4">
-                    <Lightbulb className={`h-6 w-6 ${leadershipProfile.textColor} flex-shrink-0 mt-1`} />
+                    <Lightbulb className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="text-xl font-semibold text-foreground mb-3">Executive Insight</h3>
-                      <p className={`text-base leading-relaxed ${leadershipProfile.textColor} font-medium italic`}>
+                      <p className="text-base leading-relaxed text-primary font-medium italic">
                         "{leadershipProfile.message}"
                       </p>
                     </div>
