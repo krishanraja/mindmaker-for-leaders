@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
 import { 
   Brain, 
   Target, 
@@ -24,11 +25,27 @@ import {
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 import { ContactData } from './ContactCollectionForm';
+import { DeepProfileData } from './DeepProfileQuestionnaire';
+
+interface PersonalizedInsights {
+  growthReadiness: { level: string; insight: string };
+  leadershipStage: { stage: string; nextStep: string };
+  keyFocus: { title: string; insight: string };
+  roadmapInitiatives: Array<{
+    title: string;
+    description: string;
+    basedOn: string[];
+    impact: string;
+    timeline: string;
+    growthMetric: string;
+  }>;
+}
 
 interface AILeadershipBenchmarkProps {
   assessmentData: any;
   sessionId: string | null;
   contactData: ContactData;
+  deepProfileData: DeepProfileData | null;
   onBack?: () => void;
   onViewToolkit?: () => void;
 }
@@ -37,10 +54,48 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   assessmentData,
   sessionId,
   contactData,
+  deepProfileData,
   onBack,
   onViewToolkit
 }) => {
   const { toast } = useToast();
+  const [personalizedInsights, setPersonalizedInsights] = useState<PersonalizedInsights | null>(null);
+  const [isLoadingInsights, setIsLoadingInsights] = useState(true);
+
+  useEffect(() => {
+    generatePersonalizedInsights();
+  }, []);
+
+  const generatePersonalizedInsights = async () => {
+    try {
+      setIsLoadingInsights(true);
+      console.log('Generating personalized insights...');
+
+      const { data, error } = await supabase.functions.invoke('generate-personalized-insights', {
+        body: {
+          assessmentData,
+          contactData,
+          deepProfileData
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.personalizedInsights) {
+        setPersonalizedInsights(data.personalizedInsights);
+        console.log('Personalized insights generated successfully');
+      }
+    } catch (error) {
+      console.error('Error generating personalized insights:', error);
+      toast({
+        title: "Generating Insights",
+        description: "Showing standard insights while we personalize your results.",
+        variant: "default",
+      });
+    } finally {
+      setIsLoadingInsights(false);
+    }
+  };
 
   // Calculate Leadership Score (0-30 scale)
   const calculateLeadershipScore = () => {
@@ -103,38 +158,43 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
   const leadershipProfile = getLeadershipTier(score);
 
-  const strategicInsights = [
+  // Default strategic insights (fallback)
+  const defaultStrategicInsights = [
     {
-      category: 'Growth Strategy',
-      priority: 'High',
-      insight: 'AI-Driven Revenue Acceleration',
+      title: 'AI-Driven Revenue Acceleration',
       description: 'Identify and implement AI solutions that directly impact your top-line growth and market positioning.',
+      basedOn: ['Assessment responses', 'Business context'],
       impact: 'Revenue Growth',
       timeline: '30-60 days',
-      improvement: '15-25%',
+      growthMetric: '15-25%',
       icon: Rocket
     },
     {
-      category: 'Leadership Development',
-      priority: 'High',
-      insight: 'Executive AI Fluency',
+      title: 'Executive AI Fluency',
       description: 'Develop AI literacy that positions you as a thought leader in your industry and with stakeholders.',
+      basedOn: ['Leadership assessment scores'],
       impact: 'Strategic Influence',
       timeline: '60-90 days',
-      improvement: '20-40%',
+      growthMetric: '20-40%',
       icon: Crown
     },
     {
-      category: 'Organizational Capability',
-      priority: 'Medium',
-      insight: 'AI Champions Network',
+      title: 'AI Champions Network',
       description: 'Build and coach a network of AI champions across your organization to accelerate adoption.',
+      basedOn: ['Organizational readiness'],
       impact: 'Cultural Change',
       timeline: '90-120 days',
-      improvement: '25-50%',
+      growthMetric: '25-50%',
       icon: Users
     }
   ];
+
+  // Use personalized roadmap or fallback
+  const roadmapInsights = personalizedInsights?.roadmapInitiatives?.map(initiative => ({
+    ...initiative,
+    icon: initiative.title.includes('Revenue') || initiative.title.includes('Business') ? Rocket :
+          initiative.title.includes('Leadership') || initiative.title.includes('Executive') ? Crown : Users
+  })) || defaultStrategicInsights;
 
   const handleExecutivePrimerBooking = async () => {
     try {
@@ -225,42 +285,55 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
               {/* Right: Key Metrics & Insight */}
               <div className="space-y-6">
-                {/* Desktop Grid - 3 Cards */}
+                 {/* Desktop Grid - 3 Cards */}
                 <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
-                      <BarChart3 className="h-6 w-6 text-primary" />
+                  {isLoadingInsights ? (
+                    <div className="col-span-3 flex items-center justify-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <span className="ml-3 text-muted-foreground">Personalizing your insights...</span>
                     </div>
-                    <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-                      {score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing'}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Revenue acceleration potential
-                    </p>
-                  </Card>
+                  ) : (
+                    <>
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
+                          <BarChart3 className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                          {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                          {personalizedInsights?.growthReadiness.insight || 'Revenue acceleration potential'}
+                        </p>
+                      </Card>
 
-                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
-                      <Target className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-                      {score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging'}
-                    </div>
-                    <p className="text-sm text-muted-foreground">Advancement pathway identified</p>
-                  </Card>
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
+                          <Target className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                          {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                          {personalizedInsights?.leadershipStage.nextStep || 'Advancement pathway identified'}
+                        </p>
+                      </Card>
 
-                  <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
-                      <Lightbulb className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-                      Key Focus
-                    </div>
-                    <p className="text-sm text-muted-foreground">{leadershipProfile.message}</p>
-                  </Card>
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-[200px] flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
+                          <Lightbulb className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
+                          {personalizedInsights?.keyFocus.title || 'Key Focus'}
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                          {personalizedInsights?.keyFocus.insight || leadershipProfile.message}
+                        </p>
+                      </Card>
+                    </>
+                  )}
                 </div>
 
                 {/* Mobile Carousel - 3 Cards */}
@@ -345,47 +418,67 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             className="w-full"
           >
             <CarouselContent className="-ml-4">
-              {strategicInsights.map((insight, index) => (
-                <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                  <Card className="h-[320px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
-                    <CardContent className="p-6 flex flex-col h-full">
-                      <div className="flex items-start gap-3 mb-4">
-                        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${leadershipProfile.gradient} flex-shrink-0`}>
-                          <insight.icon className="h-5 w-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-foreground text-base leading-tight">
-                            {insight.insight}
-                          </h3>
-                        </div>
-                      </div>
-                      
-                      <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1 line-clamp-4">
-                        {insight.description}
-                      </p>
-                      
-                      <div className="flex items-center justify-between pt-4 border-t mt-auto">
-                        <div>
-                          <div className={`text-base font-bold ${leadershipProfile.textColor} mb-1`}>
-                            {insight.improvement}
-                          </div>
-                          <div className="text-xs text-muted-foreground uppercase tracking-wider">
-                            Growth
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-base font-bold text-foreground mb-1">
-                            {insight.timeline}
-                          </div>
-                          <div className="text-xs text-muted-foreground uppercase tracking-wider">
-                            Timeline
-                          </div>
-                        </div>
-                      </div>
+              {isLoadingInsights ? (
+                <CarouselItem className="pl-4 basis-full">
+                  <Card className="h-[320px] flex items-center justify-center">
+                    <CardContent className="text-center">
+                      <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+                      <p className="text-muted-foreground">Creating your personalized roadmap...</p>
                     </CardContent>
                   </Card>
                 </CarouselItem>
-              ))}
+              ) : (
+                roadmapInsights.map((insight, index) => (
+                  <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                    <Card className="h-[380px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+                      <CardContent className="p-6 flex flex-col h-full">
+                        <div className="flex items-start gap-3 mb-4">
+                          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${leadershipProfile.gradient} flex-shrink-0`}>
+                            <insight.icon className="h-5 w-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-foreground text-base leading-tight">
+                              {insight.title}
+                            </h3>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-3 flex-1 line-clamp-4">
+                          {insight.description}
+                        </p>
+                        
+                        {insight.basedOn && insight.basedOn.length > 0 && (
+                          <div className="mb-3 p-2 bg-primary/5 rounded-lg">
+                            <div className="text-xs font-semibold text-primary mb-1">Based on:</div>
+                            <div className="text-xs text-muted-foreground line-clamp-2">
+                              {insight.basedOn.join(' • ')}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center justify-between pt-4 border-t mt-auto">
+                          <div>
+                            <div className={`text-base font-bold ${leadershipProfile.textColor} mb-1`}>
+                              {insight.growthMetric}
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                              Growth
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-base font-bold text-foreground mb-1">
+                              {insight.timeline}
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                              Timeline
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))
+              )}
             </CarouselContent>
             
             <div className="flex justify-center gap-2 mt-6">

@@ -4,11 +4,13 @@ import { Award, Sparkles } from 'lucide-react';
 import AILeadershipBenchmark from './AILeadershipBenchmark';
 import { PromptLibraryResults } from './PromptLibraryResults';
 import { ContactData } from './ContactCollectionForm';
+import { DeepProfileData } from './DeepProfileQuestionnaire';
 
 interface UnifiedResultsProps {
   assessmentData: any;
   promptLibrary: any;
   contactData: ContactData;
+  deepProfileData: DeepProfileData | null;
   sessionId: string | null;
   onBack?: () => void;
 }
@@ -17,6 +19,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
   assessmentData,
   promptLibrary,
   contactData,
+  deepProfileData,
   sessionId,
   onBack
 }) => {
@@ -55,6 +58,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
               assessmentData={assessmentData}
               sessionId={sessionId}
               contactData={contactData}
+              deepProfileData={deepProfileData}
               onBack={onBack}
               onViewToolkit={() => setActiveTab("library")}
             />

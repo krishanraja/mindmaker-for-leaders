@@ -224,7 +224,10 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     setShowDeepProfileQuestionnaire(true);
   };
 
+  const [deepProfileData, setDeepProfileData] = useState<DeepProfileData | null>(null);
+
   const handleDeepProfileComplete = async (profileData: DeepProfileData) => {
+    setDeepProfileData(profileData); // Store deep profile data
     setShowDeepProfileQuestionnaire(false);
     setIsGeneratingLibrary(true);
     setLibraryPhase('analyzing');
@@ -404,6 +407,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
         assessmentData={assessmentData}
         promptLibrary={promptLibrary}
         contactData={contactData}
+        deepProfileData={deepProfileData}
         sessionId={sessionId}
         onBack={onBack}
       />
@@ -428,6 +432,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
         assessmentData={assessmentData}
         sessionId={sessionId}
         contactData={contactData}
+        deepProfileData={null} // Will be passed when deep profile is completed
         onBack={onBack}
       />
     );
