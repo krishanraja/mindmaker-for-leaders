@@ -488,50 +488,67 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <h2 className="text-2xl font-bold text-foreground">Quick Reference Templates</h2>
         </div>
 
-        {Object.entries(
-          library.promptTemplates.reduce((acc, template) => {
-            if (!acc[template.category]) acc[template.category] = [];
-            acc[template.category].push(template);
-            return acc;
-          }, {} as Record<string, typeof library.promptTemplates>)
-        ).map(([category, templates]) => (
-          <Card key={category} className="shadow-sm border rounded-xl">
-            <CardHeader>
-              <CardTitle className="text-lg">{category}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="single" collapsible className="space-y-2">
-                {templates.map((template, idx) => (
-                  <AccordionItem key={idx} value={`template-${category}-${idx}`} className="border rounded-lg">
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
-                      <div className="flex items-center justify-between w-full pr-4">
-                        <span className="font-semibold text-foreground text-left">{template.name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopy(template.prompt, template.name);
-                          }}
-                          className="ml-2"
-                        >
-                          {copiedItem === template.name ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-3">
-                      <p className="text-sm text-muted-foreground leading-relaxed">{template.prompt}</p>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
-        ))}
+        <Carousel
+          opts={{
+            align: "start",
+            loop: false,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {Object.entries(
+              library.promptTemplates.reduce((acc, template) => {
+                if (!acc[template.category]) acc[template.category] = [];
+                acc[template.category].push(template);
+                return acc;
+              }, {} as Record<string, typeof library.promptTemplates>)
+            ).map(([category, templates]) => (
+              <CarouselItem key={category} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[450px] flex flex-col">
+                  <CardHeader className="flex-shrink-0">
+                    <CardTitle className="text-lg">{category}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 overflow-y-auto custom-scrollbar">
+                    <Accordion type="single" collapsible className="space-y-2">
+                      {templates.map((template, idx) => (
+                        <AccordionItem key={idx} value={`template-${category}-${idx}`} className="border rounded-lg">
+                          <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
+                            <div className="flex items-center justify-between w-full pr-4">
+                              <span className="font-semibold text-foreground text-left">{template.name}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(template.prompt, template.name);
+                                }}
+                                className="ml-2"
+                              >
+                                {copiedItem === template.name ? (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-4 pb-3">
+                            <p className="text-sm text-muted-foreground leading-relaxed">{template.prompt}</p>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          
+          <div className="flex justify-center gap-2 mt-6">
+            <CarouselPrevious className="relative static translate-y-0" />
+            <CarouselNext className="relative static translate-y-0" />
+          </div>
+        </Carousel>
       </div>
 
       {/* Implementation Roadmap Section - Collapsible with Preview */}
