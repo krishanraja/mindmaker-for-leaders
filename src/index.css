@@ -66,6 +66,19 @@
     --shadow-sm: 0 2px 8px hsl(252 71% 70% / 0.08);
     --shadow-md: 0 4px 16px hsl(252 71% 70% / 0.12);
     --shadow-lg: 0 8px 32px hsl(252 71% 70% / 0.16);
+    
+    /* === PREMIUM LEADERSHIP TIERS === */
+    --tier-orchestrator: 256 92% 65%;
+    --tier-orchestrator-light: 256 92% 75%;
+    --tier-confident: 211 92% 60%;
+    --tier-confident-light: 211 92% 70%;
+    --tier-aware: 25 95% 53%;
+    --tier-aware-light: 25 95% 63%;
+    --tier-emerging: 215 16% 47%;
+    --tier-emerging-light: 215 16% 57%;
+    
+    /* === PREMIUM ACCENTS === */
+    --gold-accent: 38 92% 50%;
   }
 
   .dark {
@@ -86,6 +99,12 @@
     --destructive-foreground: 210 40% 98%;
     --success: 142 84% 24%;
     --success-foreground: 355 100% 100%;
+    
+    /* === DARK MODE TIER COLORS === */
+    --tier-orchestrator: 256 92% 70%;
+    --tier-confident: 211 92% 65%;
+    --tier-aware: 25 95% 58%;
+    --tier-emerging: 215 20% 60%;
   }
 }
 
