@@ -75,15 +75,15 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {/* Card 1: How You Work Best */}
             <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-              <Card className="h-[320px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
+              <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
                 <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-4">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-4 flex-shrink-0">
                     <Brain className="h-10 w-10 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">
+                  <h3 className="text-xl font-bold text-foreground mb-3 flex-shrink-0">
                     How You Work Best
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6 px-2">
+                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-8 px-2">
                     {library.executiveProfile.summary}
                   </p>
                 </CardContent>
@@ -92,15 +92,15 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             
             {/* Card 2: Your Top AI Project */}
             <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-              <Card className="h-[320px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
+              <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
                 <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-4">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-4 flex-shrink-0">
                     <Target className="h-10 w-10 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">
+                  <h3 className="text-xl font-bold text-foreground mb-3 line-clamp-2 flex-shrink-0">
                     {library.recommendedProjects[0]?.name || 'Your Priority Project'}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6 px-2">
+                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-8 px-2">
                     {library.recommendedProjects[0]?.purpose || 'Custom AI projects designed for your specific needs'}
                   </p>
                 </CardContent>
@@ -109,15 +109,15 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             
             {/* Card 3: Transformation Opportunity */}
             <CarouselItem className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-              <Card className="h-[320px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
+              <Card className="h-[380px] shadow-lg border-2 border-primary/20 rounded-2xl overflow-hidden">
                 <CardContent className="p-8 h-full flex flex-col items-center justify-center text-center bg-gradient-to-br from-primary/10 via-background to-background">
-                  <div className="p-4 bg-primary/20 rounded-2xl mb-4">
+                  <div className="p-4 bg-primary/20 rounded-2xl mb-4 flex-shrink-0">
                     <TrendingUp className="h-10 w-10 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">
+                  <h3 className="text-xl font-bold text-foreground mb-3 flex-shrink-0">
                     Your Biggest Opportunity
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6 px-2">
+                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-8 px-2">
                     {library.executiveProfile.transformationOpportunity}
                   </p>
                 </CardContent>
