@@ -551,6 +551,11 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
         </Carousel>
       </div>
 
+      {/* Visual Break */}
+      <div className="py-12">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+      </div>
+
       {/* Implementation Roadmap Section - Collapsible with Preview */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-4">
