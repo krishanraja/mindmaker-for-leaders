@@ -42,6 +42,7 @@ interface PromptLibraryResultsProps {
 export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ library, contactData }) => {
   const { toast } = useToast();
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
+  const [roadmapOpen, setRoadmapOpen] = useState<string | undefined>(undefined);
 
   const handleCopy = async (text: string, label: string) => {
     try {
@@ -506,20 +507,22 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
         <Card className="shadow-sm border rounded-xl">
           <CardContent className="p-6 space-y-4">
-          {/* Week 1 Preview - Always Visible */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Badge className="bg-primary text-primary-foreground">Week 1</Badge>
-              <h3 className="font-semibold text-foreground">Quick Start</h3>
-            </div>
-            <p className="text-muted-foreground leading-relaxed pl-20 line-clamp-2">
-              {library.implementationRoadmap.week1}
-            </p>
-          </div>
-
           {/* Expandable Full Content */}
-          <Accordion type="single" collapsible className="border-0">
+          <Accordion type="single" collapsible className="border-0" value={roadmapOpen} onValueChange={setRoadmapOpen}>
             <AccordionItem value="roadmap" className="border-0">
+              {/* Week 1 Preview - Visible when collapsed */}
+              {!roadmapOpen && (
+                <div className="space-y-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    <Badge className="bg-primary text-primary-foreground">Week 1</Badge>
+                    <h3 className="font-semibold text-foreground">Quick Start</h3>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed pl-20 line-clamp-2">
+                    {library.implementationRoadmap.week1}
+                  </p>
+                </div>
+              )}
+
               <AccordionTrigger className="py-3 hover:no-underline text-sm text-primary hover:text-primary/80">
                 View Full Roadmap
               </AccordionTrigger>
