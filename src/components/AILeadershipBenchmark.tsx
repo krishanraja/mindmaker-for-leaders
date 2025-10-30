@@ -458,7 +458,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         
                         <div className="flex items-center justify-between pt-4 border-t mt-auto gap-3">
                           <div className="flex flex-col items-start">
-                            <div className="text-base font-bold text-primary mb-1.5">
+                            <div className="text-xs font-bold text-primary mb-1.5">
                               {insight.growthMetric.length > 142 
                                 ? `${insight.growthMetric.substring(0, 142)}...` 
                                 : insight.growthMetric}
