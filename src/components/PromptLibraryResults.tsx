@@ -69,11 +69,11 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     
     // Extract key behavioral patterns and rewrite as complete insights
     if (text.includes('data') || text.includes('historical') || text.includes('analysis')) {
-      traits.push('You prioritize data-driven insights over intuition when making decisions');
+      traits.push('You prioritize data-driven insights when making decisions');
     }
     
     if (text.includes('communication') || text.includes('stakeholder') || text.includes('narrative')) {
-      traits.push('You excel at translating complex analysis into compelling narratives');
+      traits.push('You excel at translating complex analysis into stories');
     }
     
     if (text.includes('strategy') || text.includes('planning') || text.includes('vision')) {
@@ -107,7 +107,16 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       traits.push(fallbacks.shift()!);
     }
     
-    return traits.slice(0, 3); // Always exactly 3
+    // ENFORCE MAX LENGTH: 60 characters per trait
+    return traits.slice(0, 3).map(trait => {
+      if (trait.length > 60) {
+        // Truncate at word boundary
+        const truncated = trait.substring(0, 60);
+        const lastSpace = truncated.lastIndexOf(' ');
+        return truncated.substring(0, lastSpace > 0 ? lastSpace : 60) + '...';
+      }
+      return trait;
+    });
   };
 
   // Synthesize priority project - clear name, complete value prop, impact
@@ -152,7 +161,25 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       }
     }
     
-    return { name: project.name, valueProp, impact };
+    // ENFORCE MAX LENGTHS
+    let name = project.name;
+    if (name.length > 40) {
+      const truncated = name.substring(0, 40);
+      const lastSpace = truncated.lastIndexOf(' ');
+      name = truncated.substring(0, lastSpace > 0 ? lastSpace : 40) + '...';
+    }
+    
+    if (valueProp.length > 80) {
+      const truncated = valueProp.substring(0, 80);
+      const lastSpace = truncated.lastIndexOf(' ');
+      valueProp = truncated.substring(0, lastSpace > 0 ? lastSpace : 80) + '...';
+    }
+    
+    if (impact.length > 25) {
+      impact = impact.substring(0, 22) + '...';
+    }
+    
+    return { name, valueProp, impact };
   };
 
   // Synthesize transformation opportunity - complete problem→solution statement
@@ -199,6 +226,17 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       statement = words.slice(0, 25).join(' ');
     }
     
+    // ENFORCE MAX LENGTHS
+    if (statement.length > 100) {
+      const truncated = statement.substring(0, 100);
+      const lastSpace = truncated.lastIndexOf(' ');
+      statement = truncated.substring(0, lastSpace > 0 ? lastSpace : 100) + '...';
+    }
+    
+    if (outcome.length > 30) {
+      outcome = outcome.substring(0, 27) + '...';
+    }
+    
     return { statement, outcome };
   };
 
@@ -240,15 +278,15 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       Your Working Style
                     </h3>
                     
-                    {/* Content - Fills remaining space */}
-                    <div className="space-y-3 flex-1 overflow-hidden flex flex-col justify-center">
-                      {workingStyle.map((trait, idx) => (
-                        <div key={idx} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3">
-                          <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
-                          <p className="text-sm text-foreground leading-relaxed">{trait}</p>
-                        </div>
-                      ))}
-                    </div>
+              {/* Content - Fills remaining space with overflow protection */}
+              <div className="space-y-3 flex-1 overflow-y-auto flex flex-col justify-start pt-2 pb-2 custom-scrollbar">
+                {workingStyle.map((trait, idx) => (
+                  <div key={idx} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3">
+                    <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+                    <p className="text-sm text-foreground leading-relaxed">{trait}</p>
+                  </div>
+                ))}
+              </div>
                   </div>
                 </CardContent>
               </Card>
@@ -271,10 +309,10 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       Priority Focus
                     </h3>
                     
-                    {/* Content - Fills remaining space */}
-                    <div className="space-y-4 flex-1 flex flex-col justify-center">
+                    {/* Content - Fills remaining space with overflow protection */}
+                    <div className="space-y-4 flex-1 flex flex-col justify-start overflow-y-auto custom-scrollbar pt-2">
                       <div className="space-y-3 bg-muted/30 rounded-lg p-5">
-                        <h4 className="text-lg font-bold text-foreground text-center">{priorityProject.name}</h4>
+                        <h4 className="text-lg font-bold text-foreground text-center leading-tight">{priorityProject.name}</h4>
                         <p className="text-sm text-muted-foreground leading-relaxed text-center">{priorityProject.valueProp}</p>
                       </div>
                       <div className="flex items-center justify-center gap-2">
@@ -306,13 +344,13 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       Transformation Opportunity
                     </h3>
                     
-                    {/* Content - Fills remaining space */}
-                    <div className="space-y-4 flex-1 flex flex-col justify-center">
+                    {/* Content - Fills remaining space with overflow protection */}
+                    <div className="space-y-4 flex-1 flex flex-col justify-start overflow-y-auto custom-scrollbar pt-2">
                       <div className="bg-muted/30 rounded-lg p-5">
                         <p className="text-sm text-foreground leading-relaxed text-center">{opportunity.statement}</p>
                       </div>
                       
-                      {/* Clean metric display - NO purple blob */}
+                      {/* Clean metric display */}
                       <div className="flex items-center justify-center gap-2 bg-muted/30 rounded-lg px-4 py-3">
                         <TrendingUp className="h-5 w-5 text-primary flex-shrink-0" />
                         <span className="text-sm font-semibold text-foreground">{opportunity.outcome}</span>
