@@ -9,6 +9,7 @@ import {
   Target, 
   TrendingUp,
   ArrowRight,
+  ArrowLeft,
   CheckCircle,
   Lightbulb,
   BarChart3,
@@ -17,7 +18,8 @@ import {
   AlertTriangle,
   Crown,
   Rocket,
-  Sparkles
+  Sparkles,
+  Award
 } from 'lucide-react';
 
 import { ContactData } from './ContactCollectionForm';
@@ -177,15 +179,23 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
     <div className="min-h-screen bg-background">
       {/* Back Button */}
       {onBack && (
-        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="rounded-xl"
-            aria-label="Go back to benchmark"
-          >
-            ← Back to Benchmark
-          </Button>
+        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
+          <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 max-w-7xl mx-auto">
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Go back to benchmark"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back to Benchmark</span>
+              <span className="sm:hidden">Back</span>
+            </Button>
+            <Badge variant="outline" className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              Leadership Score
+            </Badge>
+          </div>
         </div>
       )}
 
@@ -388,7 +398,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
         )}
 
         {/* Executive Primer CTA - Hero Section */}
-        <Card className={`mt-16 shadow-2xl border-0 rounded-3xl overflow-hidden bg-gradient-to-br ${leadershipProfile.gradient}`}>
+        <Card className="mt-16 shadow-2xl border-0 rounded-3xl overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80">
           <CardContent className="p-10 sm:p-12 lg:p-16 text-center relative">
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
@@ -430,7 +440,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               <Button 
                 size="lg" 
                 onClick={handleExecutivePrimerBooking}
-                className="bg-white text-[hsl(var(--tier-orchestrator))] hover:bg-white/90 px-10 py-6 text-xl font-bold group transition-all rounded-2xl shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(255,255,255,0.4)] hover:scale-105"
+                className="bg-white text-primary hover:bg-white/90 px-10 py-6 text-xl font-bold group transition-all rounded-2xl shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(255,255,255,0.4)] hover:scale-105"
                 aria-label="Schedule Your Strategic Session"
               >
                 Schedule Your Strategic Session

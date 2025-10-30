@@ -54,9 +54,13 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
   });
 
   const handleNext = () => {
+    console.log('handleNext called - currentStep:', currentStep, 'totalSteps:', totalSteps);
+    
     if (currentStep === totalSteps) {
+      console.log('Completing questionnaire with data:', profileData);
       onComplete(profileData);
     } else if (currentStep < totalSteps) {
+      console.log('Moving to next step:', currentStep + 1);
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -128,7 +132,8 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, thinkingProcess: option.value }));
-                    setTimeout(() => handleNext(), 600);
+                    console.log('Question 1 answered, auto-advancing in 800ms');
+                    setTimeout(() => handleNext(), 800);
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
@@ -266,7 +271,8 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, transformationGoal: option.value }));
-                    setTimeout(() => handleNext(), 600);
+                    console.log('Question 5 answered, auto-advancing in 800ms');
+                    setTimeout(() => handleNext(), 800);
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
@@ -406,7 +412,8 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, biggestChallenge: option.value }));
-                    setTimeout(() => handleNext(), 600);
+                    console.log('Question 9 answered, auto-advancing in 800ms');
+                    setTimeout(() => handleNext(), 800);
                   }}
                 >
                   <span className="text-sm sm:text-base leading-snug">{option.label}</span>
