@@ -425,34 +425,34 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
               }, {} as Record<string, typeof library.promptTemplates>)
             ).map(([category, templates]) => (
               <CarouselItem key={category} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl min-h-[200px] flex flex-col">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[480px] flex flex-col">
                   <CardHeader className="flex-shrink-0">
                     <CardTitle className="text-lg">{category}</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex-1">
+                  <CardContent className="flex-1 overflow-y-auto">
                     <Accordion type="single" collapsible className="space-y-2">
                       {templates.map((template, idx) => (
                         <AccordionItem key={idx} value={`template-${category}-${idx}`} className="border rounded-lg">
-                          <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
-                            <div className="flex items-center justify-between w-full pr-4">
+                          <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/50">
+                            <AccordionTrigger className="flex-1 hover:no-underline [&[data-state=open]>svg]:rotate-180">
                               <span className="font-semibold text-foreground text-left">{template.name}</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCopy(template.prompt, template.name);
-                                }}
-                                className="ml-2"
-                              >
-                                {copiedItem === template.name ? (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </AccordionTrigger>
+                            </AccordionTrigger>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopy(template.prompt, template.name);
+                              }}
+                              className="ml-2 flex-shrink-0"
+                            >
+                              {copiedItem === template.name ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
                           <AccordionContent className="px-4 pb-3">
                             <p className="text-sm text-muted-foreground leading-relaxed">{template.prompt}</p>
                           </AccordionContent>
