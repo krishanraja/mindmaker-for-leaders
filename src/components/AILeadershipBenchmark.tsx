@@ -443,7 +443,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     
                     <CarouselContent className="-ml-4">
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[240px] flex flex-col justify-between">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
@@ -479,7 +479,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[240px] flex flex-col justify-between">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
@@ -515,7 +515,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[240px] flex flex-col justify-between">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
