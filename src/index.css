@@ -492,3 +492,65 @@ input:focus-visible {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary) / 0.5);
 }
+
+/* ==========================================
+   UNIVERSAL CAROUSEL STANDARDS
+   ========================================== */
+
+/* Hide scrollbars while maintaining functionality */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Text truncation for all carousel cards */
+.carousel-card h1,
+.carousel-card h2,
+.carousel-card h3,
+.carousel-card h4 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.carousel-card p,
+.carousel-card .body-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.carousel-card li,
+.carousel-card .list-item {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+/* Card internal layout structure */
+.carousel-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.carousel-card-header,
+.carousel-card-body {
+  flex-shrink: 0;
+}
+
+.carousel-card-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+}

@@ -25,7 +25,7 @@ import {
   Compass,
   RefreshCw
 } from 'lucide-react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { StandardCarousel, StandardCarouselCard } from '@/components/ui/standard-carousel';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -472,27 +472,16 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
                 {/* Mobile Carousel - 3 Cards */}
                 <div className="md:hidden">
-                  <Carousel
-                    opts={{
-                      align: "center",
-                      loop: true,
-                    }}
-                    className="w-full max-w-sm mx-auto"
-                  >
-                    <div className="flex justify-center gap-2 mb-4">
-                      <CarouselPrevious className="relative static translate-y-0 bg-white/20 hover:bg-white/30 border-border" />
-                      <CarouselNext className="relative static translate-y-0 bg-white/20 hover:bg-white/30 border-border" />
-                    </div>
-                    
-                    <CarouselContent className="-ml-4">
-                      <CarouselItem className="pl-4">
-                        <Card className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
-                              <BarChart3 className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                  <StandardCarousel cardWidth="mobile" showDots={false} showArrows={true} className="w-full max-w-sm mx-auto">
+                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px]">
+                      <Card className="h-full border-0 shadow-none bg-transparent">
+                        <CardContent className="carousel-card-content p-0">
+                          <div className="carousel-card-header flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
+                            <BarChart3 className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="carousel-card-body">
+                            <div className="text-xl font-bold text-foreground mb-3">
                               {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">
@@ -518,17 +507,19 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               </p>
                             </CollapsibleContent>
                           </Collapsible>
-                        </Card>
-                      </CarouselItem>
-                      
-                      <CarouselItem className="pl-4">
-                        <Card className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
-                              <Target className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                        </CardContent>
+                      </Card>
+                    </StandardCarouselCard>
+                    
+                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px]">
+                      <Card className="h-full border-0 shadow-none bg-transparent">
+                        <CardContent className="carousel-card-content p-0">
+                          <div className="carousel-card-header flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
+                            <Target className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="carousel-card-body">
+                            <div className="text-xl font-bold text-foreground mb-3">
                               {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">
@@ -554,17 +545,19 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               </p>
                             </CollapsibleContent>
                           </Collapsible>
-                        </Card>
-                      </CarouselItem>
-                      
-                      <CarouselItem className="pl-4">
-                        <Card className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
-                              <Lightbulb className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                        </CardContent>
+                      </Card>
+                    </StandardCarouselCard>
+                    
+                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px]">
+                      <Card className="h-full border-0 shadow-none bg-transparent">
+                        <CardContent className="carousel-card-content p-0">
+                          <div className="carousel-card-header flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
+                            <Lightbulb className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="carousel-card-body">
+                            <div className="text-xl font-bold text-foreground mb-3">
                               {personalizedInsights?.keyFocus.category || 'Key Focus'}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">
@@ -590,10 +583,10 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               </p>
                             </CollapsibleContent>
                           </Collapsible>
-                        </Card>
-                      </CarouselItem>
-                    </CarouselContent>
-                  </Carousel>
+                        </CardContent>
+                      </Card>
+                    </StandardCarouselCard>
+                  </StandardCarousel>
                 </div>
               </div>
             </div>
@@ -611,113 +604,100 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             </p>
           </div>
 
-          <Carousel
-            opts={{
-              align: "start",
-              loop: false,
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-4">
-              {isLoadingInsights ? (
-                <CarouselItem className="pl-4 basis-full">
-                  <Card className="h-[320px] flex items-center justify-center">
-                    <CardContent className="text-center">
-                      <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-                      <p className="text-muted-foreground">Creating your personalized roadmap...</p>
+          <StandardCarousel cardWidth="desktop" showDots={false} showArrows={true} className="w-full">
+            {isLoadingInsights ? (
+              <StandardCarouselCard className="min-h-[320px]">
+                <Card className="h-full border-0 shadow-none flex items-center justify-center">
+                  <CardContent className="text-center">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">Creating your personalized roadmap...</p>
+                  </CardContent>
+                </Card>
+              </StandardCarouselCard>
+            ) : (
+              roadmapInsights.map((insight, index) => (
+                <StandardCarouselCard key={index} className="shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+                  <Card className="h-full border-0 shadow-none flex flex-col">
+                    <CardContent className="p-6 flex flex-col h-full">
+                      {/* Header: Fixed 72px */}
+                      <div className="h-[72px] flex items-start gap-3">
+                        <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
+                          <insight.icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-foreground text-base leading-tight line-clamp-3">
+                            {insight.title}
+                          </h3>
+                        </div>
+                      </div>
+                      
+                      {/* Description: Fixed 120px */}
+                      <div className="h-[120px] flex flex-col justify-start">
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
+                          {insight.description}
+                        </p>
+                      </div>
+                      
+                      {/* Based On: Fixed 68px (always present) */}
+                      <div className="h-[68px]">
+                        <div className="p-2.5 bg-primary/10 rounded-lg h-full overflow-hidden flex flex-col justify-start">
+                          <div className="text-xs font-semibold text-primary mb-1 flex-shrink-0">Based on:</div>
+                          <div className="text-xs text-muted-foreground line-clamp-2 flex-1">
+                            {insight.basedOn && insight.basedOn.length > 0 ? insight.basedOn.join(' • ') : 'Your assessment responses'}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Dimensions: Fixed 52px (always present) */}
+                      <div className="h-[52px] flex items-start overflow-x-auto">
+                        <div className="flex flex-wrap gap-1.5 h-full content-start">
+                          {insight.scaleUpsDimensions && insight.scaleUpsDimensions.length > 0 ? (
+                            insight.scaleUpsDimensions.map((dim: string, dimIdx: number) => (
+                              <Badge key={dimIdx} variant="outline" className="text-xs py-0.5 px-2 h-fit">
+                                {dim}
+                              </Badge>
+                            ))
+                          ) : (
+                            <Badge variant="outline" className="text-xs py-0.5 px-2 h-fit">General Leadership</Badge>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Success Metrics: Fixed 80px (always present) */}
+                      <div className="h-[80px]">
+                        <div className="p-2.5 bg-muted/30 rounded-lg h-full overflow-hidden flex flex-col justify-start">
+                          <div className="text-xs font-semibold text-foreground mb-1.5 flex-shrink-0 uppercase tracking-wide">Success Metrics</div>
+                          <div className="text-xs text-muted-foreground line-clamp-3 flex-1 leading-relaxed">
+                            {insight.impact || 'Measurable business impact and growth acceleration'}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Bottom Metrics: Fixed 60px footer */}
+                      <div className="h-[60px] flex items-center justify-between pt-3 border-t gap-3 mt-auto">
+                        <div className="flex flex-col items-start flex-1 min-w-0">
+                          <div className="text-xs font-bold text-primary mb-1 truncate w-full">
+                            {insight.growthMetric}
+                          </div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                            Growth
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-start flex-shrink-0">
+                          <div className="text-xs font-bold text-foreground mb-1 whitespace-nowrap">
+                            {insight.timeline}
+                          </div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                            Timeline
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
-                </CarouselItem>
-              ) : (
-                roadmapInsights.map((insight, index) => (
-                  <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3 flex">
-                    <Card className="h-[600px] md:h-[620px] lg:h-[640px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all w-full">
-                      <CardContent className="p-6 flex flex-col h-full">
-                        {/* Header: Fixed 72px */}
-                        <div className="h-[72px] flex items-start gap-3">
-                          <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
-                            <insight.icon className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-foreground text-base leading-tight line-clamp-3">
-                              {insight.title}
-                            </h3>
-                          </div>
-                        </div>
-                        
-                        {/* Description: Fixed 120px */}
-                        <div className="h-[120px] flex flex-col justify-start">
-                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
-                            {insight.description}
-                          </p>
-                        </div>
-                        
-                        {/* Based On: Fixed 68px (always present) */}
-                        <div className="h-[68px]">
-                          <div className="p-2.5 bg-primary/10 rounded-lg h-full overflow-hidden flex flex-col justify-start">
-                            <div className="text-xs font-semibold text-primary mb-1 flex-shrink-0">Based on:</div>
-                            <div className="text-xs text-muted-foreground line-clamp-2 flex-1">
-                              {insight.basedOn && insight.basedOn.length > 0 ? insight.basedOn.join(' • ') : 'Your assessment responses'}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Dimensions: Fixed 52px (always present) */}
-                        <div className="h-[52px] flex items-start overflow-x-auto">
-                          <div className="flex flex-wrap gap-1.5 h-full content-start">
-                            {insight.scaleUpsDimensions && insight.scaleUpsDimensions.length > 0 ? (
-                              insight.scaleUpsDimensions.map((dim: string, dimIdx: number) => (
-                                <Badge key={dimIdx} variant="outline" className="text-xs py-0.5 px-2 h-fit">
-                                  {dim}
-                                </Badge>
-                              ))
-                            ) : (
-                              <Badge variant="outline" className="text-xs py-0.5 px-2 h-fit">General Leadership</Badge>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Success Metrics: Fixed 80px (always present) */}
-                        <div className="h-[80px]">
-                          <div className="p-2.5 bg-muted/30 rounded-lg h-full overflow-hidden flex flex-col justify-start">
-                            <div className="text-xs font-semibold text-foreground mb-1.5 flex-shrink-0 uppercase tracking-wide">Success Metrics</div>
-                            <div className="text-xs text-muted-foreground line-clamp-3 flex-1 leading-relaxed">
-                              {insight.impact || 'Measurable business impact and growth acceleration'}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Bottom Metrics: Fixed 60px footer */}
-                        <div className="h-[60px] flex items-center justify-between pt-3 border-t gap-3 mt-auto">
-                          <div className="flex flex-col items-start flex-1 min-w-0">
-                            <div className="text-xs font-bold text-primary mb-1 truncate w-full">
-                              {insight.growthMetric}
-                            </div>
-                            <div className="text-xs text-muted-foreground uppercase tracking-wider">
-                              Growth
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-start flex-shrink-0">
-                            <div className="text-xs font-bold text-foreground mb-1 whitespace-nowrap">
-                              {insight.timeline}
-                            </div>
-                            <div className="text-xs text-muted-foreground uppercase tracking-wider">
-                              Timeline
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                ))
-              )}
-            </CarouselContent>
-            
-            <div className="flex justify-center gap-2 mt-6">
-              <CarouselPrevious className="relative static translate-y-0" />
-              <CarouselNext className="relative static translate-y-0" />
-            </div>
-          </Carousel>
+                </StandardCarouselCard>
+              ))
+            )}
+          </StandardCarousel>
         </div>
 
         {/* Leadership Comparison Carousel */}
@@ -737,64 +717,51 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 </p>
                 
                 {/* Carousel with 6 dimension cards */}
-                <Carousel
-                  opts={{
-                    align: "start",
-                    loop: false,
-                  }}
-                  className="w-full mt-6"
-                >
-                  <CarouselContent className="-ml-4">
-                    {leadershipComparison.dimensions.map((dim, idx) => {
-                      const IconComponent = getDimensionIcon(dim.dimension);
-                      const styling = getLevelStyling(dim.level);
-                      
-                      return (
-                        <CarouselItem key={idx} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3 flex">
-                          <Card className={`w-full h-full min-h-[280px] md:min-h-[340px] lg:min-h-[380px] group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/50 border-2 rounded-2xl bg-gradient-to-br ${styling.gradient}`}>
-                            <CardContent className="p-6 h-full flex flex-col space-y-5">
-                              {/* Header with Icon and Title */}
-                              <div className="flex items-start gap-4 min-h-[70px] md:min-h-[80px]">
-                                <div className={`p-3 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110`}>
-                                  <IconComponent className="w-6 h-6 text-primary" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-bold text-lg text-foreground leading-tight mb-2">
-                                    {dim.dimension}
-                                  </h4>
-                                  <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
-                                    {dim.level}
-                                  </Badge>
-                                </div>
+                <StandardCarousel cardWidth="desktop" showDots={false} showArrows={true} className="w-full mt-6">
+                  {leadershipComparison.dimensions.map((dim, idx) => {
+                    const IconComponent = getDimensionIcon(dim.dimension);
+                    const styling = getLevelStyling(dim.level);
+                    
+                    return (
+                      <StandardCarouselCard key={idx} className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/50 border-2 rounded-2xl bg-gradient-to-br ${styling.gradient} min-h-[280px]`}>
+                        <Card className="h-full border-0 shadow-none bg-transparent">
+                          <CardContent className="p-6 h-full flex flex-col space-y-5">
+                            {/* Header with Icon and Title */}
+                            <div className="flex items-start gap-4 min-h-[70px] md:min-h-[80px]">
+                              <div className={`p-3 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110`}>
+                                <IconComponent className="w-6 h-6 text-primary" />
                               </div>
-
-                              {/* Visual Progress Indicator */}
-                              <div className="space-y-2.5 min-h-[45px] md:min-h-[50px]">
-                                <Progress value={styling.progress} className="h-2.5" />
-                                <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-                                  <span>Building</span>
-                                  <span>Explorer</span>
-                                  <span>Practitioner</span>
-                                  <span>Pioneer</span>
-                                </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-lg text-foreground leading-tight mb-2">
+                                  {dim.dimension}
+                                </h4>
+                                <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
+                                  {dim.level}
+                                </Badge>
                               </div>
+                            </div>
 
-                              {/* Reasoning Text */}
-                              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-grow">
-                                {dim.reasoning}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        </CarouselItem>
-                      );
-                    })}
-                  </CarouselContent>
-                  
-                  <div className="flex justify-center gap-2 mt-6">
-                    <CarouselPrevious className="relative static translate-y-0" />
-                    <CarouselNext className="relative static translate-y-0" />
-                  </div>
-                </Carousel>
+                            {/* Visual Progress Indicator */}
+                            <div className="space-y-2.5 min-h-[45px] md:min-h-[50px]">
+                              <Progress value={styling.progress} className="h-2.5" />
+                              <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+                                <span>Building</span>
+                                <span>Explorer</span>
+                                <span>Practitioner</span>
+                                <span>Pioneer</span>
+                              </div>
+                            </div>
+
+                            {/* Reasoning Text */}
+                            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-grow">
+                              {dim.reasoning}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </StandardCarouselCard>
+                    );
+                  })}
+                </StandardCarousel>
 
                 <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
                   <p className="text-sm text-foreground">
@@ -875,33 +842,25 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
               {/* Value Props - Mobile Carousel */}
               <div className="sm:hidden mb-4">
-                <Carousel
-                  opts={{
-                    align: "center",
-                    loop: true,
-                  }}
-                  className="w-full max-w-sm mx-auto"
-                >
-                  <CarouselContent className="-ml-2">
-                    {[
-                      { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific implementation plan' },
-                      { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
-                      { icon: Users, title: 'Team Activation', desc: 'Leadership & stakeholder toolkit' }
-                    ].map((item, index) => (
-                      <CarouselItem key={index} className="pl-2">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-white h-[100px] flex flex-col">
+                <StandardCarousel cardWidth="mobile" showDots={false} showArrows={true} className="w-full max-w-sm mx-auto">
+                  {[
+                    { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific implementation plan' },
+                    { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
+                    { icon: Users, title: 'Team Activation', desc: 'Leadership & stakeholder toolkit' }
+                  ].map((item, index) => (
+                    <StandardCarouselCard key={index} className="bg-white/10 backdrop-blur-sm rounded-xl text-white min-h-[100px]">
+                      <div className="carousel-card-content p-3 text-center">
+                        <div className="carousel-card-header">
                           <item.icon className="h-6 w-6 mx-auto mb-2" />
+                        </div>
+                        <div className="carousel-card-body">
                           <h4 className="font-bold text-sm mb-1 leading-tight">{item.title}</h4>
                           <p className="text-xs text-white/80 leading-tight">{item.desc}</p>
                         </div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <div className="flex justify-center gap-2 mt-2">
-                    <CarouselPrevious className="relative static translate-y-0 bg-white/20 hover:bg-white/30 text-white border-white/20 h-8 w-8" />
-                    <CarouselNext className="relative static translate-y-0 bg-white/20 hover:bg-white/30 text-white border-white/20 h-8 w-8" />
-                  </div>
-                </Carousel>
+                      </div>
+                    </StandardCarouselCard>
+                  ))}
+                </StandardCarousel>
               </div>
               
               <div className="overflow-hidden">
