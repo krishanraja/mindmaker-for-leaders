@@ -365,8 +365,8 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
         <div className="hidden md:block">
           <div className="grid grid-cols-3 gap-4">
             {/* Card 1: Your Unique Strengths */}
-            <Card className="border-2 border-primary/10 bg-card h-[180px] overflow-hidden">
-              <CardContent className="p-4 h-full flex flex-col">
+            <Card className="border-2 border-primary/10 bg-card h-[216px]">
+              <CardContent className="p-4 h-full flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Icon + Title inline */}
                   <div className="flex items-center gap-2">
@@ -386,12 +386,14 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     ))}
                   </div>
                 </div>
+                {/* Empty spacer for alignment */}
+                <div></div>
               </CardContent>
             </Card>
 
             {/* Card 2: Your Biggest Opportunity */}
-            <Card className="border-2 border-primary/10 bg-card h-[180px] overflow-hidden">
-              <CardContent className="p-4 h-full flex flex-col">
+            <Card className="border-2 border-primary/10 bg-card h-[216px]">
+              <CardContent className="p-4 h-full flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Icon + Title inline */}
                   <div className="flex items-center gap-2">
@@ -406,20 +408,24 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     <h4 className="text-sm font-bold text-foreground leading-tight">
                       {priorityProject.name}
                     </h4>
-                    <p className="text-xs text-muted-foreground leading-tight line-clamp-3">
+                    <p className="text-xs text-muted-foreground leading-tight">
                       {priorityProject.valueProp}
                     </p>
-                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                      {priorityProject.impact}
-                    </Badge>
                   </div>
+                </div>
+                
+                {/* Badge at bottom */}
+                <div className="pt-2">
+                  <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                    {priorityProject.impact}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
 
             {/* Card 3: What Makes You Different */}
-            <Card className="border-2 border-primary/10 bg-card h-[180px] overflow-hidden">
-              <CardContent className="p-4 h-full flex flex-col">
+            <Card className="border-2 border-primary/10 bg-card h-[216px]">
+              <CardContent className="p-4 h-full flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Icon + Title inline */}
                   <div className="flex items-center gap-2">
@@ -432,14 +438,18 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                   {/* Content - Quote compact */}
                   <div className="space-y-2">
                     <div className="border-l-2 border-primary pl-3">
-                      <p className="text-xs text-muted-foreground leading-tight italic line-clamp-4">
+                      <p className="text-xs text-muted-foreground leading-tight italic">
                         "{opportunity.statement}"
                       </p>
                     </div>
-                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                      {opportunity.outcome}
-                    </Badge>
                   </div>
+                </div>
+                
+                {/* Badge at bottom */}
+                <div className="pt-2">
+                  <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                    {opportunity.outcome}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
