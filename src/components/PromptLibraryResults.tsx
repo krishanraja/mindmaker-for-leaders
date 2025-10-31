@@ -522,7 +522,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6">{project.whenToUse}</p>
                         </div>
 
-                        <div className="h-[180px] overflow-hidden space-y-2">
+                        <div className="h-[140px] overflow-hidden space-y-2">
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                             Success Metrics
                           </h4>
