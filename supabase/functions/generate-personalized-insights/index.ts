@@ -69,7 +69,7 @@ serve(async (req) => {
                 keyFocus: {
                   type: "object",
                   properties: {
-                    title: { type: "string", description: "Focus area (max 45 chars)", maxLength: 45 },
+                    title: { type: "string", description: "Focus area (max 40 chars) - MUST fit on 1-2 lines", maxLength: 40 },
                     preview: { type: "string", description: "Ultra-concise preview (max 50 chars) - punchy one-liner", maxLength: 50 },
                     details: { type: "string", description: "Full insight (max 120 chars) - specific solution", maxLength: 120 }
                   },
@@ -246,6 +246,10 @@ ROADMAP INITIATIVES - CRITICAL FORMATTING:
 - impact: 40 characters maximum
 - timeline: 20 characters maximum  
 - growthMetric: 5-15 characters (just number/percentage like '15%' or '$500K')
+
+KEY FOCUS AREA - CRITICAL:
+- title: MAX 40 characters - MUST fit cleanly on all devices
+  Examples: "AI for Stakeholder Communication" (35 chars), "Revenue Growth via Automation" (29 chars)
 
 Write in executive-level, punchy language. Every word must add value. NO filler. Be SPECIFIC using their actual data, words, and numbers.`;
 

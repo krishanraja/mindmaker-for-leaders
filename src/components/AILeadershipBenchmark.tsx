@@ -322,22 +322,24 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     </div>
                   ) : (
                     <>
-                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-auto min-h-[180px] flex flex-col">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
-                          <BarChart3 className="h-6 w-6 text-primary" />
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow min-h-[200px] flex flex-col justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
+                            <BarChart3 className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                            {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {personalizedInsights?.growthReadiness.preview || 'Revenue acceleration potential'}
+                          </p>
                         </div>
-                        <div className="text-xl font-bold text-foreground mb-3">
-                          {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {personalizedInsights?.growthReadiness.preview || 'Revenue acceleration potential'}
-                        </p>
                         <Collapsible open={expandedCards.has('growth')}>
                           <CollapsibleTrigger asChild>
                             <button 
                               onClick={() => toggleCard('growth')}
-                              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
                             >
                               {expandedCards.has('growth') ? (
                                 <>Less <ChevronUp className="h-3 w-3" /></>
@@ -354,22 +356,24 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </Collapsible>
                       </Card>
 
-                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-auto min-h-[180px] flex flex-col">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
-                          <Target className="h-6 w-6 text-primary" />
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow min-h-[200px] flex flex-col justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
+                            <Target className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                            {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {personalizedInsights?.leadershipStage.preview || 'Advancement pathway identified'}
+                          </p>
                         </div>
-                        <div className="text-xl font-bold text-foreground mb-3">
-                          {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {personalizedInsights?.leadershipStage.preview || 'Advancement pathway identified'}
-                        </p>
                         <Collapsible open={expandedCards.has('leadership')}>
                           <CollapsibleTrigger asChild>
                             <button 
                               onClick={() => toggleCard('leadership')}
-                              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
                             >
                               {expandedCards.has('leadership') ? (
                                 <>Less <ChevronUp className="h-3 w-3" /></>
@@ -386,22 +390,24 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </Collapsible>
                       </Card>
 
-                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow h-auto min-h-[180px] flex flex-col">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
-                          <Lightbulb className="h-6 w-6 text-primary" />
+                      <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow min-h-[200px] flex flex-col justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
+                            <Lightbulb className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                            {personalizedInsights?.keyFocus.title || 'Key Focus'}
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {personalizedInsights?.keyFocus.preview || leadershipProfile.message}
+                          </p>
                         </div>
-                        <div className="text-xl font-bold text-foreground mb-3">
-                          {personalizedInsights?.keyFocus.title || 'Key Focus'}
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {personalizedInsights?.keyFocus.preview || leadershipProfile.message}
-                        </p>
                         <Collapsible open={expandedCards.has('focus')}>
                           <CollapsibleTrigger asChild>
                             <button 
                               onClick={() => toggleCard('focus')}
-                              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
                             >
                               {expandedCards.has('focus') ? (
                                 <>Less <ChevronUp className="h-3 w-3" /></>
@@ -437,22 +443,24 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     
                     <CarouselContent className="-ml-4">
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-auto min-h-[180px] flex flex-col">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
-                            <BarChart3 className="h-6 w-6 text-primary" />
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
+                              <BarChart3 className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                              {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {personalizedInsights?.growthReadiness.preview || 'Revenue acceleration potential'}
+                            </p>
                           </div>
-                          <div className="text-xl font-bold text-foreground mb-3">
-                            {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {personalizedInsights?.growthReadiness.preview || 'Revenue acceleration potential'}
-                          </p>
                           <Collapsible open={expandedCards.has('growth-mobile')}>
                             <CollapsibleTrigger asChild>
                               <button 
                                 onClick={() => toggleCard('growth-mobile')}
-                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
                               >
                                 {expandedCards.has('growth-mobile') ? (
                                   <>Less <ChevronUp className="h-3 w-3" /></>
@@ -471,22 +479,24 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-auto min-h-[180px] flex flex-col">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
-                            <Target className="h-6 w-6 text-primary" />
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
+                              <Target className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                              {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {personalizedInsights?.leadershipStage.preview || 'Advancement pathway identified'}
+                            </p>
                           </div>
-                          <div className="text-xl font-bold text-foreground mb-3">
-                            {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {personalizedInsights?.leadershipStage.preview || 'Advancement pathway identified'}
-                          </p>
                           <Collapsible open={expandedCards.has('leadership-mobile')}>
                             <CollapsibleTrigger asChild>
                               <button 
                                 onClick={() => toggleCard('leadership-mobile')}
-                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
                               >
                                 {expandedCards.has('leadership-mobile') ? (
                                   <>Less <ChevronUp className="h-3 w-3" /></>
@@ -505,22 +515,24 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm h-auto min-h-[180px] flex flex-col">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
-                            <Lightbulb className="h-6 w-6 text-primary" />
+                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
+                              <Lightbulb className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
+                              {personalizedInsights?.keyFocus.title || 'Key Focus'}
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {personalizedInsights?.keyFocus.preview || leadershipProfile.message}
+                            </p>
                           </div>
-                          <div className="text-xl font-bold text-foreground mb-3">
-                            {personalizedInsights?.keyFocus.title || 'Key Focus'}
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {personalizedInsights?.keyFocus.preview || leadershipProfile.message}
-                          </p>
                           <Collapsible open={expandedCards.has('focus-mobile')}>
                             <CollapsibleTrigger asChild>
                               <button 
                                 onClick={() => toggleCard('focus-mobile')}
-                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
                               >
                                 {expandedCards.has('focus-mobile') ? (
                                   <>Less <ChevronUp className="h-3 w-3" /></>
