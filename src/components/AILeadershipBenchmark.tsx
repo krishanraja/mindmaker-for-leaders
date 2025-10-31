@@ -695,8 +695,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             ) : (
               roadmapInsights.map((insight, index) => (
                 <StandardCarouselCard key={index} className="shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
-                  <Card className="h-full border-0 shadow-none flex flex-col">
-                    <CardContent className="p-6 flex flex-col h-full">
+                  <Card className="h-full border-0 shadow-none flex flex-col min-h-[469px]">
+                    <CardContent className="p-4 sm:p-6 flex flex-col h-full">
                       {/* Header: Fixed 72px */}
                       <div className="h-[72px] flex items-start gap-3">
                         <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
@@ -805,21 +805,21 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     return (
                       <StandardCarouselCard 
                         key={idx} 
-                        className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl rounded-2xl bg-gradient-to-br ${styling.gradient} min-h-[392px] flex flex-col
+                        className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl rounded-2xl bg-gradient-to-br ${styling.gradient} flex flex-col
                           ${dim.rank && dim.rank <= 2 ? 'border-green-300 dark:border-green-700' : 
                             dim.rank && dim.rank >= 5 ? 'border-amber-300 dark:border-amber-700' : 
                             'border-primary/20'} 
                           border-2`}
                       >
-                        <Card className="h-full border-0 shadow-none bg-transparent">
-                          <CardContent className="p-6 h-full flex flex-col space-y-5">
+                        <Card className="h-full border-0 shadow-none bg-transparent min-h-[440px] sm:min-h-[480px]">
+                          <CardContent className="p-4 sm:p-6 h-full flex flex-col space-y-4">
                             {/* Header with Icon and Title - Fixed height for alignment */}
-                            <div className="flex items-start gap-4 h-[90px]">
-                              <div className={`p-3 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110 flex-shrink-0`}>
-                                <IconComponent className="w-6 h-6 text-primary" />
+                            <div className="carousel-card-header flex items-start gap-3 min-h-[85px] flex-shrink-0">
+                              <div className={`p-2.5 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110 flex-shrink-0`}>
+                                <IconComponent className="w-5 h-5 text-primary" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="carousel-card-title-lg font-bold text-lg text-foreground line-clamp-2 mb-2">
+                                <h4 className="carousel-card-title-base font-bold text-base sm:text-lg text-foreground line-clamp-2 mb-2 leading-tight">
                                   {dim.dimension}
                                 </h4>
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -841,8 +841,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             </div>
 
                             {/* Visual Progress Indicator with actual score - Fixed position */}
-                            <div className="space-y-2.5 h-[50px]">
-                              <Progress value={dim.score} className="h-2.5" />
+                            <div className="space-y-2 min-h-[45px] flex-shrink-0">
+                              <Progress value={dim.score} className="h-2" />
                               <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
                                 <span>Building</span>
                                 <span>Explorer</span>
@@ -852,7 +852,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             </div>
 
                             {/* Enhanced Reasoning with Collapsible Expansion */}
-                            <div className="space-y-3 flex-grow">
+                            <div className="carousel-card-body space-y-2 flex-1 overflow-hidden">
                               <Collapsible
                                 open={expandedDimensions[dim.dimension] || false}
                                 onOpenChange={() => toggleDimension(dim.dimension)}
@@ -996,17 +996,19 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
                     { icon: Users, title: 'Team Activation', desc: 'Leadership & stakeholder toolkit' }
                   ].map((item, index) => (
-                    <StandardCarouselCard key={index} className="bg-white/10 backdrop-blur-sm rounded-xl text-white min-h-[100px]">
-                      <div className="carousel-card-content p-3 text-center">
-                        <div className="carousel-card-header">
-                          <item.icon className="h-6 w-6 mx-auto mb-2" />
-                        </div>
-                        <div className="carousel-card-body">
-                          <h4 className="min-h-[2.5rem] font-bold text-sm mb-1 leading-tight line-clamp-2">{item.title}</h4>
-                          <p className="text-xs text-white/80 leading-tight">{item.desc}</p>
-                        </div>
-                      </div>
-                    </StandardCarouselCard>
+                      <StandardCarouselCard key={index} className="bg-white/10 backdrop-blur-sm rounded-xl text-white">
+                        <Card className="h-full border-0 shadow-none bg-transparent min-h-[140px]">
+                          <CardContent className="carousel-card-content p-3 text-center h-full flex flex-col">
+                            <div className="carousel-card-header flex-shrink-0">
+                              <item.icon className="h-6 w-6 mx-auto mb-2" />
+                            </div>
+                            <div className="carousel-card-body flex-1 flex flex-col justify-center">
+                              <h4 className="carousel-card-title-base font-bold text-sm mb-1 leading-tight line-clamp-2">{item.title}</h4>
+                              <p className="text-xs text-white/80 leading-tight">{item.desc}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </StandardCarouselCard>
                   ))}
                 </StandardCarousel>
               </div>

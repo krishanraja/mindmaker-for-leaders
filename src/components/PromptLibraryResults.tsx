@@ -193,24 +193,24 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
         <div className="md:hidden">
           <StandardCarousel cardWidth="mobile" showDots={true} className="w-full max-w-[580px] mx-auto">
             {/* Card 1: Your Unique Strengths */}
-            <StandardCarouselCard className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 min-h-[500px]">
-              <Card className="h-full border-0 shadow-none">
-                <CardContent className="carousel-card-content p-8">
-                  <div className="carousel-card-header text-center">
-                    <div className="p-3 bg-primary/10 rounded-xl inline-block mb-4">
-                      <Sparkles className="h-12 w-12 text-primary" />
+            <StandardCarouselCard className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="h-full border-0 shadow-none min-h-[380px] sm:min-h-[420px]">
+                <CardContent className="carousel-card-content p-4 sm:p-6 h-full flex flex-col">
+                  <div className="carousel-card-header text-center flex-shrink-0">
+                    <div className="p-3 bg-primary/10 rounded-xl inline-block mb-3">
+                      <Sparkles className="h-10 w-10 text-primary" />
                     </div>
-                    <h3 className="carousel-card-title-2xl text-2xl font-bold text-foreground mb-6 line-clamp-2">
+                    <h3 className="carousel-card-title-xl text-xl font-bold text-foreground mb-4 line-clamp-2 leading-tight">
                       {firstName}'s Unique Strengths
                     </h3>
                   </div>
                   
-                  <div className="carousel-card-body">
-                    <div className="space-y-6 max-w-xs mx-auto">
+                  <div className="carousel-card-body flex-1 flex items-center">
+                    <div className="space-y-4 max-w-xs mx-auto w-full">
                       {workingStyle.map((trait, idx) => (
-                        <div key={idx} className="flex items-center gap-4">
-                          <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                          <p className="text-sm font-medium text-foreground">{trait}</p>
+                        <div key={idx} className="flex items-center gap-3">
+                          <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                          <p className="text-sm font-medium text-foreground leading-snug">{trait}</p>
                         </div>
                       ))}
                     </div>
@@ -220,20 +220,20 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             </StandardCarouselCard>
 
             {/* Card 2: Your Biggest Opportunity */}
-            <StandardCarouselCard className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 min-h-[500px]">
-              <Card className="h-full border-0 shadow-none">
-                <CardContent className="carousel-card-content p-8">
-                  <div className="carousel-card-header text-center">
-                    <div className="p-3 bg-primary/10 rounded-xl inline-block mb-4">
-                      <Rocket className="h-12 w-12 text-primary" />
+            <StandardCarouselCard className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="h-full border-0 shadow-none min-h-[380px] sm:min-h-[420px]">
+                <CardContent className="carousel-card-content p-4 sm:p-6 h-full flex flex-col">
+                  <div className="carousel-card-header text-center flex-shrink-0">
+                    <div className="p-3 bg-primary/10 rounded-xl inline-block mb-3">
+                      <Rocket className="h-10 w-10 text-primary" />
                     </div>
-                    <h3 className="carousel-card-title-2xl text-2xl font-bold text-foreground mb-6 line-clamp-2">
+                    <h3 className="carousel-card-title-xl text-xl font-bold text-foreground mb-4 line-clamp-2 leading-tight">
                       Your Biggest Opportunity
                     </h3>
                   </div>
                   
-                  <div className="carousel-card-body text-center space-y-6">
-                    <h4 className="carousel-card-title-lg text-lg font-bold text-foreground leading-snug px-2 line-clamp-2">
+                  <div className="carousel-card-body flex-1 text-center space-y-4 flex flex-col justify-center">
+                    <h4 className="carousel-card-title-base text-base font-bold text-foreground leading-tight px-2 line-clamp-2">
                       {priorityProject.name}
                     </h4>
                     <p className="text-sm text-muted-foreground leading-relaxed px-4">
@@ -241,7 +241,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     </p>
                   </div>
                   
-                  <div className="carousel-card-footer text-center pt-2">
+                  <div className="carousel-card-footer text-center pt-2 flex-shrink-0">
                     <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
                       {priorityProject.impact}
                     </Badge>
@@ -251,27 +251,27 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             </StandardCarouselCard>
 
             {/* Card 3: What Makes You Different */}
-            <StandardCarouselCard className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 min-h-[500px]">
-              <Card className="h-full border-0 shadow-none">
-                <CardContent className="carousel-card-content p-8">
-                  <div className="carousel-card-header text-center">
-                    <div className="p-3 bg-primary/10 rounded-xl inline-block mb-4">
-                      <TrendingUp className="h-12 w-12 text-primary" />
+            <StandardCarouselCard className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <Card className="h-full border-0 shadow-none min-h-[380px] sm:min-h-[420px]">
+                <CardContent className="carousel-card-content p-4 sm:p-6 h-full flex flex-col">
+                  <div className="carousel-card-header text-center flex-shrink-0">
+                    <div className="p-3 bg-primary/10 rounded-xl inline-block mb-3">
+                      <TrendingUp className="h-10 w-10 text-primary" />
                     </div>
-                    <h3 className="carousel-card-title-2xl text-2xl font-bold text-foreground mb-6 line-clamp-2">
+                    <h3 className="carousel-card-title-xl text-xl font-bold text-foreground mb-4 line-clamp-2 leading-tight">
                       What Makes You Different
                     </h3>
                   </div>
                   
-                  <div className="carousel-card-body">
-                    <div className="border-l-4 border-primary pl-4 pr-2 py-2 mb-6">
+                  <div className="carousel-card-body flex-1 flex items-center">
+                    <div className="border-l-4 border-primary pl-4 pr-2 py-2 w-full">
                       <p className="text-sm text-foreground leading-relaxed italic">
                         "{opportunity.statement}"
                       </p>
                     </div>
                   </div>
                   
-                  <div className="carousel-card-footer text-center pt-2">
+                  <div className="carousel-card-footer text-center pt-2 flex-shrink-0">
                     <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
                       {opportunity.outcome}
                     </Badge>
@@ -387,12 +387,12 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
         
         <StandardCarousel cardWidth="desktop" showDots={true} className="w-full">
           {library.recommendedProjects.map((project, idx) => (
-            <StandardCarouselCard key={idx} className="shadow-lg border-2 border-primary/10 rounded-2xl min-h-[580px]">
-              <Card className="h-full border-0 shadow-none flex flex-col">
-                <CardContent className="carousel-card-content p-6 pb-4 md:pb-3">
+            <StandardCarouselCard key={idx} className="shadow-lg border-2 border-primary/10 rounded-2xl">
+              <Card className="h-full border-0 shadow-none flex flex-col min-h-[520px] sm:min-h-[580px]">
+                <CardContent className="carousel-card-content p-4 sm:p-6 pb-3 h-full flex flex-col">
                   {/* Header */}
-                  <div className="carousel-card-header">
-                    <div className="flex items-center justify-between mb-4">
+                  <div className="carousel-card-header flex-shrink-0">
+                    <div className="flex items-center justify-between mb-3">
                       <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-sm px-3 py-1">
                         Project {idx + 1}
                       </Badge>
@@ -418,11 +418,11 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                   </div>
 
                   {/* Tabs */}
-                  <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
-                    <TabsList className="flex-shrink-0 w-full grid grid-cols-3 mb-4">
-                      <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="instructions">Instructions</TabsTrigger>
-                      <TabsTrigger value="examples">Examples</TabsTrigger>
+                  <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <TabsList className="flex-shrink-0 w-full grid grid-cols-3 mb-3">
+                      <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+                      <TabsTrigger value="instructions" className="text-xs sm:text-sm">Instructions</TabsTrigger>
+                      <TabsTrigger value="examples" className="text-xs sm:text-sm">Examples</TabsTrigger>
                     </TabsList>
 
                     {/* Overview Tab */}
@@ -430,7 +430,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       <div className="flex flex-col gap-5">
                         {/* Header Section */}
                         <div className="space-y-2">
-                          <h3 className="carousel-card-title-xl text-xl font-bold text-foreground line-clamp-2">{project.name}</h3>
+                          <h3 className="carousel-card-title-base text-base sm:text-lg font-bold text-foreground line-clamp-2 leading-tight">{project.name}</h3>
                           <div className="relative">
                             <p className={cn(
                               "text-sm text-muted-foreground leading-relaxed",
@@ -535,12 +535,12 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
         <StandardCarousel cardWidth="desktop" showDots={true} className="w-full">
           {library.promptTemplates.map((template, idx) => (
-            <StandardCarouselCard key={idx} className="shadow-lg border-2 border-primary/10 rounded-2xl min-h-[220px]">
-              <Card className="h-full border-0 shadow-none flex flex-col">
-                <CardHeader className="carousel-card-header flex-shrink-0 pb-3">
+            <StandardCarouselCard key={idx} className="shadow-lg border-2 border-primary/10 rounded-2xl">
+              <Card className="h-full border-0 shadow-none flex flex-col min-h-[200px] sm:min-h-[220px]">
+                <CardHeader className="carousel-card-header flex-shrink-0 pb-2 p-4 sm:p-6">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex-1">
-                      <CardTitle className="carousel-card-title-lg text-lg mb-1 line-clamp-2">{template.name}</CardTitle>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="carousel-card-title-base text-base sm:text-lg mb-1 line-clamp-2 leading-tight">{template.name}</CardTitle>
                       <Badge variant="secondary" className="text-xs">{template.category}</Badge>
                     </div>
                     <Button
@@ -560,7 +560,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="carousel-card-body flex-1 overflow-y-auto pt-0">
+                <CardContent className="carousel-card-body flex-1 overflow-y-auto pt-0 px-4 sm:px-6">
                   <Accordion type="single" collapsible>
                     <AccordionItem value="prompt" className="border-none">
                       <AccordionTrigger className="hover:no-underline py-2">

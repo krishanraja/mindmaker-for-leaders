@@ -65,15 +65,15 @@ export const StandardCarousel: React.FC<StandardCarouselProps> = ({
         ref={scrollRef}
         onScroll={handleScroll}
         className={cn(
-          "grid gap-4 px-5 overflow-x-auto snap-x snap-mandatory",
+          "grid gap-4 px-4 overflow-x-auto snap-x snap-mandatory max-w-[100vw]",
           "scrollbar-hide",
           "[grid-auto-flow:column]",
           "[align-items:stretch]",
           "[-webkit-overflow-scrolling:touch]",
           "[touch-action:pan-x]",
-          cardWidth === 'mobile' && "[grid-auto-columns:85%]",
-          cardWidth === 'tablet' && "[grid-auto-columns:85%] md:[grid-auto-columns:45%]",
-          cardWidth === 'desktop' && "[grid-auto-columns:85%] md:[grid-auto-columns:45%] lg:[grid-auto-columns:32%]",
+          cardWidth === 'mobile' && "[grid-auto-columns:90%]",
+          cardWidth === 'tablet' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%]",
+          cardWidth === 'desktop' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%] lg:[grid-auto-columns:32%]",
           className
         )}
       >
@@ -134,7 +134,7 @@ export const StandardCarouselCard: React.FC<{
         "carousel-card",
         "snap-start",
         "flex flex-col",
-        "min-h-[400px]",
+        "h-full w-full",
         className
       )}
     >

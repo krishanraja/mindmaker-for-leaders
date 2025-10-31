@@ -499,12 +499,12 @@ input:focus-visible {
 
 /* Hide scrollbars while maintaining functionality */
 .scrollbar-hide {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  display: none !important; /* Chrome/Safari */
 }
 
 /* Text truncation for all carousel cards */
@@ -541,18 +541,40 @@ input:focus-visible {
 .carousel-card-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
   height: 100%;
 }
 
-.carousel-card-header,
-.carousel-card-body {
+.carousel-card-header {
   flex-shrink: 0;
+  min-height: fit-content;
+}
+
+.carousel-card-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .carousel-card-footer {
-  margin-top: auto;
   flex-shrink: 0;
+  margin-top: auto;
+  min-height: fit-content;
+}
+
+/* Mobile-specific carousel constraints */
+@media (max-width: 640px) {
+  .carousel-card-content {
+    gap: 0.5rem;
+  }
+  
+  .carousel-card-header {
+    min-height: 3rem;
+  }
+  
+  .carousel-card-footer {
+    min-height: 2rem;
+  }
 }
 
 /* Two-line title heights for consistent alignment */
