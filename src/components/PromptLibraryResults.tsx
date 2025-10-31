@@ -290,7 +290,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
               <CardContent className="p-4 h-full flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Icon + Title inline */}
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-start gap-2 mb-4">
                     <Sparkles className="h-6 w-6 text-primary flex-shrink-0" />
                     <h3 className="carousel-card-title-base text-base font-bold text-foreground leading-tight line-clamp-2">
                       {firstName}'s Unique Strengths
@@ -317,7 +317,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
               <CardContent className="p-4 h-full flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Icon + Title inline */}
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-start gap-2 mb-4">
                     <Rocket className="h-6 w-6 text-primary flex-shrink-0" />
                     <h3 className="carousel-card-title-base text-base font-bold text-foreground leading-tight line-clamp-2">
                       Your Biggest Opportunity
@@ -349,7 +349,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
               <CardContent className="p-4 h-full flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Icon + Title inline */}
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-start gap-2 mb-4">
                     <TrendingUp className="h-6 w-6 text-primary flex-shrink-0" />
                     <h3 className="carousel-card-title-base text-base font-bold text-foreground leading-tight line-clamp-2">
                       What Makes You Different
