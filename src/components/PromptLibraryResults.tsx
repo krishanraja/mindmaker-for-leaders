@@ -475,7 +475,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {library.recommendedProjects.map((project, idx) => (
               <CarouselItem key={idx} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[680px] flex flex-col">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[620px] flex flex-col">
                   <CardContent className="p-6 pb-4 md:pb-3 flex flex-col h-full">
                     {/* Header */}
                     <div className="flex-shrink-0 flex items-center justify-between mb-4">
@@ -511,7 +511,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       </TabsList>
 
                       {/* Overview Tab */}
-                      <TabsContent value="overview" className="flex-1 overflow-y-auto custom-scrollbar space-y-4 mt-0">
+                      <TabsContent value="overview" className="flex-1 overflow-y-auto custom-scrollbar space-y-3 mt-0">
                         <div className="h-[120px] overflow-hidden">
                           <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1">{project.name}</h3>
                           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{project.purpose}</p>
@@ -522,7 +522,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6">{project.whenToUse}</p>
                         </div>
 
-                        <div className="h-[140px] overflow-hidden space-y-2">
+                        <div className="h-[120px] overflow-hidden space-y-2">
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                             Success Metrics
                           </h4>
