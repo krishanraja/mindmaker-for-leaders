@@ -123,22 +123,59 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   };
 
   useEffect(() => {
-    generatePersonalizedInsights();
+    loadOrGenerateInsights();
     // Derive leadership comparison from existing data
     const comparison = deriveLeadershipComparison(assessmentData, deepProfileData);
     setLeadershipComparison(comparison);
   }, []);
 
-  const generatePersonalizedInsights = async () => {
+  const loadOrGenerateInsights = async () => {
     try {
       setIsLoadingInsights(true);
+      
+      // First, check if insights already exist for this session
+      if (sessionId) {
+        console.log('Checking for existing insights for session:', sessionId);
+        const { data: existingInsights, error: fetchError } = await supabase
+          .from('ai_insights_generated')
+          .select('insight_content')
+          .eq('session_id', sessionId)
+          .eq('insight_type', 'personalized_insights')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (!fetchError && existingInsights?.insight_content) {
+          console.log('Found existing personalized insights, using cached version');
+          const parsedInsights = typeof existingInsights.insight_content === 'string' 
+            ? JSON.parse(existingInsights.insight_content)
+            : existingInsights.insight_content;
+          setPersonalizedInsights(parsedInsights);
+          setIsLoadingInsights(false);
+          return;
+        }
+      }
+
+      // No existing insights found, generate new ones
+      console.log('No existing insights found, generating new ones...');
+      await generatePersonalizedInsights();
+    } catch (error) {
+      console.error('Error loading insights:', error);
+      // Fallback to generating new insights
+      await generatePersonalizedInsights();
+    }
+  };
+
+  const generatePersonalizedInsights = async () => {
+    try {
       console.log('Generating personalized insights...');
 
       const { data, error } = await supabase.functions.invoke('generate-personalized-insights', {
         body: {
           assessmentData,
           contactData,
-          deepProfileData
+          deepProfileData,
+          sessionId
         }
       });
 
@@ -147,6 +184,18 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       if (data?.personalizedInsights) {
         setPersonalizedInsights(data.personalizedInsights);
         console.log('Personalized insights generated successfully');
+        
+        // Save to database for future use
+        if (sessionId) {
+          await supabase
+            .from('ai_insights_generated')
+            .insert({
+              session_id: sessionId,
+              insight_type: 'personalized_insights',
+              insight_content: JSON.stringify(data.personalizedInsights)
+            });
+          console.log('Insights saved to database');
+        }
       }
     } catch (error) {
       console.error('Error generating personalized insights:', error);
