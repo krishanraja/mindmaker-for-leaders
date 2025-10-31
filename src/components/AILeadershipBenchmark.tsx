@@ -839,22 +839,22 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
         {/* Executive Primer CTA - Hero Section */}
         <Card className="mt-16 shadow-2xl border-0 rounded-3xl overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80">
-          <CardContent className="p-10 sm:p-12 lg:p-16 text-center relative">
+          <CardContent className="p-4 sm:p-12 lg:p-16 text-center relative">
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
             
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-5 py-2.5 rounded-full text-sm font-medium mb-8">
-                <Brain className="h-4 w-4" />
+              <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-8">
+                <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
                 Limited Spots Available This Month
               </div>
               
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">
+              <h3 className="text-lg sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-6 leading-tight">
                 Ready to turn your score<br className="hidden sm:block" /> into a <span className="underline decoration-white/50">strategic roadmap</span>?
               </h3>
               
-              <p className="text-lg sm:text-xl text-white/90 mb-12 leading-relaxed max-w-3xl mx-auto px-4">
+              <p className="text-xs sm:text-xl text-white/90 mb-4 sm:mb-12 leading-snug sm:leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
                 Book your <span className="font-bold">Executive Primer</span> and align your AI literacy with revenue strategy in just 30 days.
               </p>
               
@@ -874,7 +874,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               </div>
 
               {/* Value Props - Mobile Carousel */}
-              <div className="sm:hidden mb-12">
+              <div className="sm:hidden mb-4">
                 <Carousel
                   opts={{
                     align: "center",
@@ -882,24 +882,24 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   }}
                   className="w-full max-w-sm mx-auto"
                 >
-                  <CarouselContent className="-ml-4">
+                  <CarouselContent className="-ml-2">
                     {[
                       { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific implementation plan' },
                       { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
                       { icon: Users, title: 'Team Activation', desc: 'Leadership & stakeholder toolkit' }
                     ].map((item, index) => (
-                      <CarouselItem key={index} className="pl-4">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white h-[180px] flex flex-col">
-                          <item.icon className="h-10 w-10 mx-auto mb-4" />
-                          <h4 className="font-bold text-lg mb-2">{item.title}</h4>
-                          <p className="text-sm text-white/80">{item.desc}</p>
+                      <CarouselItem key={index} className="pl-2">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-white h-[100px] flex flex-col">
+                          <item.icon className="h-6 w-6 mx-auto mb-2" />
+                          <h4 className="font-bold text-sm mb-1 leading-tight">{item.title}</h4>
+                          <p className="text-xs text-white/80 leading-tight">{item.desc}</p>
                         </div>
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <div className="flex justify-center gap-2 mt-4">
-                    <CarouselPrevious className="relative static translate-y-0 bg-white/20 hover:bg-white/30 text-white border-white/20" />
-                    <CarouselNext className="relative static translate-y-0 bg-white/20 hover:bg-white/30 text-white border-white/20" />
+                  <div className="flex justify-center gap-2 mt-2">
+                    <CarouselPrevious className="relative static translate-y-0 bg-white/20 hover:bg-white/30 text-white border-white/20 h-8 w-8" />
+                    <CarouselNext className="relative static translate-y-0 bg-white/20 hover:bg-white/30 text-white border-white/20 h-8 w-8" />
                   </div>
                 </Carousel>
               </div>
@@ -908,18 +908,17 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 <Button 
                   size="lg" 
                   onClick={handleExecutivePrimerBooking}
-                  className="bg-white text-primary hover:bg-white/90 px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-xl font-bold group transition-all rounded-2xl shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(255,255,255,0.4)] hover:scale-105 max-w-full"
+                  className="bg-white text-primary hover:bg-white/90 px-4 sm:px-10 py-3 sm:py-6 text-sm sm:text-xl font-bold group transition-all rounded-xl sm:rounded-2xl shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(255,255,255,0.4)] hover:scale-105 max-w-full"
                   aria-label="Schedule Your Strategic Session"
                 >
-                  <Calendar className="h-5 w-5 mr-2 flex-shrink-0" />
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                   <span className="hidden sm:inline truncate">Schedule Your Strategic AI Planning Session</span>
                   <span className="sm:hidden">Schedule Session</span>
                 </Button>
               </div>
               
-              <div className="mt-8 text-white/80 text-sm">
-                <p className="mb-2">🚀 Join 500+ executives who've accelerated their AI leadership</p>
-                <p>30-minute strategic session • Personalized to your benchmark results</p>
+              <div className="mt-3 sm:mt-8 text-white/80 text-[10px] sm:text-sm leading-tight sm:leading-normal">
+                <p className="mb-1 sm:mb-2">🚀 Join 500+ executives who've accelerated their AI leadership</p>
               </div>
             </div>
           </CardContent>
