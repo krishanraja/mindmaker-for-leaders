@@ -768,7 +768,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     return (
                       <StandardCarouselCard 
                         key={idx} 
-                        className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl rounded-2xl bg-gradient-to-br ${styling.gradient} min-h-[380px] flex flex-col
+                        className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl rounded-2xl bg-gradient-to-br ${styling.gradient} min-h-[392px] flex flex-col
                           ${dim.rank && dim.rank <= 2 ? 'border-green-300 dark:border-green-700' : 
                             dim.rank && dim.rank >= 5 ? 'border-amber-300 dark:border-amber-700' : 
                             'border-primary/20'} 
