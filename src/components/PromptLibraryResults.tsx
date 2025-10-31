@@ -361,29 +361,27 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           </Carousel>
         </div>
 
-        {/* Desktop: Stacked Cards */}
+        {/* Desktop: Compact 3-column horizontal grid */}
         <div className="hidden md:block">
-          <div className="grid grid-cols-1 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-3 gap-4">
             {/* Card 1: Your Unique Strengths */}
-            <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[360px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-              <CardContent className="p-6 flex flex-col h-full justify-center">
-                <div className="space-y-6 flex flex-col items-center">
-                  {/* Icon */}
-                  <div className="p-2.5 bg-primary/10 rounded-xl">
-                    <Sparkles className="h-10 w-10 text-primary" />
+            <Card className="border-2 border-primary/10 bg-card h-[180px] overflow-hidden">
+              <CardContent className="p-4 h-full flex flex-col">
+                <div className="space-y-3">
+                  {/* Icon + Title inline */}
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-6 w-6 text-primary flex-shrink-0" />
+                    <h3 className="text-base font-bold text-foreground leading-tight">
+                      {firstName}'s Unique Strengths
+                    </h3>
                   </div>
                   
-                  {/* Title */}
-                  <h3 className="text-2xl font-bold text-center text-foreground">
-                    {firstName}'s Unique Strengths
-                  </h3>
-                  
-                  {/* Content - 3 strengths with breathing room */}
-                  <div className="space-y-4 w-full max-w-xs">
+                  {/* Content - 3 strengths compact */}
+                  <div className="space-y-1.5">
                     {workingStyle.map((trait, idx) => (
-                      <div key={idx} className="flex items-center gap-4">
-                        <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                        <p className="text-sm font-medium text-foreground">{trait}</p>
+                      <div key={idx} className="flex items-start gap-1.5">
+                        <span className="text-primary text-xs mt-0.5">•</span>
+                        <p className="text-xs text-muted-foreground leading-tight">{trait}</p>
                       </div>
                     ))}
                   </div>
@@ -392,64 +390,55 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             </Card>
 
             {/* Card 2: Your Biggest Opportunity */}
-            <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[360px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-              <CardContent className="p-6 flex flex-col h-full justify-center">
-                <div className="space-y-6 flex flex-col items-center">
-                  {/* Icon */}
-                  <div className="p-2.5 bg-primary/10 rounded-xl">
-                    <Rocket className="h-10 w-10 text-primary" />
+            <Card className="border-2 border-primary/10 bg-card h-[180px] overflow-hidden">
+              <CardContent className="p-4 h-full flex flex-col">
+                <div className="space-y-3">
+                  {/* Icon + Title inline */}
+                  <div className="flex items-center gap-2">
+                    <Rocket className="h-6 w-6 text-primary flex-shrink-0" />
+                    <h3 className="text-base font-bold text-foreground leading-tight">
+                      Your Biggest Opportunity
+                    </h3>
                   </div>
                   
-                  {/* Title */}
-                  <h3 className="text-2xl font-bold text-center text-foreground">
-                    Your Biggest Opportunity
-                  </h3>
-                  
-                  {/* Content - Project name bold, value prop, impact */}
-                  <div className="space-y-5 text-center">
-                    <h4 className="text-lg font-bold text-foreground leading-snug px-2">
+                  {/* Content - Project compact */}
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-bold text-foreground leading-tight">
                       {priorityProject.name}
                     </h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed px-4">
+                    <p className="text-xs text-muted-foreground leading-tight line-clamp-3">
                       {priorityProject.valueProp}
                     </p>
-                    <div className="pt-1">
-                      <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
-                        {priorityProject.impact}
-                      </Badge>
-                    </div>
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                      {priorityProject.impact}
+                    </Badge>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Card 3: What Makes You Different */}
-            <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[360px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-              <CardContent className="p-6 flex flex-col h-full justify-center">
-                <div className="space-y-6 flex flex-col items-center">
-                  {/* Icon */}
-                  <div className="p-2.5 bg-primary/10 rounded-xl">
-                    <TrendingUp className="h-10 w-10 text-primary" />
+            <Card className="border-2 border-primary/10 bg-card h-[180px] overflow-hidden">
+              <CardContent className="p-4 h-full flex flex-col">
+                <div className="space-y-3">
+                  {/* Icon + Title inline */}
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-6 w-6 text-primary flex-shrink-0" />
+                    <h3 className="text-base font-bold text-foreground leading-tight">
+                      What Makes You Different
+                    </h3>
                   </div>
                   
-                  {/* Title */}
-                  <h3 className="text-2xl font-bold text-center text-foreground">
-                    What Makes You Different
-                  </h3>
-                  
-                  {/* Content - Quote-style insight */}
-                  <div className="space-y-5 w-full">
-                    <div className="border-l-4 border-primary pl-4 pr-2 py-2">
-                      <p className="text-sm text-foreground leading-relaxed italic">
+                  {/* Content - Quote compact */}
+                  <div className="space-y-2">
+                    <div className="border-l-2 border-primary pl-3">
+                      <p className="text-xs text-muted-foreground leading-tight italic line-clamp-4">
                         "{opportunity.statement}"
                       </p>
                     </div>
-                    
-                    <div className="text-center pt-1">
-                      <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
-                        {opportunity.outcome}
-                      </Badge>
-                    </div>
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                      {opportunity.outcome}
+                    </Badge>
                   </div>
                 </div>
               </CardContent>
