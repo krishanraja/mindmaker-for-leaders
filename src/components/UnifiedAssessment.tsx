@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Brain, User, ArrowRight, CheckCircle, Target, Clock } from 'lucide-react';
+import { Brain, User, ArrowRight, CheckCircle, Target, Clock, Zap, Rocket } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useStructuredAssessment } from '@/hooks/useStructuredAssessment';
@@ -413,22 +413,28 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
 
             {/* Value Cards - Compact Mobile Layout */}
             <div className="flex flex-col sm:flex-row gap-3 mb-8 text-sm">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center justify-center gap-3 flex-1">
-                <div className="text-3xl">🎯</div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center gap-3 flex-1">
+                <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20">
+                  <Target className="w-5 h-5 text-primary" />
+                </div>
                 <div className="text-left">
                   <div className="font-bold text-foreground">5 Custom Projects</div>
                   <div className="text-xs text-muted-foreground">Tailored to your role</div>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center justify-center gap-3 flex-1">
-                <div className="text-3xl">⚡</div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center gap-3 flex-1">
+                <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20">
+                  <Zap className="w-5 h-5 text-primary" />
+                </div>
                 <div className="text-left">
                   <div className="font-bold text-foreground">5-10 Hours/Week</div>
                   <div className="text-xs text-muted-foreground">Time you'll save</div>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center justify-center gap-3 flex-1">
-                <div className="text-3xl">🚀</div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center gap-3 flex-1">
+                <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20">
+                  <Rocket className="w-5 h-5 text-primary" />
+                </div>
                 <div className="text-left">
                   <div className="font-bold text-foreground">Ready in 1 Day</div>
                   <div className="text-xs text-muted-foreground">Start using immediately</div>
