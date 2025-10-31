@@ -262,6 +262,10 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   };
 
   const handleSkipDeepProfile = () => {
+    // Set loading state FIRST to prevent flash
+    setIsGeneratingInsights(true);
+    setInsightPhase('analyzing');
+    setInsightProgress(15);
     setShowDeepProfileOptIn(false);
     startInsightGeneration();
   };
@@ -275,6 +279,11 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
 
   const handleDeepProfileComplete = async (profileData: DeepProfileData) => {
     setDeepProfileData(profileData); // Store deep profile data
+    
+    // Set loading state FIRST to prevent flash
+    setIsGeneratingLibrary(true);
+    setLibraryPhase('analyzing');
+    setLibraryProgress(10);
     setShowDeepProfileQuestionnaire(false);
     
     // Send updated email with deep profile data
@@ -315,10 +324,6 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     } catch (error) {
       console.error('❌ Error sending deep profile notification:', error);
     }
-    
-    setIsGeneratingLibrary(true);
-    setLibraryPhase('analyzing');
-    setLibraryProgress(10);
 
     // Start progress animation
     const progressInterval = setInterval(() => {
