@@ -70,34 +70,34 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     
     // Extract key behavioral patterns
     if (text.includes('data') || text.includes('historical') || text.includes('analysis')) {
-      traits.push('Data-driven decision maker');
+      traits.push('Data-driven strategic decision maker');
     }
     
     if (text.includes('communication') || text.includes('stakeholder') || text.includes('narrative')) {
-      traits.push('Expert communicator');
+      traits.push('Expert cross-functional communicator');
     }
     
     if (text.includes('strategy') || text.includes('planning') || text.includes('vision')) {
-      traits.push('Strategic thinker');
+      traits.push('Visionary strategic planning thinker');
     }
     
     if (text.includes('efficiency') || text.includes('streamline') || text.includes('automate')) {
-      traits.push('Process optimizer');
+      traits.push('Efficiency-focused process optimizer');
     }
     
     if (text.includes('innovation') || text.includes('transform') || text.includes('creative')) {
-      traits.push('Change catalyst');
+      traits.push('Innovative transformation change catalyst');
     }
 
     if (text.includes('team') || text.includes('leadership') || text.includes('collaboration')) {
-      traits.push('Team builder');
+      traits.push('Collaborative team alignment builder');
     }
     
     // Fallback traits
     const fallbacks = [
-      'Clear communicator',
-      'Results-focused leader',
-      'Strategic executor'
+      'Clear and concise communicator',
+      'Results-driven execution-focused leader',
+      'Strategic initiative executor'
     ];
     
     while (traits.length < 3) {
@@ -178,13 +178,17 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <p className="text-base text-muted-foreground">Based on your responses, here's your executive profile</p>
         </div>
         
-        <Carousel
-          opts={{
-            align: "center",
-            loop: false,
-          }}
-          className="w-full max-w-[580px] mx-auto"
-        >
+        <div className="relative">
+          {/* Left fade overlay */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+          
+          <Carousel
+            opts={{
+              align: "center",
+              loop: true,
+            }}
+            className="w-full max-w-[580px] mx-auto"
+          >
           <CarouselContent className="-ml-4">
             {/* Card 1: Your Unique Strengths */}
             <CarouselItem className="pl-4">
@@ -288,7 +292,11 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             <CarouselPrevious className="relative static translate-y-0" />
             <CarouselNext className="relative static translate-y-0" />
           </div>
-        </Carousel>
+          </Carousel>
+          
+          {/* Right fade overlay */}
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+        </div>
       </section>
 
       {/* Master Prompts Section - Horizontal Carousel */}
