@@ -283,7 +283,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
         </div>
 
         {/* Leadership Score Dashboard - Hero Style */}
-        <Card className={`mb-20 sm:mb-24 max-w-6xl mx-auto border-2 rounded-2xl overflow-hidden ${leadershipProfile.borderGlow} ${leadershipProfile.bgGradient}`}>
+        <Card className={`mb-20 sm:mb-24 max-w-6xl lg:max-w-[94rem] mx-auto border-2 rounded-2xl overflow-hidden ${leadershipProfile.borderGlow} ${leadershipProfile.bgGradient}`}>
           <CardContent className="p-8 sm:p-10 lg:p-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
               {/* Left: Hero Score Circle */}
