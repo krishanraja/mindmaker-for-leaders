@@ -758,7 +758,14 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     const styling = getLevelStyling(dim.level);
                     
                     return (
-                      <StandardCarouselCard key={idx} className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/50 border-2 rounded-2xl bg-gradient-to-br ${styling.gradient} min-h-[280px]`}>
+                      <StandardCarouselCard 
+                        key={idx} 
+                        className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl rounded-2xl bg-gradient-to-br ${styling.gradient} min-h-[380px] flex flex-col
+                          ${dim.rank && dim.rank <= 2 ? 'border-green-300 dark:border-green-700' : 
+                            dim.rank && dim.rank >= 5 ? 'border-amber-300 dark:border-amber-700' : 
+                            'border-primary/20'} 
+                          border-2`}
+                      >
                         <Card className="h-full border-0 shadow-none bg-transparent">
                           <CardContent className="p-6 h-full flex flex-col space-y-5">
                             {/* Header with Icon and Title */}
@@ -770,15 +777,27 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                                 <h4 className="carousel-card-title-lg font-bold text-lg text-foreground line-clamp-2 mb-2">
                                   {dim.dimension}
                                 </h4>
-                                <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
-                                  {dim.level}
-                                </Badge>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
+                                    {dim.level}
+                                  </Badge>
+                                  {dim.rank && dim.rank <= 2 && (
+                                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800">
+                                      Top Strength
+                                    </Badge>
+                                  )}
+                                  {dim.rank && dim.rank >= 5 && (
+                                    <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
+                                      Growth Area
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
-                            {/* Visual Progress Indicator */}
+                            {/* Visual Progress Indicator with actual score */}
                             <div className="space-y-2.5 min-h-[45px] md:min-h-[50px]">
-                              <Progress value={styling.progress} className="h-2.5" />
+                              <Progress value={dim.score} className="h-2.5" />
                               <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
                                 <span>Building</span>
                                 <span>Explorer</span>
@@ -787,10 +806,26 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               </div>
                             </div>
 
-                            {/* Reasoning Text */}
-                            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-grow">
-                              {dim.reasoning}
-                            </p>
+                            {/* Enhanced Reasoning with Next Step */}
+                            <div className="space-y-3 flex-grow">
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {dim.reasoning}
+                              </p>
+                              
+                              {dim.nextStep && (
+                                <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/10">
+                                  <p className="text-xs font-medium text-foreground">
+                                    <span className="text-primary">Next Step:</span> {dim.nextStep}
+                                  </p>
+                                </div>
+                              )}
+                              
+                              {dim.percentile && (
+                                <p className="text-xs text-muted-foreground/80">
+                                  You're in the top {100 - dim.percentile}% of executives in this dimension
+                                </p>
+                              )}
+                            </div>
                           </CardContent>
                         </Card>
                       </StandardCarouselCard>
