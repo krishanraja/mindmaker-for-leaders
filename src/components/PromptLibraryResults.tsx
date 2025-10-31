@@ -511,28 +511,33 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       </TabsList>
 
                       {/* Overview Tab */}
-                      <TabsContent value="overview" className="flex-1 overflow-y-auto custom-scrollbar space-y-3 mt-0">
-                        <div className="h-[120px] overflow-hidden">
-                          <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1">{project.name}</h3>
-                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{project.purpose}</p>
-                        </div>
+                      <TabsContent value="overview" className="flex-1 overflow-y-auto custom-scrollbar mt-0">
+                        <div className="grid grid-rows-[minmax(100px,auto)_minmax(140px,auto)_minmax(100px,auto)] gap-3">
+                          {/* Header Section */}
+                          <div className="overflow-hidden">
+                            <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1">{project.name}</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed max-h-[80px] overflow-y-auto">{project.purpose}</p>
+                          </div>
 
-                        <div className="bg-muted/50 rounded-xl p-3 space-y-2 h-[140px] overflow-hidden">
-                          <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
-                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6">{project.whenToUse}</p>
-                        </div>
+                          {/* When to Use Section */}
+                          <div className="bg-muted/50 rounded-xl p-3 space-y-2 overflow-hidden flex flex-col">
+                            <h4 className="text-sm font-semibold text-foreground flex-shrink-0">When to Use</h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed overflow-y-auto">{project.whenToUse}</p>
+                          </div>
 
-                        <div className="h-[120px] overflow-hidden space-y-2">
-                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                            Success Metrics
-                          </h4>
-                          <div className="space-y-1">
-                            {project.successMetrics.map((metric, mIdx) => (
-                              <div key={mIdx} className="flex items-start gap-2 text-sm">
-                                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-foreground leading-snug">{metric}</span>
-                              </div>
-                            ))}
+                          {/* Success Metrics Section */}
+                          <div className="space-y-2 overflow-hidden flex flex-col">
+                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex-shrink-0">
+                              Success Metrics
+                            </h4>
+                            <div className="space-y-1 overflow-y-auto">
+                              {project.successMetrics.map((metric, mIdx) => (
+                                <div key={mIdx} className="flex items-start gap-2 text-sm">
+                                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                                  <span className="text-foreground leading-snug">{metric}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </TabsContent>
