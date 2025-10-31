@@ -646,7 +646,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </div>
                         
                         {/* Description: Fixed 120px */}
-                        <div className="h-[120px] mb-3">
+                        <div className="h-[120px] mb-3 flex flex-col justify-start">
                           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
                             {insight.description}
                           </p>
@@ -654,7 +654,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         
                         {/* Based On: Fixed 68px (always present) */}
                         <div className="h-[68px] mb-3">
-                          <div className="p-2.5 bg-primary/10 rounded-lg h-full overflow-hidden flex flex-col">
+                          <div className="p-2.5 bg-primary/10 rounded-lg h-full overflow-hidden flex flex-col justify-start">
                             <div className="text-xs font-semibold text-primary mb-1 flex-shrink-0">Based on:</div>
                             <div className="text-xs text-muted-foreground line-clamp-2 flex-1">
                               {insight.basedOn && insight.basedOn.length > 0 ? insight.basedOn.join(' • ') : 'Your assessment responses'}
@@ -663,7 +663,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </div>
                         
                         {/* Dimensions: Fixed 52px (always present) */}
-                        <div className="h-[52px] mb-3 overflow-x-auto">
+                        <div className="h-[52px] mb-3 flex items-start overflow-x-auto">
                           <div className="flex flex-wrap gap-1.5 h-full content-start">
                             {insight.scaleUpsDimensions && insight.scaleUpsDimensions.length > 0 ? (
                               insight.scaleUpsDimensions.map((dim: string, dimIdx: number) => (
@@ -679,7 +679,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         
                         {/* Success Metrics: Fixed 80px (always present) */}
                         <div className="h-[80px] mb-3">
-                          <div className="p-2.5 bg-muted/30 rounded-lg h-full overflow-hidden flex flex-col">
+                          <div className="p-2.5 bg-muted/30 rounded-lg h-full overflow-hidden flex flex-col justify-start">
                             <div className="text-xs font-semibold text-foreground mb-1.5 flex-shrink-0 uppercase tracking-wide">Success Metrics</div>
                             <div className="text-xs text-muted-foreground line-clamp-3 flex-1 leading-relaxed">
                               {insight.impact || 'Measurable business impact and growth acceleration'}
