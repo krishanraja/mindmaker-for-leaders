@@ -32,7 +32,7 @@ import { DeepProfileData } from './DeepProfileQuestionnaire';
 interface PersonalizedInsights {
   growthReadiness: { level: string; preview: string; details: string };
   leadershipStage: { stage: string; preview: string; details: string };
-  keyFocus: { title: string; preview: string; details: string };
+  keyFocus: { category: string; preview: string; details: string };
   roadmapInitiatives: Array<{
     title: string;
     description: string;
@@ -397,7 +397,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <Lightbulb className="h-6 w-6 text-primary" />
                           </div>
                           <div className="text-lg font-bold text-foreground mb-3 line-clamp-1">
-                            {personalizedInsights?.keyFocus.title || 'Key Focus'}
+                            {personalizedInsights?.keyFocus.category || 'Key Focus'}
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
                             {personalizedInsights?.keyFocus.preview || leadershipProfile.message}
@@ -522,7 +522,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               <Lightbulb className="h-6 w-6 text-primary" />
                             </div>
                             <div className="text-xl font-bold text-foreground mb-3 line-clamp-2">
-                              {personalizedInsights?.keyFocus.title || 'Key Focus'}
+                              {personalizedInsights?.keyFocus.category || 'Key Focus'}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">
                               {personalizedInsights?.keyFocus.preview || leadershipProfile.message}

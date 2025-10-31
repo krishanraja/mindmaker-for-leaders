@@ -36,7 +36,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an executive AI leadership coach. Generate insights with ULTRA-CONCISE titles (18-25 chars MAX, NO abbreviations). Titles must be crystal clear and fit on ONE LINE. Examples: "AI for Sales Teams", "Revenue Automation", "Stakeholder Updates". Never use abbreviations like "Comm." or "Fin." - always use full words within the character limit. Be direct, actionable, and quantitative.' 
+            content: 'You are an executive AI leadership coach. Generate personalized insights based on assessment data. Be direct, actionable, and quantitative. Use clear templates for preview text and save detailed personalization for the details section.' 
           },
           { role: 'user', content: prompt }
         ],
@@ -69,11 +69,24 @@ serve(async (req) => {
                 keyFocus: {
                   type: "object",
                   properties: {
-                    title: { type: "string", description: "CRITICAL: Exactly 18-25 chars ONLY. Must be clear, NO abbreviations.", maxLength: 25 },
-                    preview: { type: "string", description: "Ultra-concise preview (max 50 chars) - punchy one-liner", maxLength: 50 },
-                    details: { type: "string", description: "Full insight (max 120 chars) - specific solution", maxLength: 120 }
+                    category: { 
+                      type: "string", 
+                      enum: [
+                        "Team Alignment",
+                        "Process Automation", 
+                        "Strategic Planning",
+                        "Communication",
+                        "Decision Making",
+                        "Change Management",
+                        "Innovation Culture",
+                        "Data Strategy"
+                      ],
+                      description: "Select ONE category that best matches the executive's primary challenge"
+                    },
+                    preview: { type: "string", description: "Clear preview (max 50 chars)", maxLength: 50 },
+                    details: { type: "string", description: "Specific action plan (max 120 chars)", maxLength: 120 }
                   },
-                  required: ["title", "preview", "details"]
+                  required: ["category", "preview", "details"]
                 },
                 roadmapInitiatives: {
                   type: "array",
@@ -125,30 +138,9 @@ serve(async (req) => {
 
     const personalizedInsights = JSON.parse(toolCall.function.arguments);
     
-    // Backend validation and truncation for titles - AGGRESSIVE
-    if (personalizedInsights.keyFocus?.title) {
-      const title = personalizedInsights.keyFocus.title;
-      
-      if (title.length > 25) {
-        console.warn(`keyFocus title too long (${title.length} chars): "${title}"`);
-        
-        // Aggressive truncation: max 22 chars to ensure single line
-        let truncated = title.substring(0, 22).trim();
-        const lastSpace = truncated.lastIndexOf(' ');
-        
-        // Break at last word boundary
-        if (lastSpace > 12) {
-          truncated = truncated.substring(0, lastSpace);
-        }
-        
-        personalizedInsights.keyFocus.title = truncated;
-        console.log(`Truncated to: "${truncated}" (${truncated.length} chars)`);
-      }
-      
-      // Check for abbreviations that indicate poor quality
-      if (/\b\w{2,4}\./g.test(title)) {
-        console.warn(`Title contains abbreviations: "${title}"`);
-      }
+    // Validate keyFocus category
+    if (personalizedInsights.keyFocus?.category) {
+      console.log(`keyFocus category selected: "${personalizedInsights.keyFocus.category}"`);
     }
 
     // Validate and truncate roadmap initiative titles
@@ -272,18 +264,30 @@ TASK: Generate personalized AI leadership insights that:
    - Timeline should match their stated timeline
    - Should align with their role and industry
    
-**CRITICAL: TWO-TIER TEXT GENERATION**
+**CARD CONTENT GENERATION**
 
-For each top card (growthReadiness, leadershipStage, keyFocus):
-- **preview**: 40-50 chars max - Ultra-punchy one-liner. Think Twitter-length. Examples:
-  * "12/30 score shows revenue upside"
-  * "Reach 'Confident' by boosting alignment"
-  * "AI can sharpen your communication"
-  
-- **details**: 100-120 chars max - Full context with specifics. Reference their actual answers/scores. 2-3 short sentences maximum.
+1. GROWTH READINESS:
+   - level: Select from enum ["High", "Medium-High", "Medium", "Developing"]
+   - preview: Use template "Score {X}/30 - {level} revenue potential" (max 50 chars)
+   - details: 2-3 sentences with specific recommendations based on their score (max 120 chars)
 
-The preview shows by default - it MUST be scannable at a glance.
-The details expand on click - it provides the full story with their specific data.
+2. LEADERSHIP STAGE:
+   - stage: Select from enum ["Orchestrator", "Confident", "Aware", "Emerging"]
+   - preview: Use template "Reach {next_stage}: Focus on {specific_area}" (max 50 chars)
+   - details: Concrete action plan with score targets (max 120 chars)
+
+3. KEY FOCUS AREA:
+   - category: Select ONE from the predefined list that best matches their primary challenge:
+     * "Team Alignment" - for collaboration/cross-functional issues
+     * "Process Automation" - for efficiency/workflow optimization
+     * "Strategic Planning" - for vision/roadmap/long-term strategy
+     * "Communication" - for stakeholder/internal comms
+     * "Decision Making" - for data-driven decisions/analytics
+     * "Change Management" - for adoption/transformation challenges
+     * "Innovation Culture" - for experimentation/AI culture
+     * "Data Strategy" - for data infrastructure/governance
+   - preview: Use template "Focus on {category} to unlock {quantified_benefit}" (max 50 chars)
+   - details: Specific strategy matched to their challenge (max 120 chars)
 
 ROADMAP INITIATIVES - TITLE RULES:
 - title: EXACTLY 18-25 characters maximum
@@ -297,14 +301,6 @@ ROADMAP INITIATIVES - TITLE RULES:
   ❌ BAD: "AI for Comm. & Fin. Alignment" (30 chars) - too long, unclear abbreviations
   ❌ BAD: "AI Comm. Strategy" (18 chars) - confusing abbreviations
   ❌ BAD: "Communication & Financial Alignment" (35 chars) - way too long
-- description: 180 characters maximum (2-3 punchy sentences)
-- basedOn: 50 characters each, max 3 items
-- impact: 40 characters maximum
-- timeline: 20 characters maximum  
-- growthMetric: 5-15 characters (just number/percentage like '15%' or '$500K')
-
-KEY FOCUS AREA - TITLE RULES:
-- Same rules as roadmap titles: 18-25 chars, NO abbreviations, must be clear
 
 Write in executive-level, punchy language. Every word must add value. NO filler. Be SPECIFIC using their actual data, words, and numbers.`;
 
@@ -332,7 +328,7 @@ function generateFallbackInsights(): any {
       details: "Create a cross-functional AI champion network to accelerate adoption and drive organizational change across teams."
     },
     keyFocus: {
-      title: "Strategic AI Integration",
+      category: "Strategic Planning",
       preview: "Integrate AI into core processes",
       details: "Develop a roadmap for integrating AI into your core business processes to drive measurable outcomes and competitive advantage."
     },
