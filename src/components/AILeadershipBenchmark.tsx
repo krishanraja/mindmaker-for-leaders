@@ -631,7 +631,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               ) : (
                 roadmapInsights.map((insight, index) => (
                   <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3 flex">
-                    <Card className="h-[520px] md:h-[540px] lg:h-[560px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all w-full">
+                    <Card className="h-[600px] md:h-[620px] lg:h-[640px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all w-full">
                       <CardContent className="p-6 flex flex-col h-full">
                         {/* Header: Fixed 72px */}
                         <div className="h-[72px] flex items-start gap-3 mb-3">
@@ -674,6 +674,16 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             ) : (
                               <Badge variant="outline" className="text-xs py-0.5 px-2 h-fit">General Leadership</Badge>
                             )}
+                          </div>
+                        </div>
+                        
+                        {/* Success Metrics: Fixed 80px (always present) */}
+                        <div className="h-[80px] mb-3">
+                          <div className="p-2.5 bg-muted/30 rounded-lg h-full overflow-hidden flex flex-col">
+                            <div className="text-xs font-semibold text-foreground mb-1.5 flex-shrink-0 uppercase tracking-wide">Success Metrics</div>
+                            <div className="text-xs text-muted-foreground line-clamp-3 flex-1 leading-relaxed">
+                              {insight.impact || 'Measurable business impact and growth acceleration'}
+                            </div>
                           </div>
                         </div>
                         
