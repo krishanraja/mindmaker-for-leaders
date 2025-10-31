@@ -990,7 +990,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               {/* Value Props - Desktop Grid */}
               <div className="hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
                 {[
-                  { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific implementation plan' },
+                  { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific' },
                   { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
                   { icon: Users, title: 'Team Activation', desc: 'Leadership & stakeholder toolkit' }
                 ].map((item, index) => (
@@ -1006,7 +1006,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               <div className="sm:hidden mb-4">
                 <StandardCarousel cardWidth="mobile" showDots={false} showArrows={true} className="w-full max-w-sm mx-auto">
                   {[
-                    { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific implementation plan' },
+                    { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific' },
                     { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
                     { icon: Users, title: 'Team Activation', desc: 'Leadership & stakeholder toolkit' }
                   ].map((item, index) => (
