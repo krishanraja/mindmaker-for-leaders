@@ -738,11 +738,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                                 </div>
 
                                 {/* Reasoning Text */}
-                                <div className="flex-1 flex items-start">
-                                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                                    {dim.reasoning}
-                                  </p>
-                                </div>
+                                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                                  {dim.reasoning}
+                                </p>
                               </div>
                             </CardContent>
                           </Card>
