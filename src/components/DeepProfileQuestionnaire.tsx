@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { Brain, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Brain, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 
 export interface DeepProfileData {
   thinkingProcess: string;
@@ -116,6 +117,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
       case 1:
         return (
           <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs text-muted-foreground">◉ Choose one option</span>
+            </div>
             <h3 className="text-xl font-semibold text-foreground mb-4">
               How do you think through complex problems?
             </h3>
@@ -152,11 +156,19 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
       case 2:
         return (
           <div className="space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
+                ✓ MULTIPLE CHOICES ALLOWED
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                {profileData.communicationStyle.length} selected
+              </span>
+            </div>
             <h3 className="text-xl font-semibold text-foreground mb-4">
               How would your team describe your communication style?
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Select all that apply. This helps us match your tone and structure.
+              <strong>Choose as many as you like</strong> - we'll use all selections to personalize your prompts
             </p>
             <div className="space-y-3">
               {[
@@ -172,6 +184,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => toggleArrayOption('communicationStyle', option)}
                 >
+                  {profileData.communicationStyle.includes(option) && (
+                    <Check className="h-4 w-4 mr-2 flex-shrink-0" />
+                  )}
                   <span className="text-sm sm:text-base leading-snug">{option}</span>
                 </Button>
               ))}
@@ -226,11 +241,19 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
       case 4:
         return (
           <div className="space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
+                ✓ MULTIPLE CHOICES ALLOWED
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                {profileData.informationNeeds.length} selected
+              </span>
+            </div>
             <h3 className="text-xl font-semibold text-foreground mb-4">
               What information do you typically need for important decisions?
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Select all that apply. This determines what context to include in your prompts.
+              <strong>Choose as many as you like</strong> - this determines what context to include in your prompts
             </p>
             <div className="space-y-3">
               {[
@@ -246,6 +269,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => toggleArrayOption('informationNeeds', option)}
                 >
+                  {profileData.informationNeeds.includes(option) && (
+                    <Check className="h-4 w-4 mr-2 flex-shrink-0" />
+                  )}
                   <span className="text-sm sm:text-base leading-snug">{option}</span>
                 </Button>
               ))}
@@ -256,6 +282,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
       case 5:
         return (
           <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs text-muted-foreground">◉ Choose one option</span>
+            </div>
             <h3 className="text-xl font-semibold text-foreground mb-4">
               What transformation do you most need from AI?
             </h3>
@@ -397,6 +426,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
       case 9:
         return (
           <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs text-muted-foreground">◉ Choose one option</span>
+            </div>
             <h3 className="text-xl font-semibold text-foreground mb-4">
               What's your biggest communication challenge?
             </h3>
@@ -434,11 +466,19 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
       case 10:
         return (
           <div className="space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
+                ✓ MULTIPLE CHOICES ALLOWED
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                {profileData.stakeholders.length} selected
+              </span>
+            </div>
             <h3 className="text-xl font-semibold text-foreground mb-4">
               Who are the key audiences you regularly communicate with?
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Select all that apply. We'll create audience-specific project templates.
+              <strong>Choose as many as you like</strong> - we'll create audience-specific project templates
             </p>
             <div className="space-y-3">
               {[
@@ -455,6 +495,9 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => toggleArrayOption('stakeholders', option)}
                 >
+                  {profileData.stakeholders.includes(option) && (
+                    <Check className="h-4 w-4 mr-2 flex-shrink-0" />
+                  )}
                   <span className="text-sm sm:text-base leading-snug">{option}</span>
                 </Button>
               ))}
