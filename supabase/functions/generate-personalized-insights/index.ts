@@ -36,7 +36,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an executive AI leadership coach. Analyze assessment data and generate highly personalized, specific insights that reference the executive\'s actual responses, challenges, and context. Be direct, actionable, and quantitative.' 
+            content: 'You are an executive AI leadership coach. Generate insights with ULTRA-CONCISE titles (18-25 chars MAX, NO abbreviations). Titles must be crystal clear and fit on ONE LINE. Examples: "AI for Sales Teams", "Revenue Automation", "Stakeholder Updates". Never use abbreviations like "Comm." or "Fin." - always use full words within the character limit. Be direct, actionable, and quantitative.' 
           },
           { role: 'user', content: prompt }
         ],
@@ -69,7 +69,7 @@ serve(async (req) => {
                 keyFocus: {
                   type: "object",
                   properties: {
-                    title: { type: "string", description: "CRITICAL: Exactly 25-35 chars ONLY. Count every letter. Examples: 'AI for Stakeholder Comms' (28), 'Revenue via Automation' (23)", maxLength: 35 },
+                    title: { type: "string", description: "CRITICAL: Exactly 18-25 chars ONLY. Must be clear, NO abbreviations.", maxLength: 25 },
                     preview: { type: "string", description: "Ultra-concise preview (max 50 chars) - punchy one-liner", maxLength: 50 },
                     details: { type: "string", description: "Full insight (max 120 chars) - specific solution", maxLength: 120 }
                   },
@@ -80,7 +80,7 @@ serve(async (req) => {
                   items: {
                     type: "object",
                     properties: {
-                      title: { type: "string", description: "CRITICAL: Exactly 25-35 chars ONLY. Count every letter. Use abbreviations if needed.", maxLength: 35 },
+                      title: { type: "string", description: "CRITICAL: Exactly 18-25 chars ONLY. Must be clear, NO abbreviations.", maxLength: 25 },
                       description: { type: "string", description: "Concise description (max 180 chars) with specific context", maxLength: 180 },
                       basedOn: { type: "array", items: { type: "string", maxLength: 50 }, description: "What user data this is based on (max 50 chars each)", maxItems: 3 },
                       impact: { type: "string", description: "Quantified impact metric (max 40 chars)", maxLength: 40 },
@@ -125,33 +125,49 @@ serve(async (req) => {
 
     const personalizedInsights = JSON.parse(toolCall.function.arguments);
     
-    // Backend validation and truncation for titles
-    if (personalizedInsights.keyFocus?.title && personalizedInsights.keyFocus.title.length > 35) {
-      console.warn(`keyFocus title too long (${personalizedInsights.keyFocus.title.length} chars): "${personalizedInsights.keyFocus.title}"`);
+    // Backend validation and truncation for titles - AGGRESSIVE
+    if (personalizedInsights.keyFocus?.title) {
+      const title = personalizedInsights.keyFocus.title;
       
-      // Smart truncation: find last complete word within 32 chars
-      let truncated = personalizedInsights.keyFocus.title.substring(0, 32);
-      const lastSpace = truncated.lastIndexOf(' ');
-      if (lastSpace > 20) { // Ensure we keep meaningful content
-        truncated = truncated.substring(0, lastSpace);
+      if (title.length > 25) {
+        console.warn(`keyFocus title too long (${title.length} chars): "${title}"`);
+        
+        // Aggressive truncation: max 22 chars to ensure single line
+        let truncated = title.substring(0, 22).trim();
+        const lastSpace = truncated.lastIndexOf(' ');
+        
+        // Break at last word boundary
+        if (lastSpace > 12) {
+          truncated = truncated.substring(0, lastSpace);
+        }
+        
+        personalizedInsights.keyFocus.title = truncated;
+        console.log(`Truncated to: "${truncated}" (${truncated.length} chars)`);
       }
       
-      personalizedInsights.keyFocus.title = truncated;
-      console.log(`Truncated to: "${truncated}" (${truncated.length} chars)`);
+      // Check for abbreviations that indicate poor quality
+      if (/\b\w{2,4}\./g.test(title)) {
+        console.warn(`Title contains abbreviations: "${title}"`);
+      }
     }
 
     // Validate and truncate roadmap initiative titles
     if (personalizedInsights.roadmapInitiatives) {
       personalizedInsights.roadmapInitiatives.forEach((initiative: any, index: number) => {
-        if (initiative.title && initiative.title.length > 35) {
-          console.warn(`Initiative ${index} title too long (${initiative.title.length} chars): "${initiative.title}"`);
-          let truncated = initiative.title.substring(0, 32);
-          const lastSpace = truncated.lastIndexOf(' ');
-          if (lastSpace > 20) {
-            truncated = truncated.substring(0, lastSpace);
+        if (initiative.title) {
+          if (initiative.title.length > 25) {
+            console.warn(`Initiative ${index} title too long: "${initiative.title}"`);
+            let truncated = initiative.title.substring(0, 22).trim();
+            const lastSpace = truncated.lastIndexOf(' ');
+            if (lastSpace > 12) {
+              truncated = truncated.substring(0, lastSpace);
+            }
+            initiative.title = truncated;
           }
-          initiative.title = truncated;
-          console.log(`Initiative ${index} truncated to: "${truncated}" (${truncated.length} chars)`);
+          
+          if (/\b\w{2,4}\./g.test(initiative.title)) {
+            console.warn(`Initiative ${index} contains abbreviations: "${initiative.title}"`);
+          }
         }
       });
     }
@@ -269,24 +285,26 @@ For each top card (growthReadiness, leadershipStage, keyFocus):
 The preview shows by default - it MUST be scannable at a glance.
 The details expand on click - it provides the full story with their specific data.
 
-ROADMAP INITIATIVES - CRITICAL FORMATTING:
-- title: EXACTLY 25-35 characters. NOT 40. NOT 38. Count EVERY character including spaces.
-  ✅ GOOD: "AI for Stakeholder Comms" (28 chars)
-  ✅ GOOD: "Revenue via Automation" (23 chars)  
-  ❌ BAD: "AI for Stakeholder Communication" (35+ chars - TOO LONG)
-  If your title is longer than 35 characters, you MUST shorten it. Use abbreviations if needed.
+ROADMAP INITIATIVES - TITLE RULES:
+- title: EXACTLY 18-25 characters maximum
+- MUST be clear and understandable at a glance
+- NO abbreviations (like "Comm.", "Fin.", "Mgmt")
+- Use simple, direct language
+- Examples:
+  ✅ GOOD: "AI for Sales Teams" (19 chars) - clear, direct
+  ✅ GOOD: "Revenue Automation" (18 chars) - understandable
+  ✅ GOOD: "Stakeholder Updates" (19 chars) - specific
+  ❌ BAD: "AI for Comm. & Fin. Alignment" (30 chars) - too long, unclear abbreviations
+  ❌ BAD: "AI Comm. Strategy" (18 chars) - confusing abbreviations
+  ❌ BAD: "Communication & Financial Alignment" (35 chars) - way too long
 - description: 180 characters maximum (2-3 punchy sentences)
 - basedOn: 50 characters each, max 3 items
 - impact: 40 characters maximum
 - timeline: 20 characters maximum  
 - growthMetric: 5-15 characters (just number/percentage like '15%' or '$500K')
 
-KEY FOCUS AREA - ABSOLUTELY CRITICAL:
-- title: EXACTLY 25-35 characters. NOT 40. NOT 38. Count EVERY character including spaces.
-  ✅ GOOD: "AI for Stakeholder Comms" (28 chars)
-  ✅ GOOD: "Revenue via Automation" (23 chars)  
-  ❌ BAD: "AI-Powered Stakeholder Communication" (38 chars - TOO LONG)
-  If your title is longer than 35 characters, you MUST shorten it. Use abbreviations if needed.
+KEY FOCUS AREA - TITLE RULES:
+- Same rules as roadmap titles: 18-25 chars, NO abbreviations, must be clear
 
 Write in executive-level, punchy language. Every word must add value. NO filler. Be SPECIFIC using their actual data, words, and numbers.`;
 
