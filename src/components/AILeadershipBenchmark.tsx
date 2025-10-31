@@ -209,7 +209,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
     }
   };
 
-  // Calculate Leadership Score (0-30 scale)
+  // Calculate Leadership Score (0-100 scale, normalized from 6 questions × 5 points = 30 max)
   const calculateLeadershipScore = () => {
     let totalScore = 0;
     const responses = Object.values(assessmentData);
@@ -224,13 +224,15 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       }
     });
     
-    return totalScore;
+    // Normalize to 0-100 scale (max possible is 30, so multiply by 100/30)
+    const normalizedScore = Math.round((totalScore / 30) * 100);
+    return normalizedScore;
   };
 
   const score = calculateLeadershipScore();
 
   const getLeadershipTier = (score: number) => {
-    if (score >= 25) return { 
+    if (score >= 83) return { 
       tier: 'AI-Orchestrator', 
       gradient: 'from-[hsl(var(--tier-orchestrator))] to-[hsl(var(--tier-orchestrator-light))]',
       textColor: 'text-[hsl(var(--tier-orchestrator))]',
@@ -239,7 +241,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       icon: Crown,
       message: "You're setting the pace. Now amplify by formalizing AI across teams."
     };
-    if (score >= 19) return { 
+    if (score >= 63) return { 
       tier: 'AI-Confident Leader', 
       gradient: 'from-[hsl(var(--tier-confident))] to-[hsl(var(--tier-confident-light))]',
       textColor: 'text-[hsl(var(--tier-confident))]',
@@ -248,7 +250,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       icon: Target,
       message: "You're using AI as a thinking partner—next, scale culture and growth ops."
     };
-    if (score >= 13) return { 
+    if (score >= 43) return { 
       tier: 'AI-Aware Leader', 
       gradient: 'from-[hsl(var(--tier-aware))] to-[hsl(var(--tier-aware-light))]',
       textColor: 'text-[hsl(var(--tier-aware))]',
@@ -465,7 +467,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         <span className="text-5xl lg:text-7xl font-display font-bold text-primary">
                           {score}
                         </span>
-                        <span className="text-sm text-muted-foreground mt-1">out of 30</span>
+                        <span className="text-sm text-muted-foreground mt-1">out of 100</span>
                       </div>
                       <div className="absolute -top-4 -right-4 bg-background rounded-full p-2 shadow-lg">
                         <leadershipProfile.icon className="h-8 w-8 lg:h-12 lg:w-12 text-primary" />

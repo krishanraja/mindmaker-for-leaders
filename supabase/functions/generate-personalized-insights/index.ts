@@ -241,7 +241,7 @@ serve(async (req) => {
 });
 
 function buildPersonalizedPrompt(assessmentData: any, contactData: any, deepProfileData: any): string {
-  // Calculate score for context
+  // Calculate score for context (normalize to 0-100 scale)
   let totalScore = 0;
   const responses = Object.values(assessmentData);
   responses.forEach((response: any) => {
@@ -250,6 +250,9 @@ function buildPersonalizedPrompt(assessmentData: any, contactData: any, deepProf
       if (match) totalScore += parseInt(match[1]);
     }
   });
+  
+  // Normalize to 0-100 scale (max possible is 30)
+  const normalizedScore = Math.round((totalScore / 30) * 100);
 
   // Extract assessment question names and scores
   const assessmentBreakdown = Object.entries(assessmentData).map(([key, value]: [string, any]) => {
@@ -266,7 +269,7 @@ EXECUTIVE PROFILE:
 - Industry: ${contactData.industry || 'Not specified'}
 - Primary Focus: ${contactData.primaryFocus || 'Not specified'}
 - Timeline: ${contactData.timeline || 'Not specified'}
-- Overall Leadership Score: ${totalScore}/30
+- Overall Leadership Score: ${normalizedScore}/100 (normalized from ${totalScore}/30)
 
 ASSESSMENT RESPONSES:
 ${assessmentBreakdown}
@@ -318,7 +321,7 @@ TASK: Generate personalized AI leadership insights that:
 
 1. GROWTH READINESS:
    - level: Select from enum ["High", "Medium-High", "Medium", "Developing"]
-   - preview: Use template "Score {X}/30 - {level} revenue potential" (max 50 chars)
+   - preview: Use template "Score {X}/100 - {level} revenue potential" (max 50 chars)
    - details: 2-3 sentences with specific recommendations based on their score (max 120 chars)
 
 2. LEADERSHIP STAGE:
