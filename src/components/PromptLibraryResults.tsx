@@ -517,9 +517,9 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{project.purpose}</p>
                         </div>
 
-                        <div className="bg-muted/50 rounded-xl p-3 space-y-2 h-[100px] overflow-hidden">
+                        <div className="bg-muted/50 rounded-xl p-3 space-y-2 h-[140px] overflow-hidden">
                           <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
-                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">{project.whenToUse}</p>
+                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6">{project.whenToUse}</p>
                         </div>
 
                         <div className="h-[180px] overflow-hidden space-y-2">
