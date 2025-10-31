@@ -298,7 +298,7 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
               {/* Implementation Timeline */}
               <div className="space-y-2">
                 <Label htmlFor="timeline" className="text-foreground font-medium text-sm">
-                  What's your timeline to kick off a sprint? <span className="text-destructive">*</span>
+                  What's your kick off timeline? <span className="text-destructive">*</span>
                 </Label>
                 <select
                   id="timeline"
