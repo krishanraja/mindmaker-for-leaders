@@ -80,7 +80,7 @@ serve(async (req) => {
                   items: {
                     type: "object",
                     properties: {
-                      title: { type: "string", description: "Clear title (max 60 chars)", maxLength: 60 },
+                      title: { type: "string", description: "Clear, punchy title (max 40 chars) - MUST fit on one line", maxLength: 40 },
                       description: { type: "string", description: "Concise description (max 180 chars) with specific context", maxLength: 180 },
                       basedOn: { type: "array", items: { type: "string", maxLength: 50 }, description: "What user data this is based on (max 50 chars each)", maxItems: 3 },
                       impact: { type: "string", description: "Quantified impact metric (max 40 chars)", maxLength: 40 },
@@ -238,8 +238,9 @@ For each top card (growthReadiness, leadershipStage, keyFocus):
 The preview shows by default - it MUST be scannable at a glance.
 The details expand on click - it provides the full story with their specific data.
 
-ROADMAP INITIATIVES:
-- title: 60 characters maximum
+ROADMAP INITIATIVES - CRITICAL FORMATTING:
+- title: MAX 40 characters - MUST fit on ONE LINE. Be concise and punchy.
+  Examples: "AI-Powered Stakeholder Comms" (31 chars), "Revenue Acceleration via AI" (27 chars)
 - description: 180 characters maximum (2-3 punchy sentences)
 - basedOn: 50 characters each, max 3 items
 - impact: 40 characters maximum
