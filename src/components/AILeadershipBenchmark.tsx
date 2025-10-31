@@ -260,22 +260,44 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
     }
   ];
 
-  // Use personalized roadmap or fallback
+  // Use personalized roadmap or fallback with character length validation
   const roadmapInsights = personalizedInsights?.roadmapInitiatives?.map(initiative => {
-    // Extract concise metric if AI generated long text (fallback pattern)
+    // Truncate title to 80 chars
+    const truncatedTitle = initiative.title.length > 80 
+      ? initiative.title.substring(0, 77) + '...' 
+      : initiative.title;
+    
+    // Truncate description to 400 chars
+    const truncatedDescription = initiative.description.length > 400
+      ? initiative.description.substring(0, 397) + '...'
+      : initiative.description;
+    
+    // Limit basedOn to 3 items, each max 50 chars
+    const truncatedBasedOn = (initiative.basedOn || [])
+      .slice(0, 3)
+      .map(item => item.length > 50 ? item.substring(0, 47) + '...' : item);
+    
+    // Limit dimensions to 3
+    const limitedDimensions = (initiative.scaleUpsDimensions || []).slice(0, 3);
+    
+    // Extract concise metric (max 20 chars)
     let cleanedMetric = initiative.growthMetric;
     if (cleanedMetric && cleanedMetric.length > 20) {
-      // Try to extract just the number/percentage/metric from longer text
       const metricMatch = cleanedMetric.match(/\d+[-–]?\d*%|\$\d+[KMB]?|\d+x/i);
       if (metricMatch) {
         cleanedMetric = metricMatch[0];
+      } else {
+        cleanedMetric = cleanedMetric.substring(0, 17) + '...';
       }
     }
     
     return {
       ...initiative,
+      title: truncatedTitle,
+      description: truncatedDescription,
+      basedOn: truncatedBasedOn,
+      scaleUpsDimensions: limitedDimensions,
       growthMetric: cleanedMetric,
-      scaleUpsDimensions: initiative.scaleUpsDimensions || [],
       icon: initiative.title.includes('Revenue') || initiative.title.includes('Business') ? Rocket :
             initiative.title.includes('Leadership') || initiative.title.includes('Executive') ? Crown : Users
     };
@@ -608,46 +630,57 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 </CarouselItem>
               ) : (
                 roadmapInsights.map((insight, index) => (
-                  <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-[420px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
-                      <CardContent className="p-6 flex flex-col h-full justify-between">
-                        <div className="flex items-start gap-3 mb-4">
+                  <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3 flex">
+                    <Card className="h-[520px] md:h-[540px] lg:h-[560px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all w-full">
+                      <CardContent className="p-6 flex flex-col h-full">
+                        {/* Header: Fixed 72px */}
+                        <div className="h-[72px] flex items-start gap-3 mb-3">
                           <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
                             <insight.icon className="h-5 w-5 text-primary" />
                           </div>
-                          <div className="flex-1">
-                            <h3 className="font-bold text-foreground text-base leading-tight">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-foreground text-base leading-tight line-clamp-3">
                               {insight.title}
                             </h3>
                           </div>
                         </div>
                         
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                          {insight.description}
-                        </p>
+                        {/* Description: Fixed 120px */}
+                        <div className="h-[120px] mb-3">
+                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
+                            {insight.description}
+                          </p>
+                        </div>
                         
-                        {insight.basedOn && insight.basedOn.length > 0 && (
-                          <div className="mb-4 p-2.5 bg-primary/10 rounded-lg">
-                            <div className="text-xs font-semibold text-primary mb-1">Based on:</div>
-                            <div className="text-xs text-muted-foreground">
-                              {insight.basedOn.join(' • ')}
+                        {/* Based On: Fixed 68px (always present) */}
+                        <div className="h-[68px] mb-3">
+                          <div className="p-2.5 bg-primary/10 rounded-lg h-full overflow-hidden flex flex-col">
+                            <div className="text-xs font-semibold text-primary mb-1 flex-shrink-0">Based on:</div>
+                            <div className="text-xs text-muted-foreground line-clamp-2 flex-1">
+                              {insight.basedOn && insight.basedOn.length > 0 ? insight.basedOn.join(' • ') : 'Your assessment responses'}
                             </div>
                           </div>
-                        )}
+                        </div>
                         
-                        {insight.scaleUpsDimensions && insight.scaleUpsDimensions.length > 0 && (
-                          <div className="mb-3 flex flex-wrap gap-1.5">
-                            {insight.scaleUpsDimensions.map((dim: string, dimIdx: number) => (
-                              <Badge key={dimIdx} variant="outline" className="text-xs py-0.5 px-2">
-                                {dim}
-                              </Badge>
-                            ))}
+                        {/* Dimensions: Fixed 52px (always present) */}
+                        <div className="h-[52px] mb-3 overflow-x-auto">
+                          <div className="flex flex-wrap gap-1.5 h-full content-start">
+                            {insight.scaleUpsDimensions && insight.scaleUpsDimensions.length > 0 ? (
+                              insight.scaleUpsDimensions.map((dim: string, dimIdx: number) => (
+                                <Badge key={dimIdx} variant="outline" className="text-xs py-0.5 px-2 h-fit">
+                                  {dim}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge variant="outline" className="text-xs py-0.5 px-2 h-fit">General Leadership</Badge>
+                            )}
                           </div>
-                        )}
+                        </div>
                         
-                        <div className="flex items-start justify-between pt-3 border-t gap-3">
-                          <div className="flex flex-col items-start flex-1">
-                            <div className="text-xs font-bold text-primary mb-1.5">
+                        {/* Bottom Metrics: Fixed 60px footer */}
+                        <div className="h-[60px] flex items-center justify-between pt-3 border-t gap-3 mt-auto">
+                          <div className="flex flex-col items-start flex-1 min-w-0">
+                            <div className="text-xs font-bold text-primary mb-1 truncate w-full">
                               {insight.growthMetric}
                             </div>
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">
@@ -655,7 +688,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             </div>
                           </div>
                           <div className="flex flex-col items-start flex-shrink-0">
-                            <div className="text-xs font-bold text-foreground mb-1.5">
+                            <div className="text-xs font-bold text-foreground mb-1 whitespace-nowrap">
                               {insight.timeline}
                             </div>
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">
