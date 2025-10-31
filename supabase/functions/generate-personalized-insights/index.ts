@@ -69,7 +69,7 @@ serve(async (req) => {
                 keyFocus: {
                   type: "object",
                   properties: {
-                    title: { type: "string", description: "Focus area (max 40 chars) - MUST fit on 1-2 lines", maxLength: 40 },
+                    title: { type: "string", description: "CRITICAL: Exactly 25-35 chars ONLY. Count every letter. Examples: 'AI for Stakeholder Comms' (28), 'Revenue via Automation' (23)", maxLength: 35 },
                     preview: { type: "string", description: "Ultra-concise preview (max 50 chars) - punchy one-liner", maxLength: 50 },
                     details: { type: "string", description: "Full insight (max 120 chars) - specific solution", maxLength: 120 }
                   },
@@ -80,7 +80,7 @@ serve(async (req) => {
                   items: {
                     type: "object",
                     properties: {
-                      title: { type: "string", description: "Clear, punchy title (max 40 chars) - MUST fit on one line", maxLength: 40 },
+                      title: { type: "string", description: "CRITICAL: Exactly 25-35 chars ONLY. Count every letter. Use abbreviations if needed.", maxLength: 35 },
                       description: { type: "string", description: "Concise description (max 180 chars) with specific context", maxLength: 180 },
                       basedOn: { type: "array", items: { type: "string", maxLength: 50 }, description: "What user data this is based on (max 50 chars each)", maxItems: 3 },
                       impact: { type: "string", description: "Quantified impact metric (max 40 chars)", maxLength: 40 },
@@ -124,6 +124,37 @@ serve(async (req) => {
     }
 
     const personalizedInsights = JSON.parse(toolCall.function.arguments);
+    
+    // Backend validation and truncation for titles
+    if (personalizedInsights.keyFocus?.title && personalizedInsights.keyFocus.title.length > 35) {
+      console.warn(`keyFocus title too long (${personalizedInsights.keyFocus.title.length} chars): "${personalizedInsights.keyFocus.title}"`);
+      
+      // Smart truncation: find last complete word within 32 chars
+      let truncated = personalizedInsights.keyFocus.title.substring(0, 32);
+      const lastSpace = truncated.lastIndexOf(' ');
+      if (lastSpace > 20) { // Ensure we keep meaningful content
+        truncated = truncated.substring(0, lastSpace);
+      }
+      
+      personalizedInsights.keyFocus.title = truncated;
+      console.log(`Truncated to: "${truncated}" (${truncated.length} chars)`);
+    }
+
+    // Validate and truncate roadmap initiative titles
+    if (personalizedInsights.roadmapInitiatives) {
+      personalizedInsights.roadmapInitiatives.forEach((initiative: any, index: number) => {
+        if (initiative.title && initiative.title.length > 35) {
+          console.warn(`Initiative ${index} title too long (${initiative.title.length} chars): "${initiative.title}"`);
+          let truncated = initiative.title.substring(0, 32);
+          const lastSpace = truncated.lastIndexOf(' ');
+          if (lastSpace > 20) {
+            truncated = truncated.substring(0, lastSpace);
+          }
+          initiative.title = truncated;
+          console.log(`Initiative ${index} truncated to: "${truncated}" (${truncated.length} chars)`);
+        }
+      });
+    }
     
     // Validate response completeness
     if (!personalizedInsights.roadmapInitiatives || personalizedInsights.roadmapInitiatives.length === 0) {
@@ -239,17 +270,23 @@ The preview shows by default - it MUST be scannable at a glance.
 The details expand on click - it provides the full story with their specific data.
 
 ROADMAP INITIATIVES - CRITICAL FORMATTING:
-- title: MAX 40 characters - MUST fit on ONE LINE. Be concise and punchy.
-  Examples: "AI-Powered Stakeholder Comms" (31 chars), "Revenue Acceleration via AI" (27 chars)
+- title: EXACTLY 25-35 characters. NOT 40. NOT 38. Count EVERY character including spaces.
+  ✅ GOOD: "AI for Stakeholder Comms" (28 chars)
+  ✅ GOOD: "Revenue via Automation" (23 chars)  
+  ❌ BAD: "AI for Stakeholder Communication" (35+ chars - TOO LONG)
+  If your title is longer than 35 characters, you MUST shorten it. Use abbreviations if needed.
 - description: 180 characters maximum (2-3 punchy sentences)
 - basedOn: 50 characters each, max 3 items
 - impact: 40 characters maximum
 - timeline: 20 characters maximum  
 - growthMetric: 5-15 characters (just number/percentage like '15%' or '$500K')
 
-KEY FOCUS AREA - CRITICAL:
-- title: MAX 40 characters - MUST fit cleanly on all devices
-  Examples: "AI for Stakeholder Communication" (35 chars), "Revenue Growth via Automation" (29 chars)
+KEY FOCUS AREA - ABSOLUTELY CRITICAL:
+- title: EXACTLY 25-35 characters. NOT 40. NOT 38. Count EVERY character including spaces.
+  ✅ GOOD: "AI for Stakeholder Comms" (28 chars)
+  ✅ GOOD: "Revenue via Automation" (23 chars)  
+  ❌ BAD: "AI-Powered Stakeholder Communication" (38 chars - TOO LONG)
+  If your title is longer than 35 characters, you MUST shorten it. Use abbreviations if needed.
 
 Write in executive-level, punchy language. Every word must add value. NO filler. Be SPECIFIC using their actual data, words, and numbers.`;
 
