@@ -377,11 +377,11 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                   </div>
                   
                   {/* Content - 3 strengths compact */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {workingStyle.map((trait, idx) => (
-                      <div key={idx} className="flex items-start gap-1.5">
-                        <span className="text-primary text-xs mt-0.5">•</span>
-                        <p className="text-xs text-muted-foreground leading-tight">{trait}</p>
+                      <div key={idx} className="flex items-start gap-2">
+                        <span className="text-primary text-sm mt-0.5">•</span>
+                        <p className="text-sm text-muted-foreground leading-snug">{trait}</p>
                       </div>
                     ))}
                   </div>
