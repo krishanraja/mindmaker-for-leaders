@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -20,7 +21,9 @@ import {
   Rocket,
   Sparkles,
   Award,
-  Calendar
+  Calendar,
+  Compass,
+  RefreshCw
 } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -178,6 +181,50 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   };
 
   const leadershipProfile = getLeadershipTier(score);
+
+  // Map dimension names to icons
+  const getDimensionIcon = (dimensionName: string) => {
+    const iconMap: Record<string, any> = {
+      'AI Fluency': Brain,
+      'Delegation Mastery': Users,
+      'Strategic Vision': Compass,
+      'Decision Agility': Zap,
+      'Impact Orientation': Award,
+      'Change Leadership': RefreshCw
+    };
+    return iconMap[dimensionName] || Target;
+  };
+
+  // Get level styling and progress
+  const getLevelStyling = (level: string) => {
+    const levelMap: Record<string, { gradient: string, iconBg: string, progress: number, badgeBg: string }> = {
+      'Building Foundations': { 
+        gradient: 'from-muted/30 to-muted/10',
+        iconBg: 'bg-muted/50 border-muted',
+        progress: 25,
+        badgeBg: 'bg-muted text-muted-foreground'
+      },
+      'Active Explorer': { 
+        gradient: 'from-primary/20 to-primary/5',
+        iconBg: 'bg-primary/10 border-primary/30',
+        progress: 50,
+        badgeBg: 'bg-primary/20 text-primary border-primary/30'
+      },
+      'Confident Practitioner': { 
+        gradient: 'from-primary/30 to-primary/10',
+        iconBg: 'bg-primary/20 border-primary/40',
+        progress: 75,
+        badgeBg: 'bg-primary/30 text-primary border-primary/40'
+      },
+      'AI Pioneer': { 
+        gradient: 'from-primary/40 to-primary/15',
+        iconBg: 'bg-primary/30 border-primary/50',
+        progress: 100,
+        badgeBg: 'bg-primary text-primary-foreground'
+      }
+    };
+    return levelMap[level] || levelMap['Building Foundations'];
+  };
 
   // Default strategic insights (fallback)
   const defaultStrategicInsights = [
@@ -655,32 +702,51 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   className="w-full mt-6"
                 >
                   <CarouselContent className="-ml-4">
-                    {leadershipComparison.dimensions.map((dim, idx) => (
-                      <CarouselItem key={idx} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                        <Card className="h-[280px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all bg-card">
-                          <CardContent className="p-6 flex flex-col h-full justify-between">
-                            <div className="space-y-3 flex-1 flex flex-col">
-                              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                                {dim.dimension}
+                    {leadershipComparison.dimensions.map((dim, idx) => {
+                      const IconComponent = getDimensionIcon(dim.dimension);
+                      const styling = getLevelStyling(dim.level);
+                      
+                      return (
+                        <CarouselItem key={idx} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                          <Card className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/50 border-2 rounded-2xl bg-gradient-to-br ${styling.gradient}`}>
+                            <CardContent className="p-6">
+                              <div className="space-y-5">
+                                {/* Header with Icon and Title */}
+                                <div className="flex items-start gap-4">
+                                  <div className={`p-3 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110`}>
+                                    <IconComponent className="w-6 h-6 text-primary" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-lg text-foreground leading-tight mb-2">
+                                      {dim.dimension}
+                                    </h4>
+                                    <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
+                                      {dim.level}
+                                    </Badge>
+                                  </div>
+                                </div>
+
+                                {/* Visual Progress Indicator */}
+                                <div className="space-y-2.5">
+                                  <Progress value={styling.progress} className="h-2.5" />
+                                  <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+                                    <span>Building</span>
+                                    <span>Explorer</span>
+                                    <span>Practitioner</span>
+                                    <span>Pioneer</span>
+                                  </div>
+                                </div>
+
+                                {/* Reasoning Text */}
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                  {dim.reasoning}
+                                </p>
                               </div>
-                              <Badge 
-                                variant={
-                                  dim.level === 'AI Pioneer' ? 'default' :
-                                  dim.level === 'Confident Practitioner' ? 'secondary' :
-                                  dim.level === 'Active Explorer' ? 'outline' : 'destructive'
-                                }
-                                className="text-xs font-semibold w-fit"
-                              >
-                                {dim.level}
-                              </Badge>
-                              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                                {dim.reasoning}
-                              </p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </CarouselItem>
-                    ))}
+                            </CardContent>
+                          </Card>
+                        </CarouselItem>
+                      );
+                    })}
                   </CarouselContent>
                   
                   <div className="flex justify-center gap-2 mt-6">
