@@ -166,7 +166,6 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
                   <User className="h-4 w-4 inline mr-2" />
                   Full Name <span className="text-destructive">*</span>
                 </Label>
-                <p className="text-xs text-muted-foreground">Required field</p>
                 <Input
                   id="fullName"
                   type="text"
@@ -188,7 +187,6 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
                   <Building className="h-4 w-4 inline mr-2" />
                   Company Name <span className="text-destructive">*</span>
                 </Label>
-                <p className="text-xs text-muted-foreground">Required field</p>
                 <Input
                   id="companyName"
                   type="text"
@@ -210,7 +208,6 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
                   <Mail className="h-4 w-4 inline mr-2" />
                   Email Address <span className="text-destructive">*</span>
                 </Label>
-                <p className="text-xs text-muted-foreground">Required field</p>
                 <Input
                   id="email"
                   type="email"
@@ -232,7 +229,6 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
                   <User className="h-4 w-4 inline mr-2" />
                   Your Role/Title <span className="text-destructive">*</span>
                 </Label>
-                <p className="text-xs text-muted-foreground">Required field</p>
                 <Input
                   id="roleTitle"
                   type="text"
@@ -254,7 +250,6 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
                   <Building className="h-4 w-4 inline mr-2" />
                   Company Size <span className="text-destructive">*</span>
                 </Label>
-                <p className="text-xs text-muted-foreground">Required field</p>
                 <select
                   id="companySize"
                   value={contactData.companySize}
@@ -278,9 +273,8 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
               {/* Primary AI Focus */}
               <div className="space-y-2">
                 <Label htmlFor="primaryFocus" className="text-foreground font-medium text-sm">
-                  What's your primary AI focus right now? <span className="text-destructive">*</span>
+                  What's your primary AI focus? <span className="text-destructive">*</span>
                 </Label>
-                <p className="text-xs text-muted-foreground">Required field</p>
                 <select
                   id="primaryFocus"
                   value={contactData.primaryFocus}
@@ -304,9 +298,8 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
               {/* Implementation Timeline */}
               <div className="space-y-2">
                 <Label htmlFor="timeline" className="text-foreground font-medium text-sm">
-                  What's your typical timeline for strategic initiatives? <span className="text-destructive">*</span>
+                  What's your timeline to kick off a sprint? <span className="text-destructive">*</span>
                 </Label>
-                <p className="text-xs text-muted-foreground">Required field</p>
                 <select
                   id="timeline"
                   value={contactData.timeline}
