@@ -392,8 +392,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
               {/* Right: Key Metrics & Insight */}
               <div className="space-y-6 w-full lg:w-auto lg:flex-1">
-                  {/* Desktop - Horizontal Cards */}
-                 <div className="hidden sm:flex flex-col gap-3 max-w-4xl">
+                 {/* Desktop - Horizontal Cards */}
+                 <div className="hidden md:flex flex-col gap-3 max-w-4xl">
                   {isLoadingInsights ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -471,7 +471,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 </div>
 
                 {/* Mobile Carousel - 3 Cards */}
-                <div className="sm:hidden">
+                <div className="md:hidden">
                   <Carousel
                     opts={{
                       align: "center",
