@@ -46,6 +46,9 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const [roadmapOpen, setRoadmapOpen] = useState<string | undefined>(undefined);
   
+  // Expansion state for progressive disclosure
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  
   // Carousel states for dot indicators
   const [aboutYouApi, setAboutYouApi] = useState<CarouselApi>();
   const [aboutYouCurrent, setAboutYouCurrent] = useState(0);
@@ -53,6 +56,13 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
   const [masterPromptsCurrent, setMasterPromptsCurrent] = useState(0);
   const [templatesApi, setTemplatesApi] = useState<CarouselApi>();
   const [templatesCurrent, setTemplatesCurrent] = useState(0);
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
   
   // Update current slide when carousel changes
   React.useEffect(() => {
@@ -475,7 +485,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {library.recommendedProjects.map((project, idx) => (
               <CarouselItem key={idx} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[620px] flex flex-col">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl min-h-[580px] max-h-[720px] flex flex-col">
                   <CardContent className="p-6 pb-4 md:pb-3 flex flex-col h-full">
                     {/* Header */}
                     <div className="flex-shrink-0 flex items-center justify-between mb-4">
@@ -512,31 +522,74 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
                       {/* Overview Tab */}
                       <TabsContent value="overview" className="flex-1 overflow-y-auto custom-scrollbar mt-0">
-                        <div className="grid grid-rows-[minmax(100px,auto)_minmax(140px,auto)_minmax(100px,auto)] gap-3">
+                        <div className="flex flex-col gap-5">
                           {/* Header Section */}
-                          <div className="overflow-hidden">
-                            <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1">{project.name}</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed max-h-[80px] overflow-y-auto">{project.purpose}</p>
+                          <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-foreground line-clamp-2">{project.name}</h3>
+                            <div className="relative">
+                              <p className={cn(
+                                "text-sm text-muted-foreground leading-relaxed",
+                                !expandedSections[`purpose-${idx}`] && "line-clamp-3"
+                              )}>
+                                {project.purpose}
+                              </p>
+                              {project.purpose.length > 150 && (
+                                <button
+                                  onClick={() => toggleSection(`purpose-${idx}`)}
+                                  className="text-xs text-primary hover:underline mt-1 font-medium"
+                                >
+                                  {expandedSections[`purpose-${idx}`] ? "Show less" : "Read more"}
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           {/* When to Use Section */}
-                          <div className="bg-muted/50 rounded-xl p-3 space-y-2 overflow-hidden flex flex-col">
-                            <h4 className="text-sm font-semibold text-foreground flex-shrink-0">When to Use</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed overflow-y-auto">{project.whenToUse}</p>
+                          <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                            <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
+                            <div className="relative">
+                              <p className={cn(
+                                "text-sm text-muted-foreground leading-relaxed",
+                                !expandedSections[`whenToUse-${idx}`] && "line-clamp-4"
+                              )}>
+                                {project.whenToUse}
+                              </p>
+                              {project.whenToUse.length > 200 && (
+                                <button
+                                  onClick={() => toggleSection(`whenToUse-${idx}`)}
+                                  className="text-xs text-primary hover:underline mt-1 font-medium"
+                                >
+                                  {expandedSections[`whenToUse-${idx}`] ? "Show less" : "Read more"}
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           {/* Success Metrics Section */}
-                          <div className="space-y-2 overflow-hidden flex flex-col">
-                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex-shrink-0">
+                          <div className="space-y-2">
+                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                               Success Metrics
                             </h4>
-                            <div className="space-y-1 overflow-y-auto">
-                              {project.successMetrics.map((metric, mIdx) => (
-                                <div key={mIdx} className="flex items-start gap-2 text-sm">
-                                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                                  <span className="text-foreground leading-snug">{metric}</span>
-                                </div>
-                              ))}
+                            <div className="space-y-2">
+                              {project.successMetrics
+                                .slice(0, expandedSections[`metrics-${idx}`] ? undefined : 3)
+                                .map((metric, mIdx) => (
+                                  <div key={mIdx} className="flex items-start gap-2 text-sm">
+                                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                                    <span className="text-foreground leading-snug">{metric}</span>
+                                  </div>
+                                ))}
+                              
+                              {project.successMetrics.length > 3 && (
+                                <button
+                                  onClick={() => toggleSection(`metrics-${idx}`)}
+                                  className="text-xs text-primary hover:underline ml-6 font-medium"
+                                >
+                                  {expandedSections[`metrics-${idx}`] 
+                                    ? "Show less" 
+                                    : `Show ${project.successMetrics.length - 3} more`}
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
