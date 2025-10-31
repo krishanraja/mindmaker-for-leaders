@@ -5,6 +5,16 @@
  * to show how the executive compares to other leaders.
  */
 
+const MAX_REASONING_LENGTH = 120;
+
+/**
+ * Truncates reasoning text to ensure consistent card heights
+ */
+function truncateReasoning(text: string): string {
+  if (text.length <= MAX_REASONING_LENGTH) return text;
+  return text.substring(0, MAX_REASONING_LENGTH - 3) + '...';
+}
+
 export interface LeadershipDimension {
   dimension: string;
   level: 'Building Foundations' | 'Active Explorer' | 'Confident Practitioner' | 'AI Pioneer';
@@ -101,7 +111,7 @@ function mapAIFluency(
     reasoning = 'You\'re in the early stages of developing your AI fluency - a great place to start';
   }
   
-  return { dimension: 'AI Fluency', level, reasoning };
+  return { dimension: 'AI Fluency', level, reasoning: truncateReasoning(reasoning) };
 }
 
 /**
@@ -133,7 +143,7 @@ function mapDelegationMastery(
     reasoning = 'You have significant opportunity to free up your time by delegating routine tasks to AI';
   }
   
-  return { dimension: 'Delegation Mastery', level, reasoning };
+  return { dimension: 'Delegation Mastery', level, reasoning: truncateReasoning(reasoning) };
 }
 
 /**
@@ -167,7 +177,7 @@ function mapStrategicVision(
     reasoning = 'You have opportunity to strengthen the link between AI adoption and business results';
   }
   
-  return { dimension: 'Strategic Vision', level, reasoning };
+  return { dimension: 'Strategic Vision', level, reasoning: truncateReasoning(reasoning) };
 }
 
 /**
@@ -201,7 +211,7 @@ function mapDecisionAgility(
     reasoning = 'You can accelerate your decision velocity by leveraging AI-powered intelligence tools';
   }
   
-  return { dimension: 'Decision Agility', level, reasoning };
+  return { dimension: 'Decision Agility', level, reasoning: truncateReasoning(reasoning) };
 }
 
 /**
@@ -234,7 +244,7 @@ function mapImpactOrientation(
     reasoning = 'You have opportunity to strengthen your focus on tracking and achieving measurable results';
   }
   
-  return { dimension: 'Impact Orientation', level, reasoning };
+  return { dimension: 'Impact Orientation', level, reasoning: truncateReasoning(reasoning) };
 }
 
 /**
@@ -268,5 +278,5 @@ function mapChangeLeadership(
     reasoning = 'You\'re starting to develop your voice and confidence as an AI transformation leader';
   }
   
-  return { dimension: 'Change Leadership', level, reasoning };
+  return { dimension: 'Change Leadership', level, reasoning: truncateReasoning(reasoning) };
 }
