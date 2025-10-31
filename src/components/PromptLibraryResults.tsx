@@ -308,7 +308,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <CarouselContent className="-ml-4">
             {library.recommendedProjects.map((project, idx) => (
               <CarouselItem key={idx} className="pl-4 basis-full md:basis-[480px] lg:basis-[500px]">
-                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[840px] flex flex-col">
+                <Card className="shadow-lg border-2 border-primary/10 rounded-2xl h-[680px] flex flex-col">
                   <CardContent className="p-6 flex flex-col h-full">
                     {/* Header */}
                     <div className="flex-shrink-0 flex items-center justify-between mb-4">
@@ -350,7 +350,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                           <p className="text-sm text-muted-foreground leading-relaxed">{project.purpose}</p>
                         </div>
 
-                        <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                        <div className="bg-muted/50 rounded-xl p-3 space-y-2">
                           <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
                           <p className="text-sm text-muted-foreground leading-relaxed">{project.whenToUse}</p>
                         </div>
@@ -359,7 +359,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                             Success Metrics
                           </h4>
-                          <div className="space-y-1.5">
+                          <div className="space-y-1">
                             {project.successMetrics.map((metric, mIdx) => (
                               <div key={mIdx} className="flex items-start gap-2 text-sm">
                                 <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
