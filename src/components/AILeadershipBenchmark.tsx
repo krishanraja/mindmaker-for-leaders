@@ -666,7 +666,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
           </Carousel>
         </div>
 
-        {/* SCALE UPS Competitive Positioning Strip */}
+        {/* SCALE UPS Competitive Positioning Carousel */}
         {scaleUpsLens && (
           <Card className="mb-20 sm:mb-24">
             <CardContent className="p-8 sm:p-10">
@@ -682,29 +682,48 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   Based on your leadership responses, here's how your organization maps across 6 key business dimensions
                 </p>
                 
-                {/* 6-pill grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                  {scaleUpsLens.dimensions.map((dim, idx) => (
-                    <div key={idx} className="border-2 rounded-xl p-5 space-y-3 hover:border-primary/50 transition-colors bg-card">
-                      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {dim.dimension}
-                      </div>
-                      <Badge 
-                        variant={
-                          dim.level === 'Category Breaker' ? 'default' :
-                          dim.level === 'Accelerator' ? 'secondary' :
-                          dim.level === 'Experimenter' ? 'outline' : 'destructive'
-                        }
-                        className="text-xs font-semibold"
-                      >
-                        {dim.level}
-                      </Badge>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {dim.reasoning}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                {/* Carousel with 6 dimension cards */}
+                <Carousel
+                  opts={{
+                    align: "start",
+                    loop: false,
+                  }}
+                  className="w-full mt-6"
+                >
+                  <CarouselContent className="-ml-4">
+                    {scaleUpsLens.dimensions.map((dim, idx) => (
+                      <CarouselItem key={idx} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                        <Card className="h-[280px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all bg-card">
+                          <CardContent className="p-6 flex flex-col h-full justify-between">
+                            <div className="space-y-3 flex-1 flex flex-col">
+                              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                {dim.dimension}
+                              </div>
+                              <Badge 
+                                variant={
+                                  dim.level === 'Category Breaker' ? 'default' :
+                                  dim.level === 'Accelerator' ? 'secondary' :
+                                  dim.level === 'Experimenter' ? 'outline' : 'destructive'
+                                }
+                                className="text-xs font-semibold w-fit"
+                              >
+                                {dim.level}
+                              </Badge>
+                              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                                {dim.reasoning}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  
+                  <div className="flex justify-center gap-2 mt-6">
+                    <CarouselPrevious className="relative static translate-y-0" />
+                    <CarouselNext className="relative static translate-y-0" />
+                  </div>
+                </Carousel>
 
                 <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
                   <p className="text-sm text-foreground">
