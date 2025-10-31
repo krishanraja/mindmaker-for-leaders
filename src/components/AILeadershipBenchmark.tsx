@@ -634,7 +634,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     <Card className="h-[600px] md:h-[620px] lg:h-[640px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all w-full">
                       <CardContent className="p-6 flex flex-col h-full">
                         {/* Header: Fixed 72px */}
-                        <div className="h-[72px] flex items-start gap-3 mb-3">
+                        <div className="h-[72px] flex items-start gap-3">
                           <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
                             <insight.icon className="h-5 w-5 text-primary" />
                           </div>
@@ -646,14 +646,14 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </div>
                         
                         {/* Description: Fixed 120px */}
-                        <div className="h-[120px] mb-3 flex flex-col justify-start">
+                        <div className="h-[120px] flex flex-col justify-start">
                           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
                             {insight.description}
                           </p>
                         </div>
                         
                         {/* Based On: Fixed 68px (always present) */}
-                        <div className="h-[68px] mb-3">
+                        <div className="h-[68px]">
                           <div className="p-2.5 bg-primary/10 rounded-lg h-full overflow-hidden flex flex-col justify-start">
                             <div className="text-xs font-semibold text-primary mb-1 flex-shrink-0">Based on:</div>
                             <div className="text-xs text-muted-foreground line-clamp-2 flex-1">
@@ -663,7 +663,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </div>
                         
                         {/* Dimensions: Fixed 52px (always present) */}
-                        <div className="h-[52px] mb-3 flex items-start overflow-x-auto">
+                        <div className="h-[52px] flex items-start overflow-x-auto">
                           <div className="flex flex-wrap gap-1.5 h-full content-start">
                             {insight.scaleUpsDimensions && insight.scaleUpsDimensions.length > 0 ? (
                               insight.scaleUpsDimensions.map((dim: string, dimIdx: number) => (
@@ -678,7 +678,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </div>
                         
                         {/* Success Metrics: Fixed 80px (always present) */}
-                        <div className="h-[80px] mb-3">
+                        <div className="h-[80px]">
                           <div className="p-2.5 bg-muted/30 rounded-lg h-full overflow-hidden flex flex-col justify-start">
                             <div className="text-xs font-semibold text-foreground mb-1.5 flex-shrink-0 uppercase tracking-wide">Success Metrics</div>
                             <div className="text-xs text-muted-foreground line-clamp-3 flex-1 leading-relaxed">
