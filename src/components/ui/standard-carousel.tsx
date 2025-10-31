@@ -8,7 +8,7 @@ interface StandardCarouselProps {
   className?: string;
   showDots?: boolean;
   showArrows?: boolean;
-  cardWidth?: 'mobile' | 'tablet' | 'desktop';
+  cardWidth?: 'mobile' | 'mobile-lg' | 'tablet' | 'desktop';
 }
 
 export const StandardCarousel: React.FC<StandardCarouselProps> = ({
@@ -65,15 +65,16 @@ export const StandardCarousel: React.FC<StandardCarouselProps> = ({
         ref={scrollRef}
         onScroll={handleScroll}
         className={cn(
-          "grid gap-4 px-4 overflow-x-auto snap-x snap-mandatory max-w-[100vw]",
+          "grid px-4 overflow-x-auto snap-x snap-mandatory max-w-[100vw]",
           "scrollbar-hide",
           "[grid-auto-flow:column]",
           "[align-items:stretch]",
           "[-webkit-overflow-scrolling:touch]",
           "[touch-action:pan-x]",
-          cardWidth === 'mobile' && "[grid-auto-columns:90%]",
-          cardWidth === 'tablet' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%]",
-          cardWidth === 'desktop' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%] lg:[grid-auto-columns:32%]",
+          cardWidth === 'mobile' && "[grid-auto-columns:90%] gap-4",
+          cardWidth === 'mobile-lg' && "[grid-auto-columns:88%] md:[grid-auto-columns:45%] gap-6",
+          cardWidth === 'tablet' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%] gap-4",
+          cardWidth === 'desktop' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%] lg:[grid-auto-columns:32%] gap-4",
           className
         )}
       >

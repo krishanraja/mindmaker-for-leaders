@@ -796,8 +796,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   Based on your responses, here's how your AI leadership capabilities compare to other executives
                 </p>
                 
-                {/* Carousel with 6 dimension cards */}
-                <StandardCarousel cardWidth="desktop" showDots={false} showArrows={true} className="w-full mt-6">
+                {/* Mobile-Optimized Carousel with breathing space */}
+                <StandardCarousel cardWidth="mobile-lg" showDots={true} showArrows={true} className="w-full mt-6">
                   {leadershipComparison.dimensions.map((dim, idx) => {
                     const IconComponent = getDimensionIcon(dim.dimension);
                     const styling = getLevelStyling(dim.level);
@@ -805,104 +805,161 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     return (
                       <StandardCarouselCard 
                         key={idx} 
-                        className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl rounded-2xl bg-gradient-to-br ${styling.gradient} flex flex-col
-                          ${dim.rank && dim.rank <= 2 ? 'border-green-300 dark:border-green-700' : 
-                            dim.rank && dim.rank >= 5 ? 'border-amber-300 dark:border-amber-700' : 
-                            'border-primary/20'} 
-                          border-2`}
+                        className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl rounded-2xl flex flex-col
+                          sm:border-2 border-0 shadow-lg sm:shadow-none
+                          sm:bg-gradient-to-br sm:from-card sm:to-muted/20"
                       >
-                        <Card className="h-full border-0 shadow-none bg-transparent min-h-[440px] sm:min-h-[480px]">
-                          <CardContent className="p-4 sm:p-6 h-full flex flex-col space-y-4">
-                            {/* Header with Icon and Title - Fixed height for alignment */}
-                            <div className="carousel-card-header flex items-start gap-3 min-h-[85px] flex-shrink-0">
-                              <div className={`p-2.5 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110 flex-shrink-0`}>
-                                <IconComponent className="w-5 h-5 text-primary" />
+                        {/* Mobile: Simplified, breathable layout (320px) | Desktop: Comprehensive view */}
+                        <Card className="h-full border-0 shadow-none bg-transparent min-h-[320px] sm:min-h-[480px]">
+                          <CardContent className="p-5 sm:p-6 h-full flex flex-col">
+                            
+                            {/* Mobile-First Layout */}
+                            <div className="flex flex-col h-full sm:hidden space-y-5">
+                              {/* Watermark Icon - Mobile Only */}
+                              <div className="absolute top-4 right-4 opacity-5">
+                                <IconComponent className="w-24 h-24" />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="carousel-card-title-base font-bold text-base sm:text-lg text-foreground line-clamp-2 mb-2 leading-tight">
+
+                              {/* Hero: Large Level Badge */}
+                              <div className="flex justify-center pt-2">
+                                <Badge className={`text-base font-bold px-5 py-2.5 ${styling.badgeBg} border-2 shadow-md`}>
+                                  {dim.level}
+                                </Badge>
+                              </div>
+
+                              {/* Dimension Title */}
+                              <div className="text-center">
+                                <h4 className="text-lg font-bold text-foreground leading-tight">
                                   {dim.dimension}
                                 </h4>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
-                                    {dim.level}
-                                  </Badge>
-                                  {dim.rank && dim.rank <= 2 && (
-                                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800">
-                                      Top Strength
-                                    </Badge>
-                                  )}
-                                  {dim.rank && dim.rank >= 5 && (
-                                    <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
-                                      Growth Area
-                                    </Badge>
-                                  )}
-                                </div>
                               </div>
-                            </div>
 
-                            {/* Visual Progress Indicator with actual score - Fixed position */}
-                            <div className="space-y-2 min-h-[45px] flex-shrink-0">
-                              <Progress value={dim.score} className="h-2" />
-                              <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-                                <span>Building</span>
-                                <span>Explorer</span>
-                                <span>Practitioner</span>
-                                <span>Pioneer</span>
+                              {/* Key Insight - Single most important point */}
+                              <div className="flex-1 flex items-start">
+                                <p className="text-sm text-muted-foreground leading-relaxed text-center">
+                                  {dim.reasoning.split('.')[0]}.
+                                </p>
                               </div>
-                            </div>
 
-                            {/* Enhanced Reasoning with Collapsible Expansion */}
-                            <div className="carousel-card-body space-y-2 flex-1 overflow-hidden">
-                              <Collapsible
-                                open={expandedDimensions[dim.dimension] || false}
-                                onOpenChange={() => toggleDimension(dim.dimension)}
-                              >
-                                <div className="space-y-2">
-                                  {/* Truncated version when collapsed */}
-                                  {!expandedDimensions[dim.dimension] && (
-                                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                                      {dim.reasoning}
-                                    </p>
-                                  )}
-                                  
-                                  {/* Full content when expanded */}
-                                  <CollapsibleContent>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">
-                                      {dim.reasoning}
-                                    </p>
-                                  </CollapsibleContent>
-                                  
-                                  {/* Read More/Less Button */}
-                                  {dim.reasoning.length > 150 && (
-                                    <CollapsibleTrigger asChild>
-                                      <button className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-                                        {expandedDimensions[dim.dimension] ? 'Read less' : 'Read more'}
-                                        <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${
-                                          expandedDimensions[dim.dimension] ? 'rotate-180' : ''
-                                        }`} />
-                                      </button>
-                                    </CollapsibleTrigger>
-                                  )}
-                                </div>
-                              </Collapsible>
-                              
-                              {/* Next Step - Always visible */}
+                              {/* Next Step - Actionable */}
                               {dim.nextStep && (
-                                <div className={`p-2.5 bg-primary/5 rounded-lg border border-primary/10 ${
-                                  !expandedDimensions[dim.dimension] && dim.nextStep.length > 100 ? 'line-clamp-2' : ''
-                                }`}>
-                                  <p className="text-xs font-medium text-foreground">
-                                    <span className="text-primary">Next Step:</span> {dim.nextStep}
+                                <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
+                                  <p className="text-sm font-medium text-foreground">
+                                    <span className="text-primary font-semibold">Next:</span> {dim.nextStep.length > 60 ? dim.nextStep.substring(0, 60) + '...' : dim.nextStep}
                                   </p>
                                 </div>
                               )}
-                              
-                              {/* Percentile - Always visible */}
+
+                              {/* Percentile Context */}
                               {dim.percentile && (
-                                <p className="text-xs text-muted-foreground/80">
-                                  You're in the top {100 - dim.percentile}% of executives in this dimension
-                                </p>
+                                <div className="text-center pb-1">
+                                  <p className="text-sm font-semibold text-primary">
+                                    Top {100 - dim.percentile}% of executives
+                                  </p>
+                                </div>
                               )}
+
+                              {/* Tap for Details Hint */}
+                              <div className="text-center pt-2 border-t border-border/50">
+                                <button 
+                                  onClick={() => toggleDimension(dim.dimension)}
+                                  className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 mx-auto"
+                                >
+                                  Tap for full details
+                                  <ChevronDown className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Desktop: Comprehensive View - Keep existing detailed layout */}
+                            <div className="hidden sm:flex sm:flex-col sm:h-full sm:space-y-4">
+                              {/* Header with Icon and Title */}
+                              <div className="carousel-card-header flex items-start gap-3 min-h-[85px] flex-shrink-0">
+                                <div className={`p-2.5 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110 flex-shrink-0`}>
+                                  <IconComponent className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="carousel-card-title-base font-bold text-base sm:text-lg text-foreground line-clamp-2 mb-2 leading-tight">
+                                    {dim.dimension}
+                                  </h4>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
+                                      {dim.level}
+                                    </Badge>
+                                    {dim.rank && dim.rank <= 2 && (
+                                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800">
+                                        Top Strength
+                                      </Badge>
+                                    )}
+                                    {dim.rank && dim.rank >= 5 && (
+                                      <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
+                                        Growth Area
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Visual Progress Indicator */}
+                              <div className="space-y-2 min-h-[45px] flex-shrink-0">
+                                <Progress value={dim.score} className="h-2" />
+                                <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+                                  <span>Building</span>
+                                  <span>Explorer</span>
+                                  <span>Practitioner</span>
+                                  <span>Pioneer</span>
+                                </div>
+                              </div>
+
+                              {/* Enhanced Reasoning with Collapsible Expansion */}
+                              <div className="carousel-card-body space-y-2 flex-1 overflow-hidden">
+                                <Collapsible
+                                  open={expandedDimensions[dim.dimension] || false}
+                                  onOpenChange={() => toggleDimension(dim.dimension)}
+                                >
+                                  <div className="space-y-2">
+                                    {!expandedDimensions[dim.dimension] && (
+                                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                                        {dim.reasoning}
+                                      </p>
+                                    )}
+                                    
+                                    <CollapsibleContent>
+                                      <p className="text-sm text-muted-foreground leading-relaxed">
+                                        {dim.reasoning}
+                                      </p>
+                                    </CollapsibleContent>
+                                    
+                                    {dim.reasoning.length > 150 && (
+                                      <CollapsibleTrigger asChild>
+                                        <button className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                                          {expandedDimensions[dim.dimension] ? 'Read less' : 'Read more'}
+                                          <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${
+                                            expandedDimensions[dim.dimension] ? 'rotate-180' : ''
+                                          }`} />
+                                        </button>
+                                      </CollapsibleTrigger>
+                                    )}
+                                  </div>
+                                </Collapsible>
+                                
+                                {dim.nextStep && (
+                                  <div className={`p-2.5 bg-primary/5 rounded-lg border border-primary/10 ${
+                                    !expandedDimensions[dim.dimension] && dim.nextStep.length > 100 ? 'line-clamp-2' : ''
+                                  }`}>
+                                    <p className="text-xs font-medium text-foreground">
+                                      <span className="text-primary">Next Step:</span> {dim.nextStep}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {/* Percentile - Desktop */}
+                                {dim.percentile && (
+                                  <p className="text-xs text-muted-foreground/80">
+                                    You're in the top {100 - dim.percentile}% of executives in this dimension
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
