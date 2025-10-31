@@ -109,22 +109,22 @@ function mapAIFluency(
   if (industryScore === 5) {
     level = 'AI Pioneer';
     score = 75 + (industryScore * 4); // 95
-    reasoning = `Your Q1 industry impact score (${industryScore}/5) shows exceptional AI fluency. You can articulate AI's transformative potential and educate executive peers on strategic implications.`;
+    reasoning = `Your industry impact awareness (${industryScore}/5) shows exceptional AI fluency. You can articulate AI's transformative potential and educate executive peers on strategic implications.`;
     nextStep = 'Publish thought leadership content or speak at industry events to amplify your AI vision';
   } else if (industryScore >= 4) {
     level = 'Confident Practitioner';
     score = 50 + (industryScore * 5); // 60-70
-    reasoning = `Your Q1 score (${industryScore}/5) demonstrates strong AI fluency. You confidently discuss business implications and can translate technical concepts for stakeholders.`;
+    reasoning = `Your industry impact awareness (${industryScore}/5) demonstrates strong AI fluency. You confidently discuss business implications and can translate technical concepts for stakeholders.`;
     nextStep = 'Mentor 2-3 executives on AI fundamentals to deepen your expertise through teaching';
   } else if (industryScore === 3 || hasInformationNeeds) {
     level = 'Active Explorer';
     score = 25 + (industryScore * 6) + (hasInformationNeeds ? 5 : 0); // 28-48
-    reasoning = `Your Q1 score (${industryScore}/5) shows solid awareness${hasInformationNeeds ? ', and you\'re actively seeking knowledge' : ''}. To reach Practitioner level, focus on articulating AI's ROI in business terms.`;
+    reasoning = `Your industry impact awareness (${industryScore}/5) shows solid understanding${hasInformationNeeds ? ', and you\'re actively seeking knowledge' : ''}. To reach Practitioner level, focus on articulating AI's ROI in business terms.`;
     nextStep = 'Complete 3 AI case studies in your industry and present findings to your leadership team';
   } else {
     level = 'Building Foundations';
     score = 10 + (industryScore * 4); // 10-18
-    reasoning = `Your Q1 industry impact score (${industryScore}/5) indicates early-stage AI fluency. This is a strong foundation to build from—many executives are starting here.`;
+    reasoning = `Your industry impact awareness (${industryScore}/5) indicates early-stage AI fluency. This is a strong foundation to build from—many executives are starting here.`;
     nextStep = 'Dedicate 30 minutes daily to AI news and complete an executive AI fundamentals course';
   }
   
@@ -151,22 +151,22 @@ function mapDelegationMastery(
   if (bizAccelScore === 5 && timeWaste < 20 && hasDelegationPlan) {
     level = 'AI Pioneer';
     score = 88 + (100 - timeWaste) / 10; // 88-96
-    reasoning = `Your Q2 acceleration score (${bizAccelScore}/5) and low time waste (${timeWaste}%) show mastery of strategic delegation. You've freed up ${100 - timeWaste}% of your time for high-leverage work.`;
+    reasoning = `Your business acceleration rating (${bizAccelScore}/5) and low time waste (${timeWaste}%) show mastery of strategic delegation. You've freed up ${100 - timeWaste}% of your time for high-leverage work.`;
     nextStep = 'Document your delegation playbook and train your leadership team on your time-optimization system';
   } else if (bizAccelScore >= 4 && timeWaste < 40) {
     level = 'Confident Practitioner';
     score = 52 + (bizAccelScore * 3) + (50 - timeWaste) / 2; // 62-72
-    reasoning = `Your Q2 score (${bizAccelScore}/5) with ${timeWaste}% time waste shows you're actively reclaiming ${100 - timeWaste}% of capacity. You're delegating effectively and seeing results.`;
+    reasoning = `Your business acceleration rating (${bizAccelScore}/5) with ${timeWaste}% time waste shows you're actively reclaiming ${100 - timeWaste}% of capacity. You're delegating effectively and seeing results.`;
     nextStep = 'Identify your top 3 remaining time-drains and pilot AI solutions for each this month';
   } else if (bizAccelScore === 3 || hasDelegationPlan) {
     level = 'Active Explorer';
     score = 28 + (bizAccelScore * 4) + (hasDelegationPlan ? 8 : 0); // 36-48
-    reasoning = `Your Q2 score (${bizAccelScore}/5) shows experimentation${hasDelegationPlan ? ', and you\'ve identified delegation targets' : ''}. Current time waste (${timeWaste}%) reveals opportunity to reclaim ${Math.min(30, timeWaste - 20)}+ hours monthly.`;
+    reasoning = `Your business acceleration rating (${bizAccelScore}/5) shows experimentation${hasDelegationPlan ? ', and you\'ve identified delegation targets' : ''}. Current time waste (${timeWaste}%) reveals opportunity to reclaim ${Math.min(30, timeWaste - 20)}+ hours monthly.`;
     nextStep = 'Choose one repetitive task this week and fully delegate it to AI—measure the time saved';
   } else {
     level = 'Building Foundations';
     score = 12 + (bizAccelScore * 3); // 12-24
-    reasoning = `Your Q2 acceleration score (${bizAccelScore}/5) and ${timeWaste}% time waste indicate untapped potential. Most executives at this stage can reclaim 15-20 hours monthly through AI delegation.`;
+    reasoning = `Your business acceleration rating (${bizAccelScore}/5) and ${timeWaste}% time waste indicate untapped potential. Most executives at this stage can reclaim 15-20 hours monthly through AI delegation.`;
     nextStep = 'Audit your calendar: identify 5 recurring tasks under 30 minutes that AI could handle';
   }
   
@@ -195,22 +195,22 @@ function mapStrategicVision(
   if (avgScore >= 4.5 && hasTransformationGoal) {
     level = 'AI Pioneer';
     score = 78 + (avgScore * 4); // 86-98
-    reasoning = `Your Q5 KPI score (${kpiScore}/5) and Q4 positioning (${extPosScore}/5) show exceptional strategic vision. You translate AI capabilities into clear business value${hasTransformationGoal ? ' and have defined your transformation roadmap' : ''}.`;
+    reasoning = `Your KPI tracking strength (${kpiScore}/5) and external positioning (${extPosScore}/5) show exceptional strategic vision. You translate AI capabilities into clear business value${hasTransformationGoal ? ' and have defined your transformation roadmap' : ''}.`;
     nextStep = 'Present your AI-ROI framework to the board and secure budget for a flagship transformation initiative';
   } else if (avgScore >= 4) {
     level = 'Confident Practitioner';
     score = 54 + (avgScore * 4); // 62-74
-    reasoning = `Your combined score (Q5: ${kpiScore}/5, Q4: ${extPosScore}/5) demonstrates you consistently connect AI initiatives to measurable outcomes and can articulate strategic value to stakeholders.`;
+    reasoning = `Your KPI tracking (${kpiScore}/5) and external positioning (${extPosScore}/5) demonstrate you consistently connect AI initiatives to measurable outcomes and can articulate strategic value to stakeholders.`;
     nextStep = 'Build a one-page AI business case template linking capabilities to revenue/cost KPIs';
   } else if (avgScore >= 3) {
     level = 'Active Explorer';
     score = 30 + (avgScore * 5) + (hasTransformationGoal ? 6 : 0); // 36-51
-    reasoning = `Your Q5 KPI (${kpiScore}/5) and Q4 positioning (${extPosScore}/5) show you're learning to bridge AI capabilities with business impact${hasTransformationGoal ? ', and you\'ve set a transformation goal' : '. Focus on articulating ROI'}.`;
+    reasoning = `Your KPI tracking (${kpiScore}/5) and external positioning (${extPosScore}/5) show you're learning to bridge AI capabilities with business impact${hasTransformationGoal ? ', and you\'ve set a transformation goal' : '. Focus on articulating ROI'}.`;
     nextStep = 'Map one AI use case to specific KPIs and present projected impact to your leadership team';
   } else {
     level = 'Building Foundations';
     score = 14 + (avgScore * 4); // 14-28
-    reasoning = `Your Q5 KPI score (${kpiScore}/5) and Q4 positioning (${extPosScore}/5) indicate opportunity to strengthen your strategic AI-to-business translation skills. This is a critical capability for executive AI leaders.`;
+    reasoning = `Your KPI tracking strength (${kpiScore}/5) and external positioning (${extPosScore}/5) indicate opportunity to strengthen your strategic AI-to-business translation skills. This is a critical capability for executive AI leaders.`;
     nextStep = 'Interview 3 business leaders about their KPIs and identify where AI could move the needle';
   }
   
@@ -239,22 +239,22 @@ function mapDecisionAgility(
   if (industryScore === 5 && hasDataNeeds) {
     level = 'AI Pioneer';
     score = 82 + (industryScore * 3); // 92-97
-    reasoning = `Your Q1 impact score (${industryScore}/5) combined with active data-seeking behavior shows you make informed decisions rapidly. You leverage AI-powered intelligence and real-time data to accelerate decision velocity.`;
+    reasoning = `Your industry impact awareness (${industryScore}/5) combined with active data-seeking behavior shows you make informed decisions rapidly. You leverage AI-powered intelligence and real-time data to accelerate decision velocity.`;
     nextStep = 'Build an AI decision-support dashboard that synthesizes real-time insights for your top 3 decision types';
   } else if (industryScore >= 4 || (industryScore === 3 && isAnalytical)) {
     level = 'Confident Practitioner';
     score = 56 + (industryScore * 4) + (isAnalytical ? 6 : 0); // 62-74
-    reasoning = `Your Q1 score (${industryScore}/5)${isAnalytical ? ' and analytical thinking style' : ''} show you leverage data effectively to accelerate decisions. You balance speed with informed judgment.`;
+    reasoning = `Your industry impact awareness (${industryScore}/5)${isAnalytical ? ' and analytical thinking style' : ''} show you leverage data effectively to accelerate decisions. You balance speed with informed judgment.`;
     nextStep = 'Track decision cycle time for 3 key choices this month—identify where AI could compress timelines by 40%';
   } else if (industryScore === 3 || hasDataNeeds) {
     level = 'Active Explorer';
     score = 32 + (industryScore * 4) + (hasDataNeeds ? 8 : 0); // 36-52
-    reasoning = `Your Q1 score (${industryScore}/5) shows you're building decision-making speed${hasDataNeeds ? ' by actively seeking better data access' : ''}. Focus on reducing information-gathering time to accelerate choices.`;
+    reasoning = `Your industry impact awareness (${industryScore}/5) shows you're building decision-making speed${hasDataNeeds ? ' by actively seeking better data access' : ''}. Focus on reducing information-gathering time to accelerate choices.`;
     nextStep = 'Implement one AI tool that delivers instant insights for a recurring decision you make weekly';
   } else {
     level = 'Building Foundations';
     score = 16 + (industryScore * 4); // 16-28
-    reasoning = `Your Q1 industry score (${industryScore}/5) indicates opportunity to accelerate decision velocity. Most executives at this stage can reduce decision time by 30-50% using AI-powered intelligence.`;
+    reasoning = `Your industry impact awareness (${industryScore}/5) indicates opportunity to accelerate decision velocity. Most executives at this stage can reduce decision time by 30-50% using AI-powered intelligence.`;
     nextStep = 'Map your 5 most common decisions and identify which require real-time data vs. analysis';
   }
   
@@ -282,22 +282,22 @@ function mapImpactOrientation(
   if (kpiScore === 5 && strategicWork >= 40) {
     level = 'AI Pioneer';
     score = 80 + (kpiScore * 3) + (strategicWork / 5); // 88-98
-    reasoning = `Your Q5 KPI score (${kpiScore}/5) and ${strategicWork}% time on strategic work (planning + decisions) show rigorous outcome tracking. You spend ${strategicWork}% of capacity on high-leverage activities.`;
+    reasoning = `Your KPI tracking strength (${kpiScore}/5) and ${strategicWork}% time on strategic work (planning + decisions) show rigorous outcome tracking. You spend ${strategicWork}% of capacity on high-leverage activities.`;
     nextStep = 'Create an executive impact dashboard tracking leading indicators for your top 3 strategic priorities';
   } else if (kpiScore >= 4 || (kpiScore === 3 && strategicWork >= 30)) {
     level = 'Confident Practitioner';
     score = 54 + (kpiScore * 4) + (strategicWork / 4); // 61-76
-    reasoning = `Your Q5 KPI score (${kpiScore}/5) with ${strategicWork}% strategic work allocation shows you actively measure results and maintain focus on impact-driven activities.`;
+    reasoning = `Your KPI tracking strength (${kpiScore}/5) with ${strategicWork}% strategic work allocation shows you actively measure results and maintain focus on impact-driven activities.`;
     nextStep = 'Increase strategic work time by 10% this quarter by delegating 3 low-impact recurring tasks to AI';
   } else if (kpiScore === 3 || strategicWork >= 20) {
     level = 'Active Explorer';
     score = 30 + (kpiScore * 5) + (strategicWork / 3); // 36-52
-    reasoning = `Your Q5 KPI score (${kpiScore}/5) and ${strategicWork}% strategic time show you're developing measurement discipline. Focus on increasing your high-impact work percentage.`;
+    reasoning = `Your KPI tracking strength (${kpiScore}/5) and ${strategicWork}% strategic time show you're developing measurement discipline. Focus on increasing your high-impact work percentage.`;
     nextStep = 'Define 3 outcome metrics for your AI initiatives and review them weekly to build tracking habits';
   } else {
     level = 'Building Foundations';
     score = 14 + (kpiScore * 4) + (strategicWork / 5); // 14-30
-    reasoning = `Your Q5 KPI score (${kpiScore}/5) with ${strategicWork}% strategic work indicates opportunity to strengthen outcome focus. Executives at this stage often lack clear success metrics.`;
+    reasoning = `Your KPI tracking strength (${kpiScore}/5) with ${strategicWork}% strategic work indicates opportunity to strengthen outcome focus. Executives at this stage often lack clear success metrics.`;
     nextStep = "Choose one initiative this week and define 2 measurable outcomes you'll track monthly";
   }
   
@@ -326,22 +326,22 @@ function mapChangeLeadership(
   if (avgScore >= 4.5) {
     level = 'AI Pioneer';
     score = 76 + (avgScore * 4); // 86-96
-    reasoning = `Your combined leadership scores (Q6 coaching: ${coachingScore}/5, Q3 team: ${teamAlignScore}/5, Q4 positioning: ${extPosScore}/5) show you're recognized as an AI champion who inspires transformation.`;
+    reasoning = `Your combined leadership ratings (coaching ability: ${coachingScore}/5, team alignment: ${teamAlignScore}/5, external positioning: ${extPosScore}/5) show you're recognized as an AI champion who inspires transformation.`;
     nextStep = 'Launch a cross-functional AI Champions program and certify 10 change agents across the organization';
   } else if (avgScore >= 4) {
     level = 'Confident Practitioner';
     score = 52 + (avgScore * 5); // 62-74
-    reasoning = `Your scores (Q6: ${coachingScore}/5, Q3: ${teamAlignScore}/5, Q4: ${extPosScore}/5) show you actively cultivate AI adoption and empower your team to explore new capabilities with confidence.`;
+    reasoning = `Your leadership ratings (coaching: ${coachingScore}/5, team alignment: ${teamAlignScore}/5, external positioning: ${extPosScore}/5) show you actively cultivate AI adoption and empower your team to explore new capabilities with confidence.`;
     nextStep = 'Host monthly AI show-and-tell sessions where team members demo their AI experiments and wins';
   } else if (avgScore >= 3) {
     level = 'Active Explorer';
     score = 28 + (avgScore * 6); // 34-50
-    reasoning = `Your leadership scores (Q6: ${coachingScore}/5, Q3: ${teamAlignScore}/5, Q4: ${extPosScore}/5) show you're growing your influence as a change agent and building support for AI initiatives.`;
+    reasoning = `Your leadership ratings (coaching: ${coachingScore}/5, team alignment: ${teamAlignScore}/5, external positioning: ${extPosScore}/5) show you're growing your influence as a change agent and building support for AI initiatives.`;
     nextStep = 'Share one AI success story with your team this week and invite them to pilot similar approaches';
   } else {
     level = 'Building Foundations';
     score = 12 + (avgScore * 5); // 12-30
-    reasoning = `Your combined scores (Q6 coaching: ${coachingScore}/5, Q3 team: ${teamAlignScore}/5, Q4 positioning: ${extPosScore}/5) show you're starting to develop your voice as an AI transformation leader.`;
+    reasoning = `Your combined leadership ratings (coaching ability: ${coachingScore}/5, team alignment: ${teamAlignScore}/5, external positioning: ${extPosScore}/5) show you're starting to develop your voice as an AI transformation leader.`;
     nextStep = 'Identify 2 early adopters on your team and champion their AI experiments publicly';
   }
   

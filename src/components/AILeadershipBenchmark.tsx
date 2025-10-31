@@ -768,9 +768,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       >
                         <Card className="h-full border-0 shadow-none bg-transparent">
                           <CardContent className="p-6 h-full flex flex-col space-y-5">
-                            {/* Header with Icon and Title */}
-                            <div className="flex items-start gap-4 min-h-[70px] md:min-h-[80px]">
-                              <div className={`p-3 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110`}>
+                            {/* Header with Icon and Title - Fixed height for alignment */}
+                            <div className="flex items-start gap-4 h-[90px]">
+                              <div className={`p-3 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110 flex-shrink-0`}>
                                 <IconComponent className="w-6 h-6 text-primary" />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -795,8 +795,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               </div>
                             </div>
 
-                            {/* Visual Progress Indicator with actual score */}
-                            <div className="space-y-2.5 min-h-[45px] md:min-h-[50px]">
+                            {/* Visual Progress Indicator with actual score - Fixed position */}
+                            <div className="space-y-2.5 h-[50px]">
                               <Progress value={dim.score} className="h-2.5" />
                               <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
                                 <span>Building</span>
