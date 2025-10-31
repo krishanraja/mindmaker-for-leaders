@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
 import { Brain, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export interface DeepProfileData {
@@ -200,13 +201,12 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                     <Label>{label}</Label>
                     <span className="text-primary font-medium">{profileData.workBreakdown[key as keyof typeof profileData.workBreakdown]}%</span>
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={profileData.workBreakdown[key as keyof typeof profileData.workBreakdown]}
-                    onChange={(e) => updateWorkBreakdown(key as keyof typeof profileData.workBreakdown, parseInt(e.target.value))}
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={[profileData.workBreakdown[key as keyof typeof profileData.workBreakdown]]}
+                    onValueChange={(value) => updateWorkBreakdown(key as keyof typeof profileData.workBreakdown, value[0])}
                     className="w-full"
                   />
                 </div>
@@ -303,13 +303,12 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                 <Label>Time on non-critical tasks</Label>
                 <span className="text-primary font-medium">{profileData.timeWaste}%</span>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={profileData.timeWaste}
-                onChange={(e) => setProfileData(prev => ({ ...prev, timeWaste: parseInt(e.target.value) }))}
+              <Slider
+                min={0}
+                max={100}
+                step={5}
+                value={[profileData.timeWaste]}
+                onValueChange={(value) => setProfileData(prev => ({ ...prev, timeWaste: value[0] }))}
                 className="w-full"
               />
             </div>
