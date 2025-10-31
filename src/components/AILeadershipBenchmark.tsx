@@ -402,21 +402,21 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   ) : (
                     <>
                       {/* Growth Readiness Card */}
-                      <Card className="py-2.5 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
-                        <div className="flex items-center gap-3">
+                      <Card className="py-4 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                        <div className="flex items-start gap-3">
                           <div className="flex-shrink-0">
                             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                               <BarChart3 className="h-5 w-5 text-primary" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-2 mb-0.5">
+                            <div className="flex items-baseline gap-2 mb-1">
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Growth Readiness</span>
                               <span className="text-base font-bold text-foreground">
                                 {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
+                            <p className="text-sm text-muted-foreground leading-relaxed">
                               {personalizedInsights?.growthReadiness.preview || 'Revenue acceleration potential'} — {personalizedInsights?.growthReadiness.details || 'Focus on identifying high-impact AI use cases that align with your strategic priorities.'}
                             </p>
                           </div>
@@ -424,21 +424,21 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </Card>
 
                       {/* Leadership Stage Card */}
-                      <Card className="py-2.5 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
-                        <div className="flex items-center gap-3">
+                      <Card className="py-4 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                        <div className="flex items-start gap-3">
                           <div className="flex-shrink-0">
                             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                               <Target className="h-5 w-5 text-primary" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-2 mb-0.5">
+                            <div className="flex items-baseline gap-2 mb-1">
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Leadership Stage</span>
                               <span className="text-base font-bold text-foreground">
                                 {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
+                            <p className="text-sm text-muted-foreground leading-relaxed">
                               {personalizedInsights?.leadershipStage.preview || 'Build strategic AI leadership capabilities'} — {personalizedInsights?.leadershipStage.details || 'Build a cross-functional AI champion network to accelerate adoption across your organization.'}
                             </p>
                           </div>
@@ -446,21 +446,21 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </Card>
 
                       {/* Executive Insight Card */}
-                      <Card className="py-2.5 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
-                        <div className="flex items-center gap-3">
+                      <Card className="py-4 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                        <div className="flex items-start gap-3">
                           <div className="flex-shrink-0">
                             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                               <Lightbulb className="h-5 w-5 text-primary" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-2 mb-0.5">
+                            <div className="flex items-baseline gap-2 mb-1">
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Executive Insight</span>
                               <span className="text-base font-bold text-foreground">
                                 {personalizedInsights?.keyFocus.category || 'Key Focus'}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
+                            <p className="text-sm text-muted-foreground leading-relaxed">
                               {personalizedInsights?.keyFocus.preview || leadershipProfile.message} — {personalizedInsights?.keyFocus.details || 'Develop a roadmap for integrating AI into your core business processes.'}
                             </p>
                           </div>
@@ -473,9 +473,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 {/* Mobile Carousel - 3 Cards */}
                 <div className="md:hidden">
                   <StandardCarousel cardWidth="mobile" showDots={false} showArrows={true} className="w-full max-w-sm mx-auto">
-                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px]">
-                      <Card className="h-full border-0 shadow-none bg-transparent">
-                        <CardContent className="carousel-card-content p-0">
+                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-0">
+                      <Card className="h-full border-0 shadow-none bg-transparent overflow-visible">
+                        <CardContent className="carousel-card-content p-0 overflow-visible">
                           <div className="carousel-card-header flex items-center justify-between mb-3">
                             <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                             <BarChart3 className="h-6 w-6 text-primary" />
@@ -501,8 +501,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                                 )}
                               </button>
                             </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50">
-                              <p className="text-sm text-muted-foreground">
+                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50 overflow-visible">
+                              <p className="text-sm text-muted-foreground leading-relaxed">
                                 {personalizedInsights?.growthReadiness.details || 'Focus on identifying high-impact AI use cases.'}
                               </p>
                             </CollapsibleContent>
@@ -511,9 +511,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </Card>
                     </StandardCarouselCard>
                     
-                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px]">
-                      <Card className="h-full border-0 shadow-none bg-transparent">
-                        <CardContent className="carousel-card-content p-0">
+                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-0">
+                      <Card className="h-full border-0 shadow-none bg-transparent overflow-visible">
+                        <CardContent className="carousel-card-content p-0 overflow-visible">
                           <div className="carousel-card-header flex items-center justify-between mb-3">
                             <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                             <Target className="h-6 w-6 text-primary" />
@@ -539,8 +539,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                                 )}
                               </button>
                             </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50">
-                              <p className="text-sm text-muted-foreground">
+                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50 overflow-visible">
+                              <p className="text-sm text-muted-foreground leading-relaxed">
                                 {personalizedInsights?.leadershipStage.details || 'Build a cross-functional AI champion network.'}
                               </p>
                             </CollapsibleContent>
@@ -549,9 +549,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </Card>
                     </StandardCarouselCard>
                     
-                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px]">
-                      <Card className="h-full border-0 shadow-none bg-transparent">
-                        <CardContent className="carousel-card-content p-0">
+                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-0">
+                      <Card className="h-full border-0 shadow-none bg-transparent overflow-visible">
+                        <CardContent className="carousel-card-content p-0 overflow-visible">
                           <div className="carousel-card-header flex items-center justify-between mb-3">
                             <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
                             <Lightbulb className="h-6 w-6 text-primary" />
@@ -577,8 +577,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                                 )}
                               </button>
                             </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50">
-                              <p className="text-sm text-muted-foreground">
+                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50 overflow-visible">
+                              <p className="text-sm text-muted-foreground leading-relaxed">
                                 {personalizedInsights?.keyFocus.details || 'Develop a roadmap for integrating AI into your core business processes.'}
                               </p>
                             </CollapsibleContent>
