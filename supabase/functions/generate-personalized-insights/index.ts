@@ -95,7 +95,7 @@ serve(async (req) => {
                     properties: {
                       title: { type: "string", description: "CRITICAL: Exactly 18-25 chars ONLY. Must be clear, NO abbreviations.", maxLength: 25 },
                       description: { type: "string", description: "Concise description (max 180 chars) with specific context", maxLength: 180 },
-                      basedOn: { type: "array", items: { type: "string", maxLength: 50 }, description: "What user data this is based on (max 50 chars each)", maxItems: 3 },
+                      basedOn: { type: "array", items: { type: "string", maxLength: 60 }, description: "HUMAN-READABLE context ONLY (max 60 chars each). Examples: 'Your delegation priorities', 'Time waste patterns', 'Communication challenges'. NEVER use technical strings like 'Kpi_connection' or database field names.", maxItems: 3 },
                       impact: { type: "string", description: "Quantified impact metric (max 40 chars)", maxLength: 40 },
                       timeline: { type: "string", description: "Timeline (max 20 chars)", maxLength: 20 },
                       growthMetric: { type: "string", description: "SHORT growth metric ONLY (5-15 chars). Examples: '10% faster', '20% gain', '$2M revenue', '15-25%', '3x speed'. MUST be concise number/percentage/metric, NOT a sentence.", maxLength: 15 },
@@ -176,6 +176,32 @@ serve(async (req) => {
           
           if (/\b\w{2,4}\./g.test(initiative.title)) {
             console.warn(`Initiative ${index} contains abbreviations: "${initiative.title}"`);
+          }
+        }
+        
+        // Validate and clean basedOn array
+        if (initiative.basedOn && Array.isArray(initiative.basedOn)) {
+          const technicalPatterns = [
+            /^[A-Z_]+$/, // All caps with underscores
+            /_[a-z]/, // Snake_case
+            /^[a-z]+_[a-z]+/i, // Any underscore patterns
+          ];
+          
+          initiative.basedOn = initiative.basedOn
+            .filter((item: string) => {
+              // Filter out technical strings
+              const isTechnical = technicalPatterns.some(pattern => pattern.test(item));
+              if (isTechnical) {
+                console.warn(`Filtering technical basedOn string: "${item}"`);
+                return false;
+              }
+              return true;
+            })
+            .slice(0, 3); // Ensure max 3 items
+          
+          // If all items were filtered out, add fallback
+          if (initiative.basedOn.length === 0) {
+            initiative.basedOn = ['Your assessment responses'];
           }
         }
       });
@@ -313,11 +339,16 @@ TASK: Generate personalized AI leadership insights that:
    - preview: Use template "Focus on {category} to unlock {quantified_benefit}" (max 50 chars)
    - details: Specific strategy matched to their challenge (max 120 chars)
 
-ROADMAP INITIATIVES - TITLE RULES:
+ROADMAP INITIATIVES - CONTENT RULES:
 - title: EXACTLY 18-25 characters maximum
 - MUST be clear and understandable at a glance
 - NO abbreviations (like "Comm.", "Fin.", "Mgmt")
 - Use simple, direct language
+- basedOn: **CRITICAL** - Must be HUMAN-READABLE descriptions ONLY
+  * ✅ GOOD: "Your delegation priorities", "Time waste patterns", "Communication challenges"
+  * ❌ BAD: "Kpi_connection", "time_waste", "delegation_tasks" (these are database field names!)
+  * Always write complete sentences or clear phrases that users can understand
+  * Reference actual user responses, not technical field names
 - Examples:
   ✅ GOOD: "AI for Sales Teams" (19 chars) - clear, direct
   ✅ GOOD: "Revenue Automation" (18 chars) - understandable

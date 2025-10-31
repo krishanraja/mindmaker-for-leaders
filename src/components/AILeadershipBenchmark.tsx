@@ -71,6 +71,37 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [leadershipComparison, setLeadershipComparison] = useState<LeadershipComparison | null>(null);
 
+  // Utility function to clean and validate "Based on" text
+  const cleanBasedOnText = (items: string[]): string[] => {
+    const technicalPatterns = [
+      /^[A-Z_]+$/, // All caps with underscores (e.g., KPI_CONNECTION)
+      /_[a-z]/, // Snake_case patterns
+      /^[a-z]+_[a-z]+/i, // Any underscore patterns
+    ];
+    
+    const labelMap: Record<string, string> = {
+      'Kpi_connection': 'KPI tracking and metrics',
+      'kpi_connection': 'Performance metrics',
+      'KPI_CONNECTION': 'Performance tracking',
+      'time_waste': 'Time optimization',
+      'delegation_tasks': 'Delegation priorities',
+      'work_breakdown': 'Work distribution',
+      'communication_style': 'Communication preferences',
+      'stakeholder_needs': 'Stakeholder requirements',
+    };
+    
+    return items
+      .filter(item => item && item.trim().length > 0)
+      .map(item => {
+        // Check if it's a technical string
+        if (technicalPatterns.some(pattern => pattern.test(item))) {
+          return labelMap[item] || 'Assessment insights';
+        }
+        return item;
+      })
+      .filter(item => item.length > 0);
+  };
+
   const toggleCard = (cardId: string) => {
     setExpandedCards(prev => {
       const newSet = new Set(prev);
@@ -272,13 +303,15 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       ? initiative.description.substring(0, 397) + '...'
       : initiative.description;
     
-    // Limit basedOn to 3 items, each max 50 chars
-    const truncatedBasedOn = (initiative.basedOn || [])
+    // Clean and limit basedOn to 3 items, each max 60 chars
+    const cleanedBasedOn = cleanBasedOnText(initiative.basedOn || [])
       .slice(0, 3)
-      .map(item => item.length > 50 ? item.substring(0, 47) + '...' : item);
+      .map(item => item.length > 60 ? item.substring(0, 57) + '...' : item);
     
-    // Limit dimensions to 3
-    const limitedDimensions = (initiative.scaleUpsDimensions || []).slice(0, 3);
+    // Limit dimensions to 3 and clean them
+    const limitedDimensions = (initiative.scaleUpsDimensions || [])
+      .slice(0, 3)
+      .map(dim => cleanBasedOnText([dim])[0] || dim);
     
     // Extract concise metric (max 20 chars)
     let cleanedMetric = initiative.growthMetric;
@@ -295,7 +328,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       ...initiative,
       title: truncatedTitle,
       description: truncatedDescription,
-      basedOn: truncatedBasedOn,
+      basedOn: cleanedBasedOn.length > 0 ? cleanedBasedOn : ['Your assessment responses'],
       scaleUpsDimensions: limitedDimensions,
       growthMetric: cleanedMetric,
       icon: initiative.title.includes('Revenue') || initiative.title.includes('Business') ? Rocket :
@@ -638,12 +671,14 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                         </p>
                       </div>
                       
-                      {/* Based On: Fixed 68px (always present) */}
-                      <div className="h-[68px]">
-                        <div className="p-2.5 bg-primary/10 rounded-lg h-full overflow-hidden flex flex-col justify-start">
-                          <div className="text-xs font-semibold text-primary mb-1 flex-shrink-0">Based on:</div>
-                          <div className="text-xs text-muted-foreground line-clamp-2 flex-1">
-                            {insight.basedOn && insight.basedOn.length > 0 ? insight.basedOn.join(' • ') : 'Your assessment responses'}
+                      {/* Based On: Increased to 85px for better readability */}
+                      <div className="h-[85px]">
+                        <div className="p-3 bg-primary/10 rounded-lg h-full overflow-hidden flex flex-col justify-start">
+                          <div className="text-xs font-semibold text-primary mb-1.5 flex-shrink-0">Based on:</div>
+                          <div className="text-xs text-muted-foreground line-clamp-3 flex-1 leading-relaxed break-words">
+                            {insight.basedOn && insight.basedOn.length > 0 
+                              ? insight.basedOn.join(' • ') 
+                              : 'Your assessment responses and leadership profile'}
                           </div>
                         </div>
                       </div>
