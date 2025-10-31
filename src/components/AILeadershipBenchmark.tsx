@@ -366,7 +366,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
-                            {personalizedInsights?.leadershipStage.preview || 'Advancement pathway identified'}
+                            {personalizedInsights?.leadershipStage.preview || 'Build strategic AI leadership capabilities'}
                           </p>
                         </div>
                         <Collapsible open={expandedCards.has('leadership')}>
@@ -489,7 +489,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">
-                              {personalizedInsights?.leadershipStage.preview || 'Advancement pathway identified'}
+                              {personalizedInsights?.leadershipStage.preview || 'Build strategic AI leadership capabilities'}
                             </p>
                           </div>
                           <Collapsible open={expandedCards.has('leadership-mobile')}>
