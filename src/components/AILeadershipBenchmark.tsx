@@ -312,7 +312,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               </div>
 
               {/* Right: Key Metrics & Insight */}
-              <div className="space-y-6 lg:flex-1">
+              <div className="space-y-6 w-full lg:w-auto lg:flex-1">
                  {/* Desktop Grid - 3 Cards */}
                 <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {isLoadingInsights ? (
