@@ -407,9 +407,9 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
                 Unlock $5,000 Value
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 leading-tight">
-                Get Your Personal<br />AI Command Center
+                Free Tailored Prompt Library Within Minutes
               </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl mx-auto">
                 10 more questions = Custom AI toolkit designed for <span className="text-foreground font-semibold">YOUR</span> thinking style, 
                 <span className="text-foreground font-semibold"> YOUR</span> bottlenecks, and <span className="text-foreground font-semibold">YOUR</span> workflow.
               </p>
