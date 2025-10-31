@@ -178,20 +178,16 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <p className="text-base text-muted-foreground">Based on your responses, here's your executive profile</p>
         </div>
         
-        <div className="relative">
-          {/* Left fade overlay */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-          
-          <Carousel
-            opts={{
-              align: "center",
-              loop: true,
-            }}
-            className="w-full max-w-[580px] mx-auto"
-          >
+        <Carousel
+          opts={{
+            align: "center",
+            loop: true,
+          }}
+          className="w-full max-w-[90%] md:max-w-[580px] mx-auto"
+        >
           <CarouselContent className="-ml-4">
             {/* Card 1: Your Unique Strengths */}
-            <CarouselItem className="pl-4">
+            <CarouselItem className="pl-4 basis-[85%] md:basis-full">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
@@ -220,7 +216,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             </CarouselItem>
 
             {/* Card 2: Your Biggest Opportunity */}
-            <CarouselItem className="pl-4">
+            <CarouselItem className="pl-4 basis-[85%] md:basis-full">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
@@ -254,7 +250,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             </CarouselItem>
 
             {/* Card 3: What Makes You Different */}
-            <CarouselItem className="pl-4">
+            <CarouselItem className="pl-4 basis-[85%] md:basis-full">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
@@ -292,11 +288,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             <CarouselPrevious className="relative static translate-y-0" />
             <CarouselNext className="relative static translate-y-0" />
           </div>
-          </Carousel>
-          
-          {/* Right fade overlay */}
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-        </div>
+        </Carousel>
       </section>
 
       {/* Master Prompts Section - Horizontal Carousel */}
