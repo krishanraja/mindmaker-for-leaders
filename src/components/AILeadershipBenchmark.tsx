@@ -562,123 +562,109 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   )}
                 </div>
 
-                {/* Mobile Carousel - 3 Cards */}
-                <div className="md:hidden">
-                  <StandardCarousel cardWidth="mobile" showDots={false} showArrows={true} className="w-full max-w-sm mx-auto">
-                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-0">
-                      <Card className="h-full border-0 shadow-none bg-transparent overflow-visible">
-                        <CardContent className="carousel-card-content p-0 overflow-visible">
-                          <div className="carousel-card-header flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
-                            <BarChart3 className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="carousel-card-body">
-                            <div className="carousel-card-title-xl text-xl font-bold text-foreground mb-3 line-clamp-2">
-                              {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {personalizedInsights?.growthReadiness.preview || 'Revenue acceleration potential'}
-                            </p>
-                          </div>
-                          <Collapsible open={expandedCards.has('growth-mobile')}>
-                            <CollapsibleTrigger asChild>
-                              <button 
-                                onClick={() => toggleCard('growth-mobile')}
-                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
-                              >
-                                {expandedCards.has('growth-mobile') ? (
-                                  <>Less <ChevronUp className="h-3 w-3" /></>
-                                ) : (
-                                  <>More <ChevronDown className="h-3 w-3" /></>
-                                )}
-                              </button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50 overflow-visible">
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {personalizedInsights?.growthReadiness.details || 'Focus on identifying high-impact AI use cases.'}
-                              </p>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </CardContent>
-                      </Card>
-                    </StandardCarouselCard>
-                    
-                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-0">
-                      <Card className="h-full border-0 shadow-none bg-transparent overflow-visible">
-                        <CardContent className="carousel-card-content p-0 overflow-visible">
-                          <div className="carousel-card-header flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
-                            <Target className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="carousel-card-body">
-                            <div className="carousel-card-title-xl text-xl font-bold text-foreground mb-3 line-clamp-2">
-                              {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {personalizedInsights?.leadershipStage.preview || 'Build strategic AI leadership capabilities'}
-                            </p>
-                          </div>
-                          <Collapsible open={expandedCards.has('leadership-mobile')}>
-                            <CollapsibleTrigger asChild>
-                              <button 
-                                onClick={() => toggleCard('leadership-mobile')}
-                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
-                              >
-                                {expandedCards.has('leadership-mobile') ? (
-                                  <>Less <ChevronUp className="h-3 w-3" /></>
-                                ) : (
-                                  <>More <ChevronDown className="h-3 w-3" /></>
-                                )}
-                              </button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50 overflow-visible">
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {personalizedInsights?.leadershipStage.details || 'Build a cross-functional AI champion network.'}
-                              </p>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </CardContent>
-                      </Card>
-                    </StandardCarouselCard>
-                    
-                    <StandardCarouselCard className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-0">
-                      <Card className="h-full border-0 shadow-none bg-transparent overflow-visible">
-                        <CardContent className="carousel-card-content p-0 overflow-visible">
-                          <div className="carousel-card-header flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
-                            <Lightbulb className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="carousel-card-body">
-                            <div className="carousel-card-title-xl text-xl font-bold text-foreground mb-3 line-clamp-2">
-                              {personalizedInsights?.keyFocus.category || 'Key Focus'}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {personalizedInsights?.keyFocus.preview || leadershipProfile.message}
-                            </p>
-                          </div>
-                          <Collapsible open={expandedCards.has('focus-mobile')}>
-                            <CollapsibleTrigger asChild>
-                              <button 
-                                onClick={() => toggleCard('focus-mobile')}
-                                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
-                              >
-                                {expandedCards.has('focus-mobile') ? (
-                                  <>Less <ChevronUp className="h-3 w-3" /></>
-                                ) : (
-                                  <>More <ChevronDown className="h-3 w-3" /></>
-                                )}
-                              </button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-2 pt-2 border-t border-border/50 overflow-visible">
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {personalizedInsights?.keyFocus.details || 'Develop a roadmap for integrating AI into your core business processes.'}
-                              </p>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </CardContent>
-                      </Card>
-                    </StandardCarouselCard>
-                  </StandardCarousel>
+                {/* Mobile Vertical Stack - 3 Cards */}
+                <div className="md:hidden flex flex-col gap-4 w-full max-w-sm mx-auto">
+                  <Card className="p-5 shadow-lg border-2 border-border bg-card">
+                    <CardContent className="p-0">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
+                        <BarChart3 className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="text-xl font-bold text-foreground mb-2">
+                        {personalizedInsights?.growthReadiness.level || (score >= 83 ? 'High' : score >= 63 ? 'Medium-High' : score >= 43 ? 'Medium' : 'Developing')}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {personalizedInsights?.growthReadiness.preview || 'Revenue acceleration potential'}
+                      </p>
+                      <Collapsible open={expandedCards.has('growth-mobile')}>
+                        <CollapsibleTrigger asChild>
+                          <button 
+                            onClick={() => toggleCard('growth-mobile')}
+                            className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-2"
+                          >
+                            {expandedCards.has('growth-mobile') ? (
+                              <>Less <ChevronUp className="h-3 w-3" /></>
+                            ) : (
+                              <>More <ChevronDown className="h-3 w-3" /></>
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2 pt-2 border-t border-border/50">
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {personalizedInsights?.growthReadiness.details || 'Focus on identifying high-impact AI use cases.'}
+                          </p>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="p-5 shadow-lg border-2 border-border bg-card">
+                    <CardContent className="p-0">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
+                        <Target className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="text-xl font-bold text-foreground mb-2">
+                        {personalizedInsights?.leadershipStage.stage || (score >= 83 ? 'Orchestrator' : score >= 63 ? 'Confident' : score >= 43 ? 'Aware' : 'Emerging')}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {personalizedInsights?.leadershipStage.preview || 'Build strategic AI leadership capabilities'}
+                      </p>
+                      <Collapsible open={expandedCards.has('leadership-mobile')}>
+                        <CollapsibleTrigger asChild>
+                          <button 
+                            onClick={() => toggleCard('leadership-mobile')}
+                            className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-2"
+                          >
+                            {expandedCards.has('leadership-mobile') ? (
+                              <>Less <ChevronUp className="h-3 w-3" /></>
+                            ) : (
+                              <>More <ChevronDown className="h-3 w-3" /></>
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2 pt-2 border-t border-border/50">
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {personalizedInsights?.leadershipStage.details || 'Build a cross-functional AI champion network.'}
+                          </p>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="p-5 shadow-lg border-2 border-border bg-card">
+                    <CardContent className="p-0">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
+                        <Lightbulb className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="text-xl font-bold text-foreground mb-2">
+                        {personalizedInsights?.keyFocus.category || 'Key Focus'}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {personalizedInsights?.keyFocus.preview || leadershipProfile.message}
+                      </p>
+                      <Collapsible open={expandedCards.has('focus-mobile')}>
+                        <CollapsibleTrigger asChild>
+                          <button 
+                            onClick={() => toggleCard('focus-mobile')}
+                            className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-2"
+                          >
+                            {expandedCards.has('focus-mobile') ? (
+                              <>Less <ChevronUp className="h-3 w-3" /></>
+                            ) : (
+                              <>More <ChevronDown className="h-3 w-3" /></>
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2 pt-2 border-t border-border/50">
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {personalizedInsights?.keyFocus.details || 'Develop a roadmap for integrating AI into your core business processes.'}
+                          </p>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </div>
@@ -1004,7 +990,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
               {/* Value Props - Mobile Carousel */}
               <div className="sm:hidden mb-4">
-                <StandardCarousel cardWidth="mobile" showDots={false} showArrows={true} className="w-full max-w-sm mx-auto">
+                <StandardCarousel cardWidth="mobile" showDots={true} showArrows={false} className="w-full max-w-sm mx-auto">
                   {[
                     { icon: Target, title: 'Strategic AI Roadmap', desc: 'Industry-specific' },
                     { icon: TrendingUp, title: 'Revenue Acceleration', desc: 'Growth-focused AI deployment' },
