@@ -708,40 +708,38 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       
                       return (
                         <CarouselItem key={idx} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3 flex">
-                          <Card className={`w-full h-full min-h-[380px] group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/50 border-2 rounded-2xl bg-gradient-to-br ${styling.gradient}`}>
-                            <CardContent className="p-6 h-full flex flex-col">
-                              <div className="space-y-5 flex-1 flex flex-col">
-                                {/* Header with Icon and Title */}
-                                <div className="flex items-start gap-4 min-h-[80px]">
-                                  <div className={`p-3 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110`}>
-                                    <IconComponent className="w-6 h-6 text-primary" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-lg text-foreground leading-tight mb-2">
-                                      {dim.dimension}
-                                    </h4>
-                                    <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
-                                      {dim.level}
-                                    </Badge>
-                                  </div>
+                          <Card className={`w-full h-full min-h-[280px] md:min-h-[340px] lg:min-h-[380px] group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/50 border-2 rounded-2xl bg-gradient-to-br ${styling.gradient}`}>
+                            <CardContent className="p-6 h-full flex flex-col space-y-5">
+                              {/* Header with Icon and Title */}
+                              <div className="flex items-start gap-4 min-h-[70px] md:min-h-[80px]">
+                                <div className={`p-3 rounded-xl border ${styling.iconBg} transition-transform group-hover:scale-110`}>
+                                  <IconComponent className="w-6 h-6 text-primary" />
                                 </div>
-
-                                {/* Visual Progress Indicator */}
-                                <div className="space-y-2.5 min-h-[50px]">
-                                  <Progress value={styling.progress} className="h-2.5" />
-                                  <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-                                    <span>Building</span>
-                                    <span>Explorer</span>
-                                    <span>Practitioner</span>
-                                    <span>Pioneer</span>
-                                  </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-bold text-lg text-foreground leading-tight mb-2">
+                                    {dim.dimension}
+                                  </h4>
+                                  <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
+                                    {dim.level}
+                                  </Badge>
                                 </div>
-
-                                {/* Reasoning Text */}
-                                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                                  {dim.reasoning}
-                                </p>
                               </div>
+
+                              {/* Visual Progress Indicator */}
+                              <div className="space-y-2.5 min-h-[45px] md:min-h-[50px]">
+                                <Progress value={styling.progress} className="h-2.5" />
+                                <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+                                  <span>Building</span>
+                                  <span>Explorer</span>
+                                  <span>Practitioner</span>
+                                  <span>Pioneer</span>
+                                </div>
+                              </div>
+
+                              {/* Reasoning Text */}
+                              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-grow">
+                                {dim.reasoning}
+                              </p>
                             </CardContent>
                           </Card>
                         </CarouselItem>
