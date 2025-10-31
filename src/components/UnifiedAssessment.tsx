@@ -23,6 +23,16 @@ interface Message {
   timestamp: Date;
 }
 
+type ScreenState = 
+  | 'assessment' 
+  | 'contact-form' 
+  | 'deep-profile-optin' 
+  | 'deep-profile-questionnaire'
+  | 'generating-insights'
+  | 'generating-library'
+  | 'results'
+  | 'unified-results';
+
 interface UnifiedAssessmentProps {
   onComplete?: (sessionData: any) => void;
   onBack?: () => void;
@@ -32,17 +42,12 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const [messages, setMessages] = useState<Message[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState<ScreenState>('assessment');
   const [insightProgress, setInsightProgress] = useState(0);
   const [insightPhase, setInsightPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
-  const [showContactForm, setShowContactForm] = useState(false);
   const [contactData, setContactData] = useState<ContactData | null>(null);
-  const [showDeepProfileOptIn, setShowDeepProfileOptIn] = useState(false);
-  const [showDeepProfileQuestionnaire, setShowDeepProfileQuestionnaire] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const [showPromptLibrary, setShowPromptLibrary] = useState(false);
+  const [deepProfileData, setDeepProfileData] = useState<DeepProfileData | null>(null);
   const [promptLibrary, setPromptLibrary] = useState<any>(null);
-  const [isGeneratingLibrary, setIsGeneratingLibrary] = useState(false);
   const [libraryProgress, setLibraryProgress] = useState(0);
   const [libraryPhase, setLibraryPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
   const { toast } = useToast();
@@ -66,10 +71,10 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     const progressData = getProgressData();
     const hasAnsweredAllQuestions = progressData.completedAnswers >= totalQuestions;
     
-    if (assessmentState.isComplete && hasAnsweredAllQuestions && !showContactForm && !contactData && !isGeneratingInsights && insightProgress === 0) {
-      setShowContactForm(true);
+    if (assessmentState.isComplete && hasAnsweredAllQuestions && currentScreen === 'assessment' && !contactData && insightProgress === 0) {
+      setCurrentScreen('contact-form');
     }
-  }, [assessmentState.isComplete, getProgressData, totalQuestions, showContactForm, contactData, isGeneratingInsights, insightProgress]);
+  }, [assessmentState.isComplete, getProgressData, totalQuestions, currentScreen, contactData, insightProgress]);
 
   const initializeAssessmentSession = async () => {
     try {
@@ -177,7 +182,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   };
 
   const startInsightGeneration = async () => {
-    setIsGeneratingInsights(true);
+    setCurrentScreen('generating-insights');
     setInsightPhase('analyzing');
     setInsightProgress(15);
 
@@ -203,14 +208,12 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     setTimeout(() => {
       setInsightProgress(100);
       clearInterval(progressInterval);
-      setIsGeneratingInsights(false);
-      setShowResults(true);
+      setCurrentScreen('results');
     }, 8000);
   };
 
   const handleContactSubmit = async (data: ContactData) => {
     setContactData(data);
-    setShowContactForm(false);
     
     // Send email notification immediately with all assessment data
     try {
@@ -258,33 +261,24 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       // Don't block the user flow if email fails
     }
     
-    setShowDeepProfileOptIn(true);
+    setCurrentScreen('deep-profile-optin');
   };
 
   const handleSkipDeepProfile = () => {
-    // Set loading state FIRST to prevent flash
-    setIsGeneratingInsights(true);
     setInsightPhase('analyzing');
     setInsightProgress(15);
-    setShowDeepProfileOptIn(false);
     startInsightGeneration();
   };
 
   const handleStartDeepProfile = () => {
-    setShowDeepProfileOptIn(false);
-    setShowDeepProfileQuestionnaire(true);
+    setCurrentScreen('deep-profile-questionnaire');
   };
 
-  const [deepProfileData, setDeepProfileData] = useState<DeepProfileData | null>(null);
-
   const handleDeepProfileComplete = async (profileData: DeepProfileData) => {
-    setDeepProfileData(profileData); // Store deep profile data
-    
-    // Set loading state FIRST to prevent flash
-    setIsGeneratingLibrary(true);
+    setDeepProfileData(profileData);
+    setCurrentScreen('generating-library');
     setLibraryPhase('analyzing');
     setLibraryProgress(10);
-    setShowDeepProfileQuestionnaire(false);
     
     // Send updated email with deep profile data
     try {
@@ -367,8 +361,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       // Wait for animation to complete
       setTimeout(() => {
         setPromptLibrary(data.library);
-        setIsGeneratingLibrary(false);
-        setShowPromptLibrary(true);
+        setCurrentScreen('unified-results');
       }, 500);
       
       toast({
@@ -378,7 +371,6 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     } catch (error) {
       console.error('Error generating prompt library:', error);
       clearInterval(progressInterval);
-      setIsGeneratingLibrary(false);
       toast({
         title: "Generation Error",
         description: "Failed to generate prompt library. Showing assessment results instead.",
@@ -388,9 +380,8 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     }
   };
 
-
-  // Show contact form after assessment completion
-  if (showContactForm) {
+  // Render based on current screen state
+  if (currentScreen === 'contact-form') {
     return (
       <ContactCollectionForm
         onSubmit={handleContactSubmit}
@@ -399,8 +390,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     );
   }
 
-  // Show deep profile opt-in
-  if (showDeepProfileOptIn && contactData) {
+  if (currentScreen === 'deep-profile-optin' && contactData) {
     return (
       <div className="bg-background min-h-screen relative overflow-hidden flex items-center justify-center px-4">
         <Card className="max-w-3xl w-full shadow-lg border rounded-xl">
@@ -474,21 +464,18 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     );
   }
 
-  // Show deep profile questionnaire
-  if (showDeepProfileQuestionnaire) {
+  if (currentScreen === 'deep-profile-questionnaire') {
     return (
       <DeepProfileQuestionnaire
         onComplete={handleDeepProfileComplete}
         onBack={() => {
-          setShowDeepProfileQuestionnaire(false);
-          setShowDeepProfileOptIn(true);
+          setCurrentScreen('deep-profile-optin');
         }}
       />
     );
   }
 
-  // Show library generation loading
-  if (isGeneratingLibrary) {
+  if (currentScreen === 'generating-library') {
     return (
       <ExecutiveLoadingScreen 
         progress={libraryProgress} 
@@ -497,8 +484,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     );
   }
 
-  // Show unified results (both benchmark and library)
-  if (showPromptLibrary && promptLibrary && contactData) {
+  if (currentScreen === 'unified-results' && promptLibrary && contactData) {
     const assessmentData = getAssessmentData();
     
     return (
@@ -513,7 +499,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     );
   }
 
-  if (isGeneratingInsights) {
+  if (currentScreen === 'generating-insights') {
     return (
       <ExecutiveLoadingScreen 
         progress={insightProgress} 
@@ -522,8 +508,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     );
   }
 
-  // Show personalized results with contact data
-  if (showResults && contactData) {
+  if (currentScreen === 'results' && contactData) {
     const assessmentData = getAssessmentData();
     
     return (
