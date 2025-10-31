@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Brain, Copy, CheckCircle, BookOpen, Rocket, Target, ArrowRight, TrendingUp, Sparkles } from 'lucide-react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { useToast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
 
 interface PromptLibraryResultsProps {
   library: {
@@ -44,6 +45,60 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
   const { toast } = useToast();
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const [roadmapOpen, setRoadmapOpen] = useState<string | undefined>(undefined);
+  
+  // Carousel states for dot indicators
+  const [aboutYouApi, setAboutYouApi] = useState<CarouselApi>();
+  const [aboutYouCurrent, setAboutYouCurrent] = useState(0);
+  const [masterPromptsApi, setMasterPromptsApi] = useState<CarouselApi>();
+  const [masterPromptsCurrent, setMasterPromptsCurrent] = useState(0);
+  const [templatesApi, setTemplatesApi] = useState<CarouselApi>();
+  const [templatesCurrent, setTemplatesCurrent] = useState(0);
+  
+  // Update current slide when carousel changes
+  React.useEffect(() => {
+    if (!aboutYouApi) return;
+    
+    const onSelect = () => {
+      setAboutYouCurrent(aboutYouApi.selectedScrollSnap());
+    };
+    
+    aboutYouApi.on("select", onSelect);
+    onSelect();
+    
+    return () => {
+      aboutYouApi.off("select", onSelect);
+    };
+  }, [aboutYouApi]);
+  
+  React.useEffect(() => {
+    if (!masterPromptsApi) return;
+    
+    const onSelect = () => {
+      setMasterPromptsCurrent(masterPromptsApi.selectedScrollSnap());
+    };
+    
+    masterPromptsApi.on("select", onSelect);
+    onSelect();
+    
+    return () => {
+      masterPromptsApi.off("select", onSelect);
+    };
+  }, [masterPromptsApi]);
+  
+  React.useEffect(() => {
+    if (!templatesApi) return;
+    
+    const onSelect = () => {
+      setTemplatesCurrent(templatesApi.selectedScrollSnap());
+    };
+    
+    templatesApi.on("select", onSelect);
+    onSelect();
+    
+    return () => {
+      templatesApi.off("select", onSelect);
+    };
+  }, [templatesApi]);
 
   const handleCopy = async (text: string, label: string) => {
     try {
@@ -183,11 +238,12 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             align: "center",
             loop: true,
           }}
-          className="w-full max-w-[90%] md:max-w-[580px] mx-auto"
+          setApi={setAboutYouApi}
+          className="w-full max-w-[580px] mx-auto"
         >
           <CarouselContent className="-ml-4">
             {/* Card 1: Your Unique Strengths */}
-            <CarouselItem className="pl-4 basis-[85%] md:basis-full">
+            <CarouselItem className="pl-4 basis-full">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
@@ -216,7 +272,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             </CarouselItem>
 
             {/* Card 2: Your Biggest Opportunity */}
-            <CarouselItem className="pl-4 basis-[85%] md:basis-full">
+            <CarouselItem className="pl-4 basis-full">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
@@ -250,7 +306,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             </CarouselItem>
 
             {/* Card 3: What Makes You Different */}
-            <CarouselItem className="pl-4 basis-[85%] md:basis-full">
+            <CarouselItem className="pl-4 basis-full">
               <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                 <CardContent className="p-8 flex flex-col h-full justify-center">
                   <div className="space-y-8 flex flex-col items-center">
@@ -284,9 +340,21 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             </CarouselItem>
           </CarouselContent>
           
+          {/* Dot Indicators */}
           <div className="flex justify-center gap-2 mt-6">
-            <CarouselPrevious className="relative static translate-y-0" />
-            <CarouselNext className="relative static translate-y-0" />
+            {[0, 1, 2].map((index) => (
+              <button
+                key={index}
+                onClick={() => aboutYouApi?.scrollTo(index)}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300",
+                  aboutYouCurrent === index 
+                    ? "bg-primary w-8" 
+                    : "bg-primary/20 hover:bg-primary/40 w-2"
+                )}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
         </Carousel>
       </section>
@@ -303,6 +371,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             align: "start",
             loop: false,
           }}
+          setApi={setMasterPromptsApi}
           className="w-full"
         >
           <CarouselContent className="-ml-4">
@@ -395,9 +464,21 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             ))}
           </CarouselContent>
           
+          {/* Dot Indicators */}
           <div className="flex justify-center gap-2 mt-6">
-            <CarouselPrevious className="relative static translate-y-0" />
-            <CarouselNext className="relative static translate-y-0" />
+            {library.recommendedProjects.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => masterPromptsApi?.scrollTo(index)}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300",
+                  masterPromptsCurrent === index 
+                    ? "bg-primary w-8" 
+                    : "bg-primary/20 hover:bg-primary/40 w-2"
+                )}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
         </Carousel>
       </div>
@@ -414,6 +495,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             align: "start",
             loop: false,
           }}
+          setApi={setTemplatesApi}
           className="w-full"
         >
           <CarouselContent className="-ml-4">
@@ -460,9 +542,21 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
             ))}
           </CarouselContent>
           
+          {/* Dot Indicators */}
           <div className="flex justify-center gap-2 mt-6">
-            <CarouselPrevious className="relative static translate-y-0" />
-            <CarouselNext className="relative static translate-y-0" />
+            {library.promptTemplates.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => templatesApi?.scrollTo(index)}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300",
+                  templatesCurrent === index 
+                    ? "bg-primary w-8" 
+                    : "bg-primary/20 hover:bg-primary/40 w-2"
+                )}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
         </Carousel>
       </div>
