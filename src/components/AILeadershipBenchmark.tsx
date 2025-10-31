@@ -285,9 +285,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
         {/* Leadership Score Dashboard - Hero Style */}
         <Card className={`mb-20 sm:mb-24 max-w-6xl lg:max-w-[94rem] mx-auto border-2 rounded-2xl overflow-hidden ${leadershipProfile.borderGlow} ${leadershipProfile.bgGradient}`}>
           <CardContent className="p-8 sm:p-10 lg:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+            <div className="flex flex-col lg:flex-row gap-10 lg:gap-12 items-center">
               {/* Left: Hero Score Circle */}
-              <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+              <div className="flex flex-col items-center lg:items-start text-center lg:text-left lg:flex-shrink-0 lg:w-72">
                 <div className="relative mb-8">
                   {/* Animated gradient border circle */}
                   <div className={`w-48 h-48 lg:w-56 lg:h-56 rounded-full bg-gradient-to-br ${leadershipProfile.gradient} p-1 animate-pulse`}>
@@ -312,7 +312,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               </div>
 
               {/* Right: Key Metrics & Insight */}
-              <div className="space-y-6">
+              <div className="space-y-6 lg:flex-1">
                  {/* Desktop Grid - 3 Cards */}
                 <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {isLoadingInsights ? (
