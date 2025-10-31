@@ -406,7 +406,8 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
                 <Brain className="h-5 w-5" />
                 Unlock $5,000 Value
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 leading-tight">
+              <div className="text-sm font-semibold text-primary mb-2">BONUS</div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 leading-tight">
                 Free Tailored Prompt Library Within Minutes
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl mx-auto">
@@ -415,22 +416,28 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
               </p>
             </div>
 
-            {/* Value Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl text-center">
-                <div className="text-4xl mb-2">🎯</div>
-                <div className="font-bold text-foreground mb-1">5 Custom Projects</div>
-                <div className="text-sm text-muted-foreground">Tailored to your role</div>
+            {/* Value Cards - Compact Mobile Layout */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-8 text-sm">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center justify-center gap-3 flex-1">
+                <div className="text-3xl">🎯</div>
+                <div className="text-left">
+                  <div className="font-bold text-foreground">5 Custom Projects</div>
+                  <div className="text-xs text-muted-foreground">Tailored to your role</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl text-center">
-                <div className="text-4xl mb-2">⚡</div>
-                <div className="font-bold text-foreground mb-1">5-10 Hours/Week</div>
-                <div className="text-sm text-muted-foreground">Time you'll save</div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center justify-center gap-3 flex-1">
+                <div className="text-3xl">⚡</div>
+                <div className="text-left">
+                  <div className="font-bold text-foreground">5-10 Hours/Week</div>
+                  <div className="text-xs text-muted-foreground">Time you'll save</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl text-center">
-                <div className="text-4xl mb-2">🚀</div>
-                <div className="font-bold text-foreground mb-1">Ready in 1 Day</div>
-                <div className="text-sm text-muted-foreground">Start using immediately</div>
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl flex items-center justify-center gap-3 flex-1">
+                <div className="text-3xl">🚀</div>
+                <div className="text-left">
+                  <div className="font-bold text-foreground">Ready in 1 Day</div>
+                  <div className="text-xs text-muted-foreground">Start using immediately</div>
+                </div>
               </div>
             </div>
 
