@@ -328,7 +328,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
                             <BarChart3 className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-lg font-bold text-foreground mb-3 line-clamp-1">
+                          <div className="text-lg font-bold text-foreground mb-3 line-clamp-2">
                             {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
@@ -362,7 +362,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
                             <Target className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-lg font-bold text-foreground mb-3 line-clamp-1">
+                          <div className="text-lg font-bold text-foreground mb-3 line-clamp-2">
                             {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
@@ -396,7 +396,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
                             <Lightbulb className="h-6 w-6 text-primary" />
                           </div>
-                          <div className="text-lg font-bold text-foreground mb-3 line-clamp-1">
+                          <div className="text-lg font-bold text-foreground mb-3 line-clamp-2">
                             {personalizedInsights?.keyFocus.category || 'Key Focus'}
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
