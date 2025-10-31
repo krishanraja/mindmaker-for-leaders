@@ -1,5 +1,99 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+// Co-locate SCALE UPS mapping for email generation
+interface ScaleUpsDimension {
+  dimension: string;
+  level: 'Manual-Bound' | 'Experimenter' | 'Accelerator' | 'Category Breaker';
+  reasoning: string;
+}
+
+function deriveScaleUpsLensForEmail(data: any): ScaleUpsDimension[] {
+  const extractScore = (response: string): number => {
+    const match = response?.match(/^(\d+)/);
+    return match ? parseInt(match[1]) : 0;
+  };
+
+  const scores = {
+    industry_impact: extractScore(data.industry_impact),
+    business_acceleration: extractScore(data.business_acceleration),
+    team_alignment: extractScore(data.team_alignment),
+    external_positioning: extractScore(data.external_positioning),
+    kpi_connection: extractScore(data.kpi_connection),
+    coaching_champions: extractScore(data.coaching_champions)
+  };
+
+  const deepProfile = data.deepProfile;
+  const timeWaste = deepProfile?.timeWaste || 50;
+  const stakeholderCount = deepProfile?.stakeholders?.length || 0;
+  
+  return [
+    {
+      dimension: 'Customer Intelligence',
+      level: scores.external_positioning === 5 && stakeholderCount >= 4 ? 'Category Breaker' :
+             scores.external_positioning >= 4 ? 'Accelerator' :
+             scores.external_positioning === 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: scores.external_positioning >= 4 ? 
+        'Strong stakeholder alignment with AI-driven insights' :
+        'Building customer intelligence capabilities'
+    },
+    {
+      dimension: 'Workflow Automation',
+      level: scores.business_acceleration === 5 && timeWaste < 20 ? 'Category Breaker' :
+             scores.business_acceleration >= 4 ? 'Accelerator' :
+             scores.business_acceleration === 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: timeWaste < 30 ? 
+        'Active automation reducing operational inefficiency' :
+        `${timeWaste}% time on low-value work; automation opportunities exist`
+    },
+    {
+      dimension: 'Growth Systems',
+      level: (scores.business_acceleration + scores.kpi_connection) / 2 >= 4.5 ? 'Category Breaker' :
+             (scores.business_acceleration + scores.kpi_connection) / 2 >= 4 ? 'Accelerator' :
+             (scores.business_acceleration + scores.kpi_connection) / 2 >= 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: scores.kpi_connection >= 4 ? 
+        'KPI-driven growth with clear business acceleration path' :
+        'Connecting AI initiatives to business outcomes'
+    },
+    {
+      dimension: 'Strategic Speed',
+      level: scores.industry_impact === 5 ? 'Category Breaker' :
+             scores.industry_impact >= 4 ? 'Accelerator' :
+             scores.industry_impact === 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: scores.industry_impact >= 4 ? 
+        'Data-driven decision velocity with strategic intelligence' :
+        'Building strategic speed capabilities'
+    },
+    {
+      dimension: 'Business Impact Tracking',
+      level: scores.kpi_connection === 5 ? 'Category Breaker' :
+             scores.kpi_connection >= 4 ? 'Accelerator' :
+             scores.kpi_connection === 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: scores.kpi_connection >= 4 ? 
+        'Rigorous KPI tracking with measurement frameworks' :
+        'Developing measurement discipline for AI initiatives'
+    },
+    {
+      dimension: 'Competitive Edge',
+      level: (scores.external_positioning + scores.coaching_champions + scores.team_alignment) / 3 >= 4.5 ? 'Category Breaker' :
+             (scores.external_positioning + scores.coaching_champions + scores.team_alignment) / 3 >= 4 ? 'Accelerator' :
+             (scores.external_positioning + scores.coaching_champions + scores.team_alignment) / 3 >= 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: (scores.external_positioning + scores.coaching_champions + scores.team_alignment) / 3 >= 4 ? 
+        'Building competitive moat through AI and internal champions' :
+        'Developing AI differentiation capabilities'
+    }
+  ];
+}
+
+function getBadgeColor(level: string): string {
+  switch (level) {
+    case 'Category Breaker': return '#6366f1';
+    case 'Accelerator': return '#10b981';
+    case 'Experimenter': return '#f59e0b';
+    case 'Manual-Bound': return '#ef4444';
+    default: return '#64748b';
+  }
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -477,6 +571,40 @@ const handler = async (req: Request): Promise<Response> => {
 
             <!-- AI Context Summary for SOW Generation -->
             ${generateAIContextSummary(data, scores, tier)}
+
+            <!-- SCALE UPS Competitive Positioning Block -->
+            <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 16px; padding: 32px; margin: 48px 0 25px 0;">
+              <h2 style="color: #1e293b; font-size: 24px; font-weight: 700; margin: 0 0 16px 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 28px;">🎯</span>
+                Competitive Positioning Hints (SCALE UPS Lens)
+              </h2>
+              
+              <p style="color: #64748b; font-size: 14px; margin: 0 0 24px 0; line-height: 1.6;">
+                Based on ${data.firstName || 'the executive'}'s leadership assessment, here's how their organization maps across 6 key business dimensions:
+              </p>
+              
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                ${deriveScaleUpsLensForEmail(data).map(dim => `
+                  <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+                    <div style="color: #64748b; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                      ${dim.dimension}
+                    </div>
+                    <div style="display: inline-block; background: ${getBadgeColor(dim.level)}; color: white; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 6px; margin-bottom: 8px;">
+                      ${dim.level}
+                    </div>
+                    <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0;">
+                      ${dim.reasoning}
+                    </p>
+                  </div>
+                `).join('')}
+              </div>
+              
+              <div style="margin-top: 24px; padding: 16px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
+                <p style="color: #92400e; font-size: 13px; line-height: 1.6; margin: 0;">
+                  <strong>Strategic Implication:</strong> These dimensions provide a competitive positioning snapshot for tailoring the Executive Primer scope and identifying high-leverage intervention points.
+                </p>
+              </div>
+            </div>
 
             <!-- Personalized Recommendations -->
             <div style="background: white; padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">

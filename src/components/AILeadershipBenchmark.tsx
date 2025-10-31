@@ -28,6 +28,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import { ContactData } from './ContactCollectionForm';
 import { DeepProfileData } from './DeepProfileQuestionnaire';
+import { deriveScaleUpsLens, type ScaleUpsLens } from '@/utils/scaleUpsMapping';
 
 interface PersonalizedInsights {
   growthReadiness: { level: string; preview: string; details: string };
@@ -40,6 +41,7 @@ interface PersonalizedInsights {
     impact: string;
     timeline: string;
     growthMetric: string;
+    scaleUpsDimensions?: string[];
   }>;
 }
 
@@ -64,6 +66,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   const [personalizedInsights, setPersonalizedInsights] = useState<PersonalizedInsights | null>(null);
   const [isLoadingInsights, setIsLoadingInsights] = useState(true);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [scaleUpsLens, setScaleUpsLens] = useState<ScaleUpsLens | null>(null);
 
   const toggleCard = (cardId: string) => {
     setExpandedCards(prev => {
@@ -79,6 +82,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
   useEffect(() => {
     generatePersonalizedInsights();
+    // Generate SCALE UPS lens from existing data
+    const lens = deriveScaleUpsLens(assessmentData, deepProfileData);
+    setScaleUpsLens(lens);
   }, []);
 
   const generatePersonalizedInsights = async () => {
@@ -182,7 +188,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       impact: 'Revenue Growth',
       timeline: '30-60 days',
       growthMetric: '15-25%',
-      icon: Rocket
+      icon: Rocket,
+      scaleUpsDimensions: ['Growth Systems', 'Strategic Speed']
     },
     {
       title: 'Executive AI Fluency',
@@ -191,7 +198,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       impact: 'Strategic Influence',
       timeline: '60-90 days',
       growthMetric: '20-40%',
-      icon: Crown
+      icon: Crown,
+      scaleUpsDimensions: ['Strategic Speed', 'Competitive Edge']
     },
     {
       title: 'AI Champions Network',
@@ -200,7 +208,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       impact: 'Cultural Change',
       timeline: '90-120 days',
       growthMetric: '25-50%',
-      icon: Users
+      icon: Users,
+      scaleUpsDimensions: ['Competitive Edge', 'Workflow Automation']
     }
   ];
 
@@ -219,6 +228,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
     return {
       ...initiative,
       growthMetric: cleanedMetric,
+      scaleUpsDimensions: initiative.scaleUpsDimensions || [],
       icon: initiative.title.includes('Revenue') || initiative.title.includes('Business') ? Rocket :
             initiative.title.includes('Leadership') || initiative.title.includes('Executive') ? Crown : Users
     };
@@ -614,6 +624,16 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           </div>
                         )}
                         
+                        {insight.scaleUpsDimensions && insight.scaleUpsDimensions.length > 0 && (
+                          <div className="mb-3 flex flex-wrap gap-1.5">
+                            {insight.scaleUpsDimensions.map((dim: string, dimIdx: number) => (
+                              <Badge key={dimIdx} variant="outline" className="text-xs py-0.5 px-2">
+                                {dim}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        
                         <div className="flex items-start justify-between pt-3 border-t gap-3">
                           <div className="flex flex-col items-start flex-1">
                             <div className="text-xs font-bold text-primary mb-1.5">
@@ -645,6 +665,56 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             </div>
           </Carousel>
         </div>
+
+        {/* SCALE UPS Competitive Positioning Strip */}
+        {scaleUpsLens && (
+          <Card className="mb-20 sm:mb-24">
+            <CardContent className="p-8 sm:p-10">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <BarChart3 className="h-6 w-6 text-primary" />
+                  <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
+                    Competitive Positioning Lens
+                  </h3>
+                </div>
+                
+                <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
+                  Based on your leadership responses, here's how your organization maps across 6 key business dimensions
+                </p>
+                
+                {/* 6-pill grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                  {scaleUpsLens.dimensions.map((dim, idx) => (
+                    <div key={idx} className="border-2 rounded-xl p-5 space-y-3 hover:border-primary/50 transition-colors bg-card">
+                      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {dim.dimension}
+                      </div>
+                      <Badge 
+                        variant={
+                          dim.level === 'Category Breaker' ? 'default' :
+                          dim.level === 'Accelerator' ? 'secondary' :
+                          dim.level === 'Experimenter' ? 'outline' : 'destructive'
+                        }
+                        className="text-xs font-semibold"
+                      >
+                        {dim.level}
+                      </Badge>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {dim.reasoning}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                  <p className="text-sm text-foreground">
+                    <strong>Overall Maturity:</strong> <span className="text-primary font-semibold">{scaleUpsLens.overallMaturity}</span>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* AI Toolkit CTA */}
         {onViewToolkit && (

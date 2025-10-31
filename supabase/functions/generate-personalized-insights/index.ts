@@ -98,9 +98,26 @@ serve(async (req) => {
                       basedOn: { type: "array", items: { type: "string", maxLength: 50 }, description: "What user data this is based on (max 50 chars each)", maxItems: 3 },
                       impact: { type: "string", description: "Quantified impact metric (max 40 chars)", maxLength: 40 },
                       timeline: { type: "string", description: "Timeline (max 20 chars)", maxLength: 20 },
-                      growthMetric: { type: "string", description: "SHORT growth metric ONLY (5-15 chars). Examples: '10% faster', '20% gain', '$2M revenue', '15-25%', '3x speed'. MUST be concise number/percentage/metric, NOT a sentence.", maxLength: 15 }
+                      growthMetric: { type: "string", description: "SHORT growth metric ONLY (5-15 chars). Examples: '10% faster', '20% gain', '$2M revenue', '15-25%', '3x speed'. MUST be concise number/percentage/metric, NOT a sentence.", maxLength: 15 },
+                      scaleUpsDimensions: { 
+                        type: "array", 
+                        items: { 
+                          type: "string",
+                          enum: [
+                            "Customer Intelligence",
+                            "Workflow Automation", 
+                            "Growth Systems",
+                            "Strategic Speed",
+                            "Business Impact Tracking",
+                            "Competitive Edge"
+                          ]
+                        },
+                        minItems: 1,
+                        maxItems: 2,
+                        description: "1-2 SCALE UPS dimensions this initiative addresses"
+                      }
                     },
-                    required: ["title", "description", "basedOn", "impact", "timeline", "growthMetric"]
+                    required: ["title", "description", "basedOn", "impact", "timeline", "growthMetric", "scaleUpsDimensions"]
                   },
                   minItems: 3,
                   maxItems: 3
@@ -263,6 +280,13 @@ TASK: Generate personalized AI leadership insights that:
    - Include quantified impact based on their time waste % and work breakdown
    - Timeline should match their stated timeline
    - Should align with their role and industry
+   - **CRITICAL**: Tag each initiative with 1-2 relevant SCALE UPS dimensions:
+     * Customer Intelligence - for stakeholder/customer-facing initiatives
+     * Workflow Automation - for process optimization/efficiency plays
+     * Growth Systems - for revenue/pipeline acceleration
+     * Strategic Speed - for decision-making/planning improvements
+     * Business Impact Tracking - for KPI/analytics initiatives
+     * Competitive Edge - for market positioning/differentiation plays
    
 **CARD CONTENT GENERATION**
 
