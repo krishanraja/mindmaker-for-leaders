@@ -576,8 +576,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               ) : (
                 roadmapInsights.map((insight, index) => (
                   <CarouselItem key={index} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-[520px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
-                      <CardContent className="p-6 flex flex-col h-full">
+                    <Card className="h-[420px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl transition-all">
+                      <CardContent className="p-6 flex flex-col h-full justify-between">
                         <div className="flex items-start gap-3 mb-4">
                           <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex-shrink-0">
                             <insight.icon className="h-5 w-5 text-primary" />
@@ -589,12 +589,12 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           </div>
                         </div>
                         
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-3 flex-1">
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                           {insight.description}
                         </p>
                         
                         {insight.basedOn && insight.basedOn.length > 0 && (
-                          <div className="mb-3 p-2.5 bg-primary/10 rounded-lg">
+                          <div className="mb-4 p-2.5 bg-primary/10 rounded-lg">
                             <div className="text-xs font-semibold text-primary mb-1">Based on:</div>
                             <div className="text-xs text-muted-foreground">
                               {insight.basedOn.join(' • ')}
@@ -602,7 +602,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           </div>
                         )}
                         
-                        <div className="flex items-start justify-between pt-4 border-t mt-auto gap-3">
+                        <div className="flex items-start justify-between pt-3 border-t gap-3">
                           <div className="flex flex-col items-start flex-1">
                             <div className="text-xs font-bold text-primary mb-1.5">
                               {insight.growthMetric}
