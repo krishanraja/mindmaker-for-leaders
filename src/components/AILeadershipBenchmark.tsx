@@ -817,21 +817,28 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             {/* Enhanced Reasoning with Collapsible Expansion */}
                             <div className="space-y-3 flex-grow">
                               <Collapsible
-                                open={expandedDimensions[dim.dimension]}
+                                open={expandedDimensions[dim.dimension] || false}
                                 onOpenChange={() => toggleDimension(dim.dimension)}
                               >
-                                {/* Reasoning Text */}
-                                <div className="relative">
-                                  <p className={`text-sm text-muted-foreground leading-relaxed ${
-                                    !expandedDimensions[dim.dimension] ? 'line-clamp-3' : ''
-                                  }`}>
-                                    {dim.reasoning}
-                                  </p>
+                                <div className="space-y-2">
+                                  {/* Truncated version when collapsed */}
+                                  {!expandedDimensions[dim.dimension] && (
+                                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                                      {dim.reasoning}
+                                    </p>
+                                  )}
                                   
-                                  {/* Only show Read More button if text is long enough to truncate */}
+                                  {/* Full content when expanded */}
+                                  <CollapsibleContent>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                      {dim.reasoning}
+                                    </p>
+                                  </CollapsibleContent>
+                                  
+                                  {/* Read More/Less Button */}
                                   {dim.reasoning.length > 150 && (
                                     <CollapsibleTrigger asChild>
-                                      <button className="mt-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                                      <button className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                                         {expandedDimensions[dim.dimension] ? 'Read less' : 'Read more'}
                                         <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${
                                           expandedDimensions[dim.dimension] ? 'rotate-180' : ''
