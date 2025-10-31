@@ -140,9 +140,8 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, thinkingProcess: option.value }));
-                    console.log('Question 1 answered, auto-advancing in 800ms');
                     if (currentStep === 1) {
-                      setTimeout(() => handleNext(), 800);
+                      handleNext();
                     }
                   }}
                 >
@@ -305,9 +304,8 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, transformationGoal: option.value }));
-                    console.log('Question 5 answered, auto-advancing in 800ms');
                     if (currentStep === 5) {
-                      setTimeout(() => handleNext(), 800);
+                      handleNext();
                     }
                   }}
                 >
@@ -450,9 +448,8 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
                   className="w-full min-h-[44px] h-auto text-left justify-start rounded-xl py-3 px-4 whitespace-normal"
                   onClick={() => {
                     setProfileData(prev => ({ ...prev, biggestChallenge: option.value }));
-                    console.log('Question 9 answered, auto-advancing in 800ms');
                     if (currentStep === 9) {
-                      setTimeout(() => handleNext(), 800);
+                      handleNext();
                     }
                   }}
                 >
