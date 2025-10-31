@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { 
   Brain, 
   Target, 
@@ -71,6 +72,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [expandedDimensions, setExpandedDimensions] = useState<Record<string, boolean>>({});
   const [leadershipComparison, setLeadershipComparison] = useState<LeadershipComparison | null>(null);
+  const [selectedDimension, setSelectedDimension] = useState<LeadershipComparison['dimensions'][0] | null>(null);
 
   // Utility function to clean and validate "Based on" text
   const cleanBasedOnText = (items: string[]): string[] => {
@@ -796,7 +798,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   Based on your responses, here's how your AI leadership capabilities compare to other executives
                 </p>
                 
-                {/* Mobile-Optimized Carousel with breathing space */}
+                {/* Mobile-Optimized Carousel with proper breathing space */}
                 <StandardCarousel cardWidth="mobile-lg" showDots={true} showArrows={true} className="w-full mt-6">
                   {leadershipComparison.dimensions.map((dim, idx) => {
                     const IconComponent = getDimensionIcon(dim.dimension);
@@ -806,46 +808,46 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       <StandardCarouselCard 
                         key={idx} 
                         className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl rounded-2xl flex flex-col
-                          sm:border-2 border-0 shadow-lg sm:shadow-none
+                          border-2 border-primary/10
                           sm:bg-gradient-to-br sm:from-card sm:to-muted/20"
                       >
-                        {/* Mobile: Simplified, breathable layout (320px) | Desktop: Comprehensive view */}
-                        <Card className="h-full border-0 shadow-none bg-transparent min-h-[320px] sm:min-h-[480px]">
+                        {/* Mobile: Professional, readable layout (400px) | Desktop: Comprehensive view */}
+                        <Card className="h-full border-0 shadow-none bg-transparent min-h-[400px] sm:min-h-[480px]">
                           <CardContent className="p-5 sm:p-6 h-full flex flex-col">
                             
                             {/* Mobile-First Layout */}
-                            <div className="flex flex-col h-full sm:hidden space-y-5">
+                            <div className="flex flex-col h-full sm:hidden space-y-4">
                               {/* Watermark Icon - Mobile Only */}
-                              <div className="absolute top-4 right-4 opacity-5">
+                              <div className="absolute top-4 right-4 opacity-[0.03]">
                                 <IconComponent className="w-24 h-24" />
                               </div>
 
                               {/* Hero: Large Level Badge */}
                               <div className="flex justify-center pt-2">
-                                <Badge className={`text-base font-bold px-5 py-2.5 ${styling.badgeBg} border-2 shadow-md`}>
+                                <Badge className={`text-lg font-extrabold px-6 py-3 ${styling.badgeBg} border-2 shadow-md`}>
                                   {dim.level}
                                 </Badge>
                               </div>
 
                               {/* Dimension Title */}
                               <div className="text-center">
-                                <h4 className="text-lg font-bold text-foreground leading-tight">
+                                <h4 className="text-lg font-extrabold text-foreground leading-tight">
                                   {dim.dimension}
                                 </h4>
                               </div>
 
-                              {/* Key Insight - Single most important point */}
+                              {/* Key Insight - First 2-3 sentences with natural line clamp */}
                               <div className="flex-1 flex items-start">
-                                <p className="text-sm text-muted-foreground leading-relaxed text-center">
-                                  {dim.reasoning.split('.')[0]}.
+                                <p className="text-sm text-muted-foreground leading-relaxed text-center line-clamp-4">
+                                  {dim.reasoning.split('.').slice(0, 3).join('. ') + (dim.reasoning.split('.').length > 3 ? '.' : '')}
                                 </p>
                               </div>
 
-                              {/* Next Step - Actionable */}
+                              {/* Next Step - Full text with line clamp */}
                               {dim.nextStep && (
                                 <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
-                                  <p className="text-sm font-medium text-foreground">
-                                    <span className="text-primary font-semibold">Next:</span> {dim.nextStep.length > 60 ? dim.nextStep.substring(0, 60) + '...' : dim.nextStep}
+                                  <p className="text-sm font-medium text-foreground line-clamp-3">
+                                    <span className="text-primary font-semibold">Next:</span> {dim.nextStep}
                                   </p>
                                 </div>
                               )}
@@ -853,20 +855,20 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               {/* Percentile Context */}
                               {dim.percentile && (
                                 <div className="text-center pb-1">
-                                  <p className="text-sm font-semibold text-primary">
+                                  <p className="text-base font-bold text-primary">
                                     Top {100 - dim.percentile}% of executives
                                   </p>
                                 </div>
                               )}
 
-                              {/* Tap for Details Hint */}
+                              {/* Tap for Details Button - Prominent */}
                               <div className="text-center pt-2 border-t border-border/50">
                                 <button 
-                                  onClick={() => toggleDimension(dim.dimension)}
-                                  className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 mx-auto"
+                                  onClick={() => setSelectedDimension(dim)}
+                                  className="text-sm text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1.5 mx-auto group"
                                 >
                                   Tap for full details
-                                  <ChevronDown className="w-3 h-3" />
+                                  <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
                                 </button>
                               </div>
                             </div>
@@ -967,6 +969,71 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     );
                   })}
                 </StandardCarousel>
+
+                {/* Mobile Detail Modal */}
+                <Dialog open={!!selectedDimension} onOpenChange={(open) => !open && setSelectedDimension(null)}>
+                  <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+                    {selectedDimension && (() => {
+                      const IconComponent = getDimensionIcon(selectedDimension.dimension);
+                      const styling = getLevelStyling(selectedDimension.level);
+                      
+                      return (
+                        <>
+                          <DialogHeader>
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className={`p-2 rounded-xl ${styling.iconBg}`}>
+                                <IconComponent className="w-5 h-5 text-primary" />
+                              </div>
+                              <DialogTitle className="text-xl font-bold">{selectedDimension.dimension}</DialogTitle>
+                            </div>
+                            <Badge className={`w-fit ${styling.badgeBg} font-bold`}>
+                              {selectedDimension.level}
+                            </Badge>
+                          </DialogHeader>
+
+                          <div className="space-y-6 mt-4">
+                            {/* Score Progress */}
+                            <div>
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="text-sm font-medium text-foreground">Your Score</span>
+                                <span className="text-sm font-bold text-primary">{selectedDimension.score}/5</span>
+                              </div>
+                              <Progress value={styling.progress} className="h-3" />
+                            </div>
+
+                            {/* Full Reasoning */}
+                            <div>
+                              <h4 className="text-sm font-semibold text-foreground mb-2">Assessment</h4>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {selectedDimension.reasoning}
+                              </p>
+                            </div>
+
+                            {/* Next Step */}
+                            {selectedDimension.nextStep && (
+                              <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
+                                <h4 className="text-sm font-semibold text-primary mb-2">Next Step</h4>
+                                <p className="text-sm text-foreground leading-relaxed">
+                                  {selectedDimension.nextStep}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Percentile */}
+                            {selectedDimension.percentile && (
+                              <div className="p-4 bg-muted rounded-xl">
+                                <p className="text-sm text-center">
+                                  <span className="font-bold text-primary text-lg">Top {100 - selectedDimension.percentile}%</span>
+                                  <span className="text-muted-foreground"> of executives</span>
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </DialogContent>
+                </Dialog>
 
                 <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
                   <p className="text-sm text-foreground">

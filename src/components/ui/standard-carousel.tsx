@@ -72,7 +72,7 @@ export const StandardCarousel: React.FC<StandardCarouselProps> = ({
           "[-webkit-overflow-scrolling:touch]",
           "[touch-action:pan-x]",
           cardWidth === 'mobile' && "[grid-auto-columns:90%] gap-4",
-          cardWidth === 'mobile-lg' && "[grid-auto-columns:88%] md:[grid-auto-columns:45%] gap-6",
+          cardWidth === 'mobile-lg' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%] gap-4",
           cardWidth === 'tablet' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%] gap-4",
           cardWidth === 'desktop' && "[grid-auto-columns:90%] md:[grid-auto-columns:45%] lg:[grid-auto-columns:32%] gap-4",
           className
