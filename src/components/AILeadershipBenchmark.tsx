@@ -392,8 +392,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
               {/* Right: Key Metrics & Insight */}
               <div className="space-y-6 w-full lg:w-auto lg:flex-1">
-                 {/* Desktop - Horizontal Cards */}
-                <div className="hidden sm:flex flex-col gap-4">
+                  {/* Desktop - Horizontal Cards */}
+                 <div className="hidden sm:flex flex-col gap-3 max-w-4xl">
                   {isLoadingInsights ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -402,21 +402,21 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   ) : (
                     <>
                       {/* Growth Readiness Card */}
-                      <Card className="p-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
-                        <div className="flex items-start gap-4">
+                      <Card className="py-2.5 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                        <div className="flex items-center gap-3">
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <BarChart3 className="h-6 w-6 text-primary" />
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <BarChart3 className="h-5 w-5 text-primary" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-3 mb-1">
+                            <div className="flex items-baseline gap-2 mb-0.5">
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Growth Readiness</span>
-                              <span className="text-lg font-bold text-foreground">
+                              <span className="text-base font-bold text-foreground">
                                 {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
+                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
                               {personalizedInsights?.growthReadiness.preview || 'Revenue acceleration potential'} — {personalizedInsights?.growthReadiness.details || 'Focus on identifying high-impact AI use cases that align with your strategic priorities.'}
                             </p>
                           </div>
@@ -424,21 +424,21 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </Card>
 
                       {/* Leadership Stage Card */}
-                      <Card className="p-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
-                        <div className="flex items-start gap-4">
+                      <Card className="py-2.5 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                        <div className="flex items-center gap-3">
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <Target className="h-6 w-6 text-primary" />
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <Target className="h-5 w-5 text-primary" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-3 mb-1">
+                            <div className="flex items-baseline gap-2 mb-0.5">
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Leadership Stage</span>
-                              <span className="text-lg font-bold text-foreground">
+                              <span className="text-base font-bold text-foreground">
                                 {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
+                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
                               {personalizedInsights?.leadershipStage.preview || 'Build strategic AI leadership capabilities'} — {personalizedInsights?.leadershipStage.details || 'Build a cross-functional AI champion network to accelerate adoption across your organization.'}
                             </p>
                           </div>
@@ -446,21 +446,21 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </Card>
 
                       {/* Executive Insight Card */}
-                      <Card className="p-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
-                        <div className="flex items-start gap-4">
+                      <Card className="py-2.5 px-4 shadow-md border-0 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                        <div className="flex items-center gap-3">
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <Lightbulb className="h-6 w-6 text-primary" />
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <Lightbulb className="h-5 w-5 text-primary" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-3 mb-1">
+                            <div className="flex items-baseline gap-2 mb-0.5">
                               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Executive Insight</span>
-                              <span className="text-lg font-bold text-foreground">
+                              <span className="text-base font-bold text-foreground">
                                 {personalizedInsights?.keyFocus.category || 'Key Focus'}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
+                            <p className="text-sm text-muted-foreground leading-snug line-clamp-2">
                               {personalizedInsights?.keyFocus.preview || leadershipProfile.message} — {personalizedInsights?.keyFocus.details || 'Develop a roadmap for integrating AI into your core business processes.'}
                             </p>
                           </div>
