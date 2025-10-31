@@ -554,3 +554,24 @@ input:focus-visible {
   margin-top: auto;
   flex-shrink: 0;
 }
+
+/* Two-line title heights for consistent alignment */
+.carousel-card-title-xl {
+  min-height: 3.75rem; /* 60px - accommodates 2 lines of text-xl */
+  line-height: 1.5;
+}
+
+.carousel-card-title-lg {
+  min-height: 2.8rem; /* 45px - accommodates 2 lines of text-lg */
+  line-height: 1.25;
+}
+
+.carousel-card-title-base {
+  min-height: 2.5rem; /* 40px - accommodates 2 lines of text-base */
+  line-height: 1.25;
+}
+
+.carousel-card-title-2xl {
+  min-height: 4.25rem; /* 68px - accommodates 2 lines of text-2xl */
+  line-height: 1.4;
+}

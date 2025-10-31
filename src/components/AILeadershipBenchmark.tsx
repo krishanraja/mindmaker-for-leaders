@@ -481,7 +481,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <BarChart3 className="h-6 w-6 text-primary" />
                           </div>
                           <div className="carousel-card-body">
-                            <div className="text-xl font-bold text-foreground mb-3">
+                            <div className="carousel-card-title-xl text-xl font-bold text-foreground mb-3 line-clamp-2">
                               {personalizedInsights?.growthReadiness.level || (score >= 25 ? 'High' : score >= 19 ? 'Medium-High' : score >= 13 ? 'Medium' : 'Developing')}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">
@@ -519,7 +519,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <Target className="h-6 w-6 text-primary" />
                           </div>
                           <div className="carousel-card-body">
-                            <div className="text-xl font-bold text-foreground mb-3">
+                            <div className="carousel-card-title-xl text-xl font-bold text-foreground mb-3 line-clamp-2">
                               {personalizedInsights?.leadershipStage.stage || (score >= 25 ? 'Orchestrator' : score >= 19 ? 'Confident' : score >= 13 ? 'Aware' : 'Emerging')}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">
@@ -557,7 +557,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                             <Lightbulb className="h-6 w-6 text-primary" />
                           </div>
                           <div className="carousel-card-body">
-                            <div className="text-xl font-bold text-foreground mb-3">
+                            <div className="carousel-card-title-xl text-xl font-bold text-foreground mb-3 line-clamp-2">
                               {personalizedInsights?.keyFocus.category || 'Key Focus'}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">
@@ -625,7 +625,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           <insight.icon className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-foreground text-base leading-tight line-clamp-3">
+                          <h3 className="carousel-card-title-base font-bold text-foreground text-base line-clamp-2">
                             {insight.title}
                           </h3>
                         </div>
@@ -732,7 +732,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                                 <IconComponent className="w-6 h-6 text-primary" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-lg text-foreground leading-tight mb-2">
+                                <h4 className="carousel-card-title-lg font-bold text-lg text-foreground line-clamp-2 mb-2">
                                   {dim.dimension}
                                 </h4>
                                 <Badge className={`text-xs font-semibold px-3 py-1 ${styling.badgeBg} border`}>
@@ -834,7 +834,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 ].map((item, index) => (
                   <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white h-[180px] flex flex-col">
                     <item.icon className="h-10 w-10 mx-auto mb-4" />
-                    <h4 className="font-bold text-lg mb-2">{item.title}</h4>
+                    <h4 className="carousel-card-title-lg font-bold text-lg mb-2 line-clamp-2">{item.title}</h4>
                     <p className="text-sm text-white/80">{item.desc}</p>
                   </div>
                 ))}
@@ -854,7 +854,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                           <item.icon className="h-6 w-6 mx-auto mb-2" />
                         </div>
                         <div className="carousel-card-body">
-                          <h4 className="font-bold text-sm mb-1 leading-tight">{item.title}</h4>
+                          <h4 className="min-h-[2.5rem] font-bold text-sm mb-1 leading-tight line-clamp-2">{item.title}</h4>
                           <p className="text-xs text-white/80 leading-tight">{item.desc}</p>
                         </div>
                       </div>

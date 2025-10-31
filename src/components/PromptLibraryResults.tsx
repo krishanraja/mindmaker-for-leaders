@@ -200,7 +200,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     <div className="p-3 bg-primary/10 rounded-xl inline-block mb-4">
                       <Sparkles className="h-12 w-12 text-primary" />
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-6">
+                    <h3 className="carousel-card-title-2xl text-2xl font-bold text-foreground mb-6 line-clamp-2">
                       {firstName}'s Unique Strengths
                     </h3>
                   </div>
@@ -227,13 +227,13 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     <div className="p-3 bg-primary/10 rounded-xl inline-block mb-4">
                       <Rocket className="h-12 w-12 text-primary" />
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-6">
+                    <h3 className="carousel-card-title-2xl text-2xl font-bold text-foreground mb-6 line-clamp-2">
                       Your Biggest Opportunity
                     </h3>
                   </div>
                   
                   <div className="carousel-card-body text-center space-y-6">
-                    <h4 className="text-lg font-bold text-foreground leading-snug px-2">
+                    <h4 className="carousel-card-title-lg text-lg font-bold text-foreground leading-snug px-2 line-clamp-2">
                       {priorityProject.name}
                     </h4>
                     <p className="text-sm text-muted-foreground leading-relaxed px-4">
@@ -258,7 +258,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     <div className="p-3 bg-primary/10 rounded-xl inline-block mb-4">
                       <TrendingUp className="h-12 w-12 text-primary" />
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-6">
+                    <h3 className="carousel-card-title-2xl text-2xl font-bold text-foreground mb-6 line-clamp-2">
                       What Makes You Different
                     </h3>
                   </div>
@@ -292,7 +292,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                   {/* Icon + Title inline */}
                   <div className="flex items-center gap-2 mb-4">
                     <Sparkles className="h-6 w-6 text-primary flex-shrink-0" />
-                    <h3 className="text-base font-bold text-foreground leading-tight">
+                    <h3 className="carousel-card-title-base text-base font-bold text-foreground leading-tight line-clamp-2">
                       {firstName}'s Unique Strengths
                     </h3>
                   </div>
@@ -319,14 +319,14 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                   {/* Icon + Title inline */}
                   <div className="flex items-center gap-2 mb-4">
                     <Rocket className="h-6 w-6 text-primary flex-shrink-0" />
-                    <h3 className="text-base font-bold text-foreground leading-tight">
+                    <h3 className="carousel-card-title-base text-base font-bold text-foreground leading-tight line-clamp-2">
                       Your Biggest Opportunity
                     </h3>
                   </div>
                   
                   {/* Content - Project compact */}
                   <div className="space-y-2">
-                    <h4 className="text-sm font-bold text-foreground leading-tight">
+                    <h4 className="min-h-[2.5rem] text-sm font-bold text-foreground leading-tight line-clamp-2">
                       {priorityProject.name}
                     </h4>
                     <p className="text-xs text-muted-foreground leading-tight">
@@ -351,7 +351,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                   {/* Icon + Title inline */}
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="h-6 w-6 text-primary flex-shrink-0" />
-                    <h3 className="text-base font-bold text-foreground leading-tight">
+                    <h3 className="carousel-card-title-base text-base font-bold text-foreground leading-tight line-clamp-2">
                       What Makes You Different
                     </h3>
                   </div>
@@ -430,7 +430,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       <div className="flex flex-col gap-5">
                         {/* Header Section */}
                         <div className="space-y-2">
-                          <h3 className="text-xl font-bold text-foreground">{project.name}</h3>
+                          <h3 className="carousel-card-title-xl text-xl font-bold text-foreground line-clamp-2">{project.name}</h3>
                           <div className="relative">
                             <p className={cn(
                               "text-sm text-muted-foreground leading-relaxed",
@@ -540,7 +540,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                 <CardHeader className="carousel-card-header flex-shrink-0 pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-1">{template.name}</CardTitle>
+                      <CardTitle className="carousel-card-title-lg text-lg mb-1 line-clamp-2">{template.name}</CardTitle>
                       <Badge variant="secondary" className="text-xs">{template.category}</Badge>
                     </div>
                     <Button
