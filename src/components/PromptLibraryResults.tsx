@@ -233,130 +233,229 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
           <p className="text-base text-muted-foreground">Based on your responses, here's your executive profile</p>
         </div>
         
-        <Carousel
-          opts={{
-            align: "center",
-            loop: true,
-          }}
-          setApi={setAboutYouApi}
-          className="w-full max-w-[580px] mx-auto"
-        >
-          <CarouselContent className="-ml-4">
-            {/* Card 1: Your Unique Strengths */}
-            <CarouselItem className="pl-4 basis-full">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-8 flex flex-col h-full justify-center">
-                  <div className="space-y-8 flex flex-col items-center">
-                    {/* Icon */}
-                    <div className="p-3 bg-primary/10 rounded-xl">
-                      <Sparkles className="h-12 w-12 text-primary" />
-                    </div>
-                    
-                    {/* Title */}
-                    <h3 className="text-2xl font-bold text-center text-foreground">
-                      {firstName}'s Unique Strengths
-                    </h3>
-                    
-                    {/* Content - 3 strengths with breathing room */}
-                    <div className="space-y-6 w-full max-w-xs">
-                      {workingStyle.map((trait, idx) => (
-                        <div key={idx} className="flex items-center gap-4">
-                          <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                          <p className="text-sm font-medium text-foreground">{trait}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </CarouselItem>
-
-            {/* Card 2: Your Biggest Opportunity */}
-            <CarouselItem className="pl-4 basis-full">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-8 flex flex-col h-full justify-center">
-                  <div className="space-y-8 flex flex-col items-center">
-                    {/* Icon */}
-                    <div className="p-3 bg-primary/10 rounded-xl">
-                      <Rocket className="h-12 w-12 text-primary" />
-                    </div>
-                    
-                    {/* Title */}
-                    <h3 className="text-2xl font-bold text-center text-foreground">
-                      Your Biggest Opportunity
-                    </h3>
-                    
-                    {/* Content - Project name bold, value prop, impact */}
-                    <div className="space-y-6 text-center">
-                      <h4 className="text-lg font-bold text-foreground leading-snug px-2">
-                        {priorityProject.name}
-                      </h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed px-4">
-                        {priorityProject.valueProp}
-                      </p>
-                      <div className="pt-2">
-                        <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
-                          {priorityProject.impact}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </CarouselItem>
-
-            {/* Card 3: What Makes You Different */}
-            <CarouselItem className="pl-4 basis-full">
-              <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                <CardContent className="p-8 flex flex-col h-full justify-center">
-                  <div className="space-y-8 flex flex-col items-center">
-                    {/* Icon */}
-                    <div className="p-3 bg-primary/10 rounded-xl">
-                      <TrendingUp className="h-12 w-12 text-primary" />
-                    </div>
-                    
-                    {/* Title */}
-                    <h3 className="text-2xl font-bold text-center text-foreground">
-                      What Makes You Different
-                    </h3>
-                    
-                    {/* Content - Quote-style insight */}
-                    <div className="space-y-6 w-full">
-                      <div className="border-l-4 border-primary pl-4 pr-2 py-2">
-                        <p className="text-sm text-foreground leading-relaxed italic">
-                          "{opportunity.statement}"
-                        </p>
+        {/* Mobile: Carousel */}
+        <div className="md:hidden">
+          <Carousel
+            opts={{
+              align: "center",
+              loop: true,
+            }}
+            setApi={setAboutYouApi}
+            className="w-full max-w-[580px] mx-auto"
+          >
+            <CarouselContent className="-ml-4">
+              {/* Card 1: Your Unique Strengths */}
+              <CarouselItem className="pl-4 basis-full">
+                <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                  <CardContent className="p-8 flex flex-col h-full justify-center">
+                    <div className="space-y-8 flex flex-col items-center">
+                      {/* Icon */}
+                      <div className="p-3 bg-primary/10 rounded-xl">
+                        <Sparkles className="h-12 w-12 text-primary" />
                       </div>
                       
-                      <div className="text-center pt-2">
-                        <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
-                          {opportunity.outcome}
-                        </Badge>
+                      {/* Title */}
+                      <h3 className="text-2xl font-bold text-center text-foreground">
+                        {firstName}'s Unique Strengths
+                      </h3>
+                      
+                      {/* Content - 3 strengths with breathing room */}
+                      <div className="space-y-6 w-full max-w-xs">
+                        {workingStyle.map((trait, idx) => (
+                          <div key={idx} className="flex items-center gap-4">
+                            <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
+                            <p className="text-sm font-medium text-foreground">{trait}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+
+              {/* Card 2: Your Biggest Opportunity */}
+              <CarouselItem className="pl-4 basis-full">
+                <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                  <CardContent className="p-8 flex flex-col h-full justify-center">
+                    <div className="space-y-8 flex flex-col items-center">
+                      {/* Icon */}
+                      <div className="p-3 bg-primary/10 rounded-xl">
+                        <Rocket className="h-12 w-12 text-primary" />
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-2xl font-bold text-center text-foreground">
+                        Your Biggest Opportunity
+                      </h3>
+                      
+                      {/* Content - Project name bold, value prop, impact */}
+                      <div className="space-y-6 text-center">
+                        <h4 className="text-lg font-bold text-foreground leading-snug px-2">
+                          {priorityProject.name}
+                        </h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed px-4">
+                          {priorityProject.valueProp}
+                        </p>
+                        <div className="pt-2">
+                          <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
+                            {priorityProject.impact}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+
+              {/* Card 3: What Makes You Different */}
+              <CarouselItem className="pl-4 basis-full">
+                <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[576px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                  <CardContent className="p-8 flex flex-col h-full justify-center">
+                    <div className="space-y-8 flex flex-col items-center">
+                      {/* Icon */}
+                      <div className="p-3 bg-primary/10 rounded-xl">
+                        <TrendingUp className="h-12 w-12 text-primary" />
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-2xl font-bold text-center text-foreground">
+                        What Makes You Different
+                      </h3>
+                      
+                      {/* Content - Quote-style insight */}
+                      <div className="space-y-6 w-full">
+                        <div className="border-l-4 border-primary pl-4 pr-2 py-2">
+                          <p className="text-sm text-foreground leading-relaxed italic">
+                            "{opportunity.statement}"
+                          </p>
+                        </div>
+                        
+                        <div className="text-center pt-2">
+                          <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
+                            {opportunity.outcome}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            </CarouselContent>
+            
+            {/* Dot Indicators */}
+            <div className="flex justify-center gap-2 mt-6">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => aboutYouApi?.scrollTo(index)}
+                  className={cn(
+                    "h-2 rounded-full transition-all duration-300",
+                    aboutYouCurrent === index 
+                      ? "bg-primary w-8" 
+                      : "bg-primary/20 hover:bg-primary/40 w-2"
+                  )}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </Carousel>
+        </div>
+
+        {/* Desktop: Stacked Cards */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-1 gap-6 max-w-4xl mx-auto">
+            {/* Card 1: Your Unique Strengths */}
+            <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[360px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <CardContent className="p-6 flex flex-col h-full justify-center">
+                <div className="space-y-6 flex flex-col items-center">
+                  {/* Icon */}
+                  <div className="p-2.5 bg-primary/10 rounded-xl">
+                    <Sparkles className="h-10 w-10 text-primary" />
                   </div>
-                </CardContent>
-              </Card>
-            </CarouselItem>
-          </CarouselContent>
-          
-          {/* Dot Indicators */}
-          <div className="flex justify-center gap-2 mt-6">
-            {[0, 1, 2].map((index) => (
-              <button
-                key={index}
-                onClick={() => aboutYouApi?.scrollTo(index)}
-                className={cn(
-                  "h-2 rounded-full transition-all duration-300",
-                  aboutYouCurrent === index 
-                    ? "bg-primary w-8" 
-                    : "bg-primary/20 hover:bg-primary/40 w-2"
-                )}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
+                  
+                  {/* Title */}
+                  <h3 className="text-2xl font-bold text-center text-foreground">
+                    {firstName}'s Unique Strengths
+                  </h3>
+                  
+                  {/* Content - 3 strengths with breathing room */}
+                  <div className="space-y-4 w-full max-w-xs">
+                    {workingStyle.map((trait, idx) => (
+                      <div key={idx} className="flex items-center gap-4">
+                        <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
+                        <p className="text-sm font-medium text-foreground">{trait}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Your Biggest Opportunity */}
+            <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[360px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <CardContent className="p-6 flex flex-col h-full justify-center">
+                <div className="space-y-6 flex flex-col items-center">
+                  {/* Icon */}
+                  <div className="p-2.5 bg-primary/10 rounded-xl">
+                    <Rocket className="h-10 w-10 text-primary" />
+                  </div>
+                  
+                  {/* Title */}
+                  <h3 className="text-2xl font-bold text-center text-foreground">
+                    Your Biggest Opportunity
+                  </h3>
+                  
+                  {/* Content - Project name bold, value prop, impact */}
+                  <div className="space-y-5 text-center">
+                    <h4 className="text-lg font-bold text-foreground leading-snug px-2">
+                      {priorityProject.name}
+                    </h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed px-4">
+                      {priorityProject.valueProp}
+                    </p>
+                    <div className="pt-1">
+                      <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
+                        {priorityProject.impact}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: What Makes You Different */}
+            <Card className="shadow-xl border-2 border-primary/10 rounded-2xl bg-card h-[360px] flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+              <CardContent className="p-6 flex flex-col h-full justify-center">
+                <div className="space-y-6 flex flex-col items-center">
+                  {/* Icon */}
+                  <div className="p-2.5 bg-primary/10 rounded-xl">
+                    <TrendingUp className="h-10 w-10 text-primary" />
+                  </div>
+                  
+                  {/* Title */}
+                  <h3 className="text-2xl font-bold text-center text-foreground">
+                    What Makes You Different
+                  </h3>
+                  
+                  {/* Content - Quote-style insight */}
+                  <div className="space-y-5 w-full">
+                    <div className="border-l-4 border-primary pl-4 pr-2 py-2">
+                      <p className="text-sm text-foreground leading-relaxed italic">
+                        "{opportunity.statement}"
+                      </p>
+                    </div>
+                    
+                    <div className="text-center pt-1">
+                      <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
+                        {opportunity.outcome}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </Carousel>
+        </div>
       </section>
 
       {/* Master Prompts Section - Horizontal Carousel */}
