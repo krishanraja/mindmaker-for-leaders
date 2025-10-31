@@ -60,7 +60,7 @@ Generate a comprehensive "Master Prompt Library Package" in JSON format:
 {
   "executiveProfile": {
     "summary": "150-word summary of their thinking style, communication preferences, and work patterns",
-    "transformationOpportunity": "The single biggest way AI can create value for them"
+    "transformationOpportunity": "The single biggest way AI can create value for them (CRITICAL: MAX 300 characters - be concise, complete, and impactful)"
   },
   "recommendedProjects": [
     {
@@ -100,6 +100,7 @@ CRITICAL REQUIREMENTS:
 - Match THEIR stakeholder context
 - Use THEIR language and terminology
 - Focus on THEIR transformation goal
+- **TRANSFORMATION OPPORTUNITY MUST BE MAX 300 CHARACTERS** - Be concise yet complete. Focus on the single most impactful value proposition.
 
 Return ONLY valid JSON, no markdown formatting.`;
 
