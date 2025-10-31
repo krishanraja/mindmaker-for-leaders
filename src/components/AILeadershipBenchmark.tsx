@@ -69,6 +69,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   const [personalizedInsights, setPersonalizedInsights] = useState<PersonalizedInsights | null>(null);
   const [isLoadingInsights, setIsLoadingInsights] = useState(true);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [expandedDimensions, setExpandedDimensions] = useState<Record<string, boolean>>({});
   const [leadershipComparison, setLeadershipComparison] = useState<LeadershipComparison | null>(null);
 
   // Utility function to clean and validate "Based on" text
@@ -112,6 +113,13 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       }
       return newSet;
     });
+  };
+
+  const toggleDimension = (dimensionName: string) => {
+    setExpandedDimensions(prev => ({
+      ...prev,
+      [dimensionName]: !prev[dimensionName]
+    }));
   };
 
   useEffect(() => {
@@ -806,20 +814,46 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               </div>
                             </div>
 
-                            {/* Enhanced Reasoning with Next Step */}
+                            {/* Enhanced Reasoning with Collapsible Expansion */}
                             <div className="space-y-3 flex-grow">
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {dim.reasoning}
-                              </p>
+                              <Collapsible
+                                open={expandedDimensions[dim.dimension]}
+                                onOpenChange={() => toggleDimension(dim.dimension)}
+                              >
+                                {/* Reasoning Text */}
+                                <div className="relative">
+                                  <p className={`text-sm text-muted-foreground leading-relaxed ${
+                                    !expandedDimensions[dim.dimension] ? 'line-clamp-3' : ''
+                                  }`}>
+                                    {dim.reasoning}
+                                  </p>
+                                  
+                                  {/* Only show Read More button if text is long enough to truncate */}
+                                  {dim.reasoning.length > 150 && (
+                                    <CollapsibleTrigger asChild>
+                                      <button className="mt-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                                        {expandedDimensions[dim.dimension] ? 'Read less' : 'Read more'}
+                                        <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${
+                                          expandedDimensions[dim.dimension] ? 'rotate-180' : ''
+                                        }`} />
+                                      </button>
+                                    </CollapsibleTrigger>
+                                  )}
+                                </div>
+                              </Collapsible>
                               
+                              {/* Next Step - Always visible */}
                               {dim.nextStep && (
-                                <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/10">
+                                <div className={`p-2.5 bg-primary/5 rounded-lg border border-primary/10 ${
+                                  !expandedDimensions[dim.dimension] && dim.nextStep.length > 100 ? 'line-clamp-2' : ''
+                                }`}>
                                   <p className="text-xs font-medium text-foreground">
                                     <span className="text-primary">Next Step:</span> {dim.nextStep}
                                   </p>
                                 </div>
                               )}
                               
+                              {/* Percentile - Always visible */}
                               {dim.percentile && (
                                 <p className="text-xs text-muted-foreground/80">
                                   You're in the top {100 - dim.percentile}% of executives in this dimension
