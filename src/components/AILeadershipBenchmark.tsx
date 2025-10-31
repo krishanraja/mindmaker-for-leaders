@@ -28,7 +28,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import { ContactData } from './ContactCollectionForm';
 import { DeepProfileData } from './DeepProfileQuestionnaire';
-import { deriveScaleUpsLens, type ScaleUpsLens } from '@/utils/scaleUpsMapping';
+import { deriveLeadershipComparison, type LeadershipComparison } from '@/utils/scaleUpsMapping';
 
 interface PersonalizedInsights {
   growthReadiness: { level: string; preview: string; details: string };
@@ -66,7 +66,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   const [personalizedInsights, setPersonalizedInsights] = useState<PersonalizedInsights | null>(null);
   const [isLoadingInsights, setIsLoadingInsights] = useState(true);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-  const [scaleUpsLens, setScaleUpsLens] = useState<ScaleUpsLens | null>(null);
+  const [leadershipComparison, setLeadershipComparison] = useState<LeadershipComparison | null>(null);
 
   const toggleCard = (cardId: string) => {
     setExpandedCards(prev => {
@@ -82,9 +82,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
   useEffect(() => {
     generatePersonalizedInsights();
-    // Generate SCALE UPS lens from existing data
-    const lens = deriveScaleUpsLens(assessmentData, deepProfileData);
-    setScaleUpsLens(lens);
+    // Derive leadership comparison from existing data
+    const comparison = deriveLeadershipComparison(assessmentData, deepProfileData);
+    setLeadershipComparison(comparison);
   }, []);
 
   const generatePersonalizedInsights = async () => {
@@ -666,20 +666,20 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
           </Carousel>
         </div>
 
-        {/* SCALE UPS Competitive Positioning Carousel */}
-        {scaleUpsLens && (
+        {/* Leadership Comparison Carousel */}
+        {leadershipComparison && (
           <Card className="mb-20 sm:mb-24">
             <CardContent className="p-8 sm:p-10">
               <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <BarChart3 className="h-6 w-6 text-primary" />
+                  <Users className="h-6 w-6 text-primary" />
                   <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
-                    Competitive Positioning Lens
+                    How You Compare
                   </h3>
                 </div>
                 
                 <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
-                  Based on your leadership responses, here's how your organization maps across 6 key business dimensions
+                  Based on your responses, here's how your AI leadership capabilities compare to other executives
                 </p>
                 
                 {/* Carousel with 6 dimension cards */}
@@ -691,7 +691,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                   className="w-full mt-6"
                 >
                   <CarouselContent className="-ml-4">
-                    {scaleUpsLens.dimensions.map((dim, idx) => (
+                    {leadershipComparison.dimensions.map((dim, idx) => (
                       <CarouselItem key={idx} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
                         <Card className="h-[280px] flex flex-col shadow-lg border-2 rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all bg-card">
                           <CardContent className="p-6 flex flex-col h-full justify-between">
@@ -701,9 +701,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                               </div>
                               <Badge 
                                 variant={
-                                  dim.level === 'Category Breaker' ? 'default' :
-                                  dim.level === 'Accelerator' ? 'secondary' :
-                                  dim.level === 'Experimenter' ? 'outline' : 'destructive'
+                                  dim.level === 'AI Pioneer' ? 'default' :
+                                  dim.level === 'Confident Practitioner' ? 'secondary' :
+                                  dim.level === 'Active Explorer' ? 'outline' : 'destructive'
                                 }
                                 className="text-xs font-semibold w-fit"
                               >
@@ -727,7 +727,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
 
                 <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
                   <p className="text-sm text-foreground">
-                    <strong>Overall Maturity:</strong> <span className="text-primary font-semibold">{scaleUpsLens.overallMaturity}</span>
+                    <strong>Your Leadership Position:</strong> <span className="text-primary font-semibold">{leadershipComparison.overallMaturity}</span>
                   </p>
                 </div>
               </div>

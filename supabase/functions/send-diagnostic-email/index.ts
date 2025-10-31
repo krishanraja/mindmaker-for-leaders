@@ -7,7 +7,7 @@ interface ScaleUpsDimension {
   reasoning: string;
 }
 
-function deriveScaleUpsLensForEmail(data: any): ScaleUpsDimension[] {
+function deriveLeadershipComparisonForEmail(data: any): ScaleUpsDimension[] {
   const extractScore = (response: string): number => {
     const match = response?.match(/^(\d+)/);
     return match ? parseInt(match[1]) : 0;
@@ -28,58 +28,58 @@ function deriveScaleUpsLensForEmail(data: any): ScaleUpsDimension[] {
   
   return [
     {
-      dimension: 'Customer Intelligence',
-      level: scores.external_positioning === 5 && stakeholderCount >= 4 ? 'Category Breaker' :
-             scores.external_positioning >= 4 ? 'Accelerator' :
-             scores.external_positioning === 3 ? 'Experimenter' : 'Manual-Bound',
-      reasoning: scores.external_positioning >= 4 ? 
-        'Strong stakeholder alignment with AI-driven insights' :
-        'Building customer intelligence capabilities'
-    },
-    {
-      dimension: 'Workflow Automation',
-      level: scores.business_acceleration === 5 && timeWaste < 20 ? 'Category Breaker' :
-             scores.business_acceleration >= 4 ? 'Accelerator' :
-             scores.business_acceleration === 3 ? 'Experimenter' : 'Manual-Bound',
-      reasoning: timeWaste < 30 ? 
-        'Active automation reducing operational inefficiency' :
-        `${timeWaste}% time on low-value work; automation opportunities exist`
-    },
-    {
-      dimension: 'Growth Systems',
-      level: (scores.business_acceleration + scores.kpi_connection) / 2 >= 4.5 ? 'Category Breaker' :
-             (scores.business_acceleration + scores.kpi_connection) / 2 >= 4 ? 'Accelerator' :
-             (scores.business_acceleration + scores.kpi_connection) / 2 >= 3 ? 'Experimenter' : 'Manual-Bound',
-      reasoning: scores.kpi_connection >= 4 ? 
-        'KPI-driven growth with clear business acceleration path' :
-        'Connecting AI initiatives to business outcomes'
-    },
-    {
-      dimension: 'Strategic Speed',
+      dimension: 'AI Fluency',
       level: scores.industry_impact === 5 ? 'Category Breaker' :
              scores.industry_impact >= 4 ? 'Accelerator' :
              scores.industry_impact === 3 ? 'Experimenter' : 'Manual-Bound',
       reasoning: scores.industry_impact >= 4 ? 
-        'Data-driven decision velocity with strategic intelligence' :
-        'Building strategic speed capabilities'
+        'You articulate AI\'s impact with clarity and can educate others' :
+        'You\'re building your AI vocabulary and understanding'
     },
     {
-      dimension: 'Business Impact Tracking',
+      dimension: 'Delegation Mastery',
+      level: scores.business_acceleration === 5 && timeWaste < 20 ? 'Category Breaker' :
+             scores.business_acceleration >= 4 ? 'Accelerator' :
+             scores.business_acceleration === 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: timeWaste < 30 ? 
+        'You\'re actively delegating to AI and reclaiming valuable time' :
+        `You have opportunity to free up ${timeWaste}% of your time through delegation`
+    },
+    {
+      dimension: 'Strategic Vision',
+      level: (scores.kpi_connection + scores.external_positioning) / 2 >= 4.5 ? 'Category Breaker' :
+             (scores.kpi_connection + scores.external_positioning) / 2 >= 4 ? 'Accelerator' :
+             (scores.kpi_connection + scores.external_positioning) / 2 >= 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: scores.kpi_connection >= 4 ? 
+        'You connect AI initiatives to measurable business outcomes effectively' :
+        'You\'re learning to bridge AI capabilities with business impact'
+    },
+    {
+      dimension: 'Decision Agility',
+      level: scores.industry_impact === 5 ? 'Category Breaker' :
+             scores.industry_impact >= 4 ? 'Accelerator' :
+             scores.industry_impact === 3 ? 'Experimenter' : 'Manual-Bound',
+      reasoning: scores.industry_impact >= 4 ? 
+        'You make informed decisions rapidly using AI-powered intelligence' :
+        'You\'re building your decision-making speed through better data access'
+    },
+    {
+      dimension: 'Impact Orientation',
       level: scores.kpi_connection === 5 ? 'Category Breaker' :
              scores.kpi_connection >= 4 ? 'Accelerator' :
              scores.kpi_connection === 3 ? 'Experimenter' : 'Manual-Bound',
       reasoning: scores.kpi_connection >= 4 ? 
-        'Rigorous KPI tracking with measurement frameworks' :
-        'Developing measurement discipline for AI initiatives'
+        'You rigorously track outcomes and focus on high-impact strategic work' :
+        'You\'re developing your measurement discipline and impact focus'
     },
     {
-      dimension: 'Competitive Edge',
+      dimension: 'Change Leadership',
       level: (scores.external_positioning + scores.coaching_champions + scores.team_alignment) / 3 >= 4.5 ? 'Category Breaker' :
              (scores.external_positioning + scores.coaching_champions + scores.team_alignment) / 3 >= 4 ? 'Accelerator' :
              (scores.external_positioning + scores.coaching_champions + scores.team_alignment) / 3 >= 3 ? 'Experimenter' : 'Manual-Bound',
       reasoning: (scores.external_positioning + scores.coaching_champions + scores.team_alignment) / 3 >= 4 ? 
-        'Building competitive moat through AI and internal champions' :
-        'Developing AI differentiation capabilities'
+        'You\'re recognized as an AI champion and inspire others effectively' :
+        'You\'re growing your influence as an AI transformation leader'
     }
   ];
 }
@@ -572,19 +572,19 @@ const handler = async (req: Request): Promise<Response> => {
             <!-- AI Context Summary for SOW Generation -->
             ${generateAIContextSummary(data, scores, tier)}
 
-            <!-- SCALE UPS Competitive Positioning Block -->
+            <!-- Leadership Profile Comparison Block -->
             <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 16px; padding: 32px; margin: 48px 0 25px 0;">
               <h2 style="color: #1e293b; font-size: 24px; font-weight: 700; margin: 0 0 16px 0; display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 28px;">🎯</span>
-                Competitive Positioning Hints (SCALE UPS Lens)
+                <span style="font-size: 28px;">👥</span>
+                How You Compare to Other Leaders
               </h2>
               
               <p style="color: #64748b; font-size: 14px; margin: 0 0 24px 0; line-height: 1.6;">
-                Based on ${data.firstName || 'the executive'}'s leadership assessment, here's how their organization maps across 6 key business dimensions:
+                Based on ${data.firstName || 'the executive'}'s responses, here's how their AI leadership capabilities compare across 6 dimensions:
               </p>
               
               <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                ${deriveScaleUpsLensForEmail(data).map(dim => `
+                ${deriveLeadershipComparisonForEmail(data).map(dim => `
                   <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px;">
                     <div style="color: #64748b; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
                       ${dim.dimension}

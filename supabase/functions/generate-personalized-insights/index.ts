@@ -104,17 +104,17 @@ serve(async (req) => {
                         items: { 
                           type: "string",
                           enum: [
-                            "Customer Intelligence",
-                            "Workflow Automation", 
-                            "Growth Systems",
-                            "Strategic Speed",
-                            "Business Impact Tracking",
-                            "Competitive Edge"
+                            "AI Fluency",
+                            "Delegation Mastery", 
+                            "Strategic Vision",
+                            "Decision Agility",
+                            "Impact Orientation",
+                            "Change Leadership"
                           ]
                         },
                         minItems: 1,
                         maxItems: 2,
-                        description: "1-2 SCALE UPS dimensions this initiative addresses"
+                        description: "1-2 leadership dimensions this initiative addresses"
                       }
                     },
                     required: ["title", "description", "basedOn", "impact", "timeline", "growthMetric", "scaleUpsDimensions"]
@@ -280,13 +280,13 @@ TASK: Generate personalized AI leadership insights that:
    - Include quantified impact based on their time waste % and work breakdown
    - Timeline should match their stated timeline
    - Should align with their role and industry
-   - **CRITICAL**: Tag each initiative with 1-2 relevant SCALE UPS dimensions:
-     * Customer Intelligence - for stakeholder/customer-facing initiatives
-     * Workflow Automation - for process optimization/efficiency plays
-     * Growth Systems - for revenue/pipeline acceleration
-     * Strategic Speed - for decision-making/planning improvements
-     * Business Impact Tracking - for KPI/analytics initiatives
-     * Competitive Edge - for market positioning/differentiation plays
+   - **CRITICAL**: Tag each initiative with 1-2 relevant leadership dimensions:
+     * AI Fluency - for understanding/speaking AI, education initiatives
+     * Delegation Mastery - for time-saving, workflow optimization, automation
+     * Strategic Vision - for connecting AI to business outcomes, KPI tracking
+     * Decision Agility - for decision-making speed, real-time intelligence
+     * Impact Orientation - for measurement, results tracking, strategic focus
+     * Change Leadership - for adoption, culture building, inspiring transformation
    
 **CARD CONTENT GENERATION**
 
