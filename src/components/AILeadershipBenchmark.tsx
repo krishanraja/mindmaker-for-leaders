@@ -340,30 +340,30 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
         </div>
 
         {/* Leadership Score Dashboard - Hero Style */}
-        <Card className={`mb-20 sm:mb-24 max-w-6xl lg:max-w-[94rem] mx-auto border-2 rounded-2xl overflow-hidden ${leadershipProfile.borderGlow} ${leadershipProfile.bgGradient}`}>
-          <CardContent className="p-8 sm:p-10 lg:p-12">
-            <div className="flex flex-col lg:flex-row gap-10 lg:gap-12 items-center">
+        <Card className={`mb-12 sm:mb-24 max-w-6xl lg:max-w-[94rem] mx-auto border-2 rounded-2xl overflow-hidden ${leadershipProfile.borderGlow} ${leadershipProfile.bgGradient}`}>
+          <CardContent className="p-6 sm:p-10 lg:p-12">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-center">
               {/* Left: Hero Score Circle */}
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left lg:flex-shrink-0 lg:w-72">
-                <div className="relative mb-8">
+                <div className="relative mb-6">
                   {/* Animated gradient border circle */}
-                  <div className={`w-48 h-48 lg:w-56 lg:h-56 rounded-full bg-gradient-to-br ${leadershipProfile.gradient} p-1 animate-pulse`}>
+                  <div className={`w-36 h-36 lg:w-56 lg:h-56 rounded-full bg-gradient-to-br ${leadershipProfile.gradient} p-1 animate-pulse`}>
                     <div className="w-full h-full rounded-full bg-background flex items-center justify-center relative">
                       <div className="flex flex-col items-center">
-                        <span className="text-6xl lg:text-7xl font-display font-bold text-primary">
+                        <span className="text-5xl lg:text-7xl font-display font-bold text-primary">
                           {score}
                         </span>
                         <span className="text-sm text-muted-foreground mt-1">out of 30</span>
                       </div>
                       <div className="absolute -top-4 -right-4 bg-background rounded-full p-2 shadow-lg">
-                        <leadershipProfile.icon className="h-10 w-10 lg:h-12 lg:w-12 text-primary" />
+                        <leadershipProfile.icon className="h-8 w-8 lg:h-12 lg:w-12 text-primary" />
                       </div>
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground mt-4">Leadership Score</div>
                 </div>
                 
-                <h2 className="text-3xl lg:text-4xl font-bold text-primary mb-4">
+                <h2 className="text-2xl lg:text-4xl font-bold text-primary mb-4">
                   {leadershipProfile.tier}
                 </h2>
               </div>
@@ -464,7 +464,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                     
                     <CarouselContent className="-ml-4">
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[240px] flex flex-col justify-between">
+                        <Card className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-medium text-muted-foreground">Growth Readiness</span>
@@ -500,7 +500,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[240px] flex flex-col justify-between">
+                        <Card className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-medium text-muted-foreground">Leadership Stage</span>
@@ -536,7 +536,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                       </CarouselItem>
                       
                       <CarouselItem className="pl-4">
-                        <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[240px] flex flex-col justify-between">
+                        <Card className="p-5 shadow-lg border-0 bg-card/50 backdrop-blur-sm min-h-[200px] flex flex-col justify-between">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-medium text-muted-foreground">Executive Insight</span>
