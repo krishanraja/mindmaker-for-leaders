@@ -128,8 +128,13 @@ const generateDetailedResults = (data: any, scores: any): string => {
         <p><strong>Name:</strong> ${data.firstName || ''} ${data.lastName || ''}</p>
         <p><strong>Email:</strong> ${data.email || 'Not provided'}</p>
         <p><strong>Company:</strong> ${data.company || 'Not provided'}</p>
-        <p><strong>Title:</strong> ${data.title || 'Not provided'}</p>
+        <p><strong>Title/Role:</strong> ${data.title || data.roleTitle || 'Not provided'}</p>
+        <p><strong>Company Size:</strong> ${data.companySize || 'Not provided'}</p>
+        <p><strong>Primary AI Focus:</strong> ${data.primaryFocus || 'Not provided'}</p>
+        <p><strong>Timeline:</strong> ${data.timeline || 'Not provided'}</p>
+        <p><strong>Consent to Insights:</strong> ${data.consentToInsights ? '✅ Yes' : '❌ No'}</p>
         <p><strong>LinkedIn:</strong> ${data.linkedinUrl || 'Not provided'}</p>
+        ${data.hasDeepProfile ? '<p><strong>Deep Profile:</strong> ✅ Completed extended questionnaire</p>' : ''}
       </div>
 
       <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 25px 0;">
@@ -196,11 +201,15 @@ const handler = async (req: Request): Promise<Response> => {
                 <p><strong>Name:</strong> ${data.firstName || ''} ${data.lastName || ''}</p>
                 <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email || 'Not provided'}</a></p>
                 <p><strong>Company:</strong> ${data.company || 'Not provided'}</p>
+                <p><strong>Title:</strong> ${data.title || data.roleTitle || 'Not provided'}</p>
               </div>
               <div>
-                <p><strong>Title:</strong> ${data.title || 'Not provided'}</p>
+                <p><strong>Company Size:</strong> ${data.companySize || 'Not provided'}</p>
+                <p><strong>Primary Focus:</strong> ${data.primaryFocus || 'Not provided'}</p>
+                <p><strong>Timeline:</strong> ${data.timeline || 'Not provided'}</p>
+                <p><strong>Consent Status:</strong> ${data.consentToInsights ? '✅ Opted in' : '❌ No consent'}</p>
                 <p><strong>LinkedIn:</strong> ${data.linkedinUrl ? `<a href="${data.linkedinUrl}" target="_blank">${data.linkedinUrl}</a>` : 'Not provided'}</p>
-                <p><strong>Action Type:</strong> ${contactType === 'book_call' ? '📞 Executive Advisory Request' : '📚 Learn More Request'}</p>
+                <p><strong>Deep Profile:</strong> ${data.hasDeepProfile ? '✅ Completed' : '❌ Skipped'}</p>
               </div>
             </div>
             <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 15px;">

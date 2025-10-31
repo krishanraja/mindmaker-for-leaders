@@ -351,7 +351,11 @@ serve(async (req) => {
             <p><strong>Company:</strong> ${contactData?.companyName || contactData?.company || 'Unknown'}</p>
           </div>
           <div>
-            <p><strong>Role/Title:</strong> ${contactData?.role || 'Leadership Role'}</p>
+            <p><strong>Role/Title:</strong> ${contactData?.roleTitle || contactData?.role || 'Leadership Role'}</p>
+            <p><strong>Company Size:</strong> ${contactData?.companySize || 'Not provided'}</p>
+            <p><strong>Primary Focus:</strong> ${contactData?.primaryFocus || 'Not provided'}</p>
+            <p><strong>Timeline:</strong> ${contactData?.timeline || 'Not provided'}</p>
+            <p><strong>Consent Status:</strong> ${contactData?.consentToInsights ? '✅ Opted in' : '❌ No consent'}</p>
             <p><strong>Phone:</strong> ${contactData?.phone || 'Not provided'}</p>
             <p><strong>LinkedIn:</strong> ${contactData?.linkedin ? `<a href="${contactData.linkedin}" target="_blank">${contactData.linkedin}</a>` : 'Not provided'}</p>
           </div>

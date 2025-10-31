@@ -208,9 +208,56 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     }, 8000);
   };
 
-  const handleContactSubmit = (data: ContactData) => {
+  const handleContactSubmit = async (data: ContactData) => {
     setContactData(data);
     setShowContactForm(false);
+    
+    // Send email notification immediately with all assessment data
+    try {
+      console.log('📧 Sending contact notification email to krish@fractionl.ai...');
+      
+      const assessmentData = getAssessmentData();
+      const progressData = getProgressData();
+      
+      await supabase.functions.invoke('send-diagnostic-email', {
+        body: {
+          data: {
+            // Contact form data - map to expected fields
+            firstName: data.fullName.split(' ')[0],
+            lastName: data.fullName.split(' ').slice(1).join(' ') || data.fullName,
+            fullName: data.fullName,
+            email: data.email,
+            company: data.companyName,
+            companyName: data.companyName,
+            title: data.roleTitle,
+            roleTitle: data.roleTitle,
+            companySize: data.companySize,
+            primaryFocus: data.primaryFocus,
+            timeline: data.timeline,
+            consentToInsights: data.consentToInsights,
+            
+            // Assessment responses
+            industry_impact: assessmentData.industryImpact,
+            business_acceleration: assessmentData.businessAcceleration,
+            team_alignment: assessmentData.teamAlignment,
+            external_positioning: assessmentData.externalPositioning,
+            kpi_connection: assessmentData.kpiConnection,
+            coaching_champions: assessmentData.coachingChampions
+          },
+          scores: {
+            total: progressData.completedAnswers * 5, // Calculate based on responses (6 questions * 5 max score)
+          },
+          contactType: 'contact_form_submission',
+          sessionId: sessionId
+        }
+      });
+      
+      console.log('✅ Contact notification email sent successfully');
+    } catch (error) {
+      console.error('❌ Error sending contact notification:', error);
+      // Don't block the user flow if email fails
+    }
+    
     setShowDeepProfileOptIn(true);
   };
 
@@ -229,6 +276,46 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const handleDeepProfileComplete = async (profileData: DeepProfileData) => {
     setDeepProfileData(profileData); // Store deep profile data
     setShowDeepProfileQuestionnaire(false);
+    
+    // Send updated email with deep profile data
+    try {
+      console.log('📧 Sending deep profile notification email...');
+      
+      const assessmentData = getAssessmentData();
+      const progressData = getProgressData();
+      
+      await supabase.functions.invoke('send-diagnostic-email', {
+        body: {
+          data: {
+            ...contactData,
+            firstName: contactData?.fullName.split(' ')[0],
+            lastName: contactData?.fullName.split(' ').slice(1).join(' '),
+            company: contactData?.companyName,
+            title: contactData?.roleTitle,
+            
+            // Assessment responses
+            industry_impact: assessmentData.industryImpact,
+            business_acceleration: assessmentData.businessAcceleration,
+            team_alignment: assessmentData.teamAlignment,
+            external_positioning: assessmentData.externalPositioning,
+            kpi_connection: assessmentData.kpiConnection,
+            coaching_champions: assessmentData.coachingChampions,
+            
+            // Deep profile data
+            deepProfile: profileData,
+            hasDeepProfile: true
+          },
+          scores: { total: progressData.completedAnswers * 5 },
+          contactType: 'deep_profile_completed',
+          sessionId: sessionId
+        }
+      });
+      
+      console.log('✅ Deep profile notification email sent');
+    } catch (error) {
+      console.error('❌ Error sending deep profile notification:', error);
+    }
+    
     setIsGeneratingLibrary(true);
     setLibraryPhase('analyzing');
     setLibraryProgress(10);
