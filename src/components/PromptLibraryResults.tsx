@@ -484,7 +484,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       </div>
 
       {/* Quick Reference Templates Section */}
-      <div className="space-y-4">
+      <div className="space-y-4 mt-12">
         <div className="flex items-center gap-2 mb-4">
           <BookOpen className="h-6 w-6 text-primary" />
           <h2 className="text-2xl font-bold text-foreground">Quick Reference Templates</h2>
@@ -562,7 +562,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
       </div>
 
       {/* Visual Break */}
-      <div className="py-12">
+      <div className="py-6">
         <div className="w-full h-px bg-gradient-to-r from-transparent via-border/40 to-transparent"></div>
       </div>
 
