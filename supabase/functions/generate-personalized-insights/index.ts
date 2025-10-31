@@ -52,25 +52,28 @@ serve(async (req) => {
                   type: "object",
                   properties: {
                     level: { type: "string", enum: ["High", "Medium-High", "Medium", "Developing"] },
-                    insight: { type: "string", description: "Specific insight (max 120 chars)", maxLength: 120 }
+                    preview: { type: "string", description: "Ultra-concise preview (max 50 chars) - punchy one-liner", maxLength: 50 },
+                    details: { type: "string", description: "Full insight (max 120 chars) - specific, actionable", maxLength: 120 }
                   },
-                  required: ["level", "insight"]
+                  required: ["level", "preview", "details"]
                 },
                 leadershipStage: {
                   type: "object",
                   properties: {
                     stage: { type: "string", enum: ["Orchestrator", "Confident", "Aware", "Emerging"] },
-                    nextStep: { type: "string", description: "Concrete next action (max 120 chars)", maxLength: 120 }
+                    preview: { type: "string", description: "Ultra-concise preview (max 50 chars) - punchy one-liner", maxLength: 50 },
+                    details: { type: "string", description: "Full next step (max 120 chars) - concrete action", maxLength: 120 }
                   },
-                  required: ["stage", "nextStep"]
+                  required: ["stage", "preview", "details"]
                 },
                 keyFocus: {
                   type: "object",
                   properties: {
-                    title: { type: "string", description: "One key focus area (max 45 chars)", maxLength: 45 },
-                    insight: { type: "string", description: "Specific insight (max 120 chars)", maxLength: 120 }
+                    title: { type: "string", description: "Focus area (max 45 chars)", maxLength: 45 },
+                    preview: { type: "string", description: "Ultra-concise preview (max 50 chars) - punchy one-liner", maxLength: 50 },
+                    details: { type: "string", description: "Full insight (max 120 chars) - specific solution", maxLength: 120 }
                   },
-                  required: ["title", "insight"]
+                  required: ["title", "preview", "details"]
                 },
                 roadmapInitiatives: {
                   type: "array",
@@ -222,13 +225,18 @@ TASK: Generate personalized AI leadership insights that:
    - Timeline should match their stated timeline
    - Should align with their role and industry
    
-**CRITICAL CHARACTER LIMITS - STRICT ENFORCEMENT:**
+**CRITICAL: TWO-TIER TEXT GENERATION**
 
-TOP CARDS (Growth, Leadership, Focus):
-- growthReadiness.insight: 120 characters max (1-2 punchy sentences)
-- leadershipStage.nextStep: 120 characters max (1-2 actionable sentences)
-- keyFocus.title: 45 characters max (short, clear focus area)
-- keyFocus.insight: 120 characters max (1-2 specific sentences)
+For each top card (growthReadiness, leadershipStage, keyFocus):
+- **preview**: 40-50 chars max - Ultra-punchy one-liner. Think Twitter-length. Examples:
+  * "12/30 score shows revenue upside"
+  * "Reach 'Confident' by boosting alignment"
+  * "AI can sharpen your communication"
+  
+- **details**: 100-120 chars max - Full context with specifics. Reference their actual answers/scores. 2-3 short sentences maximum.
+
+The preview shows by default - it MUST be scannable at a glance.
+The details expand on click - it provides the full story with their specific data.
 
 ROADMAP INITIATIVES:
 - title: 60 characters maximum
@@ -255,15 +263,18 @@ function generateFallbackInsights(): any {
   return {
     growthReadiness: {
       level: "Medium",
-      insight: "Based on your assessment, focus on identifying specific AI use cases that align with your strategic priorities."
+      preview: "Focus on high-impact AI use cases",
+      details: "Based on your assessment, identify specific AI use cases that align with your strategic priorities and drive measurable outcomes."
     },
     leadershipStage: {
       stage: "Aware",
-      nextStep: "Build a cross-functional AI champion network to accelerate adoption across your organization."
+      preview: "Build AI champion network",
+      details: "Create a cross-functional AI champion network to accelerate adoption and drive organizational change across teams."
     },
     keyFocus: {
       title: "Strategic AI Integration",
-      insight: "Develop a roadmap for integrating AI into your core business processes to drive measurable outcomes."
+      preview: "Integrate AI into core processes",
+      details: "Develop a roadmap for integrating AI into your core business processes to drive measurable outcomes and competitive advantage."
     },
     roadmapInitiatives: [
       {
