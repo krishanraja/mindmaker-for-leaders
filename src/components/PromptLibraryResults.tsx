@@ -414,12 +414,12 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
 
                       {/* Overview Tab */}
                       <TabsContent value="overview" className="flex-1 overflow-y-auto custom-scrollbar space-y-4 mt-0">
-                        <div>
+                        <div className="min-h-[120px]">
                           <h3 className="text-xl font-bold text-foreground mb-2">{project.name}</h3>
                           <p className="text-sm text-muted-foreground leading-relaxed">{project.purpose}</p>
                         </div>
 
-                        <div className="bg-muted/50 rounded-xl p-3 space-y-2">
+                        <div className="bg-muted/50 rounded-xl p-3 space-y-2 min-h-[100px]">
                           <h4 className="text-sm font-semibold text-foreground">When to Use</h4>
                           <p className="text-sm text-muted-foreground leading-relaxed">{project.whenToUse}</p>
                         </div>
