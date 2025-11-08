@@ -145,14 +145,14 @@ export const VoiceCapture: React.FC<VoiceCaptureProps> = ({
           )}
           
           {isRecording && (
-            <span className="absolute -bottom-8 text-sm font-medium text-foreground">
+            <span className="absolute -bottom-12 text-sm font-medium text-foreground">
               {elapsedTime}s / {timeLimit}s
             </span>
           )}
         </button>
 
         {/* Status text */}
-        <div className="text-center">
+        <div className="text-center mt-8 min-h-[32px]">
           {isTranscribing && (
             <p className="text-sm text-muted-foreground animate-pulse">
               Transcribing...

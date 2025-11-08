@@ -2,52 +2,52 @@ import { CompassDimension } from '@/types/voice';
 
 export const COMPASS_QUESTIONS: CompassDimension[] = [
   {
-    id: 'ai_literacy',
-    name: 'AI Literacy & Vocabulary',
-    question: 'In 15 seconds: How would you explain AI\'s strategic impact to your board?',
+    id: 'industry_impact',
+    name: 'Industry AI Awareness',
+    question: 'In 15 seconds: Describe how AI is specifically transforming your industry and its impact on growth.',
     timeLimit: 15,
-    example: 'e.g., "AI lets us predict customer churn, automate contract review, and personalize at scale."'
+    example: 'e.g., "In fintech, AI is enabling real-time fraud detection and personalized lending at scale—reducing defaults by 30% and accelerating approval times."'
   },
   {
-    id: 'strategic_vision',
-    name: 'Strategic Vision',
-    question: 'Describe one recent business decision where AI insights would have helped.',
+    id: 'business_acceleration',
+    name: 'AI-First Workflow Identification',
+    question: 'Tell me about one specific business area where AI-first workflows could accelerate your results.',
     timeLimit: 15,
-    example: 'e.g., "We expanded into a new region without demand forecasting—AI could have flagged low ROI."'
+    example: 'e.g., "Our sales team spends 60% of time on admin. AI could automate CRM updates, draft follow-ups, and prioritize hot leads—freeing them to close deals."'
   },
   {
-    id: 'cultural_leadership',
-    name: 'Cultural Leadership',
-    question: 'How are you preparing your team for AI transformation?',
+    id: 'team_alignment',
+    name: 'Leadership AI Narrative',
+    question: 'How aligned is your leadership team on AI? What is your current AI narrative?',
     timeLimit: 15,
-    example: 'e.g., "Monthly lunch-and-learns on AI tools, pairing skeptics with early adopters."'
+    example: 'e.g., "My CFO sees AI as cost reduction, my CTO sees it as product enhancement—we have not unified around a growth narrative yet."'
   },
   {
-    id: 'operational_readiness',
-    name: 'Operational Implementation',
-    question: 'Walk me through how you stay current with AI developments.',
+    id: 'external_positioning',
+    name: 'AI in Market Positioning',
+    question: 'How does AI show up in your story to investors, customers, or the market?',
     timeLimit: 15,
-    example: 'e.g., "I follow 3 AI newsletters, attend quarterly roundtables, and test one new tool monthly."'
+    example: 'e.g., "In our last board deck, AI was one slide about pilot projects. Investors asked tough questions—we need a stronger AI growth story."'
   },
   {
-    id: 'risk_management',
-    name: 'Risk Management & Ethics',
-    question: 'What\'s your personal approach to managing AI adoption risks?',
+    id: 'kpi_connection',
+    name: 'AI-to-KPI Linkage',
+    question: 'Give me an example of how you connect AI adoption to a specific business KPI—like margin, speed, or retention.',
     timeLimit: 15,
-    example: 'e.g., "We pilot in low-risk areas first, have a bias audit checklist, and over-communicate changes."'
+    example: 'e.g., "We track AI-assisted support tickets: 40% faster resolution, 15-point NPS increase, targeting 25% cost reduction this quarter."'
   },
   {
-    id: 'innovation_mindset',
-    name: 'Innovation & Competitive Mindset',
-    question: 'How are you thinking about AI innovation in your competitive landscape?',
+    id: 'coaching_champions',
+    name: 'Developing AI Champions',
+    question: 'How are you actively identifying and coaching emerging AI champions in your organization?',
     timeLimit: 15,
-    example: 'e.g., "Competitors automate pricing—we\'re focusing on AI-driven product recommendations instead."'
+    example: 'e.g., "I run monthly AI office hours, pair early adopters with skeptics, and publicly celebrate wins—now 5 teams are experimenting."'
   },
   {
-    id: 'stakeholder_engagement',
-    name: 'Stakeholder Communication',
-    question: 'How do you engage stakeholders (board, investors, customers) around AI strategy?',
+    id: 'strategic_execution',
+    name: 'AI Strategy to Execution',
+    question: 'Describe your approach to moving from AI strategy to actual execution and adoption.',
     timeLimit: 15,
-    example: 'e.g., "Quarterly board deck with AI metrics, monthly customer webinars showcasing AI features."'
+    example: 'e.g., "We start with one high-impact, low-risk workflow per quarter—measure results, document learnings, then scale what works."'
   }
 ];

@@ -136,6 +136,7 @@ export const CompassModule: React.FC<CompassModuleProps> = ({
 
       {/* Voice capture */}
       <VoiceCapture
+        key={currentQuestion.id}
         promptHint={`Record your answer (max ${currentQuestion.timeLimit}s)`}
         timeLimit={currentQuestion.timeLimit}
         onTranscriptReady={handleTranscriptReady}
