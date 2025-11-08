@@ -218,25 +218,48 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     const assessmentData = getAssessmentData();
     const progressData = getProgressData();
     
-    // Populate index participant data first (parallel with email)
+    // Populate index participant data and get company hash
+    let companyHash: string | null = null;
     try {
       console.log('📊 Populating AI Leadership Index data...');
-      await supabase.functions.invoke('populate-index-participant', {
+      const { data: indexData, error: indexError } = await supabase.functions.invoke('populate-index-participant', {
         body: {
           sessionId: sessionId,
           userId: null,
           assessmentData: assessmentData,
           contactData: data,
           consentFlags: {
-            index_publication: data.consentToInsights, // Use consent from form
-            product_improvements: true, // Always true
+            index_publication: data.consentToInsights,
+            product_improvements: true,
             case_study: false,
             research_partnerships: false,
             sales_outreach: false
           }
         }
       });
-      console.log('✅ Index data populated successfully');
+      
+      if (!indexError && indexData?.companyHash) {
+        companyHash = indexData.companyHash;
+        console.log('✅ Index data populated successfully');
+        
+        // Update adoption momentum
+        try {
+          console.log('📈 Updating adoption momentum...');
+          await supabase.functions.invoke('update-adoption-momentum', {
+            body: {
+              companyHash: companyHash,
+              sessionId: sessionId,
+              userId: null,
+              contactData: data,
+              eventType: 'assessment_completed'
+            }
+          });
+          console.log('✅ Momentum tracking updated');
+        } catch (momentumError) {
+          console.error('❌ Error updating momentum:', momentumError);
+          // Don't block user flow
+        }
+      }
     } catch (error) {
       console.error('❌ Error populating index data:', error);
       // Don't block user flow if this fails
@@ -272,7 +295,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
             coaching_champions: assessmentData.coachingChampions
           },
           scores: {
-            total: progressData.completedAnswers * 5, // Calculate based on responses (6 questions * 5 max score)
+            total: progressData.completedAnswers * 5,
           },
           contactType: 'contact_form_submission',
           sessionId: sessionId
