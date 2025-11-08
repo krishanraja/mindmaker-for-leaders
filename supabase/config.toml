@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.roi-estimate]
 verify_jwt = false
+
+[functions.populate-index-participant]
+verify_jwt = false

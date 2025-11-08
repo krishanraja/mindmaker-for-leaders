@@ -215,12 +215,36 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
   const handleContactSubmit = async (data: ContactData) => {
     setContactData(data);
     
+    const assessmentData = getAssessmentData();
+    const progressData = getProgressData();
+    
+    // Populate index participant data first (parallel with email)
+    try {
+      console.log('📊 Populating AI Leadership Index data...');
+      await supabase.functions.invoke('populate-index-participant', {
+        body: {
+          sessionId: sessionId,
+          userId: null,
+          assessmentData: assessmentData,
+          contactData: data,
+          consentFlags: {
+            index_publication: data.consentToInsights, // Use consent from form
+            product_improvements: true, // Always true
+            case_study: false,
+            research_partnerships: false,
+            sales_outreach: false
+          }
+        }
+      });
+      console.log('✅ Index data populated successfully');
+    } catch (error) {
+      console.error('❌ Error populating index data:', error);
+      // Don't block user flow if this fails
+    }
+    
     // Send email notification immediately with all assessment data
     try {
       console.log('📧 Sending contact notification email to krish@fractionl.ai...');
-      
-      const assessmentData = getAssessmentData();
-      const progressData = getProgressData();
       
       await supabase.functions.invoke('send-diagnostic-email', {
         body: {
