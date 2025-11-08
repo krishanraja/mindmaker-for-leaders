@@ -4,10 +4,11 @@ import mindmakerLogo from "@/assets/mindmaker-logo.png";
 import { useState, useEffect } from "react";
 
 interface HeroSectionProps {
-  onStartAssessment: () => void;
+  onStartVoice: () => void;
+  onStartQuiz: () => void;
 }
 
-export function HeroSection({ onStartAssessment }: HeroSectionProps) {
+export function HeroSection({ onStartVoice, onStartQuiz }: HeroSectionProps) {
   const [displayedText, setDisplayedText] = useState("");
   const fullText = "Benchmark Your AI Leadership";
   
@@ -52,7 +53,7 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
 
           <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-start">
             <Button 
-              onClick={onStartAssessment}
+              onClick={onStartVoice}
               className="btn-hero-cta group"
               size="lg"
             >
@@ -60,11 +61,11 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button 
-              onClick={onStartAssessment}
+              onClick={onStartQuiz}
               variant="outline"
               size="lg"
             >
-              Use Text Instead (5 min) ⌨️
+              Answer Questions Instead (5 min) 📋
             </Button>
           </div>
           

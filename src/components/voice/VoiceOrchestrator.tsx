@@ -8,11 +8,12 @@ import { CompassResults, RoiEstimate } from '@/types/voice';
 
 interface VoiceOrchestratorProps {
   sessionId: string;
+  onBack: () => void;
 }
 
 type VoiceStep = 'compass' | 'roi' | 'summary';
 
-export const VoiceOrchestrator: React.FC<VoiceOrchestratorProps> = ({ sessionId }) => {
+export const VoiceOrchestrator: React.FC<VoiceOrchestratorProps> = ({ sessionId, onBack }) => {
   const [currentStep, setCurrentStep] = useState<VoiceStep>('compass');
   const [compassResults, setCompassResults] = useState<CompassResults | null>(null);
   const [roiEstimate, setRoiEstimate] = useState<RoiEstimate | null>(null);
@@ -39,7 +40,7 @@ export const VoiceOrchestrator: React.FC<VoiceOrchestratorProps> = ({ sessionId 
         isPaused={isPaused}
         onPause={() => setIsPaused(true)}
         onResume={() => setIsPaused(false)}
-        onFinishLater={() => console.log('Finish later')}
+        onFinishLater={onBack}
       />
 
       {currentStep === 'compass' && (
