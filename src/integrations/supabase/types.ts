@@ -219,6 +219,62 @@ export type Database = {
           },
         ]
       }
+      bootcamp_plans: {
+        Row: {
+          agenda_config: Json | null
+          booked_at: string | null
+          calendly_booking_url: string | null
+          cognitive_baseline: Json | null
+          created_at: string
+          id: string
+          intake_id: string | null
+          required_prework: Json | null
+          simulation_1_id: string
+          simulation_1_snapshot: Json | null
+          simulation_2_id: string
+          simulation_2_snapshot: Json | null
+          status: string
+        }
+        Insert: {
+          agenda_config?: Json | null
+          booked_at?: string | null
+          calendly_booking_url?: string | null
+          cognitive_baseline?: Json | null
+          created_at?: string
+          id?: string
+          intake_id?: string | null
+          required_prework?: Json | null
+          simulation_1_id: string
+          simulation_1_snapshot?: Json | null
+          simulation_2_id: string
+          simulation_2_snapshot?: Json | null
+          status?: string
+        }
+        Update: {
+          agenda_config?: Json | null
+          booked_at?: string | null
+          calendly_booking_url?: string | null
+          cognitive_baseline?: Json | null
+          created_at?: string
+          id?: string
+          intake_id?: string | null
+          required_prework?: Json | null
+          simulation_1_id?: string
+          simulation_1_snapshot?: Json | null
+          simulation_2_id?: string
+          simulation_2_snapshot?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bootcamp_plans_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "exec_intakes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -403,6 +459,104 @@ export type Database = {
           },
         ]
       }
+      exec_intakes: {
+        Row: {
+          anticipated_bottlenecks: Json | null
+          company_name: string
+          created_at: string
+          id: string
+          industry: string | null
+          organizer_email: string
+          organizer_name: string
+          participants: Json | null
+          preferred_dates: Json | null
+          scheduling_notes: string | null
+          strategic_objectives_2026: string | null
+          updated_at: string
+        }
+        Insert: {
+          anticipated_bottlenecks?: Json | null
+          company_name: string
+          created_at?: string
+          id?: string
+          industry?: string | null
+          organizer_email: string
+          organizer_name: string
+          participants?: Json | null
+          preferred_dates?: Json | null
+          scheduling_notes?: string | null
+          strategic_objectives_2026?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anticipated_bottlenecks?: Json | null
+          company_name?: string
+          created_at?: string
+          id?: string
+          industry?: string | null
+          organizer_email?: string
+          organizer_name?: string
+          participants?: Json | null
+          preferred_dates?: Json | null
+          scheduling_notes?: string | null
+          strategic_objectives_2026?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      exec_pulses: {
+        Row: {
+          application_score: number | null
+          awareness_score: number | null
+          completed_at: string | null
+          created_at: string
+          governance_score: number | null
+          id: string
+          intake_id: string | null
+          participant_email: string
+          participant_name: string
+          participant_role: string
+          pulse_responses: Json | null
+          trust_score: number | null
+        }
+        Insert: {
+          application_score?: number | null
+          awareness_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          governance_score?: number | null
+          id?: string
+          intake_id?: string | null
+          participant_email: string
+          participant_name: string
+          participant_role: string
+          pulse_responses?: Json | null
+          trust_score?: number | null
+        }
+        Update: {
+          application_score?: number | null
+          awareness_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          governance_score?: number | null
+          id?: string
+          intake_id?: string | null
+          participant_email?: string
+          participant_name?: string
+          participant_role?: string
+          pulse_responses?: Json | null
+          trust_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exec_pulses_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "exec_intakes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       google_sheets_sync_log: {
         Row: {
           created_at: string
@@ -545,6 +699,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
       }
       prompt_library_profiles: {
         Row: {
@@ -710,6 +891,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           auth_user_id: string | null
@@ -720,6 +922,7 @@ export type Database = {
           full_name: string | null
           id: string
           industry: string | null
+          profile_id: string | null
           role_title: string | null
           updated_at: string | null
         }
@@ -732,6 +935,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           industry?: string | null
+          profile_id?: string | null
           role_title?: string | null
           updated_at?: string | null
         }
@@ -744,10 +948,128 @@ export type Database = {
           full_name?: string | null
           id?: string
           industry?: string | null
+          profile_id?: string | null
           role_title?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_instrumentation: {
+        Row: {
+          created_at: string | null
+          dwell_time_seconds: number | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          module_name: string | null
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dwell_time_seconds?: number | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          module_name?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dwell_time_seconds?: number | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          module_name?: string | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_instrumentation_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_sessions: {
+        Row: {
+          audio_retention_consent: boolean | null
+          compass_completed_at: string | null
+          compass_focus_areas: string[] | null
+          compass_scores: Json | null
+          compass_tier: string | null
+          created_at: string | null
+          gated_unlocked_at: string | null
+          id: string
+          roi_assumptions: string[] | null
+          roi_completed_at: string | null
+          roi_conservative_value: number | null
+          roi_inputs: Json | null
+          roi_likely_value: number | null
+          roi_transcript: string | null
+          session_id: string
+          sprint_signup_source: string | null
+          updated_at: string | null
+          voice_enabled: boolean | null
+        }
+        Insert: {
+          audio_retention_consent?: boolean | null
+          compass_completed_at?: string | null
+          compass_focus_areas?: string[] | null
+          compass_scores?: Json | null
+          compass_tier?: string | null
+          created_at?: string | null
+          gated_unlocked_at?: string | null
+          id?: string
+          roi_assumptions?: string[] | null
+          roi_completed_at?: string | null
+          roi_conservative_value?: number | null
+          roi_inputs?: Json | null
+          roi_likely_value?: number | null
+          roi_transcript?: string | null
+          session_id: string
+          sprint_signup_source?: string | null
+          updated_at?: string | null
+          voice_enabled?: boolean | null
+        }
+        Update: {
+          audio_retention_consent?: boolean | null
+          compass_completed_at?: string | null
+          compass_focus_areas?: string[] | null
+          compass_scores?: Json | null
+          compass_tier?: string | null
+          created_at?: string | null
+          gated_unlocked_at?: string | null
+          id?: string
+          roi_assumptions?: string[] | null
+          roi_completed_at?: string | null
+          roi_conservative_value?: number | null
+          roi_inputs?: Json | null
+          roi_likely_value?: number | null
+          roi_transcript?: string | null
+          session_id?: string
+          sprint_signup_source?: string | null
+          updated_at?: string | null
+          voice_enabled?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_sessions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -762,6 +1084,13 @@ export type Database = {
           high_value_conversions: number
           total_sessions: number
         }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       process_pending_sync_logs: {
         Args: never
@@ -790,7 +1119,16 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      exec_role:
+        | "CEO"
+        | "CTO"
+        | "COO"
+        | "CMO"
+        | "CFO"
+        | "VP"
+        | "Director"
+        | "Other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -917,6 +1255,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      exec_role: ["CEO", "CTO", "COO", "CMO", "CFO", "VP", "Director", "Other"],
+    },
   },
 } as const

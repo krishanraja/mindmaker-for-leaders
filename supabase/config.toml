@@ -14,3 +14,12 @@ verify_jwt = false
 
 [functions.generate-personalized-insights]
 verify_jwt = false
+
+[functions.voice-transcribe]
+verify_jwt = false
+
+[functions.compass-analyze]
+verify_jwt = false
+
+[functions.roi-estimate]
+verify_jwt = false

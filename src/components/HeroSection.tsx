@@ -46,16 +46,32 @@ export function HeroSection({ onStartAssessment }: HeroSectionProps) {
             Take 2 minutes to discover your AI literacy score and unlock personalized insights for executive growth.
           </p>
 
-          <div className="pt-4 flex justify-start">
+          <p className="text-sm text-muted-foreground mb-3">
+            Talk to me like your chief of staff. I'll keep it under two minutes.
+          </p>
+
+          <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-start">
             <Button 
               onClick={onStartAssessment}
               className="btn-hero-cta group"
               size="lg"
-              aria-label="Start the AI Leadership Benchmark"
             >
-              Start Here
+              Start with Voice (2 min) 🎙️
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
+            <Button 
+              onClick={onStartAssessment}
+              variant="outline"
+              size="lg"
+            >
+              Use Text Instead (5 min) ⌨️
+            </Button>
+          </div>
+          
+          <div className="text-xs text-muted-foreground space-y-1 mt-4">
+            <p>⚡ Faster than typing</p>
+            <p>💬 Natural conversation</p>
+            <p>🎯 Personalized instantly</p>
           </div>
         </div>
       </div>
