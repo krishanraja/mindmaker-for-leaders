@@ -3,51 +3,51 @@ import { CompassDimension } from '@/types/voice';
 export const COMPASS_QUESTIONS: CompassDimension[] = [
   {
     id: 'industry_impact',
-    name: 'Industry AI Awareness',
-    question: 'In 15 seconds: Describe how AI is specifically transforming your industry and its impact on growth.',
+    name: 'AI Awareness & Competitive Pressure',
+    question: 'What is the biggest competitive pressure or opportunity you see around AI in your industry right now?',
     timeLimit: 15,
-    example: 'e.g., "In fintech, AI is enabling real-time fraud detection and personalized lending at scale—reducing defaults by 30% and accelerating approval times."'
+    example: 'e.g., "Competitors are launching AI features faster, and customers are starting to expect it. We are falling behind on speed."'
   },
   {
     id: 'business_acceleration',
-    name: 'AI-First Workflow Identification',
-    question: 'Tell me about one specific business area where AI-first workflows could accelerate your results.',
+    name: 'Priority Problem Identification',
+    question: 'If you could wave a magic wand and have AI solve one problem in your business tomorrow, what would it be?',
     timeLimit: 15,
-    example: 'e.g., "Our sales team spends 60% of time on admin. AI could automate CRM updates, draft follow-ups, and prioritize hot leads—freeing them to close deals."'
+    example: 'e.g., "Our sales team drowns in admin work—if AI could handle CRM updates and follow-ups, they would have 10 more hours a week to sell."'
   },
   {
     id: 'team_alignment',
-    name: 'Leadership AI Narrative',
-    question: 'How aligned is your leadership team on AI? What is your current AI narrative?',
+    name: 'Leadership Readiness',
+    question: 'On a scale of totally lost to ready to execute, where is your leadership team on AI right now?',
     timeLimit: 15,
-    example: 'e.g., "My CFO sees AI as cost reduction, my CTO sees it as product enhancement—we have not unified around a growth narrative yet."'
+    example: 'e.g., "Honestly? We are scattered. My CTO wants to build, my CFO wants to cut costs, and I am not sure how to unite them around a plan."'
   },
   {
     id: 'external_positioning',
-    name: 'AI in Market Positioning',
-    question: 'How does AI show up in your story to investors, customers, or the market?',
+    name: 'Stakeholder Confidence',
+    question: 'When investors, customers, or your board ask about AI, how confident do you feel in your answer?',
     timeLimit: 15,
-    example: 'e.g., "In our last board deck, AI was one slide about pilot projects. Investors asked tough questions—we need a stronger AI growth story."'
+    example: 'e.g., "Last board meeting, I got grilled on AI and fumbled it. I need a stronger, clearer story that shows momentum."'
   },
   {
     id: 'kpi_connection',
-    name: 'AI-to-KPI Linkage',
-    question: 'Give me an example of how you connect AI adoption to a specific business KPI—like margin, speed, or retention.',
+    name: 'Value Metric Clarity',
+    question: 'If AI is going to drive real business results for you, what metric would you most want to move?',
     timeLimit: 15,
-    example: 'e.g., "We track AI-assisted support tickets: 40% faster resolution, 15-point NPS increase, targeting 25% cost reduction this quarter."'
+    example: 'e.g., "Customer acquisition cost. If AI could help us qualify leads better and automate outreach, we could cut CAC by 20%."'
   },
   {
     id: 'coaching_champions',
-    name: 'Developing AI Champions',
-    question: 'How are you actively identifying and coaching emerging AI champions in your organization?',
+    name: 'Champion Identification',
+    question: 'Who on your team is most excited about AI, and what is stopping you from empowering them?',
     timeLimit: 15,
-    example: 'e.g., "I run monthly AI office hours, pair early adopters with skeptics, and publicly celebrate wins—now 5 teams are experimenting."'
+    example: 'e.g., "My ops lead is a ChatGPT power user, but she is buried in firefighting. I need to carve out time for her to experiment."'
   },
   {
     id: 'strategic_execution',
-    name: 'AI Strategy to Execution',
-    question: 'Describe your approach to moving from AI strategy to actual execution and adoption.',
+    name: 'Near-Term Action Bias',
+    question: 'If you had to pick ONE thing to start doing in the next 30 days to build AI momentum, what would it be?',
     timeLimit: 15,
-    example: 'e.g., "We start with one high-impact, low-risk workflow per quarter—measure results, document learnings, then scale what works."'
+    example: 'e.g., "Run a lunch-and-learn to show my team 3 AI tools they could use today. Get everyone experimenting, even small wins."'
   }
 ];

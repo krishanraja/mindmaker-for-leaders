@@ -31,40 +31,46 @@ serve(async (req) => {
       .map(([dimension, text]) => `${dimension}: ${text}`)
       .join('\n\n');
 
-    const prompt = `You are an executive AI leadership assessor. Analyze these 7 voice transcripts (brief, 12-15s answers) and score the executive across our dimensions (0-100 each):
+    const prompt = `You are an executive AI leadership coach assessing an executive's readiness to start their AI journey. Analyze these 7 voice responses (15s each) and score across dimensions (0-100):
 
-1. AI Literacy & Vocabulary
-2. Strategic Vision & Business Acumen
-3. Cultural Leadership & Change Management
-4. Operational Implementation Readiness
-5. Risk Management & Ethics
-6. Innovation & Competitive Mindset
-7. Stakeholder Communication & Influence
+1. AI Awareness & Competitive Pressure - Do they understand AI's relevance to their industry?
+2. Priority Problem Identification - Can they articulate specific, high-value problems AI could solve?
+3. Leadership Readiness - How aligned/prepared is their leadership team?
+4. Stakeholder Confidence - How confidently can they discuss AI with investors/board/customers?
+5. Value Metric Clarity - Have they identified which business metrics AI should move?
+6. Champion Identification - Do they know who on their team could drive AI adoption?
+7. Near-Term Action Bias - Are they ready to take concrete action in the next 30 days?
 
-**CRITICAL:** Use tier bands, NOT percentiles:
-- Emerging (0-40): Beginning AI awareness, limited vocabulary
-- Establishing (41-65): Developing AI fluency, experimenting with tools
-- Advancing (66-85): Strong AI strategy, leading initiatives
-- Leading (86-100): AI-native leader, shaping industry standards
+**CRITICAL SCORING GUIDANCE:**
+- This is an EARLY-STAGE assessment - most executives will score 20-60
+- Score based on AWARENESS and READINESS, not current execution
+- "We don't have that yet but I know we need it" = 40-50 (Establishing)
+- "I'm not sure where to start" = 20-35 (Emerging)
+- "Here's my specific plan to address it" = 60-75 (Advancing)
+- Use tier bands:
+  - Emerging (0-40): Just beginning to explore AI, limited awareness
+  - Establishing (41-65): Aware of gaps, identifying priorities, building readiness
+  - Advancing (66-85): Clear priorities, strong readiness, starting execution
+  - Leading (86-100): Already executing with momentum (rare at this stage)
 
 Transcripts:
 ${transcriptText}
 
-Return ONLY valid JSON in this exact format:
+Return ONLY valid JSON (no markdown code blocks):
 {
   "scores": {
-    "ai_literacy": 75,
-    "strategic_vision": 68,
-    "cultural_leadership": 72,
-    "operational_readiness": 65,
-    "risk_management": 70,
-    "innovation_mindset": 78,
-    "stakeholder_engagement": 73
+    "ai_literacy": 45,
+    "strategic_vision": 52,
+    "cultural_leadership": 38,
+    "operational_readiness": 48,
+    "risk_management": 50,
+    "innovation_mindset": 55,
+    "stakeholder_engagement": 42
   },
-  "tier": "Advancing",
-  "tierDescription": "Advancing Strategist—building momentum with tactical gaps.",
-  "focusAreas": ["Build AI vocabulary for board conversations", "Establish team AI adoption metrics", "Prototype one AI tool in a low-risk area"],
-  "quickWins": ["This week: Test ChatGPT for meeting summaries", "This month: Schedule AI lunch-and-learn for team"]
+  "tier": "Establishing",
+  "tierDescription": "Emerging Leader—Building awareness, ready to start experimenting.",
+  "focusAreas": ["Identify one high-value AI use case this month", "Run team AI workshop to build excitement", "Craft simple AI story for next board meeting"],
+  "quickWins": ["This week: Try ChatGPT for one daily task", "This month: Host 30-min AI demo with team"]
 }`;
 
     // Call Lovable AI Gateway
@@ -103,8 +109,14 @@ Return ONLY valid JSON in this exact format:
       throw new Error('No content in AI response');
     }
 
-    // Parse JSON response
-    const results = JSON.parse(content);
+    // Parse JSON response - strip markdown code blocks if present
+    let cleanContent = content.trim();
+    if (cleanContent.startsWith('```json')) {
+      cleanContent = cleanContent.replace(/^```json\n/, '').replace(/\n```$/, '');
+    } else if (cleanContent.startsWith('```')) {
+      cleanContent = cleanContent.replace(/^```\n/, '').replace(/\n```$/, '');
+    }
+    const results = JSON.parse(cleanContent);
 
     // Store in database
     const supabase = createClient(
