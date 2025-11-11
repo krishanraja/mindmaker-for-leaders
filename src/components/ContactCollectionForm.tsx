@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,11 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
   });
   const [errors, setErrors] = useState<Partial<ContactData>>({});
   const [showDisqualifiedMessage, setShowDisqualifiedMessage] = useState(false);
+
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const validateForm = () => {
     const newErrors: Partial<ContactData> = {};
