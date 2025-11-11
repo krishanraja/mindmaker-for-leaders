@@ -477,7 +477,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "AI Leadership Growth Benchmark <no-reply@fractionl.ai>",
-        to: ["krish@fractionl.ai"],
+        to: ["krish@themindmaker.ai"],
         subject: `🎯 ${tier.name} Executive Lead: ${data.firstName || ''} ${data.lastName || ''} (${data.company || 'Company'}) - ${total}/30 Score ${data.hasDeepProfile ? '+ Deep Profile ✅' : ''}`,
       html: `
         <!DOCTYPE html>
@@ -637,7 +637,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.6;">
                 This executive assessment report contains confidential business intelligence.<br>
                 All contact data and assessment results are securely stored in the CRM system.<br>
-                <strong>Contact:</strong> <a href="mailto:krish@fractionl.ai" style="color: #6366f1; text-decoration: none;">krish@fractionl.ai</a>
+                <strong>Contact:</strong> <a href="mailto:krish@themindmaker.ai" style="color: #6366f1; text-decoration: none;">krish@themindmaker.ai</a>
               </p>
             </div>
 

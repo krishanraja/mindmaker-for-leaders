@@ -267,7 +267,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     
     // Send email notification immediately with all assessment data
     try {
-      console.log('📧 Sending contact notification email to krish@fractionl.ai...');
+      console.log('📧 Sending contact notification email to krish@themindmaker.ai...');
       
       await supabase.functions.invoke('send-diagnostic-email', {
         body: {

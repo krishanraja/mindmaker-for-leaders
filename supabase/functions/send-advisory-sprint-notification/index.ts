@@ -368,7 +368,7 @@ serve(async (req) => {
       </div>
     `;
 
-    // Send comprehensive email to krish@fractionl.ai using Resend API
+    // Send comprehensive email to krish@themindmaker.ai using Resend API
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (!resendApiKey) {
       throw new Error('RESEND_API_KEY not configured');
@@ -382,7 +382,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: "AI Leadership Growth Benchmark <no-reply@fractionl.ai>",
-        to: ["krish@fractionl.ai"],
+        to: ["krish@themindmaker.ai"],
         subject: emailSubject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9fafb;">
