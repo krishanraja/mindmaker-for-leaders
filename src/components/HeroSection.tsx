@@ -43,29 +43,26 @@ export function HeroSection({ onStartVoice, onStartQuiz }: HeroSectionProps) {
             </h1>
           </div>
           
-          <p className="text-muted-foreground text-xs md:text-sm font-normal leading-relaxed text-left mb-4 md:mb-6">
-            Take 2 minutes to discover your AI literacy score and unlock personalized insights for executive growth.
-          </p>
-
-          <p className="text-sm text-muted-foreground mb-3">
-            Talk to me like your chief of staff. I'll keep it under two minutes.
+          <p className="text-sm text-muted-foreground leading-relaxed text-left mb-6">
+            Take a few minutes to discover your AI literacy score and unlock personalized insights for executive growth. Talk to me like your chief of staff.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-start">
             <Button 
               onClick={onStartVoice}
-              className="btn-hero-cta group"
+              className="btn-hero-cta group justify-start"
               size="lg"
             >
-              Start with Voice (2 min) 🎙️
+              <span className="text-sm">Voice</span>
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button 
               onClick={onStartQuiz}
               variant="outline"
               size="lg"
+              className="justify-start"
             >
-              Answer Questions Instead (5 min) 📋
+              <span className="text-sm">Quiz</span>
             </Button>
           </div>
           
