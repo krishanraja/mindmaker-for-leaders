@@ -13,7 +13,7 @@ interface CompassModuleProps {
   onComplete: (results: CompassResults) => void;
 }
 
-export const CompassModule: React.FC<CompassModuleProps> = ({
+export const CompassModule = React.memo<CompassModuleProps>(({
   sessionId,
   onComplete
 }) => {
@@ -166,4 +166,6 @@ export const CompassModule: React.FC<CompassModuleProps> = ({
       </div>
     </div>
   );
-};
+});
+
+CompassModule.displayName = 'CompassModule';

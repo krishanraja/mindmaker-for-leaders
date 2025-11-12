@@ -8,7 +8,7 @@ interface CompassResultsProps {
   results: CompassResultsType;
 }
 
-export const CompassResults: React.FC<CompassResultsProps> = ({ results }) => {
+export const CompassResults = React.memo<CompassResultsProps>(({ results }) => {
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'Leading':
@@ -88,4 +88,6 @@ export const CompassResults: React.FC<CompassResultsProps> = ({ results }) => {
       </Card>
     </div>
   );
-};
+});
+
+CompassResults.displayName = 'CompassResults';

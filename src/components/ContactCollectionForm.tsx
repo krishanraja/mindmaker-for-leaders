@@ -22,7 +22,7 @@ interface ContactCollectionFormProps {
   onBack?: () => void;
 }
 
-export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ onSubmit, onBack }) => {
+export const ContactCollectionForm = React.memo<ContactCollectionFormProps>(({ onSubmit, onBack }) => {
   const [contactData, setContactData] = useState<ContactData>({
     fullName: '',
     companyName: '',
@@ -351,4 +351,6 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
       </div>
     </div>
   );
-};
+});
+
+ContactCollectionForm.displayName = 'ContactCollectionForm';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -8,13 +8,14 @@ import { Brain, User, ArrowRight, CheckCircle, Target, Clock, Zap, Rocket } from
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useStructuredAssessment } from '@/hooks/useStructuredAssessment';
-import ExecutiveLoadingScreen from './ai-chat/ExecutiveLoadingScreen';
+import { ProgressScreen } from './ui/progress-screen';
 import LLMInsightEngine from './ai-chat/LLMInsightEngine';
 import { ContactCollectionForm, ContactData } from './ContactCollectionForm';
 import { DeepProfileQuestionnaire, DeepProfileData } from './DeepProfileQuestionnaire';
 import { UnifiedResults } from './UnifiedResults';
 import AILeadershipBenchmark from './AILeadershipBenchmark';
 import { invokeEdgeFunction } from '@/utils/edgeFunctionClient';
+import { useAssessment } from '@/contexts/AssessmentContext';
 
 
 interface Message {
@@ -41,17 +42,26 @@ interface UnifiedAssessmentProps {
 
 export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete, onBack }) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('assessment');
   const [insightProgress, setInsightProgress] = useState(0);
   const [insightPhase, setInsightPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
-  const [contactData, setContactData] = useState<ContactData | null>(null);
-  const [deepProfileData, setDeepProfileData] = useState<DeepProfileData | null>(null);
-  const [promptLibrary, setPromptLibrary] = useState<any>(null);
   const [libraryProgress, setLibraryProgress] = useState(0);
   const [libraryPhase, setLibraryPhase] = useState<'analyzing' | 'generating' | 'finalizing'>('analyzing');
   const { toast } = useToast();
+  
+  const {
+    sessionId,
+    setSessionId,
+    contactData,
+    setContactData,
+    deepProfileData,
+    setDeepProfileData,
+    promptLibrary,
+    setPromptLibrary,
+    companyHash,
+    setCompanyHash
+  } = useAssessment();
   
   const {
     assessmentState,
@@ -62,22 +72,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     totalQuestions
   } = useStructuredAssessment();
 
-  useEffect(() => {
-    if (!isInitialized) {
-      initializeAssessmentSession();
-    }
-  }, []);
-
-  useEffect(() => {
-    const progressData = getProgressData();
-    const hasAnsweredAllQuestions = progressData.completedAnswers >= totalQuestions;
-    
-    if (assessmentState.isComplete && hasAnsweredAllQuestions && currentScreen === 'assessment' && !contactData && insightProgress === 0) {
-      setCurrentScreen('contact-form');
-    }
-  }, [assessmentState.isComplete, getProgressData, totalQuestions, currentScreen, contactData, insightProgress]);
-
-  const initializeAssessmentSession = async () => {
+  const initializeAssessmentSession = useCallback(async () => {
     try {
       const anonymousSessionId = crypto.randomUUID();
       
@@ -114,9 +109,24 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
         variant: "destructive",
       });
     }
-  };
+  }, [setSessionId, totalQuestions, toast]);
 
-  const handleOptionSelect = async (option: string) => {
+  useEffect(() => {
+    if (!isInitialized) {
+      initializeAssessmentSession();
+    }
+  }, [isInitialized, initializeAssessmentSession]);
+
+  useEffect(() => {
+    const progressData = getProgressData();
+    const hasAnsweredAllQuestions = progressData.completedAnswers >= totalQuestions;
+    
+    if (assessmentState.isComplete && hasAnsweredAllQuestions && currentScreen === 'assessment' && !contactData && insightProgress === 0) {
+      setCurrentScreen('contact-form');
+    }
+  }, [assessmentState.isComplete, getProgressData, totalQuestions, currentScreen, contactData, insightProgress]);
+
+  const handleOptionSelect = useCallback(async (option: string) => {
     if (!sessionId) return;
 
     const currentQuestion = getCurrentQuestion();
@@ -180,9 +190,9 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
         setMessages(prev => [...prev, nextQuestionMessage]);
       }
     }
-  };
+  }, [sessionId, getCurrentQuestion, answerQuestion, getProgressData, getAssessmentData, assessmentState.isComplete, totalQuestions]);
 
-  const startInsightGeneration = async () => {
+  const startInsightGeneration = useCallback(async () => {
     setCurrentScreen('generating-insights');
     setInsightPhase('analyzing');
     setInsightProgress(15);
@@ -211,9 +221,9 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       clearInterval(progressInterval);
       setCurrentScreen('results');
     }, 8000);
-  };
+  }, []);
 
-  const handleContactSubmit = async (data: ContactData) => {
+  const handleContactSubmit = useCallback(async (data: ContactData) => {
     setContactData(data);
     
     const assessmentData = getAssessmentData();
@@ -304,19 +314,19 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     }
     
     setCurrentScreen('deep-profile-optin');
-  };
+  }, [setContactData, getAssessmentData, getProgressData, sessionId, setCompanyHash]);
 
-  const handleSkipDeepProfile = () => {
+  const handleSkipDeepProfile = useCallback(() => {
     setInsightPhase('analyzing');
     setInsightProgress(15);
     startInsightGeneration();
-  };
+  }, [startInsightGeneration]);
 
-  const handleStartDeepProfile = () => {
+  const handleStartDeepProfile = useCallback(() => {
     setCurrentScreen('deep-profile-questionnaire');
-  };
+  }, []);
 
-  const handleDeepProfileComplete = async (profileData: DeepProfileData) => {
+  const handleDeepProfileComplete = useCallback(async (profileData: DeepProfileData) => {
     setDeepProfileData(profileData);
     setCurrentScreen('generating-library');
     setLibraryPhase('analyzing');
@@ -418,7 +428,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       });
       startInsightGeneration();
     }
-  };
+  }, [setDeepProfileData, getAssessmentData, getProgressData, contactData, sessionId, setPromptLibrary, toast, startInsightGeneration]);
 
   // Render based on current screen state
   if (currentScreen === 'contact-form') {
@@ -523,7 +533,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
 
   if (currentScreen === 'generating-library') {
     return (
-      <ExecutiveLoadingScreen 
+      <ProgressScreen 
         progress={libraryProgress} 
         phase={libraryPhase}
       />
@@ -547,7 +557,7 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
 
   if (currentScreen === 'generating-insights') {
     return (
-      <ExecutiveLoadingScreen 
+      <ProgressScreen 
         progress={insightProgress} 
         phase={insightPhase} 
       />

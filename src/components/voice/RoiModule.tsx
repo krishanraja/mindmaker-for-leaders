@@ -16,7 +16,7 @@ interface RoiModuleProps {
   onGate: () => void;
 }
 
-export const RoiModule: React.FC<RoiModuleProps> = ({
+export const RoiModule = React.memo<RoiModuleProps>(({
   sessionId,
   onComplete,
   onGate
@@ -327,4 +327,6 @@ export const RoiModule: React.FC<RoiModuleProps> = ({
       </Button>
     </div>
   );
-};
+});
+
+RoiModule.displayName = 'RoiModule';
