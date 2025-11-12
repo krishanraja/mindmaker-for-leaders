@@ -428,9 +428,9 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     {/* Overview Tab */}
                     <TabsContent value="overview" className="flex-1 overflow-y-auto custom-scrollbar mt-0">
                       <div className="flex flex-col gap-5">
-                        {/* Header Section */}
+                         {/* Header Section */}
                         <div className="space-y-2">
-                          <h3 className="carousel-card-title-base text-base sm:text-lg font-bold text-foreground line-clamp-2 leading-tight">{project.name}</h3>
+                          <h3 className="carousel-card-title-base text-base sm:text-lg font-bold text-foreground line-clamp-1 leading-tight">{project.name}</h3>
                           <div className="relative">
                             <p className={cn(
                               "text-sm text-muted-foreground leading-relaxed",
@@ -540,7 +540,7 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                 <CardHeader className="carousel-card-header flex-shrink-0 pb-2 p-4 sm:p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="carousel-card-title-base text-base sm:text-lg mb-1 line-clamp-2 leading-tight">{template.name}</CardTitle>
+                      <CardTitle className="carousel-card-title-base text-base sm:text-lg mb-1 line-clamp-1 leading-tight">{template.name}</CardTitle>
                       <Badge variant="secondary" className="text-xs">{template.category}</Badge>
                     </div>
                     <Button
@@ -566,8 +566,8 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                       <AccordionTrigger className="hover:no-underline py-2">
                         <span className="text-sm font-medium text-muted-foreground">View Prompt</span>
                       </AccordionTrigger>
-                      <AccordionContent className="pt-2">
-                        <p className="text-sm text-muted-foreground leading-relaxed">{template.prompt}</p>
+                      <AccordionContent className="pt-2 max-h-none">
+                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{template.prompt}</p>
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>

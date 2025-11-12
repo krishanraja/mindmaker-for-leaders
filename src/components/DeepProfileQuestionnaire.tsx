@@ -354,6 +354,12 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
             <Textarea
               value={profileData.timeWasteExamples}
               onChange={(e) => setProfileData(prev => ({ ...prev, timeWasteExamples: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleNext();
+                }
+              }}
               placeholder="Example: Spent 3 hours reformatting a deck for different audiences, manually summarizing meeting notes..."
               className="min-h-[120px] rounded-xl"
             />
