@@ -453,6 +453,18 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             Hello {contactData.fullName} from <span className="font-semibold text-foreground">{contactData.companyName}</span>! Here's your AI leadership capability assessment 
             and strategic roadmap for driving growth through AI literacy.
           </p>
+          
+          {/* Book a Call Button */}
+          <div className="flex justify-center mt-6">
+            <Button 
+              onClick={handleExecutivePrimerBooking}
+              size="lg"
+              className="gap-2"
+            >
+              <Calendar className="h-4 w-4" />
+              Book a Call
+            </Button>
+          </div>
         </div>
 
         {/* Leadership Score Dashboard - Hero Style */}

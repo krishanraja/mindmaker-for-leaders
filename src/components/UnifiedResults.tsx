@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, Sparkles, Shield, TrendingUp, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Award, Sparkles, Shield, TrendingUp } from 'lucide-react';
 import AILeadershipBenchmark from './AILeadershipBenchmark';
 import { PromptLibraryResults } from './PromptLibraryResults';
 import { ConsentManager } from './ConsentManager';
@@ -29,25 +28,9 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>("benchmark");
 
-  const handleBookCall = () => {
-    window.open('https://calendly.com/krish-raja/mindmaker-meeting', '_blank');
-  };
-
   return (
     <div className="bg-background min-h-screen py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Book a Call Button */}
-        <div className="flex justify-center mb-6">
-          <Button 
-            onClick={handleBookCall}
-            size="lg"
-            className="gap-2"
-          >
-            <Calendar className="h-4 w-4" />
-            Book a Call
-          </Button>
-        </div>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-4 mb-12 gap-2 h-auto p-1.5 bg-white/80 dark:bg-white/5 backdrop-blur-xl rounded-2xl shadow-xl shadow-primary/5 border border-primary/10">
             <TabsTrigger 
