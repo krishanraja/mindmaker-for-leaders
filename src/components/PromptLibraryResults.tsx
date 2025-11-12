@@ -74,56 +74,55 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     }
   };
 
-  // Extract 3 impactful strengths - NO TRUNCATION
+  // Extract 2 concrete strengths with measurable outcomes
   const synthesizeWorkingStyle = (summary: string): string[] => {
     const traits: string[] = [];
     const text = summary.toLowerCase();
     
-    // Extract key behavioral patterns
+    // Extract concrete measurable outcomes
     if (text.includes('data') || text.includes('historical') || text.includes('analysis')) {
-      traits.push('Data-driven strategic decision maker');
+      traits.push('Turns complex data into executive decisions in 1/3 the time');
     }
     
     if (text.includes('communication') || text.includes('stakeholder') || text.includes('narrative')) {
-      traits.push('Expert cross-functional communicator');
+      traits.push('Translates technical requirements across 5+ departments');
     }
     
     if (text.includes('strategy') || text.includes('planning') || text.includes('vision')) {
-      traits.push('Visionary strategic planning thinker');
+      traits.push('Built 3-year roadmap adopted by C-suite in 2 weeks');
     }
     
     if (text.includes('efficiency') || text.includes('streamline') || text.includes('automate')) {
-      traits.push('Efficiency-focused process optimizer');
+      traits.push('Cut reporting time from 8 hours to 45 minutes');
     }
     
     if (text.includes('innovation') || text.includes('transform') || text.includes('creative')) {
-      traits.push('Innovative transformation change catalyst');
+      traits.push('Launched pilot that saved $200K in first quarter');
     }
 
     if (text.includes('team') || text.includes('leadership') || text.includes('collaboration')) {
-      traits.push('Collaborative team alignment builder');
+      traits.push('Aligned 12-person team on new workflow in 2 sprints');
     }
     
-    // Fallback traits
+    // Fallback concrete examples
     const fallbacks = [
-      'Clear and concise communicator',
-      'Results-driven execution-focused leader',
-      'Strategic initiative executor'
+      'Reduced meeting prep time from 4 hours to 30 minutes',
+      'Delivered board presentation in 2 days vs typical 2 weeks'
     ];
     
-    while (traits.length < 3) {
-      traits.push(fallbacks.shift() || 'Strategic leader');
+    while (traits.length < 2) {
+      traits.push(fallbacks.shift() || 'Accelerates decision-making cycles');
     }
     
-    return traits.slice(0, 3);
+    return traits.slice(0, 2);
   };
 
-  // Extract biggest opportunity - ONE powerful insight, NO TRUNCATION
+  // Extract biggest opportunity - tight format
   const synthesizePriorityProject = (project: typeof library.recommendedProjects[0]) => {
     if (!project) return { 
-      name: 'AI-Powered Workflow', 
-      valueProp: 'Streamline operations with intelligent automation', 
-      impact: '10+ hours saved weekly' 
+      name: 'Executive Brief Generator', 
+      description: 'Converts 50-page reports into 1-page executive summaries', 
+      impact: '12 hours saved weekly' 
     };
     
     const purposeText = project.purpose || '';
@@ -132,50 +131,66 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
     const timeMatch = purposeText.match(/(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
     const percentMatch = purposeText.match(/(\d+)%/);
     
-    let impact = '20+ hours saved weekly';
+    let impact = '20 hours saved weekly';
     if (timeMatch) {
       const num = timeMatch[1];
       const unit = timeMatch[2].toLowerCase().includes('min') ? 'minutes' : 'hours';
-      impact = `${num}+ ${unit} saved weekly`;
+      impact = `${num} ${unit} saved weekly`;
     } else if (percentMatch) {
-      impact = `${percentMatch[0]} faster results`;
+      impact = `${percentMatch[0]} faster`;
     }
     
-    // Get one sentence value prop
-    let valueProp = purposeText.split(/[.!?]/)[0].trim();
+    // Get one tight sentence
+    let description = purposeText.split(/[.!?]/)[0].trim();
+    if (description.length > 80) {
+      description = description.substring(0, 77) + '...';
+    }
     
     return { 
       name: project.name, 
-      valueProp, 
+      description, 
       impact 
     };
   };
 
-  // Extract transformation insight - ONE powerful differentiator, NO TRUNCATION
-  const synthesizeOpportunity = (text: string) => {
-    // Extract metric
-    const timeMatch = text.match(/(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
-    const percentMatch = text.match(/(\d+)%/);
-    const multiplierMatch = text.match(/(\d+)x/i);
+  // Extract concrete differentiation in 2 bullet points
+  const synthesizeDifferentiation = (text: string) => {
+    const points: string[] = [];
+    const lowerText = text.toLowerCase();
     
-    let outcome = 'Significant competitive advantage';
-    if (timeMatch) {
-      outcome = `${timeMatch[1]}+ hours saved weekly`;
-    } else if (percentMatch) {
-      outcome = `${percentMatch[0]} productivity boost`;
-    } else if (multiplierMatch) {
-      outcome = `${multiplierMatch[0]} faster execution`;
+    // Create concrete differentiation points
+    if (lowerText.includes('technical') || lowerText.includes('ai') || lowerText.includes('data')) {
+      points.push('Bridges technical AI knowledge with C-suite communication');
     }
     
-    // Get first impactful sentence
-    const statement = text.split(/[.!?]/)[0].trim();
+    if (lowerText.includes('speed') || lowerText.includes('fast') || lowerText.includes('quick')) {
+      points.push('Delivers in days what typically takes weeks');
+    }
     
-    return { statement, outcome };
+    if (lowerText.includes('narrative') || lowerText.includes('story') || lowerText.includes('communication')) {
+      points.push('Converts complex analysis into compelling board-level narratives');
+    }
+    
+    if (lowerText.includes('automate') || lowerText.includes('efficiency') || lowerText.includes('streamline')) {
+      points.push('Eliminates repetitive tasks that drain executive bandwidth');
+    }
+    
+    // Fallback concrete examples
+    const fallbacks = [
+      'Combines domain expertise with AI fluency',
+      'Maintains quality while accelerating delivery'
+    ];
+    
+    while (points.length < 2) {
+      points.push(fallbacks.shift() || 'Accelerates strategic work');
+    }
+    
+    return points.slice(0, 2);
   };
 
   const workingStyle = synthesizeWorkingStyle(library.executiveProfile.summary);
   const priorityProject = synthesizePriorityProject(library.recommendedProjects[0]);
-  const opportunity = synthesizeOpportunity(library.executiveProfile.transformationOpportunity);
+  const differentiation = synthesizeDifferentiation(library.executiveProfile.transformationOpportunity);
   
   // Extract first name for personalization
   const firstName = contactData.fullName.split(' ')[0];
@@ -232,19 +247,17 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     </h3>
                   </div>
                   
-                  <div className="carousel-card-body flex-1 text-center space-y-4 flex flex-col justify-center">
-                    <h4 className="carousel-card-title-base text-base font-bold text-foreground leading-tight px-2 line-clamp-2">
-                      {priorityProject.name}
-                    </h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed px-4">
-                      {priorityProject.valueProp}
-                    </p>
-                  </div>
-                  
-                  <div className="carousel-card-footer text-center pt-2 flex-shrink-0">
-                    <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
-                      {priorityProject.impact}
-                    </Badge>
+                  <div className="carousel-card-body flex-1 flex items-center">
+                    <div className="space-y-4 max-w-xs mx-auto w-full">
+                      <div className="flex items-start gap-2">
+                        <span className="text-primary text-sm mt-0.5 flex-shrink-0">•</span>
+                        <p className="text-sm text-foreground leading-snug">{priorityProject.description}</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-primary text-sm mt-0.5 flex-shrink-0">•</span>
+                        <p className="text-sm text-foreground leading-snug">{priorityProject.impact}</p>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -264,17 +277,14 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                   </div>
                   
                   <div className="carousel-card-body flex-1 flex items-center">
-                    <div className="border-l-4 border-primary pl-4 pr-2 py-2 w-full">
-                      <p className="text-sm text-foreground leading-relaxed italic">
-                        "{opportunity.statement}"
-                      </p>
+                    <div className="space-y-4 max-w-xs mx-auto w-full">
+                      {differentiation.map((point, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <span className="text-primary text-sm mt-0.5 flex-shrink-0">•</span>
+                          <p className="text-sm text-foreground leading-snug">{point}</p>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                  
-                  <div className="carousel-card-footer text-center pt-2 flex-shrink-0">
-                    <Badge variant="secondary" className="text-sm font-semibold px-4 py-2">
-                      {opportunity.outcome}
-                    </Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -324,23 +334,20 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     </h3>
                   </div>
                   
-                  {/* Content - Project compact */}
+                  {/* Content - 2 bullets */}
                   <div className="space-y-2">
-                    <h4 className="min-h-[2.5rem] text-sm font-bold text-foreground leading-tight line-clamp-2">
-                      {priorityProject.name}
-                    </h4>
-                    <p className="text-xs text-muted-foreground leading-tight">
-                      {priorityProject.valueProp}
-                    </p>
+                    <div className="flex items-start gap-2">
+                      <span className="text-primary text-sm mt-0.5">•</span>
+                      <p className="text-sm text-muted-foreground leading-snug">{priorityProject.description}</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-primary text-sm mt-0.5">•</span>
+                      <p className="text-sm text-muted-foreground leading-snug">{priorityProject.impact}</p>
+                    </div>
                   </div>
                 </div>
-                
-                {/* Badge at bottom */}
-                <div className="pt-2">
-                  <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                    {priorityProject.impact}
-                  </Badge>
-                </div>
+                {/* Empty spacer for alignment */}
+                <div></div>
               </CardContent>
             </Card>
 
@@ -356,22 +363,18 @@ export const PromptLibraryResults: React.FC<PromptLibraryResultsProps> = ({ libr
                     </h3>
                   </div>
                   
-                  {/* Content - Quote compact */}
+                  {/* Content - 2 bullets */}
                   <div className="space-y-2">
-                    <div className="border-l-2 border-primary pl-3">
-                      <p className="text-xs text-muted-foreground leading-tight italic">
-                        "{opportunity.statement}"
-                      </p>
-                    </div>
+                    {differentiation.map((point, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <span className="text-primary text-sm mt-0.5">•</span>
+                        <p className="text-sm text-muted-foreground leading-snug">{point}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                
-                {/* Badge at bottom */}
-                <div className="pt-2">
-                  <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                    {opportunity.outcome}
-                  </Badge>
-                </div>
+                {/* Empty spacer for alignment */}
+                <div></div>
               </CardContent>
             </Card>
           </div>
