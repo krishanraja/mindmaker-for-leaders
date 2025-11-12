@@ -53,16 +53,17 @@ export function HeroSection({ onStartVoice, onStartQuiz }: HeroSectionProps) {
               className="btn-hero-cta group justify-start"
               size="lg"
             >
-              <span className="text-sm">Voice</span>
+              <span className="text-sm">🎙️ Voice</span>
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button 
               onClick={onStartQuiz}
               variant="outline"
               size="lg"
-              className="justify-start"
+              className="justify-start group"
             >
-              <span className="text-sm">Quiz</span>
+              <span className="text-sm">📝 Quiz</span>
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
           
