@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Building, Mail, ArrowRight } from 'lucide-react';
+import { validateEmail, validateRequired, isDisqualifiedRole } from '@/utils/formValidation';
 
 export interface ContactData {
   fullName: string;
@@ -43,35 +44,26 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
   const validateForm = () => {
     const newErrors: Partial<ContactData> = {};
     
-    if (!contactData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
+    const fullNameError = validateRequired(contactData.fullName, 'Full name');
+    if (fullNameError) newErrors.fullName = fullNameError;
     
-    if (!contactData.companyName.trim()) {
-      newErrors.companyName = 'Company name is required';
-    }
+    const companyNameError = validateRequired(contactData.companyName, 'Company name');
+    if (companyNameError) newErrors.companyName = companyNameError;
     
-    if (!contactData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
+    const emailError = validateEmail(contactData.email);
+    if (emailError) newErrors.email = emailError;
 
-    if (!contactData.roleTitle.trim()) {
-      newErrors.roleTitle = 'Role/title is required';
-    }
+    const roleTitleError = validateRequired(contactData.roleTitle, 'Role/title');
+    if (roleTitleError) newErrors.roleTitle = roleTitleError;
 
-    if (!contactData.companySize) {
-      newErrors.companySize = 'Company size is required';
-    }
+    const companySizeError = validateRequired(contactData.companySize, 'Company size');
+    if (companySizeError) newErrors.companySize = companySizeError;
 
-    if (!contactData.primaryFocus) {
-      newErrors.primaryFocus = 'Primary focus is required';
-    }
+    const primaryFocusError = validateRequired(contactData.primaryFocus, 'Primary focus');
+    if (primaryFocusError) newErrors.primaryFocus = primaryFocusError;
 
-    if (!contactData.timeline) {
-      newErrors.timeline = 'Timeline is required';
-    }
+    const timelineError = validateRequired(contactData.timeline, 'Timeline');
+    if (timelineError) newErrors.timeline = timelineError;
 
     if (!contactData.consentToInsights) {
       newErrors.consentToInsights = 'You must consent to receiving personalized insights' as any;
@@ -81,17 +73,10 @@ export const ContactCollectionForm: React.FC<ContactCollectionFormProps> = ({ on
     return Object.keys(newErrors).length === 0;
   };
 
-  const checkDisqualification = () => {
-    const disqualifyingRoles = ['student', 'unemployed', 'job seeker', 'looking for work'];
-    const roleTitle = contactData.roleTitle.toLowerCase();
-    
-    return disqualifyingRoles.some(term => roleTitle.includes(term));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      if (checkDisqualification()) {
+      if (isDisqualifiedRole(contactData.roleTitle)) {
         setShowDisqualifiedMessage(true);
         return;
       }

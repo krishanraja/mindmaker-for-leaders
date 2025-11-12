@@ -4,9 +4,9 @@ import { Card } from '@/components/ui/card';
 import { VoiceCapture } from './VoiceCapture';
 import { COMPASS_QUESTIONS } from '@/data/compassQuestions';
 import { CompassResults } from '@/types/voice';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { invokeEdgeFunction } from '@/utils/edgeFunctionClient';
 
 interface CompassModuleProps {
   sessionId: string;
@@ -54,14 +54,16 @@ export const CompassModule: React.FC<CompassModuleProps> = ({
     setIsAnalyzing(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('compass-analyze', {
-        body: { sessionId, transcripts }
-      });
+      const { data, error } = await invokeEdgeFunction<CompassResults>('compass-analyze', 
+        { sessionId, transcripts },
+        { logPrefix: '🧭' }
+      );
 
       if (error) throw error;
 
-      const results: CompassResults = data;
-      onComplete(results);
+      if (data) {
+        onComplete(data);
+      }
     } catch (error) {
       console.error('Error analyzing compass:', error);
       toast({

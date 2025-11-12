@@ -6,9 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { VoiceCapture } from './VoiceCapture';
 import { RoiEstimate, RoiInputs } from '@/types/voice';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Edit2, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { invokeEdgeFunction } from '@/utils/edgeFunctionClient';
 
 interface RoiModuleProps {
   sessionId: string;
@@ -46,23 +46,25 @@ export const RoiModule: React.FC<RoiModuleProps> = ({
     setIsEstimating(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('roi-estimate', {
-        body: { sessionId, roiTranscript: transcript, manualOverrides: editedInputs }
-      });
+      const { data, error } = await invokeEdgeFunction<RoiEstimate>('roi-estimate',
+        { sessionId, roiTranscript: transcript, manualOverrides: editedInputs },
+        { logPrefix: '💰' }
+      );
 
       if (error) throw error;
 
-      const results: RoiEstimate = data;
-      setEstimate(results);
-      setEditedInputs(results.inputs);
-      
-      if (results.needsClarification) {
-        toast({
-          title: 'Need more information',
-          description: results.clarificationQuestion,
-        });
-      } else {
-        onComplete(results);
+      if (data) {
+        setEstimate(data);
+        setEditedInputs(data.inputs);
+        
+        if (data.needsClarification) {
+          toast({
+            title: 'Need more information',
+            description: data.clarificationQuestion,
+          });
+        } else {
+          onComplete(data);
+        }
       }
     } catch (error) {
       console.error('Error estimating ROI:', error);
@@ -82,16 +84,18 @@ export const RoiModule: React.FC<RoiModuleProps> = ({
     setIsEstimating(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('roi-estimate', {
-        body: { sessionId, roiTranscript: transcript, manualOverrides: editedInputs }
-      });
+      const { data, error } = await invokeEdgeFunction<RoiEstimate>('roi-estimate',
+        { sessionId, roiTranscript: transcript, manualOverrides: editedInputs },
+        { logPrefix: '💰' }
+      );
 
       if (error) throw error;
 
-      const results: RoiEstimate = data;
-      setEstimate(results);
-      setIsEditing(false);
-      onComplete(results);
+      if (data) {
+        setEstimate(data);
+        setIsEditing(false);
+        onComplete(data);
+      }
     } catch (error) {
       console.error('Error recalculating ROI:', error);
       toast({

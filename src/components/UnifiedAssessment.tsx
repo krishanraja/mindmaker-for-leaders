@@ -14,6 +14,7 @@ import { ContactCollectionForm, ContactData } from './ContactCollectionForm';
 import { DeepProfileQuestionnaire, DeepProfileData } from './DeepProfileQuestionnaire';
 import { UnifiedResults } from './UnifiedResults';
 import AILeadershipBenchmark from './AILeadershipBenchmark';
+import { invokeEdgeFunction } from '@/utils/edgeFunctionClient';
 
 
 interface Message {
@@ -135,35 +136,35 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     const assessmentData = getAssessmentData();
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-assessment-chat', {
-        body: {
-          message: `The executive answered: "${option}" to the question: "${currentQuestion.question}". 
-          
-          Context: This is question ${currentQuestion.id} of ${totalQuestions} in phase "${currentQuestion.phase}".
-          Progress: ${progressData.completedAnswers}/${totalQuestions} questions completed.
-          
-          Provide a brief acknowledgment that shows understanding, then present the next question. Be professional and encouraging, like an executive coach.`,
-          sessionId: sessionId,
-          userId: null,
-          context: {
-            currentQuestion: progressData.currentQuestion,
-            phase: progressData.phase,
-            assessmentData: assessmentData,
-            isComplete: assessmentState.isComplete
-          }
+      const { data, error } = await invokeEdgeFunction('ai-assessment-chat', {
+        message: `The executive answered: "${option}" to the question: "${currentQuestion.question}". 
+        
+        Context: This is question ${currentQuestion.id} of ${totalQuestions} in phase "${currentQuestion.phase}".
+        Progress: ${progressData.completedAnswers}/${totalQuestions} questions completed.
+        
+        Provide a brief acknowledgment that shows understanding, then present the next question. Be professional and encouraging, like an executive coach.`,
+        sessionId: sessionId,
+        userId: null,
+        context: {
+          currentQuestion: progressData.currentQuestion,
+          phase: progressData.phase,
+          assessmentData: assessmentData,
+          isComplete: assessmentState.isComplete
         }
-      });
+      }, { logPrefix: '🤖' });
 
       if (error) throw error;
 
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date()
-      };
+      if (data) {
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: data.response,
+          timestamp: new Date()
+        };
 
-      setMessages(prev => [...prev, aiMessage]);
+        setMessages(prev => [...prev, aiMessage]);
+      }
 
     } catch (error) {
       console.error('Error generating AI response:', error);
@@ -222,21 +223,19 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     let companyHash: string | null = null;
     try {
       console.log('📊 Populating AI Leadership Index data...');
-      const { data: indexData, error: indexError } = await supabase.functions.invoke('populate-index-participant', {
-        body: {
-          sessionId: sessionId,
-          userId: null,
-          assessmentData: assessmentData,
-          contactData: data,
-          consentFlags: {
-            index_publication: data.consentToInsights,
-            product_improvements: true,
-            case_study: false,
-            research_partnerships: false,
-            sales_outreach: false
-          }
+      const { data: indexData, error: indexError } = await invokeEdgeFunction('populate-index-participant', {
+        sessionId: sessionId,
+        userId: null,
+        assessmentData: assessmentData,
+        contactData: data,
+        consentFlags: {
+          index_publication: data.consentToInsights,
+          product_improvements: true,
+          case_study: false,
+          research_partnerships: false,
+          sales_outreach: false
         }
-      });
+      }, { logPrefix: '📊' });
       
       if (!indexError && indexData?.companyHash) {
         companyHash = indexData.companyHash;
@@ -245,15 +244,13 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
         // Update adoption momentum
         try {
           console.log('📈 Updating adoption momentum...');
-          await supabase.functions.invoke('update-adoption-momentum', {
-            body: {
-              companyHash: companyHash,
-              sessionId: sessionId,
-              userId: null,
-              contactData: data,
-              eventType: 'assessment_completed'
-            }
-          });
+          await invokeEdgeFunction('update-adoption-momentum', {
+            companyHash: companyHash,
+            sessionId: sessionId,
+            userId: null,
+            contactData: data,
+            eventType: 'assessment_completed'
+          }, { logPrefix: '📈' });
           console.log('✅ Momentum tracking updated');
         } catch (momentumError) {
           console.error('❌ Error updating momentum:', momentumError);
@@ -269,38 +266,36 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     try {
       console.log('📧 Sending contact notification email to krish@themindmaker.ai...');
       
-      await supabase.functions.invoke('send-diagnostic-email', {
-        body: {
-          data: {
-            // Contact form data - map to expected fields
-            firstName: data.fullName.split(' ')[0],
-            lastName: data.fullName.split(' ').slice(1).join(' ') || data.fullName,
-            fullName: data.fullName,
-            email: data.email,
-            company: data.companyName,
-            companyName: data.companyName,
-            title: data.roleTitle,
-            roleTitle: data.roleTitle,
-            companySize: data.companySize,
-            primaryFocus: data.primaryFocus,
-            timeline: data.timeline,
-            consentToInsights: data.consentToInsights,
-            
-            // Assessment responses
-            industry_impact: assessmentData.industryImpact,
-            business_acceleration: assessmentData.businessAcceleration,
-            team_alignment: assessmentData.teamAlignment,
-            external_positioning: assessmentData.externalPositioning,
-            kpi_connection: assessmentData.kpiConnection,
-            coaching_champions: assessmentData.coachingChampions
-          },
-          scores: {
-            total: progressData.completedAnswers * 5,
-          },
-          contactType: 'contact_form_submission',
-          sessionId: sessionId
-        }
-      });
+      await invokeEdgeFunction('send-diagnostic-email', {
+        data: {
+          // Contact form data - map to expected fields
+          firstName: data.fullName.split(' ')[0],
+          lastName: data.fullName.split(' ').slice(1).join(' ') || data.fullName,
+          fullName: data.fullName,
+          email: data.email,
+          company: data.companyName,
+          companyName: data.companyName,
+          title: data.roleTitle,
+          roleTitle: data.roleTitle,
+          companySize: data.companySize,
+          primaryFocus: data.primaryFocus,
+          timeline: data.timeline,
+          consentToInsights: data.consentToInsights,
+          
+          // Assessment responses
+          industry_impact: assessmentData.industry_impact,
+          business_acceleration: assessmentData.business_acceleration,
+          team_alignment: assessmentData.team_alignment,
+          external_positioning: assessmentData.external_positioning,
+          kpi_connection: assessmentData.kpi_connection,
+          coaching_champions: assessmentData.coaching_champions,
+          
+          companyHash: companyHash
+        },
+        scores: { total: progressData.completedAnswers * 5 },
+        contactType: 'contact_form_submission',
+        sessionId: sessionId
+      }, { logPrefix: '📧' });
       
       console.log('✅ Contact notification email sent successfully');
     } catch (error) {
@@ -334,32 +329,30 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       const assessmentData = getAssessmentData();
       const progressData = getProgressData();
       
-      await supabase.functions.invoke('send-diagnostic-email', {
-        body: {
-          data: {
-            ...contactData,
-            firstName: contactData?.fullName.split(' ')[0],
-            lastName: contactData?.fullName.split(' ').slice(1).join(' '),
-            company: contactData?.companyName,
-            title: contactData?.roleTitle,
-            
-            // Assessment responses
-            industry_impact: assessmentData.industryImpact,
-            business_acceleration: assessmentData.businessAcceleration,
-            team_alignment: assessmentData.teamAlignment,
-            external_positioning: assessmentData.externalPositioning,
-            kpi_connection: assessmentData.kpiConnection,
-            coaching_champions: assessmentData.coachingChampions,
-            
-            // Deep profile data
-            deepProfile: profileData,
-            hasDeepProfile: true
-          },
-          scores: { total: progressData.completedAnswers * 5 },
-          contactType: 'deep_profile_completed',
-          sessionId: sessionId
-        }
-      });
+      await invokeEdgeFunction('send-diagnostic-email', {
+        data: {
+          ...contactData,
+          firstName: contactData?.fullName.split(' ')[0],
+          lastName: contactData?.fullName.split(' ').slice(1).join(' '),
+          company: contactData?.companyName,
+          title: contactData?.roleTitle,
+          
+          // Assessment responses
+          industry_impact: assessmentData.industry_impact,
+          business_acceleration: assessmentData.business_acceleration,
+          team_alignment: assessmentData.team_alignment,
+          external_positioning: assessmentData.external_positioning,
+          kpi_connection: assessmentData.kpi_connection,
+          coaching_champions: assessmentData.coaching_champions,
+          
+          // Deep profile data
+          deepProfile: profileData,
+          hasDeepProfile: true
+        },
+        scores: { total: progressData.completedAnswers * 5 },
+        contactType: 'deep_profile_completed',
+        sessionId: sessionId
+      }, { logPrefix: '📧' });
       
       console.log('✅ Deep profile notification email sent');
     } catch (error) {
@@ -390,15 +383,13 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
     try {
       const assessmentData = getAssessmentData();
       
-      const { data, error } = await supabase.functions.invoke('generate-prompt-library', {
-        body: {
-          sessionId: sessionId,
-          userId: null,
-          contactData: contactData,
-          assessmentData: assessmentData,
-          profileData: profileData
-        }
-      });
+      const { data, error } = await invokeEdgeFunction('generate-prompt-library', {
+        sessionId: sessionId,
+        userId: null,
+        contactData: contactData,
+        assessmentData: assessmentData,
+        profileData: profileData
+      }, { logPrefix: '✨' });
 
       if (error) throw error;
 
@@ -407,7 +398,9 @@ export const UnifiedAssessment: React.FC<UnifiedAssessmentProps> = ({ onComplete
       
       // Wait for animation to complete
       setTimeout(() => {
-        setPromptLibrary(data.library);
+        if (data) {
+          setPromptLibrary(data.library);
+        }
         setCurrentScreen('unified-results');
       }, 500);
       
