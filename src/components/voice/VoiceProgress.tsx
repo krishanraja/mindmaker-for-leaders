@@ -2,6 +2,7 @@ import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Pause, Play, Mail } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VoiceProgressProps {
   currentModule: 'compass' | 'roi';
@@ -22,9 +23,15 @@ export const VoiceProgress: React.FC<VoiceProgressProps> = ({
   onResume,
   onFinishLater
 }) => {
+  const isMobile = useIsMobile();
   const progressPercentage = (elapsedSeconds / totalSeconds) * 100;
   const minutesRemaining = Math.ceil((totalSeconds - elapsedSeconds) / 60);
   const moduleLabel = currentModule === 'compass' ? 'Compass (1/2)' : 'ROI (2/2)';
+  
+  // Hide on mobile
+  if (isMobile) {
+    return null;
+  }
   
   const getProgressColor = () => {
     if (progressPercentage < 60) return 'text-success';
