@@ -1128,7 +1128,7 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               </h3>
               
               <p className="text-xs sm:text-xl text-white/90 mb-4 sm:mb-12 leading-snug sm:leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
-                From as little as a weekly sync to a 90 day sprint, the engagement matches what you need from us
+                From as little as a weekly sync to a 90 day sprint, the engagement matches what you need from us.
               </p>
               
               {/* Value Props - Desktop Grid */}
