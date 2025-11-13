@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, Sparkles, Shield, TrendingUp } from 'lucide-react';
 import AILeadershipBenchmark from './AILeadershipBenchmark';
@@ -8,6 +8,8 @@ import { BenchmarkComparison } from './BenchmarkComparison';
 import { MomentumDashboard } from './MomentumDashboard';
 import { ContactData } from './ContactCollectionForm';
 import { DeepProfileData } from './DeepProfileQuestionnaire';
+import { calculateLeadershipScore, getLeadershipTier } from '@/utils/scoreCalculations';
+import { deriveLeadershipComparison } from '@/utils/scaleUpsMapping';
 
 interface UnifiedResultsProps {
   assessmentData: any;
@@ -28,6 +30,20 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>("benchmark");
   const [leadershipComparison, setLeadershipComparison] = useState<any>(null);
+
+  // Calculate score and tier from assessment data
+  const userScore = useMemo(() => calculateLeadershipScore(assessmentData), [assessmentData]);
+  const userTier = useMemo(() => {
+    const tier = getLeadershipTier(userScore);
+    return tier.name.toLowerCase().replace(/[^a-z]/g, '');
+  }, [userScore]);
+
+  // Calculate leadership comparison independently of tab state
+  useEffect(() => {
+    const comparison = deriveLeadershipComparison(assessmentData, deepProfileData);
+    console.log('🎯 Leadership Comparison calculated:', comparison);
+    setLeadershipComparison(comparison);
+  }, [assessmentData, deepProfileData]);
 
   return (
     <div className="bg-background min-h-screen py-8">
@@ -86,8 +102,8 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
           <TabsContent value="benchmarks" className="mt-0">
             <div className="space-y-6">
               <BenchmarkComparison
-                userScore={assessmentData?.totalScore || 0}
-                userTier={assessmentData?.tier || 'emerging'}
+                userScore={userScore}
+                userTier={userTier}
                 companySize={contactData?.companySize}
                 role={contactData?.roleTitle}
                 leadershipComparison={leadershipComparison}
