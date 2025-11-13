@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import mindmakerLogo from '@/assets/mindmaker-logo-dark.png';
 import { 
   Brain, 
   Target, 
@@ -442,6 +443,15 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         {/* Header */}
         <div className="text-center mb-16 sm:mb-20 pt-5 sm:pt-7">
+          {/* Mindmaker Logo */}
+          <div className="flex justify-center mb-8">
+            <img 
+              src={mindmakerLogo} 
+              alt="Mindmaker" 
+              className="h-12 sm:h-16 w-auto"
+            />
+          </div>
+          
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6 tracking-tight leading-tight text-center">
             {contactData.fullName.split(' ')[0]}'s Leadership
             <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent mt-2">
@@ -1102,11 +1112,11 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               </div>
               
               <h3 className="text-lg sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-6 leading-tight">
-                Ready to turn your score<br className="hidden sm:block" /> into a <span className="underline decoration-white/50">strategic roadmap</span>?
+                Ready to accelerate?
               </h3>
               
               <p className="text-xs sm:text-xl text-white/90 mb-4 sm:mb-12 leading-snug sm:leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
-                Book your <span className="font-bold">Executive Primer</span> and align your AI literacy with revenue strategy in just 30 days.
+                From as little as a weekly sync to a 90 day sprint, the engagement matches what you need from us
               </p>
               
               {/* Value Props - Desktop Grid */}

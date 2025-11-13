@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Brain, TrendingUp, Target, Sparkles, LucideIcon } from 'lucide-react';
+import mindmakerLogo from '@/assets/mindmaker-logo-dark.png';
 
 interface ProgressPhase {
   label: string;
@@ -50,12 +51,11 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({
       <Card className="w-full max-w-2xl mx-4 p-8 text-center bg-card/95 backdrop-blur-sm border-0 shadow-2xl">
         <CardContent className="space-y-8">
           <div className="flex justify-center">
-            <div className="relative">
-              <PhaseIcon className="h-8 w-8 text-primary animate-pulse" />
-              <div className="absolute -top-1 -right-1">
-                <Sparkles className="h-4 w-4 text-primary/60 animate-spin" />
-              </div>
-            </div>
+            <img 
+              src={mindmakerLogo} 
+              alt="Mindmaker" 
+              className="h-16 w-auto animate-pulse"
+            />
           </div>
           
           <div className="space-y-4">
