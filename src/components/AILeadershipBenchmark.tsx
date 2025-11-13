@@ -8,6 +8,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import mindmakerLogo from '@/assets/mindmaker-logo-dark.png';
+import { SaveProfileDialog } from '@/components/auth/SaveProfileDialog';
+import { useAssessment } from '@/contexts/AssessmentContext';
 import { 
   Brain, 
   Target, 
@@ -68,12 +70,14 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   onViewToolkit
 }) => {
   const { toast } = useToast();
+  const { sessionId: contextSessionId } = useAssessment();
   const [personalizedInsights, setPersonalizedInsights] = useState<PersonalizedInsights | null>(null);
   const [isLoadingInsights, setIsLoadingInsights] = useState(true);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [expandedDimensions, setExpandedDimensions] = useState<Record<string, boolean>>({});
   const [leadershipComparison, setLeadershipComparison] = useState<LeadershipComparison | null>(null);
   const [selectedDimension, setSelectedDimension] = useState<LeadershipComparison['dimensions'][0] | null>(null);
+  const [isSaveProfileOpen, setIsSaveProfileOpen] = useState(false);
 
   // Utility function to clean and validate "Based on" text
   const cleanBasedOnText = (items: string[]): string[] => {
@@ -1115,9 +1119,33 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 Ready to accelerate?
               </h3>
               
-              <p className="text-xs sm:text-xl text-white/90 mb-4 sm:mb-12 leading-snug sm:leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
+              <p className="text-xs sm:text-xl text-white/90 mb-4 sm:mb-8 leading-snug sm:leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
                 From as little as a weekly sync to a 90 day sprint, the engagement matches what you need from us
               </p>
+
+              {/* Save Profile Button */}
+              <div className="mb-8 sm:mb-12">
+                <Button
+                  onClick={() => setIsSaveProfileOpen(true)}
+                  variant="outline"
+                  size="lg"
+                  className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
+                >
+                  💾 Save Profile
+                </Button>
+              </div>
+
+              {/* Save Profile Button */}
+              <div className="mb-8 sm:mb-12">
+                <Button
+                  onClick={() => setIsSaveProfileOpen(true)}
+                  variant="outline"
+                  size="lg"
+                  className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
+                >
+                  💾 Save Profile
+                </Button>
+              </div>
               
               {/* Value Props - Desktop Grid */}
               <div className="hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
@@ -1179,6 +1207,20 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
           </CardContent>
         </Card>
       </div>
+
+      {/* Save Profile Dialog */}
+      <SaveProfileDialog
+        open={isSaveProfileOpen}
+        onClose={() => setIsSaveProfileOpen(false)}
+        email={contactData.email}
+        sessionId={contextSessionId || sessionId}
+        onSuccess={() => {
+          toast({
+            title: 'Success!',
+            description: 'Your profile has been saved. You can now access your results anytime.',
+          });
+        }}
+      />
     </div>
   );
 };
