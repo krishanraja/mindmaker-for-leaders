@@ -39,6 +39,19 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   const [benchmark, setBenchmark] = useState<BenchmarkData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Diagnostic logging
+  useEffect(() => {
+    console.log('📊 BenchmarkComparison received:', {
+      userScore,
+      userTier,
+      industry,
+      companySize,
+      role,
+      hasLeadershipComparison: !!leadershipComparison,
+      dimensionsCount: leadershipComparison?.dimensions?.length
+    });
+  }, [userScore, userTier, industry, companySize, role, leadershipComparison]);
+
   useEffect(() => {
     const fetchBenchmark = async () => {
       try {
@@ -71,12 +84,11 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
     );
   }
 
-  if (!benchmark) {
-    return null;
-  }
-
-  const percentile = ((userScore - benchmark.avg_readiness_score) / benchmark.avg_readiness_score) * 100;
-  const isAboveAverage = userScore > benchmark.avg_readiness_score;
+  // Show PeerBubbleChart even if benchmark data is unavailable
+  const percentile = benchmark 
+    ? ((userScore - benchmark.avg_readiness_score) / benchmark.avg_readiness_score) * 100
+    : 50; // default to 50th percentile if no benchmark data
+  const isAboveAverage = benchmark ? userScore > benchmark.avg_readiness_score : true;
 
   const getIndustryBenchmark = () => {
     if (!industry || !benchmark.industry_benchmarks) return null;
@@ -100,7 +112,7 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   return (
     <div className="space-y-6">
       {/* Bubble Chart - Primary Feature */}
-      {leadershipComparison && leadershipComparison.dimensions && (
+      {leadershipComparison && leadershipComparison.dimensions && leadershipComparison.dimensions.length > 0 ? (
         <PeerBubbleChart 
           userDimensions={leadershipComparison.dimensions.map(d => ({
             dimension: d.dimension,
@@ -108,9 +120,18 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
             percentile: d.percentile || 50
           }))}
         />
+      ) : (
+        <Card>
+          <CardContent className="py-10">
+            <div className="text-center text-muted-foreground">
+              Calculating your leadership dimensions...
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      <Card>
+      {benchmark && (
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
@@ -201,6 +222,7 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 };
