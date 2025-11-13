@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.update-adoption-momentum]
 verify_jwt = false
+
+[functions.send-confirmation-email]
+verify_jwt = false
