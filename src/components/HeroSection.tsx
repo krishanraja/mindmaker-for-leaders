@@ -1,15 +1,26 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, LogIn } from "lucide-react";
+import { ArrowRight, LogIn, LogOut, User } from "lucide-react";
 import mindmakerLogo from "@/assets/mindmaker-logo.png";
 import { useState, useEffect } from "react";
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeroSectionProps {
   onStartVoice: () => void;
   onStartQuiz: () => void;
   onSignIn: () => void;
+  user: SupabaseUser | null;
+  onSignOut: () => void;
 }
 
-export function HeroSection({ onStartVoice, onStartQuiz, onSignIn }: HeroSectionProps) {
+export function HeroSection({ onStartVoice, onStartQuiz, onSignIn, user, onSignOut }: HeroSectionProps) {
   const [displayedText, setDisplayedText] = useState("");
   const fullText = "Benchmark Your AI Leadership";
   
@@ -37,15 +48,42 @@ export function HeroSection({ onStartVoice, onStartQuiz, onSignIn }: HeroSection
               alt="MindMaker Logo" 
               className="w-[190px] h-auto -ml-[18px]"
             />
-            <Button
-              onClick={onSignIn}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <LogIn className="h-4 w-4" />
-              Sign In
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <User className="h-4 w-4" />
+                    {user.email?.split('@')[0]}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                    {user.email}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onSignOut} className="text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                onClick={onSignIn}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Button>
+            )}
           </div>
           
           <div className="min-h-[4rem] sm:min-h-[5rem] md:min-h-[6rem] lg:min-h-[7rem]">
