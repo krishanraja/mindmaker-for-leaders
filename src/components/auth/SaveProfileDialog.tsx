@@ -80,6 +80,17 @@ export const SaveProfileDialog: React.FC<SaveProfileDialogProps> = ({
         throw new Error('No user returned from signup');
       }
 
+      // Sign in the user automatically
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        console.error('Auto sign-in error:', signInError);
+        // Continue even if auto sign-in fails
+      }
+
       // Update the conversation session with the user_id
       if (sessionId) {
         const { error: updateError } = await supabase

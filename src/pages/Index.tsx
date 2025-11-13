@@ -3,13 +3,35 @@ import { HeroSection } from '@/components/HeroSection';
 import { VoiceOrchestrator } from '@/components/voice/VoiceOrchestrator';
 import AuthScreen from '@/components/auth/AuthScreen';
 import { AssessmentProvider } from '@/contexts/AssessmentContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 type AssessmentMode = 'hero' | 'voice' | 'quiz' | 'signin';
 
 const Index = () => {
   const [mode, setMode] = useState<AssessmentMode>('hero');
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   return (
     <AssessmentProvider>
@@ -34,6 +56,8 @@ const Index = () => {
             onStartVoice={() => setMode('voice')} 
             onStartQuiz={() => setMode('quiz')}
             onSignIn={() => setMode('signin')}
+            user={user}
+            onSignOut={handleSignOut}
           />
         </div>
       )}
