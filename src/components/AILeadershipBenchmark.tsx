@@ -1130,18 +1130,6 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
               <p className="text-xs sm:text-xl text-white/90 mb-4 sm:mb-12 leading-snug sm:leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
                 From as little as a weekly sync to a 90 day sprint, the engagement matches what you need from us
               </p>
-
-              {/* Save Profile Button */}
-              <div className="mb-8 sm:mb-12">
-                <Button
-                  onClick={() => setIsSaveProfileOpen(true)}
-                  variant="outline"
-                  size="lg"
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
-                >
-                  💾 Save Profile
-                </Button>
-              </div>
               
               {/* Value Props - Desktop Grid */}
               <div className="hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
