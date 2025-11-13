@@ -277,7 +277,7 @@ ${assessmentBreakdown}
 
   if (deepProfileData) {
     const workBreakdownText = Object.entries(deepProfileData.workBreakdown)
-      .map(([k, v]) => `${k}: ${v}%`)
+      .map(([k, v]) => k + ': ' + v + '%')
       .join(', ');
 
     prompt += `
@@ -339,7 +339,7 @@ TASK: Generate personalized AI leadership insights that are DEEPLY GROUNDED in t
    - Include quantified impact from time waste %: ${deepProfileData?.timeWaste || 'X'}%
    - Timeline matches their preference: ${contactData.timeline || 'Not specified'}
    - Stakeholder consideration: ${deepProfileData?.stakeholders?.join(', ') || 'Not specified'}
-   - Work breakdown aware: ${deepProfileData?.workBreakdown ? Object.entries(deepProfileData.workBreakdown).map(([k, v]) => \`\${k}: \${v}%\`).join(', ') : 'Not provided'}
+   - Work breakdown aware: ${deepProfileData?.workBreakdown ? Object.entries(deepProfileData.workBreakdown).map(([k, v]) => k + ': ' + v + '%').join(', ') : 'Not provided'}
    
    **DIMENSION TAGGING LOGIC:**
    - Tag "AI Fluency" if: education, awareness, industry understanding, explaining AI
