@@ -59,6 +59,7 @@ interface AILeadershipBenchmarkProps {
   deepProfileData: DeepProfileData | null;
   onBack?: () => void;
   onViewToolkit?: () => void;
+  onLeadershipComparisonReady?: (comparison: LeadershipComparison | null) => void;
 }
 
 const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
@@ -67,7 +68,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
   contactData,
   deepProfileData,
   onBack,
-  onViewToolkit
+  onViewToolkit,
+  onLeadershipComparisonReady
 }) => {
   const { toast } = useToast();
   const { sessionId: contextSessionId } = useAssessment();
@@ -134,7 +136,25 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
     // Derive leadership comparison from existing data
     const comparison = deriveLeadershipComparison(assessmentData, deepProfileData);
     setLeadershipComparison(comparison);
-  }, []);
+    
+    // Audit data flow for consistency
+    if (process.env.NODE_ENV === 'development') {
+      import('@/utils/dataFlowAudit').then(({ validateAssessmentData, validateLeadershipDimensions }) => {
+        const assessmentValidation = validateAssessmentData(assessmentData);
+        const dimensionsValidation = validateLeadershipDimensions(comparison.dimensions, assessmentData);
+        
+        console.group('🔍 Data Flow Audit');
+        console.log('Assessment:', assessmentValidation);
+        console.log('Dimensions:', dimensionsValidation);
+        console.groupEnd();
+      });
+    }
+    
+    // Notify parent component
+    if (onLeadershipComparisonReady) {
+      onLeadershipComparisonReady(comparison);
+    }
+  }, [assessmentData, deepProfileData, onLeadershipComparisonReady]);
 
   const loadOrGenerateInsights = async () => {
     try {
@@ -189,6 +209,29 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
       if (error) throw error;
 
       if (data?.personalizedInsights) {
+        // Validate insights in development
+        if (process.env.NODE_ENV === 'development') {
+          import('@/utils/dataFlowAudit').then(({ validatePersonalizedInsights, auditDataFlow }) => {
+            const validation = validatePersonalizedInsights(data.personalizedInsights);
+            
+            console.group('🔍 AI Insights Validation');
+            console.log('Valid:', validation.isValid);
+            if (validation.errors.length > 0) {
+              console.error('Errors:', validation.errors);
+            }
+            if (validation.warnings.length > 0) {
+              console.warn('Warnings:', validation.warnings);
+            }
+            
+            // Full data flow audit
+            if (leadershipComparison) {
+              const audit = auditDataFlow(assessmentData, leadershipComparison, data.personalizedInsights);
+              console.log('Full Audit:', audit.summary);
+            }
+            console.groupEnd();
+          });
+        }
+        
         setPersonalizedInsights(data.personalizedInsights);
         console.log('Personalized insights generated successfully');
         

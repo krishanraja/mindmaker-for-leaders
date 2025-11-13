@@ -296,28 +296,68 @@ DEEP WORK PROFILE:
   }
 
   prompt += `
-TASK: Generate personalized AI leadership insights that:
+TASK: Generate personalized AI leadership insights that are DEEPLY GROUNDED in the executive's specific data.
 
-1. GROWTH READINESS: Reference their specific score, time waste percentage, and examples to show revenue acceleration potential
+**CRITICAL DATA HYGIENE RULES:**
+1. NEVER use technical field names (like "kpi_connection", "time_waste") in user-facing text
+2. ALWAYS reference specific numbers from their profile (scores, percentages, examples)
+3. NEVER contradict their stated goals or challenges
+4. Match tone to their communication style and thinking process
+5. Ensure timeline recommendations align with their stated timeline preference
 
-2. LEADERSHIP STAGE: Based on their actual scores (especially team alignment, business acceleration), tell them EXACTLY what score they need to reach the next tier and one concrete action to get there
+**SCORING CONTEXT FOR ACCURATE POSITIONING:**
+- Their total score: ${totalScore}/30 (${normalizedScore}/100 normalized)
+- Score tier boundaries:
+  * AI-Driven Leader: 25-30 points
+  * AI Growth Strategist: 19-24 points
+  * AI Explorer: 13-18 points
+  * AI Curious: 6-12 points
+- If they scored 25+ (AI-Driven Leader), acknowledge they're in top tier BUT still show growth path
+- Their individual dimension scores determine strengths and development areas
 
-3. KEY FOCUS: Address their stated communication challenge or transformation goal with a specific AI solution matched to their thinking/communication style
+1. GROWTH READINESS:
+   - Reference ACTUAL time waste percentage: ${deepProfileData?.timeWaste || 'not provided'}%
+   - Cite their specific examples: "${deepProfileData?.timeWasteExamples || 'Not provided'}"
+   - Calculate potential ROI based on THEIR numbers
+   - If score is 25+: Frame as "optimizing at scale" not "building basics"
+
+2. LEADERSHIP STAGE:
+   - Based on ACTUAL assessment scores (current total: ${totalScore}/30)
+   - Tell them EXACT score needed for next tier (e.g., "Reach 19 points for Growth Strategist level")
+   - Reference specific weak areas from their 6 question responses
+   - ONE concrete action tied to their lowest-scored category
+
+3. KEY FOCUS:
+   - MUST address: "${deepProfileData?.biggestChallenge || contactData.primaryFocus}"
+   - Solution matched to: "${deepProfileData?.thinkingProcess || 'Not specified'}" thinking style
+   - Consider: "${deepProfileData?.communicationStyle?.join(', ') || 'Not specified'}" communication preferences
+   - If they're high-scoring: Focus on advanced/strategic challenges, not basics
 
 4. 90-DAY ROADMAP (3 initiatives):
-   - Each must reference SPECIFIC data from their profile (delegation tasks, time waste examples, stakeholder needs)
-   - Include quantified impact based on their time waste % and work breakdown
-   - Timeline should match their stated timeline
-   - Should align with their role and industry
-   - **CRITICAL**: Tag each initiative with 1-2 relevant leadership dimensions:
-     * AI Fluency - for understanding/speaking AI, education initiatives
-     * Delegation Mastery - for time-saving, workflow optimization, automation
-     * Strategic Vision - for connecting AI to business outcomes, KPI tracking
-     * Decision Agility - for decision-making speed, real-time intelligence
-     * Impact Orientation - for measurement, results tracking, strategic focus
-     * Change Leadership - for adoption, culture building, inspiring transformation
+   Each initiative MUST:
+   - Reference SPECIFIC delegation tasks: ${deepProfileData?.delegateTasks?.join(', ') || 'Not provided'}
+   - Include quantified impact from time waste %: ${deepProfileData?.timeWaste || 'X'}%
+   - Timeline matches their preference: ${contactData.timeline || 'Not specified'}
+   - Stakeholder consideration: ${deepProfileData?.stakeholders?.join(', ') || 'Not specified'}
+   - Work breakdown aware: ${deepProfileData?.workBreakdown ? Object.entries(deepProfileData.workBreakdown).map(([k, v]) => \`\${k}: \${v}%\`).join(', ') : 'Not provided'}
    
-**CARD CONTENT GENERATION**
+   **DIMENSION TAGGING LOGIC:**
+   - Tag "AI Fluency" if: education, awareness, industry understanding, explaining AI
+   - Tag "Delegation Mastery" if: automation, time-saving, task delegation, workflow efficiency  
+   - Tag "Strategic Vision" if: KPI tracking, business outcomes, ROI, strategic planning
+   - Tag "Decision Agility" if: faster decisions, real-time data, intelligence gathering
+   - Tag "Impact Orientation" if: measurement, results tracking, performance metrics
+   - Tag "Change Leadership" if: adoption, culture, inspiring teams, championing change
+   
+   Choose 1-2 most relevant dimensions per initiative based on PRIMARY action, not tangential benefits.
+
+**ADAPTIVE CONTENT BY SCORE TIER:**
+- Score 25-30 (AI-Driven): Use terms like "scale", "enterprise-wide", "strategic optimization", "advanced"
+- Score 19-24 (Growth Strategist): Use "expand", "systematize", "cross-functional", "strategic"
+- Score 13-18 (Explorer): Use "build momentum", "pilot", "demonstrate value", "foundational"
+- Score 6-12 (Curious): Use "start", "explore", "learn", "experiment", "build basics"
+
+**CARD CONTENT TEMPLATES:**
 
 1. GROWTH READINESS:
    - level: Select from enum ["High", "Medium-High", "Medium", "Developing"]

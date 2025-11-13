@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, Target, Award } from 'lucide-react';
+import { PeerBubbleChart } from './PeerBubbleChart';
+import { LeadershipComparison } from '@/utils/scaleUpsMapping';
 
 interface BenchmarkData {
   avg_readiness_score: number;
@@ -23,6 +25,7 @@ interface BenchmarkComparisonProps {
   industry?: string;
   companySize?: string;
   role?: string;
+  leadershipComparison?: LeadershipComparison | null;
 }
 
 export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
@@ -31,6 +34,7 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
   industry,
   companySize,
   role,
+  leadershipComparison,
 }) => {
   const [benchmark, setBenchmark] = useState<BenchmarkData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,6 +99,17 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Bubble Chart - Primary Feature */}
+      {leadershipComparison && leadershipComparison.dimensions && (
+        <PeerBubbleChart 
+          userDimensions={leadershipComparison.dimensions.map(d => ({
+            dimension: d.dimension,
+            score: d.score,
+            percentile: d.percentile || 50
+          }))}
+        />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
