@@ -468,8 +468,8 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             and strategic roadmap for driving growth through AI literacy.
           </p>
           
-          {/* Book a Call Button */}
-          <div className="flex justify-center mt-6">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
             <Button 
               onClick={handleExecutivePrimerBooking}
               size="lg"
@@ -477,6 +477,14 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
             >
               <Calendar className="h-4 w-4" />
               Book a Call
+            </Button>
+            <Button 
+              onClick={() => setIsSaveProfileOpen(true)}
+              size="lg"
+              variant="outline"
+              className="gap-2"
+            >
+              💾 Save Profile
             </Button>
           </div>
         </div>
@@ -1119,21 +1127,9 @@ const AILeadershipBenchmark: React.FC<AILeadershipBenchmarkProps> = ({
                 Ready to accelerate?
               </h3>
               
-              <p className="text-xs sm:text-xl text-white/90 mb-4 sm:mb-8 leading-snug sm:leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
+              <p className="text-xs sm:text-xl text-white/90 mb-4 sm:mb-12 leading-snug sm:leading-relaxed max-w-3xl mx-auto px-2 sm:px-4">
                 From as little as a weekly sync to a 90 day sprint, the engagement matches what you need from us
               </p>
-
-              {/* Save Profile Button */}
-              <div className="mb-8 sm:mb-12">
-                <Button
-                  onClick={() => setIsSaveProfileOpen(true)}
-                  variant="outline"
-                  size="lg"
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
-                >
-                  💾 Save Profile
-                </Button>
-              </div>
 
               {/* Save Profile Button */}
               <div className="mb-8 sm:mb-12">
