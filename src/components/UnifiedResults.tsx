@@ -27,6 +27,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
   onBack
 }) => {
   const [activeTab, setActiveTab] = useState<string>("benchmark");
+  const [leadershipComparison, setLeadershipComparison] = useState<any>(null);
 
   return (
     <div className="bg-background min-h-screen py-8">
@@ -78,6 +79,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
               deepProfileData={deepProfileData}
               onBack={onBack}
               onViewToolkit={() => setActiveTab("library")}
+              onLeadershipComparisonReady={setLeadershipComparison}
             />
           </TabsContent>
 
@@ -88,6 +90,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
                 userTier={assessmentData?.tier || 'emerging'}
                 companySize={contactData?.companySize}
                 role={contactData?.roleTitle}
+                leadershipComparison={leadershipComparison}
               />
               {contactData?.companyName && (
                 <MomentumDashboard companyHash={contactData.companyName} />
