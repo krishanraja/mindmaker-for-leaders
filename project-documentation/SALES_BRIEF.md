@@ -2,7 +2,7 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
 ---
 
@@ -128,7 +128,7 @@ AI synthesizes the user's Memory Web and assessment data into an actionable lead
 - Interactive strength/weakness pills with feedback loops
 - Intelligence gap detection with guided resolution
 
-Edge Pro ($9/month) unlocks unlimited artifact generation, email delivery, all 7 briefing types, **and unlimited Agent Skill Builder generation**.
+Edge Pro ($29/month) unlocks unlimited artifact generation, email delivery, all 7 briefing types, **and unlimited Agent Skill Builder generation**.
 
 ### Agent Skill Builder (Edge Pro)
 Voice-to-Skill pipeline that converts one weekly workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/`.
@@ -197,7 +197,7 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 | **Full Diagnostic** | $49 one-time | Full tensions/risks/scenarios, complete thinking tools library |
 | **Deep Context Upgrade** | $29 one-time | Enhanced company-context enrichment |
 | **Diagnostic + Deep Context Bundle** | $69 one-time | Both above. Saves $10. The default upsell. |
-| **Edge Pro** | $9/month | Unlimited Edge artifacts, all 7 briefing types, email delivery, unlimited Agent Skill Builder generation, Custom Voice Export |
+| **Edge Pro** | $29/month | Unlimited Edge artifacts, all 7 briefing types, email delivery, unlimited Agent Skill Builder generation, Custom Voice Export |
 | **Bootcamp** (Teams) | $15K-$50K | 4-hour exec sprint + pilot charter |
 | **Portfolio** (Partners) | $5K-$25K | Heatmap + offer pack |
 
@@ -212,7 +212,7 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 - **Self-contained** — no Slack/email/calendar access, no enterprise security review
 - **Encrypted at rest** (AES-256-GCM); user controls retention; data never trains any AI model
 - **Portable** — not locked to any AI provider or platform
-- **74 edge functions, 51 hooks, 98 migrations live** — this is not a prototype
+- **74 edge functions, 53 hooks, 99 migrations live** — this is not a prototype
 - **Audit weeks 1-6 shipped** (revenue path, data path, UX, reliability, observability, cleanup): timeouts + retries on external APIs, mandatory Stripe signature verification + idempotency, structured edge-function logger, e2e test contracts
 - **Built by Krish Raja** — operator experience: Microsoft (2010), MD at Captify ($0→$12M ARR), data revenue at Nine Entertainment ($9M→$61M). Now CEO of Mindmaker, running a multi-agent OS that automates the output of a 30-person team.
 - Context export produces richer, more structured prompts than most leaders write by hand in an hour
@@ -249,7 +249,7 @@ Leaders are getting tired of mystery algorithms. ChatGPT, LinkedIn, everywhere �
 Most AI context tools want access to your Slack, email, calendar, and browser. That means enterprise security reviews, IT approvals, and someone else reading your data. CTRL takes a different approach: you just talk to it. No integrations. No plugins. No permissions. Your context is built from what you choose to share — nothing else. The most private AI double you can build.
 
 ### The "Edge Pro Upgrade" Angle (for active free users)
-You've built your Memory Web. You've exported to Claude. Now skip the blank page entirely. Edge Pro generates board memos, strategy docs, emails, and meeting agendas in your register, anytime, for $9/month. Less than a coffee. More leverage than your last consulting hour. Plus unlimited Agent Skill Builder generation — turn the workflows you already repeat every week into Claude Skills that fire automatically.
+You've built your Memory Web. You've exported to Claude. Now skip the blank page entirely. Edge Pro generates board memos, strategy docs, emails, and meeting agendas in your register, anytime, for $29/month. More leverage than your last consulting hour. Plus unlimited Agent Skill Builder generation — turn the workflows you already repeat every week into Claude Skills that fire automatically.
 
 ### The "Stop Repeating Yourself" Angle (Skill Builder)
 Every leader has 3-5 workflows they do every week. The Monday board update. The Friday hiring sync. The RFP triage. The investor update. Every time, blank page, full context, full instructions. CTRL takes one of them at a time and turns it into a Claude Skill in 2 minutes of voice. Drop the ZIP into `~/.claude/skills/`. The skill auto-fires the moment your team's language matches. You stop repeating yourself. Your leverage compounds.
@@ -274,7 +274,7 @@ CTRL is self-contained. It doesn't connect to your Slack, email, calendar, or an
 CTRL isn't a strategy. It's infrastructure. It makes whatever AI strategy you have execute faster by giving every leader on your team personalized AI from day one. Strategy is the plan. CTRL is the accelerant.
 
 **"What's the ROI?"**
-Conservative math: every leader spends 30-60 minutes per day on AI context setup. CTRL eliminates that entirely. Add 30 minutes a day saved on news scrolling via the Briefing. That's an hour a day. At a $300/hour fully-loaded leader rate, that's $1,500+/week. Edge Pro is $9/month. The math is not subtle. But the real ROI is decision quality: AI output built on rich, structured context is fundamentally better than output from a blank prompt.
+Conservative math: every leader spends 30-60 minutes per day on AI context setup. CTRL eliminates that entirely. Add 30 minutes a day saved on news scrolling via the Briefing. That's an hour a day. At a $300/hour fully-loaded leader rate, that's $1,500+/week. Edge Pro is $29/month. The math is not subtle. But the real ROI is decision quality: AI output built on rich, structured context is fundamentally better than output from a blank prompt.
 
 **"Is this just a fancy prompt template?"**
 No. Prompt templates are static and generic. CTRL builds a living, structured knowledge base about you from natural conversation, formats it for each specific AI platform, and evolves as your context changes. It's the difference between a form letter and a briefing document written by someone who knows you.

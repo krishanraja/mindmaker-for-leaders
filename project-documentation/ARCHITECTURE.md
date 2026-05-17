@@ -2,9 +2,9 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
-> **Verified counts (2026-05-13)**: 74 edge functions, 51 hooks, 98 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points).
+> **Verified counts (2026-05-17)**: 74 edge functions, 53 hooks, 99 migrations, 6 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points), post-launch phases A-E (pricing single-source, skill builder UX rebuild, Library tab, empty states, personalized paywall).
 
 ---
 
@@ -144,7 +144,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 51 custom hooks
+├── hooks/                     # 53 custom hooks
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -156,6 +156,8 @@ src/
 │   ├── useSkillExport.ts      # Skill Builder pipeline (v5.2) — wraps generate-skill-export, decodes base64 ZIP into a Blob
 │   ├── useUserPains.ts        # Top blockers + active decisions, drives pain-anchored entry points (v5.2)
 │   ├── useRevealOnMount.ts    # Smooth reveal helper for below-the-fold components (v5.2)
+│   ├── useGeneratedArtifacts.ts  # Read/refetch/delete for Library tab on /memory (post-launch)
+│   ├── useProfileBasics.ts    # Reads leader company_name + role from user_memory for EdgePaywall personalization (post-launch)
 │   ├── useMemoryQueries.ts    # Memory Center queries
 │   ├── useMemoryWeb.ts        # Memory Web dashboard data
 │   ├── useMemoryExport.ts     # Context export logic
@@ -274,7 +276,9 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/dashboard?view=edge` | Dashboard (Edge) | Yes | Edge leadership amplifier |
 | `/memory` | MemoryCenter | Yes | Detailed memory management |
 | `/context` | ContextExport | Yes | Export to AI tools |
+| `/briefing` | BriefingPage | Yes | Full-screen briefing player |
 | `/settings` | Settings | Yes | User preferences |
+| `/compliance` | Compliance | Yes | Privacy and compliance info |
 | `/profile` | Profile | Yes | User profile |
 
 **Legacy Redirects (all redirect to `/dashboard`):**
@@ -740,6 +744,15 @@ skill_exports                           -- Skill Builder log (Phase 8)
   - One row per generation attempt, including failed-triage cases
   - RLS: owner-read + owner-insert
   - Indexed on user_id and created_at DESC
+
+generated_artifacts                     -- Library tab (post-launch phase C)
+├── id (PK, uuid), user_id (FK auth.users, ON DELETE CASCADE)
+├── kind (TEXT: skill | draft | framework)
+├── title (TEXT), body (TEXT)
+├── created_at
+  - RLS: owner-read, owner-insert
+  - Migration: 20260513000000_generated_artifacts.sql
+  - Used by LibraryTab.tsx on /memory; code falls back to empty Library if table absent
 ```
 
 **PostgreSQL Extensions (required):**
@@ -1235,16 +1248,16 @@ All user-facing tables have RLS policies:
 - `src/__tests__/authMachine.test.ts`
 - `src/__tests__/renderMarkdown.test.ts`
 - `src/__tests__/training.test.ts`
-- `src/__tests__/HeroSection.video.test.tsx`
+- `src/components/__tests__/HeroSection.video.test.tsx`
 - `supabase/functions/_shared/with-timeout.test.ts`
 
-**Playwright** (`playwright.config.ts`) — 6 e2e specs:
-- `tests/auth-journeys.spec.ts`
-- `tests/briefing-journey.spec.ts`
-- `tests/briefing-rate-limits.spec.ts`
-- `tests/sparse-profile.spec.ts`
-- `tests/account-deletion.spec.ts`
-- `tests/stripe-webhook-idempotency.spec.ts`
+**Playwright** (`playwright.config.ts`) — 6 e2e specs (testDir: `src/__tests__/e2e/`):
+- `src/__tests__/e2e/auth-journeys.spec.ts`
+- `src/__tests__/e2e/briefing-journey.spec.ts`
+- `src/__tests__/e2e/briefing-rate-limits.spec.ts`
+- `src/__tests__/e2e/sparse-profile.spec.ts`
+- `src/__tests__/e2e/account-deletion.spec.ts`
+- `src/__tests__/e2e/stripe-webhook-idempotency.spec.ts`
 
 **CI gates** (`.github/workflows/ci.yml`) — three blocking checks per PR:
 1. Typecheck (`tsc --noEmit`)
@@ -1278,7 +1291,7 @@ All user-facing tables have RLS policies:
   "react-router-dom": "^6.26.2",
   "@supabase/supabase-js": "^2.50.3",
   "@tanstack/react-query": "^5.56.2",
-  "framer-motion": "^11.x",
+  "framer-motion": "^12.24.10",
   "tailwindcss": "^3.4.11",
   "lucide-react": "^0.462.0",
   "zod": "^3.23.8",

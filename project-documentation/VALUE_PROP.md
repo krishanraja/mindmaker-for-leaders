@@ -2,7 +2,7 @@
 
 Clear value propositions for each audience. Every claim ties back to one thing: **decision speed**.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
 ---
 
@@ -53,7 +53,7 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 - "Your strengths sharpened, your weaknesses covered."
 - AI synthesizes your Memory Web + assessment data into an actionable leadership profile: strengths to amplify (Sharpen) and weaknesses to compensate for (Cover).
 - On-demand artifacts in your register: board memos, strategy docs, emails, meeting agendas, frameworks, templates.
-- Edge Pro ($9/month) unlocks unlimited generation + email delivery + all 7 briefing types + unlimited Agent Skill Builder.
+- Edge Pro ($29/month) unlocks unlimited generation + email delivery + all 7 briefing types + unlimited Agent Skill Builder.
 
 **Agent Skill Builder (Edge Pro)**
 - "Describe one weekly workflow out loud. Get a Claude Skill that auto-triggers whenever your team's language matches."
@@ -212,7 +212,7 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 | **Key Output** | Memory Web + Exports + Briefing | Pilot charter | Heatmap + offer pack |
 | **Core Action** | Talk, export, decide faster | Workshop, align, commit | Assess, prioritize, intervene |
 | **Buyer** | Self-funded | Exec team sponsor | Partner/firm |
-| **Price Point** | Free / $49 Diagnostic / $9/mo Edge Pro / $69 bundle | $15K-$50K | $5K-$25K |
+| **Price Point** | Free / $49 Diagnostic / $29/mo Edge Pro / $69 bundle | $15K-$50K | $5K-$25K |
 
 ### Shared Anti-Positioning
 
@@ -241,7 +241,7 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 | **Full Diagnostic** | $49 one-time | Complete tensions, risk signals, org scenarios, full thinking tools library | Leaders who want a one-shot deep audit |
 | **Deep Context Upgrade** | $29 one-time | Enhanced company-context enrichment for sharper AI output | Leaders pre-meeting prep / strategy sprints |
 | **Diagnostic + Deep Context Bundle** | $69 one-time | Both above. Saves $10 vs buying separately. | Default upsell once Memory Web is built |
-| **Edge Pro** | $9/month | Unlimited Edge artifacts (board memos, strategy docs, emails, agendas), all 7 Briefing types (incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice), email delivery, unlimited Agent Skill Builder generation, Custom Voice Export | Leaders who treat AI as part of their weekly cadence |
+| **Edge Pro** | $29/month | Unlimited Edge artifacts (board memos, strategy docs, emails, agendas), all 7 Briefing types (incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice), email delivery, unlimited Agent Skill Builder generation, Custom Voice Export | Leaders who treat AI as part of their weekly cadence |
 | **Bootcamp** | $15K-$50K | 4-hour executive sprint + pilot charter + provocation report | Exec teams |
 | **Portfolio** | $5K-$25K | Heatmap + offer pack across portfolio companies | VCs / PE / consultants |
 

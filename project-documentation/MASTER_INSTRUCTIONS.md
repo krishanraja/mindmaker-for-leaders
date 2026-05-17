@@ -544,5 +544,5 @@ This is core to vibe coding.
 
 ---
 
-*Last Updated: 2026-05-13*
-*Version: 1.2.0 (post Phase 8 — Agent Skill Builder + desktop UI redesign)*
+*Last Updated: 2026-05-17*
+*Version: 1.2.1 (post Phase 9 — pricing single-source, Library tab, personalized paywall, skill builder UX rebuild)*

@@ -4,8 +4,8 @@
 
 This folder is the canonical source of truth for the CTRL portable AI context platform. Everything else at the repo root has been removed in the 2026-04-26 docs refresh — if it's not in this folder or in the root `README.md` / `CLAUDE.md` / `CHANGELOG.md`, it was historical noise.
 
-**Last Updated:** 2026-05-13
-**Current Version:** v5.2 (Skill Builder + desktop UI redesign shipped on top of v5.1's audit-hardened base)
+**Last Updated:** 2026-05-17
+**Current Version:** v5.2 (Skill Builder + desktop UI redesign shipped on top of v5.1's audit-hardened base; post-launch UX polish phases A-E shipped 2026-05-13)
 
 ---
 
@@ -31,7 +31,7 @@ This folder is the canonical source of truth for the CTRL portable AI context pl
 - [BRANDING.md](./BRANDING.md) — Brand voice, tone, and messaging guidelines
 
 ### Operational Knowledge
-- [HISTORY.md](./HISTORY.md) — Phases 1-7. Includes the April 2026 audit hardening track record.
+- [HISTORY.md](./HISTORY.md) — Phases 1-8. Includes the April 2026 audit hardening track record and post-launch UX polish.
 - [COMMON_ISSUES.md](./COMMON_ISSUES.md) — Recurring bugs, architectural pain points, audit-aftermath notes
 - [DECISIONS_LOG.md](./DECISIONS_LOG.md) — 41 architectural and product decisions with rationale and outcomes
 - [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) — Step-by-step rebuild instructions
@@ -102,11 +102,11 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 | Item | Count |
 |---|---|
 | Supabase edge functions | 74 |
-| React custom hooks | 51 |
-| PostgreSQL migrations applied | 98 |
+| React custom hooks | 53 |
+| PostgreSQL migrations applied | 99 |
 | Top-level page components | 25 |
 | E2E specs (Playwright) | 6 |
-| Unit/shared specs (Vitest) | 5 |
+| Unit/shared specs (Vitest) | 6 |
 | Active routes | 11 (+ 5 legacy redirects to `/dashboard`) |
 | Audit-week tracks shipped | 6 |
 
@@ -127,7 +127,7 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 ### Core Features
 - **Memory Web**: Voice-first context extraction with encrypted storage (default dashboard view); AES-256-GCM at rest
-- **Edge**: Leadership amplifier — strengths sharpened, weaknesses covered with AI artifacts (Edge Pro $9/month)
+- **Edge**: Leadership amplifier — strengths sharpened, weaknesses covered with AI artifacts (Edge Pro $29/month)
 - **Daily Briefing v2**: Evidence-based personalised intelligence with auditable anchoring. Seven-stage pipeline (lens → planner → fan-out → dedupe + scoring → curation → script → audio). Every segment carries `lens_item_id`, `relevance_score`, `matched_profile_fact`. Four-part learning loop: Interests, industry-aware seed beats (11 industries), persistent semantic kills, nightly aggregator via pg_cron at 03:07 UTC.
 - **Context Export**: One-click export to ChatGPT, Claude, Gemini, Cursor, Claude Code, raw markdown
 - **Skill Builder (Agent Skill Builder)** — Edge Pro: Voice-to-Agent-Skill pipeline that turns a leader's repetitive workflow into an agentskills.io-compliant ZIP they can drop into `~/.claude/skills/`. Three Honest Tests triage routes inputs that are really Memory Facts, Custom Instructions, or Saved Styles back to the right surface. Quality gate enforces 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, valid name format. Pain-anchored entry points: chip row of blockers + active decisions on Edge view (`AutomatePainCard`), zap button on Memory Web blocker cards, zap button on Briefing `decision_trigger` segments. Five archetypes: decision-framework, voice-lock, reporting-engine, tool-integration, getting-started.
@@ -146,7 +146,7 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 | Full Diagnostic | $49 one-time | Full tensions/risks/scenarios + thinking tools |
 | Deep Context Upgrade | $29 one-time | Enhanced company-context enrichment |
 | Diagnostic + Deep Context Bundle | $69 one-time | Both above (saves $10) |
-| Edge Pro | $9/month | Unlimited Edge artifacts + all 7 briefing types + email delivery |
+| Edge Pro | $29/month | Unlimited Edge artifacts + all 7 briefing types + email delivery |
 | Mindmaker Bootcamp | $15K-$50K | 4-hour exec sprint |
 | Mindmaker Portfolio | $5K-$25K | Portfolio assessment |
 
@@ -190,10 +190,10 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 | AI fallback model | OpenAI GPT-4o |
 | Embedding model | OpenAI text-embedding-3-small (1536-dim, pgvector) |
 | Edge functions | 74 |
-| Database migrations | 98 |
+| Database migrations | 99 |
 | Database extensions | pgvector, pgcrypto, pg_cron |
 | Active routes | 11 (+ legacy redirects) |
-| Custom hooks | 51 |
-| E2E specs / Vitest specs | 6 / 5 |
+| Custom hooks | 53 |
+| E2E specs / Vitest specs | 6 / 6 |
 | Node.js requirement | >=22 <24 |
 | Audit-week tracks shipped | 6 (revenue path, data path, UX, reliability, observability, cleanup) |

@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
 ---
 
@@ -214,7 +214,7 @@ Key architectural and product decisions with rationale.
 **Decision**: Reject any Stripe webhook payload that does not validate against `STRIPE_WEBHOOK_SECRET`. Persist a row in a new `stripe_events_processed` table (PK = Stripe event id) for every successfully handled event; on replay, recognise and skip.
 **Rationale**: Without signature verification, a leaked endpoint URL is a replay vector. Without idempotency, a webhook retried by Stripe (which is normal) can double-fulfill an entitlement upgrade. Both are silent revenue/trust bugs that surface at audit time.
 **Trade-off**: One extra table + per-event row insert vs a buyer-trust risk we cannot afford.
-**Outcome**: ✅ Shipped. E2E test `tests/stripe-webhook-idempotency.spec.ts` locks the contract.
+**Outcome**: ✅ Shipped. E2E test `src/__tests__/e2e/stripe-webhook-idempotency.spec.ts` locks the contract.
 
 ## Decision 31: Codified Storage Bucket Policy for `ctrl-briefings`
 **Date**: Apr 2026 (Audit Week 2, PR #94)
@@ -228,7 +228,7 @@ Key architectural and product decisions with rationale.
 **Decision**: When a user deletes their account, remove all owned rows: Memory Web facts, briefings, audio artifacts, decisions, missions, assessments, dimension scores, insights, prompts, tensions, risk signals, scenarios, first moves, check-ins, progress snapshots, briefing interests, briefing feedback, briefing lens feedback, edge profiles, edge actions, edge feedback, edge subscriptions, index participant data. Audit Week 2 also closes the assessment data leak.
 **Rationale**: "You own your data" cannot be a marketing line if a deletion leaves orphaned rows. Buyers asking about GDPR/CCPA equivalence get a verifiable answer.
 **Trade-off**: Larger deletion path + more carefully ordered FK cleanup vs an honest privacy story.
-**Outcome**: ✅ Shipped. E2E test `tests/account-deletion.spec.ts` verifies it end-to-end.
+**Outcome**: ✅ Shipped. E2E test `src/__tests__/e2e/account-deletion.spec.ts` verifies it end-to-end.
 
 ## Decision 33: `with-timeout` for Every External API Call
 **Date**: Apr 2026 (Audit Week 4, PR #99)
@@ -263,7 +263,7 @@ Key architectural and product decisions with rationale.
 **Decision**: Write Playwright e2e specs that prove the riskiest contracts (auth journeys, briefing journey, briefing rate limits, sparse profile, account deletion, stripe webhook idempotency) before chasing broad unit-test coverage.
 **Rationale**: 80% unit-test coverage on a feature that doesn't exist in production is theatre. 6 e2e specs that prove the parts of the product a leader would notice are bug-free is real.
 **Trade-off**: Some breadth deferred vs tested confidence in the parts that matter.
-**Outcome**: ✅ 6 e2e specs live (`tests/`). Vitest unit coverage remains light by design.
+**Outcome**: ✅ 6 e2e specs live in `src/__tests__/e2e/` (Playwright testDir). Vitest unit coverage remains light by design.
 
 ## Decision 38: Three Honest Tests Triage Gate Before Skill Generation
 **Date**: May 2026 (Phase 8 — PR #103)
@@ -292,3 +292,17 @@ Key architectural and product decisions with rationale.
 **Rationale**: Executive buyers judge desktop polish. The product was being demoed on desktop in every sales call, and the stretched-mobile feel undercut the premium positioning. Cmd+K is also the most pitchable desktop affordance in modern productivity software.
 **Trade-off**: Mobile and desktop paths are now genuinely different (mobile preserved unchanged on Landing, Briefing, Dashboard). Higher maintenance cost.
 **Outcome**: ✅ Live. The desktop demo experience now matches the rest of the product's premium bar.
+
+## Decision 42: Single-Source Pricing Constant for Edge Pro
+**Date**: May 2026 (post-launch phase A)
+**Decision**: Create `src/constants/billing.ts` as the single source of truth for the Edge Pro price (`EDGE_PRO_PRICE_USD = 29`). All UI components (`EdgePaywall`, `EdgeProTab`) read from this constant rather than hardcoding a price string.
+**Rationale**: The paywall was showing $29 and the Settings tab was showing $9 — a split caused by two independently-hardcoded strings that diverged when the price changed. The mismatch created trust loss at the moment of purchase intent. A single constant ensures the next price change touches one file.
+**Trade-off**: Stripe price ID still lives in the edge function, not in this constant. The constant must be kept in sync with Stripe manually. Noted in a comment in the file.
+**Outcome**: ✅ Live. `EDGE_PRO_PRICE_USD = 29` is the canonical price. All copy in this documentation uses $29/month.
+
+## Decision 43: Generated Artifacts Table + Library Tab
+**Date**: May 2026 (post-launch phase C)
+**Decision**: Add a `generated_artifacts` table to persist Agent Skills, drafts, and frameworks past the preview sheet, and surface them in a Library tab on the Memory Center page (`/memory`).
+**Rationale**: Generated artifacts previously vanished on sheet close. Leaders who generate a board memo mid-week have no way to retrieve it without regenerating. A persistent library with kind-grouped display costs one migration and one hook; it turns one-shot generation into a growing personal asset library.
+**Trade-off**: One more table; a code-level fallback (empty Library state) is required until the migration is applied to the linked project.
+**Outcome**: ✅ Live. `useGeneratedArtifacts` hook + `LibraryTab` component + `generated_artifacts` migration shipped post-launch.

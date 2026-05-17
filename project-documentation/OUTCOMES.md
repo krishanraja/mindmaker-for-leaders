@@ -2,7 +2,7 @@
 
 Expected outcomes and success metrics for CTRL users. Every outcome ties back to **decision speed** and **auditable relevance**.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
 ---
 
@@ -109,7 +109,7 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 
 **Edge Pro Upgrade Path**
 - Used Edge to generate a board memo, strategy doc, or email in their own register.
-- ~25-30% of engaged users convert to Edge Pro at $9/month within 30 days.
+- ~25-30% of engaged users convert to Edge Pro at $29/month within 30 days.
 
 **First Agent Skill Shipped**
 - The leader has hit a pain-anchored zap (Edge `AutomatePainCard`, Memory blocker, Briefing `decision_trigger`) at least once and generated their first Agent Skill.
@@ -217,7 +217,7 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 
 **Revenue Indicators (for product/marketing)**
 - Free → $49 Diagnostic conversion: 5-10% in first 30 days
-- Free → $9/mo Edge Pro conversion: 15-25% by day 30 (higher among Memory Web active users)
+- Free → $29/mo Edge Pro conversion: 15-25% by day 30 (higher among Memory Web active users)
 - Bundle ($69) attach rate: ~30% of Diagnostic buyers
 - Net revenue retention on Edge Pro: target 110%+ via expansion to add-ons
 
@@ -243,7 +243,7 @@ Use these outcomes as proof points in copy:
 - **"Anchored to:" promise** — every Briefing segment can prove its relevance with a specific profile fact
 - **"Bans persist forever"** — semantic, not keyword; signature-keyed so feedback survives daily lens regeneration
 - **"3-minute audio briefing"** — concrete, time-boxed, measurable
-- **"Edge Pro $9/month"** — anchor pricing in copy; cheaper than a single coffee per week, cheaper than any AI tool subscription that already lives in the leader's stack
+- **"Edge Pro $29/month"** — anchor pricing in copy; less than a monthly SaaS tool that doesn't know your context; cheaper than a single consulting hour
 - **Earliest "WOW" moment** — accept seed beats → first Briefing audio plays → leader says "this is actually about me" within first 24h
 - **Strongest retention signal** — first Bookmark tap; correlates with continued usage and Pro upgrade
 

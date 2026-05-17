@@ -1,7 +1,7 @@
 # CTRL & Mindmaker Master Messaging & FAQ
 *Core Source of Truth for Product Marketing, Sales, Content, and Outbound*
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
 ---
 
@@ -62,7 +62,7 @@ We give CTRL away free for the core experience (Memory Web, Context Export, basi
 
 **The CTRL stack at a glance (today):**
 - React 18 + TypeScript + Vite + Tailwind + shadcn/ui front-end. Desktop ships a unified desktop-native shell (sticky top bar + optional right rail + Cmd/Ctrl+K Command Palette) instead of stretched mobile markup.
-- Supabase backend: PostgreSQL with pgvector + pgcrypto + pg_cron, **74 edge functions** (Deno, incl. `generate-skill-export`), **51 React hooks**, **98 migrations** applied
+- Supabase backend: PostgreSQL with pgvector + pgcrypto + pg_cron, **74 edge functions** (Deno, incl. `generate-skill-export`), **53 React hooks**, **99 migrations** applied
 - AI: Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback, OpenAI Whisper for voice, ElevenLabs for audio, OpenAI `text-embedding-3-small` for the briefing pipeline
 - Payments: Stripe (signature-verified, idempotent webhooks)
 - Email: Resend
@@ -96,7 +96,7 @@ One decision. One trade-off analysis. One commitment. Working systems and a 90-d
 | Full Diagnostic | $49 one-time | Leaders who want a one-shot deep audit |
 | Deep Context Upgrade | $29 one-time | Pre-meeting / strategy sprint prep |
 | Diagnostic + Deep Context Bundle | $69 one-time (saves $10) | Default upsell after Memory Web is built |
-| Edge Pro | $9/month | Active leaders who treat AI as part of weekly cadence (unlimited Edge artifacts, all 7 briefing types, email delivery, Agent Skill Builder, Custom Voice Export) |
+| Edge Pro | $29/month | Active leaders who treat AI as part of weekly cadence (unlimited Edge artifacts, all 7 briefing types, email delivery, Agent Skill Builder, Custom Voice Export) |
 | Mindmaker Enterprise Sprint | $15K-$50K | Exec teams |
 | Mindmaker Portfolio Engagement | $5K-$25K | VC / PE / consulting partners |
 
@@ -141,4 +141,4 @@ A: It is the third surface on `/context`, alongside Context Export and Custom Vo
 A: Three reasons. (1) The Three Honest Tests triage gate refuses to generate a skill when the input is really a Memory Web fact, a Custom Instruction, or a Saved Style — it routes the leader to the right surface instead. Most tools generate junk; CTRL refuses. (2) The output is agentskills.io-compliant, not a saved prompt — real agent infrastructure that works in Claude Code, Claude.ai, and Cursor. (3) Pain-anchored entry points: every blocker on Edge, every Memory Web blocker card, every Briefing decision-trigger segment has a one-tap zap into the Skill Builder pre-seeded with that pain. Discovery is built into the pages where the pain shows up.
 
 **Q: Where does Skill Builder fit in the Edge Pro upsell?**
-A: Edge Pro at $9/month already unlocked unlimited Edge artifacts, all 7 briefing types, email delivery, and Custom Voice Export. v5.2 added unlimited Agent Skill Builder generation to the same $9/month — no price change. The Pro tier is now the obvious purchase for any leader who runs the same weekly rituals (board updates, hiring syncs, RFP triage, investor updates).
+A: Edge Pro ($29/month) unlocks unlimited Edge artifacts, all 7 briefing types, email delivery, Custom Voice Export, and unlimited Agent Skill Builder generation. The price was standardized to $29/month in a post-v5.2 update (was showing inconsistently as $9 in one UI surface and $29 in another). The Pro tier is now the obvious purchase for any leader who runs the same weekly rituals (board updates, hiring syncs, RFP triage, investor updates).

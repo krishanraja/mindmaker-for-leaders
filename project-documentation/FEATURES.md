@@ -2,7 +2,7 @@
 
 Complete feature inventory across all three CTRL tools.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
 > **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
 
@@ -11,8 +11,8 @@ Complete feature inventory across all three CTRL tools.
 ## Repo at a glance (verified 2026-05-13)
 
 - **74 Supabase edge functions** (Deno runtime), grouped: 7 briefing, 5 memory, 5 AI generation, 4 billing, 6 diagnostic, 8 email, 9 enrichment, 11 leadership/missions/observability/voice, 1 skill builder (`generate-skill-export`), plus shared modules
-- **51 React hooks** under `src/hooks/` (added in v5.2: `useSkillExport`, `useUserPains`, `useRevealOnMount`)
-- **98 PostgreSQL migrations** applied to remote (added in v5.2: `20260508000000_create_skill_exports.sql`)
+- **53 React hooks** under `src/hooks/` (added in v5.2: `useSkillExport`, `useUserPains`, `useRevealOnMount`; added post-launch: `useGeneratedArtifacts`, `useProfileBasics`)
+- **99 PostgreSQL migrations** applied to remote (added in v5.2: `20260508000000_create_skill_exports.sql`; post-launch: `20260513000000_generated_artifacts.sql`)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Desktop UI redesign shipped** (PR #104, Phase 8): unified desktop-native shell — sticky top bar with page eyebrow + title + actions, optional right rail for context, Cmd/Ctrl+K Command Palette across all authenticated routes. No more stretched mobile markup on desktop.
@@ -212,7 +212,7 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 - Feedback loops
 - Limited artifact previews (samples only)
 
-**Edge Pro** ($9/month, Stripe subscription):
+**Edge Pro** ($29/month, Stripe subscription):
 - Unlimited artifact generation
 - Email delivery via `deliver-edge-artifact`
 - All capability types
@@ -221,8 +221,9 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 - Custom Voice Export (`generate-custom-export`)
 - Subscription management UI via `create-billing-portal-session`
 - Stripe webhook idempotency table (`stripe_events_processed`) prevents double-charges (Audit Week 1)
+- **Personalized paywall sample**: EdgePaywall prepends a one-liner with the leader's company name ("Board memo for Acme, Q2") when company name is captured; falls back to generic sample otherwise
 
-**Sales Anchor — Edge Pro**: "$9/month. Less than a coffee a week. Generates board memos, strategy docs, and meeting agendas in your register, on demand. Skip the blank page entirely."
+**Sales Anchor — Edge Pro**: "$29/month. Generates board memos, strategy docs, and meeting agendas in your register, on demand. Skip the blank page entirely."
 
 ---
 
@@ -400,9 +401,20 @@ Voice-first context extraction system that builds a persistent knowledge base ab
 - `VoiceMemoryCapture.tsx`, `PrivacyControlsPanel.tsx`, `ExportImportPanel.tsx`
 - `MemoryErrorBoundary.tsx`
 
+**Library Tab** (`LibraryTab.tsx`, post-launch phase C)
+
+Generated artifacts (Agent Skills, drafts, frameworks) now persist after the preview sheet is closed. A "Library" tab on the Memory Center page (`/memory`) surfaces them grouped by kind. Each row shows the artifact name, kind, and creation date; row tap deep-links back to the preview sheet. Falls back gracefully (empty Library state) if the `generated_artifacts` migration has not been applied.
+
+**Table**: `generated_artifacts` (added `20260513000000_generated_artifacts.sql`)
+- `id` (PK), `user_id` (FK auth.users, ON DELETE CASCADE), `kind` (TEXT: skill / draft / framework), `title` (TEXT), `body` (TEXT), `created_at`
+- RLS: owner-read, owner-insert.
+
+**Hook**: `useGeneratedArtifacts.ts` — read/refetch/delete hook, pattern-matched to `useUserPains`.
+
 ### Hooks
 - `useMemoryQueries.ts`: React Query integration for memory CRUD
 - `useUserMemory.ts`: Memory state management
+- `useGeneratedArtifacts.ts`: Read/refetch/delete for the Library tab
 
 ---
 
@@ -412,7 +424,7 @@ Voice-first context extraction system that builds a persistent knowledge base ab
 
 The headline differentiator: export your Memory Web as formatted context to any AI tool. One click to make ChatGPT, Claude, Gemini, Cursor, or any LLM instantly personalized.
 
-**Page**: `/context-export` (auth required)
+**Page**: `/context` (auth required)
 
 ### Export Formats (6)
 
@@ -513,8 +525,9 @@ The seed flows: entry point → `useNavigate('/context', { state: { skillSeed } 
 
 ### The SkillCaptureSheet (mobile bottom sheet / desktop dialog)
 
-- Voice mode (default when no seed): up to 5 minutes of recording, OpenAI Whisper transcript, optional review/edit before submit
-- Text mode (default when arriving with a seed): pre-filled scaffold built from the seed text
+- **Voice mode**: default on mobile (with or without seed) and when no seed is provided on desktop. Up to 5 minutes of recording, OpenAI Whisper transcript, optional review/edit before submit.
+- **Text mode**: default on desktop when arriving with a seed. Two labeled fields ("How you handle it today" / "What output you want") stitched into the same LLM payload as the bracket-scaffold approach, without the [placeholder] scaffolding the leader had to remove.
+- Voice/text segmented control at the top of the sheet lets users switch modes at any time.
 - Pain picker chip row when no seed is provided (pulls top 5 from `useUserPains`)
 - Curated example chips fallback when the leader has no declared pains yet (Monday board update, Weekly hiring sync, RFP triage, Investor update)
 - 20-character minimum on the description
@@ -1343,7 +1356,7 @@ A condensed list of one-liners pullable for outbound. Each tied to a real shippe
 - **Decision Advisor**: "Ask a hard question. Get an answer that already knows your context."
 - **Meeting Prep**: "Walk in briefed by an AI that knows your team, your priorities, and your last decision."
 - **Diagnostic**: "10 minutes. Six dimensions. The questions your board will ask you. $49."
-- **Edge Pro**: "$9/month. Less than a coffee. More leverage than your last consulting hour. Unlimited Agent Skills, all 7 briefing types, board memos in your register."
+- **Edge Pro**: "$29/month. Unlimited Agent Skills, all 7 briefing types, board memos in your register. More leverage than your last consulting hour."
 - **Privacy**: "No Slack. No email. No calendar. You talk to it. That's the whole connection."
 - **Auditable AI**: "Every Briefing segment shows the profile fact that earned it the slot. No black box."
 - **Hardened production**: "6 audit weeks shipped. Stripe sig + idempotency. End-to-end deletion. Structured logging. E2E tests."

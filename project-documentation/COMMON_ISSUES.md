@@ -2,9 +2,9 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-05-17
 
-> **Status**: Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath."
+> **Status**: Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. Phase 8 and post-launch Phase 9 (A-E) issues added at the bottom under "Audit Phase Aftermath." Verified 2026-05-17: no new open regressions from phases A-E; pricing split ($9 vs $29) resolved in Phase A via billing.ts single-source constant.
 
 ---
 

@@ -1,6 +1,6 @@
 # Ideal Customer Profile
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
 ---
 
@@ -187,4 +187,4 @@ When prospecting, scoring fit, or writing copy:
 - **Disqualifier**: Asks about Slack/email/calendar integration → not us.
 - **Deal-blocker**: Requires SOC 2 / vendor security review for an individual purchase → wrong motion (drive them to enterprise/Sprint).
 - **Channel sequencing**: LinkedIn DM → email → optional follow-up post that demonstrates the auditable-relevance angle (screenshot of "Anchored to:" chip).
-- **Pricing anchors to use in copy**: Free to start. $49 for the full Diagnostic. $9/month for Edge Pro. Bundle saves $10.
+- **Pricing anchors to use in copy**: Free to start. $49 for the full Diagnostic. $29/month for Edge Pro. Bundle saves $10.

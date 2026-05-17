@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-17
 
 ---
 
@@ -452,8 +452,60 @@ New hook: **`useUserPains`** returns the top N blockers + active decisions from 
 
 - 4 PRs merged: #103 (Skill Builder), #104 (desktop redesign), #105 (pain-anchored entry points), #106 (contrast + scroll polish)
 - 1 new edge function (`generate-skill-export`, 4 internal files, 1035 LOC)
-- 3 new hooks (`useSkillExport`, `useUserPains`, `useRevealOnMount`) — total now 51
-- 1 new migration (`20260508000000_create_skill_exports.sql`) — total now 98
+- 3 new hooks (`useSkillExport`, `useUserPains`, `useRevealOnMount`) — total at Phase 8 close: 51
+- 1 new migration (`20260508000000_create_skill_exports.sql`) — total at Phase 8 close: 98
 - 5 new components in `src/components/edge/` for the Skill Builder UX + 1 in `src/components/memory-web/`
 - Desktop now feels like a desktop product, not stretched mobile markup
-- Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change.
+- Edge Pro upsell strengthened materially: the same subscription now includes unlimited Agent Skill Builder generation alongside Edge artifacts + 7 briefing types + Custom Voice Export.
+
+---
+
+## Phase 9: Post-Launch UX Polish (May 2026, same sprint)
+
+Five sequential sub-phases shipping on 2026-05-13 after the Phase 8 doc refresh.
+
+### Phase A — Copy, Affordances, Pricing Single-Source
+
+- `src/constants/billing.ts` created as the single source of truth for Edge Pro price. Price standardized to **$29/month** across `EdgePaywall` and `EdgeProTab` (was split: paywall showed $29, Settings showed $9).
+- `AutomatePainCard` title changed to "Automate a recurring pain" (outcome-oriented).
+- `EdgeView` quick-action labels updated to outcome-oriented phrasing.
+- `SkillCaptureSheet` + `CustomBriefingSheet`: voice/text segmented control promoted to the top of the form; voice no longer a muted footer link.
+- `BriefingSheet`: first-time voice-commands hint with localStorage dismissal.
+- Settings: clearer desktop tab labels (Work context, Briefing interests, Briefing tone & rules, Leadership manifesto).
+- `AccountTab`: "Replay setup tour" button to recover dismissed onboarding banner.
+
+### Phase B — Skill Builder UX Rebuild
+
+- `AutomatePainCard` now renders above the strengths/gaps profile on Edge view (CEO priority ordering: "what can this do for me?" before "here's your profile").
+- Empty state when no pains are declared: dashed "Voice a recurring pain" card that navigates to `/context` with `openSkillBuilder=true`.
+- `SkillCaptureSheet`: on mobile, voice is now the default input mode even for seeded entries. Desktop with a seed stays text-default.
+- `SkillCaptureSheet`: seeded entries now use two labeled fields ("How you handle it today" / "What output you want") instead of a bracket-scaffold textarea, so the leader fills in steps rather than removing [placeholders].
+
+### Phase C — Persistence + Library Tab
+
+- New `generated_artifacts` table (migration `20260513000000_generated_artifacts.sql`). Stores markdown body + kind discriminator for every AI-generated output. RLS scoped to owner.
+- New `useGeneratedArtifacts` hook — read/refetch/delete pattern.
+- New `LibraryTab.tsx` — surfaces generated artifacts on `/memory`, grouped by kind. Falls back to empty Library state if migration not applied.
+- Total hooks after Phase C: 52. Total migrations after Phase C: 99.
+
+### Phase D — Action Empty States, Subtitles, Compliance Link
+
+- `BriefingPage`: "Tell us about yourself first" empty state now has a "Pick 3 interests now" button that opens `InterestsSheet` (mobile + desktop).
+- `MemoryCenter` (mobile): added subtitle "Browse and edit every fact CTRL knows about you."
+- `EdgeView` header: subtitle updated to "Drafts, frameworks, and skills built from your Memory Web."
+- `AccountTab`: "Security & compliance" row added, links to the `/compliance` page.
+
+### Phase E — Personalized Paywall Sample
+
+- New `useProfileBasics` hook reads leader's `company_name` + `role` from `user_memory`.
+- `EdgePaywall` prepends a personalized one-liner ("Board memo for Acme, Q2") when company name is captured. Falls back to generic sample when company name is not yet set.
+- Total hooks after Phase E: 53.
+
+### Outcomes from Phase 9
+
+- 5 sub-phases (A-E) shipped 2026-05-13
+- 2 new hooks (`useGeneratedArtifacts`, `useProfileBasics`) — total hooks: 53
+- 1 new migration (`20260513000000_generated_artifacts.sql`) — total migrations: 99
+- Edge Pro price standardized to $29/month (single-source via `billing.ts`)
+- Library tab ships a permanent artifact store on `/memory`
+- Paywall personalization closes the gap between "generic sample" and "your actual artifact"
