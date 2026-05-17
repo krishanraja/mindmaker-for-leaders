@@ -1,8 +1,14 @@
 /**
  * ContextExport Page - Multi-step wizard
- * Step 1: "What do you need?" - preset or voice-driven custom export
- * Step 2: "Where will you use it?" - pick AI platform
+ * Step 1: "What do you need?" - voice-led workflow capture or preset
+ * Step 2: "Where will you use it?" - pick AI platform (presets only)
  * Step 3: "Your export is ready" - copy/download + platform-specific guide
+ *
+ * The voice-led entry opens SkillCaptureSheet (which owns its own voice
+ * capture). On submit, the skill triage decides the artifact:
+ *   - skill_success → SkillPreviewSheet with downloadable ZIP
+ *   - any other outcome → fall back to generate-custom-export and surface
+ *     the result as a one-off markdown context blob in Step 3
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -40,6 +46,7 @@ import {
   User,
   Clipboard,
   FolderOpen,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDevice } from '@/hooks/useDevice';
@@ -47,19 +54,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMemoryExport } from '@/hooks/useMemoryExport';
 import { useExportRecommendations } from '@/hooks/useExportRecommendations';
 import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
-import { useVoice } from '@/hooks/useVoice';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { PLATFORM_GUIDES } from '@/lib/platform-guides';
 import { ModelRecommendationCard } from '@/components/export/ModelRecommendationCard';
-import { TranscriptReviewPanel } from '@/components/voice/TranscriptReviewPanel';
-import { SkillExportCard } from '@/components/memory-web/SkillExportCard';
 import { SkillCaptureSheet } from '@/components/edge/SkillCaptureSheet';
 import { SkillPreviewSheet } from '@/components/edge/SkillPreviewSheet';
 import { useSkillExport } from '@/hooks/useSkillExport';
-import { useToast } from '@/hooks/use-toast';
 import type { ExportFormat, ExportUseCase } from '@/types/memory';
 import type { ExportRecommendation } from '@/types/edge';
 import { isSkillSuccess, type SkillSeed } from '@/types/skill';
@@ -132,7 +135,6 @@ export default function ContextExport() {
   const { recommendations, hasRecommendations } = useExportRecommendations();
   const { hasAccess: isPaidUser, subscribe } = useEdgeSubscription();
   const { userId, email } = useAuth();
-  const { toast } = useToast();
   const skillExport = useSkillExport();
 
   const location = useLocation();
@@ -172,46 +174,18 @@ export default function ContextExport() {
   const [direction, setDirection] = useState(1);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat | null>(null);
   const [selectedUseCase, setSelectedUseCase] = useState<ExportUseCase | null>(null);
+  // isCustomMode now indicates "voice-led context fallback": the user spoke a
+  // workflow, triage said it isn't a skill, so we routed it through
+  // generate-custom-export and landed on Step 3 with a markdown blob.
   const [isCustomMode, setIsCustomMode] = useState(false);
-  const [customTranscript, setCustomTranscript] = useState<string | null>(null);
+  // When voice-led capture falls back to context blob, this holds the triage
+  // reasoning so we can show the user WHY their voice clip didn't become a
+  // skill (e.g. "This is more of a one-off task than a repeatable workflow").
+  const [triageBanner, setTriageBanner] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<'positive' | 'negative' | null>(null);
   const [showRawContent, setShowRawContent] = useState(false);
-  const [editExportReviewText, setEditExportReviewText] = useState('');
-
-  const handleVoiceTranscriptReady = useCallback((text: string) => {
-    setCustomTranscript(text);
-  }, []);
-
-  // Voice recording for custom export
-  const {
-    isRecording,
-    isProcessing: isTranscribing,
-    duration,
-    error: voiceError,
-    browserCaptionPreview,
-    pendingReview,
-    confirmPendingTranscript,
-    dismissPendingReview,
-    startRecording,
-    stopRecording,
-    resetRecording,
-  } = useVoice({
-    maxDuration: 60,
-    deferTranscriptCallback: true,
-    onTranscript: handleVoiceTranscriptReady,
-  });
-
-  useEffect(() => {
-    if (pendingReview) {
-      setEditExportReviewText(pendingReview.transcript);
-    }
-  }, [pendingReview]);
-
-  const handleConfirmExportVoiceReview = useCallback(async () => {
-    await confirmPendingTranscript(editExportReviewText);
-  }, [confirmPendingTranscript, editExportReviewText]);
 
   const goToStep = useCallback((target: WizardStep) => {
     setDirection(target > step ? 1 : -1);
@@ -221,28 +195,17 @@ export default function ContextExport() {
   const handleUseCaseSelect = useCallback((useCase: ExportUseCase) => {
     setSelectedUseCase(useCase);
     setIsCustomMode(false);
-    setCustomTranscript(null);
+    setTriageBanner(null);
     goToStep(2);
   }, [goToStep]);
 
-  const handleCustomVoiceConfirm = useCallback(() => {
-    if (customTranscript) {
-      setIsCustomMode(true);
-      setSelectedUseCase(null);
-      goToStep(2);
-    }
-  }, [customTranscript, goToStep]);
-
   const handleFormatSelect = useCallback((format: ExportFormat) => {
     setSelectedFormat(format);
-    // Auto-generate and advance
-    if (isCustomMode && customTranscript) {
-      generateCustomExport(customTranscript, format);
-    } else if (selectedUseCase) {
+    if (selectedUseCase) {
       generateExport(format, selectedUseCase);
     }
     goToStep(3);
-  }, [isCustomMode, customTranscript, selectedUseCase, generateCustomExport, generateExport, goToStep]);
+  }, [selectedUseCase, generateExport, goToStep]);
 
   const handleCopy = useCallback(async () => {
     if (!exportResult?.content) return;
@@ -303,7 +266,7 @@ export default function ContextExport() {
         feedback_text: JSON.stringify({
           type: 'export_rating',
           export_target: selectedFormat,
-          use_case: isCustomMode ? 'custom_voice' : selectedUseCase,
+          use_case: isCustomMode ? 'voice_context' : selectedUseCase,
           rating,
         }),
         page_context: 'context-export-wizard',
@@ -331,26 +294,26 @@ export default function ContextExport() {
       return;
     }
 
-    // Triage routed elsewhere - this isn't a skill. Tell the user where it
-    // belongs so they can add it to the right surface manually.
-    const routingCopy: Record<string, { title: string; description: string }> = {
-      custom_instruction: {
-        title: 'Better as a Custom Instruction',
-        description: response.triage.reasoning || 'This sounds like a universal preference, not a repeatable workflow. Add it to your AI tool\'s custom instructions.',
-      },
-      memory_fact: {
-        title: 'Better as a Memory Web fact',
-        description: response.triage.reasoning || 'This is context about you, not a workflow. Capture it in your Memory Web.',
-      },
-      saved_style: {
-        title: 'Better as a saved style',
-        description: response.triage.reasoning || 'This sounds like a tone preference. Save it as a writing style instead.',
-      },
+    // Triage rejected the skill - the voice clip is a one-off task, a
+    // preference, or a memory fact rather than a repeatable workflow. Rescue
+    // the transcript by routing it through generate-custom-export and landing
+    // the user on Step 3 with a markdown context blob they can paste anywhere.
+    const routingPrefix: Record<string, string> = {
+      custom_instruction: "This is more of a universal preference than a repeatable workflow - here's a markdown context blob you can paste into any AI's custom instructions.",
+      memory_fact: "This reads as context about you, not a workflow - here's a markdown blob you can paste into any AI to brief it on you.",
+      saved_style: "This sounds like a tone or style preference - here's a markdown blob you can paste into any AI to anchor its voice.",
     };
-    const routed = routingCopy[response.triage.result] || routingCopy.memory_fact;
-    toast({ title: routed.title, description: routed.description });
+    const prefix = routingPrefix[response.triage.result] || "This isn't a repeatable workflow - here's a markdown context blob you can paste into any AI.";
+    const reasoning = response.triage.reasoning ? ` ${response.triage.reasoning}` : '';
+    setTriageBanner(`${prefix}${reasoning}`);
+    setIsCustomMode(true);
+    setSelectedUseCase(null);
+    setSelectedFormat('markdown');
     setSkillCaptureOpen(false);
-  }, [skillExport, toast]);
+    setDirection(1);
+    setStep(3);
+    await generateCustomExport(transcript, 'markdown');
+  }, [skillExport, generateCustomExport]);
 
   const handleStartOver = useCallback(() => {
     setStep(1);
@@ -358,12 +321,11 @@ export default function ContextExport() {
     setSelectedFormat(null);
     setSelectedUseCase(null);
     setIsCustomMode(false);
-    setCustomTranscript(null);
+    setTriageBanner(null);
     setShowRawContent(false);
     setShowFeedback(false);
     setFeedbackSubmitted(null);
-    resetRecording();
-  }, [resetRecording]);
+  }, []);
 
   // ─── Step 1: What do you need? ──────────────────────────────────
   const step1Content = (
@@ -384,40 +346,28 @@ export default function ContextExport() {
         </p>
       </div>
 
-      {/* Agent Skill Builder entry point — promoted above the voice context
-          card because a triggered Skill is a more durable artifact than a
-          one-off context export. */}
-      <SkillExportCard
-        isPaidUser={isPaidUser}
-        onClick={handleOpenSkillCapture}
-        onUpgrade={async () => {
-          const url = await subscribe();
-          if (url) window.location.href = url;
-        }}
-      />
-
-      {/* Voice input card — produces a custom context.md export, NOT a skill.
-          (Skill creation lives in the card above.) */}
+      {/* Voice-led capture - the single entry point for both skill builder
+          and one-off context blobs. Opens SkillCaptureSheet (which owns voice
+          capture); on submit, triage decides whether the artifact is a
+          downloadable skill ZIP or a markdown context blob shown in Step 3. */}
       <div className={cn(
         'rounded-xl border p-4',
-        isPaidUser
-          ? 'border-accent/20 bg-accent/5'
-          : 'border-border bg-card'
+        isPaidUser ? 'border-accent/20 bg-accent/5' : 'border-border bg-card',
       )}>
         <div className="flex items-start gap-3">
           <div className={cn(
             'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
-            isPaidUser ? 'bg-accent/10' : 'bg-secondary'
+            isPaidUser ? 'bg-accent/10' : 'bg-secondary',
           )}>
             {isPaidUser ? (
-              <Mic className="h-5 w-5 text-accent" />
+              <Zap className="h-5 w-5 text-accent" />
             ) : (
               <Lock className="h-4 w-4 text-muted-foreground" />
             )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-foreground">Custom context export</span>
+              <span className="text-sm font-medium text-foreground">Describe a workflow</span>
               {!isPaidUser && (
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-accent/10 text-accent">
                   Pro
@@ -425,103 +375,18 @@ export default function ContextExport() {
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-              Describe a task and we'll generate a one-off context blob tailored to it (not a triggered skill).
+              Voice or type a task. We'll turn recurring workflows into a triggered Claude skill, and one-off tasks into a markdown context blob.
             </p>
 
             {isPaidUser ? (
-              <div className="mt-3">
-                {!isRecording && !isTranscribing && !customTranscript && !pendingReview && (
-                  <button
-                    onClick={startRecording}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-accent bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
-                  >
-                    <Mic className="h-4 w-4" />
-                    Start recording
-                  </button>
-                )}
-
-                {isRecording && (
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={stopRecording}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500/20 transition-colors"
-                      >
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                        Stop ({duration}s)
-                      </button>
-                    </div>
-                    {browserCaptionPreview ? (
-                      <p className="text-xs text-muted-foreground italic">
-                        Live caption (approx.): {browserCaptionPreview}
-                      </p>
-                    ) : null}
-                  </div>
-                )}
-
-                {isTranscribing && (
-                  <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 border border-accent/30 border-t-accent rounded-full animate-spin" />
-                      Transcribing...
-                    </div>
-                    {browserCaptionPreview ? (
-                      <p className="text-xs italic">
-                        Browser preview (may differ): {browserCaptionPreview}
-                      </p>
-                    ) : null}
-                  </div>
-                )}
-
-                {pendingReview && !isRecording && !isTranscribing && (
-                  <TranscriptReviewPanel
-                    transcript={pendingReview.transcript}
-                    rawTranscript={pendingReview.rawTranscript}
-                    refined={pendingReview.refined}
-                    editedText={editExportReviewText}
-                    onEditedTextChange={setEditExportReviewText}
-                    onConfirm={handleConfirmExportVoiceReview}
-                    onDismiss={() => {
-                      dismissPendingReview();
-                      setCustomTranscript(null);
-                    }}
-                    confirmLabel="Use this transcript"
-                    className="mt-1"
-                  />
-                )}
-
-                {customTranscript && !pendingReview && (
-                  <div className="space-y-2">
-                    <div className="rounded-lg bg-secondary/50 border border-border p-3">
-                      <p className="text-xs text-foreground/80 leading-relaxed">
-                        "{customTranscript}"
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handleCustomVoiceConfirm}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-accent text-white hover:bg-accent/90 transition-colors"
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                        Continue
-                      </button>
-                      <button
-                        onClick={() => {
-                          setCustomTranscript(null);
-                          resetRecording();
-                        }}
-                        className="px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        Re-record
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {voiceError && (
-                  <p className="text-xs text-red-500 mt-1">{voiceError.message}</p>
-                )}
-              </div>
+              <button
+                onClick={handleOpenSkillCapture}
+                className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-accent bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+              >
+                <Mic className="h-4 w-4" />
+                Start with voice
+                <ArrowRight className="h-4 w-4" />
+              </button>
             ) : (
               <button
                 onClick={async () => {
@@ -676,7 +541,7 @@ export default function ContextExport() {
     >
       <div>
         <button
-          onClick={() => goToStep(2)}
+          onClick={() => goToStep(isCustomMode ? 1 : 2)}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -692,12 +557,26 @@ export default function ContextExport() {
         )}
       </div>
 
+      {/* Triage banner — surfaces only on voice-led runs that triage redirected
+          away from the skill flow. Explains WHY this came back as a one-off
+          context blob rather than a triggered skill. */}
+      {triageBanner && !isGenerating && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 flex items-start gap-2.5"
+        >
+          <Sparkles className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-foreground/80 leading-relaxed">{triageBanner}</p>
+        </motion.div>
+      )}
+
       {/* Loading state */}
       {isGenerating && (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
           <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
           <p className="text-sm text-muted-foreground">
-            {isCustomMode ? 'Creating your custom AI skill...' : 'Building your context...'}
+            {isCustomMode ? 'Building your context blob...' : 'Building your context...'}
           </p>
         </div>
       )}
@@ -943,16 +822,22 @@ export default function ContextExport() {
               const s = (i + 1) as WizardStep;
               const isActive = s === step;
               const isDone = s < step;
+              // Voice-led runs skip Step 2 (format picker) — render it as
+              // greyed-out "Skipped" rather than a clickable backstop.
+              const isSkipped = isCustomMode && s === 2;
+              const isClickable = !isSkipped && s < step;
               return (
                 <li key={label}>
                   <button
                     type="button"
-                    onClick={() => (s < step ? goToStep(s) : undefined)}
-                    disabled={s > step}
+                    onClick={() => (isClickable ? goToStep(s) : undefined)}
+                    disabled={!isClickable && !isActive}
                     className={cn(
                       'w-full flex items-center gap-3 px-2.5 py-2 rounded-md text-sm text-left transition-colors',
                       isActive
                         ? 'bg-accent/15 text-accent'
+                        : isSkipped
+                        ? 'text-muted-foreground/50 cursor-not-allowed line-through'
                         : isDone
                         ? 'text-foreground hover:bg-secondary/60'
                         : 'text-muted-foreground/60 cursor-not-allowed',
@@ -963,14 +848,16 @@ export default function ContextExport() {
                         'flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold flex-shrink-0',
                         isActive
                           ? 'bg-accent text-accent-foreground'
+                          : isSkipped
+                          ? 'bg-secondary/50 text-muted-foreground/50'
                           : isDone
                           ? 'bg-accent/30 text-accent'
                           : 'bg-secondary text-muted-foreground/60',
                       )}
                     >
-                      {isDone ? <Check className="h-3 w-3" /> : s}
+                      {isSkipped ? '-' : isDone ? <Check className="h-3 w-3" /> : s}
                     </span>
-                    <span className="flex-1">{label}</span>
+                    <span className="flex-1">{label}{isSkipped ? ' (skipped)' : ''}</span>
                   </button>
                 </li>
               );
@@ -987,14 +874,14 @@ export default function ContextExport() {
             <div className="flex items-start justify-between gap-2">
               <dt className="text-muted-foreground">Mode</dt>
               <dd className="text-foreground font-medium text-right">
-                {isCustomMode ? 'Custom (voice)' : selectedUseCase ? 'Preset' : '-'}
+                {isCustomMode ? 'Voice' : selectedUseCase ? 'Preset' : '-'}
               </dd>
             </div>
             <div className="flex items-start justify-between gap-2">
               <dt className="text-muted-foreground">Use case</dt>
               <dd className="text-foreground font-medium text-right">
                 {isCustomMode
-                  ? customTitle || 'Custom task'
+                  ? customTitle || 'Voice capture'
                   : USE_CASE_OPTIONS.find((o) => o.value === selectedUseCase)?.label || '-'}
               </dd>
             </div>
@@ -1022,7 +909,7 @@ export default function ContextExport() {
           </h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
             {step === 1
-              ? 'Pick a preset for one-click context, or describe a recurring workflow with voice to build a reusable AI skill.'
+              ? 'Describe a workflow with voice and we\'ll turn recurring ones into a Claude skill - or pick a preset for one-click context.'
               : step === 2
               ? 'Different tools want different shapes - ChatGPT prefers structured instructions, Cursor wants .cursorrules, Markdown works anywhere.'
               : 'Re-export anytime as your Memory Web grows - the context will get sharper.'}
@@ -1079,22 +966,28 @@ export default function ContextExport() {
             <h1 className="text-base font-semibold text-foreground">Export to AI</h1>
           </div>
           <div className="flex items-center gap-2">
-            {[1, 2, 3].map((s) => (
-              <button
-                key={s}
-                onClick={() => s < step ? goToStep(s as WizardStep) : undefined}
-                disabled={s > step}
-                className={cn(
-                  'h-2 rounded-full transition-all duration-300',
-                  s === step
-                    ? 'w-8 bg-accent'
-                    : s < step
-                    ? 'w-2 bg-accent/40 cursor-pointer hover:bg-accent/60'
-                    : 'w-2 bg-border'
-                )}
-                aria-label={`Step ${s}`}
-              />
-            ))}
+            {[1, 2, 3].map((s) => {
+              const isSkipped = isCustomMode && s === 2;
+              const isClickable = !isSkipped && s < step;
+              return (
+                <button
+                  key={s}
+                  onClick={() => isClickable ? goToStep(s as WizardStep) : undefined}
+                  disabled={!isClickable && s !== step}
+                  className={cn(
+                    'h-2 rounded-full transition-all duration-300',
+                    s === step
+                      ? 'w-8 bg-accent'
+                      : isSkipped
+                      ? 'w-2 bg-border/50 cursor-not-allowed'
+                      : isClickable
+                      ? 'w-2 bg-accent/40 cursor-pointer hover:bg-accent/60'
+                      : 'w-2 bg-border',
+                  )}
+                  aria-label={`Step ${s}${isSkipped ? ' (skipped)' : ''}`}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
