@@ -2,9 +2,9 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-24
 
-> **Verified counts (2026-05-13)**: 74 edge functions, 51 hooks, 98 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points).
+> **Verified counts (2026-05-24)**: 74 edge functions, 53 hooks, 99 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped, Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (UX polish + generated_artifacts persistence + Library tab + workflow consolidation).
 
 ---
 
@@ -73,8 +73,9 @@ src/
 │   │   ├── IntelligencePanel.tsx
 │   │   ├── RecentFactsFeed.tsx
 │   │   ├── PatternInsightCard.tsx
-│   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (Edge Pro gated) (v5.2)
 │   │   └── GettingSmarterBanner.tsx
+│   ├── library/               # Generated artifacts library (v5.3)
+│   │   └── LibraryTab.tsx         # Grouped-by-kind artifact list on /memory
 │   ├── edge/                  # Edge: Leadership Amplifier + Skill Builder UI
 │   │   ├── EdgeView.tsx           # Main Edge view (strengths/weaknesses/gaps)
 │   │   ├── EdgeProfileCard.tsx    # Profile summary card
@@ -87,7 +88,7 @@ src/
 │   │   ├── ArtifactPreview.tsx    # Generated artifact display
 │   │   ├── FeedbackButtons.tsx    # Strength/weakness feedback
 │   │   ├── SendToInboxButton.tsx  # Email delivery
-│   │   ├── AutomatePainCard.tsx   # Skill Builder pain-anchored entry chip row (v5.2)
+│   │   ├── AutomatePainCard.tsx   # Skill Builder voice-first CTA on Edge view (v5.2; chip row removed v5.3)
 │   │   ├── SkillCaptureSheet.tsx  # Voice/text Skill Builder capture (bottom sheet on mobile, dialog on desktop) (v5.2)
 │   │   ├── SkillPreviewSheet.tsx  # Generated skill preview + ZIP download + install guide (v5.2)
 │   │   ├── SkillQualityGate.tsx   # Quality checklist display (v5.2)
@@ -144,7 +145,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 51 custom hooks
+├── hooks/                     # 53 custom hooks
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -156,6 +157,8 @@ src/
 │   ├── useSkillExport.ts      # Skill Builder pipeline (v5.2) — wraps generate-skill-export, decodes base64 ZIP into a Blob
 │   ├── useUserPains.ts        # Top blockers + active decisions, drives pain-anchored entry points (v5.2)
 │   ├── useRevealOnMount.ts    # Smooth reveal helper for below-the-fold components (v5.2)
+│   ├── useGeneratedArtifacts.ts # Read/refetch/delete generated_artifacts rows for Library tab (v5.3)
+│   ├── useProfileBasics.ts    # Reads company_name + role from user_memory for EdgePaywall personalization (v5.3)
 │   ├── useMemoryQueries.ts    # Memory Center queries
 │   ├── useMemoryWeb.ts        # Memory Web dashboard data
 │   ├── useMemoryExport.ts     # Context export logic
@@ -740,6 +743,17 @@ skill_exports                           -- Skill Builder log (Phase 8)
   - One row per generation attempt, including failed-triage cases
   - RLS: owner-read + owner-insert
   - Indexed on user_id and created_at DESC
+
+generated_artifacts                     -- Persisted AI outputs for Library tab (Phase 9)
+├── id (PK, uuid), user_id (FK auth.users, ON DELETE CASCADE)
+├── kind ('skill' | 'draft' | 'export' | 'framework' | 'briefing_custom')
+├── name (TEXT), body (TEXT) — full markdown content
+├── metadata (JSONB) — kind-specific extras (zip_filename, briefing_type, etc.)
+└── created_at (TIMESTAMPTZ)
+  - Written by generate-skill-export (kind='skill') and edge-generate (kind='draft' or 'framework')
+  - RLS: owner-read + owner-insert + owner-delete
+  - Indexed on (user_id, created_at DESC) and (user_id, kind)
+  - Migration: 20260513000000_generated_artifacts.sql
 ```
 
 **PostgreSQL Extensions (required):**
@@ -751,7 +765,7 @@ skill_exports                           -- Skill Builder log (Phase 8)
 
 **Location**: `supabase/functions/`
 
-**Total**: 74 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline.
+**Total**: 74 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 updated `generate-skill-export` and `edge-generate` to write rows to `generated_artifacts` on success.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)
@@ -867,7 +881,9 @@ skill_exports                           -- Skill Builder log (Phase 8)
     - `quality-gate.ts` — deterministic validator: 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, no bare MUST/NEVER, valid name format. Returns `{ checks: [...], summary: { passed, total } }`. Only the name-format check is a hard fail; everything else is advisory and surfaced to the user.
     - `zip.ts` — agentskills.io-compliant packager. Single root folder, `SKILL.md` + `references/` + `01-test-prompts.txt` + `02-maintenance-card.txt` + `03-install-guide.txt`. Returns base64 + byte length.
 
-    Triage routing: when the input is really a Memory Fact / Custom Instruction / Saved Style, the function returns `{ triage: { passed: false, result, reasoning } }` (200 OK, no skill). The attempt is still logged in `skill_exports` with `triage_result` set accordingly so we can learn from misses without re-running the LLM.
+    Triage routing: when the input is really a Memory Fact / Custom Instruction / Saved Style, the function returns `{ triage: { passed: false, result, reasoning } }` (200 OK, no skill). The attempt is still logged in `skill_exports` with `triage_result` set accordingly so we can learn from misses without re-running the LLM. Since Phase 9 (v5.3), the frontend auto-rescues triage-rejected transcripts by calling `generate-custom-export` and displaying the resulting markdown context blob in Step 3 with the triage reasoning as an explanatory banner.
+
+    Phase 9 also added: on success, `generate-skill-export` inserts a `kind='skill'` row into `generated_artifacts` so the artifact appears in the `/memory` Library tab.
 
 **Shared Modules** (`supabase/functions/_shared/`):
 - `context-builder.ts` / `memory-context-builder.ts` — LLM context construction
@@ -1207,7 +1223,7 @@ All user-facing tables have RLS policies:
 ### Backend
 
 **Edge Functions**: Deployed via Supabase CLI
-**Database Migrations**: `supabase/migrations/`, applied via `supabase db push`
+**Database Migrations**: `supabase/migrations/` — 99 applied. Do NOT use `supabase db push` (local migration history is out of sync with remote). Run SQL directly via the Supabase Management API. See `CLAUDE.md` for the exact command.
 
 ### Environment Variables
 

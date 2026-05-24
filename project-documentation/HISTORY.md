@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-24
 
 ---
 
@@ -234,6 +234,7 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 5.0 | Apr 2026 | Briefing v2: evidence-based relevance lens + pgvector + four-part learning loop (Interests, industry seeds, explicit kill, nightly aggregator) |
 | 5.1 | Apr 2026 | Phase 7 — six audit-week tracks shipped: revenue path, data path, UX, reliability, observability, cleanup. Hardened production platform. |
 | 5.2 | May 2026 | Phase 8 — Agent Skill Builder (voice-to-Claude-Skill pipeline, Edge Pro), world-class desktop UI redesign with Command Palette, pain-anchored Skill entry points on Edge / Memory / Briefing. |
+| 5.3 | May 2026 | Phase 9 — UX polish (copy, voice/text controls, install guide leading with Claude.ai), generated artifact persistence + Library tab on `/memory`, workflow consolidation (SkillExportCard deleted, `/context` unified entry). |
 
 ---
 
@@ -457,3 +458,71 @@ New hook: **`useUserPains`** returns the top N blockers + active decisions from 
 - 5 new components in `src/components/edge/` for the Skill Builder UX + 1 in `src/components/memory-web/`
 - Desktop now feels like a desktop product, not stretched mobile markup
 - Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change.
+
+---
+
+## Phase 9: UX Polish, Persistence, and Workflow Consolidation (May 2026)
+
+### Context
+
+Phase 8 shipped the Skill Builder pipeline and desktop shell. Phase 9 addressed three gaps surfaced in the first two weeks of use: (1) generated artifacts (skills, drafts, frameworks) vanished when the preview sheet closed — leaders had no way to find them again; (2) the Context Export flow had two redundant entry points for skill capture that confused new users; (3) several copy and affordance choices were sub-optimal for the CEO-on-mobile persona (voice was buried, outcome language was vague, the paywall sample was generic even when the leader's company name was known).
+
+Phase 9 shipped in two PRs: a five-phase UX overhaul (PR #108) and a workflow consolidation (PR #110).
+
+### Sub-track 1 — UX Polish (PR #108, merged 2026-05-14)
+
+Five sequential phases:
+
+**Phase A — Copy, affordances, pricing single-source**
+- `AutomatePainCard`: outcome-oriented title ("Automate a recurring pain"), bumped subline size, persistent chip arrows.
+- Edge view quick actions: outcome-oriented labels ("Draft an email or memo", "Build a decision framework").
+- `SkillCaptureSheet` + `CustomBriefingSheet`: voice/text segmented control promoted to the top of the form; voice is no longer a muted footer link.
+- `BriefingSheet`: first-time voice-commands hint ("Try saying 'pause', 'next', or 'faster'") with `localStorage` dismissal.
+- Settings: clearer desktop tab labels (Work context, Briefing interests, Briefing tone and rules, Leadership manifesto).
+- Mobile Memory dashboard idle copy: "Add a fact about you, your team, or your work".
+- `AccountTab`: "Replay setup tour" button to recover the dismissed onboarding banner.
+
+**Phase B — Skill Builder rebuild**
+- `EdgeView`: `AutomatePainCard` promoted above the strengths/gaps profile (what the CEO wants first).
+- `AutomatePainCard`: fallback "Voice a recurring pain" dashed card when leader has no declared pains; taps to `/context` with `openSkillBuilder=true`.
+- `SkillCaptureSheet`: mobile defaults to voice mode even for seeded entries; desktop with a seed keeps text-default.
+- `SkillCaptureSheet`: replaced bracket-scaffold textarea with two labeled fields ("How you handle it today" / "What output you want") for seeded entries.
+- `SkillCaptureSheet`: "What you'll get" preview line inside seed banner sets expectation before the leader fills fields.
+- `SkillInstallGuide`: leads with Claude.ai path (3 inline steps + deeplink to claude.ai/settings/capabilities). Claude Code and Cursor collapsed under "Other install options".
+
+**Phase C — Persistence + Library tab**
+- New `generated_artifacts` table (migration `20260513000000_generated_artifacts.sql`): unified store for skills, drafts, exports, frameworks, custom briefings. RLS scoped to user.
+- `generate-skill-export` now writes a `kind='skill'` row on success.
+- `edge-generate` now writes a `kind='draft'` or `kind='framework'` row on success.
+- New `useGeneratedArtifacts.ts` hook: read/refetch/delete.
+- New `LibraryTab.tsx` (`src/components/library/`): grouped-by-kind list with inline markdown preview, copy, and remove.
+- `MemoryCenter`: new Library tab (4th tab) with count badge.
+- `SkillPreviewSheet`: "Saved to Library" pill in the header.
+
+**Phase D — Action empty states, subtitles, compliance link**
+- `BriefingPage`: empty state now has a "Pick 3 interests now" button opening `InterestsSheet` directly.
+- `MemoryCenter` (mobile): subtitle "Browse and edit every fact CTRL knows about you".
+- `EdgeView` header: subtitle spells out what Edge produces ("Drafts, frameworks, and skills built from your Memory Web.").
+- `AccountTab`: "Security and compliance" row links to the existing `/compliance` page (previously only reachable via deep link).
+
+**Phase E — Personalized paywall sample**
+- New `useProfileBasics.ts` hook: reads `company_name` and `role` from `user_memory` with common fact-key aliases.
+- `EdgePaywall`: personalized one-liner above blurred sample ("Board memo for Acme, Q2") when company name is available. Falls back silently to generic sample.
+
+### Sub-track 2 — Workflow Consolidation (PR #110, merged 2026-05-17)
+
+- **`SkillExportCard` deleted**: no remaining consumers. The `/context` Step 1 is now a single "Describe a workflow" entry that opens `SkillCaptureSheet`. All voice capture moves into the sheet.
+- **`AutomatePainCard` simplified**: strategic-blocker chips (Retention Challenge, Growth Blocker, etc.) removed — they were sourced from `user_memory` but weren't realistically automatable. The concrete pain selection lives inside `SkillCaptureSheet` for users who reach it from there.
+- **Triage failure rescue**: when the triage gate rejects the voice clip (`custom_instruction` / `memory_fact` / `saved_style`), the transcript is now auto-rescued via `generate-custom-export` into a markdown context blob shown in Step 3, with the triage reasoning as an explanatory banner. Replaces the previous toast-only outcome.
+- **Step 2 skipped on voice-led runs**: since markdown is the universal fallback for one-off context, the format picker is marked "skipped" and the user goes directly to Step 3.
+
+### Outcomes from Phase 9
+
+- 2 PRs merged: #108 (UX polish, 5 phases) and #110 (workflow consolidation)
+- 2 new hooks (`useGeneratedArtifacts`, `useProfileBasics`) — total now 53
+- 1 new migration (`20260513000000_generated_artifacts.sql`) — total now 99
+- 1 new component directory (`src/components/library/`)
+- 1 component deleted (`SkillExportCard`)
+- `generate-skill-export` and `edge-generate` updated to write to `generated_artifacts`
+- Leaders can now find every AI artifact they've generated — no more "it vanished when I closed the sheet"
+- Triage-rejected voice input is no longer a dead end — it becomes a context export automatically

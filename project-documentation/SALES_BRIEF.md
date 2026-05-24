@@ -2,7 +2,7 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-24
 
 ---
 
@@ -133,10 +133,10 @@ Edge Pro ($9/month) unlocks unlimited artifact generation, email delivery, all 7
 ### Agent Skill Builder (Edge Pro)
 Voice-to-Skill pipeline that converts one weekly workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/`.
 
-- **Pain-anchored entry points everywhere**: tap a blocker in Edge view, tap the zap on a Memory Web blocker card, or tap the zap on a Briefing decision-trigger segment. The pain becomes the seed.
+- **Pain-anchored entry points everywhere**: tap the voice CTA in Edge view, tap the zap on a Memory Web blocker card, or tap the zap on a Briefing decision-trigger segment. The pain becomes the seed.
 - **Three Honest Tests triage gate**: if the input is really a Memory Web fact, a Custom Instruction, or a Saved Style, CTRL routes it to the right surface instead of generating a junk skill. This is the difference between "another macro tool" and "a triage system that respects your time."
 - **Quality gate**: 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections — validated before you download.
-- **Installs in three places**: Claude Code, Claude.ai, and Cursor (with copy-paste install instructions inside the preview sheet).
+- **Installs across Claude.ai, Claude Code, and Cursor**: the install guide inside the preview sheet leads with the Claude.ai path (3 steps + a direct deeplink to your Skills settings). Developer paths (Claude Code, Cursor) are one tap away under "Other install options".
 
 Two minutes describing a Monday-morning ritual is enough to build permanent agent infrastructure the leader owns. The Skill triggers automatically whenever the leader's team uses the same language. This is the third killer feature on `/context`, alongside Context Export and Custom Voice Export.
 
@@ -212,7 +212,7 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 - **Self-contained** — no Slack/email/calendar access, no enterprise security review
 - **Encrypted at rest** (AES-256-GCM); user controls retention; data never trains any AI model
 - **Portable** — not locked to any AI provider or platform
-- **74 edge functions, 51 hooks, 98 migrations live** — this is not a prototype
+- **74 edge functions, 53 hooks, 99 migrations live** — this is not a prototype
 - **Audit weeks 1-6 shipped** (revenue path, data path, UX, reliability, observability, cleanup): timeouts + retries on external APIs, mandatory Stripe signature verification + idempotency, structured edge-function logger, e2e test contracts
 - **Built by Krish Raja** — operator experience: Microsoft (2010), MD at Captify ($0→$12M ARR), data revenue at Nine Entertainment ($9M→$61M). Now CEO of Mindmaker, running a multi-agent OS that automates the output of a 30-person team.
 - Context export produces richer, more structured prompts than most leaders write by hand in an hour
@@ -301,7 +301,7 @@ Three things. (1) **Triage first**: the Three Honest Tests gate refuses to gener
 No, and that's the point. The triage gate decides what your input actually is. If it's a workflow → Skill. If it's a tone/voice/style preference → it routes you to Custom Instructions. If it's a fact about you → it routes you to Memory Web. CTRL stays in its lane and points you at the right tool for the other lanes.
 
 **"How do I install an Agent Skill?"**
-Download the ZIP from the preview sheet. The bundle includes a `03-install-guide.txt` with copy-paste instructions for Claude Code (`~/.claude/skills/<skill-name>/`), Claude.ai (upload via the Skills UI), and Cursor. There's also a `01-test-prompts.txt` of phrases that should auto-trigger the skill so you can verify it works in 60 seconds.
+Download the ZIP from the preview sheet. The install guide inside leads with Claude.ai: three inline steps plus a direct deeplink to your Skills settings page. If you use Claude Code or Cursor, tap "Other install options" for copy-paste instructions for those tools. There's also a `01-test-prompts.txt` of phrases that should auto-trigger the skill so you can verify it works in 60 seconds.
 
 ---
 

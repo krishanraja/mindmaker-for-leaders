@@ -2,20 +2,22 @@
 
 Complete feature inventory across all three CTRL tools.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-24
 
 > **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
 
 ---
 
-## Repo at a glance (verified 2026-05-13)
+## Repo at a glance (verified 2026-05-24)
 
 - **74 Supabase edge functions** (Deno runtime), grouped: 7 briefing, 5 memory, 5 AI generation, 4 billing, 6 diagnostic, 8 email, 9 enrichment, 11 leadership/missions/observability/voice, 1 skill builder (`generate-skill-export`), plus shared modules
-- **51 React hooks** under `src/hooks/` (added in v5.2: `useSkillExport`, `useUserPains`, `useRevealOnMount`)
-- **98 PostgreSQL migrations** applied to remote (added in v5.2: `20260508000000_create_skill_exports.sql`)
+- **53 React hooks** under `src/hooks/` (added in v5.2: `useSkillExport`, `useUserPains`, `useRevealOnMount`; added in v5.3: `useGeneratedArtifacts`, `useProfileBasics`)
+- **99 PostgreSQL migrations** applied to remote (added in v5.2: `20260508000000_create_skill_exports.sql`; added in v5.3: `20260513000000_generated_artifacts.sql`)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Desktop UI redesign shipped** (PR #104, Phase 8): unified desktop-native shell — sticky top bar with page eyebrow + title + actions, optional right rail for context, Cmd/Ctrl+K Command Palette across all authenticated routes. No more stretched mobile markup on desktop.
+- **UX polish + persistence shipped** (PR #108, Phase 9): copy refinement, voice/text segmented controls, empty states, generated artifact persistence + Library tab on `/memory`, personalized Edge paywall. See `HISTORY.md` Phase 9.
+- **Workflow consolidation shipped** (PR #110, Phase 9): `SkillExportCard` deleted; `/context` Step 1 is now a single "Describe a workflow" entry opening `SkillCaptureSheet`. Triage-rejected transcripts auto-rescued as context exports. `AutomatePainCard` simplified to voice-first CTA only.
 - **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
 - **Tests**: 5 Vitest unit/shared + 6 Playwright e2e (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency)
 
@@ -156,6 +158,7 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 **EdgePaywall** (`EdgePaywall.tsx`)
 - Pro tier upgrade wall
 - Sample artifact previews (Board Memo, Strategy Doc, Email, Meeting Agenda, Framework)
+- Personalized one-liner above the blurred sample when company name is available (e.g. "Board memo for Acme, Q2"). Falls back silently to generic sample when company name is absent. Added v5.3 via `useProfileBasics`.
 - Stripe subscription integration via `useEdgeSubscription`
 
 **DraftSheet / ArtifactPreview** (`DraftSheet.tsx`, `ArtifactPreview.tsx`)
@@ -394,15 +397,39 @@ Voice-first context extraction system that builds a persistent knowledge base ab
 - `extract-user-context`: AI fact extraction from voice
 - `enrich-company-context`: Company context enrichment
 
-### Components (11 files)
+**Library Tab** (added v5.3)
+
+The `/memory` page now has a fourth tab, Library, alongside All Facts / Privacy / Data. It lists every AI-generated artifact (skills, drafts, frameworks, custom briefings) grouped by kind with inline markdown preview, copy, and remove actions. Artifacts are persisted in the `generated_artifacts` table and survive past the preview sheet close.
+
+- `LibraryTab.tsx` (`src/components/library/`): grouped-by-kind list with count badge on the tab.
+- `useGeneratedArtifacts.ts`: read/refetch/delete hook. Pattern-matched to `useUserPains`.
+- `generate-skill-export` writes a `kind='skill'` row on success.
+- `edge-generate` writes a `kind='draft'` or `kind='framework'` row on success.
+
+**Table** (`20260513000000_generated_artifacts.sql`):
+```
+generated_artifacts
+├── id (PK, uuid)
+├── user_id (FK auth.users, ON DELETE CASCADE)
+├── kind (TEXT: 'skill' | 'draft' | 'export' | 'framework' | 'briefing_custom')
+├── name (TEXT)
+├── body (TEXT) — full markdown content
+├── metadata (JSONB) — kind-specific extras (e.g. zip_filename for skills, briefing_type for briefings)
+└── created_at (TIMESTAMPTZ)
+```
+RLS: owner-read, owner-insert, owner-delete. Indexed on `(user_id, created_at DESC)` and `(user_id, kind)`.
+
+### Components (12 files)
 - `MemoryList.tsx`, `AddMemorySheet.tsx`, `MemoryDetailSheet.tsx`
 - `MemoryItemCard.tsx`, `MemoryPill.tsx`, `FactVerificationCard.tsx`
 - `VoiceMemoryCapture.tsx`, `PrivacyControlsPanel.tsx`, `ExportImportPanel.tsx`
 - `MemoryErrorBoundary.tsx`
+- `LibraryTab.tsx` (added v5.3)
 
 ### Hooks
 - `useMemoryQueries.ts`: React Query integration for memory CRUD
 - `useUserMemory.ts`: Memory state management
+- `useGeneratedArtifacts.ts`: Artifacts CRUD (added v5.3)
 
 ---
 
@@ -465,12 +492,12 @@ Turns a repetitive leader workflow into a downloadable, **agentskills.io-complia
 This is the third surface on the Context Export page (`/context`). Two minutes describing a Monday-morning ritual is enough to generate a permanent piece of agent infrastructure the leader owns.
 
 **Pages / surfaces:**
-- `/context` (Step 1) — `SkillExportCard` promoted above the Custom Voice card, gated behind Edge Pro
-- Edge view (`/dashboard?view=edge`) — `AutomatePainCard` chip row of declared blockers + active decisions
+- `/context` (Step 1) — a single "Describe a workflow" entry (formerly two separate cards) opens `SkillCaptureSheet`. Edge Pro gated.
+- Edge view (`/dashboard?view=edge`) — `AutomatePainCard` shows a voice-first CTA ("Automate a recurring pain"); strategic-blocker chip row removed in v5.3.
 - Memory Web blocker cards — zap button on each blocker
 - Briefing — zap button on every `decision_trigger` segment (v1 + v2)
 
-All four entry points hand the user's already-declared pain to the Skill Builder via a `SkillSeed`, navigate to `/context`, and auto-open `SkillCaptureSheet` pre-anchored. The LLM grounds extraction in the leader's actual words instead of inventing an abstract trigger.
+All entry points hand the user's already-declared pain to the Skill Builder via a `SkillSeed`, navigate to `/context`, and auto-open `SkillCaptureSheet` pre-anchored. The LLM grounds extraction in the leader's actual words instead of inventing an abstract trigger.
 
 ### The Pipeline (shipped May 2026)
 
@@ -504,7 +531,7 @@ Skill creation is a reflex on the page where the pain shows up, not a standalone
 
 | Entry point | Component | Seed kind |
 |---|---|---|
-| Edge view chip row | `AutomatePainCard` | `blocker` or `decision` |
+| Edge view voice CTA | `AutomatePainCard` | `blocker` or `decision` (seeded inside sheet) |
 | Memory Web blocker card | Zap button on `MemoryItemCard` | `blocker` |
 | Briefing decision-trigger segment | Zap button on `BriefingCard` and `SegmentCard` | `briefing_segment` |
 | Curated examples (cold-start fallback) | `SkillCaptureSheet` chips | `example` |
@@ -522,10 +549,11 @@ The seed flows: entry point → `useNavigate('/context', { state: { skillSeed } 
 ### The SkillPreviewSheet
 
 - Skill description and archetype
+- "Saved to Library" pill in the header confirming the artifact is durable (visible in `/memory` Library tab)
 - Big Download CTA (decodes the base64 ZIP into a Blob in-browser)
 - Quality gate checklist (passed / total, per-check detail)
 - Test prompts with copy buttons (the leader pastes these into Claude to verify the skill triggers)
-- Install guide accordion: Claude Code (`~/.claude/skills/`), Claude.ai (uploaded skills), Cursor
+- Install guide accordion: leads with the Claude.ai path (3 inline steps + direct deeplink to claude.ai/settings/capabilities). Claude Code (`~/.claude/skills/`) and Cursor collapsed under "Other install options".
 
 ### Triage Routing
 
@@ -535,7 +563,7 @@ When the triage gate decides the input isn't a skill, the response is:
 { triage: { passed: false, result: "memory_fact" | "custom_instruction" | "saved_style", reasoning: "..." } }
 ```
 
-The UI surfaces the routing decision so the leader knows exactly what to do with their input. No skill is generated. The attempt is still logged in `skill_exports` so we can learn from the misses without re-running the LLM.
+Since v5.3 (PR #110), triage-rejected transcripts are not discarded. The transcript is automatically rescued via `generate-custom-export` and the resulting markdown context blob is shown in Step 3 with the triage reasoning as an explanatory banner. Step 2 (format picker) is skipped on voice-led runs since markdown is the universal fallback. This replaces the previous toast-only outcome. The attempt is still logged in `skill_exports` for analytics.
 
 ### Data Architecture
 
@@ -567,18 +595,23 @@ RLS: owner-read, owner-insert. Indexed on `user_id` and `created_at DESC`.
 **Hooks:**
 - `useSkillExport` — wraps the edge function. Manages full lifecycle: call, parse, decode the base64 ZIP into a downloadable Blob.
 - `useUserPains` — returns the top N blockers + active decisions from the leader's Memory Web for seeding entry points.
+- `useGeneratedArtifacts` — reads, refetches, and deletes rows from `generated_artifacts`. Pattern-matched to `useUserPains`. Added v5.3.
+- `useProfileBasics` — reads the leader's `company_name` and `role` from `user_memory` (handles common fact-key aliases). Used to personalize the Edge paywall sample. Added v5.3.
 
 **Components** (`src/components/edge/` + `src/components/memory-web/`):
-- `SkillExportCard` — entry-point card on `/context`
 - `SkillCaptureSheet` — voice/text capture, bottom sheet on mobile, dialog on desktop
-- `SkillPreviewSheet` — preview + download CTA + install guide
+- `SkillPreviewSheet` — preview + download CTA + install guide + "Saved to Library" indicator
 - `SkillQualityGate` — quality checklist display
-- `SkillInstallGuide` — per-tool install instructions
-- `AutomatePainCard` — pain-anchored entry chip row on Edge view
+- `SkillInstallGuide` — per-tool install instructions (leads with Claude.ai, others collapsed)
+- `AutomatePainCard` — voice-first CTA on Edge view (chip row removed in v5.3)
+- `LibraryTab` — grouped-by-kind list of persisted artifacts in `/memory` (added v5.3)
+
+**Deleted in v5.3:**
+- `SkillExportCard` — removed (PR #110). The `/context` Step 1 entry is now a unified single card.
 
 ### Edge Pro Gating
 
-Same paywall as `generate-custom-export`. Free users see the locked `SkillExportCard` with a "Pro" badge that opens the Stripe checkout via `useEdgeSubscription.subscribe`. Subscribers get unlimited skill generation.
+Free users see the locked `/context` Step 1 card with a "Pro" badge that opens the Stripe checkout via `useEdgeSubscription.subscribe`. Subscribers get unlimited skill generation.
 
 **Sales Anchor — Skill Builder**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Two minutes of speaking. Permanent leverage. Drop it in `~/.claude/skills/` and forget it."
 

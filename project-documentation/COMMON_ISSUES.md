@@ -2,9 +2,9 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-05-24
 
-> **Status**: Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath."
+> **Status**: Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. Phase 8 shipped the Skill Builder + desktop redesign (May 2026). Phase 9 shipped UX polish, artifact persistence, and workflow consolidation (May 2026). Issues from all phases are documented below.
 
 ---
 
@@ -477,3 +477,33 @@ Before shipping:
 **Root Cause**: ElevenLabs synthesis is fire-and-forget from `generate-briefing` to `synthesize-briefing`. The frontend polls every 3s. Audio Failure UX (Audit Week 4) ensures segments + script render even if synthesis ultimately fails.
 **Solution**: User can read segments immediately. Audio appears when synthesis completes. If `audio_url` stays null after a minute, check `synthesize-briefing` logs.
 **Status**: ✅ Resolved (Audit Week 4 audio failure UX).
+
+---
+
+## Phase 8 and Phase 9 Aftermath (May 2026)
+
+### Issue 42: Library Tab Empty Despite Having Generated Skills
+**Symptom**: User has generated and downloaded a skill ZIP, but the Library tab on `/memory` shows nothing.
+**Root Cause**: Most likely the `generated_artifacts` migration (`20260513000000_generated_artifacts.sql`) has not been applied to the remote project. The code falls back gracefully (empty Library) when the table does not exist. Another cause: the user generated the skill before Phase 9 shipped, when `generate-skill-export` did not yet write to `generated_artifacts`. Only artifacts generated after the Phase 9 deploy appear in Library.
+**Solution**:
+  1. Verify the migration is applied: `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'generated_artifacts');`. If false, apply the migration via the Supabase Management API.
+  2. For skills generated pre-Phase-9: these are in `skill_exports` but not `generated_artifacts`. There is no retroactive backfill; the Library only shows artifacts generated after the Phase 9 deploy.
+**Status**: ⚠️ Monitor — likely to surface during first-week rollout.
+
+### Issue 43: Triage-Failed Skill Capture Shows Context Export in Step 3 (Unexpected for Some Users)
+**Symptom**: A user voices something and ends up in Step 3 seeing a "context export" result with a banner saying the input wasn't a workflow, not the skill ZIP they expected.
+**Root Cause**: This is correct, intentional behaviour (Phase 9, PR #110). The Three Honest Tests gate decided the input was a Memory Fact, Custom Instruction, or Saved Style — not a repeatable workflow. The transcript was auto-rescued via `generate-custom-export`.
+**Solution**: The banner in Step 3 explains why. If the user genuinely wanted a skill, they should describe a repeatable, triggerable workflow (something they do at least weekly with consistent steps and a consistent output format). Curated examples: Monday board update, weekly hiring sync, RFP triage, investor update.
+**Status**: ✅ Working as designed. The explanatory banner is the UX resolution.
+
+### Issue 44: SkillExportCard References in Older Code or Docs
+**Symptom**: A component import or doc reference to `SkillExportCard` fails or appears stale.
+**Root Cause**: `SkillExportCard` was deleted in PR #110 (Phase 9). The `/context` Step 1 is now a unified single card with no named sub-component that matches the old name.
+**Solution**: Remove any remaining imports or documentation references to `SkillExportCard`. The entry point is now inside `ContextExport.tsx` directly.
+**Status**: ✅ Cleaned up in PR #110. Flag if found in downstream docs or tooling.
+
+### Issue 45: AutomatePainCard Chip Row No Longer Shows Specific Blockers
+**Symptom**: A user who previously tapped a specific blocker chip on Edge view (e.g. "Retention Challenge") no longer sees that chip. The card now shows a generic voice CTA.
+**Root Cause**: Intentional change in Phase 9 (PR #110). The strategic-blocker chips were sourced from `user_memory` but didn't reliably map to automatable workflows. They were removed to reduce false starts.
+**Solution**: The concrete pain selection now lives inside `SkillCaptureSheet` via the pain picker chip row (pulls top blockers from `useUserPains`). Users who want to anchor on a specific blocker should open the Skill Builder and select from the chip row there.
+**Status**: ✅ Working as designed.

@@ -1,7 +1,7 @@
 # CTRL & Mindmaker Master Messaging & FAQ
 *Core Source of Truth for Product Marketing, Sales, Content, and Outbound*
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-24
 
 ---
 
@@ -62,7 +62,7 @@ We give CTRL away free for the core experience (Memory Web, Context Export, basi
 
 **The CTRL stack at a glance (today):**
 - React 18 + TypeScript + Vite + Tailwind + shadcn/ui front-end. Desktop ships a unified desktop-native shell (sticky top bar + optional right rail + Cmd/Ctrl+K Command Palette) instead of stretched mobile markup.
-- Supabase backend: PostgreSQL with pgvector + pgcrypto + pg_cron, **74 edge functions** (Deno, incl. `generate-skill-export`), **51 React hooks**, **98 migrations** applied
+- Supabase backend: PostgreSQL with pgvector + pgcrypto + pg_cron, **74 edge functions** (Deno, incl. `generate-skill-export`), **53 React hooks**, **99 migrations** applied
 - AI: Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback, OpenAI Whisper for voice, ElevenLabs for audio, OpenAI `text-embedding-3-small` for the briefing pipeline
 - Payments: Stripe (signature-verified, idempotent webhooks)
 - Email: Resend

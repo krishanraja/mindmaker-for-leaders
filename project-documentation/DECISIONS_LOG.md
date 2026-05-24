@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-24
 
 ---
 
@@ -292,3 +292,24 @@ Key architectural and product decisions with rationale.
 **Rationale**: Executive buyers judge desktop polish. The product was being demoed on desktop in every sales call, and the stretched-mobile feel undercut the premium positioning. Cmd+K is also the most pitchable desktop affordance in modern productivity software.
 **Trade-off**: Mobile and desktop paths are now genuinely different (mobile preserved unchanged on Landing, Briefing, Dashboard). Higher maintenance cost.
 **Outcome**: ✅ Live. The desktop demo experience now matches the rest of the product's premium bar.
+
+## Decision 42: Unified generated_artifacts Table (Not Per-Kind Tables)
+**Date**: May 2026 (Phase 9 — PR #108)
+**Decision**: Persist all AI-generated outputs (skills, drafts, exports, frameworks, custom briefings) in a single `generated_artifacts` table with a `kind` discriminator, rather than separate tables per artifact type.
+**Rationale**: Skills, drafts, and frameworks share the same shape: a markdown body plus metadata. A single table with a discriminator lets the Library tab query everything in one call, adds a new artifact kind with zero schema changes, and avoids proliferating nearly-identical tables. The `metadata JSONB` column handles kind-specific extras (e.g. `zip_filename` for skills) without polluting the core schema.
+**Trade-off**: Slightly less type safety than dedicated tables. A badly-typed `kind` value would break Library grouping rather than failing at the schema level. Mitigated by a CHECK constraint on the `kind` column.
+**Outcome**: ✅ Live. Migration `20260513000000_generated_artifacts.sql`. Total migrations: 99.
+
+## Decision 43: Triage Failure Auto-Rescue via generate-custom-export (Not Toast-Only)
+**Date**: May 2026 (Phase 9 — PR #110)
+**Decision**: When the Skill Builder triage gate rejects a voice transcript, instead of showing only a toast and discarding the input, automatically call `generate-custom-export` and surface the resulting markdown context blob in Step 3 with the triage reasoning as an explanatory banner. Step 2 (format picker) is skipped on voice-led runs.
+**Rationale**: A triage rejection is not a failure — it just means the input was better suited to context export than skill generation. The voice clip has already been transcribed and it contains real information the leader wants to use. Discarding it (or showing only a toast) wastes the capture. Auto-routing to the correct output respects the leader's time and demonstrates that CTRL knows where every input belongs.
+**Trade-off**: The frontend now has two code paths through `/context` Step 3 (skill result vs. rescued context result). The triage-failure UI must communicate clearly that the output is a context export, not a skill, to avoid confusion.
+**Outcome**: ✅ Live. The "triage failure as context export" path is a proof point for the Three Honest Tests narrative: CTRL doesn't just refuse junk — it routes every input to the right output.
+
+## Decision 44: SkillExportCard Deletion — Single Unified Entry Point on /context
+**Date**: May 2026 (Phase 9 — PR #110)
+**Decision**: Delete `SkillExportCard` and collapse the two `/context` Step 1 entry points (Skill Builder card + Custom Context voice card) into a single "Describe a workflow" entry that always opens `SkillCaptureSheet`. All voice capture moves into the sheet. AutomatePainCard simplified to a voice-first CTA only; strategic-blocker chips removed.
+**Rationale**: Two nearly-identical entry points on the same page created decision paralysis for new users and implied a distinction that didn't map cleanly to the actual product experience. The sheet already owns all voice logic. A single unified entry with the triage gate inside means the right thing always happens regardless of input type.
+**Trade-off**: The chip row on `AutomatePainCard` provided visual concreteness (the leader could see specific blocker titles before tapping). Removing it makes the entry point slightly more abstract. Mitigated by the pain picker chip row inside `SkillCaptureSheet` once opened.
+**Outcome**: ✅ Live. Simpler `/context` Step 1, fewer components to maintain, clearer user journey.
