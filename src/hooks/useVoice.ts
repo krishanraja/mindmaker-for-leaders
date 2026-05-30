@@ -20,7 +20,7 @@ interface UseVoiceOptions {
  *  - `no_device`: no mic hardware available (NotFoundError)
  *  - `in_use`: another tab/app is holding the mic (NotReadableError)
  *  - `insecure_context`: page not served over HTTPS (SecurityError on some browsers)
- *  - `unknown`: anything else — show the raw message and offer retry
+ *  - `unknown`: anything else - show the raw message and offer retry
  */
 export type VoiceErrorKind =
   | 'permission_denied'

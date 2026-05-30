@@ -6,7 +6,7 @@
  * (Stripe retries up to 3 days; without dedup we'd re-grant access on
  * every retry).
  *
- * This spec exercises the receiver side directly — it doesn't need a real
+ * This spec exercises the receiver side directly - it doesn't need a real
  * browser. Run with `npx playwright test stripe-webhook-idempotency`.
  * Stripe's `--forward-to` CLI is the practical way to drive the
  * webhook against a deployed endpoint; this spec uses fetch + a fixture
@@ -31,7 +31,7 @@ function signStripePayload(payload: string, secret: string): string {
   return `t=${ts},v1=${v1}`;
 }
 
-test.describe.skip('Stripe webhook — signature + idempotency', () => {
+test.describe.skip('Stripe webhook - signature + idempotency', () => {
   test('Refuses unsigned payload with 400/503', async () => {
     if (!WEBHOOK_URL) test.skip(true, 'STRIPE_TEST_WEBHOOK_URL not set');
     const res = await fetch(WEBHOOK_URL!, {

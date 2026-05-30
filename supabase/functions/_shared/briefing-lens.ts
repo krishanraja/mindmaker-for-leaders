@@ -1,5 +1,5 @@
 /**
- * briefing-lens — Stage 1 (Importance Lens) + Stage 2 (Query Planner)
+ * briefing-lens - Stage 1 (Importance Lens) + Stage 2 (Query Planner)
  *
  * The lens is the core abstraction of briefing v2: instead of flattening every
  * profile table into one prompt, we first produce an explicit ranked list of
@@ -8,7 +8,7 @@
  * id of the lens item it matched. That is the "evidence" in "evidence-based
  * relevance".
  *
- * Cache key MUST include briefing_type — a macro_trends lens weights the
+ * Cache key MUST include briefing_type - a macro_trends lens weights the
  * watchlist differently than a boardroom_prep lens weights decisions.
  */
 
@@ -133,7 +133,7 @@ async function applyFeedbackDeltas(
 /**
  * Load the user's active declared interests. beat + entity rows become
  * weight-1.0 lens items; exclude rows post-filter the candidate pool in
- * briefing-scoring. Empty structure on any error — the lens pipeline must
+ * briefing-scoring. Empty structure on any error - the lens pipeline must
  * not fail just because interest loading misbehaved.
  */
 async function loadInterests(
@@ -242,7 +242,7 @@ function deterministicLens(
 
 /**
  * Stage 1: Importance Lens. Asks gpt-4o-mini to reorder and reweight the
- * deterministic lens based on today's briefing type — letting the LLM apply
+ * deterministic lens based on today's briefing type - letting the LLM apply
  * judgement about which profile items actually matter for THIS briefing.
  *
  * Cached 24h keyed on (user, briefing_type, date, profile_signature).
@@ -295,7 +295,7 @@ export async function buildImportanceLens(
   if (cached && Array.isArray(cached.items) && cached.items.length > 0) {
     // Fresh interests always overlay the cache so a user toggling Interests
     // mid-day sees the effect without waiting for cache expiry. Same for
-    // negative feedback — kills need to take effect immediately.
+    // negative feedback - kills need to take effect immediately.
     const cachedItems = cached.items as LensItem[];
     const merged = mergeInterestsIntoCached(interestItems, cachedItems);
     const filtered = await applyFeedbackDeltas(merged, feedbackDeltas);
@@ -315,7 +315,7 @@ export async function buildImportanceLens(
           {
             role: "system",
             content:
-              `You build a RELEVANCE LENS for a personalised news briefing. Reorder and reweight the candidate lens items so the items most relevant to a "${briefingType}" briefing rise to the top. Weights must be between 0 and 1. Keep every item id unchanged. Return AT MOST 10 items, sorted by weight descending. Do not invent new items. Items whose id starts with "interest_" are USER-DECLARED preferences — their weight must remain >= ${INTEREST_WEIGHT_FLOOR}. Return JSON: {"items": [{"id":"...","type":"...","ref_id":"...","text":"...","weight":0.85}]}`,
+              `You build a RELEVANCE LENS for a personalised news briefing. Reorder and reweight the candidate lens items so the items most relevant to a "${briefingType}" briefing rise to the top. Weights must be between 0 and 1. Keep every item id unchanged. Return AT MOST 10 items, sorted by weight descending. Do not invent new items. Items whose id starts with "interest_" are USER-DECLARED preferences - their weight must remain >= ${INTEREST_WEIGHT_FLOOR}. Return JSON: {"items": [{"id":"...","type":"...","ref_id":"...","text":"...","weight":0.85}]}`,
           },
           {
             role: "user",

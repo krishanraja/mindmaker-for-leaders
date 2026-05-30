@@ -1,10 +1,10 @@
 /**
- * briefing-scoring — Stage 4: Embedding-based dedupe + first-pass scoring.
+ * briefing-scoring - Stage 4: Embedding-based dedupe + first-pass scoring.
  *
  * Given a pool of candidate headlines from Stage 3 and the ranked lens from
  * Stage 1, this module:
  *   1. Batches all candidate embeddings in a single OpenAI call (never loop)
- *   2. Caches lens_item embeddings in ai_response_cache — they are stable
+ *   2. Caches lens_item embeddings in ai_response_cache - they are stable
  *      across briefing types within a day and cost the same amount to
  *      re-embed six times
  *   3. Dedupes candidates whose cosine similarity exceeds
@@ -14,7 +14,7 @@
  *
  * Each scored candidate carries the evidence needed by Stage 5 (curation) to
  * produce segments with explicit lens_item_id, relevance_score, and
- * matched_profile_fact — replacing the LLM-asserted relevance_reason prose of
+ * matched_profile_fact - replacing the LLM-asserted relevance_reason prose of
  * the v1 pipeline.
  */
 
@@ -25,7 +25,7 @@ import type { LensItem } from "./briefing-lens.ts";
 export interface CandidateHeadline {
   title: string;
   source: string;
-  /** Optional snippet — included in embedding input when present. */
+  /** Optional snippet - included in embedding input when present. */
   snippet?: string;
   /** Provider that surfaced this headline (perplexity | tavily | brave). */
   provider: string;
@@ -80,7 +80,7 @@ function cosine(a: number[], b: number[]): number {
 
 /**
  * Single batched call to the embeddings API. Input array order is preserved
- * in the output — we rely on that to align embeddings back to candidates.
+ * in the output - we rely on that to align embeddings back to candidates.
  */
 async function embedBatch(openaiKey: string, inputs: string[]): Promise<number[][]> {
   if (inputs.length === 0) return [];
@@ -102,7 +102,7 @@ async function embedBatch(openaiKey: string, inputs: string[]): Promise<number[]
 
   const data = await response.json();
   const rows = Array.isArray(data?.data) ? data.data : [];
-  // Sort by index — the API guarantees order but we defend against surprises.
+  // Sort by index - the API guarantees order but we defend against surprises.
   rows.sort((a: { index: number }, b: { index: number }) => a.index - b.index);
   return rows.map((r: { embedding: number[] }) => r.embedding);
 }
@@ -152,7 +152,7 @@ function getDedupeThreshold(): number {
 /**
  * Threshold for excluding a candidate based on cosine similarity to any
  * user-declared exclude. Default 0.80 is intentionally more aggressive than
- * dedupe (0.87) — users who said "never show me geopolitics" shouldn't see
+ * dedupe (0.87) - users who said "never show me geopolitics" shouldn't see
  * borderline geopolitics stories either.
  */
 function getExcludeThreshold(): number {
@@ -205,7 +205,7 @@ export async function dedupeAndScore(
   const minRelevance = getMinRelevance();
 
   const candidateInputs = candidates.map(c =>
-    c.snippet && c.snippet.length > 0 ? `${c.title} — ${c.snippet}` : c.title,
+    c.snippet && c.snippet.length > 0 ? `${c.title} - ${c.snippet}` : c.title,
   );
   // Embed candidates + excludes in the same batch to avoid a second API call.
   const batchInputs = [...candidateInputs, ...excludes];
@@ -224,7 +224,7 @@ export async function dedupeAndScore(
     const vec = candidateVectors[i];
     if (!vec) continue;
 
-    // Exclude filter — drop if semantically close to ANY user-declared exclude.
+    // Exclude filter - drop if semantically close to ANY user-declared exclude.
     let isExcluded = false;
     for (const ev of excludeVectors) {
       if (!ev) continue;

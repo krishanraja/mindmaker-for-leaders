@@ -416,7 +416,7 @@ Before shipping:
 **Status**: ⚠️ Monitor - CDN cache behaviour is the recurring culprit.
 
 ### Issue 33: `generate-briefing` Throws "Lens Empty" on New Users
-**Symptom**: v2 pipeline returns 500 with message "Lens empty — user has no profile data to personalise against".
+**Symptom**: v2 pipeline returns 500 with message "Lens empty - user has no profile data to personalise against".
 **Root Cause**: The user has zero entries in `user_memory`, `user_missions`, `user_decisions`, and `briefing_interests`. `deterministicLens` produces an empty array and v2 refuses to proceed.
 **Solution**: Either (a) send the user through onboarding to seed `user_memory`, (b) have them declare 3+ `briefing_interests`, or (c) temporarily flip them to v1 via `user_memory` row `{fact_key: 'briefing_v2_enabled', fact_value: 'false', is_current: true}`.
 **Status**: ⚠️ Monitor - probably needs a graceful fallback to industry-only seeds when lens is empty.
@@ -468,7 +468,7 @@ Before shipping:
 
 ### Issue 40: Lint Warnings High but Stable
 **Symptom**: ~1600 ESLint warnings persist in the codebase.
-**Root Cause**: Accepted technical debt (Audit Week 6). CI runs ESLint on PR-diff only — new violations block, historical baseline does not.
+**Root Cause**: Accepted technical debt (Audit Week 6). CI runs ESLint on PR-diff only - new violations block, historical baseline does not.
 **Solution**: Treat as a known number, not a problem. Ratcheting down can be a future quarterly initiative.
 **Status**: 🟡 Accepted debt.
 

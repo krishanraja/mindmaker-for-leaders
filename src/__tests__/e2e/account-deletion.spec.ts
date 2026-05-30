@@ -25,7 +25,7 @@ const TEST_DELETABLE_USER_ID = process.env.E2E_DELETABLE_USER_ID;
 const TEST_USER_EMAIL = process.env.E2E_DELETABLE_USER_EMAIL;
 const TEST_USER_PASSWORD = process.env.E2E_DELETABLE_USER_PASSWORD;
 
-test.describe.skip('Account deletion — full erasure', () => {
+test.describe.skip('Account deletion - full erasure', () => {
   test('Deletes DB rows AND storage objects for a seeded user', async ({ page }) => {
     if (!SUPABASE_URL || !SERVICE_ROLE_KEY || !TEST_DELETABLE_USER_ID) {
       test.skip(true, 'E2E env vars not set');

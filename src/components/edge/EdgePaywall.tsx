@@ -41,7 +41,7 @@ interface EdgePaywallProps {
 }
 
 // Personalised one-liner shown above the blurred sample so the leader can
-// see this isn't a stock screenshot — it's what THEIR artifact would look
+// see this isn't a stock screenshot - it's what THEIR artifact would look
 // like. Falls back to null if we can't infer a sensible line.
 function personalisedTeaser(sampleKey: string | null, company: string): string | null {
   const quarter = Math.ceil((new Date().getMonth() + 1) / 3);
@@ -119,7 +119,7 @@ function PaywallContent({
         </div>
       </div>
 
-      {/* Blurred sample artifact preview — personalised when we have the
+      {/* Blurred sample artifact preview - personalised when we have the
           leader's company name. Generic sample if not. */}
       {(() => {
         const sampleKey = findSampleKey(capability);

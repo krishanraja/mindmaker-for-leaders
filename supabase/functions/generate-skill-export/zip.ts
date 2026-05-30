@@ -42,7 +42,7 @@ export async function buildSkillZip(input: BuildSkillZipInput): Promise<BuildSki
   const folder = zip.folder(input.name);
   if (!folder) throw new Error("Failed to create skill folder in ZIP");
 
-  // SKILL.md — YAML frontmatter + body
+  // SKILL.md - YAML frontmatter + body
   folder.file(
     "SKILL.md",
     buildSkillMarkdown(
@@ -57,7 +57,7 @@ export async function buildSkillZip(input: BuildSkillZipInput): Promise<BuildSki
     ),
   );
 
-  // references/<file>.md — load-on-demand context
+  // references/<file>.md - load-on-demand context
   if (input.references.length > 0) {
     const refsFolder = folder.folder("references");
     if (!refsFolder) throw new Error("Failed to create references folder in ZIP");

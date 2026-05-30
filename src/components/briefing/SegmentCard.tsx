@@ -87,7 +87,7 @@ export function SegmentCard({
     }
   };
 
-  // v2: persistent kill — "don't show me stories like this". Only offered
+  // v2: persistent kill - "don't show me stories like this". Only offered
   // when we have a lens anchor to kill and we're not killing an interest the
   // user themselves added (interest_* kills are done by removing from the
   // Interests tab instead).
@@ -181,7 +181,7 @@ export function SegmentCard({
           </p>
         )}
 
-        {/* v2: matched profile fact — shows the specific profile item that */}
+        {/* v2: matched profile fact - shows the specific profile item that */}
         {/* anchored this story. Only rendered on schema_version 2 rows. */}
         {segment.matched_profile_fact && (
           <div
@@ -244,14 +244,14 @@ export function SegmentCard({
             </button>
           )}
 
-          {/* v2: persistent kill — "don't show me stories like this". */}
+          {/* v2: persistent kill - "don't show me stories like this". */}
           {canKill && (
             <button
               onClick={handleKill}
               disabled={killed || isKilling}
               title={
                 killed
-                  ? "Killed — this lens item won't appear in future briefings"
+                  ? "Killed - this lens item won't appear in future briefings"
                   : `Don't show me stories like this (${pinnable || "this topic"})`
               }
               className={cn(

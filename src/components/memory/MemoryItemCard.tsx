@@ -68,7 +68,7 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
   };
 
   // For declared blockers, surface a one-tap path into the Skill Builder
-  // pre-anchored to this specific pain. Only blockers — objectives/preferences
+  // pre-anchored to this specific pain. Only blockers - objectives/preferences
   // are different shapes (aspirations, settings) that don't translate to a
   // weekly procedure as cleanly.
   const isBlocker = memory.fact_category === 'blocker';

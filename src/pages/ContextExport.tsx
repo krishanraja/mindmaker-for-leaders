@@ -557,7 +557,7 @@ export default function ContextExport() {
         )}
       </div>
 
-      {/* Triage banner — surfaces only on voice-led runs that triage redirected
+      {/* Triage banner - surfaces only on voice-led runs that triage redirected
           away from the skill flow. Explains WHY this came back as a one-off
           context blob rather than a triggered skill. */}
       {triageBanner && !isGenerating && (
@@ -822,7 +822,7 @@ export default function ContextExport() {
               const s = (i + 1) as WizardStep;
               const isActive = s === step;
               const isDone = s < step;
-              // Voice-led runs skip Step 2 (format picker) — render it as
+              // Voice-led runs skip Step 2 (format picker) - render it as
               // greyed-out "Skipped" rather than a clickable backstop.
               const isSkipped = isCustomMode && s === 2;
               const isClickable = !isSkipped && s < step;

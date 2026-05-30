@@ -178,7 +178,7 @@ export async function loadTrainingForUser(
   }
 }
 
-/** Test hook — clears the in-memory caches. Callers are responsible for re-fetching. */
+/** Test hook - clears the in-memory caches. Callers are responsible for re-fetching. */
 export function __resetTrainingCache(): void {
   globalCache = null;
   userCache.clear();

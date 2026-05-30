@@ -60,7 +60,7 @@ export async function fetchWithTimeout(
   for (let i = 0; i < maxAttempts; i++) {
     try {
       const res = await tryOnce();
-      // Retry on transient server errors. Don't retry on 4xx — those are
+      // Retry on transient server errors. Don't retry on 4xx - those are
       // our problem to fix, not the provider's.
       if (res.status >= 500 && res.status < 600 && i < maxAttempts - 1) {
         lastStatus = res.status;

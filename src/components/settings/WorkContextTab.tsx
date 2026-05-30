@@ -60,7 +60,7 @@ export function WorkContextTab() {
     setIsLoading(true)
 
     try {
-      // Load both in parallel — leaders may be missing while memory has data
+      // Load both in parallel - leaders may be missing while memory has data
       const [leadersRes, memoryRes] = await Promise.all([
         supabase
           .from('leaders')
@@ -281,7 +281,7 @@ export function WorkContextTab() {
           Your work profile has not been set up yet.
         </p>
         <p className="text-sm text-muted-foreground/70">
-          Start by sharing context about your role on the Dashboard — your
+          Start by sharing context about your role on the Dashboard - your
           profile will build automatically.
         </p>
       </div>
@@ -403,7 +403,7 @@ export function WorkContextTab() {
           onSave={(value) => handleUpdate('strategic_problem', value)}
           type="textarea"
           placeholder="What's your biggest business challenge right now?"
-          helpText="Be specific — this helps us give relevant advice"
+          helpText="Be specific - this helps us give relevant advice"
         />
 
         <div className="border-t border-border pt-4" />
@@ -424,7 +424,7 @@ export function WorkContextTab() {
           onSave={(value) => handleUpdate('biggest_fear', value)}
           type="textarea"
           placeholder="What are you most worried about? (optional)"
-          helpText="Sensitive — only you can see this."
+          helpText="Sensitive - only you can see this."
         />
 
         <div className="border-t border-border pt-4" />

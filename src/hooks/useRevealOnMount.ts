@@ -22,7 +22,7 @@ export function useRevealOnMount<T extends HTMLElement>(
     firedRef.current = true;
 
     // Find the nearest scroll container (data-edge-scroll on Dashboard.tsx) so
-    // we can skip the reveal when it's already at top — a strong proxy for
+    // we can skip the reveal when it's already at top - a strong proxy for
     // "this is the initial render, not a card that appeared later".
     const scroller = el.closest<HTMLElement>('[data-edge-scroll]');
     if (scroller && scroller.scrollTop === 0) return;

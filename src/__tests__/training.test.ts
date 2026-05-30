@@ -67,7 +67,7 @@ describe('typography + banned phrases', () => {
   });
 });
 
-describe('extraction_rejects — corpus entries', () => {
+describe('extraction_rejects - corpus entries', () => {
   const extractionCases = training.evaluation_corpus.filter(e => e.kind === 'extraction');
 
   for (const entry of extractionCases) {
@@ -81,7 +81,7 @@ describe('extraction_rejects — corpus entries', () => {
         expect(result.kept.length).toBe(0);
         if (entry.expect.reason_id) {
           // Any of: the named rule, the typography_token shortcut, or
-          // unmapped_preference are all acceptable rejections — they all
+          // unmapped_preference are all acceptable rejections - they all
           // reflect the correct behaviour (don't store this as a fact).
           const acceptedReasons = [
             entry.expect.reason_id,
@@ -101,7 +101,7 @@ describe('extraction_rejects — corpus entries', () => {
   }
 });
 
-describe('extraction_rejects — quick synthetic probes', () => {
+describe('extraction_rejects - quick synthetic probes', () => {
   test('rejects em-dash meta-instruction', () => {
     const r = runGuardrailsPure([factFromInput("Don't use em dashes in my briefings.")], training);
     expect(r.rejected.length).toBe(1);
@@ -148,7 +148,7 @@ describe('extraction_rejects — quick synthetic probes', () => {
   });
 });
 
-describe('briefing corpus — synthetic post-processing', () => {
+describe('briefing corpus - synthetic post-processing', () => {
   const briefingCases = training.evaluation_corpus.filter(e => e.kind === 'briefing');
 
   for (const entry of briefingCases) {

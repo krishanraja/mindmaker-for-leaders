@@ -83,7 +83,7 @@ serve(async (req) => {
     // The real ownership chain is leader_assessments → leaders → user_id
     // (or leaders.email = auth.users.email for older rows). Without this
     // fix, assessment cleanup silently failed for every account deletion
-    // since the rename — orphaned PII left behind. The leader_assessments
+    // since the rename - orphaned PII left behind. The leader_assessments
     // FK is ON DELETE CASCADE, so deleting the leaders row at step 4 will
     // remove assessments transitively, but we still want explicit child
     // deletion here to avoid relying solely on cascade and to keep the
@@ -152,7 +152,7 @@ serve(async (req) => {
     });
 
     // 3. Purge Storage. Audio briefings frequently contain the leader's
-    // spoken name, company, and strategic decisions — they are PII. The DB
+    // spoken name, company, and strategic decisions - they are PII. The DB
     // delete above already removed the briefings rows, but the underlying
     // MP3s in the ctrl-briefings bucket would otherwise survive forever
     // (GDPR Art. 17 violation). Same logic applies to any uploaded files
@@ -160,20 +160,20 @@ serve(async (req) => {
     //
     // Path convention: <user_id>/... so we list the user's folder and
     // remove every object found. Best-effort: a partial purge logs an
-    // error but doesn't fail the deletion request — the audit log captures
+    // error but doesn't fail the deletion request - the audit log captures
     // it for follow-up.
     const purgeBucket = async (bucket: string): Promise<string | null> => {
       try {
         const { data: files, error: listErr } = await supabaseAdmin.storage
           .from(bucket)
           .list(userId, { limit: 1000 });
-        if (listErr) return `${bucket}: list failed — ${listErr.message}`;
+        if (listErr) return `${bucket}: list failed - ${listErr.message}`;
         if (!files || files.length === 0) return null;
         const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
         const { error: removeErr } = await supabaseAdmin.storage
           .from(bucket)
           .remove(paths);
-        if (removeErr) return `${bucket}: remove failed — ${removeErr.message}`;
+        if (removeErr) return `${bucket}: remove failed - ${removeErr.message}`;
         console.log(`Purged ${paths.length} object(s) from ${bucket} for ${userId}`);
         return null;
       } catch (e) {

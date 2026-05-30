@@ -232,8 +232,8 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 4.0 | Feb-Mar 2026 | Memory Web, Context Export, Portable AI Double |
 | 4.1 | Mar 2026 | Rebrand from Mindmaker to CTRL: "Clarity for Leaders" |
 | 5.0 | Apr 2026 | Briefing v2: evidence-based relevance lens + pgvector + four-part learning loop (Interests, industry seeds, explicit kill, nightly aggregator) |
-| 5.1 | Apr 2026 | Phase 7 — six audit-week tracks shipped: revenue path, data path, UX, reliability, observability, cleanup. Hardened production platform. |
-| 5.2 | May 2026 | Phase 8 — Agent Skill Builder (voice-to-Claude-Skill pipeline, Edge Pro), world-class desktop UI redesign with Command Palette, pain-anchored Skill entry points on Edge / Memory / Briefing. |
+| 5.1 | Apr 2026 | Phase 7 - six audit-week tracks shipped: revenue path, data path, UX, reliability, observability, cleanup. Hardened production platform. |
+| 5.2 | May 2026 | Phase 8 - Agent Skill Builder (voice-to-Claude-Skill pipeline, Edge Pro), world-class desktop UI redesign with Command Palette, pain-anchored Skill entry points on Edge / Memory / Briefing. |
 
 ---
 
@@ -291,26 +291,26 @@ Initially the new loop landed in `BriefingSheet` (the full-screen slide-up) and 
 
 By mid-April 2026, the product surface area had grown to 74 edge functions, 48 hooks, 97 migrations, and a multi-stage briefing pipeline. The shape was right; the edges were not all clean. A six-week audit-track program was committed, each week landing as its own PR with a clear thematic boundary.
 
-### Week 1 — Revenue Path (PR #93, merged 2026-04-21)
+### Week 1 - Revenue Path (PR #93, merged 2026-04-21)
 
 **Shipped:**
 - Mandatory Stripe webhook signature verification on `stripe-webhook` edge function. Unsigned/badly-signed payloads now reject with 400.
-- Webhook idempotency via new `stripe_events_processed` table — replays of the same event ID are recognised and skipped.
+- Webhook idempotency via new `stripe_events_processed` table - replays of the same event ID are recognised and skipped.
 - Briefing rate limits enforced via `_shared/rateLimit.ts` to prevent abuse and runaway cost.
 - E2E test `tests/stripe-webhook-idempotency.spec.ts` proves the contract.
 
 **Why it mattered:** A leaked or replayed Stripe webhook could double-charge a Pro subscriber. This is the kind of issue that surfaces at audit time and damages trust with executive buyers.
 
-### Week 2 — Data Path (PR #94, merged 2026-04-22)
+### Week 2 - Data Path (PR #94, merged 2026-04-22)
 
 **Shipped:**
 - Closed an assessment-data leak (specific issue redacted from public docs).
 - Codified the storage bucket policy for `ctrl-briefings` (audio artifacts now have explicit RLS-aligned object policies).
-- Completed end-to-end account deletion: removes Memory Web, briefings, audio artifacts, decisions, missions, assessments — verified in `tests/account-deletion.spec.ts`.
+- Completed end-to-end account deletion: removes Memory Web, briefings, audio artifacts, decisions, missions, assessments - verified in `tests/account-deletion.spec.ts`.
 
 **Why it mattered:** Privacy claims must be backed by code. "Self-contained, encrypted at rest, fully deletable" is a sales anchor; this week made it provably true.
 
-### Week 3 — UX (PR #95, merged 2026-04-22)
+### Week 3 - UX (PR #95, merged 2026-04-22)
 
 **Shipped:**
 - Killed the onboarding gate that was blocking returning users on the dashboard.
@@ -321,16 +321,16 @@ By mid-April 2026, the product surface area had grown to 74 edge functions, 48 h
 
 **Why it mattered:** The product is sold to executives. Anything that feels half-finished erodes the premium positioning.
 
-### Week 4 — Reliability (PR #99, merged 2026-04-23)
+### Week 4 - Reliability (PR #99, merged 2026-04-23)
 
 **Shipped:**
 - New `_shared/with-timeout.ts` utility (with vitest coverage). Every external API call (Vertex, OpenAI, ElevenLabs, Perplexity, Tavily, Brave, Resend, Stripe) now wraps in a timeout + retry contract.
-- Audio failure UX — if synthesis fails, the briefing card still shows segments + script.
-- Onboarding stall recovery — users who closed the app mid-onboarding can resume cleanly.
+- Audio failure UX - if synthesis fails, the briefing card still shows segments + script.
+- Onboarding stall recovery - users who closed the app mid-onboarding can resume cleanly.
 
 **Why it mattered:** A 3-minute briefing that hangs for 60 seconds because Perplexity is slow is a credibility hit. The 12-second wall-clock cap on provider fan-out + per-call timeouts means worst-case behaviour is bounded.
 
-### Week 5 — Observability (PR #97, merged 2026-04-23)
+### Week 5 - Observability (PR #97, merged 2026-04-23)
 
 **Shipped:**
 - Structured edge-function logger at `_shared/logger.ts`. JSON output: `{ ts, level, fn, msg, userId, duration_ms, error }`. Searchable in Supabase logs.
@@ -339,7 +339,7 @@ By mid-April 2026, the product surface area had grown to 74 edge functions, 48 h
 
 **Why it mattered:** When a leader emails saying "my briefing is broken," we can find the request in seconds, see the exact failure path, and fix it the same day.
 
-### Week 6 — Cleanup + e2e starter (PR #98, #100, #101, merged 2026-04-24 → 2026-04-26)
+### Week 6 - Cleanup + e2e starter (PR #98, #100, #101, merged 2026-04-24 → 2026-04-26)
 
 **Shipped:**
 - P2 backlog closure across UX, copy, and minor inconsistencies.
@@ -356,7 +356,7 @@ By mid-April 2026, the product surface area had grown to 74 edge functions, 48 h
 - 0 known revenue-path bugs
 - 0 known data-leak vectors
 - Structured logs in production, queryable per user / function / duration
-- This is the version sales/marketing AI agents can confidently sell — not "we plan to harden it" but "the audit is shipped and the tests prove it."
+- This is the version sales/marketing AI agents can confidently sell - not "we plan to harden it" but "the audit is shipped and the tests prove it."
 
 ---
 
@@ -364,13 +364,13 @@ By mid-April 2026, the product surface area had grown to 74 edge functions, 48 h
 
 ### Context
 
-By the end of Phase 7 the product was hardened but still single-loop: Memory Web feeds Context Export, Context Export feeds AI tools, AI tools accelerate decisions. The Briefing closed the daily loop. But the *weekly* loop — the leader's recurring rituals (Monday board update, Friday hiring sync, monthly investor update, RFP triage) — was still re-typed from a blank prompt every time, even by leaders with a rich Memory Web. The next leverage move was obvious: convert one weekly workflow into a permanent, downloadable Claude Skill the leader installs once and forgets.
+By the end of Phase 7 the product was hardened but still single-loop: Memory Web feeds Context Export, Context Export feeds AI tools, AI tools accelerate decisions. The Briefing closed the daily loop. But the *weekly* loop - the leader's recurring rituals (Monday board update, Friday hiring sync, monthly investor update, RFP triage) - was still re-typed from a blank prompt every time, even by leaders with a rich Memory Web. The next leverage move was obvious: convert one weekly workflow into a permanent, downloadable Claude Skill the leader installs once and forgets.
 
 Separately, the desktop experience had drifted into "stretched mobile markup" and started to feel below the executive-grade bar set by the rest of the product. Executive buyers judge by surface polish, and the desktop shell was the surface most demoed in sales calls.
 
 Phase 8 shipped both: the Agent Skill Builder and a desktop UI redesign.
 
-### Sub-track 1 — Agent Skill Builder (PR #103, merged 2026-05-04)
+### Sub-track 1 - Agent Skill Builder (PR #103, merged 2026-05-04)
 
 **What shipped:**
 
@@ -384,34 +384,34 @@ Phase 8 shipped both: the Agent Skill Builder and a desktop UI redesign.
 
 **Why it mattered:** The product moved from "make every AI conversation faster" to "make every AI conversation faster AND turn your weekly rituals into permanent agent infrastructure." The Three Honest Tests gate was the differentiator vs. generic macro / automation tools: most generate something from any input; CTRL refuses to generate junk and routes the leader to the right surface instead.
 
-### Sub-track 2 — World-Class Desktop Redesign (PR #104, merged 2026-05-06)
+### Sub-track 2 - World-Class Desktop Redesign (PR #104, merged 2026-05-06)
 
 **What shipped:**
 
 Desktop now uses a unified, desktop-native shell instead of stretched mobile markup. New primitives:
 
 - **`AuthedLayoutRoute`** wraps authenticated routes in `CommandPaletteProvider`.
-- **Command Palette** — global Cmd/Ctrl+K launcher. Pages opt into actions via custom `mm:capture-voice` and `mm:generate-briefing` window events.
+- **Command Palette** - global Cmd/Ctrl+K launcher. Pages opt into actions via custom `mm:capture-voice` and `mm:generate-briefing` window events.
 - **Refined sidebar** with user footer + keyboard hints.
 - **Sticky top bar** with page eyebrow + title + actions.
 - **Optional right rail** for context that pages opt into.
 
 Pages reworked:
 
-- **Landing** — bold asymmetric hero with animated Memory Web preview, sticky top nav with section anchors, multi-section scroll (how it works, three pillars, briefing teaser, privacy), final CTA. Mobile keeps the swipeable three-card experience.
-- **Dashboard (Memory Web)** — three-pane layout: rail nav, main canvas with big visualization + denser 3/4-column facts grid + pattern columns, right rail with today's briefing slot, quick actions, coverage bars, activity.
-- **Briefing** — brand-new desktop layout with hero player area, voice-steer bar, custom briefings strip, and a side rail for interests, suggestions, and weekly history. Mobile path preserved.
-- **Export wizard** — side rail shows step progress, current selection, and a contextual pro tip; wider main column for breathing room.
+- **Landing** - bold asymmetric hero with animated Memory Web preview, sticky top nav with section anchors, multi-section scroll (how it works, three pillars, briefing teaser, privacy), final CTA. Mobile keeps the swipeable three-card experience.
+- **Dashboard (Memory Web)** - three-pane layout: rail nav, main canvas with big visualization + denser 3/4-column facts grid + pattern columns, right rail with today's briefing slot, quick actions, coverage bars, activity.
+- **Briefing** - brand-new desktop layout with hero player area, voice-steer bar, custom briefings strip, and a side rail for interests, suggestions, and weekly history. Mobile path preserved.
+- **Export wizard** - side rail shows step progress, current selection, and a contextual pro tip; wider main column for breathing room.
 
 **Why it mattered:** Executive buyers judge desktop polish; this closed the gap.
 
-### Sub-track 3 — Pain-Anchored Skill Entry Points (PR #105, merged 2026-05-09)
+### Sub-track 3 - Pain-Anchored Skill Entry Points (PR #105, merged 2026-05-09)
 
 **What shipped:**
 
 Skill creation became a reflex on the page where the pain shows up, not a generic trip to `/context`:
 
-- **`AutomatePainCard`** on Edge view — chip row of declared blockers + active decisions.
+- **`AutomatePainCard`** on Edge view - chip row of declared blockers + active decisions.
 - **Zap button** on Memory Web blocker cards.
 - **Zap button** on `BriefingCard` `decision_trigger` segments (v1 + v2).
 
@@ -435,7 +435,7 @@ New hook: **`useUserPains`** returns the top N blockers + active decisions from 
 
 **Why it mattered:** Discoverability is a feature. A Skill Builder buried on `/context` would have been used once a quarter; entry points on every page where the pain shows up make it a weekly habit.
 
-### Sub-track 4 — Contrast + Scroll Polish (PR #106, merged 2026-05-11)
+### Sub-track 4 - Contrast + Scroll Polish (PR #106, merged 2026-05-11)
 
 **What shipped:**
 
@@ -452,8 +452,8 @@ New hook: **`useUserPains`** returns the top N blockers + active decisions from 
 
 - 4 PRs merged: #103 (Skill Builder), #104 (desktop redesign), #105 (pain-anchored entry points), #106 (contrast + scroll polish)
 - 1 new edge function (`generate-skill-export`, 4 internal files, 1035 LOC)
-- 3 new hooks (`useSkillExport`, `useUserPains`, `useRevealOnMount`) — total now 51
-- 1 new migration (`20260508000000_create_skill_exports.sql`) — total now 98
+- 3 new hooks (`useSkillExport`, `useUserPains`, `useRevealOnMount`) - total now 51
+- 1 new migration (`20260508000000_create_skill_exports.sql`) - total now 98
 - 5 new components in `src/components/edge/` for the Skill Builder UX + 1 in `src/components/memory-web/`
 - Desktop now feels like a desktop product, not stretched mobile markup
-- Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change.
+- Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change. (Historical note: Edge Pro moved to $29/month on 2026-05-30; existing $9 subscribers are grandfathered. All new checkouts are $29/mo.)

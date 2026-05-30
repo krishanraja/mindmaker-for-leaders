@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useToast } from './use-toast';
+import { attributionForStripe } from '@/lib/attribution';
 import type { EdgeSubscription, SubscriptionStatus } from '@/types/edge';
 
 export function useEdgeSubscription() {
@@ -58,7 +59,9 @@ export function useEdgeSubscription() {
   const subscribe = useCallback(async (): Promise<string | null> => {
     setIsProcessing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-edge-subscription');
+      const { data, error } = await supabase.functions.invoke('create-edge-subscription', {
+        body: { attribution: attributionForStripe() },
+      });
 
       // Supabase functions.invoke exposes the non-2xx body on error.context.
       // Pull a human-readable message from either channel so the UI can show

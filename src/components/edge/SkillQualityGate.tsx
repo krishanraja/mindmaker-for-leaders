@@ -9,7 +9,7 @@ interface SkillQualityGateProps {
 
 /**
  * Visual checklist showing which Section-7 quality gate checks the generated
- * skill passes. Failures are advisory, not blocking — they tell the leader
+ * skill passes. Failures are advisory, not blocking - they tell the leader
  * which parts of the skill are likely to behave imperfectly so they can
  * decide whether to regenerate.
  */

@@ -44,7 +44,7 @@ export function buildSkillUserPrompt({
     // description ends up using their actual language. Without this, the LLM
     // sometimes hallucinates a more abstract trigger from the transcript.
     lines.push(
-      `SEED_PAIN (the leader explicitly chose this ${describeKind(seed.kind)} as the trigger for this skill — anchor the skill in solving it):`,
+      `SEED_PAIN (the leader explicitly chose this ${describeKind(seed.kind)} as the trigger for this skill - anchor the skill in solving it):`,
       `"""${seed.text.trim()}"""`,
       ``,
     );

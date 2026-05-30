@@ -15,6 +15,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Clamp attribution to Stripe metadata limits (<=50 keys, <=500 chars/value).
+function sanitizeAttr(obj: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  let n = 0;
+  for (const [k, v] of Object.entries(obj || {})) {
+    if (n >= 40) break;
+    if (v == null) continue;
+    out[String(k).slice(0, 40)] = String(v).slice(0, 480);
+    n++;
+  }
+  return out;
+}
+
 const DIAGNOSTIC_PRICE_ID = "price_1TctCeHGqJqsGEJL1gQZsmQ9"; // $49 Full Diagnostic (provisioned 2026-05-30; replaces stale $15 price_1THBLw)
 const DEEP_CONTEXT_PRICE_ID = "price_1SojAqHGqJqsGEJLDEd6BqMG"; // $29 Deep Context (verified live in Stripe)
 const BUNDLE_PRICE_ID = "price_1SojArHGqJqsGEJLtmmGW7p3"; // $69 Bundle (verified live in Stripe)
@@ -80,6 +93,7 @@ serve(async (req) => {
 
     // Rate limiting: 10 payment sessions per hour per user (using actual user ID)
     const requestBody = await req.json();
+    const attribution = sanitizeAttr((requestBody && requestBody.attribution) || {});
     const parsed = InputSchema.safeParse(requestBody);
     if (!parsed.success) {
       return new Response(
@@ -175,6 +189,15 @@ serve(async (req) => {
         assessment_id,
         user_id: user.id,
         upgrade_type: upgrade_type,
+        ...attribution,
+      },
+      payment_intent_data: {
+        metadata: {
+          assessment_id,
+          user_id: user.id,
+          upgrade_type: upgrade_type,
+          ...attribution,
+        },
       },
     });
 

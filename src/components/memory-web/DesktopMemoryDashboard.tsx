@@ -645,7 +645,7 @@ export function DesktopMemoryDashboard() {
         rightRail={rightRail}
       >
         <div className="space-y-6">
-          {/* Input bar — sticky-feeling, primary action */}
+          {/* Input bar - sticky-feeling, primary action */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-sm hover:border-accent/30 focus-within:border-accent/40 transition-colors">
               <button

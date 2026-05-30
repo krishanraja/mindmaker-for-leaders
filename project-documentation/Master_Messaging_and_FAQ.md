@@ -49,7 +49,7 @@ The big consultancies (McKinsey, BCG, Deloitte) are selling 6-figure decks built
 ## PART 3: THE CTRL APP (THE PORTABLE CONTEXT LAYER)
 
 **What is CTRL?**
-A portable AI memory web. A private, fundamental brain that sits underneath tools like Cursor, Claude, or ChatGPT. It organizes, verifies, and retains your specific context permanently. Plus a daily 3-minute audio briefing built from your real priorities, where every segment is anchored to a specific profile fact. Plus an Agent Skill Builder that converts one weekly leader workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/` and forgets — it auto-triggers whenever the team's language matches.
+A portable AI memory web. A private, fundamental brain that sits underneath tools like Cursor, Claude, or ChatGPT. It organizes, verifies, and retains your specific context permanently. Plus a daily 3-minute audio briefing built from your real priorities, where every segment is anchored to a specific profile fact. Plus an Agent Skill Builder that converts one weekly leader workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/` and forgets - it auto-triggers whenever the team's language matches.
 
 **The "Aha" Moment (The Origin Story):**
 The moment people tried to export their memories from ChatGPT to Claude and realized they were hallucinated, inaccurate, or trapped. AI models will constantly change. Vendor lock-in is a massive risk. Your context and memories are too precious to rent. You need a layer of controlled trust over a technology that hallucinates.
@@ -58,7 +58,7 @@ The moment people tried to export their memories from ChatGPT to Claude and real
 Every time you test a new model or open Cursor, you start from zero. You spend cycles re-explaining your architecture. CTRL fixes this friction. Stop renting your brain to walled gardens and build a compounding advantage.
 
 **The Pitch to Enterprise (The Trojan Horse):**
-We give CTRL away free for the core experience (Memory Web, Context Export, basic Briefing). Once leaders use it and map their context, it inevitably exposes the reality gap in their organization — their tech might be strong, but their governance or commercial positioning is broken. That realization sells the Mindmaker Sprint.
+We give CTRL away free for the core experience (Memory Web, Context Export, basic Briefing). Once leaders use it and map their context, it inevitably exposes the reality gap in their organization - their tech might be strong, but their governance or commercial positioning is broken. That realization sells the Mindmaker Sprint.
 
 **The CTRL stack at a glance (today):**
 - React 18 + TypeScript + Vite + Tailwind + shadcn/ui front-end. Desktop ships a unified desktop-native shell (sticky top bar + optional right rail + Cmd/Ctrl+K Command Palette) instead of stretched mobile markup.
@@ -96,7 +96,7 @@ One decision. One trade-off analysis. One commitment. Working systems and a 90-d
 | Full Diagnostic | $49 one-time | Leaders who want a one-shot deep audit |
 | Deep Context Upgrade | $29 one-time | Pre-meeting / strategy sprint prep |
 | Diagnostic + Deep Context Bundle | $69 one-time (saves $10) | Default upsell after Memory Web is built |
-| Edge Pro | $9/month | Active leaders who treat AI as part of weekly cadence (unlimited Edge artifacts, all 7 briefing types, email delivery, Agent Skill Builder, Custom Voice Export) |
+| Edge Pro | $29/month | Active leaders who treat AI as part of weekly cadence (unlimited Edge artifacts, all 7 briefing types, email delivery, Agent Skill Builder, Custom Voice Export) |
 | Mindmaker Enterprise Sprint | $15K-$50K | Exec teams |
 | Mindmaker Portfolio Engagement | $5K-$25K | VC / PE / consulting partners |
 
@@ -123,22 +123,22 @@ A: "How do I identify who I should replace in my business versus who I should em
 A: The Creator Economy allowed everyone to broadcast. The Builder Economy means everyone will build. People will "vibe code" software, and it will change the paradigm of work entirely. Mindmaker is built to arm the leaders of this new economy.
 
 **Q: Is CTRL secure for executive use?**
-A: Yes. Memory Web content is encrypted at rest (AES-256-GCM), decrypted only inside edge functions and never client-side. Stripe webhooks are signature-verified and idempotent. Account deletion is end-to-end. Briefing rate limits are enforced. There is no Slack, email, or calendar integration — the data flow is exactly what you spoke or typed, nothing else.
+A: Yes. Memory Web content is encrypted at rest (AES-256-GCM), decrypted only inside edge functions and never client-side. Stripe webhooks are signature-verified and idempotent. Account deletion is end-to-end. Briefing rate limits are enforced. There is no Slack, email, or calendar integration - the data flow is exactly what you spoke or typed, nothing else.
 
 **Q: How is the Briefing different from a newsletter or Feedly?**
-A: Newsletters serve everyone the same content. Feedly is a tag-and-rank UI on top of RSS. CTRL builds a custom **lens** per user per briefing type per day from your active decisions, missions, watchlist, and declared interests, scores live headlines against it with embeddings, then writes audio in your register. Every segment shows "Anchored to: <your specific priority>" — auditable relevance. Bookmark to pin a beat. Ban to semantically kill a topic forever. The lens learns from a nightly aggregator that promotes 3+ thumbs-down on the same signature into a persistent `-0.4` weight delta.
+A: Newsletters serve everyone the same content. Feedly is a tag-and-rank UI on top of RSS. CTRL builds a custom **lens** per user per briefing type per day from your active decisions, missions, watchlist, and declared interests, scores live headlines against it with embeddings, then writes audio in your register. Every segment shows "Anchored to: <your specific priority>" - auditable relevance. Bookmark to pin a beat. Ban to semantically kill a topic forever. The lens learns from a nightly aggregator that promotes 3+ thumbs-down on the same signature into a persistent `-0.4` weight delta.
 
 **Q: What about model lock-in? You mention OpenAI and Vertex AI.**
-A: We use Vertex AI (Gemini 2.0 Flash) as primary and OpenAI GPT-4o as fallback inside the AI generation pipeline — this is hidden infrastructure, not a buyer commitment. The user-facing value is **portable context**: your Memory Web exports to ChatGPT, Claude, Gemini, Cursor, Claude Code, or raw markdown. The leader is never locked into our model choices. They take their context anywhere.
+A: We use Vertex AI (Gemini 2.0 Flash) as primary and OpenAI GPT-4o as fallback inside the AI generation pipeline - this is hidden infrastructure, not a buyer commitment. The user-facing value is **portable context**: your Memory Web exports to ChatGPT, Claude, Gemini, Cursor, Claude Code, or raw markdown. The leader is never locked into our model choices. They take their context anywhere.
 
 **Q: Can I delete everything if I leave?**
 A: Yes. Account deletion removes Memory Web facts, briefings, audio artifacts, decisions, missions, assessments, and Skill Builder exports. Audit Week 2 closed an assessment-data leak and codified the storage bucket policy. Your data does not train any AI model. Your data is yours.
 
 **Q: What is the Agent Skill Builder and why should I care?**
-A: It is the third surface on `/context`, alongside Context Export and Custom Voice Export. Edge Pro gated. The leader describes one workflow they do at least weekly — voice or text — and CTRL hands them a downloadable, agentskills.io-compliant Claude Skill (a `SKILL.md` plus references, test prompts, and an install guide, packaged as a ZIP). They drop the ZIP into `~/.claude/skills/` and the skill auto-triggers whenever their team's language matches. Two minutes of speaking, permanent agent infrastructure they own.
+A: It is the third surface on `/context`, alongside Context Export and Custom Voice Export. Edge Pro gated. The leader describes one workflow they do at least weekly - voice or text - and CTRL hands them a downloadable, agentskills.io-compliant Claude Skill (a `SKILL.md` plus references, test prompts, and an install guide, packaged as a ZIP). They drop the ZIP into `~/.claude/skills/` and the skill auto-triggers whenever their team's language matches. Two minutes of speaking, permanent agent infrastructure they own.
 
 **Q: Why isn't the Skill Builder just another "AI macro" tool?**
-A: Three reasons. (1) The Three Honest Tests triage gate refuses to generate a skill when the input is really a Memory Web fact, a Custom Instruction, or a Saved Style — it routes the leader to the right surface instead. Most tools generate junk; CTRL refuses. (2) The output is agentskills.io-compliant, not a saved prompt — real agent infrastructure that works in Claude Code, Claude.ai, and Cursor. (3) Pain-anchored entry points: every blocker on Edge, every Memory Web blocker card, every Briefing decision-trigger segment has a one-tap zap into the Skill Builder pre-seeded with that pain. Discovery is built into the pages where the pain shows up.
+A: Three reasons. (1) The Three Honest Tests triage gate refuses to generate a skill when the input is really a Memory Web fact, a Custom Instruction, or a Saved Style - it routes the leader to the right surface instead. Most tools generate junk; CTRL refuses. (2) The output is agentskills.io-compliant, not a saved prompt - real agent infrastructure that works in Claude Code, Claude.ai, and Cursor. (3) Pain-anchored entry points: every blocker on Edge, every Memory Web blocker card, every Briefing decision-trigger segment has a one-tap zap into the Skill Builder pre-seeded with that pain. Discovery is built into the pages where the pain shows up.
 
 **Q: Where does Skill Builder fit in the Edge Pro upsell?**
-A: Edge Pro at $9/month already unlocked unlimited Edge artifacts, all 7 briefing types, email delivery, and Custom Voice Export. v5.2 added unlimited Agent Skill Builder generation to the same $9/month — no price change. The Pro tier is now the obvious purchase for any leader who runs the same weekly rituals (board updates, hiring syncs, RFP triage, investor updates).
+A: Edge Pro is $29/month (moved from $9 on 2026-05-30; existing subscribers are grandfathered). It includes unlimited Edge artifacts, all 7 briefing types, email delivery, Custom Voice Export, and unlimited Agent Skill Builder generation. The Pro tier is now the obvious purchase for any leader who runs the same weekly rituals (board updates, hiring syncs, RFP triage, investor updates).

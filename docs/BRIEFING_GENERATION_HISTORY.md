@@ -1,4 +1,4 @@
-# Briefing Generation — Known Failure Modes & Fix History
+# Briefing Generation - Known Failure Modes & Fix History
 
 > **Purpose.** Every "generate/refresh briefing hangs / silently fails /
 > shows Generate CTA mid-flight" bug we've shipped has come back in a new
@@ -30,7 +30,7 @@ Phase 4b UPDATE script_text, training_material_version
 Phase 5  client poll picks up row and stops spinning
 ```
 
-Client side: `src/hooks/useBriefing.ts` — `generate()` races the invoke
+Client side: `src/hooks/useBriefing.ts` - `generate()` races the invoke
 against `GENERATE_TIMEOUT` (60s since `3abe1ce`; 30s before that), then
 polls `briefings` table every 3s up to `MAX_POLLS * POLL_INTERVAL = 120s`.
 
@@ -56,82 +56,82 @@ triggered once `script_text` is populated.
 
 ---
 
-## Timeline — every commit that touched this surface
+## Timeline - every commit that touched this surface
 
 Order: oldest → newest. Each entry: commit, one-line what-it-did,
 what-went-wrong-before.
 
 ### 2025 (original implementation + early hangs)
 
-- **78bbbd8** `feat: CTRL Briefing - personalised AI news podcast (Pro feature)` —
+- **78bbbd8** `feat: CTRL Briefing - personalised AI news podcast (Pro feature)`  - 
   initial implementation; GPT-4o + ElevenLabs TTS end-to-end inside one function.
-- **7730992** `fix: integrate BriefingCard into actual Memory Web dashboards` —
+- **7730992** `fix: integrate BriefingCard into actual Memory Web dashboards`  - 
   wired the card into desktop + mobile; revealed that mobile never had a
   Generate CTA.
 - **185d96d** `fix: briefing UX improvements`.
 - **3ce06e3** `fix: add missing Generate Briefing CTA on mobile dashboard`.
-- **9c84367** `Fix app hanging on "Extracting facts & patterns..." screen` —
+- **9c84367** `Fix app hanging on "Extracting facts & patterns..." screen`  - 
   **F4**: stale closure in `advance()`. Switched to functional state
   updater; added 30s auto-advance safety.
 
-### Early hang saga — infinite spinner on CTRL Briefing
+### Early hang saga - infinite spinner on CTRL Briefing
 
-- **b900c66** `resolve CTRL Briefing infinite spinner and improve architecture` —
+- **b900c66** `resolve CTRL Briefing infinite spinner and improve architecture`  - 
   **F8**: decoupled TTS. `generate-briefing` now returns after GPT-4o
   (~5-15s) instead of blocking on ElevenLabs (30-90s). Added 30s client
   timeout on generate + 60s audio poll.
-- **0ee9cae** `Fix audio briefing: use synthesis response, extend polling, add retry` —
+- **0ee9cae** `Fix audio briefing: use synthesis response, extend polling, add retry`  - 
   **F5**. Moved synthesis trigger into `usePollAudio`. Poll 60s → 120s.
   Dead "Retry later" text became a real button.
-- **91b857c** `Overhaul audio briefing: personalize headlines, ground script in user context` —
+- **91b857c** `Overhaul audio briefing: personalize headlines, ground script in user context`  - 
   personalization + user-context grounding. Added guard rails so the AI
   can't name the product or refer to the user in third person.
 
-### Second hang saga — "Generate" CTA flashing during live run
+### Second hang saga - "Generate" CTA flashing during live run
 
 - **6d2a8b8** `Fix verify button and improve briefing personalization`.
 - **4958679** `Redesign news briefing: sharper curation, custom types, dedicated page`.
 - **28eb96c** `Personalize news briefing pipeline + fix duration badge wrapping`.
 - **69da09d** `Add news profile line for personalized search + shorten briefing title`.
 - **e1cd253** `Fix home tab layout and overhaul news curation personalization`.
-- **6a1b8dd** `Fix briefing cache blocking all updates + restructure card layout` —
+- **6a1b8dd** `Fix briefing cache blocking all updates + restructure card layout`  - 
   cache invalidation bug + layout.
 - **b0d2f8c** `restructure BriefingCard so expanded headlines span full card width`.
 - **1559dac** `Add importance-ranked memories and diverse search topics to briefing curation`.
 - **337ba4f** `Resolve merge conflict in BriefingCard.tsx`.
 
-### Third hang saga — timeout < pipeline
+### Third hang saga - timeout < pipeline
 
 - **ff97283** `stabilize briefing panel height to prevent memory web layout shifts`.
-- **3121000** `prevent infinite hang when briefing generation times out` —
+- **3121000** `prevent infinite hang when briefing generation times out`  - 
   **F10**. `useAutoGenerateBriefing.refetch()` was inside the success path
   only. Moved to always run.
-- **9e0477a** `replace timer-based bridge with three-state fallback` —
+- **9e0477a** `replace timer-based bridge with three-state fallback`  - 
   `generating` banner auto-clears after 5s if briefing never arrives.
-- **b716d99** `replace timeout-based briefing generation with polling architecture` —
+- **b716d99** `replace timeout-based briefing generation with polling architecture`  - 
   **F1** (canonical). Added `fetchWithTimeout` to every external call
   (Perplexity 15s, Tavily/Brave 8s, OpenAI curation 10s, script 20s).
   Split generation into two phases (headline-only insert → full update).
   Client now polls DB instead of racing a timeout. The commit message is
   explicit: "Previous fixes (6 in 9 days) patched UI state transitions but
   never addressed the timeout mismatch."
-- **0f16f85** `refetch before setting generating=false to prevent CTA flash` —
+- **0f16f85** `refetch before setting generating=false to prevent CTA flash`  - 
   **F2**. Swapped the order of the two side-effects in the poll handler.
-- **7ecbeb7** `insert headlines immediately after news fetch (before curation)` —
+- **7ecbeb7** `insert headlines immediately after news fetch (before curation)`  - 
   **F3**. Moved the DB insert upstream so raw headlines land in ~7-15s.
-- **4006053** `add briefing regeneration and fix mobile layout width` —
+- **4006053** `add briefing regeneration and fix mobile layout width`  - 
   **F6**. Added `force` parameter; fallback curation now receives user
   context.
-- **44c3e12** `repair voice transcription and show headlines fast` —
+- **44c3e12** `repair voice transcription and show headlines fast`  - 
   **F3**, **F7**. Preliminary insert + 3s DB poll. Also fixed AI Landscape
   segment being clobbered by Perplexity.
-- **fe6aeeb** `briefing card z-index overlay and speed up generation` —
+- **fe6aeeb** `briefing card z-index overlay and speed up generation`  - 
   **F9**. `Promise.any` race across news providers. `gpt-4o` →
   `gpt-4o-mini` default for script gen (2-3× speedup).
 
-### Data-isolation PR (#83) — the most recent regression point
+### Data-isolation PR (#83) - the most recent regression point
 
-- **3253471** `harden data isolation, extraction guardrails, per-target exports, training file` —
+- **3253471** `harden data isolation, extraction guardrails, per-target exports, training file`  - 
   added two **serial DB reads** before the OpenAI call in
   `generate-briefing`: `loadTrainingForUser()` and
   `user_briefing_directives`. This tipped cold starts past the 30s client
@@ -147,8 +147,8 @@ what-went-wrong-before.
   must exist or `loadTrainingForUser` silently falls back to the in-code
   skeleton (`FALLBACK` in `supabase/functions/_shared/training-loader.ts`).
 
-- **3abe1ce** `raise briefing generation timeout from 30s to 60s` —
-  patches **F1** for the post-#83 pipeline. Not a redesign — just reflects
+- **3abe1ce** `raise briefing generation timeout from 30s to 60s`  - 
+  patches **F1** for the post-#83 pipeline. Not a redesign - just reflects
   that the pipeline grew.
 
 ---
@@ -193,7 +193,7 @@ When a user reports "briefing hangs" or "headlines don't refresh":
    platform-managed), but verify with a quick PostgREST ping from inside
    the function if in doubt. *Historical note: one symptom that looks
    like this is the `ingest-training-material` function returning 401 to
-   a locally-held service key — that's a local-key-stale problem, not a
+   a locally-held service key - that's a local-key-stale problem, not a
    function-env problem, because function env is platform-injected.*
 
 6. **Check client polling.** `MAX_POLLS=40, POLL_INTERVAL=3s → 120s cap`.
@@ -208,13 +208,13 @@ When a user reports "briefing hangs" or "headlines don't refresh":
 - **Adding another client-side timeout as a "safety net"** without
   aligning it to the server pipeline. Every previous attempt to do this
   failed and had to be reverted. The polling architecture (`b716d99`) is
-  the correct pattern — fire-and-poll, don't race.
+  the correct pattern - fire-and-poll, don't race.
 - **Inserting the final row only after every phase completes.** Always
   write a partial row early so the client has something to poll for.
 - **Fire-and-forget the synthesis response.** It carries the audio URL
   (`0ee9cae`). If you must fire-and-forget for latency, still write the
   URL to the DB row so polling can find it.
-- **Sequential provider cascades for news.** Use `Promise.any` —
+- **Sequential provider cascades for news.** Use `Promise.any`  - 
   Perplexity alone can take 15s+.
 - **New serial DB reads in the hot path** without raising the client
   timeout in the same commit. This was the proximate cause of the
@@ -224,17 +224,17 @@ When a user reports "briefing hangs" or "headlines don't refresh":
 
 ## Related files
 
-- `supabase/functions/generate-briefing/index.ts` — the pipeline
-- `supabase/functions/_shared/training-loader.ts` — training material fetch + cache
-- `supabase/functions/_shared/fact-guardrails.ts` — typography + banned-phrase post-processing
-- `supabase/functions/synthesize-briefing/index.ts` — TTS
-- `src/hooks/useBriefing.ts` — client `generate`, polling, `GENERATE_TIMEOUT`
-- `src/components/briefing/BriefingCard.tsx` — three-state render
-- `training/anchor.yaml` — seed source for `training_material`
-- `scripts/seed-training-material.ts` — seeder
+- `supabase/functions/generate-briefing/index.ts` - the pipeline
+- `supabase/functions/_shared/training-loader.ts` - training material fetch + cache
+- `supabase/functions/_shared/fact-guardrails.ts` - typography + banned-phrase post-processing
+- `supabase/functions/synthesize-briefing/index.ts` - TTS
+- `src/hooks/useBriefing.ts` - client `generate`, polling, `GENERATE_TIMEOUT`
+- `src/components/briefing/BriefingCard.tsx` - three-state render
+- `training/anchor.yaml` - seed source for `training_material`
+- `scripts/seed-training-material.ts` - seeder
 
 ---
 
 *Last updated: 2026-04-12 after `3abe1ce`. When adding an entry, keep the
-F-code table current — future regressions almost always map back onto one
+F-code table current - future regressions almost always map back onto one
 of these ten failure modes.*

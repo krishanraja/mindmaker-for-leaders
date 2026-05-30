@@ -8,7 +8,7 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 
 ## Leader Outcomes
 
-### Immediate Outcomes (First Session — 2 Minutes)
+### Immediate Outcomes (First Session - 2 Minutes)
 
 **Portable AI Double Created**
 - AI double built from 3 guided voice questions. No typing. No forms.
@@ -109,12 +109,12 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 
 **Edge Pro Upgrade Path**
 - Used Edge to generate a board memo, strategy doc, or email in their own register.
-- ~25-30% of engaged users convert to Edge Pro at $9/month within 30 days.
+- ~25-30% of engaged users convert to Edge Pro at $29/month within 30 days.
 
 **First Agent Skill Shipped**
 - The leader has hit a pain-anchored zap (Edge `AutomatePainCard`, Memory blocker, Briefing `decision_trigger`) at least once and generated their first Agent Skill.
-- ZIP downloaded and installed into Claude Code / Claude.ai / Cursor — they paste a test prompt and watch the skill auto-trigger. That moment ("the skill just fired in my Claude with my voice") is the second "aha" after the first Context Export.
-- The Three Honest Tests gate routed at least one input to Memory Web or Custom Instructions instead of generating a junk skill — they learn to trust the triage, not work around it.
+- ZIP downloaded and installed into Claude Code / Claude.ai / Cursor - they paste a test prompt and watch the skill auto-trigger. That moment ("the skill just fired in my Claude with my voice") is the second "aha" after the first Context Export.
+- The Three Honest Tests gate routed at least one input to Memory Web or Custom Instructions instead of generating a junk skill - they learn to trust the triage, not work around it.
 - ~15-20% of Edge Pro users have at least one shipped skill within 30 days of subscribing.
 
 **What Leaders Say:**
@@ -217,7 +217,7 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 
 **Revenue Indicators (for product/marketing)**
 - Free → $49 Diagnostic conversion: 5-10% in first 30 days
-- Free → $9/mo Edge Pro conversion: 15-25% by day 30 (higher among Memory Web active users)
+- Free → $29/mo Edge Pro conversion: 15-25% by day 30 (higher among Memory Web active users)
 - Bundle ($69) attach rate: ~30% of Diagnostic buyers
 - Net revenue retention on Edge Pro: target 110%+ via expansion to add-ons
 
@@ -225,12 +225,12 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 
 ### Anti-Metrics (What We Do Not Measure)
 
-- **Number of facts stored** — Quality of context over quantity. A Memory Web with 30 sharp facts beats 300 generic ones.
-- **Time spent in CTRL** — We measure value delivered per second, not time on platform. The goal is speed, not engagement.
-- **Feature usage breadth** — Focused outcomes over feature bloat. Using one tool well beats touching every feature.
-- **Quiz scores** — The diagnostic is a mirror, not an exam. We do not gamify literacy.
-- **Daily active usage** — Leaders are busy. If CTRL makes them faster three times a week, that is a win. We do not need daily dopamine loops.
-- **Briefing word count** — A 500-word briefing that surfaces one decision-changing story beats a 1,500-word one that surfaces none.
+- **Number of facts stored** - Quality of context over quantity. A Memory Web with 30 sharp facts beats 300 generic ones.
+- **Time spent in CTRL** - We measure value delivered per second, not time on platform. The goal is speed, not engagement.
+- **Feature usage breadth** - Focused outcomes over feature bloat. Using one tool well beats touching every feature.
+- **Quiz scores** - The diagnostic is a mirror, not an exam. We do not gamify literacy.
+- **Daily active usage** - Leaders are busy. If CTRL makes them faster three times a week, that is a win. We do not need daily dopamine loops.
+- **Briefing word count** - A 500-word briefing that surfaces one decision-changing story beats a 1,500-word one that surfaces none.
 
 ---
 
@@ -238,14 +238,14 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 
 Use these outcomes as proof points in copy:
 
-- **"2 minutes to first export"** — verified by GuidedFirstExperience telemetry
-- **"30+ minutes a day reclaimed"** — context-setup time + news scrolling time eliminated
-- **"Anchored to:" promise** — every Briefing segment can prove its relevance with a specific profile fact
-- **"Bans persist forever"** — semantic, not keyword; signature-keyed so feedback survives daily lens regeneration
-- **"3-minute audio briefing"** — concrete, time-boxed, measurable
-- **"Edge Pro $9/month"** — anchor pricing in copy; cheaper than a single coffee per week, cheaper than any AI tool subscription that already lives in the leader's stack
-- **Earliest "WOW" moment** — accept seed beats → first Briefing audio plays → leader says "this is actually about me" within first 24h
-- **Strongest retention signal** — first Bookmark tap; correlates with continued usage and Pro upgrade
+- **"2 minutes to first export"** - verified by GuidedFirstExperience telemetry
+- **"30+ minutes a day reclaimed"** - context-setup time + news scrolling time eliminated
+- **"Anchored to:" promise** - every Briefing segment can prove its relevance with a specific profile fact
+- **"Bans persist forever"** - semantic, not keyword; signature-keyed so feedback survives daily lens regeneration
+- **"3-minute audio briefing"** - concrete, time-boxed, measurable
+- **"Edge Pro $29/month"** - anchor pricing in copy; cheaper than a single coffee per week, cheaper than any AI tool subscription that already lives in the leader's stack
+- **Earliest "WOW" moment** - accept seed beats → first Briefing audio plays → leader says "this is actually about me" within first 24h
+- **Strongest retention signal** - first Bookmark tap; correlates with continued usage and Pro upgrade
 
 ---
 

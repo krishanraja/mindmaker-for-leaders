@@ -6,7 +6,7 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
-## [5.2] — 2026-05 — Phase 8: Agent Skill Builder + World-Class Desktop Redesign
+## [5.2] - 2026-05 - Phase 8: Agent Skill Builder + World-Class Desktop Redesign
 
 ### Added
 - **Agent Skill Builder** (PR #103): new edge function `generate-skill-export` (Edge Pro gated) implementing the full voice-to-Skill pipeline. Three Honest Tests triage gate routes Memory Facts / Custom Instructions / Saved Styles to the right surface instead of generating junk. Quality gate enforces 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, valid name format. ZIP packaging follows the agentskills.io standard (`SKILL.md` + `references/` + test prompts + install guide). New `skill_exports` table with RLS + per-user log. Frontend: `SkillExportCard` on `/context` Step 1, `SkillCaptureSheet` (voice/text), `SkillPreviewSheet` (download + quality checklist + install guide for Claude Code / Claude.ai / Cursor). New hook `useSkillExport`.
@@ -15,7 +15,7 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 - **Contrast + scroll polish** (PR #106): solid /15 tints + visible borders on warm pills + Skill Builder seed banner / pain picker. Dashboard Edge mobile scroller clears the floating mic FAB. Save/restore dashboard scroll position around `SkillCaptureSheet`. New hook `useRevealOnMount` for smooth below-the-fold reveals.
 
 ### Changed
-- **Edge Pro** ($9/month) now also includes unlimited Agent Skill Builder generation + Custom Voice Export. No price change.
+- **Edge Pro** ($9/month at time of release) now also includes unlimited Agent Skill Builder generation + Custom Voice Export. No price change at time of release. (Edge Pro moved to $29/month on 2026-05-30; existing $9 subscribers are grandfathered.)
 - `/context` Step 1: `SkillExportCard` promoted above the Custom Voice card; "Custom via Voice" renamed to "Custom context export" (was misleadingly claiming to produce a skill).
 - `generate-skill-export` accepts optional `seed { kind, text }` in body; prompt grounds extraction in the leader's actual pain language when present.
 
@@ -27,17 +27,17 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
-## [5.1] — 2026-04 — Phase 7: Six-Week Audit Hardening
+## [5.1] - 2026-04 - Phase 7: Six-Week Audit Hardening
 
 The product survived six thematic audit weeks, each shipped as its own PR with a clear boundary.
 
 ### Added
-- **Audit Week 1 — Revenue path** (PR #93): Mandatory Stripe webhook signature verification. New `stripe_events_processed` table for webhook idempotency. Briefing rate limits via `_shared/rateLimit.ts`. E2E test `tests/stripe-webhook-idempotency.spec.ts`.
-- **Audit Week 2 — Data path** (PR #94): Closed assessment data leak. Codified `ctrl-briefings` storage bucket policy. End-to-end account deletion (Memory Web + briefings + audio + decisions + missions + assessments + all subordinate rows). E2E test `tests/account-deletion.spec.ts`.
-- **Audit Week 3 — UX** (PR #95): Killed onboarding gate. Fixed NorthStar stub. Voice permission recovery. Killed surveillance copy. Removed all "coming soon" placeholders for unimplemented affordances.
-- **Audit Week 4 — Reliability** (PR #99): New `_shared/with-timeout.ts` utility (with vitest coverage) wrapping every external API call. Audio failure UX so briefing card still renders if synthesis fails. Onboarding stall recovery.
-- **Audit Week 5 — Observability** (PR #97): Structured edge-function JSON logger at `_shared/logger.ts`. CI gate prevents `console.log` regressions.
-- **Audit Week 6 — Cleanup + e2e** (PR #98, #100, #101): P2 backlog closure. 5 more e2e specs (auth, briefing journey, briefing rate limits, sparse profile + the two from earlier weeks). New `ai_response_cache` table for lens + embedding caching. Lint cleanup.
+- **Audit Week 1 - Revenue path** (PR #93): Mandatory Stripe webhook signature verification. New `stripe_events_processed` table for webhook idempotency. Briefing rate limits via `_shared/rateLimit.ts`. E2E test `tests/stripe-webhook-idempotency.spec.ts`.
+- **Audit Week 2 - Data path** (PR #94): Closed assessment data leak. Codified `ctrl-briefings` storage bucket policy. End-to-end account deletion (Memory Web + briefings + audio + decisions + missions + assessments + all subordinate rows). E2E test `tests/account-deletion.spec.ts`.
+- **Audit Week 3 - UX** (PR #95): Killed onboarding gate. Fixed NorthStar stub. Voice permission recovery. Killed surveillance copy. Removed all "coming soon" placeholders for unimplemented affordances.
+- **Audit Week 4 - Reliability** (PR #99): New `_shared/with-timeout.ts` utility (with vitest coverage) wrapping every external API call. Audio failure UX so briefing card still renders if synthesis fails. Onboarding stall recovery.
+- **Audit Week 5 - Observability** (PR #97): Structured edge-function JSON logger at `_shared/logger.ts`. CI gate prevents `console.log` regressions.
+- **Audit Week 6 - Cleanup + e2e** (PR #98, #100, #101): P2 backlog closure. 5 more e2e specs (auth, briefing journey, briefing rate limits, sparse profile + the two from earlier weeks). New `ai_response_cache` table for lens + embedding caching. Lint cleanup.
 
 ### Changed
 - All edge-function logging migrated to structured JSON via `_shared/logger.ts`
@@ -52,15 +52,15 @@ The product survived six thematic audit weeks, each shipped as its own PR with a
 
 ---
 
-## [5.0] — 2026-04 — Phase 6: Briefing v2 (Evidence-Based Relevance Pipeline)
+## [5.0] - 2026-04 - Phase 6: Briefing v2 (Evidence-Based Relevance Pipeline)
 
 ### Added
 - **Seven-stage briefing pipeline**: importance lens → query planner → multi-provider fan-out (Perplexity + Tavily + Brave, 12s cap) → embedding dedupe + scoring (`text-embedding-3-small` + pgvector) → budget-constrained curation → script generation (gpt-4o) → audio synthesis (ElevenLabs)
-- Every retained segment carries `lens_item_id`, `relevance_score`, `matched_profile_fact` — auditable relevance, not asserted relevance
+- Every retained segment carries `lens_item_id`, `relevance_score`, `matched_profile_fact` - auditable relevance, not asserted relevance
 - `briefing-diagnose` edge function: read-only "why these stories?" endpoint
-- `briefing_interests` table — user-declared beats / entities / excludes (Settings → Interests tab + inline Add buttons)
-- `industry_beat_library` table — 11 industries pre-seeded (creator economy, SaaS, healthcare, finance/fintech, consulting, e-commerce/retail, media/publishing, edtech, biotech, legal, generic) with 6-8 beats × 4-7 entities each
-- `briefing_lens_feedback` table — persistent semantic negative feedback. Explicit Ban writes -1.0 delta immediately. Aggregator (`sp_aggregate_briefing_feedback` plpgsql + pg_cron at 03:07 UTC) promotes 3+ thumbs-down on same signature to -0.4 delta.
+- `briefing_interests` table - user-declared beats / entities / excludes (Settings → Interests tab + inline Add buttons)
+- `industry_beat_library` table - 11 industries pre-seeded (creator economy, SaaS, healthcare, finance/fintech, consulting, e-commerce/retail, media/publishing, edtech, biotech, legal, generic) with 6-8 beats × 4-7 entities each
+- `briefing_lens_feedback` table - persistent semantic negative feedback. Explicit Ban writes -1.0 delta immediately. Aggregator (`sp_aggregate_briefing_feedback` plpgsql + pg_cron at 03:07 UTC) promotes 3+ thumbs-down on same signature to -0.4 delta.
 - `briefing_v2_enabled` per-user opt-in flag + `BRIEFING_V2_ENABLED_DEFAULT` env var
 - pgvector + pgcrypto + pg_cron extensions enabled
 
@@ -71,7 +71,7 @@ The product survived six thematic audit weeks, each shipped as its own PR with a
 
 ---
 
-## [4.1] — 2026-03 — Mindmaker → CTRL Rebrand
+## [4.1] - 2026-03 - Mindmaker → CTRL Rebrand
 
 ### Changed
 - Product renamed from **Mindmaker** to **CTRL: Clarity for Leaders** across all user-facing surfaces
@@ -79,7 +79,7 @@ The product survived six thematic audit weeks, each shipped as its own PR with a
 
 ---
 
-## [4.0] — 2026-02 to 2026-03 — Memory Web, Context Export, Portable AI Double
+## [4.0] - 2026-02 to 2026-03 - Memory Web, Context Export, Portable AI Double
 
 ### Added
 - **Memory Web**: voice-first context extraction with encrypted storage (AES-256-GCM)
@@ -88,7 +88,7 @@ The product survived six thematic audit weeks, each shipped as its own PR with a
 - **Pattern Detection**: 10X skills, blind spots, behavioral preferences from Memory Web
 - **AI Tools Hub**: Decision Advisor, Meeting Prep, Prompt Coach, Stream of Consciousness
 - **Edge** leadership amplifier: strengths sharpened, weaknesses covered with on-demand artifacts
-- **Edge Pro** ($9/month): unlimited artifact generation + email delivery
+- **Edge Pro** ($9/month at time of release; moved to $29/month on 2026-05-30): unlimited artifact generation + email delivery
 - **Diagnostic Upgrade** ($49 one-time) + **Deep Context Upgrade** ($29) + **Bundle** ($69)
 - 45+ edge functions (up from ~20), 30+ hooks
 - Memory encryption (AES-256-GCM) end-to-end
@@ -96,7 +96,7 @@ The product survived six thematic audit weeks, each shipped as its own PR with a
 
 ---
 
-## [3.0] — 2026-01 — V3 Complete Rebuild (Apple-like Executive Design)
+## [3.0] - 2026-01 - V3 Complete Rebuild (Apple-like Executive Design)
 
 ### Changed
 - Complete visual rebuild to match executive-grade Apple-like aesthetic
@@ -119,7 +119,7 @@ The product survived six thematic audit weeks, each shipped as its own PR with a
 
 ---
 
-## [2.x] — 2024 to early 2025 — AI Literacy Repositioning
+## [2.x] - 2024 to early 2025 - AI Literacy Repositioning
 
 ### Changed
 - Repositioned from "AI transformation" to "AI literacy for executive cognition"
@@ -131,7 +131,7 @@ The product survived six thematic audit weeks, each shipped as its own PR with a
 
 ---
 
-## [1.x] — 2024 — AI Leadership Benchmark (original)
+## [1.x] - 2024 - AI Leadership Benchmark (original)
 
 ### Initial release
 - Quiz-based assessment

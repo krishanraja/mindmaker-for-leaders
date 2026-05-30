@@ -83,7 +83,7 @@ export default function Dashboard() {
         <p className="text-xs text-foreground flex-1 min-w-0">
           <span className="font-medium">Welcome.</span>{" "}
           <span className="text-muted-foreground">
-            Set up your context in about a minute — or explore first.
+            Set up your context in about a minute - or explore first.
           </span>
         </p>
         <Button

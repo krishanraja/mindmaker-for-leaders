@@ -1,0 +1,88 @@
+{
+  "schema": "mindmaker.product-truth/v1",
+  "app": "ctrl",
+  "name": "CTRL",
+  "legal_entity": "Mindmaker LLC",
+  "stripe_account": "mindmaker_llc",
+  "url": "https://ctrl.themindmaker.ai",
+  "status": "live",
+  "last_updated": "2026-05-30",
+  "source_of_truth": "https://ctrl.themindmaker.ai/.well-known/product.json",
+  "tagline": "Clarity for leaders. Build your portable AI double in 2 minutes.",
+  "one_liner": "CTRL builds a portable AI double of you in 2 minutes so every AI tool you use (ChatGPT, Claude, Gemini, Cursor) instantly knows your context, goals, and thinking style, delivers a 3-minute daily audio briefing anchored to your real priorities, and turns a weekly workflow into a Claude Skill that auto-triggers forever.",
+  "icp": {
+    "who": "Senior individual leaders: C-suite (CEO, COO, CFO, CTO), VPs, Senior Directors, Founders.",
+    "company_size": "50 to 5,000 employees (sweet spot 100 to 1,000)",
+    "markets": "English-speaking",
+    "industries": ["creator economy", "SaaS", "fintech", "professional services", "healthcare", "e-commerce", "media", "edtech", "biotech", "legal", "manufacturing"],
+    "qualifiers": "Already uses at least one AI tool daily (ChatGPT, Claude, Gemini) but gets generic output. Time-poor, pragmatic, privacy-conscious, guards the calendar.",
+    "not_a_fit": "Individual contributors with no team, students, users wanting a generic chatbot."
+  },
+  "problem": {
+    "headline": "The zero-context tax.",
+    "detail": "Every AI conversation starts from zero. Leaders re-explain who they are, their company, their priorities to every AI tool, many times a day, and the output stays generic because the AI never has depth. Compounded by the noise tax (30+ minutes of newsletters that serve everyone the same stories) and the repetition tax (re-typing the same weekly workflows from a blank prompt)."
+  },
+  "magic_moment": "One-click Context Export: the first time a leader pastes their structured, personal context into ChatGPT or Claude and gets a response that is unmistakably about THEM, not generic advice. The moment generic AI becomes your AI.",
+  "pitch": {
+    "short": "Talk for 2 minutes. CTRL builds a portable AI double of you that every AI tool can use instantly, plus a 3-minute daily briefing anchored to your real world.",
+    "long": "CTRL turns 2 minutes of your voice into a Memory Web: a structured, encrypted model of who you are, your company, your goals, and how you think. One click exports that context into any LLM so ChatGPT, Claude, Gemini, Cursor, and Claude Code answer as if they already know you. Each morning CTRL delivers a 3-minute audio briefing built only from your real priorities, with the evidence trail for every item. Edge Pro turns a recurring weekly workflow into an agentskills.io-compliant Claude Skill that installs once and auto-triggers in your own voice forever."
+  },
+  "features": [
+    { "name": "Memory Web", "tier": "free", "what": "A structured, encrypted AI double built from 2 minutes of voice or text." },
+    { "name": "Context Export", "tier": "free", "what": "One-click export of your optimized context into any LLM (ChatGPT, Claude, Gemini, Cursor, Claude Code)." },
+    { "name": "Daily Briefing", "tier": "free_basic_pro_full", "what": "A 3-minute evidence-based audio briefing anchored to your real priorities. Edge Pro unlocks all 7 briefing types + email delivery." },
+    { "name": "Edge profile", "tier": "free_preview", "what": "Your leadership Edge profile across six dimensions, benchmarked against an anonymized cohort." },
+    { "name": "Decision Advisor / Meeting Prep / Prompt Coach", "tier": "free", "what": "Thinking tools that use your context." },
+    { "name": "Agent Skill Builder", "tier": "edge_pro", "what": "Turns a weekly workflow into an agentskills.io-compliant Claude Skill ZIP that auto-triggers in Claude Code." },
+    { "name": "Custom Voice Export", "tier": "edge_pro", "what": "Briefings and exports in your own voice." }
+  ],
+  "pricing": {
+    "currency": "usd",
+    "tiers": [
+      { "id": "free", "name": "Free / Core", "amount": 0, "cadence": "forever", "includes": ["Memory Web", "Context Export", "basic Daily Briefing", "Decision Advisor", "Meeting Prep", "Prompt Coach", "Edge profile preview"] },
+      { "id": "full_diagnostic", "name": "Full Diagnostic", "amount": 49, "cadence": "one_time", "includes": ["full tensions / risks / scenarios", "complete thinking tools"] },
+      { "id": "deep_context", "name": "Deep Context Upgrade", "amount": 29, "cadence": "one_time", "includes": ["enhanced company-context enrichment"] },
+      { "id": "bundle", "name": "Diagnostic + Deep Context Bundle", "amount": 69, "cadence": "one_time", "includes": ["Full Diagnostic", "Deep Context"], "note": "saves $10 vs buying separately" },
+      { "id": "edge_pro", "name": "Edge Pro", "amount": 29, "cadence": "monthly", "includes": ["unlimited Edge artifacts", "all 7 briefing types", "email delivery", "unlimited Agent Skill Builder", "Custom Voice Export"] },
+      { "id": "bootcamp", "name": "Bootcamp (Teams)", "amount_range": [15000, 50000], "cadence": "engagement", "includes": ["team enablement"] },
+      { "id": "portfolio", "name": "Portfolio (Partners)", "amount_range": [5000, 25000], "cadence": "engagement", "includes": ["partner / portfolio enablement"] }
+    ],
+    "checkout": "Stripe Checkout via edge functions create-edge-subscription (subscription) and create-diagnostic-payment (one-time). Existing $9/mo Edge Pro subscribers are grandfathered; new checkouts are $29/mo."
+  },
+  "primary_cta": { "label": "Build your AI double free", "url": "https://ctrl.themindmaker.ai/auth" },
+  "secondary_cta": { "label": "Book a walkthrough", "url": "https://ctrl.themindmaker.ai/booking" },
+  "differentiators": [
+    "Portable: works across every LLM, not locked to one chat app.",
+    "Voice-first: 2 minutes of talking, no forms, no integrations.",
+    "Evidence trail: every briefing item shows the memory fact or decision that triggered it.",
+    "Encrypted personal context: privacy-first, the user owns and controls the data.",
+    "Turns workflows into installable Claude Skills (Edge Pro)."
+  ],
+  "objections": [
+    { "q": "Why not just use ChatGPT memory?", "a": "ChatGPT memory is locked to ChatGPT. CTRL is portable across ChatGPT, Claude, Gemini, Cursor, and Claude Code, and is structured and evidence-backed." },
+    { "q": "Is my data safe?", "a": "Your context is encrypted and you control it. CTRL is privacy-first and built for leaders who guard sensitive context." },
+    { "q": "How long does setup take?", "a": "About 2 minutes of voice. No integrations, no plugins." }
+  ],
+  "guardrails": [
+    "No em dashes in any copy.",
+    "Do not promise integrations CTRL does not have (it is export-based, not plugin-based).",
+    "Do not overstate outcomes; CTRL accelerates clarity and decision speed, it does not replace judgment.",
+    "Edge Pro is $29/mo as of 2026-05-30; never quote $9 (legacy grandfathered price)."
+  ],
+  "attribution": {
+    "scheme": "Append UTM params to every fleet-driven link. CTRL captures first-touch on landing, persists through signup into user metadata, and stamps onto the Stripe customer + checkout session at purchase.",
+    "params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "agent", "campaign_id"],
+    "example": "https://ctrl.themindmaker.ai/?utm_source=linkedin&utm_medium=social&utm_campaign=ai_double&agent=hunter&campaign_id=q2_leaders",
+    "warehouse": "Lifecycle events (landed, signed_up, activated, purchased, refunded) are emitted to the central MindmakerOS attribution warehouse (project gojpffsrxybbpbdzzrvs) via the ingest-attribution function. Wiring is dormant in CTRL until WAREHOUSE_INGEST_URL + ATTRIBUTION_INGEST_SECRET are set."
+  },
+  "content_assets": {
+    "daily_briefing": "Personal and private per user; not a public feed.",
+    "note": "CTRL has no public content feed by design (briefings contain personal leader context). Fleet content should use the pitch, differentiators, and objections in this document."
+  },
+  "links": {
+    "site": "https://ctrl.themindmaker.ai",
+    "signup": "https://ctrl.themindmaker.ai/auth",
+    "booking": "https://ctrl.themindmaker.ai/booking",
+    "parent": "https://themindmaker.ai"
+  }
+}

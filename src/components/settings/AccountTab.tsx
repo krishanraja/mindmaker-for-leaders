@@ -31,7 +31,7 @@ export function AccountTab() {
   // Audit cleanup: removed the "Profile photo coming soon" placeholder and
   // the Change Password button (no click handler, no backend wired up).
   // Password reset is handled via the auth provider's "forgot password" link
-  // on the sign-in screen — that's the working path for now. Add a real
+  // on the sign-in screen - that's the working path for now. Add a real
   // in-app change-password flow when there's a working backend for it.
   return (
     <div className="space-y-6">

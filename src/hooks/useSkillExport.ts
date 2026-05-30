@@ -32,7 +32,7 @@ interface UseSkillExport {
  * call, parse, decode the base64 ZIP into a Blob the UI can download.
  *
  * Triage failures (custom_instruction, memory_fact, saved_style) come back
- * with passed: false and no skill/zip — the UI surfaces the routing decision
+ * with passed: false and no skill/zip - the UI surfaces the routing decision
  * so the leader knows what to do with the input instead.
  */
 export function useSkillExport(): UseSkillExport {

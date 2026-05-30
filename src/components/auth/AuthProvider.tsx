@@ -7,6 +7,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getPersistedAssessmentId, linkAssessmentToUser } from '@/utils/assessmentPersistence';
+import { getAttribution } from '@/lib/attribution';
+import { emitEvent } from '@/lib/track';
 import type { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -70,7 +72,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    // Persist first-touch attribution into user_metadata so the signup is
+    // joinable to its acquisition source downstream.
+    const attribution = getAttribution();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: attribution ? { data: { attribution } } : undefined,
+    });
+    if (!error) {
+      emitEvent('signed_up', { email, attribution }, false);
+    }
     return { error: error?.message ?? null };
   };
 
