@@ -29,8 +29,6 @@ export function flag(name: string): boolean {
 export const FF = {
   /** Cross-app context broadcast on the Export page (?ff_broadcast=1). */
   contextBroadcast: () => flag('broadcast'),
-  /** Streaming briefing assembly via Realtime (?ff_stream=1). */
-  briefingStream: () => flag('stream'),
   /** Unauthenticated landing voice/text demo (?ff_voicedemo=1). */
   landingVoiceDemo: () => flag('voicedemo'),
 };
