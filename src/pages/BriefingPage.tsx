@@ -39,6 +39,9 @@ import { useBriefingContext } from "@/contexts/BriefingContext";
 import { useMemoryWeb } from "@/hooks/useMemoryWeb";
 import { useBriefingInterests } from "@/hooks/useBriefingInterests";
 import { useSuggestedInterests } from "@/hooks/useSuggestedInterests";
+import { useBriefingStreamPreview } from "@/hooks/useBriefingStreamPreview";
+import { StreamingBriefingPreview } from "@/components/briefing/StreamingBriefingPreview";
+import { FF } from "@/lib/flags";
 import { BRIEFING_TYPES } from "@/types/briefing";
 import type { Briefing, BriefingType } from "@/types/briefing";
 
@@ -135,6 +138,8 @@ function BriefingPage() {
 
   const isGenerating = generating;
   const currentPhase = phase;
+  // Flag-gated (FF.briefingStream / ?ff_stream=1): live preliminary-segment preview.
+  const streamPreview = useBriefingStreamPreview(isGenerating);
 
   const earlierBriefings = useMemo(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -649,6 +654,14 @@ function BriefingPage() {
                   transition={{ duration: 20, ease: "linear" }}
                 />
               </div>
+              {FF.briefingStream() && streamPreview?.segments?.length ? (
+                <div className="mt-5">
+                  <StreamingBriefingPreview
+                    segments={streamPreview.segments}
+                    ready={streamPreview.ready}
+                  />
+                </div>
+              ) : null}
             </div>
           ) : !defaultBriefing && !!generateError && !isGenerating ? (
             <motion.div

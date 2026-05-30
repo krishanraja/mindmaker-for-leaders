@@ -49,6 +49,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FF } from '@/lib/flags';
 import { useDevice } from '@/hooks/useDevice';
 import { useAuth } from '@/hooks/useAuth';
 import { useMemoryExport } from '@/hooks/useMemoryExport';
@@ -60,6 +61,7 @@ import { AppHeader } from '@/components/memory-web/AppHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { PLATFORM_GUIDES } from '@/lib/platform-guides';
 import { ModelRecommendationCard } from '@/components/export/ModelRecommendationCard';
+import { BroadcastBar } from '@/components/export/BroadcastBar';
 import { SkillCaptureSheet } from '@/components/edge/SkillCaptureSheet';
 import { SkillPreviewSheet } from '@/components/edge/SkillPreviewSheet';
 import { useSkillExport } from '@/hooks/useSkillExport';
@@ -653,6 +655,11 @@ export default function ContextExport() {
               {!isMobile && 'Download'}
             </button>
           </div>
+
+          {/* Cross-app broadcast bar - flag gated, additive, renders nothing when off */}
+          {FF.contextBroadcast() && (
+            <BroadcastBar content={exportResult.content} />
+          )}
 
           {/* Platform-specific guide */}
           {guide && (
