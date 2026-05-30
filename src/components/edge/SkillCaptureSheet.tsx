@@ -161,20 +161,20 @@ function CaptureContent({
 }) {
   const isMobile = useIsMobile();
 
-  // Default modality: on mobile, voice is faster than typing — even for seeded
+  // Default modality: on mobile, voice is faster than typing - even for seeded
   // entries. On desktop with a seed, text-default (a keyboard is faster than
   // dictating in a quiet office). No seed: voice default everywhere.
   const [inputMode, setInputMode] = useState<InputMode>(
     initialSeed && !isMobile ? "text" : "voice",
   );
   // Structured text fields (replace the bracket-scaffold for seeded entries).
-  // For example seeds, the scaffold IS the starter text — fall back to one
+  // For example seeds, the scaffold IS the starter text - fall back to one
   // field by storing it in stepsInput.
   const [stepsInput, setStepsInput] = useState<string>(() =>
     initialSeed?.kind === "example" ? initialSeed.text : "",
   );
   const [outputInput, setOutputInput] = useState<string>("");
-  // Legacy single textarea (used when there's no active seed — the user is
+  // Legacy single textarea (used when there's no active seed - the user is
   // describing a fresh workflow with one open text field).
   const [textInput, setTextInput] = useState<string>("");
   const [voiceTranscript, setVoiceTranscript] = useState<string | null>(null);
@@ -226,7 +226,7 @@ function CaptureContent({
   const handleExample = useCallback((scaffold: string, label: string) => {
     setActiveSeed({ kind: "example", text: scaffold, label });
     setInputMode("text");
-    // Examples are full starter text — drop them into the single textarea
+    // Examples are full starter text - drop them into the single textarea
     // path. They have no separate steps/output split.
     setStepsInput(scaffold);
     setOutputInput("");
@@ -340,7 +340,7 @@ function CaptureContent({
         </div>
       </div>
 
-      {/* Active seed banner — shown when arriving from an entry point or
+      {/* Active seed banner - shown when arriving from an entry point or
           after the user picked a pain from the chip row below. */}
       <AnimatePresence>
         {activeSeed && (
@@ -377,7 +377,7 @@ function CaptureContent({
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-            {/* "What you'll get" preview — sets expectation upfront so the
+            {/* "What you'll get" preview - sets expectation upfront so the
                 leader knows the shape of the output before filling fields. */}
             {activeSeed.kind !== "example" && (
               <p className="text-[11px] opacity-80 leading-snug pl-6">
@@ -393,7 +393,7 @@ function CaptureContent({
         )}
       </AnimatePresence>
 
-      {/* Pain picker — only when there's no active seed yet AND the user has
+      {/* Pain picker - only when there's no active seed yet AND the user has
           declared blockers/decisions worth pulling from. Keeps the sheet
           focused for arrivals from an entry point. */}
       {!activeSeed && !painsLoading && visiblePains.length > 0 && (
@@ -419,7 +419,7 @@ function CaptureContent({
         </div>
       )}
 
-      {/* Curated examples — fallback anchor when the user hasn't told us
+      {/* Curated examples - fallback anchor when the user hasn't told us
           about any blockers/decisions yet. Hidden once an active seed is set. */}
       {!activeSeed && (!visiblePains.length || painsLoading) && (
         <div className="space-y-2">
@@ -440,7 +440,7 @@ function CaptureContent({
         </div>
       )}
 
-      {/* Input mode segmented control — equal weight, no buried toggle. */}
+      {/* Input mode segmented control - equal weight, no buried toggle. */}
       <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-foreground/5 border border-foreground/10">
         <button
           onClick={() => setInputMode("voice")}
@@ -744,7 +744,7 @@ function composeSeededPayload(
 
 /**
  * Short, human-readable name for the skill we're about to build. Shown in the
- * "What you'll get" preview — set expectation, not contract. The real name is
+ * "What you'll get" preview - set expectation, not contract. The real name is
  * decided by the LLM during generation.
  */
 function inferSkillName(seed: SkillSeed): string {

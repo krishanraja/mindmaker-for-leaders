@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
-    // Edge Pro gate (active or past_due grace period — same as generate-custom-export).
+    // Edge Pro gate (active or past_due grace period - same as generate-custom-export).
     const serviceClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Triage failure — record the routing decision so the UI can show what to do next.
+    // Triage failure - record the routing decision so the UI can show what to do next.
     if (!parsed.triage.passed) {
       const triageResult = parsed.triage.result || "memory_fact";
       await serviceClient.from("skill_exports").insert({
@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
       }, 200);
     }
 
-    // Triage passed — validate, package, persist.
+    // Triage passed - validate, package, persist.
     const skill = parsed.skill;
     if (!skill || !skill.name || !skill.description || !skill.body) {
       return jsonResponse(
@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
 
     const qualityGate = runQualityGate(skillData);
 
-    // Hard-fail only on the name format check — everything else is advisory
+    // Hard-fail only on the name format check - everything else is advisory
     // and shown to the user so they can decide whether to regenerate.
     const nameCheck = qualityGate.checks.find((c) => c.id === "package.nameFormat");
     if (nameCheck && !nameCheck.passed) {
@@ -246,7 +246,7 @@ Deno.serve(async (req) => {
       client: user.email || undefined,
     });
 
-    // Persist the export record. zip_path is left null for now — we return
+    // Persist the export record. zip_path is left null for now - we return
     // the ZIP inline as base64 and let the client trigger the download. We
     // can wire Storage uploads later if we want shareable links.
     const { data: insertRow } = await serviceClient
@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
 
     // Also persist in the unified generated_artifacts table so the Library
     // tab on /memory can surface it alongside drafts, frameworks, exports,
-    // and custom briefings. Quiet on failure — if the table doesn't exist
+    // and custom briefings. Quiet on failure - if the table doesn't exist
     // yet (migration not yet applied), the user still gets their skill.
     const { error: artifactInsertError } = await serviceClient
       .from("generated_artifacts")

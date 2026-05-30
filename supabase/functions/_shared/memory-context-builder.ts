@@ -394,7 +394,7 @@ function buildArtefactsForFormat(
 }
 
 /**
- * Backwards-compatible applyFormat — returns only the primary artefact as a
+ * Backwards-compatible applyFormat - returns only the primary artefact as a
  * single string. Callers that want the full artefact set should use
  * buildMemoryExport instead.
  */

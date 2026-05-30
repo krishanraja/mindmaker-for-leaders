@@ -10,14 +10,14 @@
  *      CTA is rendered. Clicking it generates the briefing exactly once.
  *   5. After headlines arrive, "Generate audio" is a SEPARATE explicit
  *      action. Audio synthesis does not auto-fire.
- *   6. Hard-refreshing the page does NOT trigger regeneration — the briefing
+ *   6. Hard-refreshing the page does NOT trigger regeneration - the briefing
  *      is read from the existing row.
- *   7. Logging out and back in: same — no regeneration.
+ *   7. Logging out and back in: same - no regeneration.
  *
  * Run with `npm run test:e2e`. Requires a running dev server (Vite) and a
  * Supabase test project with a known user. The auth setup helper at
  * tests/auth.setup.ts (TODO) seeds those credentials. Until that helper
- * exists this spec is a contract document — the assertions are real but
+ * exists this spec is a contract document - the assertions are real but
  * the seed/teardown plumbing must be added before it can run on CI.
  *
  * To run the spec interactively against your local dev server (with manual
@@ -34,7 +34,7 @@ import { test, expect } from '@playwright/test';
 const TEST_USER_EMAIL = process.env.E2E_TEST_USER_EMAIL ?? 'e2e-briefing@example.com';
 const TEST_USER_PASSWORD = process.env.E2E_TEST_USER_PASSWORD ?? 'e2e-fixture-password';
 
-test.describe.skip('Briefing — canonical CEO journey', () => {
+test.describe.skip('Briefing - canonical CEO journey', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/signin');
     await page.fill('input[placeholder="Email address"]', TEST_USER_EMAIL);
@@ -64,7 +64,7 @@ test.describe.skip('Briefing — canonical CEO journey', () => {
     await page.goto('/briefing');
 
     // If a briefing already exists for today, the "Generate today's briefing"
-    // CTA must NOT be visible — we land directly on the BriefingCard.
+    // CTA must NOT be visible - we land directly on the BriefingCard.
     // The contract: refreshing should never call generate-briefing.
     const generateRequests: string[] = [];
     page.on('request', (req) => {

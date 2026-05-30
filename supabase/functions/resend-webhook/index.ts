@@ -3,8 +3,42 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, svix-id, svix-timestamp, svix-signature",
 };
+
+// Verify the Resend (Svix) webhook signature over the raw body.
+// Resend signs with a base64 secret prefixed "whsec_". Fail-open with a loud
+// warning if RESEND_WEBHOOK_SECRET is not yet configured, fail-closed once it is.
+async function verifyResendSignature(req: Request, rawBody: string): Promise<boolean> {
+  const secret = Deno.env.get("RESEND_WEBHOOK_SECRET");
+  if (!secret) {
+    console.warn("⚠️ RESEND_WEBHOOK_SECRET not set; skipping signature verification. Set it to enforce.");
+    return true;
+  }
+  const svixId = req.headers.get("svix-id");
+  const svixTimestamp = req.headers.get("svix-timestamp");
+  const svixSignature = req.headers.get("svix-signature");
+  if (!svixId || !svixTimestamp || !svixSignature) return false;
+
+  // Replay guard: reject timestamps more than 5 minutes from now.
+  const ts = Number(svixTimestamp);
+  if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > 300) return false;
+
+  try {
+    const secretBytes = Uint8Array.from(atob(secret.replace(/^whsec_/, "")), (c) => c.charCodeAt(0));
+    const signedContent = `${svixId}.${svixTimestamp}.${rawBody}`;
+    const key = await crypto.subtle.importKey(
+      "raw", secretBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedContent));
+    const expected = btoa(String.fromCharCode(...new Uint8Array(sig)));
+    // svix-signature is space-separated "v1,<base64sig>" entries.
+    return svixSignature.split(" ").some((part) => part.split(",")[1] === expected);
+  } catch (e) {
+    console.error("❌ Signature verification threw:", (e as Error).message);
+    return false;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -32,9 +66,25 @@ serve(async (req) => {
       auth: { persistSession: false }
     });
 
-    // Parse Resend webhook payload
-    const payload = await req.json();
-    const eventType = payload.type; // 'email.sent', 'email.delivered', 'email.opened', 'email.clicked', 'email.bounced', 'email.complained'
+    // Verify the Resend (Svix) signature over the raw body, then parse
+    const rawBody = await req.text();
+    const sigOk = await verifyResendSignature(req, rawBody);
+    if (!sigOk) {
+      console.error("❌ Invalid Resend webhook signature");
+      return new Response(
+        JSON.stringify({ error: "Invalid signature" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const payload = JSON.parse(rawBody);
+    const eventType = payload.type;
+
+    if (!eventType || typeof eventType !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid event type" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    } // 'email.sent', 'email.delivered', 'email.opened', 'email.clicked', 'email.bounced', 'email.complained'
 
     console.log(`📧 Received Resend webhook: ${eventType}`, {
       emailId: payload.data?.email_id,

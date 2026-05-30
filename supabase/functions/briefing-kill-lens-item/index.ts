@@ -11,7 +11,7 @@
  *   { lens_item_type: string, lens_item_text: string }  (direct form)
  *
  * Auth: authenticated user only. Writes via service role (RLS denies INSERT
- * to end users by design — kill rows only land through this path).
+ * to end users by design - kill rows only land through this path).
  */
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";

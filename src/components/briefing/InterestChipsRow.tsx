@@ -21,7 +21,7 @@ export function InterestChipsRow({
   loading = false,
   onRemove,
   onAdd,
-  emptyHint = 'No interests yet — voice steer or tap + to add some.',
+  emptyHint = 'No interests yet - voice steer or tap + to add some.',
 }: InterestChipsRowProps) {
   if (loading) {
     return (

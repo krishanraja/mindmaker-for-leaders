@@ -27,7 +27,7 @@
  *
  * Sinks: Supabase Logs picks up stdout JSON automatically. To wire to
  * Datadog/Sentry/Logflare, add a fan-out in `emit()` (e.g. fetch to a
- * collector endpoint) — that's the single chokepoint to extend.
+ * collector endpoint) - that's the single chokepoint to extend.
  */
 
 export type LogLevel = "debug" | "info" | "warn" | "error";

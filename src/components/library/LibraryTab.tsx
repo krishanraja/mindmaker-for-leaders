@@ -38,7 +38,7 @@ const KIND_TONE: Record<ArtifactKind, string> = {
 };
 
 /**
- * Library tab — shows every artifact CTRL has generated for this user
+ * Library tab - shows every artifact CTRL has generated for this user
  * (skills, drafts, frameworks, exports, custom briefings). Tap a row to
  * inline-preview the markdown, copy it, or delete it. Replaces the
  * "artifacts vanish when the sheet closes" problem.

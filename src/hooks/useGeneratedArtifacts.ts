@@ -6,7 +6,7 @@ import type { ArtifactKind, GeneratedArtifact } from "@/types/artifact";
  * useGeneratedArtifacts
  *
  * Reads the leader's generated artifacts (skills, drafts, frameworks, exports,
- * custom briefings) for the Library tab on /memory. Quiet on errors — if the
+ * custom briefings) for the Library tab on /memory. Quiet on errors - if the
  * table doesn't exist yet (migration not applied), we treat it as empty
  * rather than crashing the page.
  */
@@ -66,7 +66,7 @@ export function useGeneratedArtifacts(kind?: ArtifactKind, limit: number = 50) {
         .limit(limit);
 
       if (error) {
-        // Table missing or RLS denied — log once at warn and return empty.
+        // Table missing or RLS denied - log once at warn and return empty.
         console.warn("useGeneratedArtifacts: fetch failed", error);
         setArtifacts([]);
         return;

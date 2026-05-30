@@ -519,7 +519,7 @@ export function OnboardingInterview({ onComplete }: Props) {
               </h2>
               <p className="text-sm text-muted-foreground">
                 {extractedFactCount > 0
-                  ? `${extractedFactCount} ${extractedFactCount === 1 ? 'point' : 'points'} from your conversation — ready to review.`
+                  ? `${extractedFactCount} ${extractedFactCount === 1 ? 'point' : 'points'} from your conversation - ready to review.`
                   : 'Your profile is ready.'}{' '}
                 Come back anytime to add more. The more you think out loud, the clearer everything gets.
               </p>

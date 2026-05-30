@@ -76,7 +76,7 @@ export function EdgeOnboarding({ onComplete }: Props) {
   const [responses, setResponses] = useState<string[]>([]);
 
   // Safety timeout for the submitting state. Previously this silently fired
-  // advanceAfterSubmit() after 30s — the user was moved on without knowing
+  // advanceAfterSubmit() after 30s - the user was moved on without knowing
   // their answer might not have saved. Now we transition to a `submit_stalled`
   // step that surfaces a recovery card with Retry / Skip choices so the user
   // is in control when something is genuinely slow.

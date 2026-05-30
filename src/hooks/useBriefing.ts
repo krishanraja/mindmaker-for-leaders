@@ -71,7 +71,7 @@ export function useTodaysBriefing() {
  * Generate a briefing on demand (supports custom types).
  *
  * Deliberately has no auto-trigger: briefing generation is a user-controlled
- * action. Refreshing the page or logging back in must NOT cause regeneration —
+ * action. Refreshing the page or logging back in must NOT cause regeneration  - 
  * today's briefing is persisted in the `briefings` table and surfaced by
  * `useTodaysBriefing` without any API call. Generation only fires from an
  * explicit user gesture (primary CTA button, refresh button, custom request).
@@ -236,7 +236,7 @@ export function usePollAudio() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [polling, setPolling] = useState(false);
   const [exhausted, setExhausted] = useState(false);
-  // synthError lets the BriefingCard render a real "audio failed — retry?"
+  // synthError lets the BriefingCard render a real "audio failed - retry?"
   // affordance instead of a stuck "Audio…" pill. Categorised so different
   // failure modes can get different copy (rate_limited vs provider_unavailable
   // vs unknown).

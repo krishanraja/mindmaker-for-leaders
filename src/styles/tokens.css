@@ -15,18 +15,12 @@
   --mid-grey: 210 7% 62%; /* #9AA0A6 */
   --graphite: 200 5% 21%; /* #333639 */
   
-  /* Semantic Color Mappings */
-  --background: var(--off-white);
-  --foreground: var(--ink);
-  --muted: var(--light-grey);
-  --muted-foreground: var(--mid-grey);
-  --primary: var(--ink);
-  --primary-foreground: var(--off-white);
-  --accent: var(--mint);
-  --accent-foreground: var(--ink);
-  --ring: var(--mint);
-  --border: var(--light-grey);
-  
+  /* Semantic color tokens (--background, --foreground, --accent, --primary,
+     --muted, --ring, --border, --success, --destructive, and the .dark set) are
+     owned by src/index.css, the shadcn base layer that wins at runtime. They were
+     removed here on 2026-05-30 to end the dual-source divergence the audit found.
+     This file owns brand primitives plus the spacing, radius, and shadow scales. */
+
   /* Spacing Scale (4px base) */
   --spacing-0-5: 0.125rem; /* 2px */
   --spacing-1: 0.25rem; /* 4px */

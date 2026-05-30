@@ -1,6 +1,6 @@
 /**
  * Pure, runtime-agnostic guardrail logic. No Supabase, no Deno APIs, no
- * URL imports — so this module is importable from both edge functions
+ * URL imports - so this module is importable from both edge functions
  * (Deno) and the vitest harness (Node).
  *
  * The Supabase-integrated wrapper lives in `fact-guardrails.ts` and calls

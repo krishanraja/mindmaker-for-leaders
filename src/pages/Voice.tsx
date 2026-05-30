@@ -395,7 +395,7 @@ export default function Voice() {
             />
           )}
 
-          {/* Error Display — categorised so the user gets a real path forward,
+          {/* Error Display - categorised so the user gets a real path forward,
               not just a vague "denied" message. permission_denied / no_device /
               in_use all surface a recovery card with Type Instead fallback. */}
           {voiceError && voiceErrorKind && voiceErrorKind !== 'unknown' && (
@@ -460,7 +460,7 @@ export default function Voice() {
       {/* Footer Hint */}
       <footer className="relative z-10 px-4 sm:px-6 pb-4">
         <p className="text-[10px] text-muted-foreground/40 text-center">
-          Key points from your recording — confirm what matters
+          Key points from your recording - confirm what matters
         </p>
       </footer>
 

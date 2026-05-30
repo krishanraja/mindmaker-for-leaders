@@ -49,7 +49,7 @@ describe('fetchWithTimeout', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it('does NOT retry on 4xx — caller error', async () => {
+  it('does NOT retry on 4xx - caller error', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response('bad', { status: 400 }));
     global.fetch = fetchMock as unknown as typeof fetch;
 
@@ -61,7 +61,7 @@ describe('fetchWithTimeout', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('returns the final 5xx response after one retry — caller decides', async () => {
+  it('returns the final 5xx response after one retry - caller decides', async () => {
     // Contract: persistent 5xx is returned to the caller (with !ok) on the
     // final attempt rather than thrown. The caller chooses whether to read
     // the body, surface a "provider_unavailable" response, or treat as fatal.

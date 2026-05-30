@@ -16,7 +16,7 @@ interface SkillInstallGuideProps {
 const CLAUDE_SETTINGS_URL = "https://claude.ai/settings/capabilities";
 
 /**
- * Install guide. The dominant path is Claude.ai — that's what a non-technical
+ * Install guide. The dominant path is Claude.ai - that's what a non-technical
  * CEO will use. We lead with it, render the 3 steps inline (not collapsed),
  * and provide a direct deep-link to Claude's Capabilities settings. Developer
  * paths (Claude Code, Cursor) are tucked into a single "Other install
@@ -32,7 +32,7 @@ export function SkillInstallGuide({ skillName, className }: SkillInstallGuidePro
         </p>
       </div>
 
-      {/* Primary path — Claude.ai, surfaced inline */}
+      {/* Primary path - Claude.ai, surfaced inline */}
       <div className="px-4 py-4 space-y-3">
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4 text-accent" />
@@ -49,7 +49,7 @@ export function SkillInstallGuide({ skillName, className }: SkillInstallGuidePro
             ZIP you just downloaded.
           </li>
           <li>
-            Done — the skill triggers automatically when your prompt matches
+            Done - the skill triggers automatically when your prompt matches
             its trigger phrase.
           </li>
         </ol>
@@ -70,7 +70,7 @@ export function SkillInstallGuide({ skillName, className }: SkillInstallGuidePro
         </Button>
       </div>
 
-      {/* Developer paths — collapsed by default */}
+      {/* Developer paths - collapsed by default */}
       <div className="border-t border-border">
         <Accordion type="single" collapsible className="px-4">
           <AccordionItem value="developer-paths" className="border-b-0">

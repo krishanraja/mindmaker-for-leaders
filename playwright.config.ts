@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * Specs live under `src/__tests__/e2e/`. Most existing specs (and the new
  * briefing-journey one) are `.skip`'d until the auth seed helper is wired
- * up — they're contracts in code form. Run `npm run test:e2e -- --headed`
+ * up - they're contracts in code form. Run `npm run test:e2e -- --headed`
  * locally against a running dev server (`npm run dev`) once seeded.
  *
  * Extend with `webServer` to auto-launch the dev server in CI when the

@@ -285,7 +285,7 @@ ${config.outputGuidance}`;
 
     // Also persist in the unified generated_artifacts table so the Library
     // tab on /memory can surface drafts and frameworks alongside skills.
-    // Quiet on failure — if the table doesn't exist yet (migration not
+    // Quiet on failure - if the table doesn't exist yet (migration not
     // applied), the user still gets their artifact in this response.
     const isFramework =
       capability === "systemize" || capability === "teach";

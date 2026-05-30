@@ -32,7 +32,7 @@ const SECTIONS: SectionConfig[] = [
     kind: 'beat',
     title: 'Topics you care about',
     description:
-      'Broad is fine — "creator monetization", "platform policy", "AI pricing". These shape every briefing.',
+      'Broad is fine - "creator monetization", "platform policy", "AI pricing". These shape every briefing.',
     placeholder: 'Add a topic',
     target: '3 to 5',
     chipClass: 'bg-accent/10 text-accent border-accent/30',
@@ -41,7 +41,7 @@ const SECTIONS: SectionConfig[] = [
     kind: 'entity',
     title: 'People & companies to watch',
     description:
-      'Named entities to track — creators, competitors, investors, regulators, anyone whose moves matter.',
+      'Named entities to track - creators, competitors, investors, regulators, anyone whose moves matter.',
     placeholder: 'Add a person or company',
     target: '3 to 10',
     chipClass: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',

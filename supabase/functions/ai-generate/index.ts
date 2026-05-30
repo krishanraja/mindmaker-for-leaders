@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 import { checkRateLimit, RATE_LIMITS } from '../_shared/rate-limit.ts';
+import { fetchWithTimeout, ProviderUnavailableError } from '../_shared/with-timeout.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -565,28 +566,45 @@ async function tryVertexAI(prompt: string, retries = 1): Promise<{ success: bool
 
       const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/gemini-2.0-flash-exp:generateContent`;
       
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${tokenResponse.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            role: 'user',
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 4000,
-            responseMimeType: 'application/json'
-          }
-        })
-      });
+      let response: Response;
+      try {
+        response = await fetchWithTimeout(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${tokenResponse.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              role: 'user',
+              parts: [{ text: prompt }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 4000,
+              responseMimeType: 'application/json'
+            }
+          }),
+          retry: false,
+          provider: 'vertex-ai',
+          timeoutMs: 12000,
+        });
+      } catch (fetchErr) {
+        console.error(`Vertex AI fetch error (attempt ${attempt + 1}):`, fetchErr);
+        if (attempt === retries) {
+          return { success: false };
+        }
+        continue;
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Vertex AI error:', response.status, errorText);
+        // Do not retry on 4xx -- bad key, quota exhausted, or invalid request.
+        // These will not resolve on retry and masking them delays the fallback.
+        if (response.status >= 400 && response.status < 500) {
+          return { success: false };
+        }
         continue;
       }
 
@@ -689,13 +707,16 @@ async function getGoogleOAuthToken(credentials: any, supabase?: any): Promise<{ 
 
     const jwt = `${signatureInput}.${signatureBase64}`;
 
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+    const tokenResponse = await fetchWithTimeout('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
         assertion: jwt
-      })
+      }),
+      retry: false,
+      provider: 'google-oauth',
+      timeoutMs: 12000,
     });
 
     if (!tokenResponse.ok) {
@@ -745,27 +766,44 @@ async function tryOpenAI(prompt: string, retries = 1): Promise<{ success: boolea
         return { success: false };
       }
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            { role: 'system', content: 'You are an AI leadership assessment analyzer trained on cognitive frameworks including A/B Framing, Dialectical Reasoning, Mental Contrasting (WOOP), Reflective Equilibrium, and First-Principles Thinking. Always return valid JSON and apply these frameworks to generate deeply personalized insights.' },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 4000,
-          response_format: { type: 'json_object' }
-        })
-      });
+      let response: Response;
+      try {
+        response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [
+              { role: 'system', content: 'You are an AI leadership assessment analyzer trained on cognitive frameworks including A/B Framing, Dialectical Reasoning, Mental Contrasting (WOOP), Reflective Equilibrium, and First-Principles Thinking. Always return valid JSON and apply these frameworks to generate deeply personalized insights.' },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 4000,
+            response_format: { type: 'json_object' }
+          }),
+          retry: false,
+          provider: 'openai',
+          timeoutMs: 12000,
+        });
+      } catch (fetchErr) {
+        console.error(`OpenAI fetch error (attempt ${attempt + 1}):`, fetchErr);
+        if (attempt === retries) {
+          return { success: false };
+        }
+        continue;
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error('OpenAI API error:', response.status, errorText);
+        // Do not retry on 4xx -- bad key, quota exhausted, or invalid request.
+        // These will not resolve on retry and masking them delays the static fallback.
+        if (response.status >= 400 && response.status < 500) {
+          return { success: false };
+        }
         continue;
       }
 

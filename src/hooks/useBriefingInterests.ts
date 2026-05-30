@@ -106,7 +106,7 @@ export function useBriefingInterests() {
     [state.all, refetch],
   );
 
-  // Soft delete — marks is_active=false so feedback history remains traceable.
+  // Soft delete - marks is_active=false so feedback history remains traceable.
   const remove = useCallback(async (id: string) => {
     try {
       const { error } = await supabase

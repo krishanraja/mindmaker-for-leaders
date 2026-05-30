@@ -73,7 +73,7 @@ serve(async (req) => {
 
     // Cost-control rate limit per briefing-owner. Each TTS run is paid bytes;
     // 12/min/user bounds cost without throttling normal use. Re-sign-existing
-    // (the cheap path below) is rate-limited too — that's intentional, since
+    // (the cheap path below) is rate-limited too - that's intentional, since
     // a tight retry loop is the primary cost-leak vector here.
     const rateLimit = await checkRateLimit(
       { maxRequests: 12, windowMs: 60_000, identifier: "synthesize-briefing" },
@@ -96,7 +96,7 @@ serve(async (req) => {
 
     // If we already have an audio URL on the briefing row, the storage object
     // likely exists but the 24h signed URL may have expired. Verify existence
-    // and re-sign a fresh URL — cheap, no TTS re-run. Only fall through to a
+    // and re-sign a fresh URL - cheap, no TTS re-run. Only fall through to a
     // full re-synthesize if the storage object has genuinely disappeared.
     if (briefing.audio_url) {
       const folder = briefing.user_id;

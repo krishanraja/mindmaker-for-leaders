@@ -52,7 +52,7 @@ export const AddMemorySheet: React.FC<AddMemorySheetProps> = ({
   const [mode, setMode] = useState<'choice' | 'voice' | 'text'>('choice');
   const [label, setLabel] = useState('');
   const [value, setValue] = useState('');
-  // Default to 'preference' — matches the voice auto-save flow and is the
+  // Default to 'preference' - matches the voice auto-save flow and is the
   // softest, most reversible category. The user can promote to a more
   // specific category from the disclosure below or later from Memory Center.
   const [category, setCategory] = useState<FactCategory>('preference');
@@ -62,7 +62,7 @@ export const AddMemorySheet: React.FC<AddMemorySheetProps> = ({
   const createMemory = useCreateMemory();
 
   // Voice capture is deliberately one-tap-to-save: a busy leader says the
-  // thought, taps stop, and the memory lands. Category is defaulted — the
+  // thought, taps stop, and the memory lands. Category is defaulted - the
   // user can refine it later from the Memory Center. The text flow (below)
   // still surfaces the full form for users who want to choose upfront.
   const autoSaveVoiceMemory = useCallback(async (text: string) => {
@@ -469,7 +469,7 @@ export const AddMemorySheet: React.FC<AddMemorySheetProps> = ({
                   </motion.div>
                 )}
 
-                {/* Text input mode — minimal friction. The leader writes
+                {/* Text input mode - minimal friction. The leader writes
                     one field (memory content). Category defaults to
                     "preference" and lives behind a disclosure for the rare
                     case the user wants to set it explicitly. Label is also

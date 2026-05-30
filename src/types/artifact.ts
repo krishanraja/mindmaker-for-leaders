@@ -15,7 +15,7 @@ export interface GeneratedArtifact {
   user_id: string;
   kind: ArtifactKind;
   name: string;
-  /** Markdown body — SKILL.md for skills, raw markdown for everything else. */
+  /** Markdown body - SKILL.md for skills, raw markdown for everything else. */
   body: string;
   /** Kind-specific bag. Skills: { trigger, zip_filename, seed_ref }. */
   metadata: Record<string, unknown>;

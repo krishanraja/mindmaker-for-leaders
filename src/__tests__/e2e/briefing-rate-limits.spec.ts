@@ -46,7 +46,7 @@ test.describe.skip('Briefing rate limits + force-regen cooldown', () => {
       responses.push(r);
     }
     // First 12 should not be rate-limited (some may already_exist; that's
-    // a different success state — we care about the absence of 429s).
+    // a different success state - we care about the absence of 429s).
     const first12 = responses.slice(0, 12);
     for (const r of first12) {
       expect((r.data as { error?: string })?.error).not.toBe('rate_limited');
