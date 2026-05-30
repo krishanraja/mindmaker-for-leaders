@@ -73,10 +73,93 @@
     <!-- Additional social platforms -->
     <meta name="pinterest" content="nohover" />
     <meta property="article:author" content="CTRL" />
-  </head>
+    <link rel="canonical" href="https://ctrl.themindmaker.ai/" />
+
+    <!-- Structured data (machine-readable for search + AI agents). Pricing mirrors /.well-known/product.json -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://ctrl.themindmaker.ai/#org",
+          "name": "CTRL",
+          "url": "https://ctrl.themindmaker.ai",
+          "logo": "https://ctrl.themindmaker.ai/mindmaker-full-logo.png",
+          "parentOrganization": { "@type": "Organization", "name": "Mindmaker", "url": "https://themindmaker.ai" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://ctrl.themindmaker.ai/#app",
+          "name": "CTRL",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web, iOS, Android",
+          "url": "https://ctrl.themindmaker.ai",
+          "description": "Portable AI-context platform for senior leaders. Build a Memory Web (your encrypted AI double) in 2 minutes of voice, export your context into any LLM with one click, and get a 3-minute daily audio briefing anchored to your real priorities.",
+          "publisher": { "@id": "https://ctrl.themindmaker.ai/#org" },
+          "offers": [
+            { "@type": "Offer", "name": "Free / Core", "price": "0", "priceCurrency": "USD", "category": "free" },
+            { "@type": "Offer", "name": "Full Diagnostic", "price": "49", "priceCurrency": "USD", "category": "one-time" },
+            { "@type": "Offer", "name": "Deep Context Upgrade", "price": "29", "priceCurrency": "USD", "category": "one-time" },
+            { "@type": "Offer", "name": "Diagnostic + Deep Context Bundle", "price": "69", "priceCurrency": "USD", "category": "one-time" },
+            { "@type": "Offer", "name": "Edge Pro", "price": "29", "priceCurrency": "USD", "category": "subscription" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            { "@type": "Question", "name": "What is CTRL?", "acceptedAnswer": { "@type": "Answer", "text": "CTRL builds a portable AI double of you in about 2 minutes of voice, so every AI tool you use (ChatGPT, Claude, Gemini, Cursor) instantly knows your context, goals, and thinking style. It also delivers a 3-minute daily audio briefing anchored to your real priorities." } },
+            { "@type": "Question", "name": "How is CTRL different from ChatGPT memory?", "acceptedAnswer": { "@type": "Answer", "text": "ChatGPT memory is locked to ChatGPT. CTRL is portable across ChatGPT, Claude, Gemini, Cursor, and Claude Code, and it is structured and evidence-backed." } },
+            { "@type": "Question", "name": "How much does CTRL cost?", "acceptedAnswer": { "@type": "Answer", "text": "The core is free. Full Diagnostic is $49 one-time, Deep Context is $29, the bundle is $69, and Edge Pro is $29 per month." } }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <style>
+      .ctrl-pre{font-family:Inter,system-ui,sans-serif;color:#1a1a1a;background:#F7F7F5;max-width:760px;margin:0 auto;padding:48px 24px;line-height:1.5}
+      .ctrl-pre h1{font-family:'Space Grotesk',Inter,sans-serif;font-size:2rem;line-height:1.15;margin:0 0 16px}
+      .ctrl-pre h2{font-size:1.1rem;margin:32px 0 8px}
+      .ctrl-pre p{margin:0 0 12px;color:#3a3a3a}
+      .ctrl-pre a{color:#1a1a1a;font-weight:600}
+      .ctrl-pre ul{padding-left:18px;color:#3a3a3a}
+    </style>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static first-paint content for crawlers, link unfurlers, and AI agents.
+           The React app replaces this on mount. Pricing mirrors /.well-known/product.json. -->
+      <main class="ctrl-pre">
+        <h1>CTRL: Clarity for leaders. Build your portable AI double in 2 minutes.</h1>
+        <p>Talk for 2 minutes. CTRL builds a Memory Web (your encrypted AI double) so every AI tool you use, ChatGPT, Claude, Gemini, Cursor, and Claude Code, instantly knows your context, goals, and thinking style. One click exports that context into any LLM, and each morning you get a 3-minute audio briefing anchored to your real priorities.</p>
+        <p><a href="/auth">Build your AI double free</a> or <a href="/booking">book a walkthrough</a>.</p>
+
+        <h2>Who it is for</h2>
+        <p>Senior leaders (C-suite, VP, Founder) at companies of 50 to 5,000 people who already use AI daily but keep getting generic output.</p>
+
+        <h2>The one magic moment</h2>
+        <p>The first time you paste your structured context into ChatGPT or Claude and get a response that is unmistakably about you, not generic advice. That is the moment generic AI becomes your AI.</p>
+
+        <h2>What you get</h2>
+        <ul>
+          <li>Memory Web: a structured, encrypted AI double from 2 minutes of voice.</li>
+          <li>Context Export: one click into any LLM.</li>
+          <li>Daily Briefing: a 3-minute evidence-based audio briefing.</li>
+          <li>Edge Pro: turn a weekly workflow into a Claude Skill that auto-triggers forever.</li>
+        </ul>
+
+        <h2>Pricing</h2>
+        <ul>
+          <li>Free / Core: $0</li>
+          <li>Full Diagnostic: $49 one-time</li>
+          <li>Deep Context Upgrade: $29 one-time</li>
+          <li>Diagnostic + Deep Context Bundle: $69 one-time</li>
+          <li>Edge Pro: $29 / month</li>
+        </ul>
+        <p>Loading the full experience. If it does not appear, <a href="/auth">continue to CTRL</a>.</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
