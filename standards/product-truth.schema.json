@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MindmakerOS Product Truth",
+  "description": "Schema for each app's public /.well-known/product.json, the single source the fleet sells from.",
+  "type": "object",
+  "required": ["schema", "app", "name", "url", "icp", "problem", "magic_moment", "pricing", "links"],
+  "properties": {
+    "schema": { "type": "string", "const": "mindmaker.product-truth/v1" },
+    "app": { "type": "string", "enum": ["ctrl", "onalert", "gutted", "merciless", "circle", "pulse"] },
+    "name": { "type": "string" },
+    "legal_entity": { "type": "string" },
+    "stripe_account": { "type": "string", "enum": ["mindmaker_llc", "fractionl_ai"] },
+    "url": { "type": "string", "format": "uri" },
+    "status": { "type": "string" },
+    "last_updated": { "type": "string" },
+    "source_of_truth": { "type": "string", "format": "uri" },
+    "tagline": { "type": "string" },
+    "one_liner": { "type": "string" },
+    "icp": { "type": "object" },
+    "problem": { "type": "object" },
+    "magic_moment": { "type": "string" },
+    "pitch": { "type": "object", "properties": { "short": { "type": "string" }, "long": { "type": "string" } } },
+    "features": { "type": "array", "items": { "type": "object", "required": ["name", "what"] } },
+    "pricing": {
+      "type": "object",
+      "required": ["currency", "tiers"],
+      "properties": {
+        "currency": { "type": "string" },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "amount": { "type": "number" },
+              "amount_range": { "type": "array", "items": { "type": "number" } },
+              "cadence": { "type": "string" },
+              "includes": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "differentiators": { "type": "array", "items": { "type": "string" } },
+    "objections": { "type": "array", "items": { "type": "object", "required": ["q", "a"] } },
+    "guardrails": { "type": "array", "items": { "type": "string" } },
+    "attribution": {
+      "type": "object",
+      "properties": {
+        "params": { "type": "array", "items": { "type": "string" } },
+        "example": { "type": "string" }
+      }
+    },
+    "links": { "type": "object" }
+  }
+}
