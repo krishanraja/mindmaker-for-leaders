@@ -1,0 +1,91 @@
+/**
+ * MindmakerOS shared semantic token contract.
+ *
+ * Each app keeps the SEMANTIC names and overrides the brand PRIMITIVE values.
+ * Values are HSL triplets (no hsl() wrapper) so Tailwind can wrap them as
+ * hsl(var(--token)). Every token referenced by a Tailwind theme must be defined
+ * here for BOTH :root (light) and .dark. The build guard (check-standards.mjs)
+ * enforces this.
+ *
+ * The values below are CTRL's theme (warm light executive, mint accent). A
+ * sibling app changes the primitives and the accent and inherits the structure.
+ */
+
+:root {
+  /* Brand primitives (retheme per app) */
+  --brand-ink: 0 0% 9%;            /* near-black text */
+  --brand-surface: 0 0% 98%;       /* app background */
+  --brand-accent: 158 64% 40%;     /* CTRL mint/green */
+
+  /* Surface */
+  --background: 0 0% 98%;
+  --foreground: 0 0% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+
+  /* Intent */
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 9%;
+  --accent: 158 64% 40%;
+  --accent-foreground: 0 0% 100%;
+  --success: 142 72% 38%;
+  --success-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Neutral + lines */
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 40%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 158 64% 40%;
+
+  /* Shape */
+  --radius: 0.75rem;
+
+  /* Spacing scale (4px base) */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.dark {
+  --background: 0 0% 7%;
+  --foreground: 0 0% 95%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 95%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 95%;
+
+  --primary: 158 64% 45%;
+  --primary-foreground: 0 0% 7%;
+  --secondary: 0 0% 14%;
+  --secondary-foreground: 0 0% 95%;
+  --accent: 158 64% 45%;
+  --accent-foreground: 0 0% 7%;
+  --success: 142 64% 45%;
+  --success-foreground: 0 0% 7%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 60%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --ring: 158 64% 45%;
+}
