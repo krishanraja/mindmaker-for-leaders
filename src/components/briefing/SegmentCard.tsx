@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, ThumbsDown, Eye, EyeOff, Check, Anchor, Bookmark, BookmarkCheck, Ban, Loader2, ChevronDown } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Eye, EyeOff, Check, Anchor, Bookmark, BookmarkCheck, Ban, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FRAMEWORK_TAG_CONFIG } from "@/types/briefing";
 import { haptics } from "@/lib/haptics";
@@ -66,22 +65,7 @@ export function SegmentCard({
 }: SegmentCardProps) {
   const [feedback, setFeedback] = useState<"useful" | "not_useful" | null>(null);
   const [justWatched, setJustWatched] = useState<string | null>(null);
-  const [provenanceOpen, setProvenanceOpen] = useState(false);
   const tagConfig = FRAMEWORK_TAG_CONFIG[segment.framework_tag as FrameworkTag];
-
-  // Provenance data: collect all non-empty evidence fields from the segment.
-  // Only fields actually present on BriefingSegment are used - no assumptions.
-  const provenanceLines: { label: string; value: string }[] = [];
-  if ((segment.matched_profile_fact ?? "").trim()) {
-    provenanceLines.push({ label: "Anchored to", value: segment.matched_profile_fact!.trim() });
-  }
-  if ((segment.relevance_reason ?? "").trim()) {
-    provenanceLines.push({ label: "Relevance", value: segment.relevance_reason.trim() });
-  }
-  if (segment.lens_item_id && !segment.lens_item_id.startsWith("interest_")) {
-    provenanceLines.push({ label: "Lens source", value: segment.lens_item_id });
-  }
-  const hasProvenance = provenanceLines.length > 0;
 
   // Fire haptics.light() once when this segment transitions to active.
   // Guarded by prefers-reduced-motion to avoid triggering on motion-sensitive setups.
@@ -221,59 +205,6 @@ export function SegmentCard({
             <p className="text-[10px] text-muted-foreground leading-relaxed">
               Anchored to: <span className="text-foreground/80">{segment.matched_profile_fact}</span>
             </p>
-          </div>
-        )}
-
-        {/* Collapsible provenance explainer - "Why this is here". */}
-        {/* Only rendered when at least one provenance field is present. */}
-        {hasProvenance && (
-          <div className="pt-0.5">
-            <button
-              type="button"
-              onClick={() => setProvenanceOpen((prev) => !prev)}
-              className={cn(
-                "flex items-center gap-1 text-[10px] font-medium transition-colors",
-                provenanceOpen
-                  ? "text-accent"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-              aria-expanded={provenanceOpen}
-              aria-controls={`provenance-${index}`}
-            >
-              <ChevronDown
-                className={cn(
-                  "w-3 h-3 transition-transform duration-200",
-                  provenanceOpen && "rotate-180",
-                )}
-                aria-hidden="true"
-              />
-              Why this is here
-            </button>
-            <AnimatePresence initial={false}>
-              {provenanceOpen && (
-                <motion.div
-                  id={`provenance-${index}`}
-                  key="provenance"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.18, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-1.5 rounded-md bg-muted/50 border border-border/60 px-2.5 py-2 space-y-1.5">
-                    {provenanceLines.map((line) => (
-                      <div key={line.label} className="flex items-start gap-1.5">
-                        <Anchor className="w-3 h-3 mt-[2px] text-accent/60 shrink-0" />
-                        <p className="text-[10px] text-muted-foreground leading-relaxed">
-                          <span className="font-medium text-foreground/60">{line.label}:</span>{" "}
-                          <span className="text-foreground/80">{line.value}</span>
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         )}
 
