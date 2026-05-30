@@ -11,6 +11,7 @@ import {
   Calendar,
   RefreshCw,
   PauseCircle,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -69,7 +70,7 @@ function BriefingPage() {
 
   const hasDeclaredOrInferred = declaredInterests.length >= 3;
 
-  const { generate, generating, phase, sparseProfile, clearSparseProfile } = useGenerateBriefing();
+  const { generate, generating, phase, error: generateError, sparseProfile, clearSparseProfile } = useGenerateBriefing();
   const { setBriefing, setSheetOpen, playback } = useBriefingContext();
   const [customSheetOpen, setCustomSheetOpen] = useState(false);
   const [interestsSheetOpen, setInterestsSheetOpen] = useState(false);
@@ -249,6 +250,34 @@ function BriefingPage() {
                   Choose what you want briefed on
                 </Button>
               </div>
+            ) : !defaultBriefing && !!generateError && !isGenerating ? (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 space-y-3"
+              >
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-destructive/70 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Could not generate your briefing just now.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      This is usually a temporary hiccup - try again in a moment.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGenerateToday}
+                >
+                  <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                  Retry
+                </Button>
+              </motion.div>
             ) : !defaultBriefing && hasDeclaredOrInferred ? (
               <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4 space-y-3">
                 <div className="flex items-center gap-3">
@@ -621,6 +650,34 @@ function BriefingPage() {
                 />
               </div>
             </div>
+          ) : !defaultBriefing && !!generateError && !isGenerating ? (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              className="rounded-2xl border border-destructive/30 bg-destructive/5 p-8"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-6 h-6 text-destructive/70" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-semibold text-foreground mb-1">
+                    Could not generate your briefing just now.
+                  </h2>
+                  <p className="text-sm text-muted-foreground mb-5">
+                    This is usually a temporary hiccup - try again in a moment.
+                  </p>
+                  <Button
+                    onClick={handleGenerateToday}
+                    variant="outline"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
           ) : !defaultBriefing && sparseProfile ? (
             <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-8">
               <div className="flex items-start gap-4">

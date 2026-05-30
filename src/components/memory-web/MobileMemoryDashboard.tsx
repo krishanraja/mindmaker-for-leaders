@@ -21,6 +21,8 @@ import {
   X,
   FileText,
   CheckCircle2,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -64,7 +66,7 @@ const PATTERN_CONFIG: Record<PatternType, { icon: typeof TrendingUp; label: stri
 export function MobileMemoryDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { facts, patterns, stats, delta, isLoading, refresh } = useMemoryWeb();
+  const { facts, patterns, stats, delta, isLoading, error: memoryError, refresh } = useMemoryWeb();
   const {
     pendingVerifications,
     isExtracting,
@@ -455,7 +457,7 @@ export function MobileMemoryDashboard() {
             {/* The living memory web - always visible */}
             <MemoryWebVisualization
               facts={facts}
-              showEmptyState={!isLoading && !hasData && mode === 'idle'}
+              showEmptyState={!isLoading && !hasData && !memoryError && mode === 'idle'}
               clearSelection={briefingExpanded}
             />
 
@@ -471,6 +473,30 @@ export function MobileMemoryDashboard() {
                   transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
                 />
               </div>
+            )}
+
+            {/* Error state - shown only when query failed and there is no cached data */}
+            {!isLoading && !!memoryError && !hasData && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+              >
+                <AlertCircle className="h-8 w-8 text-muted-foreground/30 mb-3" />
+                <p className="text-sm font-medium text-foreground mb-1">
+                  Could not load memories
+                </p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Check your connection and try again.
+                </p>
+                <button
+                  onClick={() => refresh()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card text-xs font-semibold text-foreground hover:bg-secondary"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Retry
+                </button>
+              </motion.div>
             )}
 
             {/* Pattern pills overlay - bottom of web area */}
