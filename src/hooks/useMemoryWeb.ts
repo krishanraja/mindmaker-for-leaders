@@ -69,8 +69,13 @@ export function useMemoryWeb() {
 
       const withArchived = await baseQuery().is('archived_at', null);
       if (withArchived.error) {
-        // archived_at column likely missing - query without it
+        // archived_at column likely missing - query without it. supabase-js
+        // returns query failures in .error (it does not throw), so if the
+        // fallback ALSO errors this is a genuine load failure (500/RLS/network),
+        // not a missing column. Throw it so the error state surfaces instead of
+        // silently rendering an empty Memory Web.
         const fallback = await baseQuery();
+        if (fallback.error) throw fallback.error;
         factData = fallback.data;
       } else {
         factData = withArchived.data;
