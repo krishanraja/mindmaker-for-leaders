@@ -15,9 +15,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const DIAGNOSTIC_PRICE_ID = "price_1THBLwHGqJqsGEJLXF8hX9v4";
-const DEEP_CONTEXT_PRICE_ID = "price_1SojAqHGqJqsGEJLDEd6BqMG"; // TODO: Replace with actual Stripe price ID
-const BUNDLE_PRICE_ID = "price_1SojArHGqJqsGEJLtmmGW7p3"; // TODO: Replace with actual Stripe price ID for bundle
+const DIAGNOSTIC_PRICE_ID = "price_1TctCeHGqJqsGEJL1gQZsmQ9"; // $49 Full Diagnostic (provisioned 2026-05-30; replaces stale $15 price_1THBLw)
+const DEEP_CONTEXT_PRICE_ID = "price_1SojAqHGqJqsGEJLDEd6BqMG"; // $29 Deep Context (verified live in Stripe)
+const BUNDLE_PRICE_ID = "price_1SojArHGqJqsGEJLtmmGW7p3"; // $69 Bundle (verified live in Stripe)
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

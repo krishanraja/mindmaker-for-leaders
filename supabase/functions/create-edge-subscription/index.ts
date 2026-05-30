@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const EDGE_PRO_PRICE_ID_ENV = Deno.env.get("STRIPE_EDGE_PRO_PRICE_ID");
 const EDGE_PRO_PRODUCT_NAME = "Edge Pro";
-const EDGE_PRO_UNIT_AMOUNT = 900; // $9.00/month in cents
+const EDGE_PRO_UNIT_AMOUNT = 2900; // $29.00/month in cents (set 2026-05-30; STRIPE_EDGE_PRO_PRICE_ID secret points to the canonical $29 price). Existing $9 subscribers are grandfathered; only new checkouts use $29.
 const EDGE_PRO_INTERVAL = "month" as const;
 
 // Self-healing price lookup: if STRIPE_EDGE_PRO_PRICE_ID is not set, look up
