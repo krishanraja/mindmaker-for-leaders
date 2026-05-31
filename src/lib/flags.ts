@@ -9,11 +9,18 @@
 
 function urlOverride(name: string): boolean | null {
   try {
-    const v = new URLSearchParams(window.location.search).get(`ff_${name}`);
-    if (v === '1' || v === 'true') return true;
-    if (v === '0' || v === 'false') return false;
+    const key = `ff_${name}`;
+    const storeKey = `ctrl_${key}`;
+    const v = new URLSearchParams(window.location.search).get(key);
+    // A URL override is sticky for the session so it survives SPA navigations
+    // (the briefing / export flows navigate, which would otherwise drop ?ff_x=1).
+    if (v === '1' || v === 'true') { sessionStorage.setItem(storeKey, '1'); return true; }
+    if (v === '0' || v === 'false') { sessionStorage.setItem(storeKey, '0'); return false; }
+    const stored = sessionStorage.getItem(storeKey);
+    if (stored === '1') return true;
+    if (stored === '0') return false;
   } catch {
-    // SSR / no window
+    // SSR / no window / storage blocked
   }
   return null;
 }
