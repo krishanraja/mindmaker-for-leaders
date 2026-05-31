@@ -1,6 +1,6 @@
 # Design System
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-05-31
 
 ---
 
@@ -62,10 +62,13 @@ Graphite:    #333639 (HSL: 200 5% 21%) - Strong text
 
 ### Font Families
 ```
-Primary: System font stack (San Francisco on Mac, Segoe UI on Windows)
-Display: 'Gobold' - Headlines, hero text
-Brand: Grotesk ('Inter', 'Helvetica Neue', 'Arial') - Brand typography (Ctrl, MINDMAKER)
+Primary: System font stack (San Francisco on Mac, Segoe UI on Windows) → overridden by Inter via CSS
+Display: 'Gobold Bold' (loaded via @font-face) - Hero headlines only. CSS var: --font-display
+Brand:   'Space Grotesk', 'Gobold Bold' fallback - Brand typography (CTRL wordmark). CSS class: .brand-ctrl
+Body:    'Inter', 'Helvetica Neue', 'Arial' - All other text. CSS var: --font-primary
 ```
+
+Note: `--font-display: 'Gobold', serif` controls hero headlines. `.brand-ctrl` uses `'Space Grotesk', 'Gobold Bold', sans-serif` for the CTRL wordmark specifically. The SPINE.md cross-app standard references "Space Grotesk" as the display face; this is the brand-typography class, not the full hero headline stack.
 
 ### Scale
 ```

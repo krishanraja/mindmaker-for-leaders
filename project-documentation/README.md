@@ -4,8 +4,8 @@
 
 This folder is the canonical source of truth for the CTRL portable AI context platform. Everything else at the repo root has been removed in the 2026-04-26 docs refresh - if it's not in this folder or in the root `README.md` / `CLAUDE.md` / `CHANGELOG.md`, it was historical noise.
 
-**Last Updated:** 2026-05-13
-**Current Version:** v5.2 (Skill Builder + desktop UI redesign shipped on top of v5.1's audit-hardened base)
+**Last Updated:** 2026-05-31
+**Current Version:** v5.3 (2026-05-30 coordinated rebuild: pricing, security RLS, attribution emit, runtime product-truth endpoint, public prerender - shipped on the v5.2 Skill Builder + desktop base)
 
 ---
 
@@ -31,11 +31,14 @@ This folder is the canonical source of truth for the CTRL portable AI context pl
 - [BRANDING.md](./BRANDING.md) - Brand voice, tone, and messaging guidelines
 
 ### Operational Knowledge
-- [HISTORY.md](./HISTORY.md) - Phases 1-7. Includes the April 2026 audit hardening track record.
+- [HISTORY.md](./HISTORY.md) - Phases 1-9. Includes audit hardening (Phase 7), Skill Builder + desktop redesign (Phase 8), and the 2026-05-30 coordinated rebuild (Phase 9).
 - [COMMON_ISSUES.md](./COMMON_ISSUES.md) - Recurring bugs, architectural pain points, audit-aftermath notes
-- [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 41 architectural and product decisions with rationale and outcomes
+- [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 42 architectural and product decisions with rationale and outcomes
 - [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - Step-by-step rebuild instructions
 - [MASTER_INSTRUCTIONS.md](./MASTER_INSTRUCTIONS.md) - Engineering principles and AI assistant behavior guidelines
+
+### Cross-App Standards
+- [SPINE.md](./SPINE.md) - MindmakerOS standards spine: semantic token contract, motion grammar, data/AI conventions, fleet-commerce attribution contract, and `.well-known/product.json` shape. CTRL is the reference implementation for the five-app fleet.
 
 ---
 
@@ -55,12 +58,13 @@ Each strategic doc ends with a **"Sales & Marketing Anchors"** section - pull fr
 1. [PURPOSE.md](./PURPOSE.md) - what you're building and why
 2. [ARCHITECTURE.md](./ARCHITECTURE.md) - system design, data flow, edge functions
 3. [FEATURES.md](./FEATURES.md) - what each feature does + sales anchors
-4. [HISTORY.md](./HISTORY.md) - Phase 7 audit details (revenue/data/UX/reliability/observability/cleanup)
-5. [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 41 decisions with trade-offs
+4. [HISTORY.md](./HISTORY.md) - Phase 7 audit + Phase 8 Skill Builder/desktop + Phase 9 coordinated rebuild
+5. [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 42 decisions with trade-offs
 6. [COMMON_ISSUES.md](./COMMON_ISSUES.md) - known issues and resolutions
 7. [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - to set up a new instance
 8. [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - UI tokens and patterns
-9. Repo root [`CLAUDE.md`](../CLAUDE.md) - workflow + Supabase CLI conventions
+9. [SPINE.md](./SPINE.md) - cross-app standards (token contract, motion, attribution, product.json shape)
+10. Repo root [`CLAUDE.md`](../CLAUDE.md) - workflow + Supabase CLI conventions
 
 ---
 
@@ -85,7 +89,7 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 ---
 
-## Current State (v5.2 - verified 2026-05-13)
+## Current State (v5.3 - verified 2026-05-31)
 
 ### Product Positioning
 - **Tagline**: "Clarity for Leaders"
@@ -101,9 +105,9 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 ### Verified Repo Counts
 | Item | Count |
 |---|---|
-| Supabase edge functions | 74 |
-| React custom hooks | 51 |
-| PostgreSQL migrations applied | 98 |
+| Supabase edge functions | 75 |
+| React custom hooks | 55 |
+| PostgreSQL migrations applied | 101 |
 | Top-level page components | 25 |
 | E2E specs (Playwright) | 6 |
 | Unit/shared specs (Vitest) | 5 |
@@ -112,7 +116,7 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 ### Tech Stack
 - **Frontend**: React 18.3.1, React Router 6.26.2, Vite 5.4, TypeScript 5.5, Framer Motion 12, TanStack React Query 5.56, Tailwind CSS, shadcn/ui (Radix UI), Zod
-- **Backend**: Supabase (PostgreSQL + 74 Edge Functions, Deno runtime)
+- **Backend**: Supabase (PostgreSQL + 75 Edge Functions, Deno runtime)
 - **AI Primary**: Vertex AI (Gemini 2.0 Flash) via Google Cloud service account
 - **AI Fallback**: OpenAI GPT-4o
 - **Voice**: OpenAI Whisper
@@ -138,6 +142,9 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 - **Missions System**: First Moves commitment tracking with check-ins
 - **Progress Tracking**: Snapshots and drift detection over time
 - **Command Palette** (desktop): Cmd/Ctrl+K opens a global launcher across authenticated routes. Pages opt into actions via custom `mm:capture-voice` and `mm:generate-briefing` window events.
+- **Attribution Emit** (2026-05-30): UTM params captured first-touch, persisted through signup into `auth.users.user_metadata`, stamped onto Stripe checkout, and emitted as lifecycle events to the central MindmakerOS warehouse (`gojpffsrxybbpbdzzrvs`). Emit is dormant until `WAREHOUSE_INGEST_URL` is set.
+- **Runtime Product Truth** (2026-05-30): `https://ctrl.themindmaker.ai/.well-known/product.json` serves canonical pricing, ICP, and offer data. Fleet agents must fetch this endpoint instead of relying on static doc snapshots.
+- **Public Prerender** (2026-05-30): Landing and public routes pre-rendered at build time (Vite SSR pass) so crawlers and AI agents see fully-rendered HTML.
 
 ### Pricing (Current)
 | SKU | Price | What |
@@ -146,7 +153,7 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 | Full Diagnostic | $49 one-time | Full tensions/risks/scenarios + thinking tools |
 | Deep Context Upgrade | $29 one-time | Enhanced company-context enrichment |
 | Diagnostic + Deep Context Bundle | $69 one-time | Both above (saves $10) |
-| Edge Pro | $29/month | Unlimited Edge artifacts + all 7 briefing types + email delivery |
+| Edge Pro | $29/month | Unlimited Edge artifacts + all 7 briefing types + email delivery + unlimited Agent Skill Builder |
 | Mindmaker Bootcamp | $15K-$50K | 4-hour exec sprint |
 | Mindmaker Portfolio | $5K-$25K | Portfolio assessment |
 
@@ -182,18 +189,18 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 | Field | Value |
 |-------|-------|
-| Documentation last updated | 2026-05-13 |
-| Current product version | v5.2 (Skill Builder + desktop UI redesign, on the v5.1 audit-hardened base) |
-| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder) with desktop-native shell |
+| Documentation last updated | 2026-05-31 |
+| Current product version | v5.3 (2026-05-30 coordinated rebuild on v5.2 base) |
+| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder) with desktop-native shell, attribution emit, runtime product-truth endpoint |
 | Design system version | v3.1 (Light mode, Apple-like, with desktop-native sidebar + sticky top bar + right rail + Command Palette) |
 | AI primary model | Vertex AI (Gemini 2.0 Flash) |
 | AI fallback model | OpenAI GPT-4o |
 | Embedding model | OpenAI text-embedding-3-small (1536-dim, pgvector) |
-| Edge functions | 74 |
-| Database migrations | 98 |
+| Edge functions | 75 |
+| Database migrations | 101 |
 | Database extensions | pgvector, pgcrypto, pg_cron |
 | Active routes | 11 (+ legacy redirects) |
-| Custom hooks | 51 |
+| Custom hooks | 55 |
 | E2E specs / Vitest specs | 6 / 5 |
 | Node.js requirement | >=22 <24 |
 | Audit-week tracks shipped | 6 (revenue path, data path, UX, reliability, observability, cleanup) |

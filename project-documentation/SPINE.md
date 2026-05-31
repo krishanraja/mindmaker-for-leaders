@@ -1,6 +1,6 @@
 # MindmakerOS Standards Spine (authored from CTRL)
 
-Status: foundation authored 2026-05-30 from mm-ctrl (the most documented app). Unify the SYSTEM, never the SKIN. Each app themes these tokens differently and keeps its own palette, typography personality, motion flavor, voice, and density.
+Status: foundation authored 2026-05-30 from mm-ctrl (the most documented app). Last reviewed 2026-05-31. Unify the SYSTEM, never the SKIN. Each app themes these tokens differently and keeps its own palette, typography personality, motion flavor, voice, and density.
 
 This document is the contract the other five apps (onalert, gutted, merciless, fractionl-circle, fractionl-pulse) import or mirror. CTRL is the reference implementation.
 
@@ -22,7 +22,7 @@ Rule: every token referenced in `tailwind.config.ts` MUST be defined in the base
 - Spacing: 4px base scale (`--spacing-0-5` through `--spacing-20`).
 - Radius: `--radius-sm` 6px through `--radius-2xl` 24px.
 - Elevation: `--shadow-sm` through `--shadow-xl`.
-- Type: one display face + one body face per app (CTRL: Space Grotesk display, Inter body).
+- Type: one display face + one body face per app. CTRL uses Gobold Bold (`--font-display`) for hero headlines and Space Grotesk (via `.brand-ctrl` class) for the CTRL wordmark / brand typography, with Inter (`--font-primary`) for all body text. When describing CTRL to other apps in the fleet, treat Space Grotesk as the named display personality (what callers see) and Gobold as the hero accent; both coexist in CTRL's type stack.
 
 ## 3. Motion grammar
 Ground truth lives in code (CTRL: `src/lib/motion.ts`), not in docs. Shared constants: durations 150/300/500ms, spring stiffness ~400, damping ~30, mass ~0.8, max movement 24px, max scale 1.05. Respect `prefers-reduced-motion`. Motion must communicate state, never decorate.

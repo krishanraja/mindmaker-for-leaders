@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-05-31
 
 ---
 
@@ -32,7 +32,7 @@ Key architectural and product decisions with rationale.
 **Decision**: Primary OpenAI, fallback to Vertex AI
 **Rationale**: OpenAI quality better, Vertex for redundancy
 **Trade-off**: Dual integration complexity vs reliability
-**Outcome**: ✅ Improved uptime
+**Outcome**: ↩️ Superseded by Decision 16 (Jan 2026). Primary is now Vertex AI (Gemini 2.0 Flash); OpenAI GPT-4o retained as fallback. See Decision 16 for current state.
 
 ## Decision 5: Supabase Edge Functions
 **Date**: 2024

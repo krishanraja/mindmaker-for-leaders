@@ -2,9 +2,9 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-05-31
 
-> **Verified counts (2026-05-13)**: 74 edge functions, 51 hooks, 98 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points).
+> **Verified counts (2026-05-31)**: 75 edge functions, 55 hooks, 101 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points), Phase 9 shipped (pricing $29/mo, security RLS fixes, attribution emit, `.well-known/product.json`, public prerender).
 
 ---
 
@@ -751,7 +751,7 @@ skill_exports                           -- Skill Builder log (Phase 8)
 
 **Location**: `supabase/functions/`
 
-**Total**: 74 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline.
+**Total**: 75 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added eight functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added `track-event` for attribution emit and `resend-webhook` signature verification.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)

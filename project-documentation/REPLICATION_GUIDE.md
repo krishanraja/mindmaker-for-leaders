@@ -2,9 +2,9 @@
 
 Step-by-step instructions to replicate CTRL from scratch.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-31
 
-> Current scope: 74 edge functions, 51 hooks, 98 migrations, pgvector + pgcrypto + pg_cron. This guide gets you to a runnable instance; full feature parity requires shipping each phase in order (see HISTORY.md), now including Phase 8 (Agent Skill Builder + desktop redesign).
+> Current scope: 75 edge functions, 55 hooks, 101 migrations, pgvector + pgcrypto + pg_cron. This guide gets you to a runnable instance; full feature parity requires shipping each phase in order (see HISTORY.md), now including Phase 8 (Agent Skill Builder + desktop redesign) and Phase 9 (pricing, security, attribution, product-truth, prerender).
 
 ---
 
@@ -76,10 +76,9 @@ supabase init
 
 # Link to remote project
 supabase link --project-ref YOUR_PROJECT_REF
-
-# Apply migrations
-supabase db push
 ```
+
+**Important**: Do NOT use `supabase db push`. The local migration history is out of sync with remote for the canonical CTRL instance. Apply migrations directly via the Supabase Management API using SQL. For a fresh instance on your own project ref, `supabase db push` is safe. See `CLAUDE.md` for the Management API approach used on the canonical instance.
 
 **Create `.env`**:
 ```
@@ -184,44 +183,60 @@ supabase functions deploy function-name
 ## Step 9: Configure Secrets
 
 In Supabase dashboard, add secrets:
-- `OPENAI_API_KEY`
-- `RESEND_API_KEY`
-- `STRIPE_SECRET_KEY`
+- `OPENAI_API_KEY` - embeddings, fallback LLM, Whisper voice transcription
+- `GOOGLE_SERVICE_ACCOUNT_KEY` - Vertex AI (Gemini 2.0 Flash primary LLM) JSON blob
+- `RESEND_API_KEY` - transactional email
+- `RESEND_WEBHOOK_SECRET` - Resend webhook signature verification
+- `STRIPE_SECRET_KEY` - Stripe API
+- `STRIPE_WEBHOOK_SECRET` - Stripe webhook signature verification (mandatory for payment security)
+- `ELEVENLABS_API_KEY` - briefing audio synthesis
+- `PERPLEXITY_API_KEY`, `TAVILY_API_KEY`, `BRAVE_SEARCH_API` - briefing news providers (at least one required)
+- `MEMORY_ENCRYPTION_KEY` - AES-256-GCM key for Memory Web encryption at rest
+- `WAREHOUSE_INGEST_URL` - (optional) MindmakerOS warehouse endpoint for attribution emit; emit is dormant until set
 
 ---
 
 ## Step 10: Set Up Routing
 
-**src/main.tsx**:
+The app uses `createBrowserRouter` (React Router v6 data router API) with lazy-loaded pages and an `AuthedLayoutRoute` that wraps authenticated routes in the `CommandPaletteProvider`.
+
+**src/router.tsx** (simplified):
 ```tsx
-import { BrowserRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { RequireAuth } from '@/components/auth/RequireAuth'
+import { AuthedLayoutRoute } from '@/components/layout/AuthedLayoutRoute'
 
-const queryClient = new QueryClient()
+const Landing = lazy(() => import('@/pages/Landing'))
+const Dashboard = lazy(() => import('@/pages/Dashboard'))
+// ... other lazy-loaded pages
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </BrowserRouter>
-)
+export const router = createBrowserRouter([
+  { path: '/', element: <Suspense fallback={<Loading />}><Landing /></Suspense> },
+  {
+    element: <AuthedLayoutRoute />,
+    children: [
+      { path: '/dashboard', element: <Suspense fallback={<Loading />}><RequireAuth><Dashboard /></RequireAuth></Suspense> },
+      // /memory, /context, /briefing, /settings, /compliance, /profile
+    ],
+  },
+  // Legacy redirects: /today, /pulse, /voice, /diagnostic, /think → /dashboard
+  { path: '*', element: <Suspense fallback={<Loading />}><NotFound /></Suspense> },
+])
 ```
 
-**src/App.tsx**:
+**src/main.tsx**:
 ```tsx
-import { Routes, Route } from 'react-router-dom'
-import Index from './pages/Index'
-import NotFound from './pages/NotFound'
+import { RouterProvider } from 'react-router-dom'
+import { router } from './router'
 
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  )
-}
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  </QueryClientProvider>
+)
 ```
 
 ---

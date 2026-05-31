@@ -1,7 +1,7 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-05-31
 **Runtime truth source:** https://ctrl.themindmaker.ai/.well-known/product.json
 
 ---

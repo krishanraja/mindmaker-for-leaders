@@ -2,7 +2,7 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-05-31
 
 > **Status**: Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath."
 
@@ -477,3 +477,42 @@ Before shipping:
 **Root Cause**: ElevenLabs synthesis is fire-and-forget from `generate-briefing` to `synthesize-briefing`. The frontend polls every 3s. Audio Failure UX (Audit Week 4) ensures segments + script render even if synthesis ultimately fails.
 **Solution**: User can read segments immediately. Audio appears when synthesis completes. If `audio_url` stays null after a minute, check `synthesize-briefing` logs.
 **Status**: ✅ Resolved (Audit Week 4 audio failure UX).
+
+---
+
+## Phase 8 and Phase 9 Issues (May 2026)
+
+### Issue 42: Skill Builder Generates Low-Quality Output on Vague Input
+**Symptom**: Leader describes a feeling or a preference ("I want to communicate more clearly") and the Skill Builder produces a generic skill with weak trigger phrases.
+**Root Cause**: The Three Honest Tests triage gate is LLM-driven; very vague inputs can pass triage if they include action-like language, but the extraction pass has little concrete process to work with.
+**Solution**: Guide the leader to the pain-anchored entry points (Edge `AutomatePainCard`, Memory blocker zap, Briefing decision-trigger zap) where the seed pre-fills a concrete workflow context. If triage passes but output is weak, the quality-gate checklist in `SkillPreviewSheet` will surface which criteria failed; the leader can cancel and retry with a more specific description.
+**Status**: ⚠️ Monitor - triage gate handles clear non-workflows; borderline inputs are a UX prompt problem.
+
+### Issue 43: SkillCaptureSheet Scroll Position Lost on Close
+**Symptom**: Closing the Skill capture sheet on the Dashboard Edge view leaves the page scrolled to the wrong position.
+**Root Cause**: Fixed in PR #106 (scroll save/restore around `SkillCaptureSheet`). If still observed, check that `data-edge-scroll` attribute is present on the Edge mobile scroller and `pb-44` is applied.
+**Status**: ✅ Resolved (PR #106, Phase 8 contrast + scroll polish).
+
+### Issue 44: Missions and Check-ins Return Empty for Some Users
+**Symptom**: Leader opens the Missions view and sees no missions, even though they committed to First Moves in the assessment.
+**Root Cause**: `leader_missions`, `leader_check_ins`, and `leader_progress_snapshots` RLS policies were gating on bare `leader_id = auth.uid()`. For users whose `leader_id` is an app-level ID (not equal to `auth.uid()`), all rows returned empty. Fixed in migration `20260530120000_fix_leader_rls_and_tts_rls.sql`.
+**Solution**: The fix is deployed. Verify by checking `leader_missions` for affected users. If still empty, confirm the migration applied by running `SELECT COUNT(*) FROM leader_missions WHERE leader_id IN (SELECT id FROM leaders WHERE user_id = auth.uid())` from the SQL editor.
+**Status**: ✅ Resolved (Phase 9, 2026-05-30).
+
+### Issue 45: Resend Webhook Processes Unsigned Payloads
+**Symptom**: The `resend-webhook` edge function was accepting all inbound payloads regardless of Resend signature.
+**Root Cause**: Signature verification was not implemented (same class of risk that Audit Week 1 closed for Stripe).
+**Solution**: Fixed in Phase 9. `resend-webhook` now validates the `Resend-Signature` header using `RESEND_WEBHOOK_SECRET` before processing. Returns 401 on invalid or missing signatures.
+**Status**: ✅ Resolved (Phase 9, 2026-05-30).
+
+### Issue 46: CSS Design Tokens Defined in Two Files (Token Conflict)
+**Symptom**: `--background` and `--accent` tokens had diverging values between `src/index.css` and a secondary tokens file, causing inconsistent computed values in the app.
+**Root Cause**: Two files both defining the same semantic tokens with different values; last-write wins depending on import order.
+**Solution**: Fixed in Phase 9 prerender workstream. `src/index.css` now has sole ownership of all semantic tokens. The secondary file holds only brand primitives. Build-time guard added: build fails if a token referenced in `tailwind.config.ts` is undefined in the CSS base layer.
+**Status**: ✅ Resolved (Phase 9, 2026-05-30).
+
+### Issue 47: Attribution Not Flowing to Stripe on Free-to-Paid Upgrade
+**Symptom**: UTM params captured on the landing page are not appearing in Stripe checkout session metadata or customer metadata for upgrades triggered after signup.
+**Root Cause**: The attribution emit path captures params first-touch and writes them to `auth.users.user_metadata` at signup. The Stripe checkout must read from `user_metadata` and stamp it on the session. If the upgrade happens in a session where `user_metadata` is not fetched before checkout creation, params are missing.
+**Solution**: Verify `WAREHOUSE_INGEST_URL` is set in Supabase secrets (emit is dormant until set). Confirm `track-event` edge function is receiving the `purchase` event. Check Stripe checkout session metadata in the Stripe dashboard for the affected checkout. If metadata is missing, review `create-edge-subscription` and `create-diagnostic-payment` to confirm they read from the session's `user_metadata`.
+**Status**: ⚠️ Monitor - wiring is live but dormant until `WAREHOUSE_INGEST_URL` is configured.

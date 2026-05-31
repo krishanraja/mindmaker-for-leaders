@@ -2,21 +2,22 @@
 
 Complete feature inventory across all three CTRL tools.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-05-31
 
 > **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
 
 ---
 
-## Repo at a glance (verified 2026-05-13)
+## Repo at a glance (verified 2026-05-31)
 
-- **74 Supabase edge functions** (Deno runtime), grouped: 7 briefing, 5 memory, 5 AI generation, 4 billing, 6 diagnostic, 8 email, 9 enrichment, 11 leadership/missions/observability/voice, 1 skill builder (`generate-skill-export`), plus shared modules
-- **51 React hooks** under `src/hooks/` (added in v5.2: `useSkillExport`, `useUserPains`, `useRevealOnMount`)
-- **98 PostgreSQL migrations** applied to remote (added in v5.2: `20260508000000_create_skill_exports.sql`)
+- **75 Supabase edge functions** (Deno runtime), grouped: 7 briefing, 5 memory, 5 AI generation, 4 billing, 6 diagnostic, 8 email, 9 enrichment, 11 leadership/missions/observability/voice, 1 skill builder (`generate-skill-export`), 1 attribution (`track-event`), plus shared modules and supporting functions
+- **55 React hooks** under `src/hooks/` (added in v5.2: `useSkillExport`, `useUserPains`, `useRevealOnMount`; added in v5.3: `useGeneratedArtifacts`, `useSuggestedInterests`, `useBriefingVoiceCommands`, `useBriefingStreamPreview`)
+- **101 PostgreSQL migrations** applied to remote (added in v5.3: `20260513000000_generated_artifacts.sql`, `20260530120000_fix_leader_rls_and_tts_rls.sql`, `20260530130000_add_marketing_consent.sql`)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Desktop UI redesign shipped** (PR #104, Phase 8): unified desktop-native shell with sticky top bar (page eyebrow + title + actions), optional right rail for context, Cmd/Ctrl+K Command Palette across all authenticated routes. No more stretched mobile markup on desktop.
-- **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
+- **Phase 9 shipped** (PR #111-#114, 2026-05-30): pricing to $29/mo, security RLS fixes, attribution emit path, `.well-known/product.json` runtime truth source, public prerender.
+- **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff, em-dash check, undefined-token check
 - **Tests**: 5 Vitest unit/shared + 6 Playwright e2e (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency)
 
 ---

@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-31
 
 ---
 
@@ -234,6 +234,7 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 5.0 | Apr 2026 | Briefing v2: evidence-based relevance lens + pgvector + four-part learning loop (Interests, industry seeds, explicit kill, nightly aggregator) |
 | 5.1 | Apr 2026 | Phase 7 - six audit-week tracks shipped: revenue path, data path, UX, reliability, observability, cleanup. Hardened production platform. |
 | 5.2 | May 2026 | Phase 8 - Agent Skill Builder (voice-to-Claude-Skill pipeline, Edge Pro), world-class desktop UI redesign with Command Palette, pain-anchored Skill entry points on Edge / Memory / Briefing. |
+| 5.3 | May 2026 | Phase 9 - Pricing to $29/mo, security RLS fixes, attribution emit, product-truth endpoint, prerender. |
 
 ---
 
@@ -457,3 +458,76 @@ New hook: **`useUserPains`** returns the top N blockers + active decisions from 
 - 5 new components in `src/components/edge/` for the Skill Builder UX + 1 in `src/components/memory-web/`
 - Desktop now feels like a desktop product, not stretched mobile markup
 - Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change. (Historical note: Edge Pro moved to $29/month on 2026-05-30; existing $9 subscribers are grandfathered. All new checkouts are $29/mo.)
+
+---
+
+## Phase 9: Coordinated Rebuild - Pricing, Security, Attribution, Product Truth (2026-05-30)
+
+### Context
+
+By late May 2026 the product surface area had grown to include the Agent Skill Builder, the desktop redesign, and the Skill entry points from Phase 8. Five cross-cutting concerns needed to be resolved together in a single release rather than as separate incremental PRs: pricing, security RLS, attribution, runtime product truth, and public-surface rendering. Staggering them would have created a consistency window where, for example, the Stripe checkout still showed the old $9 price while documentation already quoted $29.
+
+Phase 9 shipped all five workstreams on the same day (PRs #111-#114).
+
+### Workstream 1 - Pricing Corrections (PR #111, WS1+WS2)
+
+**What shipped:**
+- Edge Pro repriced to $29/month (was $9). Full Diagnostic confirmed at $49. Deep Context Upgrade at $29. Bundle at $69.
+- Stripe products and price IDs updated to reflect the new figures.
+- All in-app copy, paywall components, and upgrade modals updated from $9 to $29.
+- Existing $9 subscribers are grandfathered; all new checkouts are at the $29 price.
+
+**Why it mattered:** The product is in its first real sales cycle. Pricing needed to be consistent between the Stripe checkout, the app UI, the documentation, and the runtime product-truth endpoint - on the same day.
+
+### Workstream 2 - Security RLS Fixes (PR #111, WS1+WS2)
+
+**What shipped:**
+- `leader_missions`, `leader_check_ins`, and `leader_progress_snapshots` RLS policies updated to gate via `leaders.user_id` (join to the `leaders` table) rather than bare `leader_id = auth.uid()`. The bare check was returning zero rows for users whose `leader_id` differed from their `auth.uid()`, creating a horizontal-access gap.
+- `tts_config` table: RLS enabled for the first time.
+- `resend-webhook` edge function: now validates Resend webhook signatures before processing, closing the same class of risk that the Stripe webhook verification (Audit Week 1) closed for payments.
+- Migration `20260530120000_fix_leader_rls_and_tts_rls.sql` applied.
+
+**Why it mattered:** Correctness and trust. A leader whose Missions and Check-ins returned empty because of the gate mismatch had no obvious way to diagnose the problem. The RLS fix is both a bug fix and a security hardening.
+
+### Workstream 3 - Attribution Emit Path (PR #112, WS5+WS7)
+
+**What shipped:**
+- UTM params (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `agent`, `campaign_id`) captured first-touch on landing via URL-parse on the `Landing` component.
+- Params persisted to `localStorage` so they survive the auth redirect.
+- At signup, params written into `auth.users.user_metadata`.
+- At Stripe checkout creation, params stamped onto checkout session metadata.
+- Lifecycle events (landed, signed_up, activated, purchased, refunded, churned) emit to the central MindmakerOS warehouse (`gojpffsrxybbpbdzzrvs`) via the OS-owned `ingest-attribution` function and the `track-event` edge function.
+- The warehouse emit is dormant until `WAREHOUSE_INGEST_URL` is set in secrets; the wiring is live and tested.
+
+**Why it mattered:** The fleet-commerce contract in SPINE.md requires a single UTM + attribution source across all MindmakerOS apps. Without this, first-touch attribution from agent-generated outbound was invisible in Stripe.
+
+### Workstream 4 - Runtime Product Truth (PR #112, WS5+WS7)
+
+**What shipped:**
+- `https://ctrl.themindmaker.ai/.well-known/product.json` is now live as a static artifact served at build time.
+- The JSON document contains canonical pricing tiers, ICP qualifiers, offer names, CTAs, attribution scheme, and agent guardrails (no em dashes, no $9 quotes, no integration language).
+- The MindmakerOS agent fleet is instructed to fetch this endpoint rather than relying on static doc snapshots. When the endpoint and the docs disagree, the endpoint wins.
+- Shape follows the MindmakerOS product-truth standard defined in SPINE.md.
+
+**Why it mattered:** Static docs go stale between refreshes. A machine-readable endpoint that is generated from the same source as the app means fleet agents always quote current prices - including the day a price changes.
+
+### Workstream 5 - Public Surface Prerender (PR #113, WS3+WS4+WS6)
+
+**What shipped:**
+- Landing page and all public routes pre-rendered at build time via Vite SSR pass.
+- `/.well-known/product.json` served as a standalone static artifact (not a dynamic route).
+- CSS design-token conflicts resolved: `--background` and `--accent` were diverging across `index.css` and `tokens.css`; `index.css` now has sole ownership of semantic tokens.
+- Build guard added: build fails if a referenced Tailwind token is undefined or if an em dash appears in source (house rule enforced at the tool level).
+
+**Why it mattered:** Crawlers and AI agents scraping `ctrl.themindmaker.ai` were seeing blank pages (client-only SPA). Prerender ensures every public surface returns real content in initial HTML, with schema.org structured data and correct OG tags.
+
+### Outcomes from Phase 9
+
+- 4 PRs merged: #111 (pricing + RLS), #112 (attribution + product truth), #113 (prerender + design tokens), #114 (QA fixes)
+- 2 new migrations: `20260530120000_fix_leader_rls_and_tts_rls.sql`, `20260530130000_add_marketing_consent.sql`
+- Edge Pro is now $29/month across all surfaces. All documentation updated.
+- Fleet agents now have a machine-readable truth source at `/.well-known/product.json`.
+- Attribution wiring is live end-to-end (landing → signup → Stripe → warehouse).
+- Security: `tts_config` RLS live, `resend-webhook` signature-verified, leader table RLS fixed.
+- CSS token conflicts resolved; build-time token and em-dash guards added.
+
