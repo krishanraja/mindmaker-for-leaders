@@ -434,6 +434,7 @@ export function MemoryWebVisualization({
                 cy={node.y}
                 r={node.radius * 2.5}
                 fill={`rgba(${col.rgb},0.08)`}
+                initial={{ r: node.radius * 2.2 }}
                 animate={{
                   r: [node.radius * 2.2, node.radius * (isSelected ? 3.5 : 3), node.radius * 2.2],
                   opacity: [0.08, isSelected ? 0.25 : 0.15, 0.08],
@@ -447,6 +448,7 @@ export function MemoryWebVisualization({
                 r={node.radius}
                 fill={col.fill}
                 filter="url(#node-glow)"
+                initial={{ r: node.radius }}
                 animate={{
                   r: [node.radius, node.radius * (isSelected ? 1.3 : 1.15), node.radius],
                 }}

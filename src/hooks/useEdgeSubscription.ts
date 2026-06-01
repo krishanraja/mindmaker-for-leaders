@@ -20,7 +20,7 @@ export function useEdgeSubscription() {
         .from('edge_subscriptions')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       setSubscription(data as unknown as EdgeSubscription | null);
     } catch {

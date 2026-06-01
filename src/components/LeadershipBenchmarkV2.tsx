@@ -104,7 +104,7 @@ export const LeadershipBenchmarkV2: React.FC<LeadershipBenchmarkV2Props> = ({
           .from('leader_assessments')
           .select('leader_id')
           .eq('id', assessmentId)
-          .single();
+          .maybeSingle();
 
         if (assessment?.leader_id) {
           setLeaderId(assessment.leader_id);
