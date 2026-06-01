@@ -44,7 +44,7 @@ export function StrategicPulse() {
           .from('leaders')
           .select('baseline')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         // Use real data or defaults
         setData({

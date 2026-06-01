@@ -60,7 +60,7 @@ export function EdgeProTab() {
         .from('profiles')
         .select('edge_delivery_email')
         .eq('id', user!.id)
-        .single()
+        .maybeSingle()
 
       if (!error && data) {
         const saved = (data as Record<string, unknown>).edge_delivery_email as string || ''

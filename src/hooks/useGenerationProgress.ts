@@ -132,7 +132,7 @@ export function useGenerationProgress(assessmentId: string) {
           .from('leader_assessments')
           .select('generation_status')
           .eq('id', assessmentId)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('❌ Failed to fetch generation status:', error);

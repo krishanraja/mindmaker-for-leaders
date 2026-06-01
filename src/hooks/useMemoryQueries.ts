@@ -639,7 +639,7 @@ export function useMemorySettings() {
         .from('user_memory_settings')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       // Create default settings if not found
       if (error?.code === 'PGRST116' || !data) {

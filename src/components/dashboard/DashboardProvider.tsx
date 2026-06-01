@@ -53,7 +53,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         .from('leaders')
         .select('baseline')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (leaderError && leaderError.code !== 'PGRST116') {
         throw leaderError

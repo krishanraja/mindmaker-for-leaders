@@ -115,7 +115,7 @@ export function useMemoryWeb() {
         .from('user_memory_budget')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       if (!budgetResult.error && budgetResult.data) setBudget(budgetResult.data as unknown as MemoryBudget);
 
       // Calculate stats - null-safe: any unknown / missing status is inferred.
