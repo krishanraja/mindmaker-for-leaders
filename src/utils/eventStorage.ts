@@ -270,7 +270,7 @@ export async function storeEvent(
             p_tool_name: validatedData.toolName,
             p_question_id: validatedData.questionId
           })
-          .maybeSingle();
+          .single();
 
         if (questionMeta) {
           // Enhance context_snapshot with question metadata

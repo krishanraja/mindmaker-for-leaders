@@ -60,7 +60,7 @@ export const AssessmentProvider: React.FC<{ children: ReactNode }> = ({ children
           .from('leader_assessments')
           .select('*, leaders(*)')
           .eq('id', assessmentId)
-          .maybeSingle();
+          .single();
 
         if (error) {
           console.warn('⚠️ Failed to sync assessment with server:', error);
