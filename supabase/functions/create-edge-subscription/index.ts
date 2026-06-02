@@ -1,5 +1,10 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  EDGE_PRO_CURRENCY,
+  EDGE_PRO_INTERVAL,
+  EDGE_PRO_UNIT_AMOUNT_CENTS,
+} from "../_shared/edge-pricing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,8 +26,6 @@ function sanitizeAttr(obj: Record<string, unknown>): Record<string, string> {
 
 const EDGE_PRO_PRICE_ID_ENV = Deno.env.get("STRIPE_EDGE_PRO_PRICE_ID");
 const EDGE_PRO_PRODUCT_NAME = "Edge Pro";
-const EDGE_PRO_UNIT_AMOUNT = 2900; // $29.00/month in cents (set 2026-05-30; STRIPE_EDGE_PRO_PRICE_ID secret points to the canonical $29 price). Existing $9 subscribers are grandfathered; only new checkouts use $29.
-const EDGE_PRO_INTERVAL = "month" as const;
 
 // Self-healing price lookup: if STRIPE_EDGE_PRO_PRICE_ID is not set, look up
 // (or create) the "Edge Pro" product and its recurring monthly price.
@@ -33,7 +36,7 @@ async function resolveEdgeProPriceId(stripe: Stripe): Promise<string> {
 
   // Find or create product
   const products = await stripe.products.list({ limit: 100, active: true });
-  let product = products.data.find((p) => p.name === EDGE_PRO_PRODUCT_NAME);
+  let product = products.data.find((p: Stripe.Product) => p.name === EDGE_PRO_PRODUCT_NAME);
   if (!product) {
     product = await stripe.products.create({
       name: EDGE_PRO_PRODUCT_NAME,
@@ -48,17 +51,17 @@ async function resolveEdgeProPriceId(stripe: Stripe): Promise<string> {
     limit: 100,
   });
   const existing = prices.data.find(
-    (p) =>
+    (p: Stripe.Price) =>
       p.recurring?.interval === EDGE_PRO_INTERVAL &&
-      p.unit_amount === EDGE_PRO_UNIT_AMOUNT &&
-      p.currency === "usd",
+      p.unit_amount === EDGE_PRO_UNIT_AMOUNT_CENTS &&
+      p.currency === EDGE_PRO_CURRENCY,
   );
   if (existing) return existing.id;
 
   const created = await stripe.prices.create({
     product: product.id,
-    unit_amount: EDGE_PRO_UNIT_AMOUNT,
-    currency: "usd",
+    unit_amount: EDGE_PRO_UNIT_AMOUNT_CENTS,
+    currency: EDGE_PRO_CURRENCY,
     recurring: { interval: EDGE_PRO_INTERVAL },
     metadata: { product: "edge_pro" },
   });
