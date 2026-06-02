@@ -8,7 +8,8 @@ import type { Logger } from "../_shared/logger.ts";
 import type { UserContext } from "../_shared/user-context.ts";
 import { decompose } from "./decompose.ts";
 import { verifyClaim } from "./verify.ts";
-import { advise } from "./advise.ts";
+import { advise, type AdversarialInput } from "./advise.ts";
+import { crossExamine } from "./crossexamine.ts";
 import type { ClaimVerdict, ExtractedClaim } from "./types.ts";
 
 export interface PipelineParams {
@@ -17,6 +18,7 @@ export interface PipelineParams {
   statement: string;
   ctx: UserContext;
   objectiveFactIds: string[];
+  isPro: boolean;
 }
 
 /** Run async callbacks with bounded concurrency. */
@@ -35,7 +37,7 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T, index: nu
 }
 
 export async function runPipeline(admin: SupabaseClient, params: PipelineParams, log: Logger): Promise<void> {
-  const { caseId, userId, statement, ctx, objectiveFactIds } = params;
+  const { caseId, userId, statement, ctx, objectiveFactIds, isPro } = params;
   const started = Date.now();
 
   try {
@@ -116,21 +118,45 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
       return { claimId: row.id, claim, verdict };
     });
 
+    const verifiedForJudging = verified.map((v) => ({ claim: v.claim, verdict: v.verdict as ClaimVerdict }));
+
+    // --- Stage 3: cross-examine (Edge Pro only) ----------------------------
+    let adversarial: AdversarialInput | undefined;
+    let adversarialBreakpointIndex = -1;
+    if (isPro) {
+      await admin.from("decision_cases").update({ stage: "cross_examining", updated_at: new Date().toISOString() }).eq("id", caseId);
+      try {
+        const xex = await crossExamine(statement, ctx, verifiedForJudging);
+        adversarial = {
+          refutation: xex.adversarial?.refutation ?? null,
+          panelRisks: xex.panel.map((p) => `${p.model}: ${p.key_risk}`).filter((s) => s.length > 6),
+          disagreement: xex.disagreement,
+        };
+        adversarialBreakpointIndex = xex.adversarial?.breakpoint_claim_index ?? -1;
+        if (xex.disagreement && xex.disagreementNote) {
+          await admin.from("decision_tensions").insert({
+            decision_case_id: caseId,
+            user_id: userId,
+            kind: "model_disagreement",
+            description: xex.disagreementNote,
+            severity: "medium",
+          });
+        }
+      } catch (e) {
+        log.warn("cross-examine failed, continuing without it", { userId, error: e });
+      }
+    }
+
     await admin.from("decision_cases").update({ stage: "advising", updated_at: new Date().toISOString() }).eq("id", caseId);
 
-    // --- Stage 3: advise ----------------------------------------------------
+    // --- Stage 4: advise ----------------------------------------------------
     const tensionDescriptions = decomposed.profile_tensions.map((t) => t.description);
-    const adviseResult = await advise(
-      statement,
-      ctx,
-      verified.map((v) => ({ claim: v.claim, verdict: v.verdict as ClaimVerdict })),
-      tensionDescriptions,
-    );
+    const adviseResult = await advise(statement, ctx, verifiedForJudging, tensionDescriptions, adversarial);
 
+    const breakpointIndex =
+      adviseResult.breakpoint_claim_index >= 0 ? adviseResult.breakpoint_claim_index : adversarialBreakpointIndex;
     const breakpointId =
-      adviseResult.breakpoint_claim_index >= 0 && adviseResult.breakpoint_claim_index < verified.length
-        ? verified[adviseResult.breakpoint_claim_index].claimId
-        : null;
+      breakpointIndex >= 0 && breakpointIndex < verified.length ? verified[breakpointIndex].claimId : null;
 
     await admin
       .from("decision_cases")

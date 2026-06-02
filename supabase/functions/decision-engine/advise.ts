@@ -27,11 +27,18 @@ function contextBlock(ctx: UserContext): string {
   return lines.join("\n") || "No profile context.";
 }
 
+export interface AdversarialInput {
+  refutation: string | null;
+  panelRisks: string[];
+  disagreement: boolean;
+}
+
 export async function advise(
   statement: string,
   ctx: UserContext,
   claims: Array<{ claim: ExtractedClaim; verdict: ClaimVerdict }>,
   tensions: string[],
+  adversarial?: AdversarialInput,
 ): Promise<AdviseResult> {
   const claimLines = claims
     .map((c, i) => {
@@ -42,6 +49,15 @@ export async function advise(
     .join("\n");
 
   const tensionLines = tensions.length ? tensions.map((t) => `- ${t}`).join("\n") : "none surfaced";
+
+  let adversarialBlock = "";
+  if (adversarial) {
+    const bits: string[] = [];
+    if (adversarial.refutation) bits.push(`Red-team refutation: ${adversarial.refutation}`);
+    if (adversarial.panelRisks.length) bits.push(`Panel-identified risks: ${adversarial.panelRisks.join("; ")}`);
+    if (adversarial.disagreement) bits.push(`The review panel disagreed on direction, so confidence must be lower.`);
+    if (bits.length) adversarialBlock = `\n\nAdversarial review (account for this honestly):\n${bits.join("\n")}`;
+  }
 
   const user = `Decision:
 """
@@ -55,7 +71,7 @@ Verified claims:
 ${claimLines}
 
 Tensions with the leader's own context:
-${tensionLines}
+${tensionLines}${adversarialBlock}
 
 Return JSON exactly:
 {

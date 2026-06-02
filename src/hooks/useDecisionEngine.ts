@@ -68,6 +68,8 @@ export function useDecisionEngine() {
   const [tensions, setTensions] = useState<DecisionTension[]>([]);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
+  const [upgradeMessage, setUpgradeMessage] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const reset = useCallback(() => {
@@ -78,11 +80,15 @@ export function useDecisionEngine() {
     setEvidence([]);
     setTensions([]);
     setError(null);
+    setUpgradeRequired(false);
+    setUpgradeMessage(null);
   }, []);
 
   const start = useCallback(async (statement: string) => {
     setStarting(true);
     setError(null);
+    setUpgradeRequired(false);
+    setUpgradeMessage(null);
     setDecisionCase(null);
     setClaims([]);
     setEvidence([]);
@@ -92,6 +98,11 @@ export function useDecisionEngine() {
         body: { statement: statement.trim(), source: 'advisor' },
       });
       if (invokeError) throw invokeError;
+      if (data?.upgrade_required) {
+        setUpgradeRequired(true);
+        setUpgradeMessage(data.message ?? 'Upgrade to Edge Pro to continue.');
+        return;
+      }
       if (!data?.case_id) throw new Error('No case id returned');
       setCaseId(data.case_id);
     } catch (e) {
@@ -99,6 +110,14 @@ export function useDecisionEngine() {
     } finally {
       setStarting(false);
     }
+  }, []);
+
+  const load = useCallback((existingCaseId: string) => {
+    setError(null);
+    setUpgradeRequired(false);
+    setUpgradeMessage(null);
+    setEvidence([]);
+    setCaseId(existingCaseId);
   }, []);
 
   useEffect(() => {
@@ -140,5 +159,5 @@ export function useDecisionEngine() {
   const isRunning = Boolean(caseId) && !!decisionCase && !TERMINAL.includes(decisionCase.stage);
   const isComplete = decisionCase?.stage === 'complete';
 
-  return { start, reset, starting, isRunning, isComplete, error, decisionCase, claims, evidence, tensions };
+  return { start, load, reset, starting, isRunning, isComplete, error, upgradeRequired, upgradeMessage, decisionCase, claims, evidence, tensions };
 }

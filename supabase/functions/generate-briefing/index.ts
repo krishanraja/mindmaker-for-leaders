@@ -26,6 +26,7 @@ import { curateSegments, segmentCountFromBudget, type CuratedSegment } from "../
 import { getUserContext, toLensSource, type UserContext } from "../_shared/user-context.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
+import { prependDecisionAlerts } from "../_shared/decision-alerts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1411,11 +1412,14 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     matched_profile_fact: c.matched_profile_fact,
   }));
 
+  // Lead with any open decision-watch alerts (audio preamble + leading segment).
+  const injected = await prependDecisionAlerts(supabase, userId, briefingId, script, finalSegments);
+
   const { error: updateError } = await supabase
     .from("briefings")
     .update({
-      script_text: script,
-      segments: finalSegments,
+      script_text: injected.script,
+      segments: injected.segments,
     })
     .eq("id", briefingId);
 
@@ -1895,12 +1899,13 @@ serve(async (req) => {
       throw new Error("Failed to generate briefing content");
     }
 
-    // 5. Update briefing with polished segments + script
+    // 5. Update briefing with polished segments + script (lead with decision alerts)
+    const injected = await prependDecisionAlerts(supabase, user.id, briefingId, script, segments);
     const { error: updateError } = await supabase
       .from("briefings")
       .update({
-        script_text: script,
-        segments,
+        script_text: injected.script,
+        segments: injected.segments,
         news_sources: headlines,
       })
       .eq("id", briefingId);
