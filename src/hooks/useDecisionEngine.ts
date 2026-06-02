@@ -112,6 +112,14 @@ export function useDecisionEngine() {
     }
   }, []);
 
+  const load = useCallback((existingCaseId: string) => {
+    setError(null);
+    setUpgradeRequired(false);
+    setUpgradeMessage(null);
+    setEvidence([]);
+    setCaseId(existingCaseId);
+  }, []);
+
   useEffect(() => {
     if (!caseId) return;
     let active = true;
@@ -151,5 +159,5 @@ export function useDecisionEngine() {
   const isRunning = Boolean(caseId) && !!decisionCase && !TERMINAL.includes(decisionCase.stage);
   const isComplete = decisionCase?.stage === 'complete';
 
-  return { start, reset, starting, isRunning, isComplete, error, upgradeRequired, upgradeMessage, decisionCase, claims, evidence, tensions };
+  return { start, load, reset, starting, isRunning, isComplete, error, upgradeRequired, upgradeMessage, decisionCase, claims, evidence, tensions };
 }
