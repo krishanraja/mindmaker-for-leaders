@@ -40,7 +40,7 @@ interface SynthesizeResponse {
 }
 
 const WELCOME_TEXT =
-  "Welcome to Control by Mindmaker - your own private memory web. You might not yet appreciate how valuable having your own portable AI-native memory web is, but it's the future of all AI native leaders who orchestrate AI instead of just using it. We're excited to help you on that journey.";
+  "In about 2 minutes, we'll capture who you are, what you're working on, and how you think. That becomes your Memory Web. Once it's set: any AI tool you use (ChatGPT, Claude, and others) can know your context in one click, you get a short morning briefing tuned to your priorities, and your Edge profile helps you draft and decide faster.";
 
 const FIRST_QUESTION =
   "So let's start simple. What's your name, and what do you do?";

@@ -30,10 +30,10 @@ export const SaveProfileDialog: React.FC<SaveProfileDialogProps> = ({
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password.length < 6) {
+    if (password.length < 12) {
       toast({
         title: 'Password too short',
-        description: 'Password must be at least 6 characters long',
+        description: 'Password must be at least 12 characters long',
         variant: 'destructive'
       });
       return;
@@ -130,11 +130,11 @@ export const SaveProfileDialog: React.FC<SaveProfileDialogProps> = ({
 
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving profile:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to save profile. Please try again.',
+        description: (error instanceof Error && error.message) || 'Failed to save profile. Please try again.',
         variant: 'destructive'
       });
     } finally {
@@ -176,10 +176,10 @@ export const SaveProfileDialog: React.FC<SaveProfileDialogProps> = ({
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password (min. 6 characters)"
+                placeholder="Enter password (min. 12 characters)"
                 className="pl-9"
                 required
-                minLength={6}
+                minLength={12}
               />
             </div>
           </div>
@@ -196,7 +196,7 @@ export const SaveProfileDialog: React.FC<SaveProfileDialogProps> = ({
                 placeholder="Confirm password"
                 className="pl-9"
                 required
-                minLength={6}
+                minLength={12}
               />
             </div>
           </div>

@@ -114,11 +114,11 @@ export const SaveResultsPrompt: React.FC<SaveResultsPromptProps> = ({
                 <Input
                   id="auth-password"
                   type="password"
-                  placeholder="At least 6 characters"
+                  placeholder="At least 12 characters"
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
                   className="pl-10 rounded-lg"
-                  minLength={6}
+                  minLength={12}
                   required
                 />
               </div>
