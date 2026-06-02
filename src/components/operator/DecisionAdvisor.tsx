@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Mic, Send, Lightbulb, AlertTriangle, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { VoiceInput } from '@/components/ui/voice-input';
+import { PressureTestPanel } from '@/components/operator/decision/PressureTestPanel';
+
+const DECISION_ENGINE_ENABLED = import.meta.env.VITE_DECISION_ENGINE_ENABLED === 'true';
 
 interface AdvisorSession {
   id: string;
@@ -22,6 +25,7 @@ interface DecisionAdvisorProps {
 }
 
 export function DecisionAdvisor({ operatorProfileId }: DecisionAdvisorProps) {
+  const [mode, setMode] = useState<'pressure' | 'quick'>(DECISION_ENGINE_ENABLED ? 'pressure' : 'quick');
   const [question, setQuestion] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentResponse, setCurrentResponse] = useState<AdvisorSession | null>(null);
@@ -89,6 +93,27 @@ export function DecisionAdvisor({ operatorProfileId }: DecisionAdvisorProps) {
 
   return (
     <div className="space-y-6">
+      {DECISION_ENGINE_ENABLED && (
+        <div className="inline-flex rounded-lg border border-border p-1 bg-secondary/40 text-sm">
+          <button
+            onClick={() => setMode('pressure')}
+            className={`px-3 py-1.5 rounded-md font-medium transition-colors ${mode === 'pressure' ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Pressure test
+          </button>
+          <button
+            onClick={() => setMode('quick')}
+            className={`px-3 py-1.5 rounded-md font-medium transition-colors ${mode === 'quick' ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Quick advice
+          </button>
+        </div>
+      )}
+
+      {DECISION_ENGINE_ENABLED && mode === 'pressure' ? (
+        <PressureTestPanel />
+      ) : (
+      <>
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -222,6 +247,8 @@ export function DecisionAdvisor({ operatorProfileId }: DecisionAdvisorProps) {
             </div>
           </CardContent>
         </Card>
+      )}
+      </>
       )}
     </div>
   );
