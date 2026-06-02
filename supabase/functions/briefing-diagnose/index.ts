@@ -6,7 +6,7 @@
  * briefing for side-by-side comparison, and summarises recent feedback stats.
  *
  * Auth: the authenticated user may only diagnose themselves. Service-role
- * access is not exposed here — if admin diagnosis is needed later, add a
+ * access is not exposed here - if admin diagnosis is needed later, add a
  * separate endpoint guarded by a role check.
  *
  * Read-only: no writes of any kind. Safe to call on demand.
@@ -104,7 +104,7 @@ serve(async (req) => {
       .order("created_at", { ascending: true });
     const interests = interestsRaw ?? [];
 
-    // 3. Last briefing for this user (any type — lets the caller see both
+    // 3. Last briefing for this user (any type - lets the caller see both
     //    default and custom briefings and compare against the lens).
     const { data: lastBriefing } = await supabase
       .from("briefings")

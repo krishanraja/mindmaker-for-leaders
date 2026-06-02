@@ -53,7 +53,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         .from('leaders')
         .select('baseline')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (leaderError && leaderError.code !== 'PGRST116') {
         throw leaderError
@@ -108,6 +108,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   return (
@@ -117,6 +118,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDashboard() {
   const context = useContext(DashboardContext)
   if (!context) {

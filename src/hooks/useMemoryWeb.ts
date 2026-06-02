@@ -47,11 +47,13 @@ export function useMemoryWeb() {
   const [stats, setStats] = useState<MemoryWebStats | null>(null);
   const [delta, setDelta] = useState<GettingSmarterDelta | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const { user } = useAuth();
 
   const refresh = useCallback(async () => {
     if (!user?.id) return;
     setIsLoading(true);
+    setError(null);
     try {
       // Fetch all current facts
       // Try with archived_at filter first; if the column doesn't exist yet
@@ -67,8 +69,13 @@ export function useMemoryWeb() {
 
       const withArchived = await baseQuery().is('archived_at', null);
       if (withArchived.error) {
-        // archived_at column likely missing - query without it
+        // archived_at column likely missing - query without it. supabase-js
+        // returns query failures in .error (it does not throw), so if the
+        // fallback ALSO errors this is a genuine load failure (500/RLS/network),
+        // not a missing column. Throw it so the error state surfaces instead of
+        // silently rendering an empty Memory Web.
         const fallback = await baseQuery();
+        if (fallback.error) throw fallback.error;
         factData = fallback.data;
       } else {
         factData = withArchived.data;
@@ -108,7 +115,7 @@ export function useMemoryWeb() {
         .from('user_memory_budget')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       if (!budgetResult.error && budgetResult.data) setBudget(budgetResult.data as unknown as MemoryBudget);
 
       // Calculate stats - null-safe: any unknown / missing status is inferred.
@@ -143,6 +150,7 @@ export function useMemoryWeb() {
       localStorage.setItem('mindmaker_last_visit', new Date().toISOString());
     } catch (err) {
       console.error('Failed to load memory web:', err);
+      setError(err instanceof Error ? err : new Error('Failed to load memory web'));
     } finally {
       setIsLoading(false);
     }
@@ -250,6 +258,7 @@ export function useMemoryWeb() {
     stats,
     delta,
     isLoading,
+    error,
     refresh,
     hotFacts: facts.filter((f) => f.temperature === 'hot'),
     warmFacts: facts.filter((f) => f.temperature === 'warm'),

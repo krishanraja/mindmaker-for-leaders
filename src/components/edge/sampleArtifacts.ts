@@ -2,7 +2,7 @@
  * Sample artifacts shown as blurred previews in the EdgePaywall and the
  * cycling teaser on EdgeView. Kept in a standalone module (not exported
  * from EdgePaywall.tsx) so the paywall component file only exports
- * components — keeps the react-refresh fast-refresh boundary clean.
+ * components - keeps the react-refresh fast-refresh boundary clean.
  */
 export const SAMPLE_ARTIFACTS: Record<string, string> = {
   board_memo: `## Executive Summary\n\nOur product portfolio delivered **23% revenue growth** this quarter, exceeding the board-approved target by 4 points.\n\n### Key Decisions Required\n\n- Approve $2.4M expansion into enterprise segment\n- Ratify the revised go-to-market timeline for Q4\n- Review updated risk framework for international markets`,

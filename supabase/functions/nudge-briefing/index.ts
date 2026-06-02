@@ -156,7 +156,7 @@ serve(async (req) => {
           });
           applied = !error;
           payload.text = cls.text;
-          message = `Got it — dropped ${cls.text}.`;
+          message = `Got it - dropped ${cls.text}.`;
         }
         break;
       }

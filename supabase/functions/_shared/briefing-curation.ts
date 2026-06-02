@@ -1,14 +1,14 @@
 /**
- * briefing-curation — Stage 5: Budget-constrained segment picker.
+ * briefing-curation - Stage 5: Budget-constrained segment picker.
  *
  * Takes the scored+deduped candidate pool from Stage 4 and the lens from
  * Stage 1. Produces the final ordered list of segments with explicit
- * lens_item_id, relevance_score, and matched_profile_fact — the three
+ * lens_item_id, relevance_score, and matched_profile_fact - the three
  * fields the v1 pipeline never captured.
  *
  * Constraints applied:
  *   - Word budget from training_material.structural_rubric[type].word_budget
- *     (already in the YAML) — replaces the hardcoded "keep 6-8" rule
+ *     (already in the YAML) - replaces the hardcoded "keep 6-8" rule
  *   - Diversity: no 3x same lens_item unless the user has ≤2 active items
  *   - Coverage: at least one segment per top-weight lens item when possible
  *
@@ -82,7 +82,7 @@ export async function curateSegments(
           {
             role: "system",
             content:
-              `You are the final editor of a personalised news briefing for a ${leaderDesc}. You will receive a ranked pool of candidate headlines and the relevance lens they were scored against. Pick UP TO ${targetCount} segments — only those that are genuinely relevant to the lens. If the pool is thin or weakly matched, returning fewer segments is correct. A deliberately short, tight briefing is better than one padded with filler.
+              `You are the final editor of a personalised news briefing for a ${leaderDesc}. You will receive a ranked pool of candidate headlines and the relevance lens they were scored against. Pick UP TO ${targetCount} segments - only those that are genuinely relevant to the lens. If the pool is thin or weakly matched, returning fewer segments is correct. A deliberately short, tight briefing is better than one padded with filler.
 
 Rules:
 - Every segment MUST reference a lens item id from the provided list.

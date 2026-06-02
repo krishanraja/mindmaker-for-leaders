@@ -9,6 +9,8 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { SwipeableCards } from "@/components/mobile/SwipeableCards"
 import { CtrlLogo } from "./CtrlLogo"
 import { DesktopLanding } from "./DesktopLanding"
+import { VoiceDemo } from "./VoiceDemo"
+import { FF } from "@/lib/flags"
 
 const PILLARS = [
   {
@@ -114,6 +116,18 @@ function HeroScreen({ onGetStarted }: { onGetStarted: () => void }) {
           No integrations. Your data stays yours.
         </p>
       </motion.div>
+
+      {/* Flagged: landing voice/text demo (mobile) - only mounts when flag is on */}
+      {FF.landingVoiceDemo() && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.45 }}
+          className="w-full max-w-xs"
+        >
+          <VoiceDemo />
+        </motion.div>
+      )}
     </div>
   )
 }

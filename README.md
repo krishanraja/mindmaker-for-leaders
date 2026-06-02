@@ -25,7 +25,7 @@ For developers:
 - [project-documentation/HISTORY.md](./project-documentation/HISTORY.md)
 - [project-documentation/DECISIONS_LOG.md](./project-documentation/DECISIONS_LOG.md)
 - [project-documentation/COMMON_ISSUES.md](./project-documentation/COMMON_ISSUES.md)
-- [CLAUDE.md](./CLAUDE.md) — workflow conventions for Claude Code / agentic edits
+- [CLAUDE.md](./CLAUDE.md) - workflow conventions for Claude Code / agentic edits
 - [CHANGELOG.md](./CHANGELOG.md)
 
 ---
@@ -34,17 +34,17 @@ For developers:
 
 Every leader uses AI. But every AI conversation starts from zero. You re-explain who you are, what your company does, what you're working on, every single time. The advice stays generic. Decision speed suffers.
 
-Plus the **noise tax** — newsletters and feeds serve everyone the same content. 30+ minutes a day for two useful insights at best.
+Plus the **noise tax** - newsletters and feeds serve everyone the same content. 30+ minutes a day for two useful insights at best.
 
 CTRL eliminates both, permanently.
 
 ## How It Works
 
-1. **Voice a thought** — 2 minutes, no typing
-2. **It organizes itself** — Memory Web extracts and verifies structured facts
-3. **Export anywhere** — ChatGPT, Claude, Gemini, Cursor, Claude Code, raw markdown
-4. **Hear your world** — 3-minute audio Briefing every morning, every story anchored to a specific priority on your desk
-5. **Every decision gets faster** — Edge artifacts, Decision Advisor, Meeting Prep already know your context
+1. **Voice a thought** - 2 minutes, no typing
+2. **It organizes itself** - Memory Web extracts and verifies structured facts
+3. **Export anywhere** - ChatGPT, Claude, Gemini, Cursor, Claude Code, raw markdown
+4. **Hear your world** - 3-minute audio Briefing every morning, every story anchored to a specific priority on your desk
+5. **Every decision gets faster** - Edge artifacts, Decision Advisor, Meeting Prep already know your context
 
 ---
 
@@ -53,15 +53,15 @@ CTRL eliminates both, permanently.
 ### Memory Web
 Your thoughts, organized. A living map of what you know, what you want, and how you think. Facts are categorized, verified by you, and encrypted at rest (AES-256-GCM).
 
-### Edge — Leadership Amplifier
+### Edge - Leadership Amplifier
 Your strengths sharpened, your weaknesses covered. Edge synthesizes your Memory Web and assessment data into a leadership profile, then offers AI-powered capabilities:
 - **Sharpen** strengths: Systemize, Teach, Lean Into
 - **Cover** weaknesses: Board Memos, Strategy Docs, Emails, Meeting Agendas, Templates, Frameworks
 - Interactive strength/weakness pills with feedback loops
 - Intelligence gap detection with guided resolution
-- Edge Pro ($9/month) for unlimited artifact generation + email delivery
+- Edge Pro ($29/month) for unlimited artifact generation + email delivery
 
-### Daily Briefing v2 — Evidence-based intelligence
+### Daily Briefing v2 - Evidence-based intelligence
 Three minutes of audio every morning, tuned to the one thing that matters: your world.
 
 - Every segment is **anchored** to something specific in your profile (the card literally shows "Anchored to: <your active decision>")
@@ -72,22 +72,22 @@ Three minutes of audio every morning, tuned to the one thing that matters: your 
 - Seven briefing types: Daily Brief, Macro Trends, Vendor Landscape, Competitive Intel, Boardroom Prep, AI Model Landscape, Custom Voice
 - Persistent learning: explicit Bans (-1.0 immediately) + nightly aggregator (-0.4 after 3+ thumbs-down on same signature)
 
-### Context Export — Your Context, Everywhere
+### Context Export - Your Context, Everywhere
 One click to export your context to **any** AI tool:
-- **ChatGPT** — Custom instructions
-- **Claude** — Conversation context
-- **Gemini** — Formatted context
-- **Cursor** — `.cursorrules` file
-- **Claude Code** — `CLAUDE.md` file
-- **Raw Markdown** — Use anywhere
+- **ChatGPT** - Custom instructions
+- **Claude** - Conversation context
+- **Gemini** - Formatted context
+- **Cursor** - `.cursorrules` file
+- **Claude Code** - `CLAUDE.md` file
+- **Raw Markdown** - Use anywhere
 
 Optimized for: General Advisor, Meeting Prep, Decision Support, Code Review, Email Drafting, Strategic Planning.
 
 ### Thinking Tools
-- **Decision Advisor** — Think through a decision with full context
-- **Meeting Prep** — Walk in prepared
-- **Team Brief** — Draft instructions for your team
-- **Stream of Consciousness** — Speak freely. It organizes itself.
+- **Decision Advisor** - Think through a decision with full context
+- **Meeting Prep** - Walk in prepared
+- **Team Brief** - Draft instructions for your team
+- **Stream of Consciousness** - Speak freely. It organizes itself.
 
 ### AI Literacy Diagnostic
 10-minute assessment covering Strategic Vision, Experimentation Culture, Delegation & Automation, Data & Decision Quality, Team Capability, and Governance. Surfaces tensions, risk signals, and organizational scenarios. $49 to unlock the full report.
@@ -105,17 +105,17 @@ Commit to action items from your diagnostic. Track progress through check-ins. A
 | Full Diagnostic | $49 one-time | Tensions, risks, scenarios, full thinking tools |
 | Deep Context Upgrade | $29 one-time | Enhanced company-context enrichment |
 | Diagnostic + Deep Context Bundle | $69 one-time | Both above (saves $10) |
-| Edge Pro | $9/month | Unlimited Edge artifacts + 7 briefing types |
+| Edge Pro | $29/month | Unlimited Edge artifacts + 7 briefing types |
 
 ---
 
 ## Design Philosophy
 
-- **Apple-like quality** — Executive-grade, 10/10 visual polish
-- **Voice-first** — Talk naturally, structure handled
-- **Mobile-first** — Immersive, no-scroll experience on every key page
-- **Light mode** — Warm off-white backgrounds, deep ink text, pure white cards
-- **Auditable relevance** — Every Briefing segment proves its relevance with a specific profile fact
+- **Apple-like quality** - Executive-grade, 10/10 visual polish
+- **Voice-first** - Talk naturally, structure handled
+- **Mobile-first** - Immersive, no-scroll experience on every key page
+- **Light mode** - Warm off-white backgrounds, deep ink text, pure white cards
+- **Auditable relevance** - Every Briefing segment proves its relevance with a specific profile fact
 
 ---
 

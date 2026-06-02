@@ -13,6 +13,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { forwardToWarehouse, attrFromStripeMetadata } from "../_shared/attribution-emit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,9 +38,9 @@ serve(async (req) => {
     // Hard requirement: webhook signature verification is mandatory. Without
     // the secret, an attacker who knows the function URL can POST forged
     // checkout.session.completed payloads and grant themselves subscriptions.
-    // Refuse to process — fail loud rather than silently accepting forgery.
+    // Refuse to process - fail loud rather than silently accepting forgery.
     if (!webhookSecret) {
-      console.error("❌ STRIPE_WEBHOOK_SECRET not configured — refusing to process webhook.");
+      console.error("❌ STRIPE_WEBHOOK_SECRET not configured - refusing to process webhook.");
       return new Response(
         JSON.stringify({ error: "webhook_not_configured" }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -55,7 +56,7 @@ serve(async (req) => {
     const signature = req.headers.get("stripe-signature");
 
     if (!signature) {
-      console.error("❌ Missing stripe-signature header — refusing to process.");
+      console.error("❌ Missing stripe-signature header - refusing to process.");
       return new Response(
         JSON.stringify({ error: "missing_signature" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -89,7 +90,7 @@ serve(async (req) => {
 
     // Idempotency: Stripe retries webhooks for up to 3 days on transient
     // failures. Without this guard, a successful subscription would be
-    // re-processed on every retry — granting duplicate access, polluting
+    // re-processed on every retry - granting duplicate access, polluting
     // the audit trail, and potentially racing the DB. Insert-on-conflict
     // is atomic; if 0 rows return, this event was already handled.
     const { data: insertedEvent, error: idempotencyError } = await supabase
@@ -99,7 +100,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (idempotencyError && idempotencyError.code !== "23505") {
-      // Non-conflict error: log but don't block processing — failing closed
+      // Non-conflict error: log but don't block processing - failing closed
       // here would mean Stripe retries indefinitely on a transient DB blip.
       console.warn(`⚠️ Idempotency log insert failed (non-conflict): ${idempotencyError.message}`);
     } else if (!insertedEvent) {
@@ -121,6 +122,20 @@ serve(async (req) => {
         } else {
           await handleCheckoutCompleted(supabase, session);
         }
+        // Emit a purchased event to the attribution warehouse (dormant until wired).
+        await forwardToWarehouse({
+          app: "ctrl",
+          event: "purchased",
+          user_id: session.metadata?.user_id,
+          stripe_account: "mindmaker_llc",
+          stripe_customer_id: (session.customer as string) || undefined,
+          stripe_subscription_id: (session.subscription as string) || undefined,
+          amount_cents: session.amount_total ?? undefined,
+          currency: session.currency ?? undefined,
+          metadata: { product: session.metadata?.product, upgrade_type: session.metadata?.upgrade_type },
+          dedupe_key: `purchased:${event.id}`,
+          ...attrFromStripeMetadata((session.metadata ?? {}) as Record<string, string>),
+        });
         break;
       }
 
@@ -137,6 +152,15 @@ serve(async (req) => {
         if (subscription.metadata?.product === 'edge_pro') {
           await handleEdgeSubscriptionDeleted(supabase, subscription);
         }
+        await forwardToWarehouse({
+          app: "ctrl",
+          event: "churned",
+          user_id: subscription.metadata?.user_id,
+          stripe_account: "mindmaker_llc",
+          stripe_subscription_id: subscription.id,
+          dedupe_key: `churned:${event.id}`,
+          ...attrFromStripeMetadata((subscription.metadata ?? {}) as Record<string, string>),
+        });
         break;
       }
 

@@ -26,6 +26,7 @@ import { curateSegments, segmentCountFromBudget, type CuratedSegment } from "../
 import { getUserContext, toLensSource, type UserContext } from "../_shared/user-context.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
+import { prependDecisionAlerts } from "../_shared/decision-alerts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,7 +51,7 @@ interface BriefingSegment {
   framework_tag: string;
   source: string;
   relevance_reason: string;
-  // v2 evidence fields — optional so v1 rows stay schema-compatible.
+  // v2 evidence fields - optional so v1 rows stay schema-compatible.
   lens_item_id?: string;
   relevance_score?: number;
   matched_profile_fact?: string;
@@ -1030,7 +1031,7 @@ interface V2FetchResult {
 
 /**
  * Wrap a per-provider fetch with a hard timeout and a minimal retry.
- * Returns an empty array on failure — Stage 3 never lets one slow or broken
+ * Returns an empty array on failure - Stage 3 never lets one slow or broken
  * provider block the briefing.
  */
 async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
@@ -1239,7 +1240,7 @@ interface V2PipelineArgs {
 }
 
 /**
- * v2 pipeline — evidence-based relevance.
+ * v2 pipeline - evidence-based relevance.
  * Stages: lens -> query planner -> provider fan-out -> embed+dedupe+score ->
  * budget-constrained curation -> v1 script generator -> synth trigger.
  */
@@ -1269,7 +1270,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   console.log(`[v2] Lens size=${lens.length}, top=${lens.slice(0, 3).map(l => `${l.type}(${l.weight.toFixed(2)})`).join(", ")}, excludes=${excludes.length}`);
 
   if (lens.length === 0) {
-    throw new Error("Lens empty — user has no profile data to personalise against");
+    throw new Error("Lens empty - user has no profile data to personalise against");
   }
 
   // Stage 2: query plan. Pass industry so queries stay inside the leader's
@@ -1337,7 +1338,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   console.log(`[v2] Preliminary briefing inserted: ${briefingId}`);
 
   if (scored.length === 0) {
-    // No candidates survived — return the briefing with an empty curated segment list.
+    // No candidates survived - return the briefing with an empty curated segment list.
     // Client will show a friendly "no new stories worth your time today" state.
     return {
       briefing_id: briefingId,
@@ -1411,11 +1412,14 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     matched_profile_fact: c.matched_profile_fact,
   }));
 
+  // Lead with any open decision-watch alerts (audio preamble + leading segment).
+  const injected = await prependDecisionAlerts(supabase, userId, briefingId, script, finalSegments);
+
   const { error: updateError } = await supabase
     .from("briefings")
     .update({
-      script_text: script,
-      segments: finalSegments,
+      script_text: injected.script,
+      segments: injected.segments,
     })
     .eq("id", briefingId);
 
@@ -1554,7 +1558,7 @@ serve(async (req) => {
     // script_text remains NULL and segments are the unpolished ones.
     // Treating that as a successful "already_exists" would lock the user
     // into bad output forever. We detect stale-incomplete rows here and
-    // replace them transparently — same effect as a force-regen but the
+    // replace them transparently - same effect as a force-regen but the
     // user didn't have to ask. The 5-minute window is generous enough to
     // cover slow Perplexity / OpenAI runs but short enough that a real
     // crash gets recovered on the user's next visit.
@@ -1586,7 +1590,7 @@ serve(async (req) => {
         // Force-regen idempotency: at most one force-regeneration per minute
         // per (user, date, type). Without this, a double-tap on "Refresh
         // stories" deletes the existing row, then both callers see no
-        // existing row and run two parallel pipelines — burning ~$0.04 of
+        // existing row and run two parallel pipelines - burning ~$0.04 of
         // external-API spend instead of $0.02. With this check, the second
         // caller gets a clear 429 + the still-existing briefing id.
         const forceCooldown = await checkRateLimit(
@@ -1639,7 +1643,7 @@ serve(async (req) => {
     const userCtx = await getUserContext(supabase, user.id);
 
     // Sparse-profile guardrail: a thin profile produces a generic lens which
-    // pulls broad news which matches weakly — exactly the failure mode that
+    // pulls broad news which matches weakly - exactly the failure mode that
     // put biomedical headlines on a technology leader's briefing. Return a
     // structured signal the UI can convert into a targeted onboarding CTA
     // instead of a bad briefing. custom_voice is user-narrated and bypasses
@@ -1895,12 +1899,13 @@ serve(async (req) => {
       throw new Error("Failed to generate briefing content");
     }
 
-    // 5. Update briefing with polished segments + script
+    // 5. Update briefing with polished segments + script (lead with decision alerts)
+    const injected = await prependDecisionAlerts(supabase, user.id, briefingId, script, segments);
     const { error: updateError } = await supabase
       .from("briefings")
       .update({
-        script_text: script,
-        segments,
+        script_text: injected.script,
+        segments: injected.segments,
         news_sources: headlines,
       })
       .eq("id", briefingId);

@@ -20,6 +20,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
+import { fetchWithTimeout, ProviderUnavailableError } from '../_shared/with-timeout.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,26 +72,36 @@ async function callInference(facts: Array<Record<string, unknown>>, openaiKey: s
     )
     .join('\n');
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${openaiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      temperature: 0.2,
-      max_tokens: 1200,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Here are the leader's stored facts. Infer their briefing interests.\n\n${factSummary}`,
-        },
-      ],
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        temperature: 0.2,
+        max_tokens: 1200,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content: `Here are the leader's stored facts. Infer their briefing interests.\n\n${factSummary}`,
+          },
+        ],
+      }),
+      provider: 'openai',
+      timeoutMs: 12000,
+    });
+  } catch (err) {
+    if (err instanceof ProviderUnavailableError) {
+      throw new Error(`OpenAI inference unavailable: ${err.message}`);
+    }
+    throw err;
+  }
 
   if (!response.ok) {
     const errorText = await response.text();

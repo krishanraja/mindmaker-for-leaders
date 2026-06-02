@@ -27,6 +27,8 @@ import {
   Radio,
   ArrowUpRight,
   Activity,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -367,6 +369,8 @@ export function DesktopMemoryDashboard() {
     stats,
     delta,
     isLoading,
+    error: memoryError,
+    refresh: refreshMemory,
     editFact,
     deleteFact,
     verifyFact,
@@ -645,7 +649,7 @@ export function DesktopMemoryDashboard() {
         rightRail={rightRail}
       >
         <div className="space-y-6">
-          {/* Input bar — sticky-feeling, primary action */}
+          {/* Input bar - sticky-feeling, primary action */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-sm hover:border-accent/30 focus-within:border-accent/40 transition-colors">
               <button
@@ -901,8 +905,32 @@ export function DesktopMemoryDashboard() {
             </>
           )}
 
+          {/* Error state - shown only when query failed and there is no cached data */}
+          {!isLoading && !!memoryError && !hasData && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-3xl border border-dashed border-border bg-card/30 py-20 px-8 text-center"
+            >
+              <AlertCircle className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
+              <h2 className="text-lg font-semibold text-foreground mb-1">
+                Could not load your Memory Web
+              </h2>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
+                Something went wrong fetching your memories. Check your connection and try again.
+              </p>
+              <button
+                onClick={() => refreshMemory()}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-sm font-semibold text-foreground hover:bg-secondary"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Retry
+              </button>
+            </motion.div>
+          )}
+
           {/* Empty state */}
-          {!isLoading && !hasData && (
+          {!isLoading && !hasData && !memoryError && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

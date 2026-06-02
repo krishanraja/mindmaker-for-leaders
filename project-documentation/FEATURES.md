@@ -2,7 +2,7 @@
 
 Complete feature inventory across all three CTRL tools.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-30
 
 > **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
 
@@ -15,7 +15,7 @@ Complete feature inventory across all three CTRL tools.
 - **98 PostgreSQL migrations** applied to remote (added in v5.2: `20260508000000_create_skill_exports.sql`)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
-- **Desktop UI redesign shipped** (PR #104, Phase 8): unified desktop-native shell — sticky top bar with page eyebrow + title + actions, optional right rail for context, Cmd/Ctrl+K Command Palette across all authenticated routes. No more stretched mobile markup on desktop.
+- **Desktop UI redesign shipped** (PR #104, Phase 8): unified desktop-native shell with sticky top bar (page eyebrow + title + actions), optional right rail for context, Cmd/Ctrl+K Command Palette across all authenticated routes. No more stretched mobile markup on desktop.
 - **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
 - **Tests**: 5 Vitest unit/shared + 6 Playwright e2e (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency)
 
@@ -119,7 +119,7 @@ Complete feature inventory across all three CTRL tools.
 - **Deep Context Upgrade** ($29 one-time): enhanced company context enrichment.
 - **Full Diagnostic + Deep Context Bundle** ($69 one-time, saves $10): both above. Default upsell.
 
-**Sales Anchor — Diagnostic**: "10 minutes. Six dimensions. The provocation report your board will ask you about. $49 — cheaper than the slide deck a consultant would write to ask you the same questions."
+**Sales Anchor - Diagnostic**: "10 minutes. Six dimensions. The provocation report your board will ask you about. $49 (cheaper than the slide deck a consultant would write to ask you the same questions)."
 
 ---
 
@@ -212,17 +212,17 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 - Feedback loops
 - Limited artifact previews (samples only)
 
-**Edge Pro** ($9/month, Stripe subscription):
+**Edge Pro** ($29/month, Stripe subscription):
 - Unlimited artifact generation
 - Email delivery via `deliver-edge-artifact`
 - All capability types
 - All 7 briefing types (incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice)
-- **Unlimited Agent Skill Builder generation** (`generate-skill-export`) — voice-to-Skill ZIP, downloadable into `~/.claude/skills/`
+- **Unlimited Agent Skill Builder generation** (`generate-skill-export`): voice-to-Skill ZIP, downloadable into `~/.claude/skills/`
 - Custom Voice Export (`generate-custom-export`)
 - Subscription management UI via `create-billing-portal-session`
 - Stripe webhook idempotency table (`stripe_events_processed`) prevents double-charges (Audit Week 1)
 
-**Sales Anchor — Edge Pro**: "$9/month. Less than a coffee a week. Generates board memos, strategy docs, and meeting agendas in your register, on demand. Skip the blank page entirely."
+**Sales Anchor - Edge Pro**: "$29/month. Less than a coffee a week. Generates board memos, strategy docs, and meeting agendas in your register, on demand. Skip the blank page entirely."
 
 ---
 
@@ -465,10 +465,10 @@ Turns a repetitive leader workflow into a downloadable, **agentskills.io-complia
 This is the third surface on the Context Export page (`/context`). Two minutes describing a Monday-morning ritual is enough to generate a permanent piece of agent infrastructure the leader owns.
 
 **Pages / surfaces:**
-- `/context` (Step 1) — `SkillExportCard` promoted above the Custom Voice card, gated behind Edge Pro
-- Edge view (`/dashboard?view=edge`) — `AutomatePainCard` chip row of declared blockers + active decisions
-- Memory Web blocker cards — zap button on each blocker
-- Briefing — zap button on every `decision_trigger` segment (v1 + v2)
+- `/context` (Step 1): `SkillExportCard` promoted above the Custom Voice card, gated behind Edge Pro
+- Edge view (`/dashboard?view=edge`): `AutomatePainCard` chip row of declared blockers + active decisions
+- Memory Web blocker cards: zap button on each blocker
+- Briefing: zap button on every `decision_trigger` segment (v1 + v2)
 
 All four entry points hand the user's already-declared pain to the Skill Builder via a `SkillSeed`, navigate to `/context`, and auto-open `SkillCaptureSheet` pre-anchored. The LLM grounds extraction in the leader's actual words instead of inventing an abstract trigger.
 
@@ -492,11 +492,11 @@ The Three Honest Tests triage is the value-prop differentiator: when a leader de
 
 Every generated skill is tagged with one of five archetypes (used for analytics and for tuning future routing):
 
-- **decision-framework** — recurring decision templates (e.g. RFP triage, hire/no-hire)
-- **voice-lock** — exec writing patterns that must hold across many outputs (e.g. board update voice)
-- **reporting-engine** — periodic structured reports (e.g. weekly hiring sync, investor update)
-- **tool-integration** — workflows that bridge external systems
-- **getting-started** — onboarding / first-touch skills
+- **decision-framework**: recurring decision templates (e.g. RFP triage, hire/no-hire)
+- **voice-lock**: exec writing patterns that must hold across many outputs (e.g. board update voice)
+- **reporting-engine**: periodic structured reports (e.g. weekly hiring sync, investor update)
+- **tool-integration**: workflows that bridge external systems
+- **getting-started**: onboarding / first-touch skills
 
 ### Pain-Anchored Entry Points
 
@@ -547,40 +547,40 @@ skill_exports
 ├── user_id (FK auth.users, ON DELETE CASCADE)
 ├── skill_name (TEXT)
 ├── description (TEXT)
-├── transcript (TEXT) — original input, kept for analytics
+├── transcript (TEXT): original input, kept for analytics
 ├── triage_result (TEXT: 'skill' | 'custom_instruction' | 'memory_fact' | 'saved_style' | 'failed')
 ├── body_content (TEXT, null on failed triage)
 ├── references_json (JSONB)
 ├── test_prompts (TEXT[])
-├── quality_gate (JSONB) — full checklist result
-├── archetype (TEXT) — one of the 5 archetypes above
-├── version (INT) — supports skill iteration
-├── zip_path (TEXT) — null today; reserved for future Storage upload + shareable links
+├── quality_gate (JSONB): full checklist result
+├── archetype (TEXT): one of the 5 archetypes above
+├── version (INT): supports skill iteration
+├── zip_path (TEXT): null today; reserved for future Storage upload + shareable links
 └── created_at (TIMESTAMPTZ)
 ```
 
 RLS: owner-read, owner-insert. Indexed on `user_id` and `created_at DESC`.
 
 **Edge Function:**
-- `generate-skill-export` — the whole pipeline. Edge Pro gated (`active` or `past_due` grace). 4 internal files: `index.ts`, `prompt.ts` (system + user prompts encoding the triage rules + extraction rules), `quality-gate.ts` (deterministic validator), `zip.ts` (agentskills.io packager).
+- `generate-skill-export`: the whole pipeline. Edge Pro gated (`active` or `past_due` grace). 4 internal files: `index.ts`, `prompt.ts` (system + user prompts encoding the triage rules + extraction rules), `quality-gate.ts` (deterministic validator), `zip.ts` (agentskills.io packager).
 
 **Hooks:**
-- `useSkillExport` — wraps the edge function. Manages full lifecycle: call, parse, decode the base64 ZIP into a downloadable Blob.
-- `useUserPains` — returns the top N blockers + active decisions from the leader's Memory Web for seeding entry points.
+- `useSkillExport`: wraps the edge function. Manages full lifecycle: call, parse, decode the base64 ZIP into a downloadable Blob.
+- `useUserPains`: returns the top N blockers + active decisions from the leader's Memory Web for seeding entry points.
 
 **Components** (`src/components/edge/` + `src/components/memory-web/`):
-- `SkillExportCard` — entry-point card on `/context`
-- `SkillCaptureSheet` — voice/text capture, bottom sheet on mobile, dialog on desktop
-- `SkillPreviewSheet` — preview + download CTA + install guide
-- `SkillQualityGate` — quality checklist display
-- `SkillInstallGuide` — per-tool install instructions
-- `AutomatePainCard` — pain-anchored entry chip row on Edge view
+- `SkillExportCard`: entry-point card on `/context`
+- `SkillCaptureSheet`: voice/text capture, bottom sheet on mobile, dialog on desktop
+- `SkillPreviewSheet`: preview + download CTA + install guide
+- `SkillQualityGate`: quality checklist display
+- `SkillInstallGuide`: per-tool install instructions
+- `AutomatePainCard`: pain-anchored entry chip row on Edge view
 
 ### Edge Pro Gating
 
 Same paywall as `generate-custom-export`. Free users see the locked `SkillExportCard` with a "Pro" badge that opens the Stripe checkout via `useEdgeSubscription.subscribe`. Subscribers get unlimited skill generation.
 
-**Sales Anchor — Skill Builder**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Two minutes of speaking. Permanent leverage. Drop it in `~/.claude/skills/` and forget it."
+**Sales Anchor - Skill Builder**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Two minutes of speaking. Permanent leverage. Drop it in `~/.claude/skills/` and forget it."
 
 ---
 
@@ -746,7 +746,7 @@ The briefing pipeline ships with concrete reliability primitives:
 - **CI gate** prevents `console.log` regressions in edge functions.
 - **`with-timeout` test coverage** validates retry + timeout behaviour.
 
-**Sales Anchor — Daily Briefing**: "Three minutes a day that replace thirty minutes of scrolling. Every story shows the specific profile fact it was anchored to. Bookmark to keep a beat. Ban to kill a topic semantically. Your briefing gets sharper every day."
+**Sales Anchor - Daily Briefing**: "Three minutes a day that replace thirty minutes of scrolling. Every story shows the specific profile fact it was anchored to. Bookmark to keep a beat. Ban to kill a topic semantically. Your briefing gets sharper every day."
 
 ---
 
@@ -1213,10 +1213,11 @@ AI-powered tools for day-to-day leadership decision-making, available after comp
 - Diagnostic report delivery
 
 ### Payment Processing
-- Stripe integration for Leaders diagnostic upgrade
-- One-time payment ($49)
-- Payment verification
-- Receipt generation
+- Stripe integration (mindmaker_llc account), signature-verified webhooks, idempotent event processing
+- One-time payments: Full Diagnostic ($49), Deep Context Upgrade ($29), Diagnostic + Deep Context Bundle ($69)
+- Subscription: Edge Pro ($29/month)
+- Payment verification and receipt generation
+- UTM attribution stamped onto Stripe session metadata at checkout
 
 ### Analytics & Benchmarking
 - Anonymised aggregate scoring (AI Leadership Index)
@@ -1293,7 +1294,7 @@ AI-powered tools for day-to-day leadership decision-making, available after comp
 
 ## Audit Track Record (April 2026)
 
-CTRL shipped six thematic audit weeks closing technical debt and hardening the product for executive use. Sales/marketing AI agents can cite these as **proof of operational maturity** — this is not a prototype, it's a hardened production platform.
+CTRL shipped six thematic audit weeks closing technical debt and hardening the product for executive use. Sales/marketing AI agents can cite these as **proof of operational maturity**: this is not a prototype, it's a hardened production platform.
 
 | Week | Theme | Headline Outcomes |
 |------|-------|-------------------|
@@ -1303,10 +1304,11 @@ CTRL shipped six thematic audit weeks closing technical debt and hardening the p
 | 4 (PR #99) | **Reliability** | Timeouts + retries on all external APIs (`with-timeout` utility, tested); audio failure UX; onboarding stall recovery |
 | 5 (PR #97) | **Observability** | Structured edge-function JSON logger (`_shared/logger.ts`); CI gate against `console.log` regressions; tests for `with-timeout` |
 | 6 (PR #98, #100, #101) | **Cleanup** | P2 backlog closure; stale-incomplete recovery; e2e contract starter (auth, briefing, account-deletion, stripe-idempotency, sparse-profile, briefing-rate-limits); AI response cache; lint cleanup |
+| 2026-05-30 rebuild | **Pricing + Security + Attribution + Public Surface** | Edge Pro repriced to $29/month (from $9); Full Diagnostic confirmed at $49; RLS fixes on `leader_missions`, `leader_check_ins`, `leader_progress_snapshots`, `tts_config`; `resend-webhook` signature verification; UTM attribution emit path wired (dormant until env set); `/.well-known/product.json` product-truth endpoint live; public-surface prerender added for SEO and agent-readability |
 
 ### Verifiable proof points for buyers
 
-- Stripe webhook handler validates signatures and dedupes events — buyers concerned about double-charges or webhook spoofing can audit `supabase/functions/stripe-webhook/`
+- Stripe webhook handler validates signatures and dedupes events - buyers concerned about double-charges or webhook spoofing can audit `supabase/functions/stripe-webhook/`
 - E2E test `tests/stripe-webhook-idempotency.spec.ts` proves it
 - E2E test `tests/account-deletion.spec.ts` proves account deletion is end-to-end
 - E2E test `tests/briefing-rate-limits.spec.ts` proves rate limiting is enforced
@@ -1314,20 +1316,20 @@ CTRL shipped six thematic audit weeks closing technical debt and hardening the p
 
 ---
 
-## Settings — what users actually control
+## Settings - what users actually control
 
 Settings sheet (`src/components/settings/`) tabs in current order:
 
-1. **AccountTab** — name, email, password, sign-out, delete account (end-to-end)
-2. **WorkContextTab** — role, company, industry, company size (drives briefing seeds + AI context)
-3. **BriefingInterestsTab** — declare beats, entities, excludes (Briefing v2 lens inputs)
-4. **BriefingDirectivesTab** — set briefing type defaults, voice, schedule
-5. **EdgeProTab** — Edge Pro subscription state, billing portal, capability list
-6. **PreferencesTab** — display/theme/audio preferences
-7. **PrivacyDataTab** — data retention, export, deletion, consent flags
-8. **ManifestoTab** — the founder's positioning (legible to users; explains what we're not)
+1. **AccountTab** - name, email, password, sign-out, delete account (end-to-end)
+2. **WorkContextTab** - role, company, industry, company size (drives briefing seeds + AI context)
+3. **BriefingInterestsTab** - declare beats, entities, excludes (Briefing v2 lens inputs)
+4. **BriefingDirectivesTab** - set briefing type defaults, voice, schedule
+5. **EdgeProTab** - Edge Pro subscription state, billing portal, capability list
+6. **PreferencesTab** - display/theme/audio preferences
+7. **PrivacyDataTab** - data retention, export, deletion, consent flags
+8. **ManifestoTab** - the founder's positioning (legible to users; explains what we're not)
 
-**Sales Anchor — Settings**: "Every setting is a lever the leader controls — what gets stored, what gets killed, what gets generated. No mystery dial behind the scenes."
+**Sales Anchor - Settings**: "Every setting is a lever the leader controls - what gets stored, what gets killed, what gets generated. No mystery dial behind the scenes."
 
 ---
 
@@ -1336,14 +1338,14 @@ Settings sheet (`src/components/settings/`) tabs in current order:
 A condensed list of one-liners pullable for outbound. Each tied to a real shipped feature:
 
 - **Memory Web**: "Talk for two minutes. Get a portable AI double that works in every AI tool."
-- **Context Export**: "One click. ChatGPT, Claude, Gemini, Cursor, Claude Code — all of them. Yours."
+- **Context Export**: "One click. ChatGPT, Claude, Gemini, Cursor, Claude Code. All of them. Yours."
 - **Skill Builder (Agent Skill Builder)**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Permanent leverage from two minutes of speaking."
 - **Daily Briefing v2**: "Three minutes of audio. Every story anchored to a specific priority on your desk. No mystery algorithm."
-- **Edge — Sharpen/Cover**: "Your strengths systemized. Your weaknesses covered. Board memos and strategy docs in your register, on demand."
+- **Edge - Sharpen/Cover**: "Your strengths systemized. Your weaknesses covered. Board memos and strategy docs in your register, on demand."
 - **Decision Advisor**: "Ask a hard question. Get an answer that already knows your context."
 - **Meeting Prep**: "Walk in briefed by an AI that knows your team, your priorities, and your last decision."
 - **Diagnostic**: "10 minutes. Six dimensions. The questions your board will ask you. $49."
-- **Edge Pro**: "$9/month. Less than a coffee. More leverage than your last consulting hour. Unlimited Agent Skills, all 7 briefing types, board memos in your register."
+- **Edge Pro**: "$29/month. Less than a coffee. More leverage than your last consulting hour. Unlimited Agent Skills, all 7 briefing types, board memos in your register."
 - **Privacy**: "No Slack. No email. No calendar. You talk to it. That's the whole connection."
 - **Auditable AI**: "Every Briefing segment shows the profile fact that earned it the slot. No black box."
 - **Hardened production**: "6 audit weeks shipped. Stripe sig + idempotency. End-to-end deletion. Structured logging. E2E tests."

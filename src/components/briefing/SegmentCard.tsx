@@ -67,6 +67,19 @@ export function SegmentCard({
   const [justWatched, setJustWatched] = useState<string | null>(null);
   const tagConfig = FRAMEWORK_TAG_CONFIG[segment.framework_tag as FrameworkTag];
 
+  // Fire haptics.light() once when this segment transitions to active.
+  // Guarded by prefers-reduced-motion to avoid triggering on motion-sensitive setups.
+  const prevIsActiveRef = useRef(false);
+  useEffect(() => {
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isActive && !prevIsActiveRef.current && !prefersReduced) {
+      haptics.light();
+    }
+    prevIsActiveRef.current = isActive;
+  }, [isActive]);
+
   // v2: user can pin the story's anchor as a persistent beat. Only meaningful
   // when matched_profile_fact is present (schema_version 2 rows).
   const { beats: existingBeats, add: addInterest } = useBriefingInterests();
@@ -87,7 +100,7 @@ export function SegmentCard({
     }
   };
 
-  // v2: persistent kill — "don't show me stories like this". Only offered
+  // v2: persistent kill - "don't show me stories like this". Only offered
   // when we have a lens anchor to kill and we're not killing an interest the
   // user themselves added (interest_* kills are done by removing from the
   // Interests tab instead).
@@ -181,7 +194,7 @@ export function SegmentCard({
           </p>
         )}
 
-        {/* v2: matched profile fact — shows the specific profile item that */}
+        {/* v2: matched profile fact - shows the specific profile item that */}
         {/* anchored this story. Only rendered on schema_version 2 rows. */}
         {segment.matched_profile_fact && (
           <div
@@ -244,14 +257,14 @@ export function SegmentCard({
             </button>
           )}
 
-          {/* v2: persistent kill — "don't show me stories like this". */}
+          {/* v2: persistent kill - "don't show me stories like this". */}
           {canKill && (
             <button
               onClick={handleKill}
               disabled={killed || isKilling}
               title={
                 killed
-                  ? "Killed — this lens item won't appear in future briefings"
+                  ? "Killed - this lens item won't appear in future briefings"
                   : `Don't show me stories like this (${pinnable || "this topic"})`
               }
               className={cn(

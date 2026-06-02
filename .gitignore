@@ -26,6 +26,12 @@ dist-ssr
 # Supabase temp files
 supabase/.temp/
 
+# Environment files
+.env
+
+# Crash dumps
+core
+
 # Test/QA artifacts
 *.png
 !public/**/*.png

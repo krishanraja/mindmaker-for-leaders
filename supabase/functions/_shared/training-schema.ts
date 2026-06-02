@@ -1,5 +1,5 @@
 /**
- * Training-material schema — the single contract between `training/anchor.yaml`
+ * Training-material schema - the single contract between `training/anchor.yaml`
  * and every consumer (fact-guardrails, generate-briefing, memory-context-builder).
  *
  * Validation is hand-rolled (no external deps) so the edge runtime has zero

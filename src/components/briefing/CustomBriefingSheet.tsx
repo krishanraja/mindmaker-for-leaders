@@ -152,7 +152,7 @@ function CustomBriefingContent({
                   : "Add context to tailor this briefing (optional)"}
               </p>
 
-              {/* Voice / Text segmented control — equal weight. */}
+              {/* Voice / Text segmented control - equal weight. */}
               <div className="grid grid-cols-2 gap-1 p-1 mb-2 rounded-lg bg-foreground/5 border border-foreground/10">
                 <button
                   onClick={() => setInputMode("voice")}

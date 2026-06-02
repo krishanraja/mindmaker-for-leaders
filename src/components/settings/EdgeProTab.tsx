@@ -26,7 +26,7 @@ const STATUS_LABEL: Record<string, { label: string; tone: 'ok' | 'warn' | 'muted
 }
 
 function formatDate(value: string | null | undefined): string {
-  if (!value) return '—'
+  if (!value) return ' - '
   try {
     return new Date(value).toLocaleDateString(undefined, {
       year: 'numeric',
@@ -34,7 +34,7 @@ function formatDate(value: string | null | undefined): string {
       day: 'numeric',
     })
   } catch {
-    return '—'
+    return ' - '
   }
 }
 
@@ -60,7 +60,7 @@ export function EdgeProTab() {
         .from('profiles')
         .select('edge_delivery_email')
         .eq('id', user!.id)
-        .single()
+        .maybeSingle()
 
       if (!error && data) {
         const saved = (data as Record<string, unknown>).edge_delivery_email as string || ''
@@ -278,7 +278,7 @@ export function EdgeProTab() {
               ) : (
                 <Crown className="h-4 w-4" />
               )}
-              Subscribe — {EDGE_PRO_PRICE_LONG}
+              Subscribe - {EDGE_PRO_PRICE_LONG}
             </Button>
             {subscription?.stripe_customer_id && (
               <Button
@@ -346,7 +346,7 @@ export function EdgeProTab() {
               <p className="text-xs text-muted-foreground">
                 {initialEmail
                   ? `Currently delivering to ${initialEmail}.`
-                  : 'No delivery address yet — falls back to your account email.'}
+                  : 'No delivery address yet - falls back to your account email.'}
               </p>
               <Button
                 onClick={handleSendTest}

@@ -23,12 +23,23 @@ export interface ComplianceFramework {
   controls: ComplianceControl[];
 }
 
+/**
+ * Honest framing for the customer-facing page. These mappings describe the
+ * technical and organizational controls we have designed and the practices we
+ * follow. They are not claims of completed third-party certification or audit.
+ */
+export const complianceDisclaimer =
+  'This page describes how our security and privacy controls map to widely used frameworks. ' +
+  'It reflects our design intent and current practices, not completed third-party audits or certifications. ' +
+  'SOC 2 and ISO 27001 require independent assessment, which we have not yet undergone. ' +
+  'For data-processing terms or a current subprocessor list, contact privacy@themindmaker.ai.';
+
 export const complianceFrameworks: ComplianceFramework[] = [
   {
     id: 'soc2',
     name: 'SOC 2',
-    fullName: 'SOC 2 Type II',
-    description: 'Service Organization Control - Trust Services Criteria for security, availability, processing integrity, confidentiality, and privacy.',
+    fullName: 'SOC 2 (Trust Services Criteria)',
+    description: 'Trust Services Criteria for security, availability, processing integrity, confidentiality, and privacy. We map our controls to these criteria; we have not yet completed a third-party SOC 2 audit.',
     controls: [
       {
         id: 'soc2-cc6.1',
@@ -41,8 +52,8 @@ export const complianceFrameworks: ComplianceFramework[] = [
         id: 'soc2-cc7.2',
         name: 'System Monitoring',
         description: 'Monitor system components for anomalies and security events',
-        status: 'implemented',
-        implementation: 'Comprehensive audit logging via data_audit_log and ai_usage_audit tables. All data operations and AI calls tracked with timestamps.',
+        status: 'planned',
+        implementation: 'Structured JSON logging on edge functions and a CI gate against console.log regressions are in place. Comprehensive data-access and AI-usage audit trails are being built out.',
       },
       {
         id: 'soc2-cc6.3',
@@ -75,56 +86,6 @@ export const complianceFrameworks: ComplianceFramework[] = [
     ],
   },
   {
-    id: 'hipaa',
-    name: 'HIPAA',
-    fullName: 'Health Insurance Portability and Accountability Act',
-    description: 'Protects sensitive patient health information (PHI) from disclosure without consent or knowledge.',
-    controls: [
-      {
-        id: 'hipaa-164.312a',
-        name: 'Access Control',
-        description: 'Implement technical policies to allow access only to authorized persons',
-        status: 'implemented',
-        implementation: 'Row-Level Security enforces per-user data isolation. Service role access restricted to server-side edge functions only.',
-      },
-      {
-        id: 'hipaa-164.312b',
-        name: 'Audit Controls',
-        description: 'Implement mechanisms to record and examine activity in systems containing PHI',
-        status: 'implemented',
-        implementation: 'data_audit_log tracks all CRUD operations with old/new values. ai_usage_audit tracks all AI processing. security_audit_log captures auth events.',
-      },
-      {
-        id: 'hipaa-164.312c',
-        name: 'Integrity Controls',
-        description: 'Protect electronic PHI from improper alteration or destruction',
-        status: 'implemented',
-        implementation: 'Memory verification system with confidence scoring (0-1). Facts track verification_status: inferred, verified, corrected, rejected.',
-      },
-      {
-        id: 'hipaa-164.312e',
-        name: 'Transmission Security',
-        description: 'Implement security measures to guard against unauthorized access during transmission',
-        status: 'implemented',
-        implementation: 'All API communication over HTTPS/TLS. Edge functions enforce security headers. OpenAI calls use encrypted HTTPS connections.',
-      },
-      {
-        id: 'hipaa-164.314',
-        name: 'Business Associate Agreements',
-        description: 'Ensure third-party service providers protect PHI',
-        status: 'partial',
-        implementation: 'Subprocessors identified: Supabase (database), OpenAI (AI processing), Stripe (payments), Resend (email). BAA tracking in compliance dashboard.',
-      },
-      {
-        id: 'hipaa-164.312d',
-        name: 'Minimum Necessary',
-        description: 'Limit PHI access to the minimum necessary for the intended purpose',
-        status: 'implemented',
-        implementation: 'Memory context builder filters data by use case. Different AI prompts receive only relevant fact categories (identity, business, objective, etc.).',
-      },
-    ],
-  },
-  {
     id: 'gdpr',
     name: 'GDPR',
     fullName: 'General Data Protection Regulation',
@@ -141,8 +102,8 @@ export const complianceFrameworks: ComplianceFramework[] = [
         id: 'gdpr-art7',
         name: 'Conditions for Consent',
         description: 'Demonstrate that data subjects have given valid consent',
-        status: 'implemented',
-        implementation: 'Consent flags stored with timestamps. consent_audit table tracks changes with IP address and user agent for proof of consent.',
+        status: 'partial',
+        implementation: 'Granular consent flags are stored with timestamps. A consent_audit table is provisioned to record changes for proof of consent; full change-history capture is being completed.',
       },
       {
         id: 'gdpr-art15',
@@ -262,8 +223,8 @@ export const complianceFrameworks: ComplianceFramework[] = [
         id: 'iso-a12',
         name: 'Operations Security',
         description: 'Ensure correct and secure operations of information processing facilities',
-        status: 'implemented',
-        implementation: 'Rate limiting on AI endpoints. AI response caching with TTL. Automated data retention cleanup. Non-blocking audit logging.',
+        status: 'partial',
+        implementation: 'Rate limiting on AI endpoints, AI response caching with TTL, automated data-retention cleanup, and structured edge-function logging. Centralized log aggregation and event auditing are in progress.',
       },
       {
         id: 'iso-a16',

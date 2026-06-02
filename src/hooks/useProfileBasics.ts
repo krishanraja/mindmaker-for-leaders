@@ -8,7 +8,7 @@ interface ProfileBasics {
 }
 
 /**
- * useProfileBasics — pulls the leader's company name and role from their
+ * useProfileBasics - pulls the leader's company name and role from their
  * captured facts. Used by surfaces that want to personalise without a full
  * memory-context fetch (e.g. the paywall sample header).
  *

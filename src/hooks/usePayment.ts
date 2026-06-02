@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
+import { attributionForStripe } from '@/lib/attribution';
 
 export function usePayment() {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -16,9 +17,10 @@ export function usePayment() {
       console.log('💳 Creating payment session for assessment:', assessmentId, 'type:', upgradeType);
 
       const { data, error } = await supabase.functions.invoke('create-diagnostic-payment', {
-        body: { 
+        body: {
           assessment_id: assessmentId,
           upgrade_type: upgradeType,
+          attribution: attributionForStripe(),
         },
       });
 

@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { runGuardrails, type IncomingFact } from '../_shared/fact-guardrails.ts';
+import { fetchWithTimeout, ProviderUnavailableError } from '../_shared/with-timeout.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -121,23 +122,38 @@ serve(async (req) => {
       );
     }
 
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: EXTRACTION_PROMPT },
-          { role: 'user', content: `Extract facts from this ${source_type === 'markdown' ? 'document' : 'transcript'}:\n\n"${transcript}"` },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.3,
-        max_tokens: 2000,
-      }),
-    });
+    let openaiResponse: Response;
+    try {
+      openaiResponse = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            { role: 'system', content: EXTRACTION_PROMPT },
+            { role: 'user', content: `Extract facts from this ${source_type === 'markdown' ? 'document' : 'transcript'}:\n\n"${transcript}"` },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.3,
+          max_tokens: 2000,
+        }),
+        provider: 'OpenAI',
+        timeoutMs: 12000,
+      });
+    } catch (err) {
+      if (err instanceof ProviderUnavailableError) {
+        console.error('OpenAI extraction timed out or unavailable:', err.message);
+      } else {
+        console.error('OpenAI extraction fetch error:', err);
+      }
+      return new Response(
+        JSON.stringify({ error: 'AI extraction failed', facts: [] }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (!openaiResponse.ok) {
       const errorText = await openaiResponse.text();
@@ -169,7 +185,7 @@ serve(async (req) => {
     // This catches hallucinations, misinterpretations, and temporal/negation errors.
     if (extractedFacts.length > 0) {
       try {
-        const validationResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        const validationResponse = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -210,6 +226,8 @@ Return a JSON object with a "results" array. Each entry has:
             temperature: 0.1,
             max_tokens: 2000,
           }),
+          provider: 'OpenAI',
+          timeoutMs: 12000,
         });
 
         if (validationResponse.ok) {
@@ -306,7 +324,7 @@ Return a JSON object with a "results" array. Each entry has:
 
           // If there are potential contradictions, use LLM to verify
           if (potentialContradictions.length > 0 && potentialContradictions.length <= 20) {
-            const contradictionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            const contradictionResponse = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -339,6 +357,8 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
                 temperature: 0.1,
                 max_tokens: 1500,
               }),
+              provider: 'OpenAI',
+              timeoutMs: 12000,
             });
 
             if (contradictionResponse.ok) {
@@ -442,7 +462,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
           const newTexts = newFacts.map(f => `${f.fact_category}: ${f.fact_key} = ${f.fact_value}`);
           const allTexts = [...existingTexts, ...newTexts];
 
-          const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+          const embeddingResponse = await fetchWithTimeout('https://api.openai.com/v1/embeddings', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -452,6 +472,8 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
               model: 'text-embedding-3-small',
               input: allTexts,
             }),
+            provider: 'OpenAI',
+            timeoutMs: 12000,
           });
 
           if (embeddingResponse.ok) {

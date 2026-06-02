@@ -20,7 +20,7 @@ import type { SkillSeed } from "@/types/skill";
 
 /**
  * Inline segment row used in the expanded dashboard briefing card.
- * Compact by design — matches the surrounding card density — but surfaces
+ * Compact by design - matches the surrounding card density - but surfaces
  * the v2 anchor + quick actions so the user sees the new loop without
  * opening the full sheet.
  */
@@ -47,7 +47,7 @@ function InlineSegmentRow({
   const isKilling = killing === (segment.lens_item_id ?? "");
 
   // Decision-trigger segments are exactly the kind of "this changes something
-  // for me" beat that warrants a skill — they tie a news event to an active
+  // for me" beat that warrants a skill - they tie a news event to an active
   // decision on the leader's desk. Show an inline automate affordance only
   // for that framework tag so we don't clutter every story.
   const isDecisionTrigger =
@@ -55,7 +55,7 @@ function InlineSegmentRow({
   const handleAutomate = (e: React.MouseEvent) => {
     e.stopPropagation();
     haptics.light();
-    // Prefer the anchor (matched_profile_fact — the leader's actual decision
+    // Prefer the anchor (matched_profile_fact - the leader's actual decision
     // text from their profile) over the rewritten headline. Falls back to
     // headline so the seed is never empty.
     const seedText = anchor || segment.headline;
@@ -172,7 +172,7 @@ function InlineSegmentRow({
                 disabled={killed || isKilling}
                 title={
                   killed
-                    ? "Killed — won't appear in future briefings"
+                    ? "Killed - won't appear in future briefings"
                     : `Don't show me stories like this`
                 }
                 className={cn(
@@ -303,7 +303,7 @@ export function BriefingCard({
     : 3;
 
   // How many of the user's distinct profile anchors surfaced stories today.
-  // A tangible "this was actually about you" signal — replaces the opaque
+  // A tangible "this was actually about you" signal - replaces the opaque
   // generic "personalised" claim with a count tied to their own inputs.
   const anchorCount = React.useMemo(() => {
     const anchors = new Set<string>();

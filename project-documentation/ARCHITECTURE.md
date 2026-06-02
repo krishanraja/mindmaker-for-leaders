@@ -2,7 +2,7 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-30
 
 > **Verified counts (2026-05-13)**: 74 edge functions, 51 hooks, 98 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points).
 
@@ -153,7 +153,7 @@ src/
 │   ├── useDevice.ts
 │   ├── useEdge.ts             # Edge profile data + synthesis
 │   ├── useEdgeSubscription.ts # Edge Pro subscription state
-│   ├── useSkillExport.ts      # Skill Builder pipeline (v5.2) — wraps generate-skill-export, decodes base64 ZIP into a Blob
+│   ├── useSkillExport.ts      # Skill Builder pipeline (v5.2): wraps generate-skill-export, decodes base64 ZIP into a Blob
 │   ├── useUserPains.ts        # Top blockers + active decisions, drives pain-anchored entry points (v5.2)
 │   ├── useRevealOnMount.ts    # Smooth reveal helper for below-the-fold components (v5.2)
 │   ├── useMemoryQueries.ts    # Memory Center queries
@@ -298,11 +298,11 @@ All active pages are lazy-loaded with `React.lazy()` and wrapped in `<Suspense>`
 
 Authenticated routes wrap in `AuthedLayoutRoute` which mounts `CommandPaletteProvider` plus a sticky top bar with page eyebrow + title + actions, and supports an optional right rail that pages opt into.
 
-- **Command Palette** — `Cmd/Ctrl + K`. Pages opt into actions via two custom window events:
-  - `mm:capture-voice` — fired from the palette to open the active page's voice capture flow
-  - `mm:generate-briefing` — fired to kick off a briefing generation from anywhere
-- **Right rail (opt-in)** — Briefing surfaces (interests, suggestions, weekly history), Export wizard (step progress, current selection, contextual pro tip), Memory Web dashboard (today's briefing slot, quick actions, coverage bars, activity).
-- **Landing page (desktop)** — bold asymmetric hero with animated Memory Web preview, sticky top nav with section anchors, multi-section scroll (how it works, three pillars, briefing teaser, privacy), final CTA. Mobile preserves the swipeable three-card experience.
+- **Command Palette** (`Cmd/Ctrl + K`): Pages opt into actions via two custom window events:
+  - `mm:capture-voice`: fired from the palette to open the active page's voice capture flow
+  - `mm:generate-briefing`: fired to kick off a briefing generation from anywhere
+- **Right rail (opt-in)**: Briefing surfaces (interests, suggestions, weekly history), Export wizard (step progress, current selection, contextual pro tip), Memory Web dashboard (today's briefing slot, quick actions, coverage bars, activity).
+- **Landing page (desktop)**: bold asymmetric hero with animated Memory Web preview, sticky top nav with section anchors, multi-section scroll (how it works, three pillars, briefing teaser, privacy), final CTA. Mobile preserves the swipeable three-card experience.
 
 The shell exists to make the product feel like a desktop-native tool, not stretched mobile markup. This was Phase 8's UX answer to "executive buyers judge by surface polish."
 
@@ -861,31 +861,31 @@ skill_exports                           -- Skill Builder log (Phase 8)
 
 #### Skill Builder Subsystem (Phase 8, May 2026)
 
-60. **generate-skill-export** — Voice-to-Agent-Skill pipeline. Edge Pro gated. Internal modules:
-    - `index.ts` — orchestrator: Edge Pro gate → memory context build → triage LLM call → quality-gate validation → ZIP packaging → `skill_exports` insert
-    - `prompt.ts` — system + user prompts encoding the Three Honest Tests triage rules + extraction rules. Forwards optional `SkillSeed` (kind + text) so extraction grounds in the leader's actual pain language.
-    - `quality-gate.ts` — deterministic validator: 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, no bare MUST/NEVER, valid name format. Returns `{ checks: [...], summary: { passed, total } }`. Only the name-format check is a hard fail; everything else is advisory and surfaced to the user.
-    - `zip.ts` — agentskills.io-compliant packager. Single root folder, `SKILL.md` + `references/` + `01-test-prompts.txt` + `02-maintenance-card.txt` + `03-install-guide.txt`. Returns base64 + byte length.
+60. **generate-skill-export**: Voice-to-Agent-Skill pipeline. Edge Pro gated. Internal modules:
+    - `index.ts`: orchestrator: Edge Pro gate, memory context build, triage LLM call, quality-gate validation, ZIP packaging, `skill_exports` insert
+    - `prompt.ts`: system + user prompts encoding the Three Honest Tests triage rules + extraction rules. Forwards optional `SkillSeed` (kind + text) so extraction grounds in the leader's actual pain language.
+    - `quality-gate.ts`: deterministic validator (5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, no bare MUST/NEVER, valid name format). Returns `{ checks: [...], summary: { passed, total } }`. Only the name-format check is a hard fail; everything else is advisory and surfaced to the user.
+    - `zip.ts`: agentskills.io-compliant packager. Single root folder, `SKILL.md` + `references/` + `01-test-prompts.txt` + `02-maintenance-card.txt` + `03-install-guide.txt`. Returns base64 + byte length.
 
     Triage routing: when the input is really a Memory Fact / Custom Instruction / Saved Style, the function returns `{ triage: { passed: false, result, reasoning } }` (200 OK, no skill). The attempt is still logged in `skill_exports` with `triage_result` set accordingly so we can learn from misses without re-running the LLM.
 
 **Shared Modules** (`supabase/functions/_shared/`):
-- `context-builder.ts` / `memory-context-builder.ts` — LLM context construction
-- `user-context.ts` — Profile projection (shared between briefing pipeline + diagnose endpoint)
-- `briefing-lens.ts` — Importance lens (Stage 1+2 of v2 pipeline)
-- `briefing-scoring.ts` — Embedding dedupe + scoring + exclude filter (Stage 4)
-- `briefing-curation.ts` — Budget-constrained segment picker (Stage 5)
-- `lens-signature.ts` — SHA-256 signature for stable feedback keying
-- `training-loader.ts` — YAML voice guide loader (training_material table)
-- `ai-cache.ts` — Generic AI + embedding response cache (24h lens cache, 7d embedding cache, backed by `ai_response_cache` table)
-- `model-router.ts` — Vertex AI primary, OpenAI GPT-4o fallback, static tertiary
-- `rateLimit.ts` / `rate-limiting.ts` — Per-user rate limiting (briefing rate-limit shipped Audit Week 1)
-- `with-timeout.ts` — Timeout + retry wrapper for all external API calls (Audit Week 4)
-- `logger.ts` — Structured JSON edge-function logger (Audit Week 5)
-- `llm-quality-guardrails.ts` — LLM output validation
-- `storage-utils.ts` — Supabase Storage helpers (`ctrl-briefings` bucket policy codified Audit Week 2)
-- `email-utils.ts` — Resend email sending
-- `validate-database.ts` — DB validation helpers
+- `context-builder.ts` / `memory-context-builder.ts`: LLM context construction
+- `user-context.ts`: Profile projection (shared between briefing pipeline + diagnose endpoint)
+- `briefing-lens.ts`: Importance lens (Stage 1+2 of v2 pipeline)
+- `briefing-scoring.ts`: Embedding dedupe + scoring + exclude filter (Stage 4)
+- `briefing-curation.ts`: Budget-constrained segment picker (Stage 5)
+- `lens-signature.ts`: SHA-256 signature for stable feedback keying
+- `training-loader.ts`: YAML voice guide loader (training_material table)
+- `ai-cache.ts`: Generic AI + embedding response cache (24h lens cache, 7d embedding cache, backed by `ai_response_cache` table)
+- `model-router.ts`: Vertex AI primary, OpenAI GPT-4o fallback, static tertiary
+- `rateLimit.ts` / `rate-limiting.ts`: Per-user rate limiting (briefing rate-limit shipped Audit Week 1)
+- `with-timeout.ts`: Timeout + retry wrapper for all external API calls (Audit Week 4)
+- `logger.ts`: Structured JSON edge-function logger (Audit Week 5)
+- `llm-quality-guardrails.ts`: LLM output validation
+- `storage-utils.ts`: Supabase Storage helpers (`ctrl-briefings` bucket policy codified Audit Week 2)
+- `email-utils.ts`: Resend email sending
+- `validate-database.ts`: DB validation helpers
 
 ---
 
@@ -1195,6 +1195,100 @@ All user-facing tables have RLS policies:
 - Encryption key in `MEMORY_ENCRYPTION_KEY` env var
 - Decryption only in edge functions, never client-side
 
+### RLS Security Fixes (2026-05-30)
+
+Three tables were missing proper user-scoped RLS policies prior to the 2026-05-30 rebuild; all three are now fixed:
+
+- `leader_missions`: policies now gate on `leaders.user_id` (via join to the `leaders` table), not just `leader_id`
+- `leader_check_ins`: same pattern as `leader_missions`
+- `leader_progress_snapshots`: same pattern
+- `tts_config`: RLS was disabled; now enabled with read-only access for authenticated users
+- `resend-webhook` edge function: now validates the Resend webhook signature before processing any payload
+
+These changes close a class of horizontal-access bugs where one authenticated user could, in theory, read another user's mission, check-in, or snapshot rows if they knew the row ID.
+
+---
+
+## Attribution Emit Path (2026-05-30)
+
+Captures first-touch marketing attribution end-to-end, from landing URL through to the central MindmakerOS warehouse.
+
+```
+Landing page load
+        |
+        v
+Client captures UTM params on first touch:
+  utm_source, utm_medium, utm_campaign,
+  utm_content, utm_term, agent, campaign_id
+        |
+        v
+Params persisted to localStorage (first-touch wins, not overwritten)
+        |
+        v
+Signup / OAuth: params written into auth.users user_metadata
+        |
+        v
+Stripe checkout: params stamped onto session metadata
+        |
+        v
+Stripe webhook handler reads metadata, emits lifecycle event
+  to the central MindmakerOS warehouse
+  (Supabase project: gojpffsrxybbpbdzzrvs)
+        |
+        v
+Warehouse ingest (dormant until WAREHOUSE_INGEST_URL env var is set)
+```
+
+**Key design notes:**
+
+- First-touch attribution is preserved even if the user visits multiple times before signing up
+- The emit is fire-and-forget; a missing or down warehouse endpoint does not break the checkout flow
+- The warehouse env var (`WAREHOUSE_INGEST_URL`) is deliberately not set in production yet; the wiring is in place and activates when the var is set
+
+---
+
+## Runtime Product-Truth Source (2026-05-30)
+
+`https://ctrl.themindmaker.ai/.well-known/product.json`
+
+A machine-readable JSON document served at this well-known path. It is the single authoritative source of pricing, ICP, and offer data for the entire MindmakerOS agent fleet. Any agent that needs to quote CTRL pricing or describe the offer fetches this endpoint rather than reading from training data.
+
+**Served by**: a Vercel static route (or edge function) returning a pre-rendered JSON payload.
+
+**Contents (canonical):**
+
+```json
+{
+  "product": "CTRL",
+  "url": "https://ctrl.themindmaker.ai",
+  "pricing": {
+    "free": "$0",
+    "full_diagnostic": "$49 one-time",
+    "deep_context_upgrade": "$29 one-time",
+    "diagnostic_deep_context_bundle": "$69 one-time",
+    "edge_pro": "$29/month",
+    "bootcamp_teams": "$15K-$50K",
+    "portfolio_partners": "$5K-$25K"
+  },
+  "icp": "C-suite / VP / Founder, 50-5000 employees, English-speaking, already using AI daily",
+  "magic_moment": "one-click Context Export: first AI response unmistakably about them, not generic"
+}
+```
+
+Agents must treat this endpoint as the ground truth and ignore any conflicting figures in static documentation.
+
+---
+
+## Public-Surface Prerender (2026-05-30)
+
+The CTRL landing page (`/`) and any other public routes are pre-rendered at build time (or via Vercel's edge prerendering) to ensure:
+
+1. **SEO**: Crawlers see fully-rendered HTML with correct meta tags, OG images, and structured data without executing client-side JavaScript
+2. **Agent-readable surfaces**: AI agents scraping `ctrl.themindmaker.ai` for product context get complete HTML rather than a blank SPA shell
+3. **Performance**: First Contentful Paint is not blocked on the React bundle
+
+**Implementation**: Vite SSR prerender pass generates static HTML for public routes at build time. The `/.well-known/product.json` endpoint is served as a standalone static file, not part of the React app.
+
 ---
 
 ## Deployment
@@ -1230,7 +1324,7 @@ All user-facing tables have RLS policies:
 
 ### Current State
 
-**Vitest** (`vitest.config.ts`) — 6 unit/shared specs:
+**Vitest** (`vitest.config.ts`): 6 unit/shared specs:
 - `src/__tests__/api.test.ts`
 - `src/__tests__/authMachine.test.ts`
 - `src/__tests__/renderMarkdown.test.ts`
@@ -1238,7 +1332,7 @@ All user-facing tables have RLS policies:
 - `src/__tests__/HeroSection.video.test.tsx`
 - `supabase/functions/_shared/with-timeout.test.ts`
 
-**Playwright** (`playwright.config.ts`) — 6 e2e specs:
+**Playwright** (`playwright.config.ts`): 6 e2e specs:
 - `tests/auth-journeys.spec.ts`
 - `tests/briefing-journey.spec.ts`
 - `tests/briefing-rate-limits.spec.ts`
@@ -1246,7 +1340,7 @@ All user-facing tables have RLS policies:
 - `tests/account-deletion.spec.ts`
 - `tests/stripe-webhook-idempotency.spec.ts`
 
-**CI gates** (`.github/workflows/ci.yml`) — three blocking checks per PR:
+**CI gates** (`.github/workflows/ci.yml`): three blocking checks per PR:
 1. Typecheck (`tsc --noEmit`)
 2. Full Vite build
 3. ESLint on PR diff (~1600 pre-existing warnings accepted as technical debt; new lint regressions blocked)

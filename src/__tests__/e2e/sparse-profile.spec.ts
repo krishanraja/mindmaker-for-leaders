@@ -3,7 +3,7 @@
  *
  * The audit's P0-2-derivative on the input side: a leader with too little
  * structured signal (interests + missions + decisions < 5) should NOT see
- * a generic briefing — the backend returns a structured
+ * a generic briefing - the backend returns a structured
  * `{error: "profile_too_sparse"}` payload and the frontend renders an
  * amber onboarding card instead of empty headlines.
  *
@@ -16,7 +16,7 @@ import { test, expect } from '@playwright/test';
 const SPARSE_USER_EMAIL = process.env.E2E_SPARSE_USER_EMAIL ?? 'e2e-sparse@example.com';
 const SPARSE_USER_PASSWORD = process.env.E2E_SPARSE_USER_PASSWORD ?? 'e2e-fixture-password';
 
-test.describe.skip('Briefing — sparse-profile guardrail', () => {
+test.describe.skip('Briefing - sparse-profile guardrail', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/signin');
     await page.fill('input[placeholder="Email address"]', SPARSE_USER_EMAIL);

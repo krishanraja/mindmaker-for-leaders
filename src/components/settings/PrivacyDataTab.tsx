@@ -85,7 +85,7 @@ export function PrivacyDataTab() {
         .from('leaders')
         .select('*')
         .eq('user_id', user?.id)
-        .single()
+        .maybeSingle()
 
       const { data: memoryData } = await supabase
         .from('user_memory')

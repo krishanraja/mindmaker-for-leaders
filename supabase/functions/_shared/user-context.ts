@@ -1,13 +1,13 @@
 /**
  * Shared user-context loader.
  *
- * The profile projection used by the briefing pipeline — pulled out of
+ * The profile projection used by the briefing pipeline - pulled out of
  * generate-briefing/index.ts so the diagnostic function can reproduce the
  * exact inputs the generator saw, and so future briefing-adjacent tools
  * (kill-lens-item, feedback aggregator, etc.) don't have to re-implement
  * the same six-table load.
  *
- * Behaviour is 1:1 with the previous in-file implementation — any tweak
+ * Behaviour is 1:1 with the previous in-file implementation - any tweak
  * here affects both generation and diagnosis, which is the point.
  */
 
@@ -237,7 +237,7 @@ export async function getUserContext(
 
 /**
  * Build the LensSource projection used by buildImportanceLens.
- * Needs real mission/decision IDs so lens items reference real rows —
+ * Needs real mission/decision IDs so lens items reference real rows  - 
  * pass them in from the caller, which has them on hand from the same
  * generate-briefing query.
  */

@@ -18,6 +18,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { CtrlLogo } from './CtrlLogo';
 import { cn } from '@/lib/utils';
+import { VoiceDemo } from './VoiceDemo';
+import { FF } from '@/lib/flags';
 
 const PILLARS = [
   {
@@ -645,6 +647,18 @@ export function DesktopLanding() {
                 Export anywhere
               </span>
             </motion.div>
+
+            {/* Flagged: landing voice/text demo - only mounts when flag is on */}
+            {FF.landingVoiceDemo() && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.55 }}
+                className="mt-8 max-w-lg"
+              >
+                <VoiceDemo />
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Hero visual */}

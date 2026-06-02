@@ -4,7 +4,7 @@
 
 ---
 
-## Primary ICP — Individual Senior Leaders
+## Primary ICP - Individual Senior Leaders
 
 This is the buyer the product is designed for, the persona sales/marketing AI agents should write to first.
 
@@ -24,7 +24,7 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
   8. Biotech / life sciences
   9. Legal services
   10. Manufacturing / industrial
-  11. Generic (catchall — leaders outside the seeded verticals still get value)
+  11. Generic (catchall - leaders outside the seeded verticals still get value)
 - **Geography**: Global (English-speaking markets priority)
 - **AI Usage**: Already using at least one AI tool (ChatGPT, Claude, Gemini). Not starting from zero.
 
@@ -35,7 +35,7 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 - **Identity**: Sees themselves as a decisive leader. Speed is a point of pride. Hates being the bottleneck.
 - **AI Frustration**: Uses AI daily but knows the output is generic. Has felt the gap between what AI could do and what it actually does for them. Suspects the problem is context, not the tool.
 - **Time Relationship**: Guards their calendar ruthlessly. Will not sit through a course, a webinar, or a 30-minute onboarding flow. If it takes more than 2 minutes to show value, it is dead to them.
-- **Decision Style**: Makes 20+ consequential decisions per week. Relies on pattern recognition, trusted advisors, and gut. Knows AI could sharpen all three — if it actually knew their world.
+- **Decision Style**: Makes 20+ consequential decisions per week. Relies on pattern recognition, trusted advisors, and gut. Knows AI could sharpen all three - if it actually knew their world.
 - **Competitive Awareness**: Watches peers and competitors closely. When a rival moves faster, they feel it personally. The idea that someone else's AI knows their context and theirs doesn't is deeply uncomfortable.
 - **Tech Posture**: Pragmatic adopter. Not an enthusiast. Not a skeptic. Judges tools by outcomes in the first 60 seconds. Will abandon anything that feels like setup.
 - **Privacy Posture**: Burned at least once by a tool that wanted Slack/calendar access. Defaults to skepticism on integrations. Self-contained tools clear faster.
@@ -44,7 +44,7 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 
 ### Pain Points
 
-**Decision Speed Pain (Primary — CTRL solves this)**
+**Decision Speed Pain (Primary - CTRL solves this)**
 1. Every AI conversation starts from zero. They re-explain who they are, what they do, and what matters, every single time.
 2. AI gives generic advice because it has no context. The output reads like it was written for anyone. It was.
 3. They use multiple AI tools. Context does not travel between them. Switching from ChatGPT to Claude means starting over.
@@ -57,13 +57,13 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 8. Existing "personalized" feeds (Feedly, Techmeme, morning briefs) serve everyone the same stories with light reordering. The personalization is theatre.
 9. By the time a story is relevant, it's already late. Decision-relevant intel needs to surface in the same morning, anchored to a specific call on their desk.
 
-**Repetition Pain (CTRL Skill Builder solves this — Edge Pro)**
+**Repetition Pain (CTRL Skill Builder solves this - Edge Pro)**
 10. Runs the same 3-5 workflows every week: Monday board update, Friday hiring sync, monthly investor update, RFP triage, weekly metrics review.
 11. Every iteration is re-typed from a blank prompt, even after building a rich Memory Web and exporting context. The repetition tax compounds.
-12. Has tried "save this prompt to a library" tools — dead context they have to remember to paste. Has tried generic macro / automation tools — they generate junk from any input because there's no triage gate.
+12. Has tried "save this prompt to a library" tools - dead context they have to remember to paste. Has tried generic macro / automation tools - they generate junk from any input because there's no triage gate.
 13. Wants permanent agent infrastructure they own (an installable Claude Skill in `~/.claude/skills/`), not a saved prompt or a brittle no-code automation. Pain signal: "I've explained this exact format to Claude 12 times this quarter."
 
-**Strategic Pain (Secondary — compounds over time)**
+**Strategic Pain (Secondary - compounds over time)**
 10. Cannot distinguish real AI value from vendor theatre in proposals and pitches.
 11. Unable to challenge technical teams credibly on AI decisions.
 12. Feels pressure to "do something with AI" without a clear framework for what is worth doing.
@@ -187,4 +187,4 @@ When prospecting, scoring fit, or writing copy:
 - **Disqualifier**: Asks about Slack/email/calendar integration → not us.
 - **Deal-blocker**: Requires SOC 2 / vendor security review for an individual purchase → wrong motion (drive them to enterprise/Sprint).
 - **Channel sequencing**: LinkedIn DM → email → optional follow-up post that demonstrates the auditable-relevance angle (screenshot of "Anchored to:" chip).
-- **Pricing anchors to use in copy**: Free to start. $49 for the full Diagnostic. $9/month for Edge Pro. Bundle saves $10.
+- **Pricing anchors to use in copy**: Free to start. $49 for the full Diagnostic. $29/month for Edge Pro. Bundle saves $10.

@@ -8,6 +8,8 @@
   },
   "scripts": {
     "dev": "cross-env ROLLUP_DISABLE_NATIVE=1 vite",
+    "standards:check": "node standards/check-standards.mjs",
+    "prebuild": "node standards/check-standards.mjs",
     "build": "cross-env ROLLUP_DISABLE_NATIVE=1 vite build",
     "build:dev": "cross-env ROLLUP_DISABLE_NATIVE=1 vite build --mode development",
     "postinstall": "node scripts/patch-rollup.cjs",

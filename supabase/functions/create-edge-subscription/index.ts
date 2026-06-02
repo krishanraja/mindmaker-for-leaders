@@ -11,6 +11,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Clamp attribution to Stripe metadata limits (<=50 keys, <=500 chars/value).
+function sanitizeAttr(obj: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  let n = 0;
+  for (const [k, v] of Object.entries(obj || {})) {
+    if (n >= 40) break;
+    if (v == null) continue;
+    out[String(k).slice(0, 40)] = String(v).slice(0, 480);
+    n++;
+  }
+  return out;
+}
+
 const EDGE_PRO_PRICE_ID_ENV = Deno.env.get("STRIPE_EDGE_PRO_PRICE_ID");
 const EDGE_PRO_PRODUCT_NAME = "Edge Pro";
 
@@ -23,7 +36,7 @@ async function resolveEdgeProPriceId(stripe: Stripe): Promise<string> {
 
   // Find or create product
   const products = await stripe.products.list({ limit: 100, active: true });
-  let product = products.data.find((p) => p.name === EDGE_PRO_PRODUCT_NAME);
+  let product = products.data.find((p: Stripe.Product) => p.name === EDGE_PRO_PRODUCT_NAME);
   if (!product) {
     product = await stripe.products.create({
       name: EDGE_PRO_PRODUCT_NAME,
@@ -38,7 +51,7 @@ async function resolveEdgeProPriceId(stripe: Stripe): Promise<string> {
     limit: 100,
   });
   const existing = prices.data.find(
-    (p) =>
+    (p: Stripe.Price) =>
       p.recurring?.interval === EDGE_PRO_INTERVAL &&
       p.unit_amount === EDGE_PRO_UNIT_AMOUNT_CENTS &&
       p.currency === EDGE_PRO_CURRENCY,
@@ -86,6 +99,17 @@ Deno.serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
+    // Attribution (attr_*) stamped onto Stripe so revenue is joinable to source.
+    let attribution: Record<string, string> = {};
+    try {
+      const body = await req.json();
+      if (body?.attribution && typeof body.attribution === "object") {
+        attribution = sanitizeAttr(body.attribution);
+      }
+    } catch {
+      // no body is fine
+    }
+
     const edgeProPriceId = await resolveEdgeProPriceId(stripe);
 
     // Find or create Stripe customer
@@ -97,7 +121,7 @@ Deno.serve(async (req) => {
     } else {
       const customer = await stripe.customers.create({
         email: user.email,
-        metadata: { user_id: user.id },
+        metadata: { user_id: user.id, ...attribution },
       });
       customerId = customer.id;
     }
@@ -128,11 +152,13 @@ Deno.serve(async (req) => {
       metadata: {
         user_id: user.id,
         product: "edge_pro",
+        ...attribution,
       },
       subscription_data: {
         metadata: {
           user_id: user.id,
           product: "edge_pro",
+          ...attribution,
         },
       },
     });

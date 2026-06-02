@@ -1,7 +1,7 @@
 /**
  * Transcription edge function.
  * Env: OPENAI_API_KEY, GEMINI_API_KEY (fallback), optional OPENAI_TRANSCRIPTION_MODEL
- * (default whisper-1; try gpt-4o-transcribe or gpt-4o-mini-transcribe — falls back to whisper-1 on failure).
+ * (default whisper-1; try gpt-4o-transcribe or gpt-4o-mini-transcribe - falls back to whisper-1 on failure).
  */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";

@@ -15,7 +15,7 @@ Step-by-step instructions to replicate CTRL from scratch.
 - Supabase CLI (linked to a project; for the canonical CTRL instance, project ref = `bkyuxvschuwngtcdhsyg`)
 - OpenAI API key (embeddings + fallback LLM + Whisper)
 - Vertex AI service account JSON (primary LLM)
-- Perplexity / Tavily / Brave API keys (briefing news providers — at least one required)
+- Perplexity / Tavily / Brave API keys (briefing news providers - at least one required)
 - ElevenLabs API key (briefing audio)
 - Resend API key (transactional email)
 - Stripe account + webhook secret (Edge Pro subscription + Diagnostic / Deep Context one-time)

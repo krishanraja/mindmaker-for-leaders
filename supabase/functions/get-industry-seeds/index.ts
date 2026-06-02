@@ -68,7 +68,7 @@ serve(async (req) => {
 
     // Resolve the user's industry if not provided in the request.
     // Tiebreaker on confidence: most recently updated wins, so the freshest
-    // declaration carries — otherwise Postgres returns ties in arbitrary order
+    // declaration carries - otherwise Postgres returns ties in arbitrary order
     // and the same user can flap between industries call to call.
     if (!explicitKey && !rawIndustry) {
       const { data: facts } = await supabase
@@ -138,7 +138,7 @@ serve(async (req) => {
 
 /**
  * Resolve the best industry row for an explicit key or raw industry string.
- * Falls back to the 'generic' row when nothing matches — there is always
+ * Falls back to the 'generic' row when nothing matches - there is always
  * something to suggest.
  */
 function matchIndustry(

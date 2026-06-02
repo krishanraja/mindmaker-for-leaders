@@ -11,6 +11,7 @@ import { BottomNav } from '@/components/memory-web/BottomNav';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import {
   complianceFrameworks,
+  complianceDisclaimer,
   getFrameworkStats,
   subprocessors,
   type ComplianceFramework,
@@ -220,6 +221,10 @@ function SubprocessorsCard() {
 function ComplianceContent() {
   return (
     <div className="space-y-4">
+      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2.5">
+        <p className="text-[11px] leading-relaxed text-foreground/70">{complianceDisclaimer}</p>
+      </div>
+
       <LiveStatusCard />
 
       <div className="space-y-3">
@@ -254,7 +259,7 @@ export default function Compliance() {
                 <div>
                   <h1 className="text-2xl font-bold">Compliance</h1>
                   <p className="text-sm text-muted-foreground">
-                    Technical controls across SOC 2, HIPAA, GDPR, CCPA, and ISO 27001
+                    Our security and privacy controls, mapped to SOC 2, GDPR, CCPA, and ISO 27001
                   </p>
                 </div>
               </div>
@@ -278,7 +283,7 @@ export default function Compliance() {
           <div>
             <h1 className="text-base font-bold text-foreground">Compliance</h1>
             <p className="text-[10px] text-muted-foreground leading-tight">
-              SOC 2, HIPAA, GDPR, CCPA, ISO 27001
+              SOC 2, GDPR, CCPA, ISO 27001
             </p>
           </div>
         </div>

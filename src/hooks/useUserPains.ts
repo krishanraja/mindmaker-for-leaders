@@ -12,7 +12,7 @@ import type { SkillSeed } from "@/types/skill";
  *   - an active row in user_decisions
  *
  * Returned as a flat SkillSeed[] so callers just hand it straight to the
- * skill builder's route state. Quiet on errors — this is auxiliary surface
+ * skill builder's route state. Quiet on errors - this is auxiliary surface
  * and should never block the page rendering.
  */
 export function useUserPains(limit: number = 5) {
