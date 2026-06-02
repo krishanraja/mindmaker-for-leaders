@@ -130,11 +130,11 @@ export const SaveProfileDialog: React.FC<SaveProfileDialogProps> = ({
 
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving profile:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to save profile. Please try again.',
+        description: (error instanceof Error && error.message) || 'Failed to save profile. Please try again.',
         variant: 'destructive'
       });
     } finally {
