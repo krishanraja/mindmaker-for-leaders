@@ -105,11 +105,11 @@ export function SignUpForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={12}
             autoComplete="new-password"
           />
           <p className="text-xs text-muted-foreground">
-            Must be at least 6 characters
+            Must be at least 12 characters
           </p>
         </div>
 

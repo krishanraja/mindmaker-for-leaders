@@ -210,14 +210,14 @@ export function OnboardingInterview({ onComplete }: Props) {
                 className="space-y-4"
               >
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-                  Welcome to Control
+                  Welcome to CTRL
                 </h1>
                 <p className="text-muted-foreground leading-relaxed text-sm">
                   {welcomeText}
                 </p>
                 <p className="text-muted-foreground leading-relaxed text-sm">
-                  I'd love to learn a bit about you so we can build your Memory Web right away.
-                  It only takes a few minutes.
+                  Everything you share stays private, and you can edit or delete any of it
+                  later. Let's start with a few quick questions.
                 </p>
               </motion.div>
               <motion.div

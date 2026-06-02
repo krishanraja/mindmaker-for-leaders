@@ -78,11 +78,11 @@ export function AuthScreen({ onAuthSuccess, onCancel, mode: initialMode = 'signi
           <Input
             id="password"
             type="password"
-            placeholder={mode === 'signup' ? 'At least 6 characters' : 'Your password'}
+            placeholder={mode === 'signup' ? 'At least 12 characters' : 'Your password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={mode === 'signup' ? 6 : undefined}
+            minLength={mode === 'signup' ? 12 : undefined}
             disabled={isLoading}
           />
         </div>

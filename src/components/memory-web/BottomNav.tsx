@@ -1,12 +1,13 @@
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Zap, Brain, Radio } from 'lucide-react';
+import { Home, Zap, Brain, ArrowUpRight, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
   { path: '/dashboard', search: '?view=edge', icon: Zap, label: 'Edge' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory' },
+  { path: '/context', search: '', icon: ArrowUpRight, label: 'Export' },
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing' },
 ];
 
