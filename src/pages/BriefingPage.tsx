@@ -30,6 +30,7 @@ import { InterestsSheet } from "@/components/briefing/InterestsSheet";
 import { BottomNav } from "@/components/memory-web/BottomNav";
 import { AppHeader } from "@/components/memory-web/AppHeader";
 import { DesktopShell } from "@/components/layout/DesktopShell";
+import { Coachmark } from "@/components/onboarding/Coachmark";
 import { useDevice } from "@/hooks/useDevice";
 import {
   useTodaysBriefing,
@@ -186,6 +187,12 @@ function BriefingPage() {
             transition={{ duration: 0.3 }}
             className="space-y-4 py-4"
           >
+            <Coachmark
+              id="briefing"
+              icon={Radio}
+              title="Tune what you hear"
+              body="This briefing learns from you. Bookmark a story to hear more like it, ban a topic to drop it for good, or hit Tune to set the people and themes you care about."
+            />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
@@ -599,6 +606,12 @@ function BriefingPage() {
         rightRail={rightRail}
       >
         <div className="max-w-3xl mx-auto space-y-6">
+          <Coachmark
+            id="briefing"
+            icon={Radio}
+            title="Tune what you hear"
+            body="This briefing learns from you. Bookmark a story to hear more like it, ban a topic to drop it for good, or hit Tune to set the people and themes you care about."
+          />
           {/* Hero state */}
           {loading ? (
             <div className="flex items-center justify-center py-24">

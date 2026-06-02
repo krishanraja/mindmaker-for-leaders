@@ -23,6 +23,7 @@ import { SAMPLE_ARTIFACTS } from './sampleArtifacts';
 import { DraftSheet } from './DraftSheet';
 import { ArtifactPreview } from './ArtifactPreview';
 import { AutomatePainCard } from './AutomatePainCard';
+import { Coachmark } from '@/components/onboarding/Coachmark';
 import { SHARPEN_CAPABILITY_META, COVER_CAPABILITY_META } from '@/types/edge';
 import type {
   EdgeCapability,
@@ -211,6 +212,12 @@ export default function EdgeView() {
   return (
     <>
       <div className="space-y-5">
+        <Coachmark
+          id="edge"
+          icon={Zap}
+          title="This is your Edge"
+          body="Your leadership profile, built from your Memory Web. Tap any strength or weakness to generate board memos, strategy docs, and emails that sound like you."
+        />
         {/* Hero summary card */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}

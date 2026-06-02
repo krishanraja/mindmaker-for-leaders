@@ -5,6 +5,7 @@ import { SettingsSheetProvider } from '@/contexts/SettingsSheetContext'
 import { GlobalFAB } from '@/components/mobile/GlobalFAB'
 import { SettingsSheet } from '@/components/settings/SettingsSheet'
 import { CommandPaletteProvider } from '@/components/layout/CommandPalette'
+import { WelcomeTour } from '@/components/onboarding/WelcomeTour'
 
 function AuthedChrome() {
   const { isAuthenticated } = useAuth()
@@ -26,6 +27,7 @@ export function AuthedLayoutRoute() {
       <CommandPaletteProvider>
         <Outlet />
         <AuthedChrome />
+        <WelcomeTour />
       </CommandPaletteProvider>
     </SettingsSheetProvider>
   )

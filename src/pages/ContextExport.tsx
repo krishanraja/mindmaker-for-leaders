@@ -58,6 +58,7 @@ import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { AppHeader } from '@/components/memory-web/AppHeader';
+import { Coachmark } from '@/components/onboarding/Coachmark';
 import { supabase } from '@/integrations/supabase/client';
 import { PLATFORM_GUIDES } from '@/lib/platform-guides';
 import { ModelRecommendationCard } from '@/components/export/ModelRecommendationCard';
@@ -953,6 +954,13 @@ export default function ContextExport() {
                 Make any AI tool understand you - in one click.
               </p>
             </motion.div>
+            <Coachmark
+              id="export"
+              icon={ArrowRight}
+              title="One context, every AI"
+              body="Pick a tool (ChatGPT, Claude, Cursor, and more) and CTRL formats your full context for it. Paste it in once, and the AI knows you - no more re-explaining yourself."
+              className="mb-4"
+            />
             {wizardContent}
           </div>
         </DesktopShell>
@@ -1000,6 +1008,13 @@ export default function ContextExport() {
       </div>
 
       <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-20">
+        <Coachmark
+          id="export"
+          icon={ArrowRight}
+          title="One context, every AI"
+          body="Pick a tool (ChatGPT, Claude, Cursor, and more) and CTRL formats your full context for it. Paste it in once, and the AI knows you - no more re-explaining yourself."
+          className="mb-3 mt-1"
+        />
         {wizardContent}
       </main>
 
