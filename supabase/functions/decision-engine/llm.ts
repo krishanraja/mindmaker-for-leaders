@@ -67,6 +67,64 @@ async function callOpenAI(
   return text;
 }
 
+async function callGemini(system: string, user: string, maxTokens = 1500): Promise<string> {
+  const key = Deno.env.get("GEMINI_API_KEY") ?? Deno.env.get("GOOGLE_AI_API_KEY");
+  if (!key) throw new Error("GEMINI_API_KEY not set");
+  const res = await fetchWithTimeout(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+    {
+      method: "POST",
+      provider: "gemini",
+      timeoutMs: 25_000,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: `${system}\n\n${user}` }] }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens },
+      }),
+    },
+  );
+  if (!res.ok) throw new Error(`Gemini error: ${res.status}`);
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Gemini returned no text");
+  return text;
+}
+
+async function callGrok(system: string, user: string, maxTokens = 1500): Promise<string> {
+  const key = Deno.env.get("XAI_API_KEY");
+  if (!key) throw new Error("XAI_API_KEY not set");
+  const res = await fetchWithTimeout("https://api.x.ai/v1/chat/completions", {
+    method: "POST",
+    provider: "grok",
+    timeoutMs: 25_000,
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "grok-3",
+      messages: [{ role: "system", content: system }, { role: "user", content: user }],
+      temperature: 0.2,
+      max_tokens: maxTokens,
+    }),
+  });
+  if (!res.ok) throw new Error(`Grok error: ${res.status}`);
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("Grok returned no content");
+  return text;
+}
+
+export type PanelModel = "claude" | "gpt-4o" | "gemini" | "grok";
+
+/** Dispatch one judge call to a named panel model. Throws on failure so the
+ *  caller can drop that model from the panel via Promise.allSettled. */
+export async function judgeWithModel(model: PanelModel, system: string, user: string): Promise<string> {
+  switch (model) {
+    case "claude": return await callAnthropic(system, user, 1200);
+    case "gpt-4o": return await callOpenAI(system, user, { maxTokens: 1200, jsonMode: false });
+    case "gemini": return await callGemini(system, user, 1200);
+    case "grok": return await callGrok(system, user, 1200);
+  }
+}
+
 /**
  * Reasoning call for decompose / advise. Claude primary, GPT-4o fallback.
  * `user` should already instruct the model to return JSON only.

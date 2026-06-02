@@ -42,7 +42,7 @@ export async function verifyClaim(claim: ExtractedClaim): Promise<VerifyOutput> 
     };
   }
 
-  const evidence = await gatherEvidence(claim.text);
+  const evidence = await gatherEvidence(claim.text, claim.type);
 
   if (evidence.length === 0) {
     return {

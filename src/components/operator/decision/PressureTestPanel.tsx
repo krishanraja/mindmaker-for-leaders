@@ -7,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { VoiceInput } from '@/components/ui/voice-input';
 import {
   ShieldCheck, AlertTriangle, HelpCircle, CircleDashed, Loader2, ChevronDown,
-  Target, Scale, ListChecks, GitBranch, RotateCcw, Send,
+  Target, Scale, ListChecks, GitBranch, RotateCcw, Send, Sparkles, Users,
 } from 'lucide-react';
 import {
-  useDecisionEngine, type DecisionClaim, type Verdict, type DecisionEvidence,
+  useDecisionEngine, type DecisionClaim, type Verdict, type DecisionEvidence, type DecisionTension,
 } from '@/hooks/useDecisionEngine';
+import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 
 const VERDICT_STYLE: Record<Verdict, { label: string; cls: string; Icon: typeof ShieldCheck }> = {
   supported: { label: 'Supported', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200', Icon: ShieldCheck },
@@ -24,12 +25,20 @@ const VERDICT_STYLE: Record<Verdict, { label: string; cls: string; Icon: typeof 
 const STAGES = [
   { key: 'decomposing', label: 'Decomposing' },
   { key: 'verifying', label: 'Verifying' },
+  { key: 'cross_examining', label: 'Cross-examining' },
   { key: 'advising', label: 'Advising' },
   { key: 'complete', label: 'Done' },
 ];
 
+const TENSION_GROUPS: Record<DecisionTension['kind'], string> = {
+  vs_profile: 'Tensions with your context',
+  vs_evidence: 'Tensions with the evidence',
+  model_disagreement: 'Where the models disagree',
+  internal: 'Internal contradictions',
+};
+
 function StageStepper({ stage }: { stage: string }) {
-  const order = ['decomposing', 'verifying', 'advising', 'complete'];
+  const order = ['decomposing', 'verifying', 'cross_examining', 'advising', 'complete'];
   const current = order.indexOf(stage === 'error' ? 'complete' : stage);
   return (
     <div className="flex items-center gap-2 text-xs">
@@ -151,7 +160,13 @@ const EXAMPLES = [
 
 export function PressureTestPanel() {
   const [statement, setStatement] = useState('');
-  const { start, reset, starting, isRunning, isComplete, error, decisionCase, claims, evidence, tensions } = useDecisionEngine();
+  const { start, reset, starting, isRunning, isComplete, error, upgradeRequired, upgradeMessage, decisionCase, claims, evidence, tensions } = useDecisionEngine();
+  const { subscribe, isProcessing } = useEdgeSubscription();
+
+  const handleUpgrade = async () => {
+    const url = await subscribe();
+    if (url) window.location.href = url;
+  };
 
   const evByClaim = (claimId: string) => evidence.filter((e) => e.claim_id === claimId);
   const stage = decisionCase?.stage ?? 'decomposing';
@@ -159,7 +174,22 @@ export function PressureTestPanel() {
 
   return (
     <div className="space-y-5">
-      {!showResults && (
+      {upgradeRequired && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h3 className="text-base font-semibold text-foreground">Edge Pro</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">{upgradeMessage}</p>
+            <Button onClick={handleUpgrade} disabled={isProcessing} size="lg" className="w-full sm:w-auto">
+              {isProcessing ? 'Opening checkout...' : 'Upgrade to Edge Pro'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!showResults && !upgradeRequired && (
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-1.5">
@@ -305,19 +335,31 @@ export function PressureTestPanel() {
                   </div>
                 )}
 
-                {tensions.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-500" />
-                      <h4 className="font-semibold text-foreground">Tensions with your context</h4>
+                {tensions.length > 0 &&
+                  Object.entries(
+                    tensions.reduce<Record<string, DecisionTension[]>>((acc, t) => {
+                      (acc[t.kind] ??= []).push(t);
+                      return acc;
+                    }, {}),
+                  ).map(([kind, group]) => (
+                    <div key={kind}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {kind === 'model_disagreement' ? (
+                          <Users className="h-4 w-4 text-indigo-500" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        )}
+                        <h4 className="font-semibold text-foreground">
+                          {TENSION_GROUPS[kind as DecisionTension['kind']] ?? 'Tensions'}
+                        </h4>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {group.map((t) => (
+                          <li key={t.id} className="text-sm text-muted-foreground">{t.description}</li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="space-y-1.5">
-                      {tensions.map((t) => (
-                        <li key={t.id} className="text-sm text-muted-foreground">{t.description}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                  ))}
               </CardContent>
             </Card>
           )}

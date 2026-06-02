@@ -67,6 +67,26 @@ serve(async (req) => {
       .limit(20);
     const objectiveFactIds = (objFacts ?? []).map((r: { id: string }) => r.id);
 
+    // Edge Pro gating. Pro gets multi-model cross-examination and unlimited
+    // runs; free gets the base pipeline up to a monthly cap.
+    const FREE_MONTHLY_LIMIT = 3;
+    const { data: sub } = await admin.from("edge_subscriptions").select("status").eq("user_id", userId).maybeSingle();
+    const isPro = ["active", "past_due"].includes((sub?.status as string) ?? "");
+    if (!isPro) {
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await admin
+        .from("decision_cases")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("created_at", since);
+      if ((count ?? 0) >= FREE_MONTHLY_LIMIT) {
+        return json({
+          upgrade_required: true,
+          message: "You have used your free pressure tests this month. Edge Pro adds unlimited runs plus a multi-model cross-examination of every decision.",
+        });
+      }
+    }
+
     // Create the living case row immediately.
     const { data: created, error: caseErr } = await admin
       .from("decision_cases")
@@ -76,7 +96,7 @@ serve(async (req) => {
     if (caseErr || !created) throw new Error(`case insert failed: ${caseErr?.message ?? "unknown"}`);
 
     const caseId = created.id as string;
-    const pipeline = runPipeline(admin, { caseId, userId, statement, ctx, objectiveFactIds }, log.withContext({ caseId }));
+    const pipeline = runPipeline(admin, { caseId, userId, statement, ctx, objectiveFactIds, isPro }, log.withContext({ caseId }));
 
     if (typeof EdgeRuntime !== "undefined" && EdgeRuntime?.waitUntil) {
       EdgeRuntime.waitUntil(pipeline);
