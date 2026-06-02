@@ -72,7 +72,7 @@ serve(async (req) => {
       ip_address: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown',
       user_agent: req.headers.get('user-agent') || 'unknown',
       details: { email: userEmail, timestamp: new Date().toISOString() },
-    }).catch(() => {});
+    }).then(() => {}, () => {});
 
     const deletionErrors: string[] = [];
 
@@ -151,6 +151,59 @@ serve(async (req) => {
       }
     });
 
+    // 2b. Comprehensive sweep of every remaining user-owned table.
+    //
+    // GDPR Art. 17 completeness: the explicit lists above missed ~22 tables
+    // that carry a user_id and hold personal data (conversations, business
+    // context, Edge profiles, generated artifacts, decision history, etc.).
+    // We sweep them all here so erasure is actually complete. Run twice so
+    // that rows freed by the first pass (FK children) let parents delete on
+    // the second pass. Audit/consent tables are deliberately excluded - they
+    // are the evidence of the erasure itself, retained under Art. 17(3)(b).
+    const sweepTables = [
+      'ai_insights_generated', 'booking_requests', 'briefing_lens_feedback',
+      'chat_messages', 'conversion_analytics', 'decision_alerts', 'decision_cases',
+      'decision_claims', 'decision_events', 'decision_evidence', 'decision_tensions',
+      'edge_actions', 'edge_feedback', 'edge_profiles', 'edge_subscriptions',
+      'engagement_analytics', 'fact_extraction_log', 'feedback', 'generated_artifacts',
+      'index_participant_data', 'lead_qualification_scores', 'lead_qualifications',
+      'llm_call_log', 'prompt_library_profiles', 'roi_actuals', 'skill_exports',
+      'training_material', 'user_briefing_directives', 'user_business_context',
+      'user_memory_budget', 'user_roles', 'velocity_events',
+    ];
+    for (let pass = 0; pass < 2; pass++) {
+      const results = await Promise.allSettled(
+        sweepTables.map((t) => supabaseAdmin.from(t).delete().eq('user_id', userId)),
+      );
+      if (pass === 1) {
+        results.forEach((r, i) => {
+          if (r.status === 'rejected') deletionErrors.push(`sweep_${sweepTables[i]}: ${r.reason}`);
+          else if (r.value?.error) deletionErrors.push(`sweep_${sweepTables[i]}: ${r.value.error.message}`);
+        });
+      }
+    }
+
+    // 2c. Identity tables keyed by email / surrogate id rather than user_id.
+    // unified_profiles uses a random uuid PK matched on email; profile_insights
+    // hangs off it via profile_id.
+    if (userEmail) {
+      const { data: upRows } = await supabaseAdmin
+        .from('unified_profiles')
+        .select('id')
+        .eq('email', userEmail);
+      const upIds = (upRows ?? []).map((r: { id: string }) => r.id);
+      if (upIds.length > 0) {
+        const { error: piErr } = await supabaseAdmin.from('profile_insights').delete().in('profile_id', upIds);
+        if (piErr) deletionErrors.push(`profile_insights: ${piErr.message}`);
+        const { error: upErr } = await supabaseAdmin.from('unified_profiles').delete().in('id', upIds);
+        if (upErr) deletionErrors.push(`unified_profiles: ${upErr.message}`);
+      }
+    }
+
+    // 2d. The profiles row (holds email + edge_delivery_email), keyed by id.
+    const { error: profilesRowErr } = await supabaseAdmin.from('profiles').delete().eq('id', userId);
+    if (profilesRowErr) deletionErrors.push(`profiles: ${profilesRowErr.message}`);
+
     // 3. Purge Storage. Audio briefings frequently contain the leader's
     // spoken name, company, and strategic decisions - they are PII. The DB
     // delete above already removed the briefings rows, but the underlying
@@ -203,7 +256,7 @@ serve(async (req) => {
         deletion_errors: deletionErrors.length > 0 ? deletionErrors : null,
         completed_at: new Date().toISOString(),
       },
-    }).catch(() => {});
+    }).then(() => {}, () => {});
 
     // Log completion to security audit
     await supabaseAdmin.from('security_audit_log').insert({
@@ -216,7 +269,17 @@ serve(async (req) => {
         errors: deletionErrors.length > 0 ? deletionErrors : null,
         completed_at: new Date().toISOString(),
       },
-    }).catch(() => {});
+    }).then(() => {}, () => {});
+
+    // 6. Delete the auth identity itself. Without this the user's email
+    // survives in auth.users and they could still sign in - the data was
+    // gone but the account was not. This is the actual "erasure". Done last,
+    // after the audit rows are written, so those inserts still reference a
+    // valid user id.
+    const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (authDeleteError) {
+      deletionErrors.push(`auth_user: ${authDeleteError.message}`);
+    }
 
     return new Response(
       JSON.stringify({
