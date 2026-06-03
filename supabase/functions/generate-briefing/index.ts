@@ -23,7 +23,7 @@ import type { TrainingMaterial } from "../_shared/training-schema.ts";
 import { buildImportanceLens, planQueries, type LensItem, type PlannedQuery } from "../_shared/briefing-lens.ts";
 import { dedupeAndScore, type CandidateHeadline, type ScoredHeadline } from "../_shared/briefing-scoring.ts";
 import { curateSegments, segmentCountFromBudget, type CuratedSegment } from "../_shared/briefing-curation.ts";
-import { getUserContext, toLensSource, type UserContext } from "../_shared/user-context.ts";
+import { getUserContext, toLensSource, resolveLeaderIds, type UserContext } from "../_shared/user-context.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
 import { prependDecisionAlerts } from "../_shared/decision-alerts.ts";
@@ -1320,8 +1320,12 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   const t0 = Date.now();
 
   // Fetch mission + decision IDs so lens_item refs point at real rows.
+  // Missions live in leader_missions, keyed on leader_id (not a user_missions
+  // table, which never existed). Resolve the leader first.
+  const leaderIds = await resolveLeaderIds(supabase, userId);
+  const leaderFilter = leaderIds.length ? leaderIds : ["00000000-0000-0000-0000-000000000000"];
   const [{ data: missions }, { data: decisions }, training] = await Promise.all([
-    supabase.from("user_missions").select("id, title").eq("user_id", userId).eq("status", "active").limit(3),
+    supabase.from("leader_missions").select("id").in("leader_id", leaderFilter).eq("status", "active").limit(3),
     supabase.from("user_decisions").select("id, decision_text").eq("user_id", userId).eq("status", "active").order("created_at", { ascending: false }).limit(5),
     loadTrainingForUser(supabase, userId).catch(() => undefined),
   ]);
