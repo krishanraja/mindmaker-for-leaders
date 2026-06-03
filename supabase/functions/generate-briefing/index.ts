@@ -1726,6 +1726,60 @@ serve(async (req) => {
       const decisionCount = userCtx.recentDecisions?.length ?? 0;
       const depth = positiveInterests + missionCount + decisionCount;
       if (depth < 5) {
+        // Even on a sparse day, an open decision alert must still reach the
+        // leader: the decision that watches your back cannot go quiet just
+        // because the news lens is thin. Build a minimal alert-led briefing
+        // and only fall back to the onboarding signal when nothing is open.
+        const { data: openAlerts } = await supabase
+          .from("decision_alerts")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("status", "open")
+          .limit(1);
+
+        if (openAlerts && openAlerts.length > 0) {
+          const { data: inserted } = await supabase
+            .from("briefings")
+            .insert({
+              user_id: user.id,
+              briefing_date: today,
+              briefing_type: briefingType,
+              script_text: "",
+              segments: [],
+            })
+            .select("id")
+            .single();
+          const alertBriefingId = (inserted as { id: string } | null)?.id;
+          if (alertBriefingId) {
+            const base =
+              "A quiet morning for the news. Your decision watch flagged something worth a look.";
+            const injected = await prependDecisionAlerts(
+              supabase,
+              user.id,
+              alertBriefingId,
+              base,
+              [],
+            );
+            await supabase
+              .from("briefings")
+              .update({ script_text: injected.script, segments: injected.segments })
+              .eq("id", alertBriefingId);
+            return new Response(
+              JSON.stringify({
+                briefing_id: alertBriefingId,
+                already_exists: false,
+                has_audio: false,
+                segment_count: injected.segments.length,
+                briefing_type: briefingType,
+                used_fallback: false,
+                pipeline_version: 2,
+                alert_only: true,
+              }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
+        }
+
         const missing: string[] = [];
         if (positiveInterests < 3) missing.push("interests");
         if (missionCount < 1) missing.push("missions");
