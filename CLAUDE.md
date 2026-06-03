@@ -47,12 +47,13 @@
 - Mobile: bottom nav (`BottomNav`) + full-screen views, floating voice FAB
 - Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`, `/think`) all redirect to `/dashboard`
 - AI: Vertex AI Gemini 2.0 Flash primary, OpenAI GPT-4o fallback, static tertiary
-- **74 edge functions** in `supabase/functions/` (verified 2026-05-13; latest: `generate-skill-export`)
-- **51 custom hooks** in `src/hooks/`
-- **98 migrations** applied via Supabase Management API
+- **79 edge functions** in `supabase/functions/` (verified 2026-06-03; latest: the `decision-engine` / `decision-eval` / `decision-watch` trio)
+- **57 custom hooks** in `src/hooks/`
+- **105 migrations** applied via Supabase Management API
 - DB extensions in use: pgvector, pgcrypto, pg_cron
 - Briefing v2 pipeline: lens → planner → fan-out (Perplexity/Tavily/Brave, 12s cap) → embed dedupe + score → curate → script (gpt-4o) → audio (ElevenLabs)
 - Skill Builder pipeline (`/context` step 1, Edge Pro gated): voice/text → Three Honest Tests triage → OpenAI JSON-mode extraction → quality gate → agentskills.io-compliant ZIP download. Pain-anchored entry points (Edge view `AutomatePainCard`, Memory blocker zap, Briefing decision_trigger zap) pass a `SkillSeed` via location state and pre-open `SkillCaptureSheet`.
+- Decision Engine pipeline (`decision-engine`): POST a statement (source: advisor/capture/voice/fireflies) → decompose → verify (web-grounded claims) → cross-examine → advise, run in the background via `EdgeRuntime.waitUntil` while the frontend polls `decision_cases` + `decision_claims` per `stage` (mirrors the briefing streaming pattern). `decision-watch` is an hourly pg_cron WATCH loop that re-verifies load-bearing claims and raises idempotent `decision_alerts` (surfaced in the Daily Briefing); `decision-eval` is the admin-only single-claim calibration harness. Tables (all RLS owner-scoped): `decision_cases`, `decision_claims`, `decision_evidence`, `decision_tensions`, `decision_alerts`, `decision_events`, `decision_eval_cases`. Hooks: `useDecisionEngine` (run + poll), `useDecisionInbox` (case list + open alerts).
 - All external API calls wrapped via `_shared/with-timeout.ts`. Structured logs via `_shared/logger.ts`. Stripe webhooks signature-verified + idempotent.
 
 ## Key Conventions
