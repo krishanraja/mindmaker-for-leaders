@@ -17,7 +17,7 @@ This folder is the canonical source of truth for the CTRL portable AI context pl
 
 ### Strategic Foundation
 - [PURPOSE.md](./PURPOSE.md) - Core mission and problem statement
-- [ICP.md](./ICP.md) - Ideal customer profile + anti-ICP + buying triggers + pricing anchors
+- [ICP.md](./ICP.md) - Ideal customer profile: the research-grounded "Mindmaker" archetype, psychographics + skill gap, pains mapped to features, gap map, voice of customer, anti-ICP, buying triggers, app pricing anchors
 - [VALUE_PROP.md](./VALUE_PROP.md) - Per-audience value props with differentiation matrices
 - [OUTCOMES.md](./OUTCOMES.md) - Stage-by-stage outcomes with measurable KPIs
 
