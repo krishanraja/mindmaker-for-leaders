@@ -115,9 +115,23 @@ export function EdgeProTab() {
       window.location.assign(data.url as string)
     } catch (err) {
       console.error('billing portal failed:', err)
+      // supabase-js surfaces a generic "non-2xx status code" message. The real,
+      // human reason is in the response body, so read it and show that instead.
+      let description = 'We could not open billing right now. Please try again in a moment.'
+      const ctx = (err as { context?: Response }).context
+      if (ctx && typeof ctx.json === 'function') {
+        try {
+          const body = await ctx.json()
+          if (body?.error) description = body.error as string
+        } catch {
+          /* keep the friendly fallback */
+        }
+      } else if (err instanceof Error && err.message && !/non-2xx/i.test(err.message)) {
+        description = err.message
+      }
       toast({
-        title: 'Could not open billing portal',
-        description: (err as Error).message,
+        title: 'Billing portal unavailable',
+        description,
         variant: 'destructive',
       })
     } finally {
