@@ -1364,7 +1364,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
 
   // 2.5 EARLY INSERT so the frontend sees headlines while curation runs.
   const preliminarySegments: BriefingSegment[] = (scored.length > 0 ? scored.slice(0, 8) : []).map(s => ({
-    headline: s.title.replace(/^\[.*?\]\s*/, ""),
+    headline: normalizeHeadline(s.title.replace(/^\[.*?\]\s*/, "")),
     analysis: "",
     framework_tag: "signal",
     source: s.source,
@@ -1468,7 +1468,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   // segments as-is because they carry the evidence fields; the script is the
   // narrative layer on top.
   const finalSegments: BriefingSegment[] = curated.map(c => ({
-    headline: c.headline,
+    headline: normalizeHeadline(c.headline),
     analysis: c.analysis,
     framework_tag: c.framework_tag,
     source: c.source,
