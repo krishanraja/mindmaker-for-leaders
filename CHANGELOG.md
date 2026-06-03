@@ -6,6 +6,34 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
+## [5.3] - 2026-06 - Phase 9: Decision Engine + Briefing Streaming + Tenant Hardening
+
+### Added
+- **Decision Engine** (PRs #122, #124): verification-looped pressure-testing for decisions and business cases. New edge function `decision-engine` orchestrates a decompose → verify → cross-examine → advise pipeline that runs in the background via `EdgeRuntime.waitUntil` and advances `decision_cases.stage`, so the frontend renders each stage as it lands (mirrors the briefing streaming pattern). `decision-watch` is an hourly pg_cron WATCH loop that re-verifies the load-bearing, web-checkable claims behind active decisions and raises an idempotent `decision_alert` when a verdict flips or confidence drops materially (surfaced in the Daily Briefing) - making a decision a living object instead of a one-shot answer. `decision-eval` is an admin-only single-claim calibration harness exercising the exact live verify path. New tables `decision_cases`, `decision_claims`, `decision_evidence`, `decision_tensions`, `decision_alerts`, `decision_events`, `decision_eval_cases` (all RLS owner-scoped). New hooks `useDecisionEngine` (run + poll a case) and `useDecisionInbox` (case list + open alerts). Migration `20260602000000_decision_engine.sql`.
+- **Briefing streaming v2** (PRs #117-#120): flag-gated (`FF.briefingStream`, `?ff_stream=1`) streaming preview. `generate-briefing` early-inserts candidate headlines (null `script_text`) before curation, and `useBriefingStreamPreview` + `StreamingBriefingPreview` poll and surface preliminary segments while the briefing generates. Adds the `src/lib/flags.ts` feature-flag layer, a landing `VoiceDemo`, and an export `BroadcastBar`.
+- **Attribution lifecycle tracking** (2026-05-30): new public edge function `track-event` - an unauthenticated emit proxy for client lifecycle events (`landed` | `signed_up` | `activated`) that forwards to the central warehouse via the server-held `ATTRIBUTION_INGEST_SECRET` (no secret on the client). Dormant (forwards no-op) until the warehouse env is configured; deployed with `--no-verify-jwt`.
+- **Self-serve onboarding** (PR #126): replaced the `OnboardingWizard` with a `WelcomeTour` + `Coachmark` flow; new `useOnceFlag` hook for show-once gating.
+- **Generated artifacts** (2026-05-13): migration `20260513000000_generated_artifacts.sql` + hook `useGeneratedArtifacts`; new hook `useProfileBasics`.
+
+### Security
+- **Cross-tenant RLS leak hotfix** (PR #125, `20260601230000_fix_cross_tenant_rls_leak.sql`): closed a cross-tenant read path; applied to prod 2026-06-02 via the Management API and recorded in migration history so it matches the live database.
+- **Audit infrastructure** (PR #125, `20260602000000_create_audit_infrastructure.sql`): audit tables for SOC 2 (CC7.2) and GDPR (Art. 30) backing the `/compliance` page and `delete-account`.
+- **System-table write hardening** (PR #125, `20260602000100_scope_system_table_writes.sql`): closed `ALL` / `USING(true)` write-holes on shared system tables previously granted to `public`.
+- **Leader + TTS RLS fixes** (`20260530120000_fix_leader_rls_and_tts_rls.sql`, applied to prod 2026-05-30 via the Management API).
+
+### Changed
+- **Rebuild + QA hardening pass** (PRs #111-#116, 2026-05-30): batched correctness and RLS fixes from the `upgrade/ctrl/rebuild` line of work (the RLS migration above came out of this effort).
+- **Marketing consent** (`20260530130000_add_marketing_consent.sql`): added marketing-consent tracking.
+- **Edge Pro price drift fix** (PR #109): corrected stale $9/month references after the move to $29/month (existing subscribers grandfathered).
+
+### Verified counts at end of phase
+- 79 edge functions
+- 57 hooks
+- 105 migrations
+- 5 Vitest specs + 6 Playwright e2e specs
+
+---
+
 ## [5.2] - 2026-05 - Phase 8: Agent Skill Builder + World-Class Desktop Redesign
 
 ### Added
