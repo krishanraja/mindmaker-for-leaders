@@ -92,12 +92,27 @@ export function useUserMemory(): UseUserMemoryReturn {
     setError(null);
 
     try {
-      const { data, error: extractError } = await supabase.functions.invoke(
-        'extract-user-context',
-        {
+      // The first capture sometimes hits a transient FunctionsFetchError
+      // (cold start or a flaky network). Retry with backoff so a leader's
+      // first words are never silently dropped. A real function error (it ran
+      // and returned non-2xx) is not retried.
+      const delays = [0, 700, 1800];
+      let data: unknown = null;
+      let extractError: unknown = null;
+      for (let attempt = 0; attempt < delays.length; attempt++) {
+        if (delays[attempt]) await new Promise((r) => setTimeout(r, delays[attempt]));
+        const res = await supabase.functions.invoke('extract-user-context', {
           body: { transcript, session_id: sessionId, source_type: sourceType },
+        });
+        if (!res.error) {
+          data = res.data;
+          extractError = null;
+          break;
         }
-      );
+        extractError = res.error;
+        const name = (res.error as { name?: string })?.name ?? '';
+        if (name !== 'FunctionsFetchError') break; // only retry transport failures
+      }
 
       if (extractError) throw extractError;
 
@@ -116,7 +131,7 @@ export function useUserMemory(): UseUserMemoryReturn {
       return result;
     } catch (err) {
       console.error('Error extracting context:', err);
-      setError('Failed to extract context from your input');
+      setError('That did not send. Tap to try again.');
       return {
         success: false,
         pending_verifications: [],

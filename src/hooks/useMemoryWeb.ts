@@ -237,7 +237,18 @@ export function useMemoryWeb() {
     async (text: string): Promise<{ success: boolean; error?: string }> => {
       if (!user?.id) return { success: false, error: 'Not authenticated' };
       try {
-        const { data, error: fnError } = await supabase.functions.invoke('extract-user-context', { body: { transcript: text } });
+        // Retry transient transport failures (cold start) so a first capture
+        // is never silently dropped. Real function errors are not retried.
+        const delays = [0, 700, 1800];
+        let data: { stored_count?: number; pending_verifications?: unknown[] } | null = null;
+        let fnError: unknown = null;
+        for (let attempt = 0; attempt < delays.length; attempt++) {
+          if (delays[attempt]) await new Promise((r) => setTimeout(r, delays[attempt]));
+          const res = await supabase.functions.invoke('extract-user-context', { body: { transcript: text } });
+          if (!res.error) { data = res.data; fnError = null; break; }
+          fnError = res.error;
+          if (((res.error as { name?: string })?.name ?? '') !== 'FunctionsFetchError') break;
+        }
         if (fnError) throw fnError;
         await refresh();
         const factCount = data?.stored_count ?? data?.pending_verifications?.length ?? 0;
