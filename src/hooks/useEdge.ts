@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 import type {
@@ -67,6 +67,25 @@ export function useEdge() {
       setIsSynthesizing(false);
     }
   }, [user?.id, refresh]);
+
+  // Auto-synthesize once: a returning leader who already has memory but no Edge
+  // profile should watch their verdict build silently, not get re-asked the
+  // three onboarding questions. Guarded so it never loops or re-bills, and only
+  // fires when there is enough memory for a meaningful profile.
+  const autoSynthRef = useRef(false);
+  useEffect(() => {
+    if (isLoading || isSynthesizing || profile || autoSynthRef.current || !user?.id) return;
+    autoSynthRef.current = true;
+    (async () => {
+      const { count } = await supabase
+        .from('user_memory')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      if ((count ?? 0) >= 3) {
+        await synthesize();
+      }
+    })();
+  }, [isLoading, isSynthesizing, profile, user?.id, synthesize]);
 
   // Submit feedback on a strength/weakness
   const submitFeedback = useCallback(
