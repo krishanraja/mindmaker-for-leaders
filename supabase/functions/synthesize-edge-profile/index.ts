@@ -139,32 +139,34 @@ Deno.serve(async (req) => {
 
     if (dimensionScores?.length) {
       const dimLines = dimensionScores.map(
-        (d: any) => `- ${d.dimension_key}: ${d.score_numeric}/100 (${d.dimension_tier})${d.explanation ? ` - ${d.explanation}` : ""}`,
+        (d: { dimension_key: string; score_numeric: number; dimension_tier: string; explanation: string | null }) =>
+          `- ${d.dimension_key}: ${d.score_numeric}/100 (${d.dimension_tier})${d.explanation ? ` - ${d.explanation}` : ""}`,
       );
       supplementary.push(`## Assessment Dimension Scores\n${dimLines.join("\n")}`);
     }
 
     if (tensions?.length) {
       const tensionLines = tensions.map(
-        (t: any) => `- ${t.dimension_key}: ${t.summary_line}`,
+        (t: { dimension_key: string; summary_line: string }) => `- ${t.dimension_key}: ${t.summary_line}`,
       );
       supplementary.push(`## Strategic Tensions\n${tensionLines.join("\n")}`);
     }
 
     if (riskSignals?.length) {
       const riskLines = riskSignals.map(
-        (r: any) => `- ${r.risk_key} (${r.level}): ${r.description}`,
+        (r: { risk_key: string; level: string; description: string }) => `- ${r.risk_key} (${r.level}): ${r.description}`,
       );
       supplementary.push(`## Risk Signals\n${riskLines.join("\n")}`);
     }
 
     // Include feedback to guide re-synthesis
-    const rejectedStrengths = (existingFeedback || [])
-      .filter((f: any) => f.feedback_type === "strength_reject")
-      .map((f: any) => f.target_key);
-    const rejectedWeaknesses = (existingFeedback || [])
-      .filter((f: any) => f.feedback_type === "weakness_reject")
-      .map((f: any) => f.target_key);
+    const feedbackRows = (existingFeedback || []) as Array<{ feedback_type: string; target_key: string }>;
+    const rejectedStrengths = feedbackRows
+      .filter((f) => f.feedback_type === "strength_reject")
+      .map((f) => f.target_key);
+    const rejectedWeaknesses = feedbackRows
+      .filter((f) => f.feedback_type === "weakness_reject")
+      .map((f) => f.target_key);
 
     let feedbackContext = "";
     if (rejectedStrengths.length || rejectedWeaknesses.length) {
@@ -330,8 +332,8 @@ OUTPUT FORMAT (respond in valid JSON):
  */
 function computeIntelligenceGaps(
   memoryResult: { factCount: number; patternCount: number; context: string },
-  dimensionScores: any[],
-  tensions: any[],
+  dimensionScores: unknown[],
+  tensions: unknown[],
 ): IntelligenceGap[] {
   const gaps: IntelligenceGap[] = [];
 
@@ -380,7 +382,7 @@ function computeIntelligenceGaps(
     if (!context.includes(check.keyword)) {
       gaps.push({
         key: `missing_${check.keyword.replace(/\s/g, "_")}`,
-        category: check.category as any,
+        category: check.category as IntelligenceGap["category"],
         prompt: check.prompt,
         impact: check.impact,
         priority: 7,

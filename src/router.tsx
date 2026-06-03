@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- router config file legitimately exports the router object and small loading helpers, not fast-refresh components */
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { RequireAuth } from '@/components/auth/RequireAuth'
