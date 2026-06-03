@@ -178,6 +178,13 @@ export function EdgeProTab() {
   const status = subscription?.status ?? 'inactive'
   const statusMeta = STATUS_LABEL[status] ?? STATUS_LABEL.inactive
 
+  // A Pro grant can be Stripe-backed (real subscription) or complimentary
+  // (granted manually, no Stripe customer). Only the former has anything to
+  // manage in a billing portal; offering the button otherwise guarantees an error.
+  const isStripeBacked = Boolean(
+    subscription?.stripe_subscription_id || subscription?.stripe_customer_id,
+  );
+
   return (
     <div className="space-y-6">
       {/* Subscription card */}
@@ -228,24 +235,34 @@ export function EdgeProTab() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Plan</p>
-                <p className="font-medium text-foreground">Edge Pro · {EDGE_PRO_PRICE_LONG}</p>
+                <p className="font-medium text-foreground">
+                  {isStripeBacked ? `Edge Pro · ${EDGE_PRO_PRICE_LONG}` : 'Edge Pro · Complimentary'}
+                </p>
               </div>
             </div>
+            {!isStripeBacked && (
+              <p className="text-xs text-muted-foreground">
+                This is complimentary Pro access granted by Mindmaker. There is no
+                Stripe billing to manage.
+              </p>
+            )}
             <div className="flex flex-col sm:flex-row gap-2 pt-2">
-              <Button
-                onClick={handleManageBilling}
-                disabled={isPortalLoading}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                {isPortalLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ExternalLink className="h-4 w-4" />
-                )}
-                Manage subscription
-              </Button>
+              {isStripeBacked && (
+                <Button
+                  onClick={handleManageBilling}
+                  disabled={isPortalLoading}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {isPortalLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ExternalLink className="h-4 w-4" />
+                  )}
+                  Manage subscription
+                </Button>
+              )}
               <Button
                 onClick={refresh}
                 variant="ghost"
