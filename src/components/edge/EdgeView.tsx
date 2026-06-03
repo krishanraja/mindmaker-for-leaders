@@ -42,21 +42,22 @@ export default function EdgeView() {
   const [generatedTitle, setGeneratedTitle] = useState('');
   const [generatedActionId, setGeneratedActionId] = useState<string | null>(null);
 
-  // The one move: draft a board memo that covers the leading gap.
-  const handleMakeMove = useCallback(
-    (targetKey: string) => {
-      if (!hasAccess) {
-        setPaywallCapability('Board Memo');
-        setPaywallOpen(true);
-        return;
-      }
-      setActiveCapability('board_memo');
-      setActiveTargetKey(targetKey);
-      setActiveActionType('cover');
-      setDraftSheetOpen(true);
-    },
-    [hasAccess],
-  );
+  // The one move: draft a board memo that covers the leading gap. Free leaders
+  // go straight in too. The server hands them one watermarked memo, then the
+  // paywall appears after the value is shown, never as a dead-end before it.
+  const handleMakeMove = useCallback((targetKey: string) => {
+    setActiveCapability('board_memo');
+    setActiveTargetKey(targetKey);
+    setActiveActionType('cover');
+    setDraftSheetOpen(true);
+  }, []);
+
+  // Free allowance used: show the paywall after the leader has felt the value.
+  const handleLimitReached = useCallback(() => {
+    setDraftSheetOpen(false);
+    setPaywallCapability('Board Memo');
+    setPaywallOpen(true);
+  }, []);
 
   const handleReject = useCallback(
     (feedbackType: FeedbackType, key: string) => {
@@ -151,6 +152,8 @@ export default function EdgeView() {
         targetKey={activeTargetKey}
         actionType={activeActionType}
         onGenerated={handleGenerated}
+        isPaid={hasAccess}
+        onLimitReached={handleLimitReached}
       />
 
       <ArtifactPreview

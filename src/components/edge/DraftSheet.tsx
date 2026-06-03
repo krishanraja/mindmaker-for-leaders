@@ -42,6 +42,10 @@ interface DraftSheetProps {
   actionType: 'sharpen' | 'cover';
   targetKey: string;
   onGenerated: (result: { actionId: string; content: string; title: string }) => void;
+  /** Whether the leader has Edge Pro. Free leaders get one watermarked memo. */
+  isPaid?: boolean;
+  /** Called when the free allowance is used, so the host can show the paywall. */
+  onLimitReached?: () => void;
 }
 
 type InputMode = 'voice' | 'text';
@@ -145,12 +149,16 @@ function DraftContent({
   targetKey,
   onClose,
   onGenerated,
+  isPaid = true,
+  onLimitReached,
 }: {
   capability: EdgeCapability;
   actionType: ActionType;
   targetKey: string;
   onClose: () => void;
   onGenerated: DraftSheetProps['onGenerated'];
+  isPaid?: boolean;
+  onLimitReached?: () => void;
 }) {
   const [inputMode, setInputMode] = useState<InputMode>('voice');
   const [textInput, setTextInput] = useState('');
@@ -245,10 +253,16 @@ function DraftContent({
       });
     } catch (err) {
       console.error('edge-generate failed:', err);
-      setError('Generation failed. Please try again.');
+      // For a free leader, a failed generation is almost always the used-up
+      // free allowance. Show the paywall after the value, not a raw error.
+      if (!isPaid && onLimitReached) {
+        onLimitReached();
+        return;
+      }
+      setError('That did not send. Tap to try again.');
       setDraftState('idle');
     }
-  }, [inputText, capability, isSharpen, targetKey, onGenerated]);
+  }, [inputText, capability, isSharpen, targetKey, onGenerated, isPaid, onLimitReached]);
 
   // -----------------------------------------------------------------------
   // Helpers
@@ -515,6 +529,8 @@ export function DraftSheet({
   actionType,
   targetKey,
   onGenerated,
+  isPaid,
+  onLimitReached,
 }: DraftSheetProps) {
   const isMobile = useIsMobile();
 
@@ -538,6 +554,8 @@ export function DraftSheet({
             targetKey={targetKey}
             onClose={onClose}
             onGenerated={onGenerated}
+            isPaid={isPaid}
+            onLimitReached={onLimitReached}
           />
         </SheetContent>
       </Sheet>
@@ -559,6 +577,8 @@ export function DraftSheet({
           targetKey={targetKey}
           onClose={onClose}
           onGenerated={onGenerated}
+          isPaid={isPaid}
+          onLimitReached={onLimitReached}
         />
       </DialogContent>
     </Dialog>

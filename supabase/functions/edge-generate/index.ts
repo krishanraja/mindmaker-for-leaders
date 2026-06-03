@@ -157,19 +157,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Check subscription
+    // Subscription status. Pro is unlimited. Free leaders get one free,
+    // watermarked board memo so they feel the value before any paywall. The
+    // allowance is enforced after we know the capability (see below).
     const { data: subscription } = await serviceClient
       .from("edge_subscriptions")
       .select("status")
       .eq("user_id", user.id)
       .single();
 
-    if (!subscription || (subscription.status !== "active" && subscription.status !== "past_due")) {
-      return new Response(
-        JSON.stringify({ error: "Edge Pro subscription required" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    const isPro = !!subscription &&
+      (subscription.status === "active" || subscription.status === "past_due");
 
     const body: GenerateRequest = await req.json();
     const { capability, targetKey, voiceInput, additionalContext, deliverToEmail } = body;
@@ -187,6 +185,31 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: `Unknown capability: ${capability}` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
+    }
+
+    // Free-tier allowance: one watermarked board memo, then the paywall. Any
+    // other capability stays Pro-only. This is what lets the new Edge "Make my
+    // board memo" deliver real value to a free leader instead of a dead-end.
+    let isFreeGeneration = false;
+    if (!isPro) {
+      if (capability !== "board_memo") {
+        return new Response(
+          JSON.stringify({ error: "Edge Pro subscription required" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const { count } = await serviceClient
+        .from("edge_actions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("capability_key", "board_memo");
+      if ((count ?? 0) >= 1) {
+        return new Response(
+          JSON.stringify({ error: "Edge Pro subscription required", limitReached: true }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      isFreeGeneration = true;
     }
 
     // Determine action type
@@ -259,6 +282,13 @@ ${config.outputGuidance}`;
       { useCache: false },
     );
 
+    // Watermark the free preview so the value is felt before any upsell.
+    const WATERMARK =
+      "\n\n---\n_Drafted free with CTRL. Upgrade to Edge Pro to remove this note and unlock unlimited memos, strategy docs, and emails._";
+    const finalContent = isFreeGeneration
+      ? aiResponse.content + WATERMARK
+      : aiResponse.content;
+
     // Store the action
     const { data: action, error: insertError } = await serviceClient
       .from("edge_actions")
@@ -273,7 +303,7 @@ ${config.outputGuidance}`;
           additional_context: additionalContext || null,
           memory_facts_used: memoryResult.factCount,
         },
-        output_content: aiResponse.content,
+        output_content: finalContent,
         output_format: "markdown",
       })
       .select("id")
@@ -287,15 +317,18 @@ ${config.outputGuidance}`;
     // tab on /memory can surface drafts and frameworks alongside skills.
     // Quiet on failure - if the table doesn't exist yet (migration not
     // applied), the user still gets their artifact in this response.
+    // capability is already mapped to framework/teaching_doc by the client
+    // before it reaches here, so key off the mapped values (not systemize/teach)
+    // or frameworks get mis-saved as plain drafts in the Library.
     const isFramework =
-      capability === "systemize" || capability === "teach";
+      capability === "framework" || capability === "teaching_doc";
     const { error: artifactError } = await serviceClient
       .from("generated_artifacts")
       .insert({
         user_id: user.id,
         kind: isFramework ? "framework" : "draft",
         name: config.title,
-        body: aiResponse.content,
+        body: finalContent,
         metadata: {
           capability,
           action_type: actionType,
@@ -325,9 +358,10 @@ ${config.outputGuidance}`;
     return new Response(
       JSON.stringify({
         actionId: action?.id || null,
-        content: aiResponse.content,
+        content: finalContent,
         title: config.title,
         format: "markdown",
+        isFreePreview: isFreeGeneration,
       }),
       {
         status: 200,
