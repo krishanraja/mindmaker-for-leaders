@@ -1007,6 +1007,23 @@ export default function ContextExport() {
         </div>
       </div>
 
+      {step === 1 && (
+        <div className="flex-shrink-0 px-4 pb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/enrich')}
+            className="flex w-full items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-foreground/5"
+          >
+            <Sparkles className="h-4 w-4 shrink-0 text-accent" />
+            <span className="min-w-0 flex-1 text-xs text-muted-foreground">
+              Got an answer from an AI?{' '}
+              <span className="font-medium text-foreground">Paste it back to deepen your profile.</span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </button>
+        </div>
+      )}
+
       <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-20">
         <Coachmark
           id="export"
