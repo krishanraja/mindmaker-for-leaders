@@ -37,4 +37,4 @@ core
 !public/**/*.png
 !src/**/*.png
 .playwright-mcp/
-.claude/
+.claude/_uxtest/
