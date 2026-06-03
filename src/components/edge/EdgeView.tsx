@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { useEdge } from '@/hooks/useEdge';
@@ -25,6 +26,7 @@ export default function EdgeView() {
   } = useEdge();
 
   const { hasAccess } = useEdgeSubscription();
+  const navigate = useNavigate();
 
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallCapability, setPaywallCapability] = useState<string | undefined>();
@@ -120,6 +122,7 @@ export default function EdgeView() {
         weaknesses={weaknesses}
         onMakeMove={handleMakeMove}
         onOpenFullRead={() => setFullReadOpen(true)}
+        onPressureTest={() => navigate('/decision')}
       />
 
       <EdgeFullReadSheet

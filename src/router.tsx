@@ -34,6 +34,7 @@ const Compliance = lazyWithRetry(() => import('@/pages/Compliance'))
 const Profile = lazyWithRetry(() => import('@/pages/Profile'))
 const Booking = lazyWithRetry(() => import('@/pages/Booking'))
 const BriefingPage = lazyWithRetry(() => import('@/pages/BriefingPage'))
+const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
 function LoadingPage() {
@@ -90,6 +91,10 @@ export const router = createBrowserRouter([
       {
         path: '/briefing',
         element: <LazyWrapper><RequireAuth><BriefingPage /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/decision',
+        element: <LazyWrapper><RequireAuth><DecisionPage /></RequireAuth></LazyWrapper>,
       },
       {
         path: '/settings',

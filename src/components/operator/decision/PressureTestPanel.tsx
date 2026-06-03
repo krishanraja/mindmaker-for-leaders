@@ -19,10 +19,10 @@ import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 // ----- shared atoms ---------------------------------------------------------
 
 const VERDICT_STYLE: Record<Verdict, { label: string; cls: string; Icon: typeof ShieldCheck }> = {
-  supported: { label: 'Supported', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200', Icon: ShieldCheck },
-  contested: { label: 'Contested', cls: 'text-amber-700 bg-amber-50 border-amber-200', Icon: AlertTriangle },
-  unverified: { label: 'Unverified', cls: 'text-slate-600 bg-slate-100 border-slate-200', Icon: HelpCircle },
-  unverifiable: { label: 'Assumption', cls: 'text-indigo-700 bg-indigo-50 border-indigo-200', Icon: CircleDashed },
+  supported: { label: 'Supported', cls: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30', Icon: ShieldCheck },
+  contested: { label: 'Contested', cls: 'text-amber-300 bg-amber-500/10 border-amber-500/30', Icon: AlertTriangle },
+  unverified: { label: 'Unverified', cls: 'text-muted-foreground bg-foreground/5 border-border', Icon: HelpCircle },
+  unverifiable: { label: 'Assumption', cls: 'text-indigo-300 bg-indigo-500/10 border-indigo-500/30', Icon: CircleDashed },
   pending: { label: 'Checking', cls: 'text-muted-foreground bg-secondary border-border', Icon: Loader2 },
 };
 
@@ -64,12 +64,12 @@ function ClaimRow({ claim, evidence, isBreakpoint }: { claim: DecisionClaim; evi
   const [open, setOpen] = useState(false);
   const v = VERDICT_STYLE[claim.verdict] ?? VERDICT_STYLE.pending;
   return (
-    <div className={`rounded-xl border p-4 ${isBreakpoint ? 'border-amber-300 bg-amber-50/40' : 'border-border bg-white'}`}>
+    <div className={`rounded-xl border p-4 ${isBreakpoint ? 'border-amber-500/40 bg-amber-500/10' : 'border-border bg-foreground/5'}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
             <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{claim.type}</span>
-            {claim.is_load_bearing && <span className="text-[10px] uppercase tracking-wide text-amber-700 font-semibold">Load-bearing</span>}
+            {claim.is_load_bearing && <span className="text-[10px] uppercase tracking-wide text-amber-400 font-semibold">Load-bearing</span>}
             {isBreakpoint && <Badge className="bg-amber-600 text-white text-[10px] border-0">Breakpoint</Badge>}
           </div>
           <p className="text-sm text-foreground leading-snug">{claim.text}</p>
@@ -177,9 +177,9 @@ function DecisionResult({ engine, onReset }: { engine: ReturnType<typeof useDeci
       </Card>
 
       {stage === 'error' && (
-        <Card className="border-amber-200 bg-amber-50/40">
+        <Card className="border-amber-500/30 bg-amber-500/10">
           <CardContent className="p-5">
-            <div className="flex items-center gap-2 text-amber-700"><AlertTriangle className="h-4 w-4" /><p className="text-sm font-medium">This could not complete.</p></div>
+            <div className="flex items-center gap-2 text-amber-300"><AlertTriangle className="h-4 w-4" /><p className="text-sm font-medium">This could not complete.</p></div>
             <p className="text-xs text-muted-foreground mt-2">{error || decisionCase.error_detail}</p>
           </CardContent>
         </Card>
@@ -271,10 +271,10 @@ function AlertBanner({ alerts, onReRun, onDismiss }: { alerts: OpenAlert[]; onRe
   const a = alerts[0];
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="border-amber-300 bg-amber-50/60">
+      <Card className="border-amber-500/40 bg-amber-500/10">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0"><Bell className="h-4 w-4 text-amber-600" /></div>
+            <div className="h-8 w-8 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0"><Bell className="h-4 w-4 text-amber-400" /></div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">{a.headline}</p>
               {a.detail && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{a.detail}</p>}
@@ -283,7 +283,7 @@ function AlertBanner({ alerts, onReRun, onDismiss }: { alerts: OpenAlert[]; onRe
                 <Button size="sm" variant="ghost" onClick={() => onDismiss(a)}>Dismiss</Button>
               </div>
             </div>
-            {alerts.length > 1 && <span className="text-[11px] text-amber-700 font-medium shrink-0">+{alerts.length - 1} more</span>}
+            {alerts.length > 1 && <span className="text-[11px] text-amber-400 font-medium shrink-0">+{alerts.length - 1} more</span>}
           </div>
         </CardContent>
       </Card>

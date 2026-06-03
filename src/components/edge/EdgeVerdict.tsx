@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, FileText } from 'lucide-react';
+import { ArrowRight, FileText, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { EdgeStrength, EdgeWeakness } from '@/types/edge';
 
@@ -21,6 +21,8 @@ interface EdgeVerdictProps {
   onMakeMove: (targetKey: string) => void;
   /** Open the demoted full strength/gap read. */
   onOpenFullRead: () => void;
+  /** Open the decision pressure-test. */
+  onPressureTest: () => void;
 }
 
 function lower(label: string): string {
@@ -37,6 +39,7 @@ export function EdgeVerdict({
   weaknesses,
   onMakeMove,
   onOpenFullRead,
+  onPressureTest,
 }: EdgeVerdictProps) {
   const s0 = strengths[0];
   const w0 = weaknesses[0];
@@ -132,6 +135,29 @@ export function EdgeVerdict({
           <ArrowRight className="h-4 w-4" />
         </button>
       </motion.div>
+
+      {/* Secondary move: pressure-test a real decision */}
+      <motion.button
+        type="button"
+        onClick={onPressureTest}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:bg-foreground/5"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10">
+          <Scale className="h-4 w-4 text-accent" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-foreground">
+            Pressure-test a decision
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            Name a call you are weighing. We stress-test what it rests on.
+          </span>
+        </span>
+        <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </motion.button>
 
       {/* Quiet secondary: the full read */}
       <div className="pt-1 text-center">
