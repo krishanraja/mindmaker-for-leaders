@@ -53,6 +53,24 @@ export default function Dashboard() {
     staleTime: 1000 * 60 * 5,
   })
 
+  // First-run lands in the guided value-moment interview by default (the old
+  // passive 4-card tour is gone). Offered once per browser; "Skip for now" in
+  // the interview returns the leader to the dashboard to explore.
+  const autoOfferedRef = React.useRef(false)
+  React.useEffect(() => {
+    if (autoOfferedRef.current || checkingDb) return
+    if (
+      isFirstTime &&
+      !hasExistingFacts &&
+      !alreadyOnboarded &&
+      !localStorage.getItem('mindmaker_onboard_offered')
+    ) {
+      autoOfferedRef.current = true
+      localStorage.setItem('mindmaker_onboard_offered', '1')
+      setOnboardingOpen(true)
+    }
+  }, [checkingDb, isFirstTime, hasExistingFacts, alreadyOnboarded])
+
   if (checkingDb) {
     return <div className="h-screen-safe flex items-center justify-center">Loading...</div>
   }

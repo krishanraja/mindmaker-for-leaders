@@ -240,6 +240,12 @@ export function OnboardingInterview({ onComplete }: Props) {
                   <MessageSquare className="h-4 w-4" />
                   I'll type instead
                 </button>
+                <button
+                  onClick={onComplete}
+                  className="w-full py-2 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                >
+                  Skip for now, I'll explore first
+                </button>
               </motion.div>
             </motion.div>
           )}
