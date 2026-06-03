@@ -860,6 +860,11 @@ YOU WILL:
    - Generic: "OpenAI cuts API pricing 40%"
    - For a SaaS CEO: "Your LLM costs just dropped 40%"
    - For a marketing VP: "Your AI content pipeline just got cheaper"
+   HEADLINE RULES (hard, no exceptions):
+   - Sentence case only. Never Title Case. Write "Your LLM costs just dropped 40%", never "Your LLM Costs Just Dropped 40%".
+   - Under 12 words. Start with a verb or with "Your". Lead with the concrete change or the number.
+   - No abstract corporate nouns. Never "strategic positioning", "enhance", "optimize", "leverage", "synergy", "transformation", "solution". If the headline could sit on any company's blog, it has failed.
+   - Bad: "Understanding Key Martech Trends to Enhance Our Strategic Positioning". Good: "Two martech vendors shipped agents this week. One overlaps your roadmap."
 3. For each story, explain impact in 2-3 sentences. Reference their decisions, missions, or blind spots.
 4. Apply framework nudges naturally (never name the framework):
    - "Worth pressure-testing this against..."
@@ -870,7 +875,7 @@ OUTPUT JSON:
 {
   "segments": [
     {
-      "headline": "Rewritten headline, under 15 words, from THEIR perspective",
+      "headline": "Sentence case, under 12 words, verb-led or starts with Your, from THEIR perspective",
       "analysis": "2-3 sentences: specific impact on THEM + one framework nudge",
       "framework_tag": "signal|decision_trigger|krishs_take",
       "source": "Source Name",
@@ -908,6 +913,17 @@ Total: 500-600 words. 3-4 minutes spoken. Every sentence earns its place.`,
 
   const parsed = JSON.parse(content);
 
+  // Headlines are the most visible surface and the one the model drifts on
+  // (Title Case, abstract corporate nouns). Enforce the voice floor server-side
+  // so a generic "Understanding Key Trends..." can never reach the leader.
+  if (Array.isArray(parsed.segments)) {
+    for (const seg of parsed.segments) {
+      if (seg && typeof seg.headline === "string") {
+        seg.headline = normalizeHeadline(seg.headline);
+      }
+    }
+  }
+
   // Post-process: apply typography rules + strip banned phrases. Both rule
   // sets come from the training material so tuning is a YAML edit.
   let script = parsed.script || "";
@@ -925,6 +941,56 @@ Total: 500-600 words. 3-4 minutes spoken. Every sentence earns its place.`,
     script,
     training_version: trainingVersion,
   };
+}
+
+// ── Headline voice floor ───────────────────────────────────────────
+
+const HEADLINE_FLUFF =
+  /\b(strategic positioning|synergy|leverag(?:e|ing)|transformation|optimi[sz](?:e|ing)|enhanc(?:e|ing)|solutions?|ecosystem|empower(?:ing)?)\b/i;
+
+/** True when a headline reads as Title Case (most significant words capped). */
+function isTitleCase(s: string): boolean {
+  const words = s.split(/\s+/).filter((w) => /[a-zA-Z]/.test(w));
+  if (words.length < 4) return false;
+  const capped = words.filter((w) => /^[A-Z]/.test(w)).length;
+  return capped / words.length >= 0.7;
+}
+
+/** Lowercase a Title-Cased headline, preserving acronyms, brand camelCase
+ * (OpenAI), numbers, and the first word. A backstop, not the primary control. */
+function toSentenceCase(s: string): string {
+  let first = true;
+  return s
+    .split(/(\s+)/)
+    .map((tok) => {
+      if (/^\s+$/.test(tok)) return tok;
+      if (first) {
+        first = false;
+        return tok;
+      }
+      if (/^[A-Z]{2,}$/.test(tok)) return tok; // acronym: API, LLM
+      if (/[a-z][A-Z]/.test(tok)) return tok; // brand camelCase: OpenAI
+      if (/^[0-9$]/.test(tok)) return tok; // numbers, $200k
+      return tok.charAt(0).toLowerCase() + tok.slice(1);
+    })
+    .join("");
+}
+
+/** Enforce the headline voice floor: no em dashes, trimmed, no trailing
+ * punctuation, and sentence case when the model returns Title Case or fluff. */
+function normalizeHeadline(raw: string): string {
+  const EM = String.fromCharCode(0x2014);
+  const EN = String.fromCharCode(0x2013);
+  let h = raw
+    .trim()
+    .split(EM).join(", ")
+    .split(EN).join("-")
+    .replace(/\s{2,}/g, " ")
+    .replace(/[.:]\s*$/, "");
+  if (isTitleCase(h) || HEADLINE_FLUFF.test(h)) {
+    h = toSentenceCase(h);
+  }
+  return h;
 }
 
 // ── AI Landscape Headline Generator ────────────────────────────────
