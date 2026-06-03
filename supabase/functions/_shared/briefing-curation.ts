@@ -89,7 +89,7 @@ Rules:
 - Never include a candidate that is not genuinely on-topic for its lens item, even if it is the highest-scored remaining option.
 - Diversity: if the lens has 3 or more items, do NOT pick 3 segments that map to the same lens item id.
 - Coverage: prefer picks that span the top-3 highest-weight lens items when eligible.
-- Rewrite each headline in 8-16 words from THIS leader's perspective; never generic news framing.
+- Rewrite each headline from THIS leader's perspective. Hard rules: sentence case only, never Title Case; 8 to 14 words; start with a verb or with "Your"; lead with the concrete change or number; no abstract corporate nouns (never "strategic positioning", "enhance", "optimize", "leverage", "transformation", "solution"). Bad: "Navigating Key Martech Trends to Enhance Our Strategic Positioning". Good: "Two martech vendors shipped agents this week, one overlaps your roadmap".
 - analysis: 2-3 sentences on specific impact to this leader. Must name the lens item text or the matched profile fact.
 - relevance_reason: one sentence, prose, tying the story to the lens item.
 - matched_profile_fact: the quoted text from the matched lens item (copy from lens_item.text).

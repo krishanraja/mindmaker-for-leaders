@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildMemoryContext } from "../_shared/memory-context-builder.ts";
 import { callOpenAI, selectModel, selectModelDynamic } from "../_shared/openai-utils.ts";
 import { checkRateLimit } from "../_shared/rateLimit.ts";
+import { resolveLeaderIds } from "../_shared/user-context.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -86,26 +87,47 @@ Deno.serve(async (req) => {
       maxTokens: 4000,
     });
 
-    // 2. Fetch additional data sources not in memory context
+    // 2. Fetch additional data sources not in memory context. Assessment data
+    // (dimension scores, tensions, risk signals) keys off assessment_id, which
+    // is reached via leaders -> leader_assessments, not user_id. The old code
+    // queried by user_id with column names that do not exist, so it silently
+    // returned nothing. Resolve the leader's latest assessment first, with the
+    // service client so RLS never hides the leader's own data.
+    const leaderIds = await resolveLeaderIds(serviceClient, user.id);
+    let assessmentId: string | null = null;
+    if (leaderIds.length > 0) {
+      const { data: la } = await serviceClient
+        .from("leader_assessments")
+        .select("id")
+        .in("leader_id", leaderIds)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      assessmentId = (la as { id: string } | null)?.id ?? null;
+    }
+    const assessmentFilter = assessmentId ?? "00000000-0000-0000-0000-000000000000";
+
     const [
       { data: dimensionScores },
       { data: tensions },
       { data: riskSignals },
       { data: existingFeedback },
     ] = await Promise.all([
-      supabase
+      serviceClient
         .from("leader_dimension_scores")
-        .select("dimension_key, score, tier, explanation")
-        .eq("user_id", user.id)
-        .order("score", { ascending: false }),
-      supabase
+        .select("dimension_key, score_numeric, dimension_tier, explanation")
+        .eq("assessment_id", assessmentFilter)
+        .order("score_numeric", { ascending: false }),
+      serviceClient
         .from("leader_tensions")
-        .select("current_state, desired_state, gap_description, severity")
-        .eq("user_id", user.id),
-      supabase
+        .select("dimension_key, summary_line, priority_rank")
+        .eq("assessment_id", assessmentFilter)
+        .order("priority_rank", { ascending: true }),
+      serviceClient
         .from("leader_risk_signals")
-        .select("signal_type, severity, title, description")
-        .eq("user_id", user.id),
+        .select("risk_key, level, description, priority_rank")
+        .eq("assessment_id", assessmentFilter)
+        .order("priority_rank", { ascending: true }),
       serviceClient
         .from("edge_feedback")
         .select("feedback_type, target_key")
@@ -117,32 +139,34 @@ Deno.serve(async (req) => {
 
     if (dimensionScores?.length) {
       const dimLines = dimensionScores.map(
-        (d: any) => `- ${d.dimension_key}: ${d.score}/100 (${d.tier})${d.explanation ? ` - ${d.explanation}` : ""}`,
+        (d: { dimension_key: string; score_numeric: number; dimension_tier: string; explanation: string | null }) =>
+          `- ${d.dimension_key}: ${d.score_numeric}/100 (${d.dimension_tier})${d.explanation ? ` - ${d.explanation}` : ""}`,
       );
       supplementary.push(`## Assessment Dimension Scores\n${dimLines.join("\n")}`);
     }
 
     if (tensions?.length) {
       const tensionLines = tensions.map(
-        (t: any) => `- Gap: ${t.gap_description} (severity: ${t.severity})\n  Current: ${t.current_state}\n  Desired: ${t.desired_state}`,
+        (t: { dimension_key: string; summary_line: string }) => `- ${t.dimension_key}: ${t.summary_line}`,
       );
       supplementary.push(`## Strategic Tensions\n${tensionLines.join("\n")}`);
     }
 
     if (riskSignals?.length) {
       const riskLines = riskSignals.map(
-        (r: any) => `- ${r.title} (${r.signal_type}, ${r.severity}): ${r.description}`,
+        (r: { risk_key: string; level: string; description: string }) => `- ${r.risk_key} (${r.level}): ${r.description}`,
       );
       supplementary.push(`## Risk Signals\n${riskLines.join("\n")}`);
     }
 
     // Include feedback to guide re-synthesis
-    const rejectedStrengths = (existingFeedback || [])
-      .filter((f: any) => f.feedback_type === "strength_reject")
-      .map((f: any) => f.target_key);
-    const rejectedWeaknesses = (existingFeedback || [])
-      .filter((f: any) => f.feedback_type === "weakness_reject")
-      .map((f: any) => f.target_key);
+    const feedbackRows = (existingFeedback || []) as Array<{ feedback_type: string; target_key: string }>;
+    const rejectedStrengths = feedbackRows
+      .filter((f) => f.feedback_type === "strength_reject")
+      .map((f) => f.target_key);
+    const rejectedWeaknesses = feedbackRows
+      .filter((f) => f.feedback_type === "weakness_reject")
+      .map((f) => f.target_key);
 
     let feedbackContext = "";
     if (rejectedStrengths.length || rejectedWeaknesses.length) {
@@ -308,8 +332,8 @@ OUTPUT FORMAT (respond in valid JSON):
  */
 function computeIntelligenceGaps(
   memoryResult: { factCount: number; patternCount: number; context: string },
-  dimensionScores: any[],
-  tensions: any[],
+  dimensionScores: unknown[],
+  tensions: unknown[],
 ): IntelligenceGap[] {
   const gaps: IntelligenceGap[] = [];
 
@@ -358,7 +382,7 @@ function computeIntelligenceGaps(
     if (!context.includes(check.keyword)) {
       gaps.push({
         key: `missing_${check.keyword.replace(/\s/g, "_")}`,
-        category: check.category as any,
+        category: check.category as IntelligenceGap["category"],
         prompt: check.prompt,
         impact: check.impact,
         priority: 7,

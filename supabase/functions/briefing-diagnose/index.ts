@@ -15,7 +15,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getUserContext, loadLensSource } from "../_shared/user-context.ts";
+import { getUserContext, loadLensSource, resolveLeaderIds } from "../_shared/user-context.ts";
 import { buildImportanceLens, planQueries, type LensItem, type PlannedQuery } from "../_shared/briefing-lens.ts";
 import { loadTrainingForUser } from "../_shared/training-loader.ts";
 
@@ -69,8 +69,10 @@ serve(async (req) => {
 
     // Pull mission + decision IDs with the full shape so the caller can
     // trace lens ref_ids back to rows.
+    const diagLeaderIds = await resolveLeaderIds(supabase, user.id);
+    const diagLeaderFilter = diagLeaderIds.length ? diagLeaderIds : ["00000000-0000-0000-0000-000000000000"];
     const [{ data: missions }, { data: decisions }] = await Promise.all([
-      supabase.from("user_missions").select("id, title").eq("user_id", user.id).eq("status", "active").limit(3),
+      supabase.from("leader_missions").select("id").in("leader_id", diagLeaderFilter).eq("status", "active").limit(3),
       supabase.from("user_decisions").select("id, decision_text").eq("user_id", user.id).eq("status", "active").order("created_at", { ascending: false }).limit(5),
     ]);
 

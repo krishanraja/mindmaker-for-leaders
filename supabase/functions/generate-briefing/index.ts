@@ -23,7 +23,7 @@ import type { TrainingMaterial } from "../_shared/training-schema.ts";
 import { buildImportanceLens, planQueries, type LensItem, type PlannedQuery } from "../_shared/briefing-lens.ts";
 import { dedupeAndScore, type CandidateHeadline, type ScoredHeadline } from "../_shared/briefing-scoring.ts";
 import { curateSegments, segmentCountFromBudget, type CuratedSegment } from "../_shared/briefing-curation.ts";
-import { getUserContext, toLensSource, type UserContext } from "../_shared/user-context.ts";
+import { getUserContext, toLensSource, resolveLeaderIds, type UserContext } from "../_shared/user-context.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
 import { prependDecisionAlerts } from "../_shared/decision-alerts.ts";
@@ -860,6 +860,11 @@ YOU WILL:
    - Generic: "OpenAI cuts API pricing 40%"
    - For a SaaS CEO: "Your LLM costs just dropped 40%"
    - For a marketing VP: "Your AI content pipeline just got cheaper"
+   HEADLINE RULES (hard, no exceptions):
+   - Sentence case only. Never Title Case. Write "Your LLM costs just dropped 40%", never "Your LLM Costs Just Dropped 40%".
+   - Under 12 words. Start with a verb or with "Your". Lead with the concrete change or the number.
+   - No abstract corporate nouns. Never "strategic positioning", "enhance", "optimize", "leverage", "synergy", "transformation", "solution". If the headline could sit on any company's blog, it has failed.
+   - Bad: "Understanding Key Martech Trends to Enhance Our Strategic Positioning". Good: "Two martech vendors shipped agents this week. One overlaps your roadmap."
 3. For each story, explain impact in 2-3 sentences. Reference their decisions, missions, or blind spots.
 4. Apply framework nudges naturally (never name the framework):
    - "Worth pressure-testing this against..."
@@ -870,7 +875,7 @@ OUTPUT JSON:
 {
   "segments": [
     {
-      "headline": "Rewritten headline, under 15 words, from THEIR perspective",
+      "headline": "Sentence case, under 12 words, verb-led or starts with Your, from THEIR perspective",
       "analysis": "2-3 sentences: specific impact on THEM + one framework nudge",
       "framework_tag": "signal|decision_trigger|krishs_take",
       "source": "Source Name",
@@ -908,6 +913,17 @@ Total: 500-600 words. 3-4 minutes spoken. Every sentence earns its place.`,
 
   const parsed = JSON.parse(content);
 
+  // Headlines are the most visible surface and the one the model drifts on
+  // (Title Case, abstract corporate nouns). Enforce the voice floor server-side
+  // so a generic "Understanding Key Trends..." can never reach the leader.
+  if (Array.isArray(parsed.segments)) {
+    for (const seg of parsed.segments) {
+      if (seg && typeof seg.headline === "string") {
+        seg.headline = normalizeHeadline(seg.headline);
+      }
+    }
+  }
+
   // Post-process: apply typography rules + strip banned phrases. Both rule
   // sets come from the training material so tuning is a YAML edit.
   let script = parsed.script || "";
@@ -925,6 +941,56 @@ Total: 500-600 words. 3-4 minutes spoken. Every sentence earns its place.`,
     script,
     training_version: trainingVersion,
   };
+}
+
+// ── Headline voice floor ───────────────────────────────────────────
+
+const HEADLINE_FLUFF =
+  /\b(strategic positioning|synergy|leverag(?:e|ing)|transformation|optimi[sz](?:e|ing)|enhanc(?:e|ing)|solutions?|ecosystem|empower(?:ing)?)\b/i;
+
+/** True when a headline reads as Title Case (most significant words capped). */
+function isTitleCase(s: string): boolean {
+  const words = s.split(/\s+/).filter((w) => /[a-zA-Z]/.test(w));
+  if (words.length < 4) return false;
+  const capped = words.filter((w) => /^[A-Z]/.test(w)).length;
+  return capped / words.length >= 0.7;
+}
+
+/** Lowercase a Title-Cased headline, preserving acronyms, brand camelCase
+ * (OpenAI), numbers, and the first word. A backstop, not the primary control. */
+function toSentenceCase(s: string): string {
+  let first = true;
+  return s
+    .split(/(\s+)/)
+    .map((tok) => {
+      if (/^\s+$/.test(tok)) return tok;
+      if (first) {
+        first = false;
+        return tok;
+      }
+      if (/^[A-Z]{2,}$/.test(tok)) return tok; // acronym: API, LLM
+      if (/[a-z][A-Z]/.test(tok)) return tok; // brand camelCase: OpenAI
+      if (/^[0-9$]/.test(tok)) return tok; // numbers, $200k
+      return tok.charAt(0).toLowerCase() + tok.slice(1);
+    })
+    .join("");
+}
+
+/** Enforce the headline voice floor: no em dashes, trimmed, no trailing
+ * punctuation, and sentence case when the model returns Title Case or fluff. */
+function normalizeHeadline(raw: string): string {
+  const EM = String.fromCharCode(0x2014);
+  const EN = String.fromCharCode(0x2013);
+  let h = raw
+    .trim()
+    .split(EM).join(", ")
+    .split(EN).join("-")
+    .replace(/\s{2,}/g, " ")
+    .replace(/[.:]\s*$/, "");
+  if (isTitleCase(h) || HEADLINE_FLUFF.test(h)) {
+    h = toSentenceCase(h);
+  }
+  return h;
 }
 
 // ── AI Landscape Headline Generator ────────────────────────────────
@@ -1254,8 +1320,12 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   const t0 = Date.now();
 
   // Fetch mission + decision IDs so lens_item refs point at real rows.
+  // Missions live in leader_missions, keyed on leader_id (not a user_missions
+  // table, which never existed). Resolve the leader first.
+  const leaderIds = await resolveLeaderIds(supabase, userId);
+  const leaderFilter = leaderIds.length ? leaderIds : ["00000000-0000-0000-0000-000000000000"];
   const [{ data: missions }, { data: decisions }, training] = await Promise.all([
-    supabase.from("user_missions").select("id, title").eq("user_id", userId).eq("status", "active").limit(3),
+    supabase.from("leader_missions").select("id").in("leader_id", leaderFilter).eq("status", "active").limit(3),
     supabase.from("user_decisions").select("id, decision_text").eq("user_id", userId).eq("status", "active").order("created_at", { ascending: false }).limit(5),
     loadTrainingForUser(supabase, userId).catch(() => undefined),
   ]);
@@ -1298,7 +1368,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
 
   // 2.5 EARLY INSERT so the frontend sees headlines while curation runs.
   const preliminarySegments: BriefingSegment[] = (scored.length > 0 ? scored.slice(0, 8) : []).map(s => ({
-    headline: s.title.replace(/^\[.*?\]\s*/, ""),
+    headline: normalizeHeadline(s.title.replace(/^\[.*?\]\s*/, "")),
     analysis: "",
     framework_tag: "signal",
     source: s.source,
@@ -1402,7 +1472,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   // segments as-is because they carry the evidence fields; the script is the
   // narrative layer on top.
   const finalSegments: BriefingSegment[] = curated.map(c => ({
-    headline: c.headline,
+    headline: normalizeHeadline(c.headline),
     analysis: c.analysis,
     framework_tag: c.framework_tag,
     source: c.source,
@@ -1660,6 +1730,60 @@ serve(async (req) => {
       const decisionCount = userCtx.recentDecisions?.length ?? 0;
       const depth = positiveInterests + missionCount + decisionCount;
       if (depth < 5) {
+        // Even on a sparse day, an open decision alert must still reach the
+        // leader: the decision that watches your back cannot go quiet just
+        // because the news lens is thin. Build a minimal alert-led briefing
+        // and only fall back to the onboarding signal when nothing is open.
+        const { data: openAlerts } = await supabase
+          .from("decision_alerts")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("status", "open")
+          .limit(1);
+
+        if (openAlerts && openAlerts.length > 0) {
+          const { data: inserted } = await supabase
+            .from("briefings")
+            .insert({
+              user_id: user.id,
+              briefing_date: today,
+              briefing_type: briefingType,
+              script_text: "",
+              segments: [],
+            })
+            .select("id")
+            .single();
+          const alertBriefingId = (inserted as { id: string } | null)?.id;
+          if (alertBriefingId) {
+            const base =
+              "A quiet morning for the news. Your decision watch flagged something worth a look.";
+            const injected = await prependDecisionAlerts(
+              supabase,
+              user.id,
+              alertBriefingId,
+              base,
+              [],
+            );
+            await supabase
+              .from("briefings")
+              .update({ script_text: injected.script, segments: injected.segments })
+              .eq("id", alertBriefingId);
+            return new Response(
+              JSON.stringify({
+                briefing_id: alertBriefingId,
+                already_exists: false,
+                has_audio: false,
+                segment_count: injected.segments.length,
+                briefing_type: briefingType,
+                used_fallback: false,
+                pipeline_version: 2,
+                alert_only: true,
+              }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
+        }
+
         const missing: string[] = [];
         if (positiveInterests < 3) missing.push("interests");
         if (missionCount < 1) missing.push("missions");

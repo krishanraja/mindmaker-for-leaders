@@ -53,7 +53,7 @@ export async function prependDecisionAlerts<T extends BriefingSegmentLike>(
     const alertSegments = alerts.map((a) => ({
       headline: a.headline,
       analysis: a.detail ?? "",
-      framework_tag: "DECISION ALERT",
+      framework_tag: "decision_alert",
       source: "CTRL Decision Engine",
       relevance_reason: `You asked CTRL to pressure-test "${a.decision_cases?.title ?? "a decision"}". An assumption behind it has shifted, so this leads your briefing.`,
     })) as unknown as T[];

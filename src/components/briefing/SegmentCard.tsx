@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, ThumbsDown, Eye, EyeOff, Check, Anchor, Bookmark, BookmarkCheck, Ban, Loader2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Eye, EyeOff, Check, Anchor, Bookmark, BookmarkCheck, Ban, Loader2, Scale, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FRAMEWORK_TAG_CONFIG } from "@/types/briefing";
 import { haptics } from "@/lib/haptics";
@@ -66,6 +67,8 @@ export function SegmentCard({
   const [feedback, setFeedback] = useState<"useful" | "not_useful" | null>(null);
   const [justWatched, setJustWatched] = useState<string | null>(null);
   const tagConfig = FRAMEWORK_TAG_CONFIG[segment.framework_tag as FrameworkTag];
+  const isDecisionAlert = segment.framework_tag === 'decision_alert';
+  const navigate = useNavigate();
 
   // Fire haptics.light() once when this segment transitions to active.
   // Guarded by prefers-reduced-motion to avoid triggering on motion-sensitive setups.
@@ -192,6 +195,19 @@ export function SegmentCard({
           <p className="text-[11px] text-accent/80 italic leading-relaxed">
             {segment.relevance_reason}
           </p>
+        )}
+
+        {/* Decision alert: one tap back to pressure-test the shifted decision */}
+        {isDecisionAlert && (
+          <button
+            type="button"
+            onClick={() => navigate('/decision')}
+            className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-500 transition-colors hover:bg-amber-500/20"
+          >
+            <Scale className="h-3.5 w-3.5" />
+            Re-run that decision
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
         )}
 
         {/* v2: matched profile fact - shows the specific profile item that */}

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- router config file legitimately exports the router object and small loading helpers, not fast-refresh components */
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { RequireAuth } from '@/components/auth/RequireAuth'
@@ -34,6 +35,8 @@ const Compliance = lazyWithRetry(() => import('@/pages/Compliance'))
 const Profile = lazyWithRetry(() => import('@/pages/Profile'))
 const Booking = lazyWithRetry(() => import('@/pages/Booking'))
 const BriefingPage = lazyWithRetry(() => import('@/pages/BriefingPage'))
+const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
+const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
 function LoadingPage() {
@@ -90,6 +93,14 @@ export const router = createBrowserRouter([
       {
         path: '/briefing',
         element: <LazyWrapper><RequireAuth><BriefingPage /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/decision',
+        element: <LazyWrapper><RequireAuth><DecisionPage /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/enrich',
+        element: <LazyWrapper><RequireAuth><EnrichPage /></RequireAuth></LazyWrapper>,
       },
       {
         path: '/settings',

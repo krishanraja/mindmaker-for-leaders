@@ -14,6 +14,28 @@
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import type { LensSource } from "./briefing-lens.ts";
 
+/**
+ * Resolve the leader record id(s) for an auth user. Some leader rows use
+ * leaders.id == the auth uid, others use leaders.user_id, so check both.
+ * Missions/scores/tensions all key off leader_id, not user_id, which is why
+ * the old user_missions query (wrong table, wrong key) always came back empty.
+ * Returns [] on any failure so callers degrade cleanly.
+ */
+export async function resolveLeaderIds(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<string[]> {
+  try {
+    const { data } = await supabase
+      .from("leaders")
+      .select("id")
+      .or(`id.eq.${userId},user_id.eq.${userId}`);
+    return ((data as Array<{ id: string }> | null) ?? []).map((l) => l.id);
+  } catch {
+    return [];
+  }
+}
+
 export interface UserContext {
   name: string;
   role: string;
@@ -110,15 +132,20 @@ export async function getUserContext(
   }
 
   try {
-    const { data: missions } = await supabase
-      .from("user_missions")
-      .select("title")
-      .eq("user_id", userId)
-      .eq("status", "active")
-      .limit(3);
+    const leaderIds = await resolveLeaderIds(supabase, userId);
+    if (leaderIds.length > 0) {
+      const { data: missions } = await supabase
+        .from("leader_missions")
+        .select("mission_text")
+        .in("leader_id", leaderIds)
+        .eq("status", "active")
+        .limit(3);
 
-    if (missions) {
-      ctx.activeMissions = missions.map((m: { title: string }) => m.title);
+      if (missions) {
+        ctx.activeMissions = (missions as Array<{ mission_text: string }>)
+          .map((m) => m.mission_text)
+          .filter(Boolean);
+      }
     }
   } catch (e) {
     console.warn("user-context: failed to fetch missions:", e);
@@ -271,8 +298,10 @@ export async function loadLensSource(
   userId: string,
   userCtx: UserContext,
 ): Promise<LensSource> {
+  const leaderIds = await resolveLeaderIds(supabase, userId);
+  const leaderFilter = leaderIds.length ? leaderIds : ["00000000-0000-0000-0000-000000000000"];
   const [{ data: missions }, { data: decisions }] = await Promise.all([
-    supabase.from("user_missions").select("id, title").eq("user_id", userId).eq("status", "active").limit(3),
+    supabase.from("leader_missions").select("id").in("leader_id", leaderFilter).eq("status", "active").limit(3),
     supabase.from("user_decisions").select("id, decision_text").eq("user_id", userId).eq("status", "active").order("created_at", { ascending: false }).limit(5),
   ]);
   const missionIds = ((missions as Array<{ id: string }> | null) ?? []).map((m) => m.id);

@@ -57,9 +57,21 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id)
       .maybeSingle();
 
+    // Verify the stored customer still exists in Stripe before using it. A
+    // stale, deleted, or placeholder id (e.g. a manually-set comp account)
+    // would otherwise 500 the portal create with "No such customer".
     if (row?.stripe_customer_id) {
-      customerId = row.stripe_customer_id as string;
-    } else {
+      try {
+        const existing = await stripe.customers.retrieve(row.stripe_customer_id as string);
+        if (existing && !(existing as { deleted?: boolean }).deleted) {
+          customerId = row.stripe_customer_id as string;
+        }
+      } catch (_lookupErr) {
+        // Not a real Stripe customer. Fall through to the email match.
+      }
+    }
+
+    if (!customerId) {
       const customers = await stripe.customers.list({ email: user.email, limit: 1 });
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
@@ -70,7 +82,8 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           error:
-            "No Stripe customer found. Subscribe first, then revisit billing.",
+            "No billing account is linked to you yet. If you subscribed, give it a minute and refresh; otherwise there is nothing to manage.",
+          code: "no_customer",
         }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );

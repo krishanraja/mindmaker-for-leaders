@@ -42,6 +42,10 @@ interface DraftSheetProps {
   actionType: 'sharpen' | 'cover';
   targetKey: string;
   onGenerated: (result: { actionId: string; content: string; title: string }) => void;
+  /** Whether the leader has Edge Pro. Free leaders get one watermarked memo. */
+  isPaid?: boolean;
+  /** Called when the free allowance is used, so the host can show the paywall. */
+  onLimitReached?: () => void;
 }
 
 type InputMode = 'voice' | 'text';
@@ -79,20 +83,59 @@ const SHARPEN_GENERATE_MAP: Record<string, string> = {
   lean_into: 'lean_into',
 };
 
-/** Prompt text per action/capability */
-function getPromptText(actionType: ActionType, capability: EdgeCapability): string {
-  if (actionType === 'cover') {
-    return 'Speak your key points and we will draft it for you.';
-  }
+/**
+ * One structured, answerable prompt per capability. Every prompt is anchored to
+ * the business or the decision, never to the self. No "walk us through your
+ * thinking" and nothing that asks a busy leader to praise or expose themselves.
+ */
+function getPromptText(_actionType: ActionType, capability: EdgeCapability): string {
   switch (capability) {
+    case 'board_memo':
+      return 'What decision does the board need to make? One line.';
+    case 'strategy_doc':
+      return 'What strategic question must this document answer?';
+    case 'email':
+      return 'Who is this for, and what do you need from them?';
+    case 'meeting_agenda':
+      return 'What does this meeting need to decide or unblock?';
+    case 'template':
+      return 'What do you keep rewriting that we should turn into a template?';
     case 'systemize':
-      return 'Describe how you approach this. We will turn it into a repeatable framework.';
+    case 'framework':
+      return 'What recurring decision do you want to stop making by hand?';
     case 'teach':
-      return 'Walk us through your thinking on this. We will create a teaching doc your team can use.';
+    case 'teaching_doc':
+      return 'What recent call do you want your team to be able to make without you?';
     case 'lean_into':
-      return 'Tell us what excites you about this strength. We will find missions that leverage it.';
+      return 'Where could this strength move the needle this quarter?';
     default:
-      return 'Speak your key points and we will draft it for you.';
+      return 'Say your key points and we draft it for you.';
+  }
+}
+
+/** A worked example, shown as a placeholder so the prompt is never a blank page. */
+function getExample(capability: EdgeCapability): string {
+  switch (capability) {
+    case 'board_memo':
+      return 'e.g. Approve $200k to consolidate four pilots into one team.';
+    case 'strategy_doc':
+      return 'e.g. Should we build our own AI layer or buy one?';
+    case 'email':
+      return 'e.g. My CFO. I need sign-off on the pilot budget by Friday.';
+    case 'meeting_agenda':
+      return 'e.g. Decide which two pilots we stop.';
+    case 'template':
+      return 'e.g. The weekly update I send the board.';
+    case 'systemize':
+    case 'framework':
+      return 'e.g. How I decide which vendors get a pilot.';
+    case 'teach':
+    case 'teaching_doc':
+      return 'e.g. How I price a new enterprise deal.';
+    case 'lean_into':
+      return 'e.g. Turning around the stalled enterprise segment.';
+    default:
+      return 'e.g. The key points, the audience, the ask.';
   }
 }
 
@@ -106,12 +149,16 @@ function DraftContent({
   targetKey,
   onClose,
   onGenerated,
+  isPaid = true,
+  onLimitReached,
 }: {
   capability: EdgeCapability;
   actionType: ActionType;
   targetKey: string;
   onClose: () => void;
   onGenerated: DraftSheetProps['onGenerated'];
+  isPaid?: boolean;
+  onLimitReached?: () => void;
 }) {
   const [inputMode, setInputMode] = useState<InputMode>('voice');
   const [textInput, setTextInput] = useState('');
@@ -122,6 +169,7 @@ function DraftContent({
 
   const meta = resolveCapabilityMeta(capability, actionType);
   const promptText = getPromptText(actionType, capability);
+  const example = getExample(capability);
 
   const isSharpen = actionType === 'sharpen';
 
@@ -205,10 +253,16 @@ function DraftContent({
       });
     } catch (err) {
       console.error('edge-generate failed:', err);
-      setError('Generation failed. Please try again.');
+      // For a free leader, a failed generation is almost always the used-up
+      // free allowance. Show the paywall after the value, not a raw error.
+      if (!isPaid && onLimitReached) {
+        onLimitReached();
+        return;
+      }
+      setError('That did not send. Tap to try again.');
       setDraftState('idle');
     }
-  }, [inputText, capability, isSharpen, targetKey, onGenerated]);
+  }, [inputText, capability, isSharpen, targetKey, onGenerated, isPaid, onLimitReached]);
 
   // -----------------------------------------------------------------------
   // Helpers
@@ -256,9 +310,10 @@ function DraftContent({
             exit={{ opacity: 0, y: -8 }}
             className="space-y-4"
           >
-            <p className="text-sm text-muted-foreground">
-              {promptText}
-            </p>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">{promptText}</p>
+              <p className="text-xs text-muted-foreground/70">{example}</p>
+            </div>
 
             {/* Record button */}
             <div className="flex flex-col items-center gap-3">
@@ -397,13 +452,11 @@ function DraftContent({
             exit={{ opacity: 0, y: -8 }}
             className="space-y-3"
           >
-            <p className="text-sm text-muted-foreground">
-              Type your key points below.
-            </p>
+            <p className="text-sm font-medium text-foreground">{promptText}</p>
             <textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              placeholder="e.g. Key themes to cover, audience, tone..."
+              placeholder={example}
               autoFocus
               rows={4}
               className={cn(
@@ -476,6 +529,8 @@ export function DraftSheet({
   actionType,
   targetKey,
   onGenerated,
+  isPaid,
+  onLimitReached,
 }: DraftSheetProps) {
   const isMobile = useIsMobile();
 
@@ -499,6 +554,8 @@ export function DraftSheet({
             targetKey={targetKey}
             onClose={onClose}
             onGenerated={onGenerated}
+            isPaid={isPaid}
+            onLimitReached={onLimitReached}
           />
         </SheetContent>
       </Sheet>
@@ -520,6 +577,8 @@ export function DraftSheet({
           targetKey={targetKey}
           onClose={onClose}
           onGenerated={onGenerated}
+          isPaid={isPaid}
+          onLimitReached={onLimitReached}
         />
       </DialogContent>
     </Dialog>
