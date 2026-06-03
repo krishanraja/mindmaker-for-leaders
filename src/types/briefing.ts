@@ -3,7 +3,7 @@
  * Personalised AI news briefing for leaders
  */
 
-export type FrameworkTag = 'signal' | 'noise' | 'decision_trigger' | 'krishs_take';
+export type FrameworkTag = 'signal' | 'noise' | 'decision_trigger' | 'krishs_take' | 'decision_alert';
 
 export type BriefingType =
   | 'default'
@@ -189,5 +189,9 @@ export const FRAMEWORK_TAG_CONFIG: Record<FrameworkTag, {
   krishs_take: {
     label: "KRISH'S TAKE",
     className: 'bg-accent/10 text-accent border-accent/30',
+  },
+  decision_alert: {
+    label: 'DECISION ALERT',
+    className: 'bg-amber-500/15 text-amber-500 border-amber-500/40',
   },
 };
