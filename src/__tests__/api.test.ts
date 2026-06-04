@@ -215,17 +215,16 @@ describe('api.transcribeAudio', () => {
 
     const blob = new Blob(['audio'], { type: 'audio/webm' });
 
-    // We cannot easily test the 45s timeout without faking timers,
-    // but we can verify the function name appears in the timeout error.
-    // Using vi.useFakeTimers for this test.
+    // The transcription timeout (150s) is too long to wait on in real time, so
+    // we drive it with fake timers and advance past it.
     vi.useFakeTimers();
 
     const promise = api.transcribeAudio(blob);
+    const expectation = expect(promise).rejects.toThrow('voice-transcribe timed out after 150s');
 
-    // Advance past the 45s transcription timeout
-    vi.advanceTimersByTime(46_000);
-
-    await expect(promise).rejects.toThrow('voice-transcribe timed out after 45s');
+    // Advance past the 150s transcription timeout.
+    await vi.advanceTimersByTimeAsync(151_000);
+    await expectation;
 
     vi.useRealTimers();
   });

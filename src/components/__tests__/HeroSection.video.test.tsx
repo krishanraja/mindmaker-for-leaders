@@ -7,11 +7,10 @@
  * - Parent container does not have bg-background
  */
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
-import { HeroSection } from '../HeroSection';
-import type { User } from '@supabase/supabase-js';
+import { HeroSection } from '../landing/HeroSection';
 
 // Mock useNavigate
 vi.mock('react-router-dom', async () => {
@@ -22,101 +21,65 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-// Mock getPersistedAssessmentId
-vi.mock('@/utils/assessmentPersistence', () => ({
-  getPersistedAssessmentId: () => ({ assessmentId: null }),
+// The video background lives on the mobile branch of the hero; force mobile so
+// it renders (desktop returns DesktopLanding, which has no video).
+vi.mock('@/hooks/use-mobile', () => ({
+  useIsMobile: () => true,
 }));
 
-const mockProps = {
-  onStartVoice: vi.fn(),
-  onStartQuiz: vi.fn(),
-  onSignIn: vi.fn(),
-  user: null as User | null,
-  onSignOut: vi.fn(),
-};
+const renderHero = () =>
+  render(
+    <BrowserRouter>
+      <HeroSection />
+    </BrowserRouter>,
+  );
 
 describe('HeroSection Video Background', () => {
-  it('video element has correct opacity and z-index', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <HeroSection {...mockProps} />
-      </BrowserRouter>
-    );
-    
+  it('video element has the background styling', () => {
+    const { container } = renderHero();
+
     const video = container.querySelector('video');
     expect(video).toBeInTheDocument();
-    
+
     if (video) {
-      const styles = window.getComputedStyle(video);
-      // Check that video has opacity-100 class (will be computed as opacity: 1)
-      expect(video.className).toContain('opacity-100');
-      expect(video.className).toContain('-z-20');
+      expect(video.className).toContain('opacity-40');
+      expect(video.className).toContain('object-cover');
+      expect(video.className).toContain('pointer-events-none');
     }
   });
 
-  it('overlay element exists with correct classes', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <HeroSection {...mockProps} />
-      </BrowserRouter>
-    );
-    
-    // Find overlay by bg-black/50 class
-    const overlay = container.querySelector('[class*="bg-black"]');
+  it('dark overlay element exists for readability', () => {
+    const { container } = renderHero();
+
+    const overlay = container.querySelector('[class*="bg-black/40"]');
     expect(overlay).toBeInTheDocument();
-    
+
     if (overlay) {
-      expect(overlay.className).toContain('bg-black/50');
-      expect(overlay.className).toContain('-z-10');
       expect(overlay.className).toContain('pointer-events-none');
     }
   });
 
-  it('parent container does not have bg-background', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <HeroSection {...mockProps} />
-      </BrowserRouter>
-    );
-    
-    // Find the main container div (first child of rendered component)
-    const parent = container.firstChild as HTMLElement;
-    expect(parent).toBeInTheDocument();
-    
-    if (parent) {
-      const classes = parent.className || '';
-      expect(classes).not.toContain('bg-background');
-    }
-  });
+  it('video element has required playback attributes', () => {
+    const { container } = renderHero();
 
-  it('video element has required attributes', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <HeroSection {...mockProps} />
-      </BrowserRouter>
-    );
-    
     const video = container.querySelector('video');
     expect(video).toBeInTheDocument();
-    
+
     if (video) {
       expect(video.hasAttribute('autoPlay')).toBe(true);
       expect(video.hasAttribute('loop')).toBe(true);
-      expect(video.hasAttribute('muted')).toBe(true);
       expect(video.hasAttribute('playsInline')).toBe(true);
+      // React sets `muted` as a DOM property, not a reflected HTML attribute.
+      expect((video as HTMLVideoElement).muted).toBe(true);
     }
   });
 
   it('video source element exists with correct src', () => {
-    const { container } = render(
-      <BrowserRouter>
-        <HeroSection {...mockProps} />
-      </BrowserRouter>
-    );
-    
+    const { container } = renderHero();
+
     const source = container.querySelector('video source');
     expect(source).toBeInTheDocument();
-    
+
     if (source) {
       expect(source.getAttribute('src')).toBe('/Mindmaker for Leaders - background video.mp4');
       expect(source.getAttribute('type')).toBe('video/mp4');
