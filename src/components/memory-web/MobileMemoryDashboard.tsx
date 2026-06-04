@@ -40,6 +40,7 @@ import { useToast } from '@/hooks/use-toast';
 import { sanitizeTranscriptionError } from '@/utils/transcriptionErrors';
 import { TranscriptReviewPanel } from '@/components/voice/TranscriptReviewPanel';
 import { BriefingCard } from '@/components/dashboard/BriefingCard';
+import { DecisionInboxCard } from '@/components/operator/decision/DecisionInboxCard';
 import { BriefingSheet, MiniPlayer, CustomBriefingSheet } from '@/components/briefing';
 import { InterestsSheet } from '@/components/briefing/InterestsSheet';
 import { useTodaysBriefing, useGenerateBriefing } from '@/hooks/useBriefing';
@@ -390,6 +391,9 @@ export function MobileMemoryDashboard() {
                 </motion.div>
               ) : null}
             </AnimatePresence>
+            <div className="empty:hidden [&>*]:mt-2">
+              <DecisionInboxCard alertsOnly />
+            </div>
           </div>
         )}
 

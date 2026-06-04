@@ -8,8 +8,9 @@ import { VoiceInput } from '@/components/ui/voice-input';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ShieldCheck, AlertTriangle, HelpCircle, CircleDashed, Loader2, ChevronDown,
-  Target, Scale, ListChecks, GitBranch, RotateCcw, Send, Sparkles, Users, Plus, Bell, X, Mic,
+  Target, Scale, ListChecks, GitBranch, RotateCcw, Send, Sparkles, Users, Plus, Bell, X, Mic, Eye,
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import {
   useDecisionEngine, type DecisionClaim, type Verdict, type DecisionEvidence, type DecisionTension,
 } from '@/hooks/useDecisionEngine';
@@ -37,6 +38,25 @@ const TENSION_GROUPS: Record<DecisionTension['kind'], string> = {
   model_disagreement: 'Where the models disagree',
   internal: 'Internal contradictions',
 };
+
+// How each piece of evidence relates to the claim it was retrieved for. Making
+// this explicit (rather than implied by styling) is the point of the verify
+// layer: the user sees what actually backs - or undercuts - each claim.
+const STANCE_STYLE: Record<DecisionEvidence['stance'], { label: string; cls: string }> = {
+  supports: { label: 'Supports', cls: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30' },
+  refutes: { label: 'Refutes', cls: 'text-rose-300 bg-rose-500/10 border-rose-500/30' },
+  neutral: { label: 'Context', cls: 'text-muted-foreground bg-foreground/5 border-border' },
+};
+const STANCE_ORDER: Record<DecisionEvidence['stance'], number> = { supports: 0, neutral: 1, refutes: 2 };
+
+const KIND_LABEL: Record<string, string> = {
+  binary: 'Binary call', directional: 'Directional', investment: 'Investment',
+  hiring: 'Hiring', gtm: 'Go-to-market', other: 'Decision',
+};
+function kindLabel(kind: string | null): string | null {
+  if (!kind) return null;
+  return KIND_LABEL[kind] ?? kind.charAt(0).toUpperCase() + kind.slice(1);
+}
 
 const EXAMPLES = [
   'We should move upmarket to enterprise next quarter because ACVs are higher and SMB churn is unsustainable.',
@@ -89,14 +109,20 @@ function ClaimRow({ claim, evidence, isBreakpoint }: { claim: DecisionClaim; evi
           </button>
           <AnimatePresence>
             {open && (
-              <motion.ul initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-2 space-y-1.5">
-                {evidence.map((e) => (
-                  <li key={e.id} className="text-xs">
-                    <a href={e.source_url ?? '#'} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium">{e.source_title || e.source_url || e.retriever}</a>
-                    <span className="text-muted-foreground/60"> · {e.retriever}</span>
-                    {e.excerpt && <p className="text-muted-foreground mt-0.5 line-clamp-2">{e.excerpt}</p>}
-                  </li>
-                ))}
+              <motion.ul initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-2 space-y-2">
+                {[...evidence].sort((a, b) => STANCE_ORDER[a.stance] - STANCE_ORDER[b.stance]).map((e) => {
+                  const st = STANCE_STYLE[e.stance] ?? STANCE_STYLE.neutral;
+                  return (
+                    <li key={e.id} className="text-xs">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${st.cls}`}>{st.label}</span>
+                        <a href={e.source_url ?? '#'} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium">{e.source_title || e.source_url || e.retriever}</a>
+                        <span className="text-muted-foreground/60">· {e.retriever}</span>
+                      </div>
+                      {e.excerpt && <p className="text-muted-foreground mt-0.5 line-clamp-2 text-pretty">{e.excerpt}</p>}
+                    </li>
+                  );
+                })}
               </motion.ul>
             )}
           </AnimatePresence>
@@ -168,8 +194,13 @@ function DecisionResult({ engine, onReset }: { engine: ReturnType<typeof useDeci
         <CardContent className="p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-foreground">{decisionCase.title || 'Your decision'}</h3>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{decisionCase.statement}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-semibold text-foreground text-balance">{decisionCase.title || 'Your decision'}</h3>
+                {kindLabel(decisionCase.decision_kind) && (
+                  <Badge variant="secondary" className="text-[10px] font-medium shrink-0">{kindLabel(decisionCase.decision_kind)}</Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed text-pretty">{decisionCase.statement}</p>
             </div>
             <Button variant="ghost" size="sm" onClick={onReset} className="shrink-0"><RotateCcw className="h-4 w-4" /></Button>
           </div>
@@ -189,6 +220,15 @@ function DecisionResult({ engine, onReset }: { engine: ReturnType<typeof useDeci
         <Card className="border-primary/20">
           <CardContent className="p-5 space-y-5">
             {decisionCase.confidence != null && <ConfidenceMeter value={decisionCase.confidence} />}
+            {decisionCase.last_verified_at && (
+              <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+                <Eye className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                <span className="text-pretty">
+                  Monitored: CTRL re-checks the load-bearing claims and flags you if the evidence shifts. Last checked{' '}
+                  {formatDistanceToNow(new Date(decisionCase.last_verified_at), { addSuffix: true })}.
+                </span>
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2 mb-2"><Target className="h-4 w-4 text-primary" /><h4 className="font-semibold text-foreground">The call</h4></div>
               <p className="text-sm text-foreground leading-relaxed">{decisionCase.recommendation}</p>
@@ -224,22 +264,42 @@ function DecisionResult({ engine, onReset }: { engine: ReturnType<typeof useDeci
         </Card>
       )}
 
-      {tensions.length > 0 && (
+      <PanelCard tensions={tensions} />
+
+      {tensions.some((t) => t.kind !== 'model_disagreement') && (
         <Card>
           <CardContent className="p-5 space-y-4">
-            {Object.entries(tensions.reduce<Record<string, DecisionTension[]>>((acc, t) => { (acc[t.kind] ??= []).push(t); return acc; }, {})).map(([kind, group]) => (
+            {Object.entries(tensions.filter((t) => t.kind !== 'model_disagreement').reduce<Record<string, DecisionTension[]>>((acc, t) => { (acc[t.kind] ??= []).push(t); return acc; }, {})).map(([kind, group]) => (
               <div key={kind}>
                 <div className="flex items-center gap-2 mb-2">
-                  {kind === 'model_disagreement' ? <Users className="h-4 w-4 text-indigo-500" /> : <AlertTriangle className="h-4 w-4 text-amber-500" />}
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
                   <h4 className="font-semibold text-foreground">{TENSION_GROUPS[kind as DecisionTension['kind']] ?? 'Tensions'}</h4>
                 </div>
-                <ul className="space-y-1.5">{group.map((t) => <li key={t.id} className="text-sm text-muted-foreground">{t.description}</li>)}</ul>
+                <ul className="space-y-1.5">{group.map((t) => <li key={t.id} className="text-sm text-muted-foreground text-pretty">{t.description}</li>)}</ul>
               </div>
             ))}
           </CardContent>
         </Card>
       )}
     </div>
+  );
+}
+
+// The cross-examination panel, promoted out of the generic tensions list. When
+// the multi-model review split, that disagreement is a first-class signal - it
+// is the clearest sign the recommendation deserves lower confidence - so it gets
+// its own card rather than reading as a footnote.
+function PanelCard({ tensions }: { tensions: DecisionTension[] }) {
+  const panel = tensions.filter((t) => t.kind === 'model_disagreement');
+  if (panel.length === 0) return null;
+  return (
+    <Card className="border-indigo-500/30 bg-indigo-500/5">
+      <CardContent className="p-5">
+        <div className="flex items-center gap-2 mb-2"><Users className="h-4 w-4 text-indigo-400" /><h4 className="font-semibold text-foreground">The review panel split</h4></div>
+        <p className="text-xs text-muted-foreground mb-3 text-pretty">Several models stress-tested this independently. Where they disagree, treat the call as lower-confidence.</p>
+        <ul className="space-y-1.5">{panel.map((t) => <li key={t.id} className="text-sm text-muted-foreground text-pretty">{t.description}</li>)}</ul>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -305,7 +365,10 @@ function RecentRail({ cases, activeId, onSelect, onNew }: { cases: DecisionCaseS
               <p className="text-sm font-medium text-foreground line-clamp-1">{c.title || c.statement}</p>
               {c.confidence != null && <span className="text-[11px] text-muted-foreground shrink-0">{Math.round(c.confidence * 100)}%</span>}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{c.stage === 'complete' ? 'Pressure tested' : c.stage === 'error' ? 'Did not complete' : 'In progress'}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {kindLabel(c.decision_kind) && <Badge variant="secondary" className="text-[10px] font-medium px-1.5 py-0">{kindLabel(c.decision_kind)}</Badge>}
+              <p className="text-[11px] text-muted-foreground">{c.stage === 'complete' ? 'Pressure tested' : c.stage === 'error' ? 'Did not complete' : 'In progress'}</p>
+            </div>
           </button>
         );
       })}

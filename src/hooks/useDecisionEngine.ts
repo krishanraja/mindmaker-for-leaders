@@ -24,6 +24,7 @@ export interface DecisionCase {
   validate_next: string[] | null;
   confidence: number | null;
   error_detail: string | null;
+  last_verified_at: string | null;
 }
 
 export interface DecisionClaim {
