@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, FileText, Scale } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, capLabel } from '@/lib/utils';
 import type { EdgeStrength, EdgeWeakness } from '@/types/edge';
 
 /**
@@ -60,21 +60,21 @@ export function EdgeVerdict({
         className="space-y-2.5"
       >
         {s0 ? (
-          <p className="text-2xl font-bold leading-snug text-foreground">
-            You lead with {lower(s0.label)}.
+          <p className="text-[clamp(1.375rem,6vw,1.5rem)] font-bold leading-tight tracking-tight text-balance text-foreground">
+            You lead with {lower(capLabel(s0.label))}.
           </p>
         ) : (
-          <p className="text-2xl font-bold leading-snug text-foreground">
+          <p className="text-[clamp(1.375rem,6vw,1.5rem)] font-bold leading-tight tracking-tight text-balance text-foreground">
             Your edge is still taking shape.
           </p>
         )}
         {w0 && (
-          <p className="text-2xl font-bold leading-snug text-foreground">
-            <span className="text-amber-500">{w0.label}</span> is where the remit
+          <p className="text-[clamp(1.375rem,6vw,1.5rem)] font-bold leading-tight tracking-tight text-balance text-foreground">
+            <span className="text-amber-500">{capLabel(w0.label)}</span> is where the remit
             bites.
           </p>
         )}
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
           {s0 && w0
             ? 'Most leaders carrying the AI remit share this exact split.'
             : 'Add a few more thoughts and this read sharpens fast.'}
@@ -98,7 +98,7 @@ export function EdgeVerdict({
           )}
           {w0 && (
             <CompareRow
-              label={`Behind on ${lower(w0.label)}`}
+              label={`Behind on ${lower(capLabel(w0.label, 32))}`}
               fill={Math.max(0.35, w0.confidence || 0.6)}
               tone="amber"
             />
@@ -116,9 +116,9 @@ export function EdgeVerdict({
         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-accent">
           Your next move
         </p>
-        <p className="mb-4 text-sm leading-relaxed text-foreground">
+        <p className="mb-4 text-sm leading-relaxed text-pretty text-foreground">
           {w0
-            ? `Cover ${lower(w0.label)} the fast way: a board memo drafted from your real context, ready to send.`
+            ? `Cover ${lower(capLabel(w0.label, 32))} the fast way: a board memo drafted from your real context, ready to send.`
             : 'Put your strongest thinking on paper. We draft a board memo from your context, ready to send.'}
         </p>
         <button
@@ -184,7 +184,7 @@ function CompareRow({
 }) {
   return (
     <div className="space-y-1.5">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground truncate">{label}</p>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
         <motion.div
           initial={{ width: 0 }}

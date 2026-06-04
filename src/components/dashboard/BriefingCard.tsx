@@ -362,14 +362,12 @@ export function BriefingCard({
                     <ChevronDown className="w-3 h-3 text-muted-foreground" />
                   </motion.div>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground truncate">
                   {segmentCount} {segmentCount === 1 ? "story" : "stories"}
                   {anchorCount > 0 && (
                     <>
-                      {" · drawn from "}
-                      <span className="text-foreground/80">
-                        {anchorCount} of your {anchorCount === 1 ? "inputs" : "inputs"}
-                      </span>
+                      {" · "}
+                      <span className="text-foreground/80">{anchorCount} {anchorCount === 1 ? "input" : "inputs"}</span>
                     </>
                   )}
                 </p>
@@ -380,7 +378,7 @@ export function BriefingCard({
                       {waitingForAudio && briefing.segments?.length > 0 ? (
                         <RotatingHeadlines segments={briefing.segments} />
                       ) : (
-                        <p className="text-xs leading-relaxed line-clamp-1 text-muted-foreground/80">{teaser}</p>
+                        <p className="text-xs leading-snug line-clamp-1 text-pretty text-muted-foreground/80">{teaser}</p>
                       )}
                     </motion.div>
                   </AnimatePresence>

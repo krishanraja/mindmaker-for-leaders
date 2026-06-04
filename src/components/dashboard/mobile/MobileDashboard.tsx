@@ -5,6 +5,7 @@ import { HeroStatusCard } from "../HeroStatusCard"
 import { WeeklyActionCard } from "../WeeklyActionCard"
 import { DailyProvocationCard } from "../DailyProvocationCard"
 import { BriefingCard } from "../BriefingCard"
+import { DecisionInboxCard } from "@/components/operator/decision/DecisionInboxCard"
 import { BottomNav } from "./BottomNav"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { MissionsDashboard } from "@/components/missions/MissionsDashboard"
@@ -76,6 +77,7 @@ export function MobileDashboard() {
                   onPlay={handlePlayBriefing}
                 />
               )}
+              <DecisionInboxCard />
               <MissionsDashboard />
               {data.weeklyAction && <WeeklyActionCard action={data.weeklyAction} />}
               {data.dailyProvocation && <DailyProvocationCard provocation={data.dailyProvocation} />}
