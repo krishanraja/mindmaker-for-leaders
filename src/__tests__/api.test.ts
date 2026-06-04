@@ -182,9 +182,10 @@ describe('api.transcribeAudio', () => {
     try {
       await api.transcribeAudio(blob);
       expect.fail('Should have thrown');
-    } catch (err: any) {
-      expect(err.message).toBe('Audio too short');
-      expect(err.fallbackAvailable).toBe(true);
+    } catch (err) {
+      const e = err as { message?: string; fallbackAvailable?: boolean };
+      expect(e.message).toBe('Audio too short');
+      expect(e.fallbackAvailable).toBe(true);
     }
   });
 
@@ -204,9 +205,10 @@ describe('api.transcribeAudio', () => {
     try {
       await api.transcribeAudio(blob);
       expect.fail('Should have thrown');
-    } catch (err: any) {
-      expect(err.message).toBe('Internal error');
-      expect(err.fallbackAvailable).toBe(false);
+    } catch (err) {
+      const e = err as { message?: string; fallbackAvailable?: boolean };
+      expect(e.message).toBe('Internal error');
+      expect(e.fallbackAvailable).toBe(false);
     }
   });
 
