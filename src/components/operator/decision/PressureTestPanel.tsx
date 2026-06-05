@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDecisionEngine } from '@/hooks/useDecisionEngine';
@@ -7,6 +7,7 @@ import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 import {
   DecisionResult, CaptureView, AlertBanner, RecentRail, UpgradeCard,
 } from '@/components/operator/decision/decision-views';
+import { CriticalCallStep } from '@/components/operator/decision/CriticalCallStep';
 
 // ----- orchestrator ---------------------------------------------------------
 
@@ -16,6 +17,13 @@ export function PressureTestPanel() {
   const engine = useDecisionEngine();
   const inbox = useDecisionInbox();
   const { subscribe, isProcessing } = useEdgeSubscription();
+
+  // B6 critical-evaluation gate: force the user's own call on a load-bearing
+  // claim before revealing the recommendation. Resets whenever the active case
+  // changes; the step itself skips cases already called on (fail-open).
+  const [callDone, setCallDone] = useState(false);
+  const handleCallDone = useCallback(() => setCallDone(true), []);
+  useEffect(() => { setCallDone(false); }, [engine.decisionCase?.id]);
 
   const handleUpgrade = async () => { const url = await subscribe(); if (url) window.location.href = url; };
 
@@ -27,6 +35,7 @@ export function PressureTestPanel() {
   const reRun = (a: OpenAlert) => { const c = inbox.cases.find((x) => x.id === a.decision_case_id); inbox.acknowledge(a.id); if (c) { setStatement(c.statement); engine.reset(); } };
 
   const hasActive = Boolean(engine.decisionCase) && (engine.isRunning || engine.isComplete || engine.decisionCase?.stage === 'error');
+  const needsCall = engine.isComplete && engine.claims.some((c) => c.is_load_bearing) && !callDone;
 
   // ---- MOBILE: one thing at a time -----------------------------------------
   if (isMobile) {
@@ -36,7 +45,11 @@ export function PressureTestPanel() {
         {engine.upgradeRequired ? (
           <UpgradeCard message={engine.upgradeMessage} onUpgrade={handleUpgrade} processing={isProcessing} />
         ) : hasActive ? (
-          <DecisionResult engine={engine} onReset={newBlank} />
+          needsCall ? (
+            <CriticalCallStep engine={engine} onDone={handleCallDone} />
+          ) : (
+            <DecisionResult engine={engine} onReset={newBlank} />
+          )
         ) : (
           <Card><CardContent className="p-5"><CaptureView value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} /></CardContent></Card>
         )}
@@ -54,7 +67,11 @@ export function PressureTestPanel() {
           {engine.upgradeRequired ? (
             <UpgradeCard message={engine.upgradeMessage} onUpgrade={handleUpgrade} processing={isProcessing} />
           ) : hasActive ? (
-            <DecisionResult engine={engine} onReset={newBlank} />
+            needsCall ? (
+              <CriticalCallStep engine={engine} onDone={handleCallDone} />
+            ) : (
+              <DecisionResult engine={engine} onReset={newBlank} />
+            )
           ) : (
             <Card><CardContent className="p-6 max-w-2xl"><CaptureView value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} autoFocus /></CardContent></Card>
           )}
