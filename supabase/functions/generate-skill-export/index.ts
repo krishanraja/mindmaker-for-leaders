@@ -20,6 +20,7 @@ import { callOpenAI, selectModel } from "../_shared/openai-utils.ts";
 import { buildSkillSystemPrompt, buildSkillUserPrompt } from "./prompt.ts";
 import { runQualityGate, type SkillData } from "./quality-gate.ts";
 import { buildSkillZip } from "./zip.ts";
+import { recordAiUsage, checkDailySoftCap } from "../_shared/ai-usage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -85,6 +86,10 @@ Deno.serve(async (req) => {
     ) {
       return jsonResponse({ error: "Edge Pro subscription required" }, 403);
     }
+
+    // Generous soft cap: logs an overage signal, never blocks. Reported back so
+    // the client may show a gentle notice.
+    const softCap = await checkDailySoftCap(serviceClient, user.id, "generate-skill-export");
 
     const body = await req.json().catch(() => ({}));
     const transcript = typeof body?.transcript === "string" ? body.transcript : "";
@@ -168,6 +173,19 @@ Deno.serve(async (req) => {
       },
       { useCache: false },
     );
+
+    // Record the spend signal (service role: ai_usage_audit has no INSERT policy).
+    await recordAiUsage(serviceClient, {
+      userId: user.id,
+      functionName: "generate-skill-export",
+      provider: "openai",
+      model: aiResponse.model,
+      purpose: "skill-export",
+      promptTokens: aiResponse.usage?.prompt_tokens,
+      completionTokens: aiResponse.usage?.completion_tokens,
+      totalTokens: aiResponse.usage?.total_tokens,
+      status: "ok",
+    });
 
     let parsed: SkillJson;
     try {
@@ -293,6 +311,7 @@ Deno.serve(async (req) => {
     }
 
     return jsonResponse({
+      soft_cap: softCap,
       triage: parsed.triage,
       skill: {
         id: insertRow?.id || null,
