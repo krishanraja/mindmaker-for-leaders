@@ -18,6 +18,11 @@ export type InterviewStep =
   | 'generating_next'
   | 'extracting'
   | 'verification'
+  // Session-one resequence: after extraction the leader watches their Memory
+  // Web bloom to life, then pressure-tests a real decision (the concrete
+  // payoff) before landing on the dashboard.
+  | 'blooming'
+  | 'first_artifact'
   | 'complete';
 
 export type InputMode = 'voice' | 'text';

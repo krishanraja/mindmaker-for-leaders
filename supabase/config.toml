@@ -90,3 +90,7 @@ verify_jwt = true
 
 [functions.cleanup-expired-data]
 verify_jwt = false
+
+# Called by pg_cron (no JWT) to send the daily briefing email.
+[functions.send-daily-briefing]
+verify_jwt = false

@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { weekly_checkin_enabled, preferred_day, timezone } = await req.json();
+    const { weekly_checkin_enabled, preferred_day, timezone, daily_briefing_enabled } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -36,27 +36,31 @@ serve(async (req) => {
       });
     }
 
-    const enabled = Boolean(weekly_checkin_enabled);
     const email = user.email ?? null;
-
     const allowedDays = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
     const day = typeof preferred_day === "string" && allowedDays.has(preferred_day) ? preferred_day : null;
     const tz = typeof timezone === "string" ? timezone.slice(0, 64) : null;
 
+    // Only write the fields the caller actually provided, so toggling the daily
+    // briefing email never clobbers the weekly check-in prefs (and vice versa).
+    const payload: Record<string, unknown> = {
+      user_id: user.id,
+      email,
+      updated_at: new Date().toISOString(),
+    };
+    if (typeof weekly_checkin_enabled !== "undefined") {
+      payload.weekly_checkin_enabled = Boolean(weekly_checkin_enabled);
+      payload.preferred_day = day;
+      payload.timezone = tz;
+    }
+    if (typeof daily_briefing_enabled !== "undefined") {
+      payload.daily_briefing_enabled = Boolean(daily_briefing_enabled);
+    }
+
     const { data, error } = await supabase
       .from("leader_notification_prefs" as never)
-      .upsert(
-        {
-          user_id: user.id,
-          email,
-          weekly_checkin_enabled: enabled,
-          preferred_day: day,
-          timezone: tz,
-          updated_at: new Date().toISOString(),
-        } as never,
-        { onConflict: "user_id" } as never,
-      )
-      .select("weekly_checkin_enabled, preferred_day, timezone, email")
+      .upsert(payload as never, { onConflict: "user_id" } as never)
+      .select("weekly_checkin_enabled, preferred_day, timezone, email, daily_briefing_enabled")
       .single();
 
     if (error) {

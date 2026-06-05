@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic,
@@ -7,48 +7,23 @@ import {
   MessageSquare,
   Send,
   Check,
-  Copy,
   Volume2,
   Loader2,
+  Scale,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import mindmakerIcon from '@/assets/mindmaker-icon.png';
 import { useOnboardingInterview } from '@/hooks/useOnboardingInterview';
 import { useVoice } from '@/hooks/useVoice';
 import { useUserMemory } from '@/hooks/useUserMemory';
-import { useMemoryExport } from '@/hooks/useMemoryExport';
-import { FactVerificationCard } from '@/components/memory/FactVerificationCard';
+import { useIndustrySeeds } from '@/hooks/useIndustrySeeds';
+import { buildSeedFacts, toWebFact } from '@/lib/seedFacts';
+import { MemoryWebVisualization } from '@/components/memory-web/MemoryWebVisualization';
+import { useDecisionEngine } from '@/hooks/useDecisionEngine';
+import { DecisionResult, CaptureView } from '@/components/operator/decision/decision-views';
 
 interface Props {
   onComplete: () => void;
-}
-
-/**
- * Auto-advances after a short delay when there are no facts to verify.
- */
-function VerificationAutoAdvance({ onComplete }: { onComplete: () => void }) {
-  const called = useRef(false);
-  useEffect(() => {
-    if (called.current) return;
-    const timer = setTimeout(() => {
-      if (!called.current) {
-        called.current = true;
-        onComplete();
-      }
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [onComplete]);
-
-  return (
-    <motion.div
-      key="no-verify"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="text-center"
-    >
-      <p className="text-muted-foreground">Processing...</p>
-    </motion.div>
-  );
 }
 
 export function OnboardingInterview({ onComplete }: Props) {
@@ -57,8 +32,6 @@ export function OnboardingInterview({ onComplete }: Props) {
     inputMode,
     currentQuestion,
     isAudioLoading,
-    conversation,
-    turnCount,
     isInterviewComplete,
     fieldsStatus,
     error: interviewError,
@@ -66,27 +39,24 @@ export function OnboardingInterview({ onComplete }: Props) {
     startInterview,
     submitResponse,
     getFullTranscript,
-    moveToVerification,
     completeOnboarding,
     skipAudio,
     setStep,
     setInputMode,
   } = useOnboardingInterview();
 
-  const {
-    pendingVerifications,
-    isExtracting,
-    extractFromTranscript,
-    verifyFact,
-    rejectFact,
-    clearPendingVerifications,
-  } = useUserMemory();
+  const { memory, extractFromTranscript } = useUserMemory();
 
-  const { exportResult, generateExport } = useMemoryExport();
+  // Industry seeds make the Memory Web bloom feel alive even before any of the
+  // leader's own facts land. Fetched up front so they are ready by bloom time.
+  const seeds = useIndustrySeeds(true);
+
+  // The concrete session-one artifact: a real decision, pressure-tested.
+  const engine = useDecisionEngine();
 
   const [textInput, setTextInput] = useState('');
-  const [copied, setCopied] = useState(false);
   const [extractedFactCount, setExtractedFactCount] = useState(0);
+  const [decisionStatement, setDecisionStatement] = useState('');
 
   // Handle user voice transcript
   const handleTranscript = useCallback(
@@ -98,26 +68,43 @@ export function OnboardingInterview({ onComplete }: Props) {
 
   const {
     isRecording,
-    isProcessing: isTranscribing,
     duration,
     startRecording,
     stopRecording,
     resetRecording,
   } = useVoice({ maxDuration: 120, onTranscript: handleTranscript });
 
-  // When step changes to 'extracting', run extraction
+  // When step changes to 'extracting', run extraction, then bloom the web.
   const extractionStarted = useRef(false);
   useEffect(() => {
     if (step === 'extracting' && !extractionStarted.current) {
       extractionStarted.current = true;
       const transcript = getFullTranscript();
       extractFromTranscript(transcript, undefined, 'voice').then((result) => {
-        const count = result?.pending_verifications?.length || 0;
+        const count = result?.pending_verifications?.length || result?.facts_stored || 0;
         setExtractedFactCount(count);
-        moveToVerification();
+        setStep('blooming');
       });
     }
-  }, [step, getFullTranscript, extractFromTranscript, moveToVerification]);
+  }, [step, getFullTranscript, extractFromTranscript, setStep]);
+
+  // Facts driving the bloom: the leader's own (hot, centre) over an ambient
+  // ring of industry seeds (cold, periphery) so the canvas is never empty.
+  const webFacts = useMemo(
+    () => [...memory.map(toWebFact), ...buildSeedFacts(seeds.data)],
+    [memory, seeds.data],
+  );
+
+  // Prefill the decision capture with a challenge the leader just named, so the
+  // pressure test feels drawn from their own words (still fully editable).
+  useEffect(() => {
+    if (step === 'first_artifact' && !decisionStatement) {
+      const blocker = memory.find((m) => m.fact_category === 'blocker');
+      const objective = memory.find((m) => m.fact_category === 'objective');
+      const seedText = blocker?.fact_value || objective?.fact_value || '';
+      if (seedText) setDecisionStatement(seedText);
+    }
+  }, [step, decisionStatement, memory]);
 
   // Handle voice toggle
   const handleVoiceToggle = useCallback(() => {
@@ -139,19 +126,10 @@ export function OnboardingInterview({ onComplete }: Props) {
     await submitResponse(text);
   }, [textInput, submitResponse]);
 
-  // Handle verification complete
-  const handleVerificationComplete = useCallback(async () => {
-    await generateExport('claude', 'general');
+  const finish = useCallback(() => {
     completeOnboarding();
-  }, [generateExport, completeOnboarding]);
-
-  const handleCopy = async () => {
-    if (exportResult?.content) {
-      await navigator.clipboard.writeText(exportResult.content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
+    onComplete();
+  }, [completeOnboarding, onComplete]);
 
   const formatTime = (s: number) =>
     `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
@@ -161,10 +139,16 @@ export function OnboardingInterview({ onComplete }: Props) {
   const capturedCount = fieldsStatus.captured.length;
   const progress = Math.min((capturedCount / totalRequired) * 100, 100);
 
+  const showProgress =
+    step !== 'welcome' &&
+    step !== 'complete' &&
+    step !== 'blooming' &&
+    step !== 'first_artifact';
+
   return (
     <div className="h-screen bg-background flex flex-col">
-      {/* Progress bar - shown during interview */}
-      {step !== 'welcome' && step !== 'complete' && step !== 'verification' && (
+      {/* Progress bar - shown during the interview Q&A */}
+      {showProgress && (
         <div className="flex-shrink-0 px-6 pt-6 pb-2">
           <div className="h-1.5 rounded-full overflow-hidden bg-muted">
             <motion.div
@@ -183,7 +167,7 @@ export function OnboardingInterview({ onComplete }: Props) {
       )}
 
       {/* Main content area */}
-      <div className="flex-1 flex items-center justify-center px-6">
+      <div className="flex-1 flex items-center justify-center px-6 overflow-y-auto">
         <AnimatePresence mode="wait">
           {/* WELCOME */}
           {step === 'welcome' && (
@@ -491,24 +475,95 @@ export function OnboardingInterview({ onComplete }: Props) {
             </motion.div>
           )}
 
-          {/* VERIFICATION */}
-          {step === 'verification' && pendingVerifications.length > 0 && (
-            <FactVerificationCard
-              facts={pendingVerifications}
-              onVerify={verifyFact}
-              onReject={rejectFact}
-              onDismiss={() => {
-                clearPendingVerifications();
-                handleVerificationComplete();
-              }}
-              onComplete={handleVerificationComplete}
-            />
-          )}
-          {step === 'verification' && pendingVerifications.length === 0 && (
-            <VerificationAutoAdvance onComplete={handleVerificationComplete} />
+          {/* BLOOMING - watch the Memory Web come alive */}
+          {step === 'blooming' && (
+            <motion.div
+              key="blooming"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="w-full max-w-lg flex flex-col items-center text-center py-6"
+            >
+              <div className="space-y-1.5 mb-3">
+                <h2 className="text-xl font-bold text-foreground">Your Memory Web is live</h2>
+                <p className="text-sm text-muted-foreground">
+                  {extractedFactCount > 0
+                    ? `${extractedFactCount} ${extractedFactCount === 1 ? 'point' : 'points'} from our conversation, mapped against your world.`
+                    : 'A living map of your world, ready to sharpen every AI you use.'}
+                </p>
+              </div>
+              <div className="w-full h-[48vh] rounded-2xl border border-border bg-card/40 overflow-hidden">
+                <MemoryWebVisualization facts={webFacts} showEmptyState={webFacts.length === 0} />
+              </div>
+              <button
+                onClick={() => setStep('first_artifact')}
+                className="mt-5 px-8 py-3 rounded-xl bg-accent text-accent-foreground font-semibold flex items-center gap-2 shadow-lg shadow-accent/25"
+              >
+                See it in action
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </motion.div>
           )}
 
-          {/* COMPLETE */}
+          {/* FIRST ARTIFACT - pressure-test a real decision */}
+          {step === 'first_artifact' && (
+            <motion.div
+              key="first-artifact"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="w-full max-w-xl py-6 space-y-4"
+            >
+              {engine.decisionCase ? (
+                <>
+                  <DecisionResult engine={engine} onReset={engine.reset} />
+                  {engine.isComplete && (
+                    <button
+                      onClick={finish}
+                      className="w-full px-8 py-3 rounded-xl bg-accent text-accent-foreground font-semibold flex items-center justify-center gap-2 shadow-lg shadow-accent/25"
+                    >
+                      Take me to my dashboard
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  )}
+                </>
+              ) : engine.upgradeRequired ? (
+                <div className="text-center space-y-4">
+                  <p className="text-sm text-muted-foreground">{engine.upgradeMessage}</p>
+                  <button onClick={finish} className="text-sm text-accent font-medium underline underline-offset-4">
+                    Continue to my dashboard
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center gap-2 text-accent">
+                    <Scale className="h-5 w-5" />
+                    <span className="text-xs font-semibold uppercase tracking-wider">One real decision</span>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-card p-5">
+                    <CaptureView
+                      value={decisionStatement}
+                      onChange={setDecisionStatement}
+                      onStart={() => engine.start(decisionStatement)}
+                      starting={engine.starting}
+                      autoFocus
+                      heading="Put a real call through your new web"
+                      subhead="Say a decision you are actually weighing. CTRL breaks it into the claims it rests on, checks each against real evidence and your own context, and tells you where it breaks. This is what every day here looks like."
+                    />
+                  </div>
+                  {engine.error && <p className="text-xs text-destructive text-center">{engine.error}</p>}
+                  <button
+                    onClick={finish}
+                    className="w-full py-2 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                  >
+                    Skip for now, take me to my dashboard
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* COMPLETE - graceful fallback */}
           {step === 'complete' && (
             <motion.div
               key="complete"
@@ -524,33 +579,9 @@ export function OnboardingInterview({ onComplete }: Props) {
                 Your Memory Web is live
               </h2>
               <p className="text-sm text-muted-foreground">
-                {extractedFactCount > 0
-                  ? `${extractedFactCount} ${extractedFactCount === 1 ? 'point' : 'points'} from your conversation - ready to review.`
-                  : 'Your profile is ready.'}{' '}
-                Come back anytime to add more. The more you think out loud, the clearer everything gets.
+                Come back anytime to add more. The more you think out loud, the clearer
+                everything gets.
               </p>
-              {exportResult?.content && (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    Copy this into ChatGPT or Claude. See the difference context makes.
-                  </p>
-                  <pre className="text-left text-xs text-foreground/70 bg-foreground/5 rounded-xl p-4 max-h-48 overflow-auto whitespace-pre-wrap font-mono border border-border">
-                    {exportResult.content}
-                  </pre>
-                  <button
-                    onClick={handleCopy}
-                    className={cn(
-                      'w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2',
-                      copied
-                        ? 'bg-accent/20 text-accent'
-                        : 'bg-foreground/5 text-foreground hover:bg-foreground/10',
-                    )}
-                  >
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    {copied ? 'Copied!' : 'Copy to Clipboard'}
-                  </button>
-                </>
-              )}
               <button
                 onClick={onComplete}
                 className="w-full px-8 py-3 rounded-xl bg-accent text-accent-foreground font-semibold shadow-lg shadow-accent/25"
