@@ -34,8 +34,10 @@ const Settings = lazyWithRetry(() => import('@/pages/Settings'))
 const Compliance = lazyWithRetry(() => import('@/pages/Compliance'))
 const Profile = lazyWithRetry(() => import('@/pages/Profile'))
 const Booking = lazyWithRetry(() => import('@/pages/Booking'))
+const BuildLap = lazyWithRetry(() => import('@/pages/BuildLap'))
 const BriefingPage = lazyWithRetry(() => import('@/pages/BriefingPage'))
 const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
+const Goals = lazyWithRetry(() => import('@/pages/Goals'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
@@ -69,6 +71,10 @@ export const router = createBrowserRouter([
     path: '/booking',
     element: <LazyWrapper><Booking /></LazyWrapper>,
   },
+  {
+    path: '/build',
+    element: <LazyWrapper><BuildLap /></LazyWrapper>,
+  },
 
   // Authenticated routes (share a persistent chrome: GlobalFAB + SettingsSheet)
   {
@@ -97,6 +103,10 @@ export const router = createBrowserRouter([
       {
         path: '/decision',
         element: <LazyWrapper><RequireAuth><DecisionPage /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/goals',
+        element: <LazyWrapper><RequireAuth><Goals /></RequireAuth></LazyWrapper>,
       },
       {
         path: '/enrich',
