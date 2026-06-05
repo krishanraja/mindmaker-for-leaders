@@ -29,6 +29,8 @@ import {
   Activity,
   AlertCircle,
   RefreshCw,
+  Scale,
+  ArrowRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -37,6 +39,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useVoice } from '@/hooks/useVoice';
 import { useMemoryExport } from '@/hooks/useMemoryExport';
 import { useMarkdownImport } from '@/hooks/useMarkdownImport';
+import { useIndustrySeeds } from '@/hooks/useIndustrySeeds';
+import { useDecisionInbox } from '@/hooks/useDecisionInbox';
+import { buildSeedFacts } from '@/lib/seedFacts';
+import { AlertBanner } from '@/components/operator/decision/decision-views';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { MemoryWebVisualization } from './MemoryWebVisualization';
 import { SeedBeatsPrompt } from '@/components/briefing/SeedBeatsPrompt';
@@ -358,6 +364,28 @@ function RailCoverage({ stats }: { stats: ReturnType<typeof useMemoryWeb>['stats
   );
 }
 
+/* The marquee recurring action: pressure-test a real decision. Elevated out of
+   Edge so it reads as a primary, everyday move, grounded in the Memory Web. */
+function DecisionCtaCard({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group w-full flex items-center gap-4 rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 text-left transition-colors hover:bg-primary/10"
+    >
+      <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+        <Scale className="h-5 w-5 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground">Pressure-test a decision</p>
+        <p className="text-xs text-muted-foreground leading-snug">
+          Break a real call into the claims it rests on, check each against the evidence and your own context.
+        </p>
+      </div>
+      <ArrowRight className="h-4 w-4 text-primary/70 group-hover:translate-x-0.5 transition-transform shrink-0" />
+    </button>
+  );
+}
+
 /* ─── Main dashboard ───────────────────────────────────────────── */
 
 export function DesktopMemoryDashboard() {
@@ -382,6 +410,16 @@ export function DesktopMemoryDashboard() {
   const { generate, generating, phase } = useGenerateBriefing();
   const hasData = facts.length > 0;
   const { toast } = useToast();
+
+  // Decision Engine: open alerts pull the leader back; the CTA leads with the
+  // marquee action.
+  const decisionInbox = useDecisionInbox();
+
+  // Cold start: seed the web with ambient industry context so the canvas is
+  // never empty. Only fetched when there is genuinely nothing to show.
+  const showEmpty = !isLoading && !hasData && !memoryError;
+  const { data: emptySeedData } = useIndustrySeeds(showEmpty);
+  const emptySeedFacts = useMemo(() => buildSeedFacts(emptySeedData), [emptySeedData]);
 
   useEffect(() => {
     if (todaysBriefing) setBriefing(todaysBriefing);
@@ -649,6 +687,19 @@ export function DesktopMemoryDashboard() {
         rightRail={rightRail}
       >
         <div className="space-y-6">
+          {/* Decision alerts: a re-verified call whose evidence shifted pulls
+              the leader back. */}
+          {decisionInbox.alerts.length > 0 && (
+            <AlertBanner
+              alerts={decisionInbox.alerts}
+              onReRun={() => navigate('/decision')}
+              onDismiss={(a) => decisionInbox.acknowledge(a.id)}
+            />
+          )}
+
+          {/* Marquee action, shown once the leader has context to ground it. */}
+          {hasData && <DecisionCtaCard onClick={() => navigate('/decision')} />}
+
           {/* Input bar - sticky-feeling, primary action */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-sm hover:border-accent/30 focus-within:border-accent/40 transition-colors">
@@ -929,49 +980,60 @@ export function DesktopMemoryDashboard() {
             </motion.div>
           )}
 
-          {/* Empty state */}
-          {!isLoading && !hasData && !memoryError && (
+          {/* Empty state - the web is never bare: ambient industry seeds bloom
+              behind the call to action so the canvas reads as alive. */}
+          {showEmpty && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-dashed border-border bg-card/30 py-20 px-8 text-center"
+              className="relative rounded-3xl border border-border bg-card/30 overflow-hidden"
             >
-              <Brain className="h-12 w-12 text-muted-foreground/30 mx-auto mb-5" />
-              <h2 className="text-xl font-bold text-foreground mb-2">
-                Your Memory Web is empty
-              </h2>
-              <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-6">
-                Start by voicing your thoughts about your role, company, goals, and
-                challenges. The more you share, the smarter your AI context gets.
-              </p>
-              <p className="text-xs text-muted-foreground/60 max-w-md mx-auto mb-8">
-                Try: "I'm a VP of Engineering at a Series B startup. My biggest
-                challenge right now is..."
-              </p>
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  onClick={() => startRecording()}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-semibold shadow-lg shadow-accent/20 hover:bg-accent/90"
-                >
-                  <Mic className="h-4 w-4" />
-                  Voice a thought
-                </button>
-                <button
-                  onClick={triggerImport}
-                  disabled={isImporting}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-sm font-semibold text-foreground hover:bg-secondary"
-                >
-                  <FileText className="h-4 w-4" />
-                  Import markdown
-                </button>
+              {/* Ambient seeded web (decorative, not interactive) */}
+              <div className="absolute inset-0 opacity-70 pointer-events-none">
+                <MemoryWebVisualization
+                  facts={emptySeedFacts}
+                  showEmptyState={emptySeedFacts.length === 0}
+                />
               </div>
-              <p className="text-[11px] text-muted-foreground/40 mt-4">
-                Tip: press{' '}
-                <kbd className="px-1.5 py-0.5 rounded border border-border bg-secondary text-[10px] font-mono">
-                  ⌘K
-                </kbd>{' '}
-                anytime to jump or run actions.
-              </p>
+
+              {/* Overlay content */}
+              <div className="relative z-10 py-16 px-8 text-center bg-gradient-to-b from-card/30 via-card/70 to-card/90">
+                <h2 className="text-xl font-bold text-foreground mb-2">
+                  This is the shape of your world
+                </h2>
+                <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-6">
+                  Voice a few thoughts about your role, company, goals, and challenges,
+                  and these ambient nodes become your own living Memory Web - the context
+                  every AI you use draws on.
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    onClick={() => startRecording()}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-semibold shadow-lg shadow-accent/20 hover:bg-accent/90"
+                  >
+                    <Mic className="h-4 w-4" />
+                    Voice a thought
+                  </button>
+                  <button
+                    onClick={triggerImport}
+                    disabled={isImporting}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-sm font-semibold text-foreground hover:bg-secondary"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Import markdown
+                  </button>
+                </div>
+                <div className="max-w-md mx-auto mt-6">
+                  <DecisionCtaCard onClick={() => navigate('/decision')} />
+                </div>
+                <p className="text-[11px] text-muted-foreground/50 mt-4">
+                  Tip: press{' '}
+                  <kbd className="px-1.5 py-0.5 rounded border border-border bg-secondary text-[10px] font-mono">
+                    ⌘K
+                  </kbd>{' '}
+                  anytime to jump or run actions.
+                </p>
+              </div>
             </motion.div>
           )}
         </div>

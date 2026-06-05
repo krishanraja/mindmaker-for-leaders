@@ -1,13 +1,16 @@
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Zap, Brain, ArrowUpRight, Radio } from 'lucide-react';
+import { Home, Zap, Brain, Scale, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// "Decide" leads here over the old "Export" tab: pressure-testing a real call is
+// the marquee, everyday action. Context Export stays reachable via dashboard
+// quick actions, /context, and the command palette.
 const navItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
   { path: '/dashboard', search: '?view=edge', icon: Zap, label: 'Edge' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory' },
-  { path: '/context', search: '', icon: ArrowUpRight, label: 'Export' },
+  { path: '/decision', search: '', icon: Scale, label: 'Decide' },
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing' },
 ];
 

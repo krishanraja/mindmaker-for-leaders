@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -34,6 +34,8 @@ import { FactVerificationCard } from '@/components/memory/FactVerificationCard';
 import { VerificationSwipeStack } from '@/components/memory/VerificationSwipeStack';
 import { useVerificationFlow } from '@/hooks/useVerificationFlow';
 import { MemoryWebVisualization } from './MemoryWebVisualization';
+import { useIndustrySeeds } from '@/hooks/useIndustrySeeds';
+import { buildSeedFacts } from '@/lib/seedFacts';
 import { BottomNav } from './BottomNav';
 import { AppHeader } from './AppHeader';
 import { useToast } from '@/hooks/use-toast';
@@ -268,6 +270,13 @@ export function MobileMemoryDashboard() {
     `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   const hasData = facts.length > 0;
+
+  // Cold start: ambient industry seeds keep the web alive when there are no
+  // real facts yet. Only fetched when the canvas would otherwise be empty.
+  const showEmpty = !isLoading && !hasData && !memoryError;
+  const { data: emptySeedData } = useIndustrySeeds(showEmpty);
+  const emptySeedFacts = useMemo(() => buildSeedFacts(emptySeedData), [emptySeedData]);
+
   const isVoiceExpanded =
     isRecording || activeProcessing || mode === 'text' || mode === 'review' || !!pendingReview;
 
@@ -458,10 +467,11 @@ export function MobileMemoryDashboard() {
         {/* Main content area - Memory Web visualization as hero */}
         {!isVoiceExpanded && (
           <div className="flex-1 min-h-[280px] relative">
-            {/* The living memory web - always visible */}
+            {/* The living memory web - always visible. Falls back to ambient
+                industry seeds so it is never a blank canvas. */}
             <MemoryWebVisualization
-              facts={facts}
-              showEmptyState={!isLoading && !hasData && !memoryError && mode === 'idle'}
+              facts={hasData ? facts : emptySeedFacts}
+              showEmptyState={!isLoading && !hasData && !memoryError && emptySeedFacts.length === 0 && mode === 'idle'}
               clearSelection={briefingExpanded}
             />
 
