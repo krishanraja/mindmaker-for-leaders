@@ -111,3 +111,43 @@ ephemeral container and is reviewable.
 - Honesty: anything that genuinely needs an authenticated browser or mobile session
   (dark-parity sweep on existing surfaces, the build-lap and forced-call UX) is reported as
   needing human QA rather than claimed as verified.
+
+## Build status (2026-06-05)
+
+All four phases are implemented, build-verified (npm run build green, standards
+guard passing), committed, and pushed to branch claude/blissful-turing-vPwiW.
+
+Shipped to the branch:
+- B2 goals: migration + types + useGoals + /goals page + desktop sidebar entry.
+- B4/B7 compute cap: _shared/ai-usage.ts + est_cost_usd column + wiring into
+  generate-skill-export.
+- B5 build lap: free-skill-export function + /build page + useSkillExport made
+  function-name aware.
+- B6 critical-evaluation: decision_user_calls + useDecisionCall + CriticalCallStep
+  gating the recommendation in PressureTestPanel.
+
+Live database changes applied via the Management API (additive, idempotent):
+- public.goals (+ RLS, indexes); 14 goals backfilled from user_memory objectives.
+- decision_cases.goal_ids, leader_missions.goal_id (additive columns).
+- ai_usage_audit.est_cost_usd (+ daily index).
+- public.decision_user_calls (+ RLS, indexes).
+Note: the live user_business_context has no goals column (only primary_challenges),
+so the planned business_context backfill was dropped; memory objectives are the
+canonical source on live.
+
+Deploy-pending (this container has no supabase CLI or Deno, and GitHub release
+downloads are blocked by the network policy, so edge functions were not deployed
+blind). Run on a machine with the CLI:
+  supabase functions deploy free-skill-export
+  supabase functions deploy generate-skill-export
+Optional: set the soft cap without a redeploy via
+  supabase secrets set AI_SOFT_CAP_USD_PER_DAY=2.0
+
+Needs a human QA pass (cannot be verified headlessly):
+- Dark-mode parity sweep on existing surfaces (new surfaces use semantic tokens
+  and are dark-correct by construction; the prebuild guard enforces token
+  definitions, but existing screens still need an eyes-on pass per decision 5).
+- The /build anonymous -> account upgrade and kit download UX.
+- The B6 forced-call step in a real authenticated decision run.
+- Add /goals to the mobile BottomNav if wanted (left at 5 items to avoid
+  crowding 390px; reachable on desktop sidebar and by direct URL today).
