@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { Home, Zap, Brain, Radio, ArrowUpRight, Settings, Shield, LogOut, User } from 'lucide-react';
+import { Home, Zap, Brain, Radio, ArrowUpRight, Settings, Shield, LogOut, User, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { CtrlLogo } from '@/components/landing/CtrlLogo';
@@ -8,6 +8,7 @@ const navItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
   { path: '/dashboard', search: '?view=edge', icon: Zap, label: 'Edge' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory Web' },
+  { path: '/goals', search: '', icon: Target, label: 'Goals' },
   { path: '/context', search: '', icon: ArrowUpRight, label: 'Export' },
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing' },
 ];
