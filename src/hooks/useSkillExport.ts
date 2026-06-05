@@ -35,7 +35,7 @@ interface UseSkillExport {
  * with passed: false and no skill/zip - the UI surfaces the routing decision
  * so the leader knows what to do with the input instead.
  */
-export function useSkillExport(): UseSkillExport {
+export function useSkillExport(functionName: string = "generate-skill-export"): UseSkillExport {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [triageResult, setTriageResult] = useState<SkillTriage | null>(null);
@@ -68,7 +68,7 @@ export function useSkillExport(): UseSkillExport {
         const seed = options?.seed
           ? { kind: options.seed.kind, text: options.seed.text }
           : undefined;
-        const { data, error: fnError } = await supabase.functions.invoke("generate-skill-export", {
+        const { data, error: fnError } = await supabase.functions.invoke(functionName, {
           body: {
             transcript,
             skill_name_hint: options?.skillNameHint,
@@ -117,7 +117,7 @@ export function useSkillExport(): UseSkillExport {
         setIsGenerating(false);
       }
     },
-    [],
+    [functionName],
   );
 
   const downloadZip = useCallback(() => {
