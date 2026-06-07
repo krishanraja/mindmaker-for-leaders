@@ -2,7 +2,7 @@
 
 Expected outcomes and success metrics for CTRL users. Every outcome ties back to **decision speed** and **auditable relevance**.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-07
 
 ---
 

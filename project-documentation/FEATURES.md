@@ -2,19 +2,19 @@
 
 Complete feature inventory across all three CTRL tools.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-07
 
 > **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
 
 ---
 
-## Repo at a glance (verified 2026-05-13)
+## Repo at a glance (verified 2026-06-07)
 
-- **74 Supabase edge functions** (Deno runtime), grouped: 7 briefing, 5 memory, 5 AI generation, 4 billing, 6 diagnostic, 8 email, 9 enrichment, 11 leadership/missions/observability/voice, 1 skill builder (`generate-skill-export`), plus shared modules
-- **51 React hooks** under `src/hooks/` (added in v5.2: `useSkillExport`, `useUserPains`, `useRevealOnMount`)
-- **98 PostgreSQL migrations** applied to remote (added in v5.2: `20260508000000_create_skill_exports.sql`)
+- **80 Supabase edge functions** (Deno runtime), grouped: 7 briefing, 5 memory, 5 AI generation, 4 billing, 6 diagnostic, 8 email, 9 enrichment, 11 leadership/missions/observability/voice, 1 skill builder (`generate-skill-export`), 1 free skill builder (`free-skill-export`), 3 decision engine (`decision-engine`, `decision-eval`, `decision-watch`), plus attribution, compliance, AA utilities, and shared modules
+- **59 React hooks** under `src/hooks/` (added in v5.2: `useSkillExport`, `useUserPains`, `useRevealOnMount`; added in v5.3: `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGoals`, `useWatchlist`, `useOnboardingInterview`, `useOnceFlag`, `useComplianceStatus`, `useBriefingStreamPreview`, `useBriefingVoiceCommands`, `useSuggestedInterests`, `useExportRecommendations`, `useModelRecommendation`, `useVerificationFlow`, `useGeneratedArtifacts`, `useProfileBasics`, `useAssessmentBenchmarks`, `useAudioCapture`, `useVisualViewport`, `useZoomPan`, `useWatchlist`)
+- **109 PostgreSQL migrations** applied to remote (added in v5.3: decision_engine tables, goals, ai_usage_cost, audit_infrastructure, cross-tenant RLS fix, daily_briefing_trigger)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
-- **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
+- **6 audit-week tracks shipped** (PR #93-#101, Phase 7): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7. Phase 9 added security hardening (cross-tenant RLS fix, audit infrastructure, system-table write hardening).
 - **Desktop UI redesign shipped** (PR #104, Phase 8): unified desktop-native shell with sticky top bar (page eyebrow + title + actions), optional right rail for context, Cmd/Ctrl+K Command Palette across all authenticated routes. No more stretched mobile markup on desktop.
 - **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
 - **Tests**: 5 Vitest unit/shared + 6 Playwright e2e (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency)
@@ -581,6 +581,80 @@ RLS: owner-read, owner-insert. Indexed on `user_id` and `created_at DESC`.
 Same paywall as `generate-custom-export`. Free users see the locked `SkillExportCard` with a "Pro" badge that opens the Stripe checkout via `useEdgeSubscription.subscribe`. Subscribers get unlimited skill generation.
 
 **Sales Anchor - Skill Builder**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Two minutes of speaking. Permanent leverage. Drop it in `~/.claude/skills/` and forget it."
+
+---
+
+## Decision Engine: Verification-Looped Pressure-Testing (v5.3)
+
+Turns a high-stakes statement or business case into a structured, evidence-based verdict. Available at `/decision`. Introduced in Phase 9.
+
+### The Pipeline
+
+| Stage | What it does | Model / Tool |
+|---|---|---|
+| 1. Decompose | Break the statement into discrete, verifiable claims | gpt-4o JSON mode |
+| 2. Verify | Web-ground each claim via Perplexity/Brave, compute verdict + confidence | `decision-engine` per claim |
+| 3. Cross-examine | Surface tensions between claims | gpt-4o |
+| 4. Advise | Synthesize a final recommendation, net verdict, and confidence score | gpt-4o |
+
+Runs via `EdgeRuntime.waitUntil` so the pipeline never blocks the HTTP response. The frontend polls `decision_cases` + `decision_claims` per `stage`, rendering each stage as it lands (mirrors the briefing streaming pattern).
+
+### WATCH Loop (decision-watch)
+
+`decision-watch` is an hourly pg_cron job that re-verifies the load-bearing, web-checkable claims behind every active decision case. When a verdict flips or confidence drops materially, it raises an idempotent `decision_alert`. Alerts surface in the Daily Briefing so the leader sees the flag in their next morning brief.
+
+### Force User Call (B6)
+
+When a claim is load-bearing and the evidence verdict is contradicted or low-confidence, the UI prompts the leader to record their own call. The leader's call is stored in `decision_claims.user_call` and is included in the Advise stage context.
+
+### Data Architecture
+
+**Tables**: `decision_cases`, `decision_claims`, `decision_evidence`, `decision_tensions`, `decision_alerts`, `decision_events`, `decision_eval_cases`. All RLS owner-scoped.
+
+**Edge Functions**: `decision-engine` (main pipeline), `decision-watch` (hourly re-verify), `decision-eval` (admin calibration harness).
+
+**Hooks**: `useDecisionEngine` (run + poll a case), `useDecisionInbox` (case list + open alerts), `useDecisionCall` (force-user-call UX).
+
+**Sales Anchor - Decision Engine**: "Paste your business case. Get back each load-bearing claim marked supported, contradicted, or unverifiable - with the web sources. Your briefing alerts you if the evidence moves. Decisions become living objects, not one-shot answers."
+
+---
+
+## Goals (v5.3)
+
+Unified goals table as the spine's single source of truth for what the leader is working toward. Replaces scattered goal references across Memory Web, briefing context, and assessment data.
+
+**Route**: `/goals` (auth required)
+
+### Features
+
+- Create, update, and track goals with priority ranking
+- Goals feed the briefing importance lens (weight 1.0 for active high-priority goals)
+- Goals feed the Decision Engine decompose stage as context
+- Goals feed Context Export and Edge profile synthesis
+- Source tracking: voice, form, enrichment
+
+### Data Architecture
+
+**Table**: `goals` - `id`, `user_id`, `title`, `description`, `status`, `priority`, `source`, `confidence`, `created_at`, `updated_at`. RLS: owner-scoped.
+
+**Hook**: `useGoals` - CRUD and priority management.
+
+---
+
+## Build Lap: Free Anonymous Skill Try (v5.3)
+
+A free, anonymous entry point at `/build` that lets any visitor generate a skill without creating an account first. The account is created at kit delivery (when they download the ZIP).
+
+**Route**: `/build` (no auth required)
+
+### How it works
+
+1. Visitor describes a workflow at `/build` (voice or text)
+2. `free-skill-export` edge function runs the Three Honest Tests triage and extraction (no Edge Pro gate)
+3. If the skill passes quality gate, visitor downloads the ZIP
+4. Downloading triggers account creation and wires the skill to their new profile
+
+**Sales Anchor - Build Lap**: "Try it before you sign up. Describe one workflow. Download a Claude Skill. Then decide if you want an account. Two minutes to proof."
 
 ---
 
@@ -1305,6 +1379,7 @@ CTRL shipped six thematic audit weeks closing technical debt and hardening the p
 | 5 (PR #97) | **Observability** | Structured edge-function JSON logger (`_shared/logger.ts`); CI gate against `console.log` regressions; tests for `with-timeout` |
 | 6 (PR #98, #100, #101) | **Cleanup** | P2 backlog closure; stale-incomplete recovery; e2e contract starter (auth, briefing, account-deletion, stripe-idempotency, sparse-profile, briefing-rate-limits); AI response cache; lint cleanup |
 | 2026-05-30 rebuild | **Pricing + Security + Attribution + Public Surface** | Edge Pro repriced to $29/month (from $9); Full Diagnostic confirmed at $49; RLS fixes on `leader_missions`, `leader_check_ins`, `leader_progress_snapshots`, `tts_config`; `resend-webhook` signature verification; UTM attribution emit path wired (dormant until env set); `/.well-known/product.json` product-truth endpoint live; public-surface prerender added for SEO and agent-readability |
+| 2026-06 (Phase 9) | **Tenant Hardening + Compliance + Security** | Cross-tenant RLS leak hotfix (`fix_cross_tenant_rls_leak.sql`, applied 2026-06-02); audit infrastructure tables for SOC 2 (CC7.2) and GDPR (Art. 30) backing `/compliance`; system-table write hardening (closed `ALL`/`USING(true)` holes on public-granted system tables); marketing consent tracking; AI spend cap with `ai_usage_cost` logging |
 
 ### Verifiable proof points for buyers
 

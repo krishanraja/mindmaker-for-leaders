@@ -2,9 +2,9 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-07
 
-> **Verified counts (2026-05-13)**: 74 edge functions, 51 hooks, 98 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points).
+> **Verified counts (2026-06-07)**: 80 edge functions, 59 hooks, 109 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, Phase 9 shipped (Decision Engine + Briefing Streaming + Tenant Hardening on top of Phase 8's Skill Builder + world-class desktop UI redesign).
 
 ---
 
@@ -144,7 +144,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 51 custom hooks
+├── hooks/                     # 59 custom hooks
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -156,6 +156,26 @@ src/
 │   ├── useSkillExport.ts      # Skill Builder pipeline (v5.2): wraps generate-skill-export, decodes base64 ZIP into a Blob
 │   ├── useUserPains.ts        # Top blockers + active decisions, drives pain-anchored entry points (v5.2)
 │   ├── useRevealOnMount.ts    # Smooth reveal helper for below-the-fold components (v5.2)
+│   ├── useDecisionEngine.ts   # Run + poll a decision case (v5.3)
+│   ├── useDecisionInbox.ts    # Case list + open alerts (v5.3)
+│   ├── useDecisionCall.ts     # Force-user-call UX for load-bearing claims (v5.3)
+│   ├── useGoals.ts            # Goals CRUD from unified goals table (v5.3)
+│   ├── useWatchlist.ts        # Watchlist entities for briefing (v5.3)
+│   ├── useOnboardingInterview.ts  # Onboarding interview flow (v5.3)
+│   ├── useOnceFlag.ts         # Show-once gating for coachmarks/tours (v5.3)
+│   ├── useComplianceStatus.ts # Compliance/audit page state (v5.3)
+│   ├── useBriefingStreamPreview.ts  # Polls preliminary briefing rows before curation completes (v5.3)
+│   ├── useBriefingVoiceCommands.ts  # Voice command integration for briefing (v5.3)
+│   ├── useSuggestedInterests.ts     # Suggested beats/entities for briefing interests (v5.3)
+│   ├── useExportRecommendations.ts  # Export format/use-case recommendations (v5.3)
+│   ├── useModelRecommendation.ts    # AA model recommendation (v5.3)
+│   ├── useVerificationFlow.ts       # Claim verification UX (v5.3)
+│   ├── useGeneratedArtifacts.ts     # Generated artifacts query (v5.3)
+│   ├── useProfileBasics.ts          # Basic profile read (v5.3)
+│   ├── useAssessmentBenchmarks.ts   # Assessment benchmark queries (v5.3)
+│   ├── useAudioCapture.ts           # Audio capture state (v5.3)
+│   ├── useVisualViewport.ts         # Visual viewport height tracking (v5.3)
+│   ├── useZoomPan.ts                # Pan/zoom for visualizations (v5.3)
 │   ├── useMemoryQueries.ts    # Memory Center queries
 │   ├── useMemoryWeb.ts        # Memory Web dashboard data
 │   ├── useMemoryExport.ts     # Context export logic
@@ -208,29 +228,35 @@ src/
 │   └── supabase/
 │       ├── client.ts          # Supabase client
 │       └── types.ts           # Generated DB types (READ-ONLY)
-├── pages/                     # 25 page files (many legacy, now redirected to /dashboard)
+├── pages/                     # 29 page files (many legacy, now redirected to /dashboard)
 │   ├── Landing.tsx            # Landing page (/)
 │   ├── Auth.tsx               # Authentication (/auth)
 │   ├── AuthCallback.tsx       # OAuth callback (/auth/callback)
 │   ├── Dashboard.tsx          # **Main hub** (/dashboard) - renders Memory Web or Edge view
 │   ├── MemoryCenter.tsx       # Memory Center (/memory)
 │   ├── ContextExport.tsx      # Context Export (/context)
+│   ├── BriefingPage.tsx       # Briefing deep-link (/briefing) (v5.2)
+│   ├── DecisionPage.tsx       # Decision Engine (/decision) (v5.3)
+│   ├── Goals.tsx              # Goals management (/goals) (v5.3)
+│   ├── EnrichPage.tsx         # Inbound enrichment (/enrich) (v5.3)
+│   ├── BuildLap.tsx           # Free anonymous build lap (/build) (v5.3)
+│   ├── Compliance.tsx         # Audit/compliance (/compliance) (v5.3)
 │   ├── Settings.tsx           # User settings (/settings)
 │   ├── Profile.tsx            # User profile (/profile)
 │   ├── Booking.tsx            # Workshop booking (/booking)
-│   ├── Diagnostic.tsx         # Assessment flow (legacy, redirects to /dashboard)
-│   ├── Voice.tsx              # Voice recording (legacy, redirects to /dashboard)
-│   ├── Pulse.tsx              # Strategic pulse (legacy, redirects to /dashboard)
-│   ├── Today.tsx              # Today page (legacy, redirects to /dashboard)
-│   ├── Think.tsx              # Think page (legacy, redirects to /dashboard?view=edge)
-│   ├── WeeklyCheckin.tsx      # Weekly check-in
-│   ├── MissionCheckIn.tsx     # Mission check-in
-│   ├── MissionHistory.tsx     # Mission history
-│   ├── Progress.tsx           # Progress tracking
-│   ├── Baseline.tsx           # Baseline assessment
-│   ├── DecisionCapture.tsx    # Decision capture
-│   ├── PromptCoach.tsx        # Prompt coaching
-│   ├── Timeline.tsx           # Assessment timeline
+│   ├── Diagnostic.tsx         # Assessment flow (legacy, file exists, redirects to /dashboard)
+│   ├── Voice.tsx              # Voice recording (legacy, file exists, redirects to /dashboard)
+│   ├── Pulse.tsx              # Strategic pulse (legacy, file exists, redirects to /dashboard)
+│   ├── Today.tsx              # Today page (legacy, file exists, redirects to /dashboard)
+│   ├── Think.tsx              # Think page (in auth router, Navigate to /dashboard?view=edge)
+│   ├── WeeklyCheckin.tsx      # Weekly check-in (legacy, not in active router)
+│   ├── MissionCheckIn.tsx     # Mission check-in (legacy, not in active router)
+│   ├── MissionHistory.tsx     # Mission history (legacy, not in active router)
+│   ├── Progress.tsx           # Progress tracking (legacy, not in active router)
+│   ├── Baseline.tsx           # Baseline assessment (legacy, not in active router)
+│   ├── DecisionCapture.tsx    # Decision capture (legacy, not in active router)
+│   ├── PromptCoach.tsx        # Prompt coaching (legacy, not in active router)
+│   ├── Timeline.tsx           # Assessment timeline (legacy, not in active router)
 │   └── NotFound.tsx           # 404 page
 ├── styles/                    # Design tokens & styles
 ├── __tests__/                 # Test files
@@ -270,23 +296,29 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/auth` | Auth | No | Email + Google OAuth |
 | `/auth/callback` | AuthCallback | No | OAuth redirect handler |
 | `/booking` | Booking | No | External booking |
+| `/build` | BuildLap | No | Free anonymous skill/context try; account created at kit delivery (v5.3) |
 | `/dashboard` | Dashboard (Memory Web) | Yes | Default view - Memory Web with guided first experience |
 | `/dashboard?view=edge` | Dashboard (Edge) | Yes | Edge leadership amplifier |
 | `/memory` | MemoryCenter | Yes | Detailed memory management |
-| `/context` | ContextExport | Yes | Export to AI tools |
+| `/context` | ContextExport | Yes | Export to AI tools + Skill Builder |
+| `/briefing` | BriefingPage | Yes | Deep-link view for a specific briefing (v5.2) |
+| `/decision` | DecisionPage | Yes | Decision Engine - run and track decision cases (v5.3) |
+| `/goals` | Goals | Yes | Unified goals management (v5.3) |
+| `/enrich` | EnrichPage | Yes | Inbound enrichment loop (v5.3) |
 | `/settings` | Settings | Yes | User preferences |
+| `/compliance` | Compliance | Yes | Audit infrastructure for SOC 2 / GDPR (v5.3) |
 | `/profile` | Profile | Yes | User profile |
 
 **Legacy Redirects (all redirect to `/dashboard`):**
 
 | Route | Redirects To |
 |-------|-------------|
+| `/think` | `/dashboard?view=edge` (authenticated route, Navigate redirect) |
 | `/today` | `/dashboard` |
 | `/pulse` | `/dashboard` |
 | `/voice` | `/dashboard` |
 | `/diagnostic` | `/dashboard` |
-| `/think` | `/dashboard?view=edge` |
-| `*` | `/` |
+| `*` | NotFound page |
 
 All active pages are lazy-loaded with `React.lazy()` and wrapped in `<Suspense>` boundaries.
 
@@ -740,6 +772,57 @@ skill_exports                           -- Skill Builder log (Phase 8)
   - One row per generation attempt, including failed-triage cases
   - RLS: owner-read + owner-insert
   - Indexed on user_id and created_at DESC
+
+goals                                   -- Unified goals table (Phase 9 / v5.3)
+├── id (PK, uuid), user_id (FK auth.users)
+├── title, description, status, priority
+├── source (voice | form | enrichment), confidence (0-1)
+├── created_at, updated_at
+  - RLS: owner-scoped; drives briefing lens weight and Decision Engine context
+
+decision_cases                          -- Decision Engine (Phase 9 / v5.3)
+├── id (PK, uuid), user_id (FK auth.users)
+├── statement (TEXT), source ('advisor' | 'capture' | 'voice' | 'fireflies')
+├── stage ('decompose' | 'verify' | 'cross_examine' | 'advise' | 'complete')
+├── created_at, updated_at
+  - RLS: owner-scoped
+
+decision_claims                         -- Individual claims within a case
+├── id (PK, uuid), case_id (FK decision_cases), user_id
+├── claim_text, claim_type, verdict ('supported' | 'contradicted' | 'unverifiable')
+├── confidence (NUMERIC), evidence_count (INT)
+├── user_call (TEXT, nullable) -- set when user forces their call (B6)
+├── created_at, updated_at
+
+decision_evidence                       -- Web-grounded evidence per claim
+├── id (PK, uuid), claim_id (FK decision_claims)
+├── source_url, source_title, excerpt, relevance_score
+├── created_at
+
+decision_tensions                       -- Cross-claim tensions surfaced by cross-examine stage
+├── id (PK, uuid), case_id (FK decision_cases)
+├── description, severity ('low' | 'medium' | 'high')
+├── created_at
+
+decision_alerts                         -- Idempotent alerts raised by decision-watch
+├── id (PK, uuid), case_id (FK decision_cases), claim_id (FK decision_claims)
+├── alert_type ('verdict_flip' | 'confidence_drop'), severity
+├── is_read (BOOL, default false), created_at
+  - Unique on (case_id, claim_id, alert_type) for idempotency
+
+decision_events                         -- Audit log of stage transitions
+├── id (PK, uuid), case_id (FK decision_cases)
+├── event_type, payload (JSONB), created_at
+
+decision_eval_cases                     -- Admin-only single-claim calibration harness
+├── id (PK, uuid), claim_text, expected_verdict
+├── actual_verdict, passed (BOOL), created_at
+
+ai_usage_cost                           -- Per-user AI spend tracking (Phase 9 / v5.3)
+├── id (PK, uuid), user_id (FK auth.users)
+├── function_name, model, tokens_in, tokens_out, cost_usd
+├── created_at
+  - Drives the soft daily spend cap per user
 ```
 
 **PostgreSQL Extensions (required):**
@@ -751,7 +834,7 @@ skill_exports                           -- Skill Builder log (Phase 8)
 
 **Location**: `supabase/functions/`
 
-**Total**: 74 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline.
+**Total**: 80 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions plus shared modules. Phase 8 added `generate-skill-export` (Skill Builder pipeline). Phase 9 added `decision-engine`, `decision-eval`, `decision-watch` (Decision Engine trio), `track-event` (attribution lifecycle proxy), `free-skill-export` (Build Lap), `send-daily-briefing` (daily briefing email), `synthesize-interview-audio`, `swap-profile-data`, `onboarding-interview`, `aa-assessment-enrich`, `aa-model-recommend`, `aa-tts-monitor`, `ingest-training-material`, `cleanup-expired-data`, `send-edge-test-email`.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)
@@ -858,6 +941,22 @@ skill_exports                           -- Skill Builder log (Phase 8)
 #### Additional Functions
 
 53. **enrich-company-context** - Enrich company data for contextual AI responses
+
+#### Decision Engine Subsystem (Phase 9, June 2026)
+
+61. **decision-engine**: Main orchestrator. POST a statement (source: advisor/capture/voice/fireflies) → decompose → verify (web-grounded claims via Perplexity/Brave) → cross-examine → advise. Runs in the background via `EdgeRuntime.waitUntil` while the frontend polls `decision_cases` + `decision_claims` per `stage` (mirrors the briefing streaming pattern).
+62. **decision-watch**: Hourly pg_cron WATCH loop. Re-verifies load-bearing, web-checkable claims behind active decisions. Raises idempotent `decision_alerts` when a verdict flips or confidence drops materially. Alerts surface in the Daily Briefing.
+63. **decision-eval**: Admin-only single-claim calibration harness. Exercises the exact live verify path against expected verdicts for QA.
+64. **track-event**: Unauthenticated attribution emit proxy. Accepts client lifecycle events (`landed` | `signed_up` | `activated`) and forwards to the central MindmakerOS warehouse via server-held `ATTRIBUTION_INGEST_SECRET`. No secret on the client. Dormant until warehouse env is configured. Deployed with `--no-verify-jwt`.
+65. **free-skill-export**: Skill/context export for the free anonymous Build Lap (`/build`). Account created at kit delivery.
+66. **send-daily-briefing**: Email delivery of the daily briefing. Triggered by the `daily_briefing_trigger` pg_cron schedule.
+67. **onboarding-interview**: Onboarding interview flow (voice interview → structured profile extraction).
+68. **synthesize-interview-audio**: ElevenLabs synthesis for onboarding interview audio.
+69. **swap-profile-data**: Profile data swap utility.
+70. **aa-assessment-enrich**, **aa-model-recommend**, **aa-tts-monitor**: Agent Assessment enrichment, model recommendation, and TTS monitoring utilities.
+71. **ingest-training-material**: Admin function to load YAML training material into the `training_material` table.
+72. **cleanup-expired-data**: Scheduled cleanup of expired AI cache rows and temporary data.
+73. **send-edge-test-email**: Internal test function for Edge artifact email delivery.
 
 #### Skill Builder Subsystem (Phase 8, May 2026)
 
@@ -1324,12 +1423,11 @@ The CTRL landing page (`/`) and any other public routes are pre-rendered at buil
 
 ### Current State
 
-**Vitest** (`vitest.config.ts`): 6 unit/shared specs:
+**Vitest** (`vitest.config.ts`): 5 unit/shared specs:
 - `src/__tests__/api.test.ts`
 - `src/__tests__/authMachine.test.ts`
 - `src/__tests__/renderMarkdown.test.ts`
 - `src/__tests__/training.test.ts`
-- `src/__tests__/HeroSection.video.test.tsx`
 - `supabase/functions/_shared/with-timeout.test.ts`
 
 **Playwright** (`playwright.config.ts`): 6 e2e specs:
@@ -1372,7 +1470,7 @@ The CTRL landing page (`/`) and any other public routes are pre-rendered at buil
   "react-router-dom": "^6.26.2",
   "@supabase/supabase-js": "^2.50.3",
   "@tanstack/react-query": "^5.56.2",
-  "framer-motion": "^11.x",
+  "framer-motion": "^12.24.10",
   "tailwindcss": "^3.4.11",
   "lucide-react": "^0.462.0",
   "zod": "^3.23.8",

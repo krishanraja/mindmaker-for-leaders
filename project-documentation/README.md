@@ -4,8 +4,8 @@
 
 This folder is the canonical source of truth for the CTRL portable AI context platform. Everything else at the repo root has been removed in the 2026-04-26 docs refresh - if it's not in this folder or in the root `README.md` / `CLAUDE.md` / `CHANGELOG.md`, it was historical noise.
 
-**Last Updated:** 2026-05-13
-**Current Version:** v5.2 (Skill Builder + desktop UI redesign shipped on top of v5.1's audit-hardened base)
+**Last Updated:** 2026-06-07
+**Current Version:** v5.3 (Decision Engine + Briefing Streaming + Tenant Hardening, shipped on top of v5.2)
 
 ---
 
@@ -22,7 +22,7 @@ This folder is the canonical source of truth for the CTRL portable AI context pl
 - [OUTCOMES.md](./OUTCOMES.md) - Stage-by-stage outcomes with measurable KPIs
 
 ### Product & Features
-- [FEATURES.md](./FEATURES.md) - Complete feature inventory (Memory Web, Context Export, Briefing v2, Edge, Diagnostic, Missions, AI Tools), settings tabs, audit track record, sales-anchor index
+- [FEATURES.md](./FEATURES.md) - Complete feature inventory (Memory Web, Context Export, Briefing v2, Edge, Decision Engine, Goals, Diagnostic, Missions, AI Tools, Build Lap), settings tabs, audit track record, sales-anchor index
 - [VISUAL_GUIDELINES.md](./VISUAL_GUIDELINES.md) - Visual design principles and examples
 
 ### Technical Foundation
@@ -31,9 +31,9 @@ This folder is the canonical source of truth for the CTRL portable AI context pl
 - [BRANDING.md](./BRANDING.md) - Brand voice, tone, and messaging guidelines
 
 ### Operational Knowledge
-- [HISTORY.md](./HISTORY.md) - Phases 1-7. Includes the April 2026 audit hardening track record.
+- [HISTORY.md](./HISTORY.md) - Phases 1-9. Includes audit hardening (Phase 7/v5.1), Skill Builder + desktop redesign (Phase 8/v5.2), and Decision Engine + security hardening (Phase 9/v5.3).
 - [COMMON_ISSUES.md](./COMMON_ISSUES.md) - Recurring bugs, architectural pain points, audit-aftermath notes
-- [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 41 architectural and product decisions with rationale and outcomes
+- [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 45 architectural and product decisions with rationale and outcomes
 - [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - Step-by-step rebuild instructions
 - [MASTER_INSTRUCTIONS.md](./MASTER_INSTRUCTIONS.md) - Engineering principles and AI assistant behavior guidelines
 
@@ -85,7 +85,7 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 ---
 
-## Current State (v5.2 - verified 2026-05-13)
+## Current State (v5.3 - verified 2026-06-07)
 
 ### Product Positioning
 - **Tagline**: "Clarity for Leaders"
@@ -101,14 +101,14 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 ### Verified Repo Counts
 | Item | Count |
 |---|---|
-| Supabase edge functions | 74 |
-| React custom hooks | 51 |
-| PostgreSQL migrations applied | 98 |
-| Top-level page components | 25 |
+| Supabase edge functions | 80 |
+| React custom hooks | 59 |
+| PostgreSQL migrations applied | 109 |
+| Top-level page components | 29 |
 | E2E specs (Playwright) | 6 |
 | Unit/shared specs (Vitest) | 5 |
-| Active routes | 11 (+ 5 legacy redirects to `/dashboard`) |
-| Audit-week tracks shipped | 6 |
+| Active routes | 15 (+ 4 legacy redirects to `/dashboard`) |
+| Audit-week tracks shipped | 6 (Phase 7) + Phase 9 security hardening |
 
 ### Tech Stack
 - **Frontend**: React 18.3.1, React Router 6.26.2, Vite 5.4, TypeScript 5.5, Framer Motion 12, TanStack React Query 5.56, Tailwind CSS, shadcn/ui (Radix UI), Zod
@@ -134,10 +134,16 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 - **Guided First Experience**: 3-question onboarding delivering export in 2 minutes
 - **Pattern Detection**: 10X skills, blind spots, behavioral preferences
 - **AI Tools**: Decision Advisor, Meeting Prep, Prompt Coach, Stream of Consciousness
+- **Decision Engine** (v5.3): Verification-looped pressure-testing for decisions and business cases. Pipeline: decompose → verify (web-grounded claims) → cross-examine → advise. Runs via `EdgeRuntime.waitUntil`; frontend polls `decision_cases` + `decision_claims` per `stage`. `decision-watch` hourly pg_cron loop re-verifies load-bearing claims and raises idempotent `decision_alerts` surfaced in the Daily Briefing. Entry point: `/decision` page + `useDecisionEngine` + `useDecisionInbox` hooks.
+- **Goals** (v5.3): Unified goals table as the spine's single source of truth. `/goals` route + `useGoals` hook.
+- **Build Lap** (v5.3): Free anonymous `/build` route with account creation at kit delivery. Backed by `free-skill-export` edge function.
 - **Diagnostic Assessment**: 10-minute AI literacy diagnostic ($49 unlock)
 - **Missions System**: First Moves commitment tracking with check-ins
 - **Progress Tracking**: Snapshots and drift detection over time
 - **Command Palette** (desktop): Cmd/Ctrl+K opens a global launcher across authenticated routes. Pages opt into actions via custom `mm:capture-voice` and `mm:generate-briefing` window events.
+- **Compliance page** (v5.3): `/compliance` route backed by audit infrastructure tables for SOC 2 (CC7.2) and GDPR (Art. 30).
+- **Daily Briefing email** (v5.3): `send-daily-briefing` edge function + `daily_briefing_trigger` pg_cron schedule delivers the briefing to email.
+- **AI spend cap** (v5.3): Soft daily AI-spend cap per user + `ai_usage_cost` logging table.
 
 ### Pricing (Current)
 | SKU | Price | What |
@@ -182,18 +188,18 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 | Field | Value |
 |-------|-------|
-| Documentation last updated | 2026-05-13 |
-| Current product version | v5.2 (Skill Builder + desktop UI redesign, on the v5.1 audit-hardened base) |
-| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder) with desktop-native shell |
+| Documentation last updated | 2026-06-07 |
+| Current product version | v5.3 (Decision Engine + Briefing Streaming + Tenant Hardening, on the v5.2 base) |
+| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder + Decision Engine + Goals) with desktop-native shell |
 | Design system version | v3.1 (Light mode, Apple-like, with desktop-native sidebar + sticky top bar + right rail + Command Palette) |
 | AI primary model | Vertex AI (Gemini 2.0 Flash) |
 | AI fallback model | OpenAI GPT-4o |
 | Embedding model | OpenAI text-embedding-3-small (1536-dim, pgvector) |
-| Edge functions | 74 |
-| Database migrations | 98 |
+| Edge functions | 80 |
+| Database migrations | 109 |
 | Database extensions | pgvector, pgcrypto, pg_cron |
-| Active routes | 11 (+ legacy redirects) |
-| Custom hooks | 51 |
+| Active routes | 15 (+ 4 legacy redirects) |
+| Custom hooks | 59 |
 | E2E specs / Vitest specs | 6 / 5 |
 | Node.js requirement | >=22 <24 |
-| Audit-week tracks shipped | 6 (revenue path, data path, UX, reliability, observability, cleanup) |
+| Audit-week tracks shipped | 6 (Phase 7: revenue, data, UX, reliability, observability, cleanup) + Phase 9 security hardening (cross-tenant RLS, audit infra, system-table write hardening) |

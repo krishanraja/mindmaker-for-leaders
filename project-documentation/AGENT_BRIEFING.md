@@ -1,8 +1,9 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-07
 **Runtime truth source:** https://ctrl.themindmaker.ai/.well-known/product.json
+**Current version:** v5.3 (Decision Engine + Briefing Streaming + Tenant Hardening)
 
 ---
 
@@ -202,6 +203,17 @@ Voice-to-Skill pipeline: describe one weekly workflow in 2 minutes. CTRL runs Th
 Drop it into `~/.claude/skills/`. The skill auto-triggers in Claude Code, Claude.ai, and Cursor whenever the team's language matches.
 
 Pain-anchored entry points everywhere: tap a blocker in Edge view, tap the zap on a Memory Web blocker card, or tap the zap on a Briefing decision-trigger segment.
+
+**Build Lap - free anonymous try (v5.3)**
+`/build` is a free, anonymous route that lets any visitor generate a Skill without creating an account first. Account is created at ZIP download.
+
+### Decision Engine ($0, included in Free)
+
+Available at `/decision`. Paste any high-stakes statement. The engine decomposes it into verifiable claims, web-grounds each one, surfaces tensions, and delivers a net verdict with confidence scores. `decision-watch` re-verifies load-bearing claims hourly and sends an alert in the next morning briefing when a verdict shifts. Decisions become living objects, not one-shot answers.
+
+### Goals ($0, included in Free)
+
+Unified goals layer at `/goals`. Goals feed the briefing importance lens, the Decision Engine decompose stage, and the Context Export. Single source of truth for what the leader is working toward.
 
 ### Bootcamp ($15K-$50K, Teams)
 

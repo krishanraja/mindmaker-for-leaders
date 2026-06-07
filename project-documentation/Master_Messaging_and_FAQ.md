@@ -1,7 +1,7 @@
 # CTRL & Mindmaker Master Messaging & FAQ
 *Core Source of Truth for Product Marketing, Sales, Content, and Outbound*
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-07
 
 ---
 

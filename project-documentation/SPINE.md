@@ -1,6 +1,8 @@
 # MindmakerOS Standards Spine (authored from CTRL)
 
-Status: foundation authored 2026-05-30 from mm-ctrl (the most documented app). Unify the SYSTEM, never the SKIN. Each app themes these tokens differently and keeps its own palette, typography personality, motion flavor, voice, and density.
+**Last Updated:** 2026-06-07
+
+Status: foundation authored 2026-05-30 from mm-ctrl (the most documented app). Verified clean 2026-06-07. Unify the SYSTEM, never the SKIN. Each app themes these tokens differently and keeps its own palette, typography personality, motion flavor, voice, and density.
 
 This document is the contract the other five apps (onalert, gutted, merciless, fractionl-circle, fractionl-pulse) import or mirror. CTRL is the reference implementation.
 

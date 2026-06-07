@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-07
 
 ---
 
@@ -154,6 +154,116 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 - Immediate value delivery (2 min to first export vs. 10 min diagnostic)
 - Portable context as primary differentiator
 - Voice-first as interaction paradigm, not just an alternative input
+
+---
+
+### Phase 6: Daily Briefing v2 - Evidence-Based Pipeline
+**Period**: March-April 2026
+**Positioning**: "Three minutes of audio that replace thirty minutes of scrolling"
+
+**Trigger**: The briefing was generating headlines but could not prove why each one earned its slot. Leaders asked "why this story?" and there was no answer. The v2 pipeline was built to make relevance auditable.
+
+**Key Features Added**:
+- **Evidence-based seven-stage pipeline**: lens → query planner → provider fan-out (Perplexity + Tavily + Brave, 12s cap) → embedding dedupe + scoring → budget-constrained curation → script generation → ElevenLabs audio
+- **Auditable anchoring**: every segment carries `lens_item_id`, `relevance_score`, and `matched_profile_fact` - the user can see exactly which profile fact earned each headline its slot
+- **Briefing interests surface**: beats, entities, and excludes. User-declared preferences become lens items with weight 1.0
+- **Persistent semantic feedback**: Bookmark pins an anchor as a beat; Ban writes a `-1.0` kill delta immediately. Nightly pg_cron aggregator (`sp_aggregate_briefing_feedback`, 03:07 UTC) promotes 3+ thumbs-down to a persistent `-0.4` delta
+- **Industry-aware cold-start**: 11 industries seeded in `industry_beat_library`; `SeedBeatsPrompt` proposes relevant starter beats for new users
+- **Preliminary insert pattern**: briefing row written before curation so frontend can show something while the pipeline runs
+
+**Technical Changes**:
+- 7 new edge functions: `generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`
+- New shared modules: `briefing-lens.ts`, `briefing-scoring.ts`, `briefing-curation.ts`, `lens-signature.ts`, `user-context.ts`
+- New tables: `briefings` (schema_version=2), `briefing_feedback`, `briefing_interests`, `briefing_lens_feedback`, `industry_beat_library`, `ai_response_cache`, `training_material`
+- New hooks: `useBriefing`, `useBriefingInterests`, `useIndustrySeeds`, `useKillLensItem`
+
+**Outcomes**:
+- Personalization changed from asserted to auditable
+- Cold-start problem solved with 11 industry seed sets
+- Feedback loop: the more you use it, the better it gets
+- Seven briefing types: Daily Brief, Macro Trends, Vendor Landscape, Competitive Intel, Boardroom Prep, AI Model Landscape, Custom Voice (Pro tier unlocks specialised types)
+
+---
+
+### Phase 7: Six-Week Audit Hardening (v5.1)
+**Period**: April 2026
+**Positioning**: "Hardened production platform, not a prototype"
+
+**Trigger**: Pre-Series-A review revealed six categories of technical debt that could block enterprise sales: revenue path integrity, data path leaks, UX issues, reliability gaps, observability gaps, and accumulated cruft.
+
+**Six Audit Tracks (PRs #93-#101)**:
+
+| Track | PR | Headline Outcomes |
+|---|---|---|
+| 1. Revenue path | #93 | Mandatory Stripe webhook signature verification; `stripe_events_processed` idempotency table; briefing rate limits; Edge Pro subscription validation |
+| 2. Data path | #94 | Closed assessment data leak; `ctrl-briefings` storage bucket policy; end-to-end account deletion (Memory Web + briefings + audio + assessments + all subordinate rows) |
+| 3. UX | #95 | Killed onboarding gate; fixed NorthStar stub; voice permission recovery; killed surveillance copy; removed all "coming soon" affordances |
+| 4. Reliability | #99 | `_shared/with-timeout.ts` utility (with Vitest coverage) wrapping all external API calls; audio failure UX; onboarding stall recovery |
+| 5. Observability | #97 | Structured edge-function JSON logger (`_shared/logger.ts`); CI gate against `console.log` regressions |
+| 6. Cleanup | #98, #100, #101 | P2 backlog closure; 5 Playwright e2e contracts (auth journeys, briefing, rate limits, sparse profile, account deletion, Stripe idempotency); `ai_response_cache` table; lint cleanup |
+
+**Outcomes**:
+- 74 edge functions, 48 hooks, 97 migrations at end of phase
+- Production-hardened: Stripe sig verification, webhook idempotency, end-to-end deletion, structured logging, timeout + retry on every external call
+- E2E test suite covers the six highest-risk paths
+
+---
+
+### Phase 8: Agent Skill Builder + World-Class Desktop Redesign (v5.2)
+**Period**: May 2026
+**Positioning**: "Built like a desktop product, not stretched mobile"
+
+**Trigger**: Two gaps remained: (1) leaders were repeating the same weekly workflows from a blank prompt - the Memory Web didn't eliminate the Repetition Tax. (2) Desktop users were getting mobile markup stretched to fit.
+
+**Key Features Added**:
+- **Agent Skill Builder** (`generate-skill-export`, Edge Pro gated): voice-to-Skill pipeline. Three Honest Tests triage gate routes Memory Facts / Custom Instructions / Saved Styles to the right surface instead of generating junk. Quality gate enforces 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, valid name format. ZIP packaging follows agentskills.io standard.
+- **Pain-anchored entry points**: `AutomatePainCard` on Edge view (blocker + decision chip row), zap button on Memory Web blocker cards, zap button on Briefing `decision_trigger` segments. Each hands a `SkillSeed` to `/context` via `location.state`.
+- **World-class desktop shell**: `AuthedLayoutRoute` wraps authenticated routes. Cmd/Ctrl+K Command Palette. Sticky top bar. Optional right rail. Sidebar with keyboard hints.
+- **Edge Pro repriced to $29/month** (2026-05-30; existing $9 subscribers grandfathered)
+- **2026-05-30 rebuild**: Coordinated five-workstream release: pricing corrections, security RLS fixes, UTM attribution emit path, `/.well-known/product.json` runtime truth source, public-surface prerender.
+
+**Technical Changes**:
+- 1 new edge function: `generate-skill-export` (4 internal modules: `index.ts`, `prompt.ts`, `quality-gate.ts`, `zip.ts`)
+- New table: `skill_exports` with RLS + per-user log
+- New hooks: `useSkillExport`, `useUserPains`, `useRevealOnMount`
+- New components: `SkillExportCard`, `SkillCaptureSheet`, `SkillPreviewSheet`, `SkillQualityGate`, `SkillInstallGuide`, `AutomatePainCard`
+
+**Outcomes**:
+- 74 edge functions, 51 hooks, 98 migrations at end of phase
+- Repetition Tax eliminated for Edge Pro subscribers
+- Desktop product matches executive-buyer quality expectations
+- Pricing, attribution, and product-truth all consistent from 2026-05-30
+
+---
+
+### Phase 9: Decision Engine + Briefing Streaming + Tenant Hardening (v5.3)
+**Period**: June 2026
+**Positioning**: "Decisions become living objects, not one-shot answers"
+
+**Trigger**: Three gaps surfaced: (1) leaders needed pressure-tested decisions, not just advisory; (2) a cross-tenant RLS leak was identified and needed immediate closure; (3) the briefing pipeline showed preliminary results too late.
+
+**Key Features Added**:
+- **Decision Engine**: Verification-looped pressure-testing. `decision-engine` orchestrates decompose → verify (web-grounded) → cross-examine → advise via `EdgeRuntime.waitUntil`. `decision-watch` hourly pg_cron re-verifies load-bearing claims and raises `decision_alerts` surfaced in the Daily Briefing. `decision-eval` is an admin calibration harness.
+- **Goals**: Unified `goals` table as the single source of truth for what the leader is working toward. Feeds briefing lens, Decision Engine, and Context Export.
+- **Build Lap**: Free anonymous `/build` route; `free-skill-export` function; account created at kit delivery.
+- **Daily Briefing email**: `send-daily-briefing` + `daily_briefing_trigger` pg_cron schedule.
+- **Briefing streaming** (flag-gated): `FF.briefingStream` / `?ff_stream=1`. `generate-briefing` early-inserts candidate headlines before curation; `useBriefingStreamPreview` polls preliminary segments.
+- **Onboarding interview**: `onboarding-interview` edge function + `useOnboardingInterview` hook; `WelcomeTour` + `Coachmark` flow replaced the `OnboardingWizard`.
+- **Compliance page**: `/compliance` route backed by audit infrastructure tables for SOC 2 (CC7.2) and GDPR (Art. 30).
+- **AI spend cap**: Soft daily AI spend cap per user + `ai_usage_cost` logging table.
+- **Attribution lifecycle tracking**: `track-event` public edge function emits `landed` | `signed_up` | `activated` to the central warehouse. Dormant until warehouse env is configured.
+
+**Security (Phase 9)**:
+- Cross-tenant RLS leak hotfix (`fix_cross_tenant_rls_leak.sql`, applied 2026-06-02)
+- Audit infrastructure tables for SOC 2 / GDPR compliance
+- System-table write hardening: closed `ALL`/`USING(true)` write-holes on public-granted system tables
+- Marketing consent tracking added
+
+**Outcomes**:
+- 80 edge functions, 59 hooks, 109 migrations at end of phase
+- Decisions are now living objects with ongoing web-grounded claim re-verification
+- The product has a clear path to SOC 2 with audit infrastructure in place
+- No client-side secrets: attribution uses a server-held ingest secret
 
 ---
 

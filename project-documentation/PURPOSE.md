@@ -1,6 +1,6 @@
 # Purpose
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-07
 
 ---
 
@@ -21,6 +21,8 @@ It **is**:
 - Built-in thinking tools - Decision Advisor, Meeting Prep, Prompt Coach - that already know your world
 - Self-contained - no integrations with Slack, email, calendar, or any other tool. Your context comes from what you choose to share, nothing else.
 - A pattern detection system that surfaces strengths to amplify and blind spots to close
+- A Decision Engine (v5.3) that decomposes a business case into verifiable claims, web-grounds each one, and continues re-verifying load-bearing claims so decisions become living objects rather than one-shot answers
+- A unified Goals layer that feeds the briefing lens, Decision Engine, and context export
 - Infrastructure for faster decisions, not another AI tool
 
 It is **not**:

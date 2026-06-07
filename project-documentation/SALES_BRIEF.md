@@ -2,7 +2,7 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-07
 
 ---
 
@@ -140,6 +140,9 @@ Voice-to-Skill pipeline that converts one weekly workflow into a downloadable, a
 
 Two minutes describing a Monday-morning ritual is enough to build permanent agent infrastructure the leader owns. The Skill triggers automatically whenever the leader's team uses the same language. This is the third killer feature on `/context`, alongside Context Export and Custom Voice Export.
 
+### Decision Engine (v5.3)
+Paste a statement or business case. The engine decomposes it into verifiable claims, web-grounds each one via Perplexity/Brave, surfaces tensions between claims, and delivers a verdict with confidence scores. `decision-watch` re-verifies load-bearing claims hourly and flags you in the next morning briefing when a verdict shifts. Decisions become living objects with ongoing evidence tracking, not one-shot answers.
+
 ### Decision Advisor
 AI that already knows your context helps you think through hard calls. No setup. No preamble. Ask the question, get an answer that accounts for your business, your constraints, your priorities.
 
@@ -212,7 +215,7 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 - **Self-contained** - no Slack/email/calendar access, no enterprise security review
 - **Encrypted at rest** (AES-256-GCM); user controls retention; data never trains any AI model
 - **Portable** - not locked to any AI provider or platform
-- **74 edge functions, 51 hooks, 98 migrations live** - this is not a prototype
+- **80 edge functions, 59 hooks, 109 migrations live** - this is not a prototype
 - **Audit weeks 1-6 shipped** (revenue path, data path, UX, reliability, observability, cleanup): timeouts + retries on external APIs, mandatory Stripe signature verification + idempotency, structured edge-function logger, e2e test contracts
 - **Built by Krish Raja** - operator experience: Microsoft (2010), MD at Captify ($0→$12M ARR), data revenue at Nine Entertainment ($9M→$61M). Now CEO of Mindmaker, running a multi-agent OS that automates the output of a 30-person team.
 - Context export produces richer, more structured prompts than most leaders write by hand in an hour

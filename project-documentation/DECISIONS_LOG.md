@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-07
 
 ---
 
@@ -310,3 +310,24 @@ Key architectural and product decisions with rationale.
 **Rationale**: Shipping these five workstreams together ensures internal consistency: the Stripe price, the product-truth JSON, the documentation, and the attribution wiring all point to the same figures on the same day. Staggering them would create a window where, for example, the product.json quoted $29 but the Stripe checkout still showed $9.
 **Trade-off**: Larger coordinated release is harder to roll back than individual PRs. Mitigated by Stripe's grandfathering (no subscriber is harmed) and the dormant nature of the warehouse emit.
 **Outcome**: ✅ Live on 2026-05-30. Pricing, security, attribution, product-truth, and prerender all consistent.
+
+## Decision 43: Decision Engine Architecture - Streaming + Living Objects (Phase 9, 2026-06)
+**Date**: 2026-06
+**Decision**: Build the Decision Engine as a streaming pipeline using `EdgeRuntime.waitUntil` with stage-by-stage DB writes, and pair it with a persistent `decision-watch` WATCH loop that re-verifies claims hourly rather than treating a decision as a one-shot answer.
+**Rationale**: One-shot advisory (the existing Decision Advisor) becomes stale the moment market conditions change. Leaders need to know when the evidence behind a decision shifts. The WATCH loop makes decisions living objects without requiring the leader to re-run the pipeline manually.
+**Trade-off**: Higher ongoing compute cost (hourly re-verification for every active decision). Mitigated by only re-verifying "load-bearing, web-checkable" claims (not all claims) and by the `decision_alerts` idempotency constraint.
+**Outcome**: ✅ Shipped. `decision-watch` runs hourly via pg_cron. Alerts surface in the Daily Briefing.
+
+## Decision 44: Free Anonymous Build Lap - Account at Kit Delivery (Phase 9, 2026-06)
+**Date**: 2026-06
+**Decision**: Allow any visitor to run the Skill Builder pipeline at `/build` without an account, and create the account only at ZIP download ("kit delivery") rather than at the start of the flow.
+**Rationale**: The biggest conversion drop-off was the signup gate before proof of value. By letting the visitor generate a real Skill first, the download moment is the value moment. Account creation at that point converts at a much higher rate than account creation at the top of the funnel.
+**Trade-off**: Free compute spent on anonymous visitors who never sign up. Mitigated by the Three Honest Tests triage gate (which rejects non-workflow inputs before reaching the expensive LLM extraction step) and by rate-limiting the `/build` endpoint.
+**Outcome**: ✅ Shipped. `free-skill-export` edge function backs the flow.
+
+## Decision 45: Cross-Tenant RLS Fix - Hotfix-First, Then Audit Infrastructure (Phase 9, 2026-06)
+**Date**: 2026-06
+**Decision**: Apply the cross-tenant RLS leak fix immediately via the Supabase Management API (no PR, same-day) and add it to migration history so it appears in the local diff, then follow up with the full audit infrastructure tables for SOC 2 and GDPR as a separate migration.
+**Rationale**: The cross-tenant read path was a live security issue affecting any authenticated user who knew a row ID from another tenant. Fixing it could not wait for a PR cycle. Recording it in migration history ensures the fix is visible to future audits without requiring `supabase db push`.
+**Trade-off**: Migration history now has a migration that was applied out-of-band before the PR that adds it to the repo. Acceptable because the repair was time-sensitive and the audit trail is preserved.
+**Outcome**: ✅ Applied 2026-06-02. Migration `20260601230000_fix_cross_tenant_rls_leak.sql` added to history. Audit infrastructure (`20260602000000_create_audit_infrastructure.sql`) followed.
