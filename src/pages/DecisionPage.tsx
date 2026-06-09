@@ -19,8 +19,10 @@ export default function DecisionPage() {
   if (!isMobile) {
     return (
       <DesktopShell eyebrow="Decide" title="Pressure-test a decision">
-        <div className="mx-auto w-full max-w-5xl">
-          <PressureTestPanel />
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+          <div className="mx-auto w-full max-w-5xl">
+            <PressureTestPanel />
+          </div>
         </div>
       </DesktopShell>
     );

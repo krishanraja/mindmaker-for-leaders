@@ -577,7 +577,7 @@ function BriefingPage() {
         }
         rightRail={rightRail}
       >
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="max-w-3xl mx-auto w-full flex-1 min-h-0 overflow-y-auto scrollbar-hide space-y-6">
           {/* Hero state - exactly one thing at a time */}
           {loading ? (
             <div className="flex items-center justify-center py-24">

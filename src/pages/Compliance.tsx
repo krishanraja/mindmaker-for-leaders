@@ -243,11 +243,13 @@ export default function Compliance() {
   if (!isMobile) {
     return (
       <DesktopShell eyebrow="Trust" title="Compliance">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-sm text-muted-foreground mb-6">
-            Our security and privacy controls, mapped to SOC 2, GDPR, CCPA, and ISO 27001
-          </p>
-          <ComplianceContent />
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+          <div className="max-w-4xl mx-auto w-full">
+            <p className="text-sm text-muted-foreground mb-6">
+              Our security and privacy controls, mapped to SOC 2, GDPR, CCPA, and ISO 27001
+            </p>
+            <ComplianceContent />
+          </div>
         </div>
       </DesktopShell>
     );

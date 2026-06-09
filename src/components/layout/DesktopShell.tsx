@@ -159,7 +159,7 @@ type DesktopTopBarProps = {
 
 function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
   return (
-    <header className="h-14 flex items-center gap-4 px-6 border-b border-border/60 bg-background/80 backdrop-blur-md sticky top-0 z-30">
+    <header className="h-14 flex-shrink-0 flex items-center gap-4 px-6 border-b border-border/60 bg-background/80 backdrop-blur-md z-30">
       <div className="min-w-0 flex-1 flex items-center gap-4">
         {(title || eyebrow) && (
           <div className="min-w-0 flex-shrink-0">
@@ -193,13 +193,24 @@ type DesktopShellProps = {
   children: React.ReactNode;
   /** When true, removes default padding from the main content area. */
   bleed?: boolean;
+  /**
+   * When true, the page owns its own scroll/fit behaviour: <main> becomes a
+   * bounded `flex flex-col min-h-0` column with NO scroll of its own, and the
+   * page is responsible for fitting its content (the fit-to-viewport default).
+   * When false (legacy), <main> provides a single hidden-scrollbar region so
+   * overflow is reachable without ever producing a page/body scrollbar.
+   */
+  fit?: boolean;
 };
 
 /**
- * Unified desktop shell. Wraps every authenticated page with:
+ * Unified desktop shell. Pins the whole app to the viewport (100dvh via the
+ * shared --mobile-vh var) so the WINDOW never scrolls on any device:
  *  - Fixed 220px navigation rail
- *  - 56px sticky top bar (page title + command palette + page actions)
- *  - Main scroll area (with optional right rail)
+ *  - 56px top bar (page title + command palette + page actions)
+ *  - A bounded main region that hands children a `flex flex-col min-h-0`
+ *    context. Children fit-to-viewport; any overflow lives in an internal
+ *    hidden-scrollbar region, never the page itself.
  */
 export function DesktopShell({
   title,
@@ -208,17 +219,19 @@ export function DesktopShell({
   rightRail,
   rightRailWidth = 360,
   bleed = false,
+  fit = true,
   children,
 }: DesktopShellProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen-safe overflow-hidden bg-background">
       <DesktopRail />
-      <div className="ml-[220px] flex flex-col min-h-screen">
+      <div className="ml-[220px] flex flex-col h-full min-h-0">
         <DesktopTopBar title={title} eyebrow={eyebrow} actions={actions} />
         <div className="flex-1 flex min-h-0">
           <main
             className={cn(
-              'flex-1 min-w-0',
+              'flex-1 min-w-0 min-h-0 flex flex-col',
+              fit ? 'overflow-hidden' : 'overflow-y-auto scrollbar-hide',
               !bleed && 'px-8 py-6',
             )}
           >
@@ -226,7 +239,7 @@ export function DesktopShell({
           </main>
           {rightRail && (
             <aside
-              className="hidden xl:flex flex-col border-l border-border/60 bg-card/20 overflow-y-auto scrollbar-hide"
+              className="hidden xl:flex flex-col min-h-0 border-l border-border/60 bg-card/20 overflow-y-auto scrollbar-hide"
               style={{ width: rightRailWidth, flexShrink: 0 }}
             >
               {rightRail}

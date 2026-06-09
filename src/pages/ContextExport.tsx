@@ -946,24 +946,26 @@ export default function ContextExport() {
           }
           rightRail={desktopRail}
         >
-          <div className="max-w-3xl">
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6"
-            >
-              <p className="text-sm text-muted-foreground">
-                Make any AI tool understand you - in one click.
-              </p>
-            </motion.div>
-            <Coachmark
-              id="export"
-              icon={ArrowRight}
-              title="One context, every AI"
-              body="Pick a tool (ChatGPT, Claude, Cursor, and more) and CTRL formats your full context for it. Paste it in once, and the AI knows you - no more re-explaining yourself."
-              className="mb-4"
-            />
-            {wizardContent}
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+            <div className="max-w-3xl">
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <p className="text-sm text-muted-foreground">
+                  Make any AI tool understand you - in one click.
+                </p>
+              </motion.div>
+              <Coachmark
+                id="export"
+                icon={ArrowRight}
+                title="One context, every AI"
+                body="Pick a tool (ChatGPT, Claude, Cursor, and more) and CTRL formats your full context for it. Paste it in once, and the AI knows you - no more re-explaining yourself."
+                className="mb-4"
+              />
+              {wizardContent}
+            </div>
           </div>
         </DesktopShell>
         {skillSheets}

@@ -147,9 +147,11 @@ export default function Dashboard() {
     return (
       <DesktopShell eyebrow="Edge" title="Strategic thinking">
         {onboardingBanner}
-        <React.Suspense fallback={<div className="flex items-center justify-center py-20">Loading...</div>}>
-          <EdgeViewLazy />
-        </React.Suspense>
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+          <React.Suspense fallback={<div className="flex items-center justify-center py-20">Loading...</div>}>
+            <EdgeViewLazy />
+          </React.Suspense>
+        </div>
       </DesktopShell>
     )
   }

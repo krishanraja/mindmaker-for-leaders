@@ -117,7 +117,7 @@ export default function Settings() {
 
   return (
     <DesktopShell eyebrow="Account" title="Settings">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl w-full mx-auto flex-1 min-h-0 flex flex-col">
         <SettingsTabs />
       </div>
     </DesktopShell>
