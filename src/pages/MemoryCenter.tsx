@@ -178,12 +178,12 @@ export default function MemoryCenter() {
           </>
         }
       >
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xs text-muted-foreground mb-3">
+        <div className="max-w-4xl w-full mx-auto flex-1 min-h-0 flex flex-col">
+          <p className="text-xs text-muted-foreground mb-3 flex-shrink-0">
             Everything your AI knows about you
           </p>
           {stats && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4 flex-shrink-0">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent/10 text-accent text-xs font-medium">
                 <Brain className="h-3 w-3" />
                 {stats.total_facts} facts

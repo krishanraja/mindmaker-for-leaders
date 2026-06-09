@@ -686,7 +686,7 @@ export function DesktopMemoryDashboard() {
         }
         rightRail={rightRail}
       >
-        <div className="space-y-6">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide space-y-6">
           {/* Decision alerts: a re-verified call whose evidence shifted pulls
               the leader back. */}
           {decisionInbox.alerts.length > 0 && (
@@ -829,7 +829,7 @@ export function DesktopMemoryDashboard() {
                     })}
                   </div>
                 </div>
-                <div className="h-[clamp(420px,_calc(100vh-360px),_640px)] relative">
+                <div className="h-[clamp(420px,_calc(100dvh-360px),_640px)] relative">
                   <MemoryWebVisualization facts={facts} />
                 </div>
               </motion.div>
