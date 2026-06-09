@@ -77,7 +77,7 @@ ephemeral container and is reviewable.
   into `ai_usage_audit`, never throws), `getDailyUsage(...)`, `checkDailySoftCap(...)`
   (returns over/used/limit, logs an overage event, NEVER blocks). Soft cap is a generous
   constant (a few full runs/user/day).
-- Wire into representative paid functions (the build-lap `generate-skill-export` and a
+- Wire into representative paid functions (the `/build` kit builder's `generate-skill-export` and a
   decision-path function) as strictly additive, try/catch-guarded logging. The live
   `generate-briefing` revenue path is left untouched in this pass.
 - Deploy: new helper is safe; modified functions are additive/guarded.
@@ -109,7 +109,7 @@ ephemeral container and is reviewable.
 - Frontend: built locally to verify compilation; pushed to the feature branch. Production
   promotion happens on merge, not from the branch.
 - Honesty: anything that genuinely needs an authenticated browser or mobile session
-  (dark-parity sweep on existing surfaces, the build-lap and forced-call UX) is reported as
+  (dark-parity sweep on existing surfaces, the `/build` kit builder and forced-call UX) is reported as
   needing human QA rather than claimed as verified.
 
 ## Build status (2026-06-05)
