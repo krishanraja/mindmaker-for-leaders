@@ -111,6 +111,7 @@ export const MeetingPrepTab: React.FC<MeetingPrepTabProps> = ({
     };
 
     loadPrepHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assessmentId]);
 
   const handleGeneratePrep = async () => {
@@ -158,11 +159,11 @@ export const MeetingPrepTab: React.FC<MeetingPrepTabProps> = ({
       } else {
         throw new Error('Failed to generate prep materials');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating prep:', error);
       toast({
         title: 'Generation Failed',
-        description: error.message || 'Failed to generate meeting prep. Please try again.',
+        description: (error instanceof Error ? error.message : '') || 'Failed to generate meeting prep. Please try again.',
         variant: 'destructive',
       });
     } finally {

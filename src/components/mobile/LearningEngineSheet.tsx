@@ -7,9 +7,26 @@ import { DailyProvocation } from '@/components/dashboard/DailyProvocation';
 import { PatternInsight } from '@/components/dashboard/PatternInsight';
 import { motion } from 'framer-motion';
 
+interface DailyPrompt {
+  id: string;
+  question: string;
+  category: string;
+}
+
+interface DimensionScore {
+  score_numeric: number;
+  dimension_key: string;
+  dimension_tier: string;
+}
+
+interface BaselineData {
+  dimensionScores?: DimensionScore[];
+  benchmarkTier?: string;
+}
+
 interface LearningEngineSheetProps {
-  dailyPrompt: any;
-  baselineData?: any;
+  dailyPrompt: DailyPrompt | null;
+  baselineData?: BaselineData;
   onNavigate: (path: string) => void;
 }
 
@@ -27,9 +44,9 @@ export const LearningEngineSheet: React.FC<LearningEngineSheetProps> = ({
     
     // Find dimensions that need improvement
     const needsImprovement = dimensions
-      .filter((dim: any) => dim.score_numeric < 70)
+      .filter((dim: DimensionScore) => dim.score_numeric < 70)
       .slice(0, 3)
-      .map((dim: any) => ({
+      .map((dim: DimensionScore) => ({
         name: dim.dimension_key.replace('_', ' '),
         currentScore: Math.round(dim.score_numeric),
         targetScore: 70,
@@ -110,7 +127,7 @@ export const LearningEngineSheet: React.FC<LearningEngineSheetProps> = ({
                   <p className="text-xs font-medium text-muted-foreground mb-2">
                     Focus Areas to Reach {capabilityRoadmap.nextTier}:
                   </p>
-                  {capabilityRoadmap.improvements.map((improvement: any, index: number) => (
+                  {capabilityRoadmap.improvements.map((improvement, index: number) => (
                     <div key={index} className="space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-foreground capitalize">

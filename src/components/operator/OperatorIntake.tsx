@@ -540,7 +540,7 @@ export const OperatorIntake: React.FC<OperatorIntakeProps> = ({ onComplete, onBa
           </div>
         );
 
-      case 5:
+      case 5: {
         const exampleQuestions = [
           "Should I get ChatGPT Pro or Business?",
           "Should I use Zapier or Make?",
@@ -696,6 +696,7 @@ export const OperatorIntake: React.FC<OperatorIntakeProps> = ({ onComplete, onBa
             </div>
           </div>
         );
+      }
 
       default:
         return null;

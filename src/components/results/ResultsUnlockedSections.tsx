@@ -17,7 +17,7 @@ import { BenchmarkComparison } from '../BenchmarkComparison';
 import { TensionCard } from '@/components/ui/tension-card';
 import { RiskSignalCard } from '@/components/ui/risk-signal-card';
 import { ConsentManager } from '../ConsentManager';
-import { AggregatedLeaderResults } from '@/utils/aggregateLeaderResults';
+import { AggregatedLeaderResults, type LeaderPromptSet } from '@/utils/aggregateLeaderResults';
 
 interface ResultsUnlockedSectionsProps {
   data: AggregatedLeaderResults | null;
@@ -26,7 +26,7 @@ interface ResultsUnlockedSectionsProps {
   toggleSection: (section: string) => void;
   copiedPromptIdx: string | null;
   onCopyPrompt: (prompt: string, idx: string) => void;
-  onDownloadPrompts: (promptSets: any[]) => void;
+  onDownloadPrompts: (promptSets: LeaderPromptSet[]) => void;
 }
 
 export const ResultsUnlockedSections: React.FC<ResultsUnlockedSectionsProps> = ({

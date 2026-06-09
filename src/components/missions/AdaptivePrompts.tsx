@@ -12,7 +12,7 @@ interface PromptSet {
   category_key: string;
   title: string;
   description: string;
-  prompts_json: any;
+  prompts_json: unknown;
   priority_rank: number;
 }
 
@@ -156,8 +156,9 @@ export function AdaptivePrompts() {
                     {set.title}
                   </h4>
                   <div className="space-y-2">
-                    {prompts.slice(0, 3).map((prompt: any, pIdx: number) => {
-                      const text = typeof prompt === 'string' ? prompt : prompt?.text || prompt?.prompt || '';
+                    {prompts.slice(0, 3).map((prompt: unknown, pIdx: number) => {
+                      const promptObj = (typeof prompt === 'object' && prompt !== null ? prompt : {}) as { text?: string; prompt?: string };
+                      const text = typeof prompt === 'string' ? prompt : promptObj.text || promptObj.prompt || '';
                       const key = `${setIdx}-${pIdx}`;
                       const isNew = pIdx >= prompts.length - 1 && stats.completedCount > 0;
                       return (

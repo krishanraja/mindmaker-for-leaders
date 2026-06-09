@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { EnhancedPromptCard } from '@/components/ui/enhanced-prompt-card';
 import { ExecutiveSummaryCard } from '@/components/ui/executive-summary-card';
-import { aggregateLeaderResults, isContentLocked } from '@/utils/aggregateLeaderResults';
+import { aggregateLeaderResults, isContentLocked, type LeaderPromptSet } from '@/utils/aggregateLeaderResults';
 import { Loader2, Copy, CheckCircle, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ContactData } from './ContactCollectionForm';
@@ -15,12 +15,29 @@ interface PromptLibraryV2Props {
   contactData: ContactData;
 }
 
+type PromptSet = LeaderPromptSet & { id?: string };
+
+interface PromptResults {
+  promptSets?: PromptSet[];
+  hasFullDiagnostic?: boolean;
+}
+
+interface PersonalizedInsights {
+  yourEdge?: string;
+  yourRisk: string;
+  yourNextMove: string;
+}
+
+interface EnrichedData {
+  personalizedInsights?: PersonalizedInsights | null;
+}
+
 export const PromptLibraryV2: React.FC<PromptLibraryV2Props> = ({
   assessmentId,
   contactData,
 }) => {
-  const [results, setResults] = useState<any>(null);
-  const [enrichedData, setEnrichedData] = useState<any>(null);
+  const [results, setResults] = useState<PromptResults | null>(null);
+  const [enrichedData, setEnrichedData] = useState<EnrichedData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copyingAll, setCopyingAll] = useState(false);
   const { toast } = useToast();
@@ -45,7 +62,7 @@ export const PromptLibraryV2: React.FC<PromptLibraryV2Props> = ({
     
     if (profileData?.executive_profile) {
       setEnrichedData({
-        personalizedInsights: profileData.executive_profile
+        personalizedInsights: profileData.executive_profile as unknown as PersonalizedInsights
       });
     }
     setIsLoading(false);
@@ -64,7 +81,7 @@ export const PromptLibraryV2: React.FC<PromptLibraryV2Props> = ({
     setCopyingAll(true);
     
     const allPromptsText = results.promptSets
-      .map((set: any) => {
+      .map((set: PromptSet) => {
         const prompts = Array.isArray(set.prompts_json) ? set.prompts_json : [];
         return `## ${set.title}\n\n${prompts.join('\n\n')}`;
       })
@@ -157,7 +174,7 @@ export const PromptLibraryV2: React.FC<PromptLibraryV2Props> = ({
 
       {/* Prompt Cards */}
       <div className="space-y-4">
-        {(results?.promptSets || []).map((set: any, index: number) => (
+        {(results?.promptSets || []).map((set: PromptSet, index: number) => (
           <EnhancedPromptCard
             key={set.id}
             title={set.title || 'Untitled Prompt Set'}

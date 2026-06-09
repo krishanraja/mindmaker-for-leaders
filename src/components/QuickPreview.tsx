@@ -5,12 +5,12 @@ import { ArrowRight, Brain, Zap, TrendingUp } from 'lucide-react';
 import mindmakerLogo from '@/assets/mindmaker-logo.png';
 
 interface QuickPreviewProps {
-  assessmentData: Record<string, any>;
+  assessmentData: Record<string, unknown>;
   onContinue: () => void;
 }
 
 // Generate a tension teaser based on early assessment answers
-const generateTensionTeaser = (data: Record<string, any>): { tension: string; insight: string } => {
+const generateTensionTeaser = (data: Record<string, unknown>): { tension: string; insight: string } => {
   const answers = Object.entries(data);
   
   // Look for contrasting signals in the data
@@ -54,8 +54,8 @@ const generateTensionTeaser = (data: Record<string, any>): { tension: string; in
   };
 };
 
-const parseAnswerScore = (answer: string | undefined): number => {
-  if (!answer) return 3;
+const parseAnswerScore = (answer: unknown): number => {
+  if (typeof answer !== 'string' || !answer) return 3;
   const match = answer.match(/^(\d)/);
   return match ? parseInt(match[1]) : 3;
 };

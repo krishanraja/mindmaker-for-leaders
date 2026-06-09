@@ -115,11 +115,11 @@ export const ConnectContextUpgrade: React.FC<ConnectContextUpgradeProps> = ({
       } else {
         throw new Error(result.error || 'Failed to enrich context');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error enriching context:', error);
       toast({
         title: 'Enrichment Failed',
-        description: error.message || 'Failed to enrich company context. Please try again.',
+        description: (error instanceof Error ? error.message : '') || 'Failed to enrich company context. Please try again.',
         variant: 'destructive',
       });
       setEnrichmentStatus('idle');

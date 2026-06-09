@@ -11,12 +11,12 @@ import { ConsentManager } from './ConsentManager';
 import { MeetingPrepTab } from './MeetingPrepTab';
 import { ContactData } from './ContactCollectionForm';
 import { DeepProfileData } from './DeepProfileQuestionnaire';
-import { aggregateLeaderResults } from '@/utils/aggregateLeaderResults';
+import { aggregateLeaderResults, type AggregatedLeaderResults } from '@/utils/aggregateLeaderResults';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UnifiedResultsProps {
-  assessmentData: any;
-  promptLibrary: any;
+  assessmentData: unknown;
+  promptLibrary: unknown;
   contactData: ContactData;
   deepProfileData: DeepProfileData | null;
   sessionId: string | null;
@@ -34,7 +34,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
-  const [aggregatedData, setAggregatedData] = useState<any>(null);
+  const [aggregatedData, setAggregatedData] = useState<AggregatedLeaderResults | null>(null);
   const [hasDeepContext, setHasDeepContext] = useState(false);
 
   const [isLoadingId, setIsLoadingId] = useState(true);

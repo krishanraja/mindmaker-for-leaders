@@ -11,7 +11,7 @@ import { LoadingState } from '@/components/sharpen/LoadingState';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useAssessment } from '@/contexts/AssessmentContext';
+import { useAssessment, type AssessmentInsights } from '@/contexts/AssessmentContext';
 
 interface CoachResult {
   whats_working: string;
@@ -22,7 +22,7 @@ interface CoachResult {
 }
 
 // Suggested prompts based on assessment gaps
-const getSuggestedPrompts = (insights: any) => {
+const getSuggestedPrompts = (insights: AssessmentInsights | null) => {
   const suggestions: { title: string; prompt: string; category: string }[] = [];
   
   if (!insights) {

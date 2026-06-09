@@ -75,6 +75,7 @@ export const VoiceMemoryCapture: React.FC<VoiceMemoryCaptureProps> = ({
     } finally {
       setIsProcessing(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showVerification, extractFromTranscript, onComplete, toast]);
 
   const handleTranscript = useCallback(async (text: string) => {

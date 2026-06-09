@@ -64,6 +64,7 @@ export const ConsentManager: React.FC<ConsentManagerProps> = ({
     try {
       const { error } = await supabase
         .from('index_participant_data')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase generated types lack this column; cast preserves runtime payload
         .update({ consent_flags: consent as any })
         .eq(participantId ? 'id' : 'user_id', participantId || userId!);
 
@@ -77,6 +78,7 @@ export const ConsentManager: React.FC<ConsentManagerProps> = ({
         new_value: consent,
         ip_address: 'client',
         user_agent: navigator.userAgent,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase generated types lack consent_audit table; cast preserves runtime payload
       } as any).catch(() => {});
 
       toast({

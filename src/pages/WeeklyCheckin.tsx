@@ -40,7 +40,12 @@ export default function WeeklyCheckin() {
     setServerAction(null);
     setServerWhy(null);
 
-    let baselineContext: any = null;
+    let baselineContext: {
+      benchmarkTier: string;
+      benchmarkScore: number;
+      topTension: string | null;
+      topRisk: string | null;
+    } | null = null;
     try {
       const { assessmentId } = getPersistedAssessmentId();
       if (assessmentId) {
