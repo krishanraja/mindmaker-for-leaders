@@ -6,6 +6,7 @@ import {
   Brain,
   Radio,
   ArrowUpRight,
+  Target,
   Settings,
   Shield,
   User,
@@ -90,6 +91,11 @@ function CommandPalette() {
             <Radio className="mr-2 h-4 w-4" />
             Briefing
             <CommandShortcut>G B</CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={go('/goals')}>
+            <Target className="mr-2 h-4 w-4" />
+            Goals
+            <CommandShortcut>G G</CommandShortcut>
           </CommandItem>
         </CommandGroup>
 

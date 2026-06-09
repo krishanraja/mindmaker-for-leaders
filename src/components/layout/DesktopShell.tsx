@@ -5,6 +5,7 @@ import {
   Brain,
   Radio,
   ArrowUpRight,
+  Target,
   Settings,
   Shield,
   LogOut,
@@ -21,6 +22,7 @@ const navItems = [
   { path: '/memory', search: '', icon: Brain, label: 'Memory', shortcut: 'M' },
   { path: '/context', search: '', icon: ArrowUpRight, label: 'Export', shortcut: 'X' },
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing', shortcut: 'B' },
+  { path: '/goals', search: '', icon: Target, label: 'Goals', shortcut: 'G' },
 ];
 
 const accountItems = [
