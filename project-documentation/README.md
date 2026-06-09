@@ -4,8 +4,8 @@
 
 This folder is the canonical source of truth for the CTRL portable AI context platform. Everything else at the repo root has been removed in the 2026-04-26 docs refresh - if it's not in this folder or in the root `README.md` / `CLAUDE.md` / `CHANGELOG.md`, it was historical noise.
 
-**Last Updated:** 2026-05-13
-**Current Version:** v5.2 (Skill Builder + desktop UI redesign shipped on top of v5.1's audit-hardened base)
+**Last Updated:** 2026-06-09
+**Current Version:** v5.4 (every authenticated surface unified onto `DesktopShell` + Goals + Enrich loop, shipped on top of v5.3's Decision Engine and v5.2's Skill Builder)
 
 ---
 
@@ -85,7 +85,7 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 ---
 
-## Current State (v5.2 - verified 2026-05-13)
+## Current State (v5.4 - verified 2026-06-09)
 
 ### Product Positioning
 - **Tagline**: "Clarity for Leaders"
@@ -101,18 +101,18 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 ### Verified Repo Counts
 | Item | Count |
 |---|---|
-| Supabase edge functions | 74 |
-| React custom hooks | 51 |
-| PostgreSQL migrations applied | 98 |
-| Top-level page components | 25 |
-| E2E specs (Playwright) | 6 |
-| Unit/shared specs (Vitest) | 5 |
-| Active routes | 11 (+ 5 legacy redirects to `/dashboard`) |
+| Supabase edge functions | 80 |
+| React custom hooks | 59 |
+| PostgreSQL migrations applied | 110 |
+| Top-level page components | 29 |
+| E2E specs (Playwright) | 7 |
+| Unit/shared specs (Vitest) | 6 |
+| Active routes | 15 (+ 5 legacy redirects) |
 | Audit-week tracks shipped | 6 |
 
 ### Tech Stack
 - **Frontend**: React 18.3.1, React Router 6.26.2, Vite 5.4, TypeScript 5.5, Framer Motion 12, TanStack React Query 5.56, Tailwind CSS, shadcn/ui (Radix UI), Zod
-- **Backend**: Supabase (PostgreSQL + 74 Edge Functions, Deno runtime)
+- **Backend**: Supabase (PostgreSQL + 80 Edge Functions, Deno runtime)
 - **AI Primary**: Vertex AI (Gemini 2.0 Flash) via Google Cloud service account
 - **AI Fallback**: OpenAI GPT-4o
 - **Voice**: OpenAI Whisper
@@ -137,7 +137,11 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 - **Diagnostic Assessment**: 10-minute AI literacy diagnostic ($49 unlock)
 - **Missions System**: First Moves commitment tracking with check-ins
 - **Progress Tracking**: Snapshots and drift detection over time
+- **Decision Engine** (`/decision`): Verification-looped pressure-testing for a decision or business case. A statement is decomposed → verified (web-grounded claims) → cross-examined → advised, running in the background via `EdgeRuntime.waitUntil` while the frontend polls `decision_cases` per `stage` (mirrors the briefing streaming pattern). An hourly pg_cron WATCH loop (`decision-watch`) re-verifies load-bearing claims and raises idempotent `decision_alerts` surfaced in the Daily Briefing, so a decision is a living object rather than a one-shot answer.
+- **Goals** (`/goals`): Horizon-grouped goal tracking (active / paused / done) sourced from voice, diagnostic, and decisions.
+- **Enrich loop** (`/enrich`): Inbound "borrow your own AI" loop - copy one prompt, run it in ChatGPT or Claude, paste the answer back, and CTRL learns in two minutes what would take weeks to tell it.
 - **Command Palette** (desktop): Cmd/Ctrl+K opens a global launcher across authenticated routes. Pages opt into actions via custom `mm:capture-voice` and `mm:generate-briefing` window events.
+- **Unified desktop shell**: Every authenticated surface wears the same `DesktopShell` (sidebar + sticky top bar + optional right rail), viewport-pinned so the window never scrolls; phones fall back to the mobile header + bottom nav.
 
 ### Pricing (Current)
 | SKU | Price | What |
@@ -182,18 +186,18 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 | Field | Value |
 |-------|-------|
-| Documentation last updated | 2026-05-13 |
-| Current product version | v5.2 (Skill Builder + desktop UI redesign, on the v5.1 audit-hardened base) |
-| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder) with desktop-native shell |
-| Design system version | v3.1 (Light mode, Apple-like, with desktop-native sidebar + sticky top bar + right rail + Command Palette) |
+| Documentation last updated | 2026-06-09 |
+| Current product version | v5.4 (DesktopShell unified across all authed surfaces + Goals + Enrich loop, on the v5.3 Decision Engine base) |
+| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder + Decision Engine) with desktop-native shell on every authenticated surface |
+| Design system version | v3.2 (Light mode, Apple-like, with desktop-native sidebar + sticky top bar + right rail + Command Palette + viewport-pinned zero-scroll) |
 | AI primary model | Vertex AI (Gemini 2.0 Flash) |
 | AI fallback model | OpenAI GPT-4o |
 | Embedding model | OpenAI text-embedding-3-small (1536-dim, pgvector) |
-| Edge functions | 74 |
-| Database migrations | 98 |
+| Edge functions | 80 |
+| Database migrations | 110 |
 | Database extensions | pgvector, pgcrypto, pg_cron |
-| Active routes | 11 (+ legacy redirects) |
-| Custom hooks | 51 |
-| E2E specs / Vitest specs | 6 / 5 |
+| Active routes | 15 (+ 5 legacy redirects) |
+| Custom hooks | 59 |
+| E2E specs / Vitest specs | 7 / 6 |
 | Node.js requirement | >=22 <24 |
 | Audit-week tracks shipped | 6 (revenue path, data path, UX, reliability, observability, cleanup) |

@@ -2,9 +2,9 @@
 
 Step-by-step instructions to replicate CTRL from scratch.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-09
 
-> Current scope: 74 edge functions, 51 hooks, 98 migrations, pgvector + pgcrypto + pg_cron. This guide gets you to a runnable instance; full feature parity requires shipping each phase in order (see HISTORY.md), now including Phase 8 (Agent Skill Builder + desktop redesign).
+> Current scope: 80 edge functions, 59 hooks, 110 migrations, pgvector + pgcrypto + pg_cron. This guide gets you to a runnable instance; full feature parity requires shipping each phase in order (see HISTORY.md), now including Phase 8 (Agent Skill Builder + desktop redesign), Phase 9 (Decision Engine + Briefing streaming), and Phase 10 (DesktopShell unified across every authed surface + Goals + Enrich loop).
 
 ---
 

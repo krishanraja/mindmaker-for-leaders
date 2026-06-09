@@ -6,6 +6,31 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
+## [5.4] - 2026-06-09 - Phase 10: Desktop Shell Unification + Goals + Enrich Loop
+
+### Added
+- **Goals** (PRs #130-#135): horizon-grouped goal tracking (active / paused / done) sourced from voice, diagnostic, and decisions. New page `Goals.tsx` (`/goals`), hook `useGoals`, migration `20260605120000_create_goals.sql`. Wears the unified `DesktopShell` on desktop, mobile header + bottom nav on phones.
+- **Enrich loop** (`/enrich`, `EnrichPage`): the inbound "borrow your own AI" loop - the leader copies one prompt, runs it in ChatGPT or Claude, and pastes the answer back, so CTRL learns in two minutes what would take weeks to tell it.
+- **Daily Briefing pg_cron trigger** (`20260605000000_daily_briefing_trigger.sql`): scheduled trigger feeding the daily briefing pipeline.
+- **AI usage cost tracking** (`20260605130000_ai_usage_cost.sql`) and **per-user decision-call metering** (`20260605140000_decision_user_calls.sql`, hook `useDecisionCall`).
+- **`desktop-zero-scroll` e2e spec** (`src/__tests__/e2e/desktop-zero-scroll.spec.ts`, PR #138): asserts the desktop shell pins the app to the viewport and never scrolls the window.
+
+### Changed
+- **DesktopShell unification** (PRs #130-#139): every authenticated surface (Dashboard, Memory, Context, Briefing, Decision, Goals, Enrich, Settings, Compliance, Profile) now wears the same `DesktopShell` (sidebar + sticky top bar + optional right rail) instead of stretched mobile markup, and the app is viewport-pinned so the window never scrolls. `DecisionPage` is mounted directly rather than reached only via the orphaned OperatorDashboard.
+- **Memory polish** (PRs #136-#137): desktop loading skeleton; import-dedup 406 fix + `useMemoryQueries` lint cleanup.
+
+### Security
+- **Leaders RLS hardening** (`20260609120000_fix_leaders_rls_auth_users.sql`, PR #136): fixed a leaders-table RLS 403 so reads/writes are correctly owner-scoped against `auth.users`.
+
+### Verified counts at end of phase
+- 80 edge functions
+- 59 hooks
+- 110 migrations
+- 6 Vitest specs + 7 Playwright e2e specs
+- 15 active routes (+ 5 legacy redirects)
+
+---
+
 ## [5.3] - 2026-06 - Phase 9: Decision Engine + Briefing Streaming + Tenant Hardening
 
 ### Added

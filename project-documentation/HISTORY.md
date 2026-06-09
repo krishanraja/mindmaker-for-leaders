@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-09
 
 ---
 
@@ -234,6 +234,8 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 5.0 | Apr 2026 | Briefing v2: evidence-based relevance lens + pgvector + four-part learning loop (Interests, industry seeds, explicit kill, nightly aggregator) |
 | 5.1 | Apr 2026 | Phase 7 - six audit-week tracks shipped: revenue path, data path, UX, reliability, observability, cleanup. Hardened production platform. |
 | 5.2 | May 2026 | Phase 8 - Agent Skill Builder (voice-to-Claude-Skill pipeline, Edge Pro), world-class desktop UI redesign with Command Palette, pain-anchored Skill entry points on Edge / Memory / Briefing. |
+| 5.3 | Jun 2026 | Phase 9 - Decision Engine (decompose → verify → cross-examine → advise, hourly WATCH re-verification), flag-gated Briefing streaming, cross-tenant RLS hotfix + audit infrastructure. |
+| 5.4 | Jun 2026 | Phase 10 - every authenticated surface unified onto `DesktopShell` (viewport-pinned, zero-scroll), Goals tracking (`/goals`), inbound Enrich loop (`/enrich`), leaders RLS fix. |
 
 ---
 
@@ -456,4 +458,51 @@ New hook: **`useUserPains`** returns the top N blockers + active decisions from 
 - 1 new migration (`20260508000000_create_skill_exports.sql`) - total now 98
 - 5 new components in `src/components/edge/` for the Skill Builder UX + 1 in `src/components/memory-web/`
 - Desktop now feels like a desktop product, not stretched mobile markup
+
+---
+
+## Phase 9: Decision Engine + Briefing Streaming + Tenant Hardening (June 2026)
+
+### Context
+
+By the end of Phase 8, CTRL could capture context, export it, brief on it, and turn rituals into Skills. The one thing it could not do was *pressure-test a decision* and keep watching it. A leader's hardest moments are not "what do I know" but "is this call right, and is it still right next week." That is the gap Phase 9 closed.
+
+### Sub-track 1 - Decision Engine (PRs #122, #124)
+
+A new edge function `decision-engine` orchestrates a four-stage pipeline - decompose → verify (web-grounded claims) → cross-examine → advise - that runs in the background via `EdgeRuntime.waitUntil` and advances `decision_cases.stage`, so the frontend renders each stage as it lands (the same streaming pattern the Briefing uses). `decision-watch` is an hourly pg_cron WATCH loop that re-verifies the load-bearing, web-checkable claims behind active decisions and raises an idempotent `decision_alert` when a verdict flips or confidence drops materially (surfaced in the Daily Briefing) - making a decision a living object instead of a one-shot answer. `decision-eval` is an admin-only single-claim calibration harness that exercises the exact live verify path. Seven new RLS owner-scoped tables (`decision_cases`, `decision_claims`, `decision_evidence`, `decision_tensions`, `decision_alerts`, `decision_events`, `decision_eval_cases`) and two hooks (`useDecisionEngine`, `useDecisionInbox`). Surfaced at `/decision` via `PressureTestPanel`. Migration `20260602000000_decision_engine.sql`.
+
+### Sub-track 2 - Briefing streaming v2 (PRs #117-#120)
+
+Flag-gated (`FF.briefingStream`, `?ff_stream=1`) streaming preview. `generate-briefing` early-inserts candidate headlines (null `script_text`) before curation, and `useBriefingStreamPreview` + `StreamingBriefingPreview` poll and surface preliminary segments while the briefing generates. Adds the `src/lib/flags.ts` feature-flag layer, a landing `VoiceDemo`, and an export `BroadcastBar`.
+
+### Sub-track 3 - Tenant hardening (PR #125)
+
+Closed a cross-tenant read path (`20260601230000_fix_cross_tenant_rls_leak.sql`, applied to prod 2026-06-02), added audit infrastructure for SOC 2 (CC7.2) / GDPR (Art. 30) (`20260602000000_create_audit_infrastructure.sql`) backing the `/compliance` page and `delete-account`, and closed `ALL` / `USING(true)` write-holes on shared system tables (`20260602000100_scope_system_table_writes.sql`).
+
+### Also shipped
+
+- **Attribution lifecycle tracking** (`track-event`): an unauthenticated emit proxy for client lifecycle events (`landed` | `signed_up` | `activated`) that forwards to the central warehouse via the server-held `ATTRIBUTION_INGEST_SECRET`; dormant until the warehouse env is configured; deployed `--no-verify-jwt`.
+- **Self-serve onboarding** (PR #126): replaced the `OnboardingWizard` with a `WelcomeTour` + `Coachmark` flow; new `useOnceFlag` hook.
+
+---
+
+## Phase 10: Desktop Shell Unification + Goals + Enrich Loop (June 2026)
+
+### Context
+
+The Phase 8 desktop redesign proved the `DesktopShell` pattern on the core surfaces, but several routes were still stretched mobile markup, and the window could scroll on desktop - the one thing an executive-grade shell should never do. Phase 10 finished the job and added two long-pending capture loops.
+
+### What shipped (PRs #130-#139)
+
+- **DesktopShell everywhere**: Dashboard, Memory, Context, Briefing, Decision, Goals, Enrich, Settings, Compliance, and Profile now all wear the same shell (sidebar + sticky top bar + optional right rail), and the app is viewport-pinned so the window never scrolls. `DecisionPage` is mounted directly rather than reached only through the orphaned OperatorDashboard. A new `desktop-zero-scroll` Playwright spec guards the no-scroll contract.
+- **Goals** (`/goals`, hook `useGoals`, migration `20260605120000_create_goals.sql`): horizon-grouped goal tracking (active / paused / done) sourced from voice, diagnostic, and decisions.
+- **Enrich loop** (`/enrich`): the inbound "borrow your own AI" loop - copy one prompt, run it in ChatGPT or Claude, paste the answer back, and CTRL learns in two minutes what would take weeks to tell it.
+- **Plumbing**: daily-briefing pg_cron trigger, AI usage cost tracking, per-user decision-call metering, a Memory desktop loading skeleton, an import-dedup 406 fix, and a leaders-table RLS fix (`20260609120000_fix_leaders_rls_auth_users.sql`).
+
+### Outcomes from Phase 10
+
+- 4 new active routes (`/build`, `/decision`, `/goals`, `/enrich`) wired into the unified shell
+- 1 new e2e spec (`desktop-zero-scroll`) - total now 7
+- Counts at end of phase: 80 edge functions, 59 hooks, 110 migrations, 6 Vitest + 7 Playwright specs
+- Desktop is now uniformly viewport-pinned; no authenticated surface scrolls the window
 - Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change. (Historical note: Edge Pro moved to $29/month on 2026-05-30; existing $9 subscribers are grandfathered. All new checkouts are $29/mo.)

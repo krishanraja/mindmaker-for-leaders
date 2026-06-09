@@ -45,11 +45,12 @@
 - **Dashboard** (`/dashboard`) is the main hub - shows Memory Web (default) or Edge (`?view=edge`)
 - Desktop: world-class desktop shell with `DesktopSidebar`, sticky top bar, optional right rail, and global Command Palette (Cmd/Ctrl+K). Authenticated routes wrapped by `AuthedLayoutRoute` / `CommandPaletteProvider`.
 - Mobile: bottom nav (`BottomNav`) + full-screen views, floating voice FAB
-- Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`, `/think`) all redirect to `/dashboard`
+- Authed routes (all wear the unified `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/enrich`, `/settings`, `/compliance`, `/profile`. Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`
+- Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`) redirect to `/dashboard`; `/think` redirects to `/dashboard?view=edge`
 - AI: Vertex AI Gemini 2.0 Flash primary, OpenAI GPT-4o fallback, static tertiary
-- **79 edge functions** in `supabase/functions/` (verified 2026-06-03; latest: the `decision-engine` / `decision-eval` / `decision-watch` trio)
-- **57 custom hooks** in `src/hooks/`
-- **105 migrations** applied via Supabase Management API
+- **80 edge functions** in `supabase/functions/` (verified 2026-06-09; latest: the `decision-engine` / `decision-eval` / `decision-watch` trio and the `track-event` attribution proxy)
+- **59 custom hooks** in `src/hooks/` (latest: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`)
+- **110 migrations** applied via Supabase Management API
 - DB extensions in use: pgvector, pgcrypto, pg_cron
 - Briefing v2 pipeline: lens → planner → fan-out (Perplexity/Tavily/Brave, 12s cap) → embed dedupe + score → curate → script (gpt-4o) → audio (ElevenLabs)
 - Skill Builder pipeline (`/context` step 1, Edge Pro gated): voice/text → Three Honest Tests triage → OpenAI JSON-mode extraction → quality gate → agentskills.io-compliant ZIP download. Pain-anchored entry points (Edge view `AutomatePainCard`, Memory blocker zap, Briefing decision_trigger zap) pass a `SkillSeed` via location state and pre-open `SkillCaptureSheet`.
