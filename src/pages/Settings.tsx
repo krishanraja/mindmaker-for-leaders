@@ -39,7 +39,7 @@ function isValidSection(value: string | null): value is SettingsSection {
 function SettingsTabs() {
   return (
     <Tabs defaultValue="work" className="flex-1 flex flex-col overflow-hidden min-h-0">
-      <TabsList className="flex-shrink-0 flex flex-nowrap overflow-x-auto scrollbar-hide w-full bg-secondary px-1 gap-0.5">
+      <TabsList className="flex-shrink-0 flex flex-nowrap overflow-x-auto scrollbar-hide w-full bg-secondary px-1 gap-0.5 md:flex-wrap md:h-auto md:overflow-x-visible">
         <TabsTrigger value="account" className="text-xs whitespace-nowrap flex-shrink-0">Account</TabsTrigger>
         <TabsTrigger value="work" className="text-xs whitespace-nowrap flex-shrink-0">Work context</TabsTrigger>
         <TabsTrigger value="briefing-interests" className="text-xs whitespace-nowrap flex-shrink-0">Briefing interests</TabsTrigger>

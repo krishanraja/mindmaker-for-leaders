@@ -43,6 +43,7 @@ import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { buildSeedFacts } from '@/lib/seedFacts';
 import { AlertBanner } from '@/components/operator/decision/decision-views';
 import { DesktopShell } from '@/components/layout/DesktopShell';
+import { Skeleton } from '@/components/ui/skeleton';
 import { MemoryWebVisualization } from './MemoryWebVisualization';
 import { SeedBeatsPrompt } from '@/components/briefing/SeedBeatsPrompt';
 import { BriefingSheet } from '@/components/briefing/BriefingSheet';
@@ -780,8 +781,15 @@ export function DesktopMemoryDashboard() {
           {hasData && <SeedBeatsPrompt />}
 
           {isLoading && (
-            <div className="flex items-center justify-center py-16">
-              <div className="w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+            // Content-shaped skeleton (hero canvas + fact cards) so the 3-6s
+            // first load reads as "your memory is arriving", not a blank spinner.
+            <div className="space-y-4" aria-busy="true" aria-label="Loading your memory">
+              <Skeleton className="h-64 w-full rounded-2xl" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                ))}
+              </div>
             </div>
           )}
 
