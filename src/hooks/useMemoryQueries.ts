@@ -7,7 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { UserMemoryFact, FactCategory } from '@/types/memory';
+import type { UserMemoryFact, FactCategory, MemorySourceType } from '@/types/memory';
 import type { MemorySettings, MemorySettingsUpdate } from '@/types/memory-settings';
 
 // Query keys
@@ -170,7 +170,21 @@ async function exportMemory(format: 'json' | 'csv' = 'json'): Promise<Blob> {
   return new Blob([content], { type: mimeType });
 }
 
-async function importMemory(memories: any[]): Promise<{ imported: number; skipped: number }> {
+// Shape of an inbound import row. All fields optional/loose because the data
+// comes from user files or the import edge function; each row is validated
+// before use. user_memory columns are plain text, so string typing is correct.
+interface ImportMemoryRow {
+  fact_key?: string;
+  fact_category?: string;
+  fact_label?: string;
+  fact_value?: string;
+  fact_context?: string | null;
+  confidence_score?: number;
+  is_high_stakes?: boolean;
+  verification_status?: string;
+}
+
+async function importMemory(memories: ImportMemoryRow[]): Promise<{ imported: number; skipped: number }> {
   const { data, error } = await supabase.functions.invoke('memory-crud/import', {
     body: { memories },
   });
@@ -355,7 +369,7 @@ export function useCreateMemory() {
           confidence_score: newMemory.confidence_score || 1.0,
           is_high_stakes: newMemory.is_high_stakes || false,
           verification_status: 'verified',
-          source_type: (newMemory.source_type || 'manual') as any,
+          source_type: (newMemory.source_type || 'manual') as MemorySourceType,
           is_current: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -540,7 +554,7 @@ export function useExportMemory() {
         
         for (const memory of data || []) {
           const row = headers.map(h => {
-            const val = (memory as any)[h];
+            const val = (memory as Record<string, unknown>)[h];
             if (val === null || val === undefined) return '';
             const str = String(val);
             if (str.includes(',') || str.includes('"') || str.includes('\n')) {
@@ -566,7 +580,7 @@ export function useImportMemory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (memories: any[]) => {
+    mutationFn: async (memories: ImportMemoryRow[]) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -579,14 +593,16 @@ export function useImportMemory() {
           continue;
         }
 
-        // Check for duplicates
+        // Check for duplicates. maybeSingle(): the common case is "no existing
+        // match" (a brand-new fact); single() throws 406/PGRST116 on zero rows,
+        // spamming the console on every fresh fact during an import.
         const { data: existing } = await supabase
           .from('user_memory')
           .select('id')
           .eq('user_id', user.id)
           .eq('fact_key', memory.fact_key)
           .eq('is_current', true)
-          .single();
+          .maybeSingle();
 
         if (existing) {
           skipped++;
@@ -635,11 +651,12 @@ export function useMemorySettings() {
       if (!user) throw new Error('Not authenticated');
 
       // Try to get existing settings
-      let { data, error } = await supabase
+      const { data: existingSettings, error } = await supabase
         .from('user_memory_settings')
         .select('*')
         .eq('user_id', user.id)
         .single();
+      let data = existingSettings;
 
       // Create default settings if not found
       if (error?.code === 'PGRST116' || !data) {
