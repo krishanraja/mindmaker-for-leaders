@@ -44,6 +44,8 @@ const ROUTES = [
   { path: '/context', label: 'Export' },
   { path: '/briefing', label: 'Briefing' },
   { path: '/decision', label: 'Decide' },
+  { path: '/goals', label: 'Goals' },
+  { path: '/enrich', label: 'Enrich' },
   { path: '/settings', label: 'Settings' },
   { path: '/compliance', label: 'Compliance' },
 ];

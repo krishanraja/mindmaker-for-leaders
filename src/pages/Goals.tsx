@@ -168,9 +168,11 @@ export default function GoalsPage() {
   if (!isMobile) {
     return (
       <DesktopShell eyebrow="Workspace" title="Goals">
-        <div className="mx-auto w-full max-w-3xl">
-          <p className="text-sm text-muted-foreground mb-6">{GOALS_SUBTITLE}</p>
-          {body}
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+          <div className="mx-auto w-full max-w-3xl">
+            <p className="text-sm text-muted-foreground mb-6">{GOALS_SUBTITLE}</p>
+            {body}
+          </div>
         </div>
       </DesktopShell>
     );

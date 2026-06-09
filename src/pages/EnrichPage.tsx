@@ -4,9 +4,14 @@ import { motion } from 'framer-motion';
 import { Copy, Check, Brain, Zap, ArrowRight, Loader2 } from 'lucide-react';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import { BottomNav } from '@/components/memory-web/BottomNav';
+import { DesktopShell } from '@/components/layout/DesktopShell';
 import { Button } from '@/components/ui/button';
+import { useDevice } from '@/hooks/useDevice';
 import { useUserMemory } from '@/hooks/useUserMemory';
 import { useToast } from '@/hooks/use-toast';
+
+const ENRICH_INTRO =
+  'Borrow your own AI. Copy one prompt, run it in ChatGPT or Claude, and paste the answer back. CTRL learns in two minutes what would take weeks to tell it.';
 
 /**
  * The inbound enrichment loop: borrow your own AI. Copy one prompt, run it in
@@ -58,6 +63,7 @@ type Phase = 'idle' | 'adding' | 'done';
 
 export default function EnrichPage() {
   const navigate = useNavigate();
+  const { isMobile } = useDevice();
   const { toast } = useToast();
   const { extractFromTranscript } = useUserMemory();
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -89,25 +95,8 @@ export default function EnrichPage() {
     setPhase('done');
   };
 
-  return (
-    <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-      <AppHeader />
-      <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 scrollbar-hide">
-        <div className="mx-auto w-full max-w-2xl py-4 space-y-6">
-          {/* Intro */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-accent" />
-              <h1 className="text-xl font-bold text-foreground">Deepen your profile</h1>
-            </div>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Borrow your own AI. Copy one prompt, run it in ChatGPT or Claude,
-              and paste the answer back. CTRL learns in two minutes what would
-              take weeks to tell it.
-            </p>
-          </div>
-
-          {phase === 'done' ? (
+  const body =
+    phase === 'done' ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -190,10 +179,39 @@ export default function EnrichPage() {
                 </Button>
               </div>
             </>
-          )}
+          );
+
+  // Mobile: full-screen with AppHeader + BottomNav.
+  if (isMobile) {
+    return (
+      <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
+        <AppHeader />
+        <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 scrollbar-hide">
+          <div className="mx-auto w-full max-w-2xl py-4 space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-accent" />
+                <h1 className="text-xl font-bold text-foreground">Deepen your profile</h1>
+              </div>
+              <p className="text-sm leading-relaxed text-muted-foreground">{ENRICH_INTRO}</p>
+            </div>
+            {body}
+          </div>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  // Desktop: unified shell (rail + top bar), cohesive with the rest of CTRL.
+  return (
+    <DesktopShell eyebrow="Workspace" title="Deepen your profile">
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+        <div className="mx-auto w-full max-w-2xl space-y-6">
+          <p className="text-sm leading-relaxed text-muted-foreground">{ENRICH_INTRO}</p>
+          {body}
         </div>
-      </main>
-      <BottomNav />
-    </div>
+      </div>
+    </DesktopShell>
   );
 }
