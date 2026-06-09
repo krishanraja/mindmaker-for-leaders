@@ -59,6 +59,18 @@ async function signUp(page: Page) {
   await page.locator('#signup-password').fill(PASSWORD);
   await page.getByRole('button', { name: /create account/i }).click();
   await page.waitForURL('**/dashboard', { timeout: 30_000 });
+
+  // A fresh account lands on the full-screen onboarding interview (by design,
+  // NOT under DesktopShell). Wait for its skip control to actually render, then
+  // dismiss it so the real Memory Web shell mounts. (Waiting first avoids a
+  // race where isVisible() checks before the interview has painted.)
+  const skip = page.getByText(/skip for now/i);
+  await skip.waitFor({ state: 'visible', timeout: 20_000 }).catch(() => {});
+  if (await skip.isVisible().catch(() => false)) {
+    await skip.click();
+  }
+  // Settle into the authed shell.
+  await page.locator('aside').first().waitFor({ state: 'visible', timeout: 30_000 });
 }
 
 /** True page-scroll lives on the scrolling element (html/body), never a child. */
@@ -86,7 +98,7 @@ test.describe(BASE_URL ? 'Desktop zero-scroll invariant' : 'Desktop zero-scroll 
         await page.waitForTimeout(600);
 
         // The desktop sidebar (chrome) must be present and pinned.
-        await expect(page.locator('aside').first()).toBeVisible();
+        await expect(page.locator('aside').first()).toBeVisible({ timeout: 15_000 });
 
         // Allow 1px for sub-pixel rounding; anything more is a real scrollbar.
         const overflow = await pageScrollOverflowPx(page);

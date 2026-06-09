@@ -33,8 +33,12 @@ supabase/.temp/
 core
 
 # Test/QA artifacts
+test-results/
+playwright-report/
 *.png
 !public/**/*.png
 !src/**/*.png
 .playwright-mcp/
 .claude/_uxtest/
+.vercel
+.env*.local
