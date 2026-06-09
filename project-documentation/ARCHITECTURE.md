@@ -2,9 +2,9 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-09
 
-> **Verified counts (2026-05-13)**: 74 edge functions, 51 hooks, 98 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points).
+> **Verified counts (2026-06-09)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop).
 
 ---
 
@@ -144,7 +144,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 51 custom hooks
+├── hooks/                     # 59 custom hooks
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -208,14 +208,20 @@ src/
 │   └── supabase/
 │       ├── client.ts          # Supabase client
 │       └── types.ts           # Generated DB types (READ-ONLY)
-├── pages/                     # 25 page files (many legacy, now redirected to /dashboard)
+├── pages/                     # 29 page files (many legacy, now redirected to /dashboard)
 │   ├── Landing.tsx            # Landing page (/)
 │   ├── Auth.tsx               # Authentication (/auth)
 │   ├── AuthCallback.tsx       # OAuth callback (/auth/callback)
 │   ├── Dashboard.tsx          # **Main hub** (/dashboard) - renders Memory Web or Edge view
 │   ├── MemoryCenter.tsx       # Memory Center (/memory)
 │   ├── ContextExport.tsx      # Context Export (/context)
+│   ├── BriefingPage.tsx       # Daily Briefing v2 (/briefing)
+│   ├── DecisionPage.tsx       # Decision Engine pressure-test (/decision)
+│   ├── Goals.tsx              # Goals tracking (/goals)
+│   ├── EnrichPage.tsx         # Inbound Enrich loop (/enrich)
+│   ├── BuildLap.tsx           # Agent Skill Builder full-page flow (/build)
 │   ├── Settings.tsx           # User settings (/settings)
+│   ├── Compliance.tsx         # Compliance center (/compliance)
 │   ├── Profile.tsx            # User profile (/profile)
 │   ├── Booking.tsx            # Workshop booking (/booking)
 │   ├── Diagnostic.tsx         # Assessment flow (legacy, redirects to /dashboard)
@@ -270,11 +276,17 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/auth` | Auth | No | Email + Google OAuth |
 | `/auth/callback` | AuthCallback | No | OAuth redirect handler |
 | `/booking` | Booking | No | External booking |
+| `/build` | BuildLap | No | Agent Skill Builder full-page flow |
 | `/dashboard` | Dashboard (Memory Web) | Yes | Default view - Memory Web with guided first experience |
 | `/dashboard?view=edge` | Dashboard (Edge) | Yes | Edge leadership amplifier |
 | `/memory` | MemoryCenter | Yes | Detailed memory management |
 | `/context` | ContextExport | Yes | Export to AI tools |
+| `/briefing` | BriefingPage | Yes | Daily Briefing v2 |
+| `/decision` | DecisionPage | Yes | Decision Engine pressure-test (decompose → verify → cross-examine → advise) |
+| `/goals` | Goals | Yes | Horizon-grouped goal tracking |
+| `/enrich` | EnrichPage | Yes | Inbound "borrow your own AI" enrichment loop |
 | `/settings` | Settings | Yes | User preferences |
+| `/compliance` | Compliance | Yes | Compliance / audit center |
 | `/profile` | Profile | Yes | User profile |
 
 **Legacy Redirects (all redirect to `/dashboard`):**
@@ -751,7 +763,7 @@ skill_exports                           -- Skill Builder log (Phase 8)
 
 **Location**: `supabase/functions/`
 
-**Total**: 74 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline.
+**Total**: 80 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`).
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)
@@ -1332,13 +1344,14 @@ The CTRL landing page (`/`) and any other public routes are pre-rendered at buil
 - `src/__tests__/HeroSection.video.test.tsx`
 - `supabase/functions/_shared/with-timeout.test.ts`
 
-**Playwright** (`playwright.config.ts`): 6 e2e specs:
-- `tests/auth-journeys.spec.ts`
-- `tests/briefing-journey.spec.ts`
-- `tests/briefing-rate-limits.spec.ts`
-- `tests/sparse-profile.spec.ts`
-- `tests/account-deletion.spec.ts`
-- `tests/stripe-webhook-idempotency.spec.ts`
+**Playwright** (`playwright.config.ts`, `testDir: src/__tests__/e2e`): 7 e2e specs:
+- `src/__tests__/e2e/auth-journeys.spec.ts`
+- `src/__tests__/e2e/briefing-journey.spec.ts`
+- `src/__tests__/e2e/briefing-rate-limits.spec.ts`
+- `src/__tests__/e2e/sparse-profile.spec.ts`
+- `src/__tests__/e2e/account-deletion.spec.ts`
+- `src/__tests__/e2e/stripe-webhook-idempotency.spec.ts`
+- `src/__tests__/e2e/desktop-zero-scroll.spec.ts` (Phase 10: asserts the desktop shell never scrolls the window)
 
 **CI gates** (`.github/workflows/ci.yml`): three blocking checks per PR:
 1. Typecheck (`tsc --noEmit`)
