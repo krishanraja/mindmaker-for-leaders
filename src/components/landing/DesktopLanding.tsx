@@ -10,7 +10,7 @@ import {
   Mic,
   Radio,
   Download,
-  Sparkles,
+  Lightbulb,
   Shield,
   Command,
   Lock,
@@ -62,7 +62,7 @@ const FLOW_STEPS = [
     detail: 'ChatGPT, Claude, Cursor, Gemini, or raw Markdown.',
   },
   {
-    icon: Sparkles,
+    icon: Lightbulb,
     label: 'Every decision gets clearer',
     detail: 'Daily briefings cite the parts of you that matter most today.',
   },

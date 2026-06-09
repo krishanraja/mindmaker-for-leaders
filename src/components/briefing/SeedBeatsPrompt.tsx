@@ -13,7 +13,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { X, Plus, Check, Loader2, Sparkles } from 'lucide-react';
+import { X, Plus, Check, Loader2, Lightbulb } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -94,7 +94,7 @@ export function SeedBeatsPrompt({ hidden, onDismiss, onAnyAdded }: Props) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 min-w-0">
-          <Sparkles className="h-4 w-4 text-accent mt-0.5 shrink-0" />
+          <Lightbulb className="h-4 w-4 text-accent mt-0.5 shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-semibold text-foreground">
               Tell us what you care about

@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { EnhancedPromptCard } from '@/components/ui/enhanced-prompt-card';
 import { ExecutiveSummaryCard } from '@/components/ui/executive-summary-card';
 import { aggregateLeaderResults, isContentLocked } from '@/utils/aggregateLeaderResults';
-import { Loader2, Copy, CheckCircle, Sparkles } from 'lucide-react';
+import { Loader2, Copy, CheckCircle, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ContactData } from './ContactCollectionForm';
 import { supabase } from '@/integrations/supabase/client';
@@ -102,7 +102,7 @@ export const PromptLibraryV2: React.FC<PromptLibraryV2Props> = ({
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <Sparkles className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+          <Brain className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
           <p className="text-muted-foreground">Your prompts are still being generated...</p>
           <p className="text-sm text-muted-foreground mt-2">This usually takes 30-45 seconds. Please refresh in a moment.</p>
         </CardContent>

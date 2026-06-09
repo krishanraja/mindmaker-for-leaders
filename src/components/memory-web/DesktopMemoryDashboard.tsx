@@ -7,7 +7,6 @@ import {
   Edit3,
   Trash2,
   CheckCircle2,
-  Sparkles,
   Brain,
   Zap,
   Download,

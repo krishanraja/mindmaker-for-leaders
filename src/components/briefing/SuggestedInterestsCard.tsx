@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Check, X } from 'lucide-react';
+import { Lightbulb, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SuggestedBriefingInterest } from '@/types/briefing';
@@ -35,7 +35,7 @@ export function SuggestedInterestsCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 min-w-0">
           <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <Lightbulb className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="min-w-0">
             <p className="text-xs font-semibold text-foreground">

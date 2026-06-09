@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Mic, Send, Loader2, Sparkles } from 'lucide-react';
+import { Mic, Send, Loader2, Lightbulb } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { api } from '@/lib/api';
 import { AudioRecorder } from '@/utils/audioRecorder';
@@ -141,7 +141,7 @@ export const DailyProvocation: React.FC<DailyProvocationProps> = ({
     <Card className="mb-6 border rounded-2xl bg-gradient-to-br from-primary/5 to-transparent overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-5 w-5 text-primary" />
+          <Lightbulb className="h-5 w-5 text-primary" />
           <span className="text-sm font-medium text-foreground">Daily Provocation</span>
         </div>
 

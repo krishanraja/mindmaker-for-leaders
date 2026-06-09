@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, TrendingUp, FileText, Sparkles } from 'lucide-react';
+import { Shield, TrendingUp, FileText, Lightbulb } from 'lucide-react';
 
 interface ConsentFlags {
   index_publication: boolean;
@@ -118,7 +118,7 @@ export const ConsentManager: React.FC<ConsentManagerProps> = ({
     },
     {
       key: 'product_improvements' as keyof ConsentFlags,
-      icon: Sparkles,
+      icon: Lightbulb,
       title: 'Product Improvements',
       description: 'Help improve this assessment tool (always enabled)',
       disabled: true,

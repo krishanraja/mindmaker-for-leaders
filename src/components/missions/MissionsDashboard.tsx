@@ -10,7 +10,7 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  Sparkles,
+  Star,
   ArrowRight,
   MessageSquare,
 } from 'lucide-react';
@@ -48,7 +48,7 @@ const momentumConfig: Record<
   new: {
     label: 'Getting Started',
     color: 'bg-primary/10 text-primary border-primary/30',
-    icon: Sparkles,
+    icon: Star,
   },
 };
 

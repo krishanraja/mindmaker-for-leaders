@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Copy, Check, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
+import { Copy, Check, Brain, Zap, ArrowRight, Loader2 } from 'lucide-react';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { Button } from '@/components/ui/button';
@@ -97,7 +97,7 @@ export default function EnrichPage() {
           {/* Intro */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-accent" />
+              <Brain className="h-5 w-5 text-accent" />
               <h1 className="text-xl font-bold text-foreground">Deepen your profile</h1>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">
@@ -185,7 +185,7 @@ export default function EnrichPage() {
                   {phase === 'adding' ? (
                     <><Loader2 className="h-4 w-4 animate-spin" /> Reading it in</>
                   ) : (
-                    <><Sparkles className="h-4 w-4" /> Add to my profile</>
+                    <><Zap className="h-4 w-4" /> Add to my profile</>
                   )}
                 </Button>
               </div>

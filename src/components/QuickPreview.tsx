@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, Zap, TrendingUp } from 'lucide-react';
+import { ArrowRight, Brain, Zap, TrendingUp } from 'lucide-react';
 import mindmakerLogo from '@/assets/mindmaker-logo.png';
 
 interface QuickPreviewProps {
@@ -74,7 +74,7 @@ export const QuickPreview: React.FC<QuickPreviewProps> = ({
           <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 sm:p-8 border-b border-border/50">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-primary/20 rounded-lg">
-                <Sparkles className="w-5 h-5 text-primary" />
+                <Brain className="w-5 h-5 text-primary" />
               </div>
               <span className="text-sm font-medium text-primary">Early Insight Detected</span>
             </div>

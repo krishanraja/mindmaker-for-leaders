@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import type { UserMemoryFact, FactCategory } from '@/types/memory'
 import { FACT_CATEGORY_META, FACT_KEY_LABELS } from '@/types/memory'
-import { Loader2, RefreshCw, Sparkles } from 'lucide-react'
+import { Loader2, RefreshCw, Zap } from 'lucide-react'
 
 type LeaderProfile = {
   title?: string | null
@@ -226,7 +226,7 @@ export function WorkContextTab() {
               {isSyncing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Sparkles className="h-4 w-4" />
+                <Zap className="h-4 w-4" />
               )}
               Sync to profile
             </Button>

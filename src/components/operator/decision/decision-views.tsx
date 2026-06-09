@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { VoiceInput } from '@/components/ui/voice-input';
 import {
   ShieldCheck, AlertTriangle, HelpCircle, CircleDashed, Loader2, ChevronDown,
-  Target, Scale, ListChecks, GitBranch, RotateCcw, Send, Sparkles, Users, Plus, Bell, Mic, Eye,
+  Target, Scale, ListChecks, GitBranch, RotateCcw, Send, Zap, Users, Plus, Bell, Mic, Eye,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -387,7 +387,7 @@ export function UpgradeCard({ message, onUpgrade, processing }: { message: strin
   return (
     <Card className="border-primary/30 bg-primary/5">
       <CardContent className="p-6">
-        <div className="flex items-center gap-2 mb-2"><Sparkles className="h-5 w-5 text-primary" /><h3 className="text-base font-semibold text-foreground">Edge Pro</h3></div>
+        <div className="flex items-center gap-2 mb-2"><Zap className="h-5 w-5 text-primary" /><h3 className="text-base font-semibold text-foreground">Edge Pro</h3></div>
         <p className="text-sm text-muted-foreground mb-4">{message}</p>
         <Button onClick={onUpgrade} disabled={processing} size="lg" className="w-full sm:w-auto">{processing ? 'Opening checkout...' : 'Upgrade to Edge Pro'}</Button>
       </CardContent>

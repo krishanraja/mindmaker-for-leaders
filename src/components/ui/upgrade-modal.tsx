@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Lock, Sparkles } from 'lucide-react';
+import { CheckCircle2, Lock, Zap } from 'lucide-react';
 
 interface UpgradeModalProps {
   open: boolean;
@@ -74,7 +74,7 @@ export const UpgradeModal = React.memo<UpgradeModalProps>(({
         <DialogHeader>
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Zap className="h-5 w-5 text-primary" />
             </div>
             <DialogTitle className="text-xl">
               {title}

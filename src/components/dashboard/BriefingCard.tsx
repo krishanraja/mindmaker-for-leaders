@@ -4,17 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Radio, Play, Check, ChevronDown, Sparkles, RefreshCw, Bookmark, BookmarkCheck, Ban, Loader2, Info, Volume2, Zap } from "lucide-react";
+import { Radio, Play, Check, ChevronDown, Plus, RefreshCw, Bookmark, BookmarkCheck, Ban, Loader2, Info, Zap } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { Briefing, BriefingSegment } from "@/types/briefing";
 import { FRAMEWORK_TAG_CONFIG, BRIEFING_TYPES } from "@/types/briefing";
-import { usePollAudio, useGenerateBriefing } from "@/hooks/useBriefing";
+import { usePollAudio } from "@/hooks/useBriefing";
 import { useBriefingInterests } from "@/hooks/useBriefingInterests";
 import { useKillLensItem } from "@/hooks/useKillLensItem";
 import { haptics } from "@/lib/haptics";
-import { supabase } from "@/integrations/supabase/client";
 import { useBriefingContext } from "@/contexts/BriefingContext";
 import type { SkillSeed } from "@/types/skill";
 
@@ -265,8 +264,11 @@ export function BriefingCard({
 }: BriefingCardProps) {
   const { audioUrl, polling, exhausted, synthError, start, clearError } = usePollAudio();
   const { setBriefing } = useBriefingContext();
-  const { regenerate, generating: regenerating } = useGenerateBriefing();
   const [expanded, setExpanded] = useState(false);
+  // "Collapse the workflow behind the outcome": the leader wants to listen, not
+  // to first "generate audio" then "listen". A single Listen button kicks off
+  // synthesis when needed and auto-opens playback the moment audio is ready.
+  const [pendingPlay, setPendingPlay] = useState(false);
 
   const handleGenerateAudio = () => {
     if (!briefing.audio_url) {
@@ -275,16 +277,14 @@ export function BriefingCard({
     }
   };
 
-  const handleRegenerate = async () => {
-    const newId = await regenerate();
-    if (newId) {
-      const { data } = await supabase
-        .from("briefings")
-        .select("*")
-        .eq("id", newId)
-        .maybeSingle();
-      if (data) setBriefing(data);
+  const handleListen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (briefing.audio_url || audioUrl) {
+      onPlay();
+      return;
     }
+    setPendingPlay(true);
+    handleGenerateAudio();
   };
 
   useEffect(() => {
@@ -292,6 +292,20 @@ export function BriefingCard({
       setBriefing({ ...briefing, audio_url: audioUrl });
     }
   }, [audioUrl, briefing, setBriefing]);
+
+  // When the user tapped Listen before audio existed, open playback the instant
+  // synthesis finishes. If synthesis exhausts/fails, drop the pending intent so
+  // the button falls back to a retry affordance rather than spinning forever.
+  useEffect(() => {
+    if (pendingPlay && audioUrl) {
+      setPendingPlay(false);
+      onPlay();
+    }
+  }, [pendingPlay, audioUrl, onPlay]);
+
+  useEffect(() => {
+    if (exhausted) setPendingPlay(false);
+  }, [exhausted]);
 
   const hasAudio = !!(briefing.audio_url || audioUrl);
   const hasScript = !!briefing.script_text;
@@ -347,14 +361,6 @@ export function BriefingCard({
                   {hasListened && (
                     <Check className="w-3 h-3 text-emerald-500" />
                   )}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleRegenerate(); }}
-                    disabled={regenerating}
-                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                    title="Regenerate briefing"
-                  >
-                    <RefreshCw className={`w-3 h-3 ${regenerating ? "animate-spin" : ""}`} />
-                  </button>
                   <motion.div
                     animate={{ rotate: expanded ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
@@ -387,39 +393,15 @@ export function BriefingCard({
             </div>
 
             <div className="flex flex-col gap-1.5 flex-shrink-0">
-              {hasAudio ? (
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="bg-accent text-accent-foreground hover:bg-accent/90 h-8 px-3"
-                  onClick={onPlay}
-                >
-                  <Play className="w-3 h-3 fill-current mr-1" />
-                  Listen
-                </Button>
-              ) : polling ? (
-                <Button
-                  variant="default"
-                  size="sm"
-                  disabled
-                  className="relative bg-accent text-accent-foreground h-8 w-[72px] overflow-hidden"
-                >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-accent-foreground/15 to-transparent"
-                    animate={{ x: ["-100%", "100%"] }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                  />
-                  <span className="relative z-10 text-xs">Audio...</span>
-                </Button>
-              ) : exhausted ? (
+              {exhausted && !hasAudio ? (
                 <div className="flex flex-col items-end gap-1">
                   <Button
                     variant="outline"
                     size="sm"
                     className="h-8 px-3 text-[11px]"
-                    onClick={(e) => { e.stopPropagation(); handleGenerateAudio(); }}
+                    onClick={(e) => { e.stopPropagation(); setPendingPlay(true); handleGenerateAudio(); }}
                   >
-                    Retry audio
+                    Retry
                   </Button>
                   {synthError && (
                     <span
@@ -434,17 +416,31 @@ export function BriefingCard({
                     </span>
                   )}
                 </div>
+              ) : (waitingForAudio || (pendingPlay && !hasAudio)) ? (
+                <Button
+                  variant="default"
+                  size="sm"
+                  disabled
+                  className="relative bg-accent text-accent-foreground h-8 w-[88px] overflow-hidden"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-accent-foreground/15 to-transparent"
+                    animate={{ x: ["-100%", "100%"] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                  />
+                  <span className="relative z-10 text-xs">Preparing</span>
+                </Button>
               ) : (
                 <Button
-                  variant="outline"
+                  variant="default"
                   size="sm"
-                  className="h-8 px-3 gap-1"
-                  onClick={(e) => { e.stopPropagation(); handleGenerateAudio(); }}
-                  disabled={!hasScript}
-                  title={hasScript ? "Generate audio for this briefing" : "Waiting for script"}
+                  className="bg-accent text-accent-foreground hover:bg-accent/90 h-8 px-3"
+                  onClick={handleListen}
+                  disabled={!hasAudio && !hasScript}
+                  title={hasAudio ? "Listen" : hasScript ? "Listen (prepares audio first)" : "Waiting for script"}
                 >
-                  <Volume2 className="w-3 h-3" />
-                  <span className="text-xs">Generate audio</span>
+                  <Play className="w-3 h-3 fill-current mr-1" />
+                  Listen
                 </Button>
               )}
             </div>
@@ -489,7 +485,7 @@ export function BriefingCard({
                       onClick={onCustomBriefing}
                       className="flex items-center gap-1.5 text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
                     >
-                      <Sparkles className="w-3 h-3" />
+                      <Plus className="w-3 h-3" />
                       Custom Briefing
                     </button>
                     {customBriefingCount > 0 && (

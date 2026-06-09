@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Mic, TrendingUp, Target } from 'lucide-react';
+import { Lightbulb, Mic, TrendingUp, Target } from 'lucide-react';
 import { DailyProvocation } from '@/components/dashboard/DailyProvocation';
 import { PatternInsight } from '@/components/dashboard/PatternInsight';
 import { motion } from 'framer-motion';
@@ -63,7 +63,7 @@ export const LearningEngineSheet: React.FC<LearningEngineSheetProps> = ({
       ) : (
         <Card className="border rounded-2xl">
           <CardContent className="p-6 text-center">
-            <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <Lightbulb className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-sm text-muted-foreground">
               No daily provocation available. Check back tomorrow!
             </p>

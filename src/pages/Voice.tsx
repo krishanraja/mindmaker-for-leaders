@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useState, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, Mic, MicOff, Send, Sparkles, MessageSquare } from "lucide-react"
+import { ArrowLeft, Mic, MicOff, Send, Brain, MessageSquare } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { useVoice } from "@/hooks/useVoice"
@@ -362,7 +362,7 @@ export default function Voice() {
                     className="absolute inset-0 rounded-full border-2 border-accent/20 border-t-accent"
                   />
                   <div className="absolute inset-2 rounded-full bg-background flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-accent" />
+                    <Brain className="w-6 h-6 text-accent" />
                   </div>
                 </div>
                 <p className="text-sm text-foreground mt-6">

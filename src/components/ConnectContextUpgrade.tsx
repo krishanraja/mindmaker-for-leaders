@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { enrichCompanyContext } from '@/utils/enrichCompanyContext';
-import { Sparkles, Upload, Link2, Calendar, Loader2, CheckCircle2 } from 'lucide-react';
+import { Zap, Upload, Link2, Calendar, Loader2, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ConnectContextUpgradeProps {
@@ -147,7 +147,7 @@ export const ConnectContextUpgrade: React.FC<ConnectContextUpgradeProps> = ({
       <CardHeader>
         <div className="flex items-center gap-2 mb-2">
           <div className="p-2 rounded-lg bg-primary/10">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Zap className="h-5 w-5 text-primary" />
           </div>
           <CardTitle className="text-xl">Connect Your Context</CardTitle>
         </div>
@@ -262,7 +262,7 @@ export const ConnectContextUpgrade: React.FC<ConnectContextUpgradeProps> = ({
             </>
           ) : (
             <>
-              <Sparkles className="h-4 w-4" />
+              <Zap className="h-4 w-4" />
               Enrich My Context
             </>
           )}

@@ -4,7 +4,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
-import { LogOut, Loader2, Sparkles, Shield, ArrowUpRight } from 'lucide-react'
+import { LogOut, Loader2, Hand, Shield, ArrowUpRight } from 'lucide-react'
 
 export function AccountTab() {
   const { user, signOut } = useAuth()
@@ -84,7 +84,7 @@ export function AccountTab() {
           }}
           className="gap-2"
         >
-          <Sparkles className="h-4 w-4" />
+          <Hand className="h-4 w-4" />
           Replay setup tour
         </Button>
       </div>

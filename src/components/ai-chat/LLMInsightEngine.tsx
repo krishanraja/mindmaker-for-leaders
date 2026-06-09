@@ -14,8 +14,7 @@ import {
   Users,
   DollarSign,
   Calendar,
-  Lightbulb,
-  Sparkles
+  Lightbulb
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -458,7 +457,7 @@ Return ONLY the JSON, no other text.`,
       <Card>
         <CardContent className="text-center py-8">
           <Button onClick={generateInsights} disabled={isGenerating} className="mt-4">
-            <Sparkles className="h-4 w-4 mr-2" />
+            <Zap className="h-4 w-4 mr-2" />
             Generate My AI Leadership Insights
           </Button>
         </CardContent>

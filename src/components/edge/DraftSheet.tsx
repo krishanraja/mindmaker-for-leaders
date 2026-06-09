@@ -5,7 +5,7 @@ import {
   MicOff,
   MessageSquare,
   Loader2,
-  Sparkles,
+  Zap,
   Send,
 } from 'lucide-react';
 import {
@@ -73,7 +73,7 @@ function resolveCapabilityMeta(
   if (capability in SHARPEN_CAPABILITY_META) {
     return SHARPEN_CAPABILITY_META[capability as SharpenCapability];
   }
-  return { label: capability, description: '', icon: 'Sparkles' };
+  return { label: capability, description: '', icon: 'Zap' };
 }
 
 /** Map sharpen capability to edge-generate capability key */
@@ -287,7 +287,7 @@ function DraftContent({
               : 'from-amber-500/20 to-orange-500/20',
           )}
         >
-          <Sparkles
+          <Zap
             className={cn(
               'h-5 w-5',
               isSharpen ? 'text-emerald-400' : 'text-amber-400',

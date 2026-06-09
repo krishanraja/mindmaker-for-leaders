@@ -11,7 +11,7 @@
 
 import { useState, useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { FF } from '@/lib/flags';
@@ -286,7 +286,7 @@ function VoiceDemoInner() {
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-1">
-        <Sparkles className="h-3.5 w-3.5 text-accent flex-shrink-0" aria-hidden="true" />
+        <Star className="h-3.5 w-3.5 text-accent flex-shrink-0" aria-hidden="true" />
         <span className="text-[10px] uppercase tracking-[0.15em] text-accent font-medium">
           Preview - no account needed
         </span>

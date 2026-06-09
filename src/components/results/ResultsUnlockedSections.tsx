@@ -7,7 +7,7 @@ import {
   ChevronDown,
   TrendingUp,
   AlertTriangle,
-  Sparkles,
+  Brain,
   Shield,
   Copy,
   Check,
@@ -135,7 +135,7 @@ export const ResultsUnlockedSections: React.FC<ResultsUnlockedSectionsProps> = (
               <CollapsibleTrigger className="w-full">
                 <CardHeader className="flex flex-row items-center justify-between p-4 cursor-pointer hover:bg-secondary/30 transition-colors rounded-t-xl">
                   <div className="flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 text-primary" />
+                    <Brain className="w-5 h-5 text-primary" />
                     <CardTitle className="text-base font-semibold">Your Prompt Library ({data.promptSets.length} sets)</CardTitle>
                   </div>
                   <div className="flex items-center gap-2">

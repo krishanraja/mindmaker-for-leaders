@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, MicOff, Loader2, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVoice } from '@/hooks/useVoice';
 import { invokeEdgeFunction } from '@/lib/api';
@@ -163,12 +163,9 @@ export function VoiceSteerBar({ briefingId, onCustomRequest, onApplied }: VoiceS
             </div>
           ) : (
             <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-accent" />
-                <span className="text-xs font-semibold text-foreground">
-                  Steer your briefing
-                </span>
-              </div>
+              <span className="text-xs font-semibold text-foreground">
+                Steer your briefing
+              </span>
               <p className="text-[11px] text-muted-foreground line-clamp-1">
                 Tap and say what you'd rather hear.
               </p>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, TrendingUp, Brain, Sparkles, Users, MessageSquare, ArrowRight, Calendar } from 'lucide-react';
+import { Shield, TrendingUp, Brain, Zap, Users, MessageSquare, ArrowRight, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { LeadershipBenchmarkV2 } from './LeadershipBenchmarkV2';
@@ -127,7 +127,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
               value="tools" 
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center justify-center gap-2"
             >
-              <Sparkles className="h-4 w-4 flex-shrink-0" />
+              <Zap className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Tools</span>
             </TabsTrigger>
             <TabsTrigger 

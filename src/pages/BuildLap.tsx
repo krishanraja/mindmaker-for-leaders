@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles,
+  Star,
+  Lightbulb,
   Wand2,
   Download,
   Loader2,
@@ -107,7 +108,7 @@ export default function BuildLap() {
             >
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <Star className="h-3.5 w-3.5" />
                   Free, no account needed
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
@@ -222,7 +223,7 @@ export default function BuildLap() {
                       )}
                       {(skillData.test_prompts?.length ?? 0) > 0 && (
                         <KitLine
-                          icon={<Sparkles className="h-4 w-4" />}
+                          icon={<Lightbulb className="h-4 w-4" />}
                           label={`${skillData.test_prompts.length} test prompt${skillData.test_prompts.length === 1 ? '' : 's'} to try it`}
                         />
                       )}

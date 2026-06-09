@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Brain } from 'lucide-react';
 import type { GettingSmarterDelta } from '@/types/memory';
 
 interface Props {
@@ -23,7 +23,7 @@ export function GettingSmarterBanner({ delta }: Props) {
       transition={{ delay: 0.2 }}
       className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent/5 border border-accent/10"
     >
-      <Sparkles className="h-4 w-4 text-accent flex-shrink-0" />
+      <Brain className="h-4 w-4 text-accent flex-shrink-0" />
       <p className="text-xs text-foreground">
         <span className="font-medium">Getting smarter:</span> {parts.join(', ')} {delta.period}
       </p>

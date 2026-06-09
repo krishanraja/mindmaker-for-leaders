@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail, ArrowRight, Check, Sparkles } from 'lucide-react';
+import { Mail, ArrowRight, Check, Brain } from 'lucide-react';
 import { validateEmail } from '@/utils/formValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { invokeEdgeFunction } from '@/utils/edgeFunctionClient';
@@ -133,7 +133,7 @@ export const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
           {/* Header */}
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-2 text-primary text-sm mb-3">
-              <Sparkles className="h-4 w-4" />
+              <Brain className="h-4 w-4" />
               <span>Weekly insights</span>
             </div>
             <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">

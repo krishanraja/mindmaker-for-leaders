@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, Loader2, Download, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calendar, Loader2, Download, Zap, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { ContactData } from './ContactCollectionForm';
 import { exportDiagnosticPDF } from '@/utils/exportPDF';
 
@@ -281,7 +281,7 @@ export const MeetingPrepTab: React.FC<MeetingPrepTabProps> = ({
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4" />
+                <Zap className="h-4 w-4" />
                 Generate Prep Materials
               </>
             )}

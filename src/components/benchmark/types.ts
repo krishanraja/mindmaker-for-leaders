@@ -1,4 +1,4 @@
-import { Crown, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { Crown, Star, Target, TrendingUp } from 'lucide-react';
 
 export const tierConfig = {
   'AI-Orchestrator': {
@@ -7,7 +7,7 @@ export const tierConfig = {
     badgeStyle: 'bg-yellow-100 text-yellow-800 border-yellow-300',
   },
   'AI-Confident': {
-    icon: Sparkles,
+    icon: Star,
     gradient: 'from-blue-400 to-blue-600',
     badgeStyle: 'bg-blue-100 text-blue-800 border-blue-300',
   },
