@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Send, Loader2, Sparkles, MessageSquare } from 'lucide-react';
+import { Mic, MicOff, Send, Loader2, Brain, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useVoice } from '@/hooks/useVoice';
@@ -75,6 +75,7 @@ export const VoiceMemoryCapture: React.FC<VoiceMemoryCaptureProps> = ({
     } finally {
       setIsProcessing(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showVerification, extractFromTranscript, onComplete, toast]);
 
   const handleTranscript = useCallback(async (text: string) => {
@@ -364,7 +365,7 @@ export const VoiceMemoryCapture: React.FC<VoiceMemoryCaptureProps> = ({
                     )}
                   >
                     <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-                      <Sparkles className="w-8 h-8 text-purple-400" />
+                      <Brain className="w-8 h-8 text-purple-400" />
                     </div>
                   </motion.div>
                 </div>

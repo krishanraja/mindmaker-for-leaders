@@ -22,7 +22,9 @@ import {
   MessageSquare,
   Code2,
   Terminal,
-  Sparkles,
+  Brain,
+  Star,
+  Lightbulb,
   Bot,
   Users,
   Target,
@@ -97,7 +99,7 @@ const FORMAT_OPTIONS: {
   description: string;
 }[] = [
   { value: 'chatgpt', label: 'ChatGPT', icon: Bot, description: 'Custom Instructions' },
-  { value: 'claude', label: 'Claude', icon: Sparkles, description: 'Conversation context' },
+  { value: 'claude', label: 'Claude', icon: Brain, description: 'Conversation context' },
   { value: 'gemini', label: 'Gemini', icon: MessageSquare, description: 'Chat context' },
   { value: 'cursor', label: 'Cursor', icon: Code2, description: '.cursorrules file' },
   { value: 'claude-code', label: 'Claude Code', icon: Terminal, description: 'CLAUDE.md file' },
@@ -398,7 +400,7 @@ export default function ContextExport() {
                 }}
                 className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-accent/30 text-accent hover:bg-accent/10 transition-colors"
               >
-                <Sparkles className="h-3 w-3" />
+                <Zap className="h-3 w-3" />
                 Upgrade to Pro
               </button>
             )}
@@ -410,7 +412,7 @@ export default function ContextExport() {
       {hasRecommendations && (
         <div>
           <div className="flex items-center gap-2 mb-2.5">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <Star className="h-3.5 w-3.5 text-accent" />
             <h3 className="text-sm font-semibold text-foreground">Recommended for You</h3>
           </div>
           <div className="flex flex-col gap-2">
@@ -569,7 +571,7 @@ export default function ContextExport() {
           animate={{ opacity: 1, y: 0 }}
           className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 flex items-start gap-2.5"
         >
-          <Sparkles className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <Lightbulb className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-foreground/80 leading-relaxed">{triageBanner}</p>
         </motion.div>
       )}
@@ -1014,7 +1016,7 @@ export default function ContextExport() {
             onClick={() => navigate('/enrich')}
             className="flex w-full items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-foreground/5"
           >
-            <Sparkles className="h-4 w-4 shrink-0 text-accent" />
+            <Brain className="h-4 w-4 shrink-0 text-accent" />
             <span className="min-w-0 flex-1 text-xs text-muted-foreground">
               Got an answer from an AI?{' '}
               <span className="font-medium text-foreground">Paste it back to deepen your profile.</span>

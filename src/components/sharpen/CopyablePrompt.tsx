@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Check, Sparkles } from 'lucide-react';
+import { Copy, Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -28,7 +28,7 @@ export function CopyablePrompt({ prompt, title = "Ready to use", className }: Co
     <div className={cn('rounded-xl border border-accent/30 bg-accent/5 overflow-hidden', className)}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-accent/20 bg-accent/10">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-accent-foreground" />
+          <Star className="h-4 w-4 text-accent-foreground" />
           <span className="text-sm font-medium text-accent-foreground">{title}</span>
         </div>
         <Button

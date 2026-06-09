@@ -7,7 +7,7 @@ import {
   MessageSquare,
   Send,
   X,
-  Sparkles,
+  CheckCircle2,
   Shield,
   Flame,
   Target,
@@ -565,7 +565,7 @@ export function EdgeOnboarding({ onComplete }: Props) {
                 transition={{ type: 'spring' }}
               >
                 <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto shadow-lg shadow-accent/25">
-                  <Sparkles className="h-8 w-8 text-white" />
+                  <CheckCircle2 className="h-8 w-8 text-white" />
                 </div>
               </motion.div>
               <h2 className="text-xl font-bold text-foreground">Context captured</h2>

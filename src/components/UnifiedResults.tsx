@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, TrendingUp, Brain, Sparkles, Users, MessageSquare, ArrowRight, Calendar } from 'lucide-react';
+import { Shield, TrendingUp, Brain, Zap, Users, MessageSquare, ArrowRight, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { LeadershipBenchmarkV2 } from './LeadershipBenchmarkV2';
@@ -11,12 +11,12 @@ import { ConsentManager } from './ConsentManager';
 import { MeetingPrepTab } from './MeetingPrepTab';
 import { ContactData } from './ContactCollectionForm';
 import { DeepProfileData } from './DeepProfileQuestionnaire';
-import { aggregateLeaderResults } from '@/utils/aggregateLeaderResults';
+import { aggregateLeaderResults, type AggregatedLeaderResults } from '@/utils/aggregateLeaderResults';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UnifiedResultsProps {
-  assessmentData: any;
-  promptLibrary: any;
+  assessmentData: unknown;
+  promptLibrary: unknown;
   contactData: ContactData;
   deepProfileData: DeepProfileData | null;
   sessionId: string | null;
@@ -34,7 +34,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
-  const [aggregatedData, setAggregatedData] = useState<any>(null);
+  const [aggregatedData, setAggregatedData] = useState<AggregatedLeaderResults | null>(null);
   const [hasDeepContext, setHasDeepContext] = useState(false);
 
   const [isLoadingId, setIsLoadingId] = useState(true);
@@ -127,7 +127,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
               value="tools" 
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center justify-center gap-2"
             >
-              <Sparkles className="h-4 w-4 flex-shrink-0" />
+              <Zap className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Tools</span>
             </TabsTrigger>
             <TabsTrigger 

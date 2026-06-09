@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Radio,
-  Sparkles,
+  ListChecks,
+  Lightbulb,
   Play,
   Clock,
   ChevronDown,
@@ -30,7 +31,6 @@ import { InterestsSheet } from "@/components/briefing/InterestsSheet";
 import { BottomNav } from "@/components/memory-web/BottomNav";
 import { AppHeader } from "@/components/memory-web/AppHeader";
 import { DesktopShell } from "@/components/layout/DesktopShell";
-import { Coachmark } from "@/components/onboarding/Coachmark";
 import { useDevice } from "@/hooks/useDevice";
 import {
   useTodaysBriefing,
@@ -187,44 +187,36 @@ function BriefingPage() {
             transition={{ duration: 0.3 }}
             className="space-y-4 py-4"
           >
-            <Coachmark
-              id="briefing"
-              icon={Radio}
-              title="Tune what you hear"
-              body="This briefing learns from you. Bookmark a story to hear more like it, ban a topic to drop it for good, or hit Tune to set the people and themes you care about."
-            />
+            {/* One calm header: what this is + its status + a single way to
+                adjust it. Interests, tuning and steering all live behind this
+                one "Adjust" control so the page itself stays a single step. */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                  <Radio className="w-4.5 h-4.5 text-accent" />
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-lg font-semibold text-foreground truncate">
-                    Your Briefing
-                  </h1>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <span
-                      className={cn(
-                        "inline-block w-1.5 h-1.5 rounded-full",
-                        isGenerating
-                          ? "bg-amber-500 animate-pulse"
-                          : defaultBriefing
-                          ? "bg-emerald-500"
-                          : "bg-muted-foreground/40",
-                      )}
-                    />
-                    {liveStatus}
-                  </p>
-                </div>
+              <div className="min-w-0">
+                <h1 className="text-lg font-semibold text-foreground truncate">
+                  Briefing
+                </h1>
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      "inline-block w-1.5 h-1.5 rounded-full",
+                      isGenerating
+                        ? "bg-amber-500 animate-pulse"
+                        : defaultBriefing
+                        ? "bg-emerald-500"
+                        : "bg-muted-foreground/40",
+                    )}
+                  />
+                  {liveStatus}
+                </p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setInterestsSheetOpen(true)}
-                className="gap-1 text-xs h-8"
+                className="gap-1.5 text-xs h-8"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                Tune
+                <Settings2 className="w-3.5 h-3.5" />
+                Adjust
               </Button>
             </div>
 
@@ -262,7 +254,7 @@ function BriefingPage() {
             ) : !hasDeclaredOrInferred && !defaultBriefing && !suggestionsLoading && suggestions.length === 0 ? (
               <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4 space-y-3">
                 <div className="flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-accent" />
+                  <ListChecks className="w-5 h-5 text-accent shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-foreground">Pick a few topics first</p>
                     <p className="text-xs text-muted-foreground">We need 3+ interests to make this feel like yours.</p>
@@ -327,7 +319,10 @@ function BriefingPage() {
               />
             ) : null}
 
-            {hasData && (
+            {/* Secondary, one quiet action: once a briefing exists, the only
+                follow-on offered is steering it by voice - the learn-and-refine
+                loop. Topic management lives behind "Adjust", not stacked here. */}
+            {defaultBriefing && (
               <VoiceSteerBar
                 briefingId={defaultBriefing?.id ?? null}
                 onCustomRequest={handleVoiceCustomRequest}
@@ -335,38 +330,15 @@ function BriefingPage() {
               />
             )}
 
-            <SuggestedInterestsCard
-              suggestions={suggestions}
-              loading={suggestionsLoading}
-              onAccept={acceptSuggestion}
-              onDismiss={dismissSuggestion}
-              onAcceptAll={acceptAllSuggestions}
-            />
-
-            {hasData && (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                    In this briefing
-                  </p>
-                  {declaredInterests.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setInterestsSheetOpen(true)}
-                      className="text-[11px] text-accent hover:underline"
-                    >
-                      Manage
-                    </button>
-                  )}
-                </div>
-                <InterestChipsRow
-                  interests={declaredInterests}
-                  loading={interestsLoading}
-                  onRemove={removeInterest}
-                  onAdd={() => setInterestsSheetOpen(true)}
-                  emptyHint="No interests yet - voice steer above or tap Tune."
-                />
-              </div>
+            {/* Suggestions only help before there is a briefing to listen to. */}
+            {!defaultBriefing && (
+              <SuggestedInterestsCard
+                suggestions={suggestions}
+                loading={suggestionsLoading}
+                onAccept={acceptSuggestion}
+                onDismiss={dismissSuggestion}
+                onAcceptAll={acceptAllSuggestions}
+              />
             )}
 
             {customBriefings.length > 0 && (
@@ -488,7 +460,7 @@ function BriefingPage() {
       <div className="border-b border-border/60 p-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <Settings2 className="h-3.5 w-3.5 text-accent" />
             <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Your interests
             </h3>
@@ -599,20 +571,14 @@ function BriefingPage() {
               className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-secondary transition-colors"
             >
               <Settings2 className="h-3.5 w-3.5" />
-              Tune
+              Adjust
             </button>
           </>
         }
         rightRail={rightRail}
       >
         <div className="max-w-3xl mx-auto space-y-6">
-          <Coachmark
-            id="briefing"
-            icon={Radio}
-            title="Tune what you hear"
-            body="This briefing learns from you. Bookmark a story to hear more like it, ban a topic to drop it for good, or hit Tune to set the people and themes you care about."
-          />
-          {/* Hero state */}
+          {/* Hero state - exactly one thing at a time */}
           {loading ? (
             <div className="flex items-center justify-center py-24">
               <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
@@ -634,7 +600,7 @@ function BriefingPage() {
             <div className="rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 to-transparent p-8">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-accent" />
+                  <ListChecks className="w-6 h-6 text-accent" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-lg font-semibold text-foreground mb-1">
@@ -718,7 +684,7 @@ function BriefingPage() {
             <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-8">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-amber-500" />
+                  <Lightbulb className="w-6 h-6 text-amber-500" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-lg font-semibold text-foreground mb-1">

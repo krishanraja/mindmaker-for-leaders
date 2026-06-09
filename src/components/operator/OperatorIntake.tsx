@@ -9,7 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { VoiceInput } from '@/components/ui/voice-input';
-import { ArrowRight, ArrowLeft, Check, Mic, Plus, X, Briefcase, Sparkles, Zap, Target, AlertCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Mic, Plus, X, Briefcase, Brain, Loader2, Zap, Target, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { DualPercentageSlider } from './DualPercentageSlider';
 import { VoiceFirstInput } from './VoiceFirstInput';
@@ -186,7 +186,7 @@ export const OperatorIntake: React.FC<OperatorIntakeProps> = ({ onComplete, onBa
         return (
           <div className="flex-1 flex flex-col min-h-0 space-y-2">
             <div className="flex items-center gap-1.5 shrink-0">
-              <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+              <Brain className="h-3.5 w-3.5 text-primary animate-pulse" />
               <span className="text-[10px] font-medium text-primary">Learning about your business</span>
             </div>
             <h3 className="text-base font-semibold text-foreground shrink-0">
@@ -540,7 +540,7 @@ export const OperatorIntake: React.FC<OperatorIntakeProps> = ({ onComplete, onBa
           </div>
         );
 
-      case 5:
+      case 5: {
         const exampleQuestions = [
           "Should I get ChatGPT Pro or Business?",
           "Should I use Zapier or Make?",
@@ -696,6 +696,7 @@ export const OperatorIntake: React.FC<OperatorIntakeProps> = ({ onComplete, onBa
             </div>
           </div>
         );
+      }
 
       default:
         return null;
@@ -724,7 +725,7 @@ export const OperatorIntake: React.FC<OperatorIntakeProps> = ({ onComplete, onBa
                 <span className="text-xs font-medium text-foreground">Operator Setup</span>
                 {currentStep > 1 && (
                   <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-primary/20 px-1 py-0">
-                    <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                    <Brain className="h-2.5 w-2.5 mr-0.5" />
                     Learning
                   </Badge>
                 )}
@@ -783,7 +784,7 @@ export const OperatorIntake: React.FC<OperatorIntakeProps> = ({ onComplete, onBa
                 >
                   {isSubmitting ? (
                     <>
-                      <Sparkles className="h-3 w-3 mr-1 animate-spin" />
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Preparing...
                     </>
                   ) : currentStep === totalSteps ? (

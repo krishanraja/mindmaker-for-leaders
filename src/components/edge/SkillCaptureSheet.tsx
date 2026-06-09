@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, MessageSquare, Loader2, Send, Zap, Sparkles, AlertTriangle, X } from "lucide-react";
+import { Mic, MicOff, MessageSquare, Loader2, Send, Zap, Lightbulb, AlertTriangle, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -356,7 +356,7 @@ function CaptureContent({
             <div className="flex items-start gap-2.5">
               <div className="flex-shrink-0 mt-0.5">
                 {activeSeed.kind === "example" ? (
-                  <Sparkles className="h-4 w-4" />
+                  <Lightbulb className="h-4 w-4" />
                 ) : (
                   <AlertTriangle className="h-4 w-4" />
                 )}

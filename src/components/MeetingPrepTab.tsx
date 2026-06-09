@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, Loader2, Download, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calendar, Loader2, Download, Zap, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { ContactData } from './ContactCollectionForm';
 import { exportDiagnosticPDF } from '@/utils/exportPDF';
 
@@ -111,6 +111,7 @@ export const MeetingPrepTab: React.FC<MeetingPrepTabProps> = ({
     };
 
     loadPrepHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assessmentId]);
 
   const handleGeneratePrep = async () => {
@@ -158,11 +159,11 @@ export const MeetingPrepTab: React.FC<MeetingPrepTabProps> = ({
       } else {
         throw new Error('Failed to generate prep materials');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating prep:', error);
       toast({
         title: 'Generation Failed',
-        description: error.message || 'Failed to generate meeting prep. Please try again.',
+        description: (error instanceof Error ? error.message : '') || 'Failed to generate meeting prep. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -281,7 +282,7 @@ export const MeetingPrepTab: React.FC<MeetingPrepTabProps> = ({
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4" />
+                <Zap className="h-4 w-4" />
                 Generate Prep Materials
               </>
             )}

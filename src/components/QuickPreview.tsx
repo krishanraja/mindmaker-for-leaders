@@ -1,16 +1,16 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, Zap, TrendingUp } from 'lucide-react';
+import { ArrowRight, Brain, Zap, TrendingUp } from 'lucide-react';
 import mindmakerLogo from '@/assets/mindmaker-logo.png';
 
 interface QuickPreviewProps {
-  assessmentData: Record<string, any>;
+  assessmentData: Record<string, unknown>;
   onContinue: () => void;
 }
 
 // Generate a tension teaser based on early assessment answers
-const generateTensionTeaser = (data: Record<string, any>): { tension: string; insight: string } => {
+const generateTensionTeaser = (data: Record<string, unknown>): { tension: string; insight: string } => {
   const answers = Object.entries(data);
   
   // Look for contrasting signals in the data
@@ -54,8 +54,8 @@ const generateTensionTeaser = (data: Record<string, any>): { tension: string; in
   };
 };
 
-const parseAnswerScore = (answer: string | undefined): number => {
-  if (!answer) return 3;
+const parseAnswerScore = (answer: unknown): number => {
+  if (typeof answer !== 'string' || !answer) return 3;
   const match = answer.match(/^(\d)/);
   return match ? parseInt(match[1]) : 3;
 };
@@ -74,7 +74,7 @@ export const QuickPreview: React.FC<QuickPreviewProps> = ({
           <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 sm:p-8 border-b border-border/50">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-primary/20 rounded-lg">
-                <Sparkles className="w-5 h-5 text-primary" />
+                <Brain className="w-5 h-5 text-primary" />
               </div>
               <span className="text-sm font-medium text-primary">Early Insight Detected</span>
             </div>

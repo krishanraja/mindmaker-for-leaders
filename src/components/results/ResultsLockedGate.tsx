@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Sparkles, Lock } from 'lucide-react';
+import { ChevronDown, Zap, Lock } from 'lucide-react';
 import { UnlockResultsForm, UnlockFormData } from '../UnlockResultsForm';
 
 interface ResultsLockedGateProps {
@@ -42,7 +42,7 @@ export const ResultsLockedGate: React.FC<ResultsLockedGateProps> = ({
             <CardHeader className="flex flex-row items-center justify-between p-4 cursor-pointer hover:bg-secondary/30 transition-colors">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <Zap className="h-5 w-5 text-primary" />
                 </div>
                 <div className="text-left">
                   <CardTitle className="text-base sm:text-lg font-semibold">Unlock Your Full Results</CardTitle>

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Brain } from 'lucide-react';
 import { useEdge } from '@/hooks/useEdge';
 import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 import { EdgeOnboarding } from './EdgeOnboarding';
@@ -101,7 +101,7 @@ export default function EdgeView() {
           transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
           className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent/20 border-t-accent"
         >
-          <Sparkles className="h-5 w-5 text-accent" />
+          <Brain className="h-5 w-5 text-accent" />
         </motion.div>
         <p className="text-sm font-medium text-foreground">Building your Edge.</p>
         <p className="text-xs text-muted-foreground">Reading your Memory Web.</p>

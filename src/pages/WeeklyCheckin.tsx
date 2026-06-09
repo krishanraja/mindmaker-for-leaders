@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { VoiceInput } from '@/components/ui/voice-input';
-import { ArrowLeft, Sparkles, Lightbulb, Target, Brain, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Lightbulb, Target, Brain, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getPersistedAssessmentId } from '@/utils/assessmentPersistence';
@@ -40,7 +40,12 @@ export default function WeeklyCheckin() {
     setServerAction(null);
     setServerWhy(null);
 
-    let baselineContext: any = null;
+    let baselineContext: {
+      benchmarkTier: string;
+      benchmarkScore: number;
+      topTension: string | null;
+      topRisk: string | null;
+    } | null = null;
     try {
       const { assessmentId } = getPersistedAssessmentId();
       if (assessmentId) {
@@ -127,7 +132,7 @@ export default function WeeklyCheckin() {
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 shrink-0 rounded-lg bg-primary/10 p-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Brain className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1">
               <div className="text-sm font-medium text-foreground">{question}</div>

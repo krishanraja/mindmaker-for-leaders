@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Sparkles, Brain } from 'lucide-react';
+import { ArrowRight, Brain } from 'lucide-react';
 
 interface QuestionData {
   id: number;
@@ -37,7 +37,7 @@ export const AssessmentQuestionCard: React.FC<AssessmentQuestionCardProps> = ({
             </h3>
             {completedAnswers > 0 && (
               <span className="text-[10px] text-primary flex items-center gap-1">
-                <Sparkles className="h-3 w-3 animate-pulse" />
+                <Brain className="h-3 w-3 animate-pulse" />
                 <span className="hidden sm:inline">Personalizing...</span>
               </span>
             )}

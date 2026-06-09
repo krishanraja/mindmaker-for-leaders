@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Copy, CheckCircle, Lock, ChevronDown, ChevronUp, Crown, Sparkles } from 'lucide-react';
+import { Copy, CheckCircle, Lock, ChevronDown, ChevronUp, Crown, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -74,7 +74,7 @@ export const EnhancedPromptCard = React.memo<EnhancedPromptCardProps>(({
 
         <CardContent className="space-y-4">
           <div className="flex items-start gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
-            <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+            <Brain className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs leading-relaxed">{whatItsFor}</p>
           </div>
 

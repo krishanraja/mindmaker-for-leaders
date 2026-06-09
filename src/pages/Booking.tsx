@@ -6,7 +6,7 @@ import {
   ArrowLeft,
   Calendar,
   MessageSquare,
-  Sparkles,
+  Star,
   Clock,
   CheckCircle2,
 } from 'lucide-react';
@@ -64,7 +64,7 @@ export default function Booking() {
       <Card className="border rounded-xl mt-4">
         <CardContent className="p-4">
           <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Star className="h-4 w-4 text-primary" />
             What to expect
           </h3>
           <div className="space-y-3">

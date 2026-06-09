@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mic, MicOff, Send, Loader2, MessageSquare, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Mic, MicOff, Send, Loader2, MessageSquare, Brain, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -454,7 +454,7 @@ export const AddMemorySheet: React.FC<AddMemorySheetProps> = ({
                         )}
                       >
                         <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-                          <Sparkles className="w-8 h-8 text-accent" />
+                          <Brain className="w-8 h-8 text-accent" />
                         </div>
                       </motion.div>
                     </div>

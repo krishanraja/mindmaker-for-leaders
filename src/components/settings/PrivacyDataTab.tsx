@@ -4,7 +4,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Trash2, ShieldCheck, Sparkles } from 'lucide-react'
+import { Trash2, ShieldCheck, Brain } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
   FACT_CATEGORY_META,
@@ -220,7 +220,7 @@ export function PrivacyDataTab() {
                                   variant="outline"
                                   className="h-5 px-1.5 text-[10px] gap-1 border-amber-500/40 text-amber-600"
                                 >
-                                  <Sparkles className="w-3 h-3" />
+                                  <Brain className="w-3 h-3" />
                                   Inferred
                                 </Badge>
                               ) : null}

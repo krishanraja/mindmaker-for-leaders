@@ -18,7 +18,7 @@ import {
   Repeat,
   Lightbulb,
   MessageSquare,
-  Sparkles,
+  Star,
   CheckCircle2,
   XCircle,
   RotateCcw,
@@ -33,7 +33,7 @@ import type {
 } from '@/types/memory';
 
 const PATTERN_ICONS: Record<PatternType, typeof TrendingUp> = {
-  preference: Sparkles,
+  preference: Star,
   anti_preference: Repeat,
   behavior: Lightbulb,
   blindspot: MessageSquare,

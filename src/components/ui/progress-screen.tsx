@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Brain, TrendingUp, Target, Sparkles, Lightbulb, Users, Zap, LucideIcon } from 'lucide-react';
+import { Brain, TrendingUp, Target, Lightbulb, Users, Zap, LucideIcon } from 'lucide-react';
 
 interface ProgressPhase {
   label: string;

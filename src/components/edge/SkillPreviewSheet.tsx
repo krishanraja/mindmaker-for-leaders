@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
-import { Copy, Check, X, Download, Zap, Sparkles, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
+import { Copy, Check, X, Download, Zap, Star, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -143,7 +143,7 @@ function PreviewContent({
         {/* Description */}
         <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <Star className="h-3.5 w-3.5 text-accent" />
             <h4 className="text-xs font-medium text-foreground uppercase tracking-wide">
               Description
             </h4>

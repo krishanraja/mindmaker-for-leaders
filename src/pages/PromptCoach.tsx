@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Send, Sparkles, Zap, Target } from 'lucide-react';
+import { ArrowLeft, Send, Lightbulb, Zap, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { LoadingState } from '@/components/sharpen/LoadingState';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useAssessment } from '@/contexts/AssessmentContext';
+import { useAssessment, type AssessmentInsights } from '@/contexts/AssessmentContext';
 
 interface CoachResult {
   whats_working: string;
@@ -22,7 +22,7 @@ interface CoachResult {
 }
 
 // Suggested prompts based on assessment gaps
-const getSuggestedPrompts = (insights: any) => {
+const getSuggestedPrompts = (insights: AssessmentInsights | null) => {
   const suggestions: { title: string; prompt: string; category: string }[] = [];
   
   if (!insights) {
@@ -273,7 +273,7 @@ export default function PromptCoach() {
 
             {/* One Thing to Try */}
             <InsightCard
-              icon={<Sparkles className="h-5 w-5" />}
+              icon={<Lightbulb className="h-5 w-5" />}
               title="One thing to try"
               variant="highlight"
             >

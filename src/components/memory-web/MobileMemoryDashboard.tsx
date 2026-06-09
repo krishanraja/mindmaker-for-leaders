@@ -6,7 +6,8 @@ import {
   MicOff,
   Send,
   MessageSquare,
-  Sparkles,
+  Radio,
+  ListChecks,
   Brain,
   Zap,
   ChevronRight,
@@ -322,7 +323,7 @@ export function MobileMemoryDashboard() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-4 h-4 text-accent animate-pulse" />
+                      <Radio className="w-4 h-4 text-accent animate-pulse" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground whitespace-nowrap">Preparing your briefing</p>
@@ -359,7 +360,7 @@ export function MobileMemoryDashboard() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-4 h-4 text-accent" />
+                      <ListChecks className="w-4 h-4 text-accent" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground whitespace-nowrap">Make your briefing yours</p>
@@ -384,7 +385,7 @@ export function MobileMemoryDashboard() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-4 h-4 text-accent" />
+                      <Radio className="w-4 h-4 text-accent" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground whitespace-nowrap">Your Daily Briefing</p>
@@ -464,9 +465,12 @@ export function MobileMemoryDashboard() {
           </div>
         )}
 
-        {/* Main content area - Memory Web visualization as hero */}
+        {/* Main content area - Memory Web visualization as hero. The floor is
+            viewport-relative so the web shrinks gracefully on short phones
+            (keeping the voice input above the nav) and stays generous on tall
+            screens, rather than a fixed 280px that clips small devices. */}
         {!isVoiceExpanded && (
-          <div className="flex-1 min-h-[280px] relative">
+          <div className="flex-1 min-h-[clamp(170px,30vh,320px)] relative">
             {/* The living memory web - always visible. Falls back to ambient
                 industry seeds so it is never a blank canvas. */}
             <MemoryWebVisualization
@@ -784,7 +788,7 @@ export function MobileMemoryDashboard() {
                       className="absolute inset-0 rounded-full bg-gradient-to-r from-accent via-purple-500 to-pink-500 p-[2px]"
                     >
                       <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-                        <Sparkles className="w-6 h-6 text-purple-400" />
+                        <Brain className="w-6 h-6 text-purple-400" />
                       </div>
                     </motion.div>
                     <motion.div

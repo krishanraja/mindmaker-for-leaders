@@ -9,7 +9,7 @@
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Plus, Check, Loader2, X } from 'lucide-react';
+import { Lightbulb, Plus, Check, Loader2, X } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -91,7 +91,7 @@ export function InterestsSheet({ open, onOpenChange, onSaved }: Props) {
         <div className="flex-shrink-0 flex items-start justify-between gap-3 px-5 pt-3 pb-4 border-b border-border">
           <div className="flex items-start gap-2.5 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Sparkles className="h-4 w-4 text-accent" />
+              <Lightbulb className="h-4 w-4 text-accent" />
             </div>
             <div className="min-w-0">
               <DrawerTitle className="text-base font-semibold">

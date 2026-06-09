@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Sparkles, AlertTriangle } from 'lucide-react';
+import { Star, AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { EdgeStrength, EdgeWeakness, FeedbackType } from '@/types/edge';
 import { StrengthPill } from './StrengthPill';
@@ -36,7 +36,7 @@ export function EdgeProfileCard({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-teal-500/10">
-                <Sparkles className="h-4 w-4 text-teal-500" />
+                <Star className="h-4 w-4 text-teal-500" />
               </div>
               <h3 className="text-sm font-semibold text-foreground">Your Edge</h3>
             </div>

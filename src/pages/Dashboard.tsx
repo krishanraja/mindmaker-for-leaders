@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useSearchParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import { Sparkles, X } from "lucide-react"
+import { Hand, X } from "lucide-react"
 import { MobileMemoryDashboard } from "@/components/memory-web/MobileMemoryDashboard"
 import { DesktopMemoryDashboard } from "@/components/memory-web/DesktopMemoryDashboard"
 import { OnboardingInterview } from "@/components/onboarding/OnboardingInterview"
@@ -97,7 +97,7 @@ export default function Dashboard() {
   const onboardingBanner = showOnboardingPrompt ? (
     <div className="bg-accent/10 border-b border-accent/20 px-4 py-2.5">
       <div className="max-w-4xl mx-auto flex items-center gap-3">
-        <Sparkles className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />
+        <Hand className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />
         <p className="text-xs text-foreground flex-1 min-w-0">
           <span className="font-medium">Welcome.</span>{" "}
           <span className="text-muted-foreground">

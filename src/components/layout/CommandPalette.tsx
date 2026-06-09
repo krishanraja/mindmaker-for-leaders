@@ -10,7 +10,6 @@ import {
   Shield,
   User,
   LogOut,
-  Sparkles,
   Mic,
   Download,
 } from 'lucide-react';
@@ -112,7 +111,7 @@ function CommandPalette() {
               window.dispatchEvent(new CustomEvent('mm:generate-briefing'));
             }}
           >
-            <Sparkles className="mr-2 h-4 w-4" />
+            <Zap className="mr-2 h-4 w-4" />
             Generate today's briefing
           </CommandItem>
           <CommandItem onSelect={go('/context')}>

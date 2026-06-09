@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2,
   Lock,
-  Sparkles,
+  Zap,
   PenTool,
   Mail,
   Layers,
@@ -107,7 +107,7 @@ function PaywallContent({
       {/* Header icon */}
       <div className="flex items-center gap-3">
         <div className="p-2.5 rounded-xl bg-gradient-to-br from-accent/20 to-purple-500/20">
-          <Sparkles className="h-5 w-5 text-accent" />
+          <Zap className="h-5 w-5 text-accent" />
         </div>
         <div>
           <h3 className="text-lg font-bold text-foreground">Unlock Edge Pro</h3>

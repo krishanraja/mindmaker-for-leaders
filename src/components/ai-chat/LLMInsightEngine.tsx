@@ -14,8 +14,7 @@ import {
   Users,
   DollarSign,
   Calendar,
-  Lightbulb,
-  Sparkles
+  Lightbulb
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -33,8 +32,8 @@ interface ExecutiveInsight {
 }
 
 interface LLMInsightEngineProps {
-  conversationData: any;
-  assessmentData: Record<string, any>;
+  conversationData: Record<string, unknown>;
+  assessmentData: Record<string, unknown>;
   sessionId: string | null;
   isComplete: boolean;
 }
@@ -77,6 +76,7 @@ const LLMInsightEngine: React.FC<LLMInsightEngineProps> = ({
         generateExecutiveInsights();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, hasGeneratedInsights]);
 
   const generateExecutiveInsights = async () => {
@@ -151,7 +151,7 @@ Return ONLY the JSON, no other text.`,
           const parsedData = JSON.parse(jsonMatch[0]);
           
           if (parsedData.insights && Array.isArray(parsedData.insights)) {
-            const formattedInsights = parsedData.insights.map((insight: any, index: number) => ({
+            const formattedInsights = parsedData.insights.map((insight: Omit<ExecutiveInsight, 'id'>, index: number) => ({
               id: `llm-insight-${Date.now()}-${index}`,
               ...insight
             }));
@@ -173,7 +173,7 @@ Return ONLY the JSON, no other text.`,
           // Fallback: try to parse the entire response
           const fallbackData = JSON.parse(response);
           if (fallbackData.insights) {
-            const formattedFallbackInsights = fallbackData.insights.map((insight: any, index: number) => ({
+            const formattedFallbackInsights = fallbackData.insights.map((insight: Omit<ExecutiveInsight, 'id'>, index: number) => ({
               id: `llm-insight-${Date.now()}-${index}`,
               ...insight
             }));
@@ -458,7 +458,7 @@ Return ONLY the JSON, no other text.`,
       <Card>
         <CardContent className="text-center py-8">
           <Button onClick={generateInsights} disabled={isGenerating} className="mt-4">
-            <Sparkles className="h-4 w-4 mr-2" />
+            <Zap className="h-4 w-4 mr-2" />
             Generate My AI Leadership Insights
           </Button>
         </CardContent>
