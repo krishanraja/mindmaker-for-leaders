@@ -10,7 +10,7 @@ import { ManifestoTab } from '@/components/settings/ManifestoTab'
 import { BriefingDirectivesTab } from '@/components/settings/BriefingDirectivesTab'
 import { BriefingInterestsTab } from '@/components/settings/BriefingInterestsTab'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { DesktopSidebar } from '@/components/memory-web/DesktopSidebar'
+import { DesktopShell } from '@/components/layout/DesktopShell'
 import { useDevice } from '@/hooks/useDevice'
 import {
   useSettingsSheet,
@@ -116,14 +116,10 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <DesktopSidebar />
-      <main className="ml-64 min-h-screen">
-        <div className="max-w-3xl mx-auto px-8 py-8">
-          <h1 className="text-2xl font-bold mb-6">Settings</h1>
-          <SettingsTabs />
-        </div>
-      </main>
-    </div>
+    <DesktopShell eyebrow="Account" title="Settings">
+      <div className="max-w-3xl mx-auto">
+        <SettingsTabs />
+      </div>
+    </DesktopShell>
   )
 }

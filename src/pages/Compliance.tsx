@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Shield, CheckCircle2, AlertCircle, Clock, ChevronDown, ChevronRight, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDevice } from '@/hooks/useDevice';
 import { useComplianceStatus } from '@/hooks/useComplianceStatus';
-import { DesktopSidebar } from '@/components/memory-web/DesktopSidebar';
+import { DesktopShell } from '@/components/layout/DesktopShell';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import {
@@ -243,31 +242,14 @@ export default function Compliance() {
 
   if (!isMobile) {
     return (
-      <div className="min-h-screen bg-background">
-        <DesktopSidebar />
-        <main className="ml-64 p-8">
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center shadow-lg shadow-accent/20">
-                  <Shield className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold">Compliance</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Our security and privacy controls, mapped to SOC 2, GDPR, CCPA, and ISO 27001
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-            <ComplianceContent />
-          </div>
-        </main>
-      </div>
+      <DesktopShell eyebrow="Trust" title="Compliance">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-sm text-muted-foreground mb-6">
+            Our security and privacy controls, mapped to SOC 2, GDPR, CCPA, and ISO 27001
+          </p>
+          <ComplianceContent />
+        </div>
+      </DesktopShell>
     );
   }
 

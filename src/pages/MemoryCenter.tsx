@@ -18,7 +18,7 @@ import { useDevice } from '@/hooks/useDevice';
 import { useMemoryWeb } from '@/hooks/useMemoryWeb';
 import { useMarkdownImport } from '@/hooks/useMarkdownImport';
 import { useVerificationFlow } from '@/hooks/useVerificationFlow';
-import { DesktopSidebar } from '@/components/memory-web/DesktopSidebar';
+import { DesktopShell } from '@/components/layout/DesktopShell';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import type { UserMemoryFact } from '@/types/memory';
@@ -147,89 +147,72 @@ export default function MemoryCenter() {
 
   if (!isMobile) {
     return (
-      <div className="min-h-screen bg-background">
-        <DesktopSidebar />
-        <main className="ml-64 p-8">
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4 space-y-2"
+      <DesktopShell
+        eyebrow="Memory"
+        title="Memory Browser"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/context')}
+              size="sm"
+              className="border-0 bg-accent/10 text-accent hover:bg-accent/20"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-emerald-500 flex items-center justify-center shadow-lg shadow-accent/20">
-                  <Brain className="h-5 w-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h1 className="text-xl font-bold">Memory Browser</h1>
-                  <p className="text-xs text-muted-foreground">
-                    Everything your AI knows about you
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate('/context')}
-                    size="sm"
-                    className="border-0 bg-accent/10 text-accent hover:bg-accent/20"
-                  >
-                    <ArrowUpRight className="h-4 w-4 mr-1" />
-                    Export to AI
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={triggerImport}
-                    disabled={isImporting}
-                    size="sm"
-                    className="border-0 bg-secondary/50"
-                  >
-                    <FileText className="h-4 w-4 mr-1" />
-                    {isImporting ? 'Importing...' : 'Import'}
-                  </Button>
-                  <Button
-                    onClick={() => setIsAddOpen(true)}
-                    size="sm"
-                    className="border-0"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add
-                  </Button>
-                </div>
-              </div>
-
-              {stats && (
-                <div className="flex flex-wrap gap-2 pl-[52px]">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent/10 text-accent text-xs font-medium">
-                    <Brain className="h-3 w-3" />
-                    {stats.total_facts} facts
-                  </span>
-                  <motion.button
-                    onClick={openFlow}
-                    whileTap={{ scale: 0.95 }}
-                    animate={stats.verified_rate === 0 ? { opacity: [1, 0.7, 1] } : undefined}
-                    transition={stats.verified_rate === 0 ? { repeat: Infinity, duration: 2 } : undefined}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-medium cursor-pointer hover:bg-emerald-500/20 transition-colors"
-                  >
-                    <CheckCircle2 className="h-3 w-3" />
-                    {stats.verified_rate}% verified
-                  </motion.button>
-                  {(stats.temperature_distribution?.hot || 0) > 0 && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-500 text-xs font-medium">
-                      <Flame className="h-3 w-3" />
-                      {stats.temperature_distribution.hot} hot
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-500 text-xs font-medium">
-                    <Thermometer className="h-3 w-3" />
-                    {stats.temperature_distribution?.warm || 0} warm
-                  </span>
-                </div>
+              <ArrowUpRight className="h-4 w-4 mr-1" />
+              Export to AI
+            </Button>
+            <Button
+              variant="outline"
+              onClick={triggerImport}
+              disabled={isImporting}
+              size="sm"
+              className="border-0 bg-secondary/50"
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              {isImporting ? 'Importing...' : 'Import'}
+            </Button>
+            <Button onClick={() => setIsAddOpen(true)} size="sm" className="border-0">
+              <Plus className="h-4 w-4 mr-1" />
+              Add
+            </Button>
+          </>
+        }
+      >
+        <div className="max-w-4xl mx-auto">
+          <p className="text-xs text-muted-foreground mb-3">
+            Everything your AI knows about you
+          </p>
+          {stats && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent/10 text-accent text-xs font-medium">
+                <Brain className="h-3 w-3" />
+                {stats.total_facts} facts
+              </span>
+              <motion.button
+                onClick={openFlow}
+                whileTap={{ scale: 0.95 }}
+                animate={stats.verified_rate === 0 ? { opacity: [1, 0.7, 1] } : undefined}
+                transition={stats.verified_rate === 0 ? { repeat: Infinity, duration: 2 } : undefined}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-medium cursor-pointer hover:bg-emerald-500/20 transition-colors"
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                {stats.verified_rate}% verified
+              </motion.button>
+              {(stats.temperature_distribution?.hot || 0) > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-500 text-xs font-medium">
+                  <Flame className="h-3 w-3" />
+                  {stats.temperature_distribution.hot} hot
+                </span>
               )}
-            </motion.div>
-            {content}
-          </div>
-        </main>
-      </div>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-500 text-xs font-medium">
+                <Thermometer className="h-3 w-3" />
+                {stats.temperature_distribution?.warm || 0} warm
+              </span>
+            </div>
+          )}
+          {content}
+        </div>
+      </DesktopShell>
     );
   }
 
