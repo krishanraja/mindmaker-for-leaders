@@ -28,9 +28,13 @@ export function KitPortalLayout({ classTitle, passEndsAt, children }: KitPortalL
     };
   }, []);
 
+  // The app shell sets html/body/#root to height:100% overflow:hidden (the
+  // no-scroll pattern), so the portal must own its own scroll. A fixed-height
+  // flex column with a scrollable main keeps the header pinned and lets the
+  // kit page (which runs well past one screen) scroll on mobile.
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur-sm">
+    <div className="flex h-screen-safe flex-col overflow-hidden bg-background text-foreground">
+      <header className="shrink-0 border-b border-border/60 bg-background/85 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-3 px-5 py-3.5">
           <Link to="/kit/me" aria-label="Your kit" className="flex shrink-0 items-center gap-2">
             <img src="/mindmaker-favicon.png" alt="" className="h-6 w-6" />
@@ -51,11 +55,12 @@ export function KitPortalLayout({ classTitle, passEndsAt, children }: KitPortalL
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-8 sm:py-12">{children}</main>
-
-      <footer className="pb-8 pt-4 text-center text-xs text-muted-foreground">
-        CTRL by Mindmaker
-      </footer>
+      <main className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="mx-auto w-full max-w-2xl px-5 py-8 sm:py-12">{children}</div>
+        <footer className="pb-8 pt-4 text-center text-xs text-muted-foreground">
+          CTRL by Mindmaker
+        </footer>
+      </main>
     </div>
   );
 }
