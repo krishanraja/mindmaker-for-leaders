@@ -134,6 +134,15 @@ export function runQualityGate(skill: SkillData): QualityGateResult {
     detail: bareRule ? `Bare rule near: "${bareRule}"` : "All hard rules include reasoning",
   });
 
+  // Advisory: skills that document their own runs improve with use. Kit
+  // skills force this via the seed; the gate verifies it survived generation.
+  checks.push({
+    id: "body.learningLoop",
+    label: "Learning loop block present",
+    passed: /learning loop|BUILD_LOG\.md|LESSONS\.md/i.test(body),
+    detail: "A learning loop section makes the skill log its runs and sharpen with use",
+  });
+
   // -------- Package checks --------------------------------------------
   const name = skill.name ?? "";
   checks.push({
