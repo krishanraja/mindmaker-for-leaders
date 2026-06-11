@@ -16,7 +16,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildSkillSystemPrompt, buildSkillUserPrompt } from "../generate-skill-export/prompt.ts";
 import { runQualityGate, type SkillData } from "../generate-skill-export/quality-gate.ts";
 import { buildSkillZip } from "../generate-skill-export/zip.ts";
-import { callOpenAI, selectModel } from "../_shared/openai-utils.ts";
+import { selectModel } from "../_shared/openai-utils.ts";
+import { callLLMWithFallback, providerFromModel } from "../_shared/llm-fallback.ts";
 import { recordAiUsage, checkDailySoftCap } from "../_shared/ai-usage.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { createLogger } from "../_shared/logger.ts";
@@ -105,7 +106,7 @@ Deno.serve(async (req) => {
     // Generous soft cap: logs an overage signal, never blocks.
     const softCap = await checkDailySoftCap(serviceClient, userId, "free-skill-export");
 
-    const aiResponse = await callOpenAI(
+    const aiResponse = await callLLMWithFallback(
       {
         messages: [
           { role: "system", content: buildSkillSystemPrompt() },
@@ -130,7 +131,7 @@ Deno.serve(async (req) => {
     await recordAiUsage(serviceClient, {
       userId,
       functionName: "free-skill-export",
-      provider: "openai",
+      provider: providerFromModel(aiResponse.model),
       model: aiResponse.model,
       purpose: "skill-export-free",
       promptTokens: aiResponse.usage?.prompt_tokens,

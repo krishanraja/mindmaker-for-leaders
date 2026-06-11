@@ -24,7 +24,8 @@ import JSZip from "https://esm.sh/jszip@3.10.1";
 import { buildSkillSystemPrompt, buildSkillUserPrompt } from "../generate-skill-export/prompt.ts";
 import { runQualityGate, type SkillData } from "../generate-skill-export/quality-gate.ts";
 import { buildSkillZip } from "../generate-skill-export/zip.ts";
-import { callOpenAI, selectModel } from "../_shared/openai-utils.ts";
+import { selectModel } from "../_shared/openai-utils.ts";
+import { callLLMWithFallback, providerFromModel } from "../_shared/llm-fallback.ts";
 import { recordAiUsage, checkDailySoftCap } from "../_shared/ai-usage.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { createLogger } from "../_shared/logger.ts";
@@ -485,7 +486,7 @@ async function runSkillArtifact(
     const framed = extraFraming
       ? `${transcript}\n\nThis is a repeatable workflow I do every week. It is specialised to how I work and bounded to one job.`
       : transcript;
-    const aiResponse = await callOpenAI(
+    const aiResponse = await callLLMWithFallback(
       {
         messages: [
           { role: "system", content: buildSkillSystemPrompt() },
@@ -509,7 +510,7 @@ async function runSkillArtifact(
     await recordAiUsage(serviceClient, {
       userId,
       functionName: "kit-compose",
-      provider: "openai",
+      provider: providerFromModel(aiResponse.model),
       model: aiResponse.model,
       purpose: "kit-skill",
       promptTokens: aiResponse.usage?.prompt_tokens,
@@ -665,7 +666,7 @@ async function runPolishBatch(
     .map(([id, prompt]) => `### ARTIFACT ${id}\n${prompt}`)
     .join("\n\n");
 
-  const aiResponse = await callOpenAI(
+  const aiResponse = await callLLMWithFallback(
     {
       messages: [
         { role: "system", content: system },
@@ -722,7 +723,7 @@ async function runPlan(
   if (!spec.buildPrompt) return fallback;
 
   try {
-    const aiResponse = await callOpenAI(
+    const aiResponse = await callLLMWithFallback(
       {
         messages: [
           {
@@ -741,7 +742,7 @@ async function runPlan(
     await recordAiUsage(serviceClient, {
       userId,
       functionName: "kit-compose",
-      provider: "openai",
+      provider: providerFromModel(aiResponse.model),
       model: aiResponse.model,
       purpose: "kit-plan",
       promptTokens: aiResponse.usage?.prompt_tokens,

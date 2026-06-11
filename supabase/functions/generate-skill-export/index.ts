@@ -16,7 +16,8 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildMemoryContext } from "../_shared/memory-context-builder.ts";
-import { callOpenAI, selectModel } from "../_shared/openai-utils.ts";
+import { selectModel } from "../_shared/openai-utils.ts";
+import { callLLMWithFallback, providerFromModel } from "../_shared/llm-fallback.ts";
 import { buildSkillSystemPrompt, buildSkillUserPrompt } from "./prompt.ts";
 import { runQualityGate, type SkillData } from "./quality-gate.ts";
 import { buildSkillZip } from "./zip.ts";
@@ -152,7 +153,7 @@ Deno.serve(async (req) => {
 
     // Generate via the LLM. JSON mode keeps the model on-format. The
     // system prompt encodes the triage gate + extraction rules.
-    const aiResponse = await callOpenAI(
+    const aiResponse = await callLLMWithFallback(
       {
         messages: [
           { role: "system", content: buildSkillSystemPrompt() },
@@ -178,7 +179,7 @@ Deno.serve(async (req) => {
     await recordAiUsage(serviceClient, {
       userId: user.id,
       functionName: "generate-skill-export",
-      provider: "openai",
+      provider: providerFromModel(aiResponse.model),
       model: aiResponse.model,
       purpose: "skill-export",
       promptTokens: aiResponse.usage?.prompt_tokens,
