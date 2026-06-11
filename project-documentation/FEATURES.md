@@ -584,6 +584,86 @@ Same paywall as `generate-custom-export`. Free users see the locked `SkillExport
 
 ---
 
+## Kit Engine: Class Follow-Up Portal
+
+### Overview
+
+The portal a student lands on after a Mindmaker live class. They scan a QR on the way out, enter a session code (no login), answer a short intake, and CTRL composes a personalised pack of installable artifacts tuned to what they came to the class to do. The same page then becomes their journey page: a 7-day plan to work through, a place to mark "I shipped it", and a way to regenerate the pack with feedback or paste new context back in.
+
+This replaces the static Google Docs follow-up that every class used to send. Those got 0% adoption - a link in an email that nobody opened. The Kit Engine turns the follow-up into something the student actually installs and uses, and gives CTRL a real success metric to optimise: the **7-day ship rate** (did the student ship the thing the class was about, within a week).
+
+The engine is also the front door to the full CTRL app. Intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` once they hand over an email.
+
+Shipped as PR #141 (branch `claude/kit-engine`), 2026-06-10. Verified live end to end against the production Supabase project on both shipped presets (`vibe-coding`, `autonomous-business`) before merge.
+
+**Pages / surfaces (outside the authed app shell):**
+- `/kit` - code entry. Starts an anonymous Supabase session, redeems the code, lands the student in the portal.
+- `/kit/me` - the kit + journey home: pack of artifacts, 7-day plan checklist, "I shipped it" celebration, regenerate-with-feedback, context-capsule paste-back.
+- `/kit/me/intake` - the 6-question intake (voice or taps).
+- `/kit/reading/:pageId` - full-screen reader for a single artifact.
+
+### The Student Flow
+
+1. **Scan + code** - student scans the QR at the end of the class, lands on `/kit`, enters the session code. No account, no password. An anonymous session is created via `ensureAnonSession`.
+2. **Intake** - 6 short questions, answerable by voice or by tapping options. Captures what they're building, where they're stuck, and what "shipped" looks like for them.
+3. **Compose** - `kit-compose` runs in the background and builds the pack. The build row is the progress UX: the client polls it and watches each artifact flip from pending to ready.
+4. **Pack** - the student gets their artifacts. They read, copy, and download what they need.
+5. **Send my pack** - the one moment email is asked for. Handing over an email sends the pack and upgrades the anonymous account (`upgradeAnonymousSession`), so the student can come back to the same kit later.
+6. **Journey** - the page becomes a 7-day plan. The student checks off steps, hits "I shipped it" when they ship, regenerates with feedback if the pack missed, or pastes new context back in to sharpen it.
+
+### The Artifacts
+
+The pack is a set of installable artifacts, not a document. Each artifact is markdown or JSON inline, or a downloadable ZIP (stored inline on the artifact row as base64). The pack stays downloadable for the life of the redemption - the student can come back weeks later and the artifacts are still there.
+
+Artifacts are composed per student from their intake answers, grounded in the class preset. A "learning loop" section is part of every pack (an advisory quality-gate check ensures it's present), so the artifacts teach the student how to keep improving the thing after the class, not just hand them a one-off output.
+
+### The Preset Model
+
+One engine, many class presets. A preset is the only thing that differs between classes - the runtime, the data model, and the UI are shared.
+
+- Presets live in `supabase/functions/_shared/kit-presets/` and are imported by **both** the Deno edge runtime and the Vite client (the same cross-import pattern as `_shared/edge-pricing.ts`).
+- The database stores only `class_slug` + `preset_version`. The preset content lives in code.
+- **Adding a new class is not new code.** It's a new preset folder, a registry entry, and one `kit_codes` row.
+
+Ships with two presets:
+- **Vibe Coding Field Kit** (`vibe-coding`)
+- **Autonomous Business Pack** (`autonomous-business`)
+
+### Entitlement & Quota
+
+Redeeming a code grants a **30-day pass** plus a **skill quota of 3 net-new builds**. The pass and quota live on the `kit_redemptions` row. Two atomic RPCs guard the entitlement:
+
+- `redeem_kit_code` - row-locks the code so a whole class redeeming at the same moment can't race it. Idempotent: a student re-entering their code lands back in their existing kit, not a duplicate.
+- `consume_kit_skill` - decrements the quota atomically on each net-new build.
+
+Both are `SECURITY DEFINER` with no anon/authenticated execute grant - they run on the student's behalf from the edge layer, never directly from the client.
+
+### Journey + Nudges
+
+The kit page doubles as a journey page:
+- **7-day plan** - a checklist the student works through over the week after the class.
+- **"I shipped it"** - a celebration moment when the student ships, the event the success metric keys on.
+- **Regenerate with feedback** - the student says what the pack missed and CTRL recomposes.
+- **Context-capsule paste-back** - the student pastes new context (a doc, a transcript, a brief). It's untrusted input, so it's fenced through the existing `extract-user-context` fact machinery via `kit-capsule-ingest` rather than trusted raw.
+
+Every journey action is appended to `kit_journey_events` (append-only log).
+
+**Email nudges** land on day 3 and day 7, sent by the `send-kit-nudges` cron sweep. Students who already shipped are skipped - the nudge is help, not noise. Sends are deduped through the `kit_nudges` ledger so nobody gets the same nudge twice.
+
+### Where It Sits Commercially
+
+The Kit Engine is the top of the funnel, not a paid surface in itself. It is free at the point of a Mindmaker live class and exists to prove value before any ask:
+
+```
+free class  →  personal kit (free, anonymous)  →  Edge Pro / Workshop / Cohort
+```
+
+The Edge Pro upsell ($29/month, canonical `_shared/edge-pricing.ts`) appears only **post-trust** - after the quota is hit, after the 30-day pass expires, or when a student tries to regenerate after expiry. It never gates what was already delivered: the pack the student earned in class stays theirs. The bridge card into `/dashboard` (shown after email capture) is the path from a single class kit into the full CTRL product.
+
+**Sales Anchor - Kit Engine**: "Scan a QR on the way out of class. No login. Answer six questions. Walk out with a personalised pack you actually install, a 7-day plan to ship it, and nudges that stop the moment you do. The follow-up that replaces the Google Doc nobody opened."
+
+---
+
 ## Daily Briefing: Personalised Intelligence with an Evidence-Based Lens
 
 The most sophisticated component of the Leaders tool. Produces a 500-600 word audio briefing every morning, tuned to what this specific leader cares about today. Built on an evidence-based relevance pipeline (v2) that can prove, story by story, why every headline earned its place in front of you.
@@ -1340,6 +1420,7 @@ A condensed list of one-liners pullable for outbound. Each tied to a real shippe
 - **Memory Web**: "Talk for two minutes. Get a portable AI double that works in every AI tool."
 - **Context Export**: "One click. ChatGPT, Claude, Gemini, Cursor, Claude Code. All of them. Yours."
 - **Skill Builder (Agent Skill Builder)**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Permanent leverage from two minutes of speaking."
+- **Kit Engine**: "Scan a QR after class. No login. Six questions. A personalised pack you install, a 7-day plan to ship it, and nudges that stop when you do."
 - **Daily Briefing v2**: "Three minutes of audio. Every story anchored to a specific priority on your desk. No mystery algorithm."
 - **Edge - Sharpen/Cover**: "Your strengths systemized. Your weaknesses covered. Board memos and strategy docs in your register, on demand."
 - **Decision Advisor**: "Ask a hard question. Get an answer that already knows your context."

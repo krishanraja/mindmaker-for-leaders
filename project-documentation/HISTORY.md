@@ -234,6 +234,7 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 5.0 | Apr 2026 | Briefing v2: evidence-based relevance lens + pgvector + four-part learning loop (Interests, industry seeds, explicit kill, nightly aggregator) |
 | 5.1 | Apr 2026 | Phase 7 - six audit-week tracks shipped: revenue path, data path, UX, reliability, observability, cleanup. Hardened production platform. |
 | 5.2 | May 2026 | Phase 8 - Agent Skill Builder (voice-to-Claude-Skill pipeline, Edge Pro), world-class desktop UI redesign with Command Palette, pain-anchored Skill entry points on Edge / Memory / Briefing. |
+| 5.3 | Jun 2026 | Phase 9 - Kit Engine: preset-driven class follow-up portal. No-login QR entry, anonymous compose, installable artifact packs, 7-day journey + ship metric, day-3/7 nudges. Replaces the 0%-adoption Google Docs follow-up. |
 
 ---
 
@@ -457,3 +458,45 @@ New hook: **`useUserPains`** returns the top N blockers + active decisions from 
 - 5 new components in `src/components/edge/` for the Skill Builder UX + 1 in `src/components/memory-web/`
 - Desktop now feels like a desktop product, not stretched mobile markup
 - Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change. (Historical note: Edge Pro moved to $29/month on 2026-05-30; existing $9 subscribers are grandfathered. All new checkouts are $29/mo.)
+
+---
+
+## Phase 9: Kit Engine - Class Follow-Up Portal (claude/kit-engine, PR #141, 2026-06-10)
+
+### Context
+
+Mindmaker runs live classes (Vibe Coding, Autonomous Business, and more to come). Every class ended the same way: a static Google Doc follow-up emailed to the room. Adoption was 0%. A link in an email nobody opened isn't a follow-up - it's a dead end, and there was no metric on the other side of it to even measure the loss.
+
+The product already had the pieces to do better. The anonymous `/build` pipeline composed real artifacts. The `generate-skill-export` modules (prompt, quality gate, ZIP packaging) were hardened and live. Phase 9 assembled those pieces into a follow-up the student actually reaches and uses: scan a QR on the way out of class, enter a session code with no login, answer six quick questions, and walk out with a personalised pack and a 7-day plan to ship the thing the class was about. The metric on the other side is the **7-day ship rate**.
+
+### What Was Built
+
+**One engine, many class presets.** The runtime, the six-table data model, and the portal UI are shared. The only thing that differs per class is a preset in `supabase/functions/_shared/kit-presets/`, cross-imported by both the Deno edge runtime and the Vite client (the same pattern as `_shared/edge-pricing.ts`). The DB stores only `class_slug` + `preset_version`. Adding a class is a new preset folder + a registry entry + one `kit_codes` row - not new code. Shipped with two presets: `vibe-coding` (Vibe Coding Field Kit) and `autonomous-business` (Autonomous Business Pack).
+
+**Anon-first, no-login portal.** Code entry on `/kit` starts an anonymous Supabase session via `ensureAnonSession`. The student answers the intake and gets the full pack before being asked for anything. Email is asked once, at the "send my pack" moment, and `upgradeAnonymousSession` upgrades the account in place. Anonymous sessions carry a real `auth.uid()` with role `authenticated`, so owner-scoped RLS holds with no special anon policies. The portal lives outside the authed app shell on four public routes: `/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`.
+
+**Six tables, RLS on all.** `kit_codes` (service-role only; RLS enabled with zero policies so codes can't be enumerated), `kit_redemptions` (30-day pass + 3-net-new-build quota), `kit_builds` (one row per compose run; the row IS the progress UX, polled by the client via per-artifact `artifact_statuses`), `kit_artifacts` (system of record; versioned, `is_current`, ZIPs stored inline as base64), `kit_journey_events` (append-only journey log), `kit_nudges` (send-dedupe ledger, service-role only). Two atomic `SECURITY DEFINER` RPCs - `redeem_kit_code` (row-locks the code to survive a whole class redeeming at once; idempotent) and `consume_kit_skill` (decrements the quota) - with no anon/authenticated execute grant.
+
+**Five new edge functions.** `kit-redeem` (atomic, idempotent, rate limited per-user not per-IP since a venue shares one network), `kit-compose` (background orchestrator via `EdgeRuntime.waitUntil`; partial-failure policy ships whatever artifacts succeed; max 3 LLM calls - skill + batched polish + 7-day plan), `kit-capsule-ingest` (untrusted paste-back fenced through the existing `extract-user-context` fact machinery), `send-kit-pack`, and `send-kit-nudges` (cron sweep that skips students who already shipped). A `kit-nudges-email` pg_cron job drives the day-3 / day-7 nudges.
+
+**Reuse, not rebuild.** `kit-compose` imports `generate-skill-export`'s prompt / quality-gate / zip modules exactly the way `free-skill-export` does. The changes to existing code were additive only: the `track-event` event list was extended, and one advisory quality-gate check (for a "learning loop" section in the pack) was added.
+
+**The journey page.** The kit page doubles as a journey page: a 7-day plan checklist, an "I shipped it" celebration (the event the success metric keys on), regenerate-with-feedback, and context-capsule paste-back. It is also a bridge into the full CTRL app - intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` after email capture.
+
+### Key Decisions (see DECISIONS_LOG.md Decision 43)
+
+- ZIPs stored inline as base64 on the artifact row, not in a Storage bucket: object-level RLS on `storage.objects` can't be created via the Supabase Management API (the role doesn't own the relation), the artifacts are small, and the row persists for the life of the redemption so the pack stays downloadable forever. Same pattern as `free-skill-export`.
+- Edge Pro upsell ($29/month, canonical `_shared/edge-pricing.ts`) shown only post-trust (quota hit, pass expiry, regenerate-after-expiry); never gates what was already delivered.
+- Backend deployed live and verified before the routes shipped, so go-live was a frontend merge rather than a big-bang flip.
+
+### A Bug Found in Testing
+
+The app shell sets `html` / `body` / `#root` to `overflow: hidden` (the no-scroll pattern). The long kit page was clipped at one viewport on mobile because it didn't own its own scroll. Fixed by making `KitPortalLayout` a fixed-height flex column with a single scrollable `main`.
+
+### Outcomes
+
+- Static Google Docs follow-up (0% adoption) replaced with a no-login portal the student reaches via QR while still in the room
+- +6 tables, +5 edge functions, +4 public routes, +1 shared preset module, +1 pg_cron job
+- 2 class presets live (`vibe-coding`, `autonomous-business`); a third class is a preset folder + registry entry + one row away
+- Verified live end to end against the production Supabase project on both presets - redeem, intake, real-LLM compose, ZIP download, journey, ship - before merge
+- A real success metric on the follow-up for the first time: the 7-day ship rate

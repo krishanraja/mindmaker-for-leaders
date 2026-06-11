@@ -5,6 +5,8 @@ Complete system architecture and data flow documentation.
 **Last Updated:** 2026-05-30
 
 > **Verified counts (2026-05-13)**: 74 edge functions, 51 hooks, 98 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points).
+>
+> **Phase 9 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`), +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
 
 ---
 
@@ -276,6 +278,12 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/context` | ContextExport | Yes | Export to AI tools |
 | `/settings` | Settings | Yes | User preferences |
 | `/profile` | Profile | Yes | User profile |
+| `/kit` | KitEntry | No | Class follow-up portal code entry (anonymous session) |
+| `/kit/me` | KitHome | No | Kit + journey home (anonymous, upgrades on email capture) |
+| `/kit/me/intake` | KitIntake | No | 6-question intake (voice or taps) |
+| `/kit/reading/:pageId` | KitReading | No | Full-screen reader for a single artifact |
+
+The four `/kit*` routes are the Kit Engine portal (Phase 9). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
 
 **Legacy Redirects (all redirect to `/dashboard`):**
 
@@ -740,7 +748,57 @@ skill_exports                           -- Skill Builder log (Phase 8)
   - One row per generation attempt, including failed-triage cases
   - RLS: owner-read + owner-insert
   - Indexed on user_id and created_at DESC
+
+kit_codes                               -- Kit Engine class codes (Phase 9)
+├── id (PK, uuid), code (UNIQUE)
+├── class_slug, preset_version
+├── label, is_active, created_at
+  - Service-role only. RLS enabled with ZERO policies so codes are never client-enumerable.
+  - Redemption reads it via the redeem_kit_code RPC (SECURITY DEFINER), never directly.
+
+kit_redemptions                         -- the 30-day pass + skill quota
+├── id (PK, uuid), user_id (FK auth.users)
+├── code_id (FK kit_codes), class_slug, preset_version
+├── expires_at (30-day pass), skills_remaining (default 3 net-new builds)
+├── shipped_at (set when the student hits "I shipped it"), created_at
+  - RLS: owner-scoped (anonymous session has a real auth.uid())
+  - UNIQUE (user_id, code_id) - re-entering a code lands the same redemption
+
+kit_builds                              -- one row per compose run; the row IS the progress UX
+├── id (PK, uuid), redemption_id (FK), user_id (FK auth.users)
+├── status (pending | running | partial | done | failed)
+├── artifact_statuses (JSONB - per-artifact status, polled by the client)
+├── feedback (text, set on regenerate-with-feedback), created_at
+  - RLS: owner-scoped. Polled every few seconds by the client during compose.
+
+kit_artifacts                           -- system of record for the pack
+├── id (PK, uuid), build_id (FK), redemption_id (FK), user_id (FK auth.users)
+├── kind, title, format ('markdown' | 'json' | 'zip')
+├── content_md (TEXT), content_json (JSONB)
+├── zip_base64 (TEXT - ZIPs stored inline as base64, not in a Storage bucket)
+├── version (INT), is_current (BOOL), created_at
+  - RLS: owner-scoped. Versioned; is_current flags the live artifact.
+  - Persists for the life of the redemption, so the pack stays downloadable.
+
+kit_journey_events                      -- append-only journey log
+├── id (PK, uuid), redemption_id (FK), user_id (FK auth.users)
+├── event_type (intake_completed | build_started | artifact_viewed | step_checked | shipped | regenerated | capsule_ingested | ...)
+├── payload (JSONB), created_at
+  - RLS: owner-scoped. Append-only.
+
+kit_nudges                              -- day-3 / day-7 send-dedupe ledger
+├── id (PK, uuid), redemption_id (FK), user_id
+├── nudge_kind (day_3 | day_7), sent_at
+  - Service-role only. UNIQUE (redemption_id, nudge_kind) so a nudge sends once.
 ```
+
+**Kit Engine RLS note:** all six tables have RLS enabled. `kit_codes` and `kit_nudges` are service-role only (`kit_codes` has zero policies so codes can't be enumerated). The four student-facing tables are owner-scoped. This works for anonymous students because an anonymous Supabase session carries a real `auth.uid()` with role `authenticated`, so owner-scoped RLS holds exactly as it does for a logged-in user.
+
+**Kit Engine atomic RPCs:**
+- `redeem_kit_code` - `SECURITY DEFINER`, no anon/authenticated execute grant. Row-locks the `kit_codes` row so a whole class redeeming simultaneously can't race it. Idempotent: a re-entered code returns the existing redemption.
+- `consume_kit_skill` - `SECURITY DEFINER`, no anon/authenticated execute grant. Atomically decrements `kit_redemptions.skills_remaining` on each net-new build.
+
+**Kit Engine schedule:** day-3 / day-7 nudge `pg_cron` job `kit-nudges-email` invokes the `send-kit-nudges` sweep.
 
 **PostgreSQL Extensions (required):**
 - `pgvector` - embedding storage + cosine operators (briefing scoring)
@@ -751,7 +809,7 @@ skill_exports                           -- Skill Builder log (Phase 8)
 
 **Location**: `supabase/functions/`
 
-**Total**: 74 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline.
+**Total**: 74 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)
@@ -869,6 +927,18 @@ skill_exports                           -- Skill Builder log (Phase 8)
 
     Triage routing: when the input is really a Memory Fact / Custom Instruction / Saved Style, the function returns `{ triage: { passed: false, result, reasoning } }` (200 OK, no skill). The attempt is still logged in `skill_exports` with `triage_result` set accordingly so we can learn from misses without re-running the LLM.
 
+#### Kit Engine Subsystem (Phase 9, June 2026)
+
+Five new edge functions back the class follow-up portal. They reuse the proven anonymous pipeline from `/build`: `kit-compose` imports `generate-skill-export`'s prompt / quality-gate / zip modules exactly the way `free-skill-export` does. The surgery on existing code was additive only - the `track-event` event list was extended and one advisory quality-gate check (for a "learning loop" section) was added. No existing pipeline behaviour changed.
+
+61. **kit-redeem** - atomic, idempotent code redemption. Calls the `redeem_kit_code` RPC, starts/links the anonymous session's redemption, returns the kit state. Rate limited per-user, never per-IP (a venue shares one network, so per-IP would throttle the whole class).
+62. **kit-compose** - background orchestrator via `EdgeRuntime.waitUntil`. Composes the pack from the student's intake + the class preset. Writes a `kit_builds` row up front (the row is the progress UX the client polls) and flips `artifact_statuses` as each artifact lands. **Partial-failure policy:** ships whatever artifacts succeed rather than failing the whole pack. Max 3 LLM calls: skill + batched polish + 7-day plan.
+63. **kit-capsule-ingest** - context-capsule paste-back. Untrusted student-pasted text is fenced through the existing `extract-user-context` fact machinery rather than trusted raw, then folded into the redemption's context for regeneration.
+64. **send-kit-pack** - emails the pack at the "send my pack" moment (the one point email is asked for).
+65. **send-kit-nudges** - cron sweep for the day-3 / day-7 nudges. Skips any student who has already shipped (`kit_redemptions.shipped_at` set). Dedupes sends through the `kit_nudges` ledger. Driven by the `kit-nudges-email` pg_cron job.
+
+**Kit Engine preset registry** (`supabase/functions/_shared/kit-presets/`): one shared module imported by **both** the Deno edge runtime (`kit-compose`) and the Vite client - the same cross-import pattern as `_shared/edge-pricing.ts`. The DB stores only `class_slug` + `preset_version`; all preset content (the artifact set, the intake questions, the 7-day plan shape) lives in code. Adding a new class is a new preset folder + a registry entry + one `kit_codes` row, not new code. Ships with two presets: `vibe-coding` (Vibe Coding Field Kit) and `autonomous-business` (Autonomous Business Pack).
+
 **Shared Modules** (`supabase/functions/_shared/`):
 - `context-builder.ts` / `memory-context-builder.ts`: LLM context construction
 - `user-context.ts`: Profile projection (shared between briefing pipeline + diagnose endpoint)
@@ -886,6 +956,8 @@ skill_exports                           -- Skill Builder log (Phase 8)
 - `storage-utils.ts`: Supabase Storage helpers (`ctrl-briefings` bucket policy codified Audit Week 2)
 - `email-utils.ts`: Resend email sending
 - `validate-database.ts`: DB validation helpers
+- `edge-pricing.ts`: canonical Edge Pro price ($29/month), cross-imported by Deno edge runtime + Vite client
+- `kit-presets/`: Kit Engine class presets (Phase 9), cross-imported by `kit-compose` + Vite client the same way as `edge-pricing.ts`. The DB stores only `class_slug` + `preset_version`; preset content lives here. Ships with `vibe-coding` and `autonomous-business`.
 
 ---
 
@@ -1288,6 +1360,47 @@ The CTRL landing page (`/`) and any other public routes are pre-rendered at buil
 3. **Performance**: First Contentful Paint is not blocked on the React bundle
 
 **Implementation**: Vite SSR prerender pass generates static HTML for public routes at build time. The `/.well-known/product.json` endpoint is served as a standalone static file, not part of the React app.
+
+---
+
+## Kit Engine Portal (Phase 9, 2026-06-10)
+
+The Kit Engine is CTRL's class follow-up portal. It is a standalone, light, mobile-first surface that lives **outside** the authed app shell on four public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`). It is also a bridge into the full CTRL app: intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` after email capture.
+
+### Anon-first identity
+
+Code entry on `/kit` starts an anonymous Supabase session via `ensureAnonSession`. The student answers the intake and gets their pack with no login. Email is asked once, at the "send my pack" moment, and `upgradeAnonymousSession` upgrades the anonymous account in place so the student keeps the same `auth.uid()` (and therefore the same redemption, builds, and artifacts) after they convert.
+
+Because an anonymous session carries a real `auth.uid()` with role `authenticated`, the owner-scoped RLS on the four student-facing kit tables works exactly as it does for a logged-in user. No special anon policies were needed.
+
+### Reuse of the proven pipeline
+
+`kit-compose` reuses the anonymous `/build` pipeline rather than a new one: it imports `generate-skill-export`'s prompt / quality-gate / zip modules exactly the way `free-skill-export` does. The only changes to existing code were additive - the `track-event` event list gained the kit events, and one advisory quality-gate check (for a "learning loop" section in the pack) was added. No existing pipeline behaviour changed.
+
+### Why ZIPs are base64 in the DB, not a Storage bucket
+
+Kit artifact ZIPs are stored inline as base64 on the `kit_artifacts` row (`zip_base64`), not in a Supabase Storage bucket. Two reasons:
+
+1. **Storage RLS can't be provisioned the way the rest of the schema is.** Object-level RLS policies on `storage.objects` cannot be created via the Supabase Management API - the role used does not own that relation. Keeping artifacts in a normal table keeps them under the same owner-scoped RLS as everything else in the schema, provisioned the same way.
+2. **The artifacts are small**, and the row persists for the life of the redemption, so the pack stays downloadable indefinitely.
+
+This is the same pattern `free-skill-export` already uses for its skill ZIPs.
+
+### Portal owns its own scroll
+
+The app shell sets `html` / `body` / `#root` to `overflow: hidden` (the no-scroll pattern used across CTRL). The kit page is long, so `KitPortalLayout` is a fixed-height flex column with a single scrollable `main`, mirroring the mobile no-scroll layout pattern documented above. A bug where the long kit page was clipped at one viewport on mobile was found and fixed during testing.
+
+### Background compose + progress
+
+`kit-compose` runs via `EdgeRuntime.waitUntil`. It writes a `kit_builds` row first; that row **is** the progress UX - the client polls it and watches `artifact_statuses` flip per artifact. Compose ships whatever artifacts succeed (partial-failure policy) and caps at 3 LLM calls (skill + batched polish + 7-day plan).
+
+### Entitlement
+
+Redeeming grants a 30-day pass + a 3-net-new-build quota on `kit_redemptions`, guarded by the atomic `redeem_kit_code` (row-locks the code against a simultaneous-class race; idempotent) and `consume_kit_skill` RPCs, both `SECURITY DEFINER` with no anon/authenticated execute grant. The Edge Pro upsell ($29/month, canonical `_shared/edge-pricing.ts`) shows only post-trust (quota hit, pass expiry, regenerate-after-expiry) and never gates what was already delivered.
+
+### Verification
+
+Verified live end to end against the production Supabase project on both presets (`vibe-coding`, `autonomous-business`) before merge: redeem, intake, real-LLM compose, ZIP download, journey, ship.
 
 ---
 
