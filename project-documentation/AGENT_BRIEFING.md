@@ -1,7 +1,7 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-09
 **Runtime truth source:** https://ctrl.themindmaker.ai/.well-known/product.json
 
 ---
@@ -356,7 +356,7 @@ These rules are non-negotiable for any agent writing CTRL copy or messaging.
 - **No em dashes.** Use commas, colons, parentheses, or rewrite. Replace any em dash found in quoted text.
 - **No "$9/mo", "$9/month", or "$9 a month" for Edge Pro.** Edge Pro is $29/month. Always. Existing $9 subscribers are grandfathered but that figure is never quoted publicly.
 - **No plugin or integration language.** CTRL is export-based. Do not say "CTRL connects to" or "CTRL integrates with" any tool. Say "export to" or "works with."
-- **No overstated outcomes.** Do not invent case studies, specific percentage improvements, or named customer results. Use the proof points that are documented: 2 minutes to first export, 3-minute briefing, 74 edge functions, voice-first, auditable relevance.
+- **No overstated outcomes.** Do not invent case studies, specific percentage improvements, or named customer results. Use the proof points that are documented: 2 minutes to first export, 3-minute briefing, 80 edge functions, voice-first, auditable relevance.
 - **No "leaders.themindmaker.ai".** The live product URL is https://ctrl.themindmaker.ai. Never use the old subdomain.
 - **No hallucinated features.** If a feature is not in this brief, do not describe it. Fetch the runtime source for the latest state if needed: https://ctrl.themindmaker.ai/.well-known/product.json
 

@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-09
 
 ---
 
@@ -263,7 +263,7 @@ Key architectural and product decisions with rationale.
 **Decision**: Write Playwright e2e specs that prove the riskiest contracts (auth journeys, briefing journey, briefing rate limits, sparse profile, account deletion, stripe webhook idempotency) before chasing broad unit-test coverage.
 **Rationale**: 80% unit-test coverage on a feature that doesn't exist in production is theatre. 6 e2e specs that prove the parts of the product a leader would notice are bug-free is real.
 **Trade-off**: Some breadth deferred vs tested confidence in the parts that matter.
-**Outcome**: ✅ 6 e2e specs live (`tests/`). Vitest unit coverage remains light by design.
+**Outcome**: ✅ 7 e2e specs live (`src/__tests__/e2e/`; the starter six plus `desktop-zero-scroll` added in Phase 10). Vitest unit coverage remains light by design.
 
 ## Decision 38: Three Honest Tests Triage Gate Before Skill Generation
 **Date**: May 2026 (Phase 8, PR #103)

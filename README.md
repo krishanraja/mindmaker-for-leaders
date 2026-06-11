@@ -127,7 +127,7 @@ Commit to action items from your diagnostic. Track progress through check-ins. A
 | Routing | React Router 6.26.2 (lazy-loaded routes) |
 | Styling | Tailwind CSS, shadcn/ui (Radix UI) |
 | State | React Context, TanStack Query 5.56 |
-| Backend | Supabase (PostgreSQL + 74 Edge Functions, Deno runtime) |
+| Backend | Supabase (PostgreSQL + 80 Edge Functions, Deno runtime) |
 | AI Primary | Vertex AI (Gemini 2.0 Flash) via Google Cloud service account |
 | AI Fallback | OpenAI GPT-4o |
 | Voice | OpenAI Whisper |
@@ -137,18 +137,20 @@ Commit to action items from your diagnostic. Track progress through check-ins. A
 | Payments | Stripe (signature-verified, idempotent) |
 | Email | Resend |
 | DB extensions | pgvector, pgcrypto, pg_cron |
-| Tests | Vitest (unit + shared, 5 specs), Playwright (e2e, 6 specs) |
+| Tests | Vitest (unit + shared, 6 specs), Playwright (e2e, 7 specs) |
 | Hosting | Vercel (frontend), Supabase Cloud (backend) |
 | Node.js | `>=22 <24` |
 
-### Verified counts (2026-05-13)
-- 74 Supabase edge functions
-- 51 React custom hooks
-- 98 PostgreSQL migrations applied
-- 25 top-level page components
-- 11 active routes (+ 5 legacy redirects to `/dashboard`)
+### Verified counts (2026-06-09)
+- 80 Supabase edge functions
+- 59 React custom hooks
+- 110 PostgreSQL migrations applied
+- 29 top-level page components
+- 15 active routes (+ 5 legacy redirects)
 - 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup)
 - Phase 8 shipped: Agent Skill Builder (voice-to-Claude-Skill, Edge Pro) + world-class desktop UI redesign with Cmd/Ctrl+K Command Palette + pain-anchored Skill entry points
+- Phase 9 shipped: Decision Engine (verification-looped pressure-testing: decompose → verify → cross-examine → advise, hourly WATCH re-verification) + flag-gated Briefing streaming + cross-tenant RLS hardening
+- Phase 10 shipped: every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll desktop, Goals tracking (`/goals`), and the inbound Enrich loop (`/enrich`)
 
 ---
 
@@ -164,15 +166,19 @@ The app uses a **unified dashboard** architecture. The Dashboard page (`/dashboa
 | `/auth` | Auth (Email + Google OAuth) | No |
 | `/auth/callback` | OAuth redirect handler | No |
 | `/booking` | Booking | No |
+| `/build` | Build Lap (Agent Skill Builder full-page flow) | No |
 | `/dashboard` | Dashboard hub (Memory Web view by default; `?view=edge` for Edge) | Yes |
 | `/memory` | Memory Center | Yes |
 | `/context` | Context Export | Yes |
 | `/briefing` | Daily Briefing page | Yes |
+| `/decision` | Decision Engine pressure-test (decompose → verify → cross-examine → advise) | Yes |
+| `/goals` | Goals tracking (horizon-grouped goals + status) | Yes |
+| `/enrich` | Inbound Enrich loop ("borrow your own AI": copy a prompt, paste the answer back) | Yes |
 | `/settings` | Settings | Yes |
 | `/compliance` | Compliance | Yes |
 | `/profile` | Profile | Yes |
 
-Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`, `/think`) redirect to `/dashboard`.
+Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`) redirect to `/dashboard`; `/think` redirects to `/dashboard?view=edge`.
 
 ### Directory Structure
 
@@ -194,8 +200,8 @@ src/
 │   ├── ai-chat/         # AI interaction
 │   ├── diagnostic/      # Assessment components
 │   └── ... (operator, progress, provocation, pulse, team-instructions, etc.)
-├── hooks/               # 51 custom React hooks (incl. useSkillExport, useUserPains, useRevealOnMount)
-├── pages/               # 25 page components (many are legacy redirects)
+├── hooks/               # 59 custom React hooks (incl. useSkillExport, useGoals, useDecisionEngine, useDecisionInbox)
+├── pages/               # 29 page components (many are legacy redirects)
 ├── contexts/            # AppState, Assessment, Auth, Theme
 ├── types/               # TypeScript types
 ├── utils/               # Utilities
@@ -203,7 +209,7 @@ src/
 └── integrations/        # External service clients (Supabase)
 
 supabase/
-├── functions/           # 74 edge functions (Deno runtime)
+├── functions/           # 80 edge functions (Deno runtime)
 │   ├── _shared/         # logger, with-timeout, ai-cache, rate-limit, briefing-lens/scoring/curation, model-router, training-loader, etc.
 │   ├── generate-briefing/        # Briefing v2 orchestrator
 │   ├── synthesize-briefing/      # ElevenLabs MP3 synthesis
@@ -220,8 +226,10 @@ supabase/
 │   ├── create-edge-subscription/, create-billing-portal-session/
 │   ├── stripe-webhook/           # Signature-verified, idempotent
 │   ├── voice-transcribe/         # Whisper
-│   └── ... (74 total)
-├── migrations/          # 98 PostgreSQL migrations (incl. 20260508 create_skill_exports)
+│   ├── decision-engine/, decision-eval/, decision-watch/  # Decision Engine pipeline + WATCH loop + eval harness (Phase 9)
+│   ├── track-event/              # Unauthenticated attribution emit proxy (Phase 9)
+│   └── ... (80 total)
+├── migrations/          # 110 PostgreSQL migrations (incl. 20260602 decision_engine, 20260605 create_goals)
 ├── email-templates/     # Auth email templates
 └── config.toml
 ```
@@ -241,13 +249,14 @@ The product survived a six-week audit-track program. Each week landed as its own
 | 5 | Observability | Structured edge-function JSON logger; CI gate against `console.log` regressions |
 | 6 | Cleanup + e2e | P2 backlog; 6 e2e specs covering riskiest paths; AI response cache; lint cleanup |
 
-E2E specs covering the highest-risk paths:
-- `tests/auth-journeys.spec.ts`
-- `tests/briefing-journey.spec.ts`
-- `tests/briefing-rate-limits.spec.ts`
-- `tests/sparse-profile.spec.ts`
-- `tests/account-deletion.spec.ts`
-- `tests/stripe-webhook-idempotency.spec.ts`
+E2E specs (Playwright) covering the highest-risk paths, in `src/__tests__/e2e/`:
+- `auth-journeys.spec.ts`
+- `briefing-journey.spec.ts`
+- `briefing-rate-limits.spec.ts`
+- `sparse-profile.spec.ts`
+- `account-deletion.spec.ts`
+- `stripe-webhook-idempotency.spec.ts`
+- `desktop-zero-scroll.spec.ts` (Phase 10: proves the desktop shell never scrolls the window)
 
 ---
 

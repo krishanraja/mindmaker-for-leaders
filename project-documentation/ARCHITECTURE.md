@@ -2,11 +2,11 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-05-30
+**Last Updated:** 2026-06-09
 
-> **Verified counts (2026-05-13)**: 74 edge functions, 51 hooks, 98 migrations, 6 e2e specs, 5 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + world-class desktop UI redesign + pain-anchored entry points).
+> **Verified counts (2026-06-09)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop).
 >
-> **Phase 9 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`), +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
+> **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) = 85, +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`) = 62, +4 migrations = 114, +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
 
 ---
 
@@ -146,7 +146,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 51 custom hooks
+├── hooks/                     # 59 custom hooks
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -210,14 +210,20 @@ src/
 │   └── supabase/
 │       ├── client.ts          # Supabase client
 │       └── types.ts           # Generated DB types (READ-ONLY)
-├── pages/                     # 25 page files (many legacy, now redirected to /dashboard)
+├── pages/                     # 29 page files (many legacy, now redirected to /dashboard)
 │   ├── Landing.tsx            # Landing page (/)
 │   ├── Auth.tsx               # Authentication (/auth)
 │   ├── AuthCallback.tsx       # OAuth callback (/auth/callback)
 │   ├── Dashboard.tsx          # **Main hub** (/dashboard) - renders Memory Web or Edge view
 │   ├── MemoryCenter.tsx       # Memory Center (/memory)
 │   ├── ContextExport.tsx      # Context Export (/context)
+│   ├── BriefingPage.tsx       # Daily Briefing v2 (/briefing)
+│   ├── DecisionPage.tsx       # Decision Engine pressure-test (/decision)
+│   ├── Goals.tsx              # Goals tracking (/goals)
+│   ├── EnrichPage.tsx         # Inbound Enrich loop (/enrich)
+│   ├── BuildLap.tsx           # Agent Skill Builder full-page flow (/build)
 │   ├── Settings.tsx           # User settings (/settings)
+│   ├── Compliance.tsx         # Compliance center (/compliance)
 │   ├── Profile.tsx            # User profile (/profile)
 │   ├── Booking.tsx            # Workshop booking (/booking)
 │   ├── Diagnostic.tsx         # Assessment flow (legacy, redirects to /dashboard)
@@ -272,18 +278,24 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/auth` | Auth | No | Email + Google OAuth |
 | `/auth/callback` | AuthCallback | No | OAuth redirect handler |
 | `/booking` | Booking | No | External booking |
+| `/build` | BuildLap | No | Agent Skill Builder full-page flow |
 | `/dashboard` | Dashboard (Memory Web) | Yes | Default view - Memory Web with guided first experience |
 | `/dashboard?view=edge` | Dashboard (Edge) | Yes | Edge leadership amplifier |
 | `/memory` | MemoryCenter | Yes | Detailed memory management |
 | `/context` | ContextExport | Yes | Export to AI tools |
+| `/briefing` | BriefingPage | Yes | Daily Briefing v2 |
+| `/decision` | DecisionPage | Yes | Decision Engine pressure-test (decompose → verify → cross-examine → advise) |
+| `/goals` | Goals | Yes | Horizon-grouped goal tracking |
+| `/enrich` | EnrichPage | Yes | Inbound "borrow your own AI" enrichment loop |
 | `/settings` | Settings | Yes | User preferences |
+| `/compliance` | Compliance | Yes | Compliance / audit center |
 | `/profile` | Profile | Yes | User profile |
 | `/kit` | KitEntry | No | Class follow-up portal code entry (anonymous session) |
 | `/kit/me` | KitHome | No | Kit + journey home (anonymous, upgrades on email capture) |
 | `/kit/me/intake` | KitIntake | No | 6-question intake (voice or taps) |
 | `/kit/reading/:pageId` | KitReading | No | Full-screen reader for a single artifact |
 
-The four `/kit*` routes are the Kit Engine portal (Phase 9). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
+The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
 
 **Legacy Redirects (all redirect to `/dashboard`):**
 
@@ -749,7 +761,7 @@ skill_exports                           -- Skill Builder log (Phase 8)
   - RLS: owner-read + owner-insert
   - Indexed on user_id and created_at DESC
 
-kit_codes                               -- Kit Engine class codes (Phase 9)
+kit_codes                               -- Kit Engine class codes (Phase 11)
 ├── id (PK, uuid), code (UNIQUE)
 ├── class_slug, preset_version
 ├── label, is_active, created_at
@@ -809,7 +821,7 @@ kit_nudges                              -- day-3 / day-7 send-dedupe ledger
 
 **Location**: `supabase/functions/`
 
-**Total**: 74 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry.
+**Total**: 85 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)
@@ -927,7 +939,7 @@ kit_nudges                              -- day-3 / day-7 send-dedupe ledger
 
     Triage routing: when the input is really a Memory Fact / Custom Instruction / Saved Style, the function returns `{ triage: { passed: false, result, reasoning } }` (200 OK, no skill). The attempt is still logged in `skill_exports` with `triage_result` set accordingly so we can learn from misses without re-running the LLM.
 
-#### Kit Engine Subsystem (Phase 9, June 2026)
+#### Kit Engine Subsystem (Phase 11, June 2026)
 
 Five new edge functions back the class follow-up portal. They reuse the proven anonymous pipeline from `/build`: `kit-compose` imports `generate-skill-export`'s prompt / quality-gate / zip modules exactly the way `free-skill-export` does. The surgery on existing code was additive only - the `track-event` event list was extended and one advisory quality-gate check (for a "learning loop" section) was added. No existing pipeline behaviour changed.
 
@@ -957,7 +969,7 @@ Five new edge functions back the class follow-up portal. They reuse the proven a
 - `email-utils.ts`: Resend email sending
 - `validate-database.ts`: DB validation helpers
 - `edge-pricing.ts`: canonical Edge Pro price ($29/month), cross-imported by Deno edge runtime + Vite client
-- `kit-presets/`: Kit Engine class presets (Phase 9), cross-imported by `kit-compose` + Vite client the same way as `edge-pricing.ts`. The DB stores only `class_slug` + `preset_version`; preset content lives here. Ships with `vibe-coding` and `autonomous-business`.
+- `kit-presets/`: Kit Engine class presets (Phase 11), cross-imported by `kit-compose` + Vite client the same way as `edge-pricing.ts`. The DB stores only `class_slug` + `preset_version`; preset content lives here. Ships with `vibe-coding` and `autonomous-business`.
 
 ---
 
@@ -1363,7 +1375,7 @@ The CTRL landing page (`/`) and any other public routes are pre-rendered at buil
 
 ---
 
-## Kit Engine Portal (Phase 9, 2026-06-10)
+## Kit Engine Portal (Phase 11, 2026-06-10)
 
 The Kit Engine is CTRL's class follow-up portal. It is a standalone, light, mobile-first surface that lives **outside** the authed app shell on four public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`). It is also a bridge into the full CTRL app: intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` after email capture.
 
@@ -1445,13 +1457,14 @@ Verified live end to end against the production Supabase project on both presets
 - `src/__tests__/HeroSection.video.test.tsx`
 - `supabase/functions/_shared/with-timeout.test.ts`
 
-**Playwright** (`playwright.config.ts`): 6 e2e specs:
-- `tests/auth-journeys.spec.ts`
-- `tests/briefing-journey.spec.ts`
-- `tests/briefing-rate-limits.spec.ts`
-- `tests/sparse-profile.spec.ts`
-- `tests/account-deletion.spec.ts`
-- `tests/stripe-webhook-idempotency.spec.ts`
+**Playwright** (`playwright.config.ts`, `testDir: src/__tests__/e2e`): 7 e2e specs:
+- `src/__tests__/e2e/auth-journeys.spec.ts`
+- `src/__tests__/e2e/briefing-journey.spec.ts`
+- `src/__tests__/e2e/briefing-rate-limits.spec.ts`
+- `src/__tests__/e2e/sparse-profile.spec.ts`
+- `src/__tests__/e2e/account-deletion.spec.ts`
+- `src/__tests__/e2e/stripe-webhook-idempotency.spec.ts`
+- `src/__tests__/e2e/desktop-zero-scroll.spec.ts` (Phase 10: asserts the desktop shell never scrolls the window)
 
 **CI gates** (`.github/workflows/ci.yml`): three blocking checks per PR:
 1. Typecheck (`tsc --noEmit`)
