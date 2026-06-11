@@ -12,9 +12,18 @@ Apply in order via POST https://api.supabase.com/v1/projects/bkyuxvschuwngtcdhsy
 with header `Authorization: Bearer $SUPABASE_ACCESS_TOKEN` and body `{"query": "<file contents>"}`:
 
 1. supabase/migrations/20260610000000_kit_engine.sql
-2. supabase/migrations/20260610000001_kit_artifacts_bucket.sql
+2. supabase/migrations/20260610000001_kit_artifacts_zip_inline.sql  (adds zip_base64 column)
 3. supabase/migrations/20260610000002_kit_memory_sources.sql  (enum ADD VALUE: run standalone)
-4. supabase/migrations/20260610000003_kit_nudge_cron.sql      (after functions deploy)
+4. supabase/migrations/20260610000003_kit_nudge_cron.sql
+
+The whole DB step (migrations + seed) is one command:
+`node scripts/kit-db-deploy.mjs <sbp_token>` (or `SUPABASE_ACCESS_TOKEN=... bash scripts/kit-deploy.sh` for DB + functions together).
+
+Kit ZIP artifacts are stored inline as base64 on the kit_artifacts row (no
+storage bucket): storage RLS policies cannot be created via the Management API.
+
+Live smoke test (real anon session, real compose, real LLM):
+`node scripts/kit-live-test.mjs http://localhost:8083 VIBE-TEST`
 
 ## 2. Edge functions
 

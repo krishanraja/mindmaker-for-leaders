@@ -42,3 +42,5 @@ playwright-report/
 .claude/_uxtest/
 .vercel
 .env*.local
+scripts/_kitshots/
+scripts/_kitlive/
