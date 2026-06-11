@@ -75,11 +75,15 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Your pass has ended.", pass_expired: true }, 403);
     }
 
-    // Sanitize: cap length, strip control characters (keep newlines/tabs).
-    capsule = capsule
-      .slice(0, MAX_CAPSULE_CHARS)
-      // deno-lint-ignore no-control-regex
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+    // Sanitize: cap length, strip control characters (keep tab, newline, CR).
+    // Done by code point rather than a control-char regex (cleaner, and avoids
+    // the no-control-regex lint rule in both Deno and ESLint).
+    capsule = Array.from(capsule.slice(0, MAX_CAPSULE_CHARS) as string)
+      .filter((ch: string) => {
+        const c = ch.charCodeAt(0);
+        return c === 9 || c === 10 || c === 13 || (c >= 32 && c !== 127);
+      })
+      .join("");
 
     // Data-fenced framing: the extractor treats this as material ABOUT the
     // user, never as instructions. extract-user-context's own NEVER-EXTRACT
