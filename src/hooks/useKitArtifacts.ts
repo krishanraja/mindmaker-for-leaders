@@ -13,7 +13,7 @@ export interface UseKitArtifacts {
   byArtifactId: Record<string, KitArtifactRow>;
   isLoading: boolean;
   refresh: () => Promise<void>;
-  /** Downloads a ZIP artifact from storage. Resolves false on failure. */
+  /** Downloads a ZIP artifact (decoded from its inline base64). Resolves false on failure. */
   download: (artifact: KitArtifactRow) => Promise<boolean>;
   /** Copies a text artifact body to the clipboard. Resolves false on failure. */
   copy: (artifact: KitArtifactRow) => Promise<boolean>;
@@ -56,13 +56,13 @@ export function useKitArtifacts(redemptionId: string | null): UseKitArtifacts {
   }, [artifacts]);
 
   const download = useCallback(async (artifact: KitArtifactRow): Promise<boolean> => {
-    if (!artifact.storage_path) return false;
+    if (!artifact.zip_base64) return false;
     try {
-      const { data, error } = await supabase.storage
-        .from("kit-artifacts")
-        .download(artifact.storage_path);
-      if (error || !data) return false;
-      const url = URL.createObjectURL(data);
+      const binary = atob(artifact.zip_base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: "application/zip" });
+      const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = zipFilenameFromArtifact(artifact);

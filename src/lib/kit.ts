@@ -55,6 +55,8 @@ export interface KitArtifactRow {
   content_type: "markdown" | "json" | "zip";
   body: string | null;
   storage_path: string | null;
+  /** Small ZIP artifacts are stored inline as base64 (same pattern as free-skill-export). */
+  zip_base64: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
 }

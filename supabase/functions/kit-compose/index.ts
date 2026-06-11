@@ -342,9 +342,8 @@ async function processBuild(args: ProcessArgs): Promise<void> {
         const zip = new JSZip();
         for (const f of files) zip.file(f.path, f.content);
         const base64 = await zip.generateAsync({ type: "base64" });
-        const storagePath = await uploadZip(args, spec.id, base64);
         const id = await persistArtifact(args, spec, {
-          storagePath,
+          zipBase64: base64,
           metadata: { files: files.map((f) => f.path), zip_filename: `${spec.id}.zip` },
         });
         statuses[spec.id] = { status: "done", kit_artifact_id: id };
@@ -422,7 +421,7 @@ async function finishBuild(args: ProcessArgs): Promise<void> {
 async function persistArtifact(
   args: ProcessArgs,
   spec: ArtifactSpec,
-  data: { body?: string; storagePath?: string; metadata?: Record<string, unknown> },
+  data: { body?: string; zipBase64?: string; metadata?: Record<string, unknown> },
 ): Promise<string> {
   const { serviceClient, userId, buildId, redemption } = args;
 
@@ -458,7 +457,7 @@ async function persistArtifact(
       title: spec.title,
       content_type: spec.contentType,
       body: data.body ?? null,
-      storage_path: data.storagePath ?? null,
+      zip_base64: data.zipBase64 ?? null,
       metadata: { part: spec.part ?? null, description: spec.description, ...(data.metadata ?? {}) },
     })
     .select("id")
@@ -466,17 +465,6 @@ async function persistArtifact(
 
   if (error || !row) throw new Error(error?.message || "artifact insert failed");
   return row.id as string;
-}
-
-async function uploadZip(args: ProcessArgs, artifactId: string, base64: string): Promise<string> {
-  const { serviceClient, userId, redemption } = args;
-  const bytes = base64ToBytes(base64);
-  const path = `${userId}/${redemption.id}/${artifactId}-${Date.now()}.zip`;
-  const { error } = await serviceClient.storage
-    .from("kit-artifacts")
-    .upload(path, bytes, { contentType: "application/zip", upsert: true });
-  if (error) throw new Error(`storage upload failed: ${error.message}`);
-  return path;
 }
 
 /**
@@ -584,8 +572,6 @@ async function runSkillArtifact(
       archetype: skill.archetype,
     });
 
-    const storagePath = await uploadZip(args, statusKey, zipResult.base64);
-
     // Mirror into skill_exports + generated_artifacts so the skill shows up in
     // the Library after an account upgrade (same as the existing pipelines).
     const { error: exportErr } = await serviceClient.from("skill_exports").insert({
@@ -629,7 +615,7 @@ async function runSkillArtifact(
 
     const artifactId = await persistArtifact(args, persistSpec, {
       body: skillData.body,
-      storagePath,
+      zipBase64: zipResult.base64,
       metadata: {
         skill: {
           name: skillData.name,
@@ -863,13 +849,6 @@ function safeScore(preset: KitPreset, intake: IntakeAnswers): unknown {
 function friendlyError(err: unknown): string {
   const msg = (err as Error)?.message || "failed";
   return msg.length > 200 ? `${msg.slice(0, 200)}...` : msg;
-}
-
-function base64ToBytes(base64: string): Uint8Array {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
 }
 
 function jsonResponse(payload: unknown, status: number): Response {

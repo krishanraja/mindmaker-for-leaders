@@ -86,7 +86,7 @@ export function ArtifactCard({
       )}
 
       <div className="flex items-center gap-2">
-        {isZip && artifact?.storage_path ? (
+        {isZip && artifact?.zip_base64 ? (
           <Button size="lg" className="flex-1" onClick={() => void downloadZip()} disabled={downloading}>
             <Download className="mr-2 h-4 w-4" />
             Download ZIP

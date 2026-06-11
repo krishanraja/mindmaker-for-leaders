@@ -441,7 +441,7 @@ export default function KitHome() {
               <p className="mx-auto max-w-md text-muted-foreground">
                 {skillMeta?.description ?? preset.tagline}
               </p>
-              {firstSkillArtifact?.storage_path && (
+              {firstSkillArtifact?.zip_base64 && (
                 <Button
                   size="xl"
                   className="w-full"
