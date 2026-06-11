@@ -6,12 +6,14 @@
 import type { KitPreset } from "./types.ts";
 import { vibeCodingPreset } from "./vibe-coding/preset.ts";
 import { autonomousBusinessPreset } from "./autonomous-business/preset.ts";
+import { memoryIdentityPreset } from "./memory-identity/preset.ts";
 
 export * from "./types.ts";
 
 export const PRESETS: Record<string, KitPreset> = {
   [vibeCodingPreset.slug]: vibeCodingPreset,
   [autonomousBusinessPreset.slug]: autonomousBusinessPreset,
+  [memoryIdentityPreset.slug]: memoryIdentityPreset,
 };
 
 export function getPreset(slug: string): KitPreset | null {
