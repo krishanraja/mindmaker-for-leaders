@@ -76,7 +76,12 @@ function AppContent() {
       <Toaster />
       <SonnerToaster position="top-center" />
       <OfflineIndicator />
-      <DiagnosticsPanel />
+      {/* Dev-only diagnostics. Mount only when actually shown so its data
+          hooks never run (and never 406 on empty tables) for real users. */}
+      {(import.meta.env.DEV ||
+        new URLSearchParams(window.location.search).get('diagnostics') === 'true') && (
+        <DiagnosticsPanel />
+      )}
     </>
   )
 }
