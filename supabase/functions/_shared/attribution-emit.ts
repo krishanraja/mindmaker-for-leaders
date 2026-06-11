@@ -11,7 +11,20 @@
 
 export interface AttributionEvent {
   app: "ctrl";
-  event: "landed" | "signed_up" | "activated" | "purchased" | "refunded" | "churned";
+  event:
+    | "landed"
+    | "signed_up"
+    | "activated"
+    | "purchased"
+    | "refunded"
+    | "churned"
+    | "kit_redeemed"
+    | "kit_intake_completed"
+    | "kit_composed"
+    | "kit_capsule_pasted"
+    | "kit_artifact_downloaded"
+    | "kit_shipped"
+    | "kit_email_captured";
   occurred_at?: string;
   anonymous_id?: string;
   user_id?: string;

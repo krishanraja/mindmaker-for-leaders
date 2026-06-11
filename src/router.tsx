@@ -35,6 +35,10 @@ const Compliance = lazyWithRetry(() => import('@/pages/Compliance'))
 const Profile = lazyWithRetry(() => import('@/pages/Profile'))
 const Booking = lazyWithRetry(() => import('@/pages/Booking'))
 const BuildLap = lazyWithRetry(() => import('@/pages/BuildLap'))
+const KitRedeem = lazyWithRetry(() => import('@/pages/kit/KitRedeem'))
+const KitHome = lazyWithRetry(() => import('@/pages/kit/KitHome'))
+const KitIntake = lazyWithRetry(() => import('@/pages/kit/KitIntake'))
+const KitReading = lazyWithRetry(() => import('@/pages/kit/KitReading'))
 const BriefingPage = lazyWithRetry(() => import('@/pages/BriefingPage'))
 const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
 const Goals = lazyWithRetry(() => import('@/pages/Goals'))
@@ -75,6 +79,22 @@ export const router = createBrowserRouter([
   {
     path: '/build',
     element: <LazyWrapper><BuildLap /></LazyWrapper>,
+  },
+  {
+    path: '/kit',
+    element: <LazyWrapper><KitRedeem /></LazyWrapper>,
+  },
+  {
+    path: '/kit/me',
+    element: <LazyWrapper><KitHome /></LazyWrapper>,
+  },
+  {
+    path: '/kit/me/intake',
+    element: <LazyWrapper><KitIntake /></LazyWrapper>,
+  },
+  {
+    path: '/kit/reading/:pageId',
+    element: <LazyWrapper><KitReading /></LazyWrapper>,
   },
 
   // Authenticated routes (share a persistent chrome: GlobalFAB + SettingsSheet)

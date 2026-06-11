@@ -14,6 +14,40 @@ import { getAttribution } from "@/lib/attribution";
 
 export type LifecycleEvent = "landed" | "signed_up" | "activated";
 
+export type KitLifecycleEvent =
+  | "kit_redeemed"
+  | "kit_intake_completed"
+  | "kit_composed"
+  | "kit_capsule_pasted"
+  | "kit_artifact_downloaded"
+  | "kit_shipped"
+  | "kit_email_captured";
+
+export interface KitEventDims {
+  class_slug?: string;
+  code?: string;
+  redemption_id?: string;
+}
+
+/**
+ * Emit a Kit Engine funnel event. Not session-deduped: downloads and
+ * regenerations legitimately repeat. Fire-and-forget like emitEvent.
+ */
+export async function emitKitEvent(
+  event: KitLifecycleEvent,
+  kit: KitEventDims = {},
+  extra: Record<string, unknown> = {},
+): Promise<void> {
+  try {
+    const attribution = getAttribution();
+    void supabase.functions
+      .invoke("track-event", { body: { event, attribution, kit, ...extra } })
+      .catch(() => {});
+  } catch {
+    // Attribution must never break the app.
+  }
+}
+
 const SESSION_GUARD_PREFIX = "ctrl_evt_";
 
 /**
