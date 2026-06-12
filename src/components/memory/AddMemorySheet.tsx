@@ -37,6 +37,21 @@ const CATEGORIES: { value: FactCategory; label: string; description: string }[] 
 // Local storage key for offline drafts
 const DRAFT_KEY = 'mindmaker-memory-draft';
 
+// Map the edge-function error message (now routed through memory-crud) to a
+// human-readable toast. memory-crud returns 403 when memory storage is off in
+// privacy settings, and 422 (rejected_by_guardrails) when the input reads as a
+// style rule / negation / transient state rather than a durable fact.
+function friendlyMemoryError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes('privacy') || m.includes('storage is disabled') || m.includes('memory storage')) {
+    return 'Memory storage is off in your privacy settings. Turn it on to save memories.';
+  }
+  if (m.includes('rejected_by_guardrails') || m.includes('style rule') || m.includes('durable fact')) {
+    return 'That reads like a style rule or a passing note, not a durable fact, so it was not saved. Try a fact about you, your business, or your goals.';
+  }
+  return message;
+}
+
 interface Draft {
   label: string;
   value: string;
@@ -88,8 +103,9 @@ export const AddMemorySheet: React.FC<AddMemorySheetProps> = ({
       // Fall back to the review form so nothing is lost.
       setValue(trimmed);
       setMode('text');
-      const msg = err instanceof Error ? err.message : 'Could not save automatically';
-      toast.error(`${msg}. Review and save manually.`);
+      const raw = err instanceof Error ? err.message : 'Could not save automatically';
+      const msg = friendlyMemoryError(raw);
+      toast.error(`${msg} Review and save manually.`);
     }
   }, [createMemory, onSuccess]);
 
@@ -226,7 +242,8 @@ export const AddMemorySheet: React.FC<AddMemorySheetProps> = ({
       onSuccess?.();
       handleClose();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to save memory';
+      const raw = err instanceof Error ? err.message : 'Failed to save memory';
+      const msg = friendlyMemoryError(raw);
       setError(msg);
       haptics?.error?.();
       toast.error(msg);

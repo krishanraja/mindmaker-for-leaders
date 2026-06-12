@@ -73,7 +73,15 @@ export function useComplianceStatus() {
           retentionPolicySet: privacyResult.data?.retention_days !== null && privacyResult.data?.retention_days !== undefined,
           dataExportAvailable: true,
           accountDeletionAvailable: true,
-          encryptionEnabled: true, // AES-256-GCM via memory-crud edge function
+          // Honest claim: every stored fact now carries application-layer
+          // AES-256-GCM field-level encryption on its content (written by both
+          // memory-crud and extract-user-context via the shared memory-crypto
+          // module). This is NOT a blanket "encryption at rest" promise: the
+          // plaintext fact_value/fact_context shadow is still kept alongside the
+          // ciphertext for display/search. Removing that plaintext shadow (true
+          // at-rest encryption) is a tracked follow-up; until then the control
+          // wording on /compliance must stay scoped to field-level encryption.
+          encryptionEnabled: true,
           lastAuditEntry: auditResult.data?.[0]?.created_at || null,
         });
       } catch (error) {

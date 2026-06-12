@@ -17,6 +17,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { checkRateLimit } from "../_shared/rateLimit.ts";
+import { encrypt } from "../_shared/memory-crypto.ts";
+import { runGuardrails, type IncomingFact } from "../_shared/fact-guardrails.ts";
 
 const CreateMemorySchema = z.object({
   fact_key: z.string().min(1, "fact_key is required"),
@@ -65,58 +67,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Simple encryption using Web Crypto API
-async function getEncryptionKey(): Promise<CryptoKey> {
-  const keyMaterial = Deno.env.get('MEMORY_ENCRYPTION_KEY') || 'default-dev-key-change-in-prod-32ch';
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(keyMaterial.padEnd(32, '0').slice(0, 32));
-  
-  return await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt', 'decrypt']
-  );
-}
-
-async function encrypt(text: string): Promise<{ ciphertext: string; iv: string }> {
-  const key = await getEncryptionKey();
-  const encoder = new TextEncoder();
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encoder.encode(text)
-  );
-  
-  return {
-    ciphertext: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-    iv: btoa(String.fromCharCode(...iv)),
-  };
-}
-
-async function decrypt(ciphertext: string, iv: string): Promise<string> {
-  try {
-    const key = await getEncryptionKey();
-    const decoder = new TextDecoder();
-    
-    const encryptedData = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
-    const ivData = Uint8Array.from(atob(iv), c => c.charCodeAt(0));
-    
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: ivData },
-      key,
-      encryptedData
-    );
-    
-    return decoder.decode(decrypted);
-  } catch (error) {
-    console.error('Decryption failed:', error);
-    return '[Decryption failed]';
-  }
-}
+// AES-256-GCM encrypt() is shared from ../_shared/memory-crypto.ts so memory-crud
+// and extract-user-context use a single implementation keyed off MEMORY_ENCRYPTION_KEY.
 
 interface MemoryItem {
   id: string;
@@ -224,7 +176,31 @@ serve(async (req) => {
           );
         }
 
-        // Encrypt sensitive content
+        // Hygiene guardrails: reject style-rules / negations / transient / third-party
+        // identity even for user-asserted (1.0 confidence) facts. The MIN_CONFIDENCE
+        // gate does not fire at 1.0; the pattern-based rejects still do.
+        const incoming: IncomingFact = {
+          fact_key,
+          fact_category,
+          fact_label,
+          fact_value,
+          fact_context: fact_context ?? '', // IncomingFact requires a non-null context
+          confidence_score,
+          is_high_stakes,
+        };
+        const { kept, training_version } = await runGuardrails([incoming], userId, null, supabase);
+        if (kept.length === 0) {
+          return new Response(
+            JSON.stringify({
+              error: 'rejected_by_guardrails',
+              message: 'This looks like a style rule, a negation, or transient state, not a durable fact.',
+            }),
+            { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        const guarded = kept[0]; // carries fact_subtype
+
+        // Encrypt sensitive content (AES-256-GCM, shared crypto module)
         const contentToEncrypt = JSON.stringify({ fact_value, fact_context: fact_context || '' });
         const { ciphertext, iv } = await encrypt(contentToEncrypt);
 
@@ -235,14 +211,19 @@ serve(async (req) => {
             fact_key,
             fact_category,
             fact_label,
-            fact_value, // Keep plaintext for display/search
+            fact_value, // Keep plaintext for display/search (plaintext-shadow follow-up to remove)
             fact_context,
             encrypted_content: JSON.stringify({ ciphertext, iv }),
             encryption_version: 1,
             confidence_score,
             is_high_stakes,
-            verification_status: source_type === 'manual' ? 'verified' : 'inferred',
+            // A3: both manual and voice are user-asserted (the two AddMemorySheet
+            // sources), so neither is silently demoted to 'inferred' when routed
+            // through memory-crud. Only the AI extractor owns 'inferred'.
+            verification_status: (source_type === 'manual' || source_type === 'voice') ? 'verified' : 'inferred',
             source_type,
+            fact_subtype: guarded.fact_subtype ?? null,
+            training_material_version: training_version,
             is_current: true,
           })
           .select()

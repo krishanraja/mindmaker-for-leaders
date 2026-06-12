@@ -144,7 +144,9 @@ function LiveStatusCard() {
     { label: 'Retention policy set', active: status.retentionPolicySet },
     { label: 'Data export available', active: status.dataExportAvailable },
     { label: 'Account deletion available', active: status.accountDeletionAvailable },
-    { label: 'Encryption enabled', active: status.encryptionEnabled },
+    // Scoped wording: field-level AES-256-GCM on stored facts, NOT a blanket
+    // "encryption at rest" claim (plaintext shadow is still kept for display/search).
+    { label: 'Field-level encryption (AES-256-GCM)', active: status.encryptionEnabled },
   ];
 
   return (

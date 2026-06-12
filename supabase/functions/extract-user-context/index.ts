@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { runGuardrails, type IncomingFact } from '../_shared/fact-guardrails.ts';
 import { fetchWithTimeout, ProviderUnavailableError } from '../_shared/with-timeout.ts';
+import { encryptFactContent } from '../_shared/memory-crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -527,26 +528,34 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
         }
       }
 
-      // Prepare facts for insertion: exclude exact key matches AND semantic duplicates
-      const factsToInsert = extractedFacts
-        .filter(fact => !existingKeys.has(fact.fact_key) && !semanticDuplicates.has(fact.fact_key))
-        .map(fact => ({
-          user_id: userId,
-          fact_key: fact.fact_key,
-          fact_category: fact.fact_category,
-          fact_label: fact.fact_label,
-          fact_value: fact.fact_value,
-          fact_context: fact.fact_context,
-          confidence_score: fact.confidence_score,
-          is_high_stakes: fact.is_high_stakes,
-          // ALL new extractions are inferred; only an explicit user action
-          // (update-fact-verification) may promote to 'verified'.
-          verification_status: 'inferred' as const,
-          fact_subtype: (fact as unknown as { fact_subtype?: string | null }).fact_subtype ?? null,
-          source_type: source_type || 'voice',
-          source_session_id: session_id || null,
-          training_material_version: guardrailTrainingVersion,
-        }));
+      // Prepare facts for insertion: exclude exact key matches AND semantic duplicates.
+      // Each fact's content is field-level encrypted (AES-256-GCM, shared crypto
+      // module) into encrypted_content so AI-extracted facts match the same
+      // encryption shape memory-crud writes. The plaintext fact_value/fact_context
+      // shadow is still kept for display/search (plaintext-shadow follow-up to remove).
+      const factsToInsert = await Promise.all(
+        extractedFacts
+          .filter(fact => !existingKeys.has(fact.fact_key) && !semanticDuplicates.has(fact.fact_key))
+          .map(async fact => ({
+            user_id: userId,
+            fact_key: fact.fact_key,
+            fact_category: fact.fact_category,
+            fact_label: fact.fact_label,
+            fact_value: fact.fact_value,
+            fact_context: fact.fact_context,
+            encrypted_content: await encryptFactContent(fact.fact_value, fact.fact_context),
+            encryption_version: 1,
+            confidence_score: fact.confidence_score,
+            is_high_stakes: fact.is_high_stakes,
+            // ALL new extractions are inferred; only an explicit user action
+            // (update-fact-verification) may promote to 'verified'.
+            verification_status: 'inferred' as const,
+            fact_subtype: (fact as unknown as { fact_subtype?: string | null }).fact_subtype ?? null,
+            source_type: source_type || 'voice',
+            source_session_id: session_id || null,
+            training_material_version: guardrailTrainingVersion,
+          }))
+      );
 
       // Update existing facts if new extraction has higher confidence
       // (handles both exact key matches and semantic duplicates)
@@ -576,6 +585,9 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
             .update({
               fact_value: fact.fact_value,
               fact_context: fact.fact_context,
+              // Re-encrypt the content shadow so encrypted_content tracks the value.
+              encrypted_content: await encryptFactContent(fact.fact_value, fact.fact_context),
+              encryption_version: 1,
               confidence_score: fact.confidence_score,
             })
             .eq('id', existing.id)
