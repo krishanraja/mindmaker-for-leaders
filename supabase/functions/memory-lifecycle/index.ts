@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     // Dual-mode auth: service-role { user_id } sweep mode OR user-JWT getUser() mode.
     const authHeader = req.headers.get("Authorization") ?? "";
     const bearer = authHeader.replace("Bearer ", "");
-    const isServiceRole = roleFromJwt(bearer) === "service_role";
+    const isServiceRole = (!!bearer && bearer === (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "")) || roleFromJwt(bearer) === "service_role";
 
     let userId: string;
     let supabase;

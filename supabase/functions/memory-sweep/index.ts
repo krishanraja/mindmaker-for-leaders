@@ -44,7 +44,10 @@ serve(async (req) => {
     new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   const bearer = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
-  if (roleFromJwt(bearer) !== "service_role") return json({ error: "Forbidden" }, 403);
+  const sweepSecret = Deno.env.get("MEMORY_SWEEP_SECRET") ?? "";
+  const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const okCaller = (!!bearer && ((!!sweepSecret && bearer === sweepSecret) || (!!svcKey && bearer === svcKey))) || roleFromJwt(bearer) === "service_role";
+  if (!okCaller) return json({ error: "Forbidden" }, 403);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
