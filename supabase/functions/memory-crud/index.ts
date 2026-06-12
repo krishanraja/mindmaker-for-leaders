@@ -94,8 +94,12 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/').filter(Boolean);
-    const action = pathParts[0] || '';
-    const itemId = pathParts[1];
+    // Route relative to the function name so it works whether the runtime passes
+    // /memory-crud/create or /functions/v1/memory-crud/create (the pre-existing
+    // pathParts[0] assumed the action was the first segment, which it never is).
+    const fnIdx = pathParts.indexOf('memory-crud');
+    const action = (fnIdx >= 0 ? pathParts[fnIdx + 1] : pathParts[0]) || '';
+    const itemId = fnIdx >= 0 ? pathParts[fnIdx + 2] : pathParts[1];
 
     // Initialize Supabase clients
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
