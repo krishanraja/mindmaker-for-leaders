@@ -1,6 +1,5 @@
 export { FactVerificationCard } from './FactVerificationCard';
 export { MemoryPill } from './MemoryPill';
-export { VoiceMemoryCapture } from './VoiceMemoryCapture';
 export { MemoryErrorBoundary } from './MemoryErrorBoundary';
 export { MemoryItemCard } from './MemoryItemCard';
 export { MemoryList } from './MemoryList';
