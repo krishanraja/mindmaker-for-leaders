@@ -57,7 +57,8 @@ serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
     // Ground in the Memory Web.
-    const ctx = await getUserContext(admin, userId);
+    const touchIds: string[] = [];
+    const ctx = await getUserContext(admin, userId, { collectTouchIds: touchIds });
     const { data: objFacts } = await admin
       .from("user_memory")
       .select("id")
@@ -98,11 +99,23 @@ serve(async (req) => {
     const caseId = created.id as string;
     const pipeline = runPipeline(admin, { caseId, userId, statement, ctx, objectiveFactIds, isPro }, log.withContext({ caseId }));
 
+    // Fire-and-forget reliance signal, inside the background pipeline scope so
+    // it is off the response path (the handler returns 202 below). admin is
+    // service-role, fenced by auth.uid() IS NULL inside touch_memory_facts.
+    const touch: Promise<unknown> = touchIds.length
+      ? Promise.resolve(
+        admin.rpc("touch_memory_facts", { p_fact_ids: [...new Set(touchIds)] })
+          .then(({ error }) => { if (error) console.warn("touch failed:", error.message); }),
+      )
+      : Promise.resolve();
+
     if (typeof EdgeRuntime !== "undefined" && EdgeRuntime?.waitUntil) {
       EdgeRuntime.waitUntil(pipeline);
+      EdgeRuntime.waitUntil(touch);
     } else {
       // Local / fallback: await so the work still completes.
       await pipeline;
+      await touch;
     }
 
     return json({ case_id: caseId, stage: "decomposing" }, 202);

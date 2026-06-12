@@ -63,6 +63,7 @@ export interface UserContext {
 export async function getUserContext(
   supabase: SupabaseClient,
   userId: string,
+  opts?: { collectTouchIds?: string[] },
 ): Promise<UserContext> {
   const ctx: UserContext = {
     name: "there",
@@ -87,7 +88,7 @@ export async function getUserContext(
   try {
     const { data: facts } = await supabase
       .from("user_memory")
-      .select("fact_key, fact_value, fact_category")
+      .select("id, fact_key, fact_value, fact_category")
       .eq("user_id", userId)
       .eq("is_current", true)
       .in("fact_category", ["identity", "business", "objective", "blocker", "preference"])
@@ -104,6 +105,7 @@ export async function getUserContext(
         if (f.fact_category === "objective") ctx.objectives.push(f.fact_value);
         if (f.fact_category === "blocker") ctx.blockers.push(f.fact_value);
         if (f.fact_category === "preference") ctx.preferences.push(f.fact_value);
+        if (opts?.collectTouchIds && f.id) opts.collectTouchIds.push(f.id);
       }
     }
   } catch (e) {
@@ -154,13 +156,16 @@ export async function getUserContext(
   try {
     const { data: watchlist } = await supabase
       .from("user_memory")
-      .select("fact_value")
+      .select("id, fact_value")
       .eq("user_id", userId)
       .eq("fact_key", "watching_company")
       .eq("is_current", true);
 
     if (watchlist) {
-      ctx.watchingCompanies = watchlist.map((w: { fact_value: string }) => w.fact_value);
+      ctx.watchingCompanies = watchlist.map((w: { id: string; fact_value: string }) => {
+        if (opts?.collectTouchIds && w.id) opts.collectTouchIds.push(w.id);
+        return w.fact_value;
+      });
     }
   } catch (e) {
     console.warn("user-context: failed to fetch watchlist:", e);

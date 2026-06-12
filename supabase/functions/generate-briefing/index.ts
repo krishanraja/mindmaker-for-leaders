@@ -1710,7 +1710,15 @@ serve(async (req) => {
 
     // 1. Get user context
     console.log("Fetching user context...");
-    const userCtx = await getUserContext(supabase, user.id);
+    const touchIds: string[] = [];
+    const userCtx = await getUserContext(supabase, user.id, { collectTouchIds: touchIds });
+    // Fire-and-forget reliance signal. Never awaited; a slow/failed touch must
+    // not delay or fail the briefing. Service-role client is fenced by
+    // auth.uid() IS NULL inside touch_memory_facts.
+    if (touchIds.length) {
+      void supabase.rpc("touch_memory_facts", { p_fact_ids: [...new Set(touchIds)] })
+        .then(({ error }) => { if (error) console.warn("touch failed:", error.message); });
+    }
 
     // Sparse-profile guardrail: a thin profile produces a generic lens which
     // pulls broad news which matches weakly - exactly the failure mode that

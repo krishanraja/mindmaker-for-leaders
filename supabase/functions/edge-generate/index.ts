@@ -223,6 +223,16 @@ Deno.serve(async (req) => {
       maxTokens: 4000,
     });
 
+    // Fire-and-forget reliance signal on the facts that shipped into the
+    // context. Never awaited; user-JWT client is fenced by auth.uid().
+    {
+      const touchIds = memoryResult.touchedFactIds ?? [];
+      if (touchIds.length) {
+        void supabase.rpc("touch_memory_facts", { p_fact_ids: touchIds })
+          .then(({ error }) => { if (error) console.warn("touch failed:", error.message); });
+      }
+    }
+
     // Fetch edge profile for additional context
     const { data: edgeProfile } = await serviceClient
       .from("edge_profiles")

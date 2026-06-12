@@ -87,6 +87,16 @@ Deno.serve(async (req) => {
       maxTokens: 4000,
     });
 
+    // Fire-and-forget reliance signal on the facts that shipped into the
+    // context. Never awaited; user-JWT client is fenced by auth.uid().
+    {
+      const touchIds = memoryResult.touchedFactIds ?? [];
+      if (touchIds.length) {
+        void supabase.rpc("touch_memory_facts", { p_fact_ids: touchIds })
+          .then(({ error }) => { if (error) console.warn("touch failed:", error.message); });
+      }
+    }
+
     // 2. Fetch additional data sources not in memory context. Assessment data
     // (dimension scores, tensions, risk signals) keys off assessment_id, which
     // is reached via leaders -> leader_assessments, not user_id. The old code

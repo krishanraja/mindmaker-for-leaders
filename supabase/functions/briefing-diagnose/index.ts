@@ -64,6 +64,7 @@ serve(async (req) => {
     const feedbackWindowDays = Math.min(60, Math.max(1, Number(url.searchParams.get("feedback_window_days")) || 14));
 
     // 1. Profile + lens source.
+    // read-only diagnostic: do NOT touch reference_count
     const userCtx = await getUserContext(supabase, user.id);
     const lensSource = await loadLensSource(supabase, user.id, userCtx);
 
