@@ -287,6 +287,15 @@ async function processBuild(args: ProcessArgs): Promise<void> {
       maxTokens: 3000,
     });
     memoryContext = result.context || "";
+    // Fire-and-forget reliance signal on the facts that shipped into the
+    // context. We are already inside the EdgeRuntime.waitUntil pipeline, so this
+    // is off the response path. serviceClient is service-role, fenced by
+    // auth.uid() IS NULL inside touch_memory_facts.
+    const touchIds = result.touchedFactIds ?? [];
+    if (touchIds.length) {
+      void serviceClient.rpc("touch_memory_facts", { p_fact_ids: touchIds })
+        .then(({ error }) => { if (error) log.warn("touch failed", { buildId, error: error.message }); });
+    }
   } catch (err) {
     log.warn("buildMemoryContext failed (cold start)", { buildId, error: (err as Error).message });
   }

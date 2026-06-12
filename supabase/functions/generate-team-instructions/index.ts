@@ -46,6 +46,16 @@ Deno.serve(async (req) => {
       maxTokens: 3000,
     });
 
+    // Fire-and-forget reliance signal on the facts that shipped into the
+    // context. Never awaited; user-JWT client is fenced by auth.uid().
+    {
+      const touchIds = memoryResult.touchedFactIds ?? [];
+      if (touchIds.length) {
+        void supabase.rpc("touch_memory_facts", { p_fact_ids: touchIds })
+          .then(({ error }) => { if (error) console.warn("touch failed:", error.message); });
+      }
+    }
+
     const focusAreasText = focusAreas?.length
       ? `\n\nFocus areas to emphasize:\n${focusAreas.map((a: string) => `- ${a}`).join("\n")}`
       : "";

@@ -22,6 +22,10 @@ export interface MemoryContextResult {
   // Custom GPT produces "Instructions" + "Knowledge"). When present, clients
   // should prefer `artefacts` over `context` for downloads.
   artefacts?: ExportArtefact[];
+  // Ids of the facts that actually shipped into the final context (post
+  // token-budget trim). Callers fire-and-forget touch_memory_facts on these so
+  // reference_count reflects genuine reliance, never trimmed-out facts.
+  touchedFactIds?: string[];
 }
 
 export interface ExportArtefact {
@@ -560,6 +564,11 @@ export async function buildMemoryContext(
   // Apply use case filter
   const filtered = filterByUseCase(allFacts, patterns, decisions, useCase);
 
+  // Track which filtered fact set actually produced the shipped context. The
+  // touch signal must reflect only facts that genuinely made it into the
+  // artefact; touching trimmed-out warm facts would overstate reliance.
+  let finalFacts = filtered.facts;
+
   // Build markdown (universal base)
   let markdown = buildMarkdownContext(filtered.facts, filtered.patterns, filtered.decisions, userName);
   let sections = buildSections(filtered.facts, filtered.patterns, filtered.decisions, userName);
@@ -573,6 +582,7 @@ export async function buildMemoryContext(
     markdown = buildMarkdownContext(reducedFiltered.facts, reducedFiltered.patterns, reducedFiltered.decisions, userName);
     sections = buildSections(reducedFiltered.facts, reducedFiltered.patterns, reducedFiltered.decisions, userName);
     tokenCount = estimateTokens(markdown);
+    finalFacts = reducedFiltered.facts; // trim path shipped instead of the full set
   }
 
   // Build every artefact for this target (may be 1 or 2 files).
@@ -602,6 +612,7 @@ export async function buildMemoryContext(
     decisionCount: filtered.decisions.length,
     lastUpdated: new Date().toISOString(),
     artefacts,
+    touchedFactIds: finalFacts.map((f) => f.id).filter(Boolean),
   };
 }
 

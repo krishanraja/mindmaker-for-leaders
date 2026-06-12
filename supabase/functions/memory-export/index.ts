@@ -37,6 +37,16 @@ Deno.serve(async (req) => {
       maxTokens,
     });
 
+    // Fire-and-forget reliance signal on the facts that shipped into the
+    // context. Never awaited; user-JWT client is fenced by auth.uid().
+    {
+      const touchIds = result.touchedFactIds ?? [];
+      if (touchIds.length) {
+        void supabase.rpc("touch_memory_facts", { p_fact_ids: touchIds })
+          .then(({ error }) => { if (error) console.warn("touch failed:", error.message); });
+      }
+    }
+
     // Surface artefacts + primary-file hints for the client wizard. Keep
     // `context` for legacy callers that grab the first blob.
     const primary = result.artefacts?.[0];
