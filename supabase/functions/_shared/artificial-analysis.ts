@@ -7,7 +7,7 @@
 
 import type { AAModel, AAMediaModel } from "./aa-types.ts";
 
-const AA_BASE_URL = "https://api.artificialanalysis.ai/v1";
+const AA_BASE_URL = "https://artificialanalysis.ai/api/v2";
 
 function getApiKey(): string {
   const key = Deno.env.get("ARTIFICIALANALYSIS_API_KEY");
