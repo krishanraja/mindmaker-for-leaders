@@ -21,12 +21,13 @@ import { useVerificationFlow } from '@/hooks/useVerificationFlow';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { AppHeader } from '@/components/memory-web/AppHeader';
+import { showThermometer } from '@/lib/memorySignals';
 import type { UserMemoryFact } from '@/types/memory';
 
 export default function MemoryCenter() {
   const navigate = useNavigate();
   const { isMobile } = useDevice();
-  const { stats } = useMemoryWeb();
+  const { stats, facts } = useMemoryWeb();
   const {
     isFlowOpen,
     pendingFacts,
@@ -198,16 +199,20 @@ export default function MemoryCenter() {
                 <CheckCircle2 className="h-3 w-3" />
                 {stats.verified_rate}% verified
               </motion.button>
-              {(stats.temperature_distribution?.hot || 0) > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-500 text-xs font-medium">
-                  <Flame className="h-3 w-3" />
-                  {stats.temperature_distribution.hot} hot
-                </span>
+              {showThermometer(facts, stats) && (
+                <>
+                  {(stats.temperature_distribution?.hot || 0) > 0 && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-500 text-xs font-medium">
+                      <Flame className="h-3 w-3" />
+                      {stats.temperature_distribution.hot} hot
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-500 text-xs font-medium">
+                    <Thermometer className="h-3 w-3" />
+                    {stats.temperature_distribution?.warm || 0} warm
+                  </span>
+                </>
               )}
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-500 text-xs font-medium">
-                <Thermometer className="h-3 w-3" />
-                {stats.temperature_distribution?.warm || 0} warm
-              </span>
             </div>
           )}
           {content}
@@ -243,14 +248,18 @@ export default function MemoryCenter() {
             >
               {stats.verified_rate}% verified
             </motion.button>
-            {(stats.temperature_distribution?.hot || 0) > 0 && (
+            {showThermometer(facts, stats) && (
               <>
+                {(stats.temperature_distribution?.hot || 0) > 0 && (
+                  <>
+                    {' · '}
+                    <span className="text-orange-500 font-medium">{stats.temperature_distribution.hot} hot</span>
+                  </>
+                )}
                 {' · '}
-                <span className="text-orange-500 font-medium">{stats.temperature_distribution.hot} hot</span>
+                <span className="text-amber-500 font-medium">{stats.temperature_distribution?.warm || 0} warm</span>
               </>
             )}
-            {' · '}
-            <span className="text-amber-500 font-medium">{stats.temperature_distribution?.warm || 0} warm</span>
           </p>
         </div>
       )}

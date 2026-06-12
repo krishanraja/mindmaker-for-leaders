@@ -45,6 +45,8 @@ export interface DecisionEvidence {
   excerpt: string | null;
   stance: 'supports' | 'refutes' | 'neutral';
   retriever: string;
+  retrieved_at: string | null;
+  relevance_score: number | null;
 }
 
 export interface DecisionTension {

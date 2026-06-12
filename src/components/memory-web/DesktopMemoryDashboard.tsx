@@ -139,9 +139,11 @@ function FactCard({
           {fact.fact_value}
         </p>
         <div className="flex items-center flex-wrap gap-1 mt-2">
-          <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-medium', TEMP_PILL_STYLES[fact.temperature])}>
-            {fact.temperature}
-          </span>
+          {(fact.reference_count ?? 0) > 0 && (
+            <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-medium', TEMP_PILL_STYLES[fact.temperature])}>
+              {fact.temperature}
+            </span>
+          )}
           {fact.verification_status === 'verified' && (
             <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-emerald-500/10 text-emerald-400">
               verified
@@ -662,7 +664,7 @@ export function DesktopMemoryDashboard() {
                   patterns
                 </span>
                 <span>
-                  Health{' '}
+                  Profile{' '}
                   <span className="text-emerald-400 font-semibold">
                     {stats?.health_score || 0}%
                   </span>

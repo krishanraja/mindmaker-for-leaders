@@ -125,6 +125,7 @@ function ClaimRow({ claim, evidence, isBreakpoint }: { claim: DecisionClaim; evi
                         <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${st.cls}`}>{st.label}</span>
                         <a href={e.source_url ?? '#'} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium">{e.source_title || e.source_url || e.retriever}</a>
                         <span className="text-muted-foreground/60">· {e.retriever}</span>
+                        {e.retrieved_at && <span className="text-muted-foreground/50">· as of {new Date(e.retrieved_at).toLocaleDateString()}</span>}
                       </div>
                       {e.excerpt && <p className="text-muted-foreground mt-0.5 line-clamp-2 text-pretty">{e.excerpt}</p>}
                     </li>

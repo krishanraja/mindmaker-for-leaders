@@ -220,6 +220,9 @@ export function SegmentCard({
             <Anchor className="w-3 h-3 mt-[2px] text-accent/70 shrink-0" />
             <p className="text-[10px] text-muted-foreground leading-relaxed">
               Anchored to: <span className="text-foreground/80">{segment.matched_profile_fact}</span>
+              {typeof segment.relevance_score === 'number' && (
+                <span className="ml-1 tabular-nums text-foreground/50">· {segment.relevance_score.toFixed(2)}</span>
+              )}
             </p>
           </div>
         )}
