@@ -66,6 +66,24 @@ export interface BulkDeleteInput {
   delete_all?: boolean;
 }
 
+// Pull the human-readable message out of a Supabase FunctionsHttpError. The real
+// body (e.g. the 403 privacy-off error or the 422 guardrail message) lives on
+// error.context, not on error.message (which is a generic "non-2xx" string).
+// Prefer the friendly `message` (422), then `error` (403/4xx), then the fallback.
+async function edgeErrorMessage(error: unknown, fallback: string): Promise<string> {
+  const err = error as { message?: string; context?: { json?: () => Promise<unknown> } };
+  let detail = err?.message || fallback;
+  try {
+    if (err?.context && typeof err.context.json === 'function') {
+      const body = (await err.context.json()) as { error?: string; message?: string } | null;
+      detail = body?.message || body?.error || detail;
+    }
+  } catch {
+    /* response body not parseable; keep the fallback */
+  }
+  return detail;
+}
+
 // API functions
 async function fetchMemoryList(filters: MemoryFilters): Promise<MemoryListResponse> {
   const params = new URLSearchParams();
@@ -114,7 +132,7 @@ async function createMemory(input: CreateMemoryInput): Promise<UserMemoryFact> {
   });
 
   if (error) {
-    throw new Error(error.message || 'Failed to create memory');
+    throw new Error(await edgeErrorMessage(error, 'Failed to create memory'));
   }
 
   return data.memory as UserMemoryFact;
@@ -127,7 +145,7 @@ async function updateMemory(id: string, input: UpdateMemoryInput): Promise<UserM
   });
 
   if (error) {
-    throw new Error(error.message || 'Failed to update memory');
+    throw new Error(await edgeErrorMessage(error, 'Failed to update memory'));
   }
 
   return data.memory as UserMemoryFact;
@@ -190,7 +208,7 @@ async function importMemory(memories: ImportMemoryRow[]): Promise<{ imported: nu
   });
 
   if (error) {
-    throw new Error(error.message || 'Failed to import memories');
+    throw new Error(await edgeErrorMessage(error, 'Failed to import memories'));
   }
 
   return data as { imported: number; skipped: number };
@@ -325,31 +343,11 @@ export function useCreateMemory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CreateMemoryInput) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase
-        .from('user_memory')
-        .insert({
-          user_id: user.id,
-          fact_key: input.fact_key,
-          fact_category: input.fact_category,
-          fact_label: input.fact_label,
-          fact_value: input.fact_value,
-          fact_context: input.fact_context,
-          source_type: input.source_type || 'manual',
-          confidence_score: input.confidence_score || 1.0,
-          is_high_stakes: input.is_high_stakes || false,
-          verification_status: 'verified',
-          is_current: true,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as UserMemoryFact;
-    },
+    // Route through the memory-crud edge function so every manual/voice create is
+    // field-level encrypted (AES-256-GCM) and passes the hygiene guardrails. The
+    // edge fn sets verification_status (manual|voice -> 'verified') and stamps the
+    // training material version. Optimistic block below is unchanged.
+    mutationFn: (input: CreateMemoryInput) => createMemory(input),
     onMutate: async (newMemory) => {
       await queryClient.cancelQueries({ queryKey: memoryKeys.lists() });
       
@@ -401,21 +399,10 @@ export function useUpdateMemory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateMemoryInput & { id: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase
-        .from('user_memory')
-        .update(input)
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as UserMemoryFact;
-    },
+    // Route through memory-crud/update/:id (PUT) so edits re-encrypt the content
+    // shadow. The inferred -> corrected promotion is preserved: UpdateMemorySchema
+    // accepts 'corrected' and the edge fn stamps verified_at. Optimistic block unchanged.
+    mutationFn: ({ id, ...input }: UpdateMemoryInput & { id: string }) => updateMemory(id, input),
     onMutate: async ({ id, ...updates }) => {
       await queryClient.cancelQueries({ queryKey: memoryKeys.detail(id) });
       
@@ -580,59 +567,32 @@ export function useImportMemory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (memories: ImportMemoryRow[]) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      let imported = 0;
-      let skipped = 0;
-
-      for (const memory of memories) {
-        if (!memory.fact_key || !memory.fact_category || !memory.fact_label || !memory.fact_value) {
-          skipped++;
-          continue;
-        }
-
-        // Check for duplicates. maybeSingle(): the common case is "no existing
-        // match" (a brand-new fact); single() throws 406/PGRST116 on zero rows,
-        // spamming the console on every fresh fact during an import.
-        const { data: existing } = await supabase
-          .from('user_memory')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('fact_key', memory.fact_key)
-          .eq('is_current', true)
-          .maybeSingle();
-
-        if (existing) {
-          skipped++;
-          continue;
-        }
-
-        const { error } = await supabase
-          .from('user_memory')
-          .insert({
-            user_id: user.id,
-            fact_key: memory.fact_key,
-            fact_category: memory.fact_category,
-            fact_label: memory.fact_label,
-            fact_value: memory.fact_value,
-            fact_context: memory.fact_context,
-            confidence_score: memory.confidence_score || 1.0,
-            is_high_stakes: memory.is_high_stakes || false,
-            verification_status: memory.verification_status || 'verified',
-            source_type: 'manual',
-            is_current: true,
-          });
-
-        if (!error) {
-          imported++;
-        } else {
-          skipped++;
-        }
+    // Route through memory-crud/import so imported facts are field-level encrypted
+    // and deduped server-side (the edge fn already encrypts + dedupes). Rows missing
+    // a required field are dropped here; null fact_context is coerced to undefined so
+    // it passes the import schema (z.string().optional()).
+    mutationFn: (memories: ImportMemoryRow[]) => {
+      const validRows = memories
+        .filter(m => m.fact_key && m.fact_category && m.fact_label && m.fact_value)
+        .map(m => ({
+          fact_key: m.fact_key!,
+          fact_category: m.fact_category!,
+          fact_label: m.fact_label!,
+          fact_value: m.fact_value!,
+          fact_context: m.fact_context ?? undefined,
+          confidence_score: m.confidence_score,
+          is_high_stakes: m.is_high_stakes,
+          verification_status: m.verification_status,
+        }));
+      const droppedLocally = memories.length - validRows.length;
+      if (validRows.length === 0) {
+        return Promise.resolve({ imported: 0, skipped: droppedLocally });
       }
-
-      return { imported, skipped };
+      return importMemory(validRows).then(result => ({
+        imported: result.imported,
+        // fold rows we dropped locally into the skipped count the UI shows
+        skipped: result.skipped + droppedLocally,
+      }));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: memoryKeys.lists() });
