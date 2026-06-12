@@ -415,19 +415,7 @@ export function MobileMemoryDashboard() {
               animate={{ opacity: 1 }}
               className="flex items-center gap-3"
             >
-              <motion.div
-                animate={{
-                  boxShadow: [
-                    '0 0 4px rgba(16,185,129,0.2)',
-                    '0 0 8px rgba(139,92,246,0.3)',
-                    '0 0 4px rgba(16,185,129,0.2)',
-                  ],
-                }}
-                transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
-                className="rounded-full"
-              >
-                <Brain className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-              </motion.div>
+              <Brain className="h-3.5 w-3.5 text-accent flex-shrink-0" />
               <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
@@ -450,7 +438,7 @@ export function MobileMemoryDashboard() {
                 {stats.health_score}%
               </span>
               <span className="text-[10px] text-muted-foreground flex-shrink-0">
-                {stats.total_facts}f &middot; {stats.patterns_count}p
+                {stats.total_facts}f{stats.patterns_count > 0 ? ` · ${stats.patterns_count}p` : ''}
               </span>
               {delta && delta.new_facts > 0 && (
                 <motion.span

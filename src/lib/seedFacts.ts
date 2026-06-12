@@ -84,6 +84,9 @@ export function buildSeedFacts(
 export function toWebFact(fact: UserMemoryFact): MemoryWebFact {
   return {
     ...fact,
+    // Display-only: this 'hot' is ephemeral visualization state for a brand-new
+    // capture and is NEVER persisted to user_memory.temperature (never write it back,
+    // or it re-fakes the aggregate thermometer that reads from the DB).
     temperature: 'hot',
     reference_count: 0,
   };
