@@ -113,3 +113,17 @@ verify_jwt = true
 # Called by pg_cron with the service role key; rejects everything else.
 [functions.send-kit-nudges]
 verify_jwt = false
+
+# === MEMORY LEARNING ENGINES (Phase 0 / ITEM 2) ===
+# Called by the nightly memory-sweep cron with the service role key (sweep mode),
+# OR by an authed user with their JWT (re-learn-now / QA). Each function enforces both:
+# service-role without a user_id -> 400; anon/no-auth -> JWT branch -> getUser() -> 401.
+[functions.memory-lifecycle]
+verify_jwt = false
+
+[functions.memory-synthesize]
+verify_jwt = false
+
+# Nightly memory learning sweep. Cron-only (enforces service_role internally).
+[functions.memory-sweep]
+verify_jwt = false
