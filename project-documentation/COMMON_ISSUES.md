@@ -2,7 +2,7 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-06-14
 
 > **Status**: Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath."
 
@@ -288,7 +288,13 @@ Use this checklist when implementing new features to ensure V3 standards are met
 ### Issue 23: Memory Table Not Found
 **Symptom**: Memory Center shows "Failed to load memories" error
 **Root Cause**: Database migrations not applied to Supabase instance
-**Solution**: Run migrations via Supabase CLI: `supabase db push`
+**Solution**: Do NOT use `supabase db push` - the local migration history is out of sync with remote. Run SQL directly via the Supabase Management API:
+```
+POST https://api.supabase.com/v1/projects/bkyuxvschuwngtcdhsyg/database/query
+Headers: { 'apikey': SUPABASE_ACCESS_TOKEN, 'Authorization': 'Bearer SUPABASE_ACCESS_TOKEN', 'Content-Type': 'application/json' }
+Body: { "query": "YOUR SQL HERE" }
+```
+Use `CREATE TABLE IF NOT EXISTS` for idempotency.
 **Status**: ⚠️ Requires migration deployment
 
 ### Issue 24: Memory Settings Not Loading

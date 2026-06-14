@@ -92,8 +92,8 @@ Optimized for: General Advisor, Meeting Prep, Decision Support, Code Review, Ema
 ### AI Literacy Diagnostic
 10-minute assessment covering Strategic Vision, Experimentation Culture, Delegation & Automation, Data & Decision Quality, Team Capability, and Governance. Surfaces tensions, risk signals, and organizational scenarios. $49 to unlock the full report.
 
-### Missions & Progress
-Commit to action items from your diagnostic. Track progress through check-ins. Adaptive prompts adjust based on your momentum.
+### Kit Engine - Class Follow-Up Portal
+Live-class attendees scan a QR, enter a session code with no login, answer 6 quick questions, and walk out with a personalised artifact pack and a 7-day plan. Three class presets: Vibe Coding, Autonomous Business, Memory / Identity / Self-Healing. The kit page doubles as a 7-day journey (checklist, "I shipped it" celebration, regenerate-with-feedback, context-capsule paste-back). Portal routes: `/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`.
 
 ---
 
@@ -127,7 +127,7 @@ Commit to action items from your diagnostic. Track progress through check-ins. A
 | Routing | React Router 6.26.2 (lazy-loaded routes) |
 | Styling | Tailwind CSS, shadcn/ui (Radix UI) |
 | State | React Context, TanStack Query 5.56 |
-| Backend | Supabase (PostgreSQL + 80 Edge Functions, Deno runtime) |
+| Backend | Supabase (PostgreSQL + 86 Edge Functions, Deno runtime) |
 | AI Primary | Vertex AI (Gemini 2.0 Flash) via Google Cloud service account |
 | AI Fallback | OpenAI GPT-4o |
 | Voice | OpenAI Whisper |
@@ -141,16 +141,18 @@ Commit to action items from your diagnostic. Track progress through check-ins. A
 | Hosting | Vercel (frontend), Supabase Cloud (backend) |
 | Node.js | `>=22 <24` |
 
-### Verified counts (2026-06-09)
-- 80 Supabase edge functions
-- 59 React custom hooks
-- 110 PostgreSQL migrations applied
-- 29 top-level page components
-- 15 active routes (+ 5 legacy redirects)
+### Verified counts (2026-06-14)
+- 86 Supabase edge functions
+- 61 React custom hooks
+- 117 PostgreSQL migrations applied
+- 21 page files (17 main + 4 kit portal)
+- 19 active routes (+ 5 legacy redirects)
 - 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup)
 - Phase 8 shipped: Agent Skill Builder (voice-to-Claude-Skill, Edge Pro) + world-class desktop UI redesign with Cmd/Ctrl+K Command Palette + pain-anchored Skill entry points
 - Phase 9 shipped: Decision Engine (verification-looped pressure-testing: decompose → verify → cross-examine → advise, hourly WATCH re-verification) + flag-gated Briefing streaming + cross-tenant RLS hardening
 - Phase 10 shipped: every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll desktop, Goals tracking (`/goals`), and the inbound Enrich loop (`/enrich`)
+- Phase 11 shipped: Kit Engine - preset-driven class follow-up portal (QR entry, no login, 6-question intake, personalised artifact pack, 7-day journey, day-3/7 nudges). 3 presets: vibe-coding, autonomous-business, memory-identity.
+- Phase 12 shipped: AES-256-GCM memory encryption at rest, nightly sweep orchestrator, touch wire, honest-compliance UI, Gemini fallback for Skill Builder, 96 dead files deleted
 
 ---
 
@@ -177,6 +179,10 @@ The app uses a **unified dashboard** architecture. The Dashboard page (`/dashboa
 | `/settings` | Settings | Yes |
 | `/compliance` | Compliance | Yes |
 | `/profile` | Profile | Yes |
+| `/kit` | Kit Redeem (class portal entry - session code) | No |
+| `/kit/me` | Kit Home (student's personalised pack) | No |
+| `/kit/me/intake` | Kit Intake (6-question intake flow) | No |
+| `/kit/reading/:pageId` | Kit Reading (journey + day checklist) | No |
 
 Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`) redirect to `/dashboard`; `/think` redirects to `/dashboard?view=edge`.
 
@@ -189,19 +195,17 @@ src/
 │   ├── auth/            # AuthProvider, RequireAuth
 │   ├── landing/         # HeroSection, CtrlLogo, TrustIndicators
 │   ├── dashboard/       # Dashboard hub
-│   ├── memory-web/      # Memory Web views, sidebars, guided experience
-│   ├── edge/            # EdgeView, profile card, paywall, pills, draft sheet
+│   ├── memory-web/      # Memory Web views, sidebars, voice capture
+│   ├── edge/            # EdgeView, paywall, draft sheet, automate-pain card
 │   ├── voice/           # Voice capture
-│   ├── memory/          # Memory management
-│   ├── onboarding/      # Guided first experience
-│   ├── missions/        # Missions tracking
+│   ├── memory/          # Memory management, verification flow (VerificationBanner, VerificationCompletionScreen, VerificationSwipeStack)
 │   ├── settings/        # Account, WorkContext, BriefingInterests, BriefingDirectives, EdgePro, Preferences, PrivacyData, Manifesto
 │   ├── sharpen/         # Sharpen tool
 │   ├── ai-chat/         # AI interaction
 │   ├── diagnostic/      # Assessment components
 │   └── ... (operator, progress, provocation, pulse, team-instructions, etc.)
-├── hooks/               # 59 custom React hooks (incl. useSkillExport, useGoals, useDecisionEngine, useDecisionInbox)
-├── pages/               # 29 page components (many are legacy redirects)
+├── hooks/               # 61 custom React hooks (incl. useSkillExport, useGoals, useDecisionEngine, useDecisionInbox, useKitRedemption, useVerificationFlow)
+├── pages/               # 21 page files (17 main + kit/ with 4 kit portal pages)
 ├── contexts/            # AppState, Assessment, Auth, Theme
 ├── types/               # TypeScript types
 ├── utils/               # Utilities
@@ -209,7 +213,7 @@ src/
 └── integrations/        # External service clients (Supabase)
 
 supabase/
-├── functions/           # 80 edge functions (Deno runtime)
+├── functions/           # 86 edge functions (Deno runtime)
 │   ├── _shared/         # logger, with-timeout, ai-cache, rate-limit, briefing-lens/scoring/curation, model-router, training-loader, etc.
 │   ├── generate-briefing/        # Briefing v2 orchestrator
 │   ├── synthesize-briefing/      # ElevenLabs MP3 synthesis

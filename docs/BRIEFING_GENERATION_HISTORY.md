@@ -235,6 +235,6 @@ When a user reports "briefing hangs" or "headlines don't refresh":
 
 ---
 
-*Last updated: 2026-04-12 after `3abe1ce`. When adding an entry, keep the
+*Last updated: 2026-06-14. When adding an entry, keep the
 F-code table current - future regressions almost always map back onto one
 of these ten failure modes.*

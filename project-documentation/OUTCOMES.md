@@ -2,7 +2,7 @@
 
 Expected outcomes and success metrics for CTRL users. Every outcome ties back to **decision speed** and **auditable relevance**.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-14
 
 ---
 
@@ -238,7 +238,7 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 
 Use these outcomes as proof points in copy:
 
-- **"2 minutes to first export"** - verified by GuidedFirstExperience telemetry
+- **"2 minutes to first export"** - verified by first-session voice capture timing
 - **"30+ minutes a day reclaimed"** - context-setup time + news scrolling time eliminated
 - **"Anchored to:" promise** - every Briefing segment can prove its relevance with a specific profile fact
 - **"Bans persist forever"** - semantic, not keyword; signature-keyed so feedback survives daily lens regeneration

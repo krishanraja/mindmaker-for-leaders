@@ -86,7 +86,7 @@ Expected:
 
 ```yaml
 Components to Test:
-  - Onboarding flow (GuidedFirstExperience)
+  - Dashboard voice capture (first-session)
   - Dashboard voice capture
   - Decision Advisor
   - Stream of Consciousness
@@ -148,7 +148,7 @@ Expected:
 ```yaml
 Tabs:
   - Home → /dashboard
-  - Think → /think
+  - Edge → /dashboard?view=edge (replaces /think, which now redirects)
   - Memory → /memory
   - Export → /context
 

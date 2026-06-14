@@ -1,6 +1,6 @@
 # CTRL Data Retention Policy
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-14
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Defines how long CTRL keeps each category of personal data and how it is deleted. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 12 and [ROPA.md](./ROPA.md).

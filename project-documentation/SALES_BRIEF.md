@@ -2,7 +2,7 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-14
 
 ---
 

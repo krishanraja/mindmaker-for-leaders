@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-14
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).

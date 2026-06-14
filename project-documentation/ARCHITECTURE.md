@@ -2,11 +2,13 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-14
 
 > **Verified counts (2026-06-09)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop).
 >
 > **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) = 85, +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`) = 62, +4 migrations = 114, +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
+>
+> **Phase 12 additions (2026-06-12, PRs #143-#152)**: Phase 0 memory hardening + Phase 1 dead code deletion. Memory Phase 0: ITEM 1 touch wire (`user_memory.last_accessed_at` usage signal), ITEM 2 nightly `memory-sweep` orchestrator scheduled via pg_cron (runs `memory-lifecycle` free for all + `memory-synthesize` gated on a content-change delta signal), ITEM 3 full AES-256-GCM encryption at rest (`user_memory.encrypted_content` column, key in `MEMORY_ENCRYPTION_KEY` secret) + three honest-compliance verification UI components (`VerificationBanner`, `VerificationCompletionScreen`, `VerificationSwipeStack`), ITEM 4 honest learning signals + `useVerificationFlow` hook. Gemini fallback added to the Skill Builder pipeline (`generate-skill-export`) for OpenAI outage resilience. Third Kit preset `memory-identity` (Memory / Identity / Self-Healing) shipped (PR #143). Dead code cleanup (PR #152): 96 files deleted from 3 prior product visions (assessment, benchmark, diagnostic, older mobile patterns). Net counts: **86 edge functions** (+1 vs Phase 11 end), **61 hooks** (-1 net: +1 `useVerificationFlow`, -2 legacy hooks including `useOfflineDetection`), **117 migrations** (+3), **21 page files** (12 deleted: Baseline, DecisionCapture, Diagnostic, MissionCheckIn, MissionHistory, Progress, PromptCoach, Pulse, Think, Today, Voice, WeeklyCheckin).
 
 ---
 
@@ -52,39 +54,25 @@ src/
 │   │   │   ├── Sidebar.tsx           # Legacy sidebar (pre-Memory Web)
 │   │   │   └── Panel.tsx
 │   │   └── mobile/
-│   │       ├── MobileDashboard.tsx
-│   │       ├── BottomNav.tsx
 │   │       ├── VoiceButton.tsx
-│   │       ├── VoiceFAB.tsx
 │   │       ├── Sheet.tsx
 │   │       ├── HeroStatusCard.tsx
 │   │       ├── PriorityCardStack.tsx
 │   │       ├── ActionQueueSheet.tsx
 │   │       └── StrategicPulseSheet.tsx
+│   │       # MobileDashboard.tsx and BottomNav.tsx deleted in Phase 12
 │   ├── memory-web/            # Memory Web dashboard (primary dashboard view)
 │   │   ├── MobileMemoryDashboard.tsx
 │   │   ├── DesktopMemoryDashboard.tsx
 │   │   ├── DesktopSidebar.tsx     # Primary desktop nav (Home, Edge, Memory Web, Export)
 │   │   ├── BottomNav.tsx          # Primary mobile nav (Home, Edge, Memory, Export)
 │   │   ├── AppHeader.tsx
-│   │   ├── GuidedFirstExperience.tsx  # Onboarding for new users
 │   │   ├── MemoryWebVisualization.tsx
-│   │   ├── MemoryHealthViz.tsx
-│   │   ├── MemoryPulseBar.tsx
-│   │   ├── CategoryChart.tsx
-│   │   ├── IntelligencePanel.tsx
-│   │   ├── RecentFactsFeed.tsx
-│   │   ├── PatternInsightCard.tsx
-│   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (Edge Pro gated) (v5.2)
-│   │   └── GettingSmarterBanner.tsx
+│   │   └── PatternInsightCard.tsx
 │   ├── edge/                  # Edge: Leadership Amplifier + Skill Builder UI
 │   │   ├── EdgeView.tsx           # Main Edge view (strengths/weaknesses/gaps)
-│   │   ├── EdgeProfileCard.tsx    # Profile summary card
 │   │   ├── EdgeOnboarding.tsx     # First-time Edge experience
 │   │   ├── EdgePaywall.tsx        # Pro tier paywall with sample artifacts
-│   │   ├── StrengthPill.tsx       # Interactive strength pills
-│   │   ├── GapPill.tsx            # Intelligence gap pills
-│   │   ├── SmartProbeCard.tsx     # Guided gap resolution
 │   │   ├── DraftSheet.tsx         # Artifact preview/generation sheet
 │   │   ├── ArtifactPreview.tsx    # Generated artifact display
 │   │   ├── FeedbackButtons.tsx    # Strength/weakness feedback
@@ -99,22 +87,20 @@ src/
 │   ├── analytics/             # Analytics components
 │   ├── diagnostic/            # Diagnostic-specific components
 │   ├── insight/               # Insight display components
-│   ├── memory/                # Memory Center components (11 files)
+│   ├── memory/                # Memory Center components (13 files, Phase 12)
 │   │   ├── MemoryList.tsx
 │   │   ├── AddMemorySheet.tsx
 │   │   ├── MemoryDetailSheet.tsx
 │   │   ├── MemoryItemCard.tsx
 │   │   ├── MemoryPill.tsx
 │   │   ├── FactVerificationCard.tsx
-│   │   ├── VoiceMemoryCapture.tsx
+│   │   ├── VerificationBanner.tsx         # Phase 12: honest-compliance UI
+│   │   ├── VerificationCompletionScreen.tsx  # Phase 12
+│   │   ├── VerificationSwipeStack.tsx     # Phase 12: swipe-to-verify fact queue
 │   │   ├── PrivacyControlsPanel.tsx
 │   │   ├── ExportImportPanel.tsx
 │   │   └── MemoryErrorBoundary.tsx
-│   ├── missions/              # Missions system components
-│   │   ├── FirstMoveSelector.tsx
-│   │   └── MissionsDashboard.tsx
-│   ├── mobile/
-│   │   └── MobileLayout.tsx   # Mobile viewport wrapper
+│   ├── mobile/                # Mobile shell remnants (most components moved to memory-web/)
 │   ├── onboarding/            # Onboarding flow components
 │   ├── operator/              # Operator tools components
 │   ├── progress/              # Progress tracking components
@@ -129,24 +115,24 @@ src/
 │   │   ├── LoadingState.tsx
 │   │   └── VoiceInput.tsx
 │   ├── team-instructions/     # Team instruction generation
-│   ├── UnifiedAssessment.tsx  # Quiz + voice assessment orchestrator
-│   ├── UnifiedResults.tsx     # Results page with tabs
-│   ├── LeadershipBenchmarkV2.tsx  # Overview tab
-│   ├── PromptLibraryV2.tsx    # Tools tab
-│   ├── TensionsView.tsx       # Tensions tab
-│   ├── ConsentManager.tsx     # Privacy/consent tab
-│   ├── SingleScrollResults.tsx # Single-page results view
-│   ├── AssessmentHistory.tsx  # Past assessments
+│   ├── PromptLibraryV2.tsx    # Thinking tools tab (retained)
+│   ├── TensionsView.tsx       # Tensions tab (retained)
+│   ├── ConsentManager.tsx     # Privacy/consent tab (retained)
+│   ├── AssessmentHistory.tsx  # Past assessments (retained)
 │   ├── BenchmarkComparison.tsx
 │   ├── PeerBubbleChart.tsx
 │   ├── PeerComparisonMobile.tsx
 │   ├── MomentumDashboard.tsx
 │   ├── ErrorBoundary.tsx
-│   └── [Other components]
+│   └── [Other retained components]
+│   # Deleted in Phase 12 dead code pass: UnifiedAssessment, UnifiedResults,
+│   # LeadershipBenchmarkV2, SingleScrollResults, and 86 more (benchmark/,
+│   # diagnostic/, ai-chat/, assessment/, action/, insight/, operator/ sub-dirs,
+│   # missions/ dir entirely, VoiceMemoryCapture, mobile/)
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 59 custom hooks
+├── hooks/                     # 61 custom hooks (Phase 12: +useVerificationFlow; -useOfflineDetection)
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -158,13 +144,17 @@ src/
 │   ├── useSkillExport.ts      # Skill Builder pipeline (v5.2): wraps generate-skill-export, decodes base64 ZIP into a Blob
 │   ├── useUserPains.ts        # Top blockers + active decisions, drives pain-anchored entry points (v5.2)
 │   ├── useRevealOnMount.ts    # Smooth reveal helper for below-the-fold components (v5.2)
+│   ├── useKitRedemption.ts    # Kit Engine: pass + redemption state (Phase 11)
+│   ├── useKitBuild.ts         # Kit Engine: compose run + artifact polling (Phase 11)
+│   ├── useKitArtifacts.ts     # Kit Engine: artifact list + download (Phase 11)
+│   ├── useVerificationFlow.ts # Memory Phase 12: honest-compliance fact verification
 │   ├── useMemoryQueries.ts    # Memory Center queries
 │   ├── useMemoryWeb.ts        # Memory Web dashboard data
 │   ├── useMemoryExport.ts     # Context export logic
 │   ├── useUserMemory.ts       # Memory state management
 │   ├── useGuidedCapture.ts    # Onboarding guided capture flow
 │   ├── useMarkdownImport.ts   # Markdown file import
-│   ├── useMissions.ts         # Missions system
+│   ├── useMissions.ts         # Missions system (hooks retained; pages retired in Phase 12)
 │   ├── useCheckIns.ts         # Check-in system
 │   ├── useProgress.ts         # Progress tracking
 │   ├── useDecisions.ts        # Decision capture
@@ -180,7 +170,6 @@ src/
 │   ├── use-mobile.tsx
 │   ├── useLongPress.ts
 │   ├── useOffline.ts
-│   ├── useOfflineDetection.ts
 │   └── use-toast.ts
 ├── lib/
 │   └── motion.ts              # Animation utilities (Framer Motion)
@@ -210,7 +199,7 @@ src/
 │   └── supabase/
 │       ├── client.ts          # Supabase client
 │       └── types.ts           # Generated DB types (READ-ONLY)
-├── pages/                     # 29 page files (many legacy, now redirected to /dashboard)
+├── pages/                     # 21 page files (12 retired/deleted in Phase 12 dead code pass)
 │   ├── Landing.tsx            # Landing page (/)
 │   ├── Auth.tsx               # Authentication (/auth)
 │   ├── AuthCallback.tsx       # OAuth callback (/auth/callback)
@@ -226,20 +215,13 @@ src/
 │   ├── Compliance.tsx         # Compliance center (/compliance)
 │   ├── Profile.tsx            # User profile (/profile)
 │   ├── Booking.tsx            # Workshop booking (/booking)
-│   ├── Diagnostic.tsx         # Assessment flow (legacy, redirects to /dashboard)
-│   ├── Voice.tsx              # Voice recording (legacy, redirects to /dashboard)
-│   ├── Pulse.tsx              # Strategic pulse (legacy, redirects to /dashboard)
-│   ├── Today.tsx              # Today page (legacy, redirects to /dashboard)
-│   ├── Think.tsx              # Think page (legacy, redirects to /dashboard?view=edge)
-│   ├── WeeklyCheckin.tsx      # Weekly check-in
-│   ├── MissionCheckIn.tsx     # Mission check-in
-│   ├── MissionHistory.tsx     # Mission history
-│   ├── Progress.tsx           # Progress tracking
-│   ├── Baseline.tsx           # Baseline assessment
-│   ├── DecisionCapture.tsx    # Decision capture
-│   ├── PromptCoach.tsx        # Prompt coaching
-│   ├── Timeline.tsx           # Assessment timeline
-│   └── NotFound.tsx           # 404 page
+│   ├── Timeline.tsx           # Assessment timeline (/timeline)
+│   ├── NotFound.tsx           # 404 page
+│   └── kit/                   # Kit Engine portal (4 files; Phase 11)
+│       ├── KitRedeem.tsx      # Code entry (/kit)
+│       ├── KitHome.tsx        # Journey home (/kit/me)
+│       ├── KitIntake.tsx      # 6-question intake (/kit/me/intake)
+│       └── KitReading.tsx     # Full-screen artifact reader (/kit/reading/:pageId)
 ├── styles/                    # Design tokens & styles
 ├── __tests__/                 # Test files
 └── index.css                  # Design system
@@ -290,14 +272,14 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/settings` | Settings | Yes | User preferences |
 | `/compliance` | Compliance | Yes | Compliance / audit center |
 | `/profile` | Profile | Yes | User profile |
-| `/kit` | KitEntry | No | Class follow-up portal code entry (anonymous session) |
+| `/kit` | KitRedeem | No | Class follow-up portal code entry (anonymous session) |
 | `/kit/me` | KitHome | No | Kit + journey home (anonymous, upgrades on email capture) |
 | `/kit/me/intake` | KitIntake | No | 6-question intake (voice or taps) |
 | `/kit/reading/:pageId` | KitReading | No | Full-screen reader for a single artifact |
 
 The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
 
-**Legacy Redirects (all redirect to `/dashboard`):**
+**Legacy Redirects:**
 
 | Route | Redirects To |
 |-------|-------------|
@@ -306,7 +288,6 @@ The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outsid
 | `/voice` | `/dashboard` |
 | `/diagnostic` | `/dashboard` |
 | `/think` | `/dashboard?view=edge` |
-| `*` | `/` |
 
 All active pages are lazy-loaded with `React.lazy()` and wrapped in `<Suspense>` boundaries.
 

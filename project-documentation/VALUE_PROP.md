@@ -2,7 +2,7 @@
 
 Clear value propositions for each audience. Every claim ties back to one thing: **decision speed**.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-14
 
 ---
 

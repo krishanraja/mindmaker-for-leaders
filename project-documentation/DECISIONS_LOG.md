@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-14
 
 ---
 
@@ -330,3 +330,18 @@ Key architectural and product decisions with rationale.
 **Rationale**: The static Google Docs follow-up got 0% adoption - a link in an email nobody opened. A no-login portal the student reaches with a QR while still in the room, that hands back something they install and a 7-day plan to ship it, is the difference between a follow-up that's read and one that's used. The preset model keeps the cost of every future class near zero. Reusing the `/build` pipeline and the base64-in-DB pattern kept the engine almost entirely additive on top of code that was already hardened and live.
 **Trade-off**: Preset content lives in code, so a new class still needs a (tiny) deploy rather than a pure DB edit. Base64-in-DB caps practical artifact size (fine here; the artifacts are small). Anon-first means an abandoned intake leaves an orphan anonymous session until cleanup.
 **Outcome**: ✅ Backend deployed and verified live end to end on both presets against the production Supabase project; routes shipped behind the PR #141 merge on 2026-06-10. A long-kit-page mobile clipping bug (the portal not owning its own scroll under the app shell's `overflow: hidden`) was found and fixed during testing.
+
+## Decision 44: Phase 12 Memory Hardening - Touch Wire, Sweep Orchestrator, AES-256-GCM Encryption, Honest Compliance (PRs #145-#151, 2026-06-10 to 2026-06-14)
+**Date**: 2026-06-14
+**Decision**: Ship four interlocking memory-hardening items as a coordinated Phase 0: (1) a `last_accessed_at` touch wire on `user_memory` so the lifecycle engine has a real usage signal; (2) a live nightly `memory-sweep` orchestrator replacing two dormant pg_cron entries; (3) AES-256-GCM encryption at rest on `user_memory.encrypted_content` with edge-only decryption, plus an honest-compliance UI (`VerificationBanner`, `VerificationCompletionScreen`, `VerificationSwipeStack`) so leaders can verify their memory facts; (4) provenance signals on fact creation/update (source, user-confirmed, edited-after-creation) to feed lifecycle quality scoring.
+
+These four items were shipped with a deliberate sequencing: ITEM 4 (honest learning signals) first because it is purely additive and feeds the sweep; ITEM 2 (sweep orchestrator) next because it wires the engines; ITEM 1 (touch wire) in the same window because the sweep needs it immediately; ITEM 3 (encryption + honest compliance) last because it touches the most surfaces (memory-crud write path, read path, new compliance components, migration).
+
+**Rationale**:
+1. Touch wire: The lifecycle engine (hot/warm/cold classification) was using `created_at` as a proxy for recency. A fact the leader reads every day and a fact they recorded once and never saw again looked identical. `last_accessed_at` is the signal the engine was always supposed to have.
+2. Sweep orchestrator: `memory-lifecycle` and `memory-synthesize` had been live edge functions since Phase 5, but neither was scheduled. They only ran when called directly. The nightly sweep is what actually makes memory a living system rather than a write-once store.
+3. Encryption: User memory content is the most sensitive data in the product (leadership context, strategic decisions, personal priorities). AES-256-GCM at rest means a DB-level read (backup, support access, breach) does not expose plaintext. The honest-compliance UI is the user-visible face of the same commitment: CTRL only knows what you told it and you can verify, correct, or delete any fact.
+4. Provenance signals: Without knowing whether a fact came from voice, whether the user confirmed it, or whether it was edited after synthesis, the lifecycle engine cannot distinguish high-quality facts from LLM inference that was never validated. Provenance is the data the quality gate needed.
+
+**Trade-off**: AES-256-GCM means the `MEMORY_ENCRYPTION_KEY` secret is now a critical dependency - if it is rotated without re-encrypting the column, all facts become unreadable. The encryption key must be treated with the same operational care as the Supabase service role key. Edge-only decryption means any tooling that reads `user_memory` directly from the DB (migrations, manual SQL) sees ciphertext.
+**Outcome**: ✅ All four items live. Nightly sweep running. Encryption at rest verified end to end. Honest-compliance UI in production. Gemini fallback added to the Skill Builder pipeline in the same release window. 3 kit presets live. 96 dead files deleted in Phase 1 (PR #152). Counts at end of phase: 86 edge functions, 61 hooks, 117 migrations.

@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-14
 
 ---
 
@@ -550,4 +550,56 @@ The app shell sets `html` / `body` / `#root` to `overflow: hidden` (the no-scrol
 - 2 class presets live (`vibe-coding`, `autonomous-business`); a third class is a preset folder + registry entry + one row away
 - Verified live end to end against the production Supabase project on both presets - redeem, intake, real-LLM compose, ZIP download, journey, ship - before merge
 - A real success metric on the follow-up for the first time: the 7-day ship rate
+
+---
+
+## Phase 12: Memory Hardening + Honest Compliance + Phase 1 Dead Code Deletion (2026-06-10 to 2026-06-14)
+
+### Context
+
+Phase 11 shipped the Kit Engine. The product's quality ceiling was now memory integrity and trust: facts needed a usage signal so the lifecycle engine knew what was actually being read; the nightly engines that had been sitting dormant since the memory architecture was built needed scheduling; memory content needed real encryption at rest, not just transit; and two prior product visions (original diagnostic/benchmark, missions/progress, older mobile patterns) had left 96 dead files in the codebase. Phase 12 cleared all four debts.
+
+### What shipped
+
+**Kit 3rd preset - Memory / Identity / Self-Healing**
+
+The third class preset (`memory-identity`) shipped as a standalone PR (#143) before the memory hardening work began. It follows the exact same preset-driven model as `vibe-coding` and `autonomous-business`: a new preset folder in `supabase/functions/_shared/kit-presets/`, a registry entry, and one new `kit_codes` row. No new runtime code.
+
+**Gemini fallback for the skill pipeline**
+
+`generate-skill-export` received a Gemini 2.0 Flash fallback path for the OpenAI extraction step, mirroring the pattern already used in `ai-generate` and `briefing-script`. If the OpenAI JSON-mode call fails or quota-errors, the pipeline retries against Vertex AI before surfacing an error. This closes the one remaining place in the Skill Builder that was single-homed on OpenAI.
+
+**Phase 0 - Memory Hardening (4 items, PRs #145-#151)**
+
+ITEM 1 (touch wire): Added `last_accessed_at` column to `user_memory`. Every read of a memory fact now stamps the row. This is the usage signal the lifecycle engine needs to classify facts as hot / warm / cold without relying on create-time alone.
+
+ITEM 2 (nightly sweep orchestrator): The `memory-sweep` edge function replaced two dormant pg_cron entries with a live nightly orchestrator (03:00 UTC). It batches active users (most-stale-synthesis first, hard cap 25 per run) and, for each, fires `memory-lifecycle` (free, always) then `memory-synthesize` (gated on a touch-immune content-change signal: `last_fact_change > last_synthesized_at`). Caps: LIFECYCLE_MAX = 25, SYNTH_MAX = 15 per run. Per-user work is wrapped in try/catch so one failure never aborts the sweep.
+
+ITEM 3 (AES-256-GCM encryption at rest + honest compliance): `user_memory` gained an `encrypted_content` column. All writes from `memory-crud` now encrypt content with AES-256-GCM before storing; reads decrypt in-edge, never client-side. The encryption key lives in `MEMORY_ENCRYPTION_KEY` (Supabase secret). Alongside this, an honest-compliance UI (`VerificationBanner`, `VerificationCompletionScreen`, `VerificationSwipeStack` in `src/components/memory/`) was added so users can verify that their memory facts accurately represent what they said. This closes the loop between what CTRL learned and what the leader actually believes.
+
+ITEM 4 (honest learning signals): The memory fact creation and update flows now record provenance signals alongside content - what triggered the fact (voice, text, synthesis), whether the user confirmed it, and whether it was edited after creation. These signals feed the lifecycle engine's quality scoring and the honest-compliance queue.
+
+**Phase 1 - Dead Code Deletion (PR #152)**
+
+96 files deleted from 3 prior product visions that had been dormant since early 2026:
+- Original assessment/benchmark/diagnostic components (`UnifiedAssessment`, `UnifiedResults`, `LeadershipBenchmarkV2`, `SingleScrollResults`, and ~30 supporting components)
+- Missions and progress-tracking directory (`src/components/missions/`, `src/components/progress/`, `src/components/check-in/`)
+- Older mobile-pattern components (`src/components/mobile/`, several `src/components/dashboard/mobile/` files)
+- 12 page files that were no longer routed (assessment, benchmark, onboarding, today, voice, pulse, diagnostic variants)
+- 1 hook: `useOfflineDetection.ts`
+- Legacy Memory Web components that the new encrypted-content stack superseded (`GuidedFirstExperience`, `CategoryChart`, `RecentFactsFeed`, `GettingSmarterBanner`, `MemoryHealthViz`, `MemoryPulseBar`, `IntelligencePanel`, `SkillExportCard`)
+- Legacy Edge components (`EdgeProfileCard`, `StrengthPill`, `GapPill`, `SmartProbeCard`)
+
+Project documentation was updated and reconciled in the same PR.
+
+### Outcomes from Phase 12
+
+- Memory facts have a live usage signal; `memory-lifecycle` can now classify hot/warm/cold by actual access patterns
+- Nightly sweep live: `memory-lifecycle` + `memory-synthesize` fire every night for all active users with content changes
+- AES-256-GCM encryption at rest on all `user_memory.encrypted_content` - decryption is edge-only, never client-side
+- Honest-compliance UI in production: leaders can verify, correct, and confirm their memory facts
+- Gemini fallback closes the last single-OpenAI path in the Skill Builder
+- 3 kit presets live: `vibe-coding`, `autonomous-business`, `memory-identity`
+- 96 dead files deleted; codebase reflects only what is actually live
+- Counts at end of phase: 86 edge functions, 61 hooks, 117 migrations, 21 page files, 7 E2E specs, 6 Vitest specs
 

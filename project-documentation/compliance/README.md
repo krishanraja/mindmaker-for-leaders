@@ -1,6 +1,6 @@
 # CTRL Compliance Documentation Pack
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-14
 Owner: Krish Raja, Mindmaker
 Contact: privacy@themindmaker.ai
 Product: CTRL (executive leadership-clarity tool)

@@ -1,6 +1,6 @@
 # CTRL Control Matrix (SOC 2 + ISO 27001:2022)
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-14
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Maps the SOC 2 Trust Services Criteria (Common Criteria CC1-CC9 plus Availability, Confidentiality, Privacy) and key ISO/IEC 27001:2022 Annex A controls to CTRL's honest current status, the specific implementation or gap, and where evidence lives. This is a gap analysis, not a claim of conformance.

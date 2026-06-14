@@ -2,20 +2,21 @@
 
 Complete feature inventory across all three CTRL tools.
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-14
 
 > **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
 
 ---
 
-## Repo at a glance (verified 2026-06-09)
+## Repo at a glance (verified 2026-06-14)
 
-- **80 Supabase edge functions** (Deno runtime), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules
-- **59 React hooks** under `src/hooks/` (added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
-- **110 PostgreSQL migrations** applied to remote (added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening)
+- **86 Supabase edge functions** (Deno runtime), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), the Kit Engine (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`), the memory learning stack (`memory-sweep`, `memory-lifecycle`, `memory-synthesize`), and the `track-event` attribution proxy, plus shared modules
+- **61 React hooks** under `src/hooks/` (added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`, `useKitRedemption`, `useKitBuild`, `useKitArtifacts`, `useVerificationFlow`; `useOfflineDetection` removed in Phase 12 dead code pass)
+- **117 PostgreSQL migrations** applied to remote (added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, kit schema, audit-infrastructure + cross-tenant RLS hardening, Phase 12 memory encryption and touch-wire migrations)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Desktop UI redesign shipped** (PR #104, Phase 8; extended through Phase 10, PR #130-#139): every authenticated surface now wears the same `DesktopShell` (sticky top bar with page eyebrow + title + actions, optional right rail, Cmd/Ctrl+K Command Palette), viewport-pinned so the window never scrolls. No more stretched mobile markup on desktop.
+- **Phase 12 memory hardening** (PRs #143-#152): AES-256-GCM encryption at rest for all memory facts (`user_memory.encrypted_content`), nightly sweep orchestrator (`memory-sweep` scheduled via pg_cron; runs lifecycle free for all users, synthesize gated on content-change signal), usage touch wire, honest-compliance verification UI. Dead code cleanup deleted 96 files from 3 prior product visions.
 - **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
 - **Tests**: 6 Vitest unit/shared + 7 Playwright e2e in `src/__tests__/e2e/` (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency, desktop-zero-scroll)
 

@@ -12,7 +12,7 @@ This project must behave like a world-class engineer, UX designer, and operator 
 - Model the entire pipeline, not single functions.
 - Produce 10/10 diagnostics and logging before edits.
 - Never break working flows or overwrite real assets.
-- Stay general enough to work for any codebase in Lovable.
+- Stay general enough to work for any codebase.
 
 ---
 
@@ -367,7 +367,7 @@ Each CP must state: action, expected outcome, how you'll verify (log line, UI st
 
 ---
 
-## 8. HOW TO PROMPT / ITERATE INSIDE LOVABLE
+## 8. HOW TO PROMPT / ITERATE INSIDE CLAUDE CODE
 
 When the user asks you to modify or add features:
 
@@ -544,5 +544,5 @@ This is core to vibe coding.
 
 ---
 
-*Last Updated: 2026-05-13*
-*Version: 1.2.0 (post Phase 8 - Agent Skill Builder + desktop UI redesign)*
+*Last Updated: 2026-06-14*
+*Version: 1.3.0 (post Phase 12 - memory hardening + dead code cleanup; Claude Code, not Lovable)*

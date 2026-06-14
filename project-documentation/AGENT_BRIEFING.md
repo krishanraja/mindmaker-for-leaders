@@ -1,7 +1,7 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-14
 **Runtime truth source:** https://ctrl.themindmaker.ai/.well-known/product.json
 
 ---
@@ -119,6 +119,8 @@ Second, one click exports that context to whichever AI you use next: ChatGPT (cu
 Third, a 3-minute audio briefing arrives every morning. It reads your active decisions, missions, watchlist, and declared interests, scores live headlines against them with embeddings, and hands you 3-5 stories each showing "Anchored to: [your specific priority]." Auditable relevance. Not a black box. Bookmark to keep a beat. Ban to kill a topic semantically. Three minutes of audio replaces 30 minutes of scrolling.
 
 Edge Pro adds unlimited Edge artifacts (board memos, strategy docs, emails) in your register, all 7 briefing types, email delivery, and unlimited Agent Skill Builder -- voice-to-Claude-Skill in 2 minutes, drops into `~/.claude/skills/` and fires automatically.
+
+The Kit Engine (`ctrl.themindmaker.ai/kit`) is a separate motion: live-class attendees scan a QR, enter a session code with no login, answer 6 quick questions, and walk out with a personalised pack of installable artifacts and a 7-day plan. Three class presets: Vibe Coding, Autonomous Business, Memory / Identity / Self-Healing. This is the CTRL class-to-practice bridge, not a self-serve product sold via outbound.
 
 The result: every AI interaction starts from the leader's world. Decision speed compounds. The gap between them and generic-AI users widens every day.
 
