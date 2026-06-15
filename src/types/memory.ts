@@ -24,9 +24,19 @@ export interface UserMemoryFact {
   source_type: MemorySourceType;
   source_session_id?: string;
   is_current: boolean;
+  /**
+   * Brain importance, 1-10 (LLM-scored at creation, sharpened by decision
+   * outcomes via the credit loop). Facts at IMPORTANCE_LOAD_BEARING+ are
+   * hot-tiered - always kept in the model's context. Optional: pre-brain
+   * rows / older API shapes may omit it.
+   */
+  importance?: number;
   created_at: string;
   updated_at: string;
 }
+
+/** Hot-tier threshold the brain uses (memory-lifecycle promotes importance>=8). */
+export const IMPORTANCE_LOAD_BEARING = 8;
 
 export interface PendingVerification {
   id: string;

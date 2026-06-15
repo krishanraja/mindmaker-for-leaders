@@ -4,8 +4,10 @@
 import { useState, type ReactNode } from 'react';
 import { DecisionCard } from '@/components/track-record/DecisionCard';
 import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone';
+import { MemoryItemCard } from '@/components/memory/MemoryItemCard';
 import type { TrackRecordRow } from '@/types/track-record';
 import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
+import type { UserMemoryFact } from '@/types/memory';
 
 const noop = () => {};
 
@@ -68,6 +70,37 @@ const STONE_FIXTURES: { label: string; claim: DecisionClaim; evidence: DecisionE
   },
 ];
 
+function fact(p: Partial<UserMemoryFact> & { fact_label: string; fact_value: string; fact_category: UserMemoryFact['fact_category'] }): UserMemoryFact {
+  return {
+    id: p.fact_label, user_id: 'u', fact_key: p.fact_label, confidence_score: 0.85, is_high_stakes: false,
+    verification_status: 'verified', source_type: 'voice', is_current: true,
+    created_at: new Date(Date.now() - 3 * 86400000).toISOString(), updated_at: new Date().toISOString(), ...p,
+  };
+}
+
+const MEMORY_FIXTURES: { label: string; memory: UserMemoryFact }[] = [
+  {
+    label: 'load-bearing (importance 9), verified',
+    memory: fact({ fact_label: 'Primary objective', fact_value: 'Reach $1M ARR by end of next year, currently at $340K and growing ~12% MoM.', fact_category: 'objective', importance: 9 }),
+  },
+  {
+    label: 'load-bearing blocker (importance 8) - has the automate zap',
+    memory: fact({ fact_label: 'Biggest bottleneck', fact_value: 'Manual lead qualification eats ~10 hours a week of the founder\'s time.', fact_category: 'blocker', importance: 8, is_high_stakes: true }),
+  },
+  {
+    label: 'normal importance (6), inferred + low confidence',
+    memory: fact({ fact_label: 'Prefers async comms', fact_value: 'Tends to favour written updates over meetings.', fact_category: 'preference', importance: 6, verification_status: 'inferred', confidence_score: 0.55 }),
+  },
+  {
+    label: 'no importance (pre-brain row) - no load-bearing badge',
+    memory: fact({ fact_label: 'Company', fact_value: 'Runs a 12-person B2B SaaS in the compliance space.', fact_category: 'business', source_type: 'form' }),
+  },
+  {
+    label: 'load-bearing identity, long value (clamp) + context',
+    memory: fact({ fact_label: 'Role and mandate', fact_value: 'Founder and CEO, also acting head of product and de-facto head of sales until the next two hires land; owns the board relationship and the fundraising narrative end to end.', fact_category: 'identity', importance: 10, fact_context: 'said on the onboarding call' }),
+  },
+];
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-10">
@@ -107,6 +140,15 @@ export default function PreviewPage() {
                 onToggle={() => setOpen((o) => ({ ...o, [f.claim.id]: !o[f.claim.id] }))}
                 animated={false}
               />
+            </div>
+          ))}
+        </Section>
+
+        <Section title="Memory Web - MemoryItemCard">
+          {MEMORY_FIXTURES.map((f) => (
+            <div key={f.memory.id}>
+              <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
+              <MemoryItemCard memory={f.memory} onEdit={noop} onDelete={noop} animated={false} />
             </div>
           ))}
         </Section>

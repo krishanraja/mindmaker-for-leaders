@@ -8,11 +8,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pencil, Trash2, Check, AlertCircle, User, Building, Target, AlertTriangle, Settings, Zap } from 'lucide-react';
+import { Pencil, Trash2, Check, AlertCircle, User, Building, Target, AlertTriangle, Settings, Zap, Anchor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { haptics } from '@/lib/haptics';
-import type { UserMemoryFact, FactCategory } from '@/types/memory';
+import { IMPORTANCE_LOAD_BEARING, type UserMemoryFact, type FactCategory } from '@/types/memory';
 import type { SkillSeed } from '@/types/skill';
 
 interface MemoryItemCardProps {
@@ -21,6 +21,8 @@ interface MemoryItemCardProps {
   onDelete: (id: string) => void;
   onQuickVerify?: (id: string) => void;
   isDeleting?: boolean;
+  /** false renders at final state (no entrance fade) for the QC harness / static capture. */
+  animated?: boolean;
 }
 
 const categoryIcons: Record<FactCategory, React.ElementType> = {
@@ -52,6 +54,7 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
   onDelete,
   onQuickVerify,
   isDeleting = false,
+  animated = true,
 }) => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
@@ -87,6 +90,8 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
   const CategoryIcon = categoryIcons[memory.fact_category] || User;
   const categoryColor = categoryColors[memory.fact_category] || categoryColors.identity;
   const verificationBadge = verificationBadges[memory.verification_status] || verificationBadges.inferred;
+  // The brain hot-tiers these - they are always kept in the model's context.
+  const isLoadBearing = (memory.importance ?? 0) >= IMPORTANCE_LOAD_BEARING;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -103,7 +108,7 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 10 }}
+      initial={animated ? { opacity: 0, y: 10 } : false}
       animate={{ opacity: isDeleting ? 0.5 : 1, y: 0 }}
       exit={{ opacity: 0, x: -100 }}
       transition={{ duration: 0.2 }}
@@ -212,11 +217,22 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
 
       {/* Footer with badges */}
       <div className="flex items-center gap-2 flex-wrap">
+        {isLoadBearing && (
+          <Badge
+            variant="secondary"
+            className="text-xs bg-accent/10 text-accent"
+            title="Load-bearing - the brain keeps this in context"
+          >
+            <Anchor className="w-3 h-3 mr-1" />
+            Load-bearing
+          </Badge>
+        )}
+
         <Badge variant="secondary" className={cn("text-xs", verificationBadge.className)}>
           {memory.verification_status === 'verified' && <Check className="w-3 h-3 mr-1" />}
           {verificationBadge.label}
         </Badge>
-        
+
         <Badge variant="secondary" className="text-xs bg-secondary/50 text-muted-foreground">
           {memory.source_type}
         </Badge>
