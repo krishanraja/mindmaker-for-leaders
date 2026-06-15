@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-locates the card with its calibration helpers */
 import { motion } from 'framer-motion';
 import { Check, Clock, TrendingUp, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';

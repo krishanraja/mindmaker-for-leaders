@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-locates the stone with its verdict/source helpers */
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ExternalLink, GitFork, Lock } from 'lucide-react';

@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 // Fixture-render harness (dev/QC). Renders each surface's presentational components against
 // the RANGE of content they must hold - so every state can be screenshot + checked before it
 // reaches a user (no auth, no data round-trip). Not linked in nav; remove when the redesign is done.
