@@ -6,6 +6,7 @@ import {
   Radio,
   ArrowUpRight,
   Target,
+  TrendingUp,
   Settings,
   Shield,
   LogOut,
@@ -23,6 +24,7 @@ const navItems = [
   { path: '/context', search: '', icon: ArrowUpRight, label: 'Export', shortcut: 'X' },
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing', shortcut: 'B' },
   { path: '/goals', search: '', icon: Target, label: 'Goals', shortcut: 'G' },
+  { path: '/track-record', search: '', icon: TrendingUp, label: 'Track Record', shortcut: 'T' },
 ];
 
 const accountItems = [

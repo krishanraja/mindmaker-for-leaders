@@ -1,6 +1,6 @@
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Zap, Brain, Scale, Radio } from 'lucide-react';
+import { Home, Zap, Brain, Scale, Radio, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // "Decide" leads here over the old "Export" tab: pressure-testing a real call is
@@ -12,6 +12,7 @@ const navItems = [
   { path: '/memory', search: '', icon: Brain, label: 'Memory' },
   { path: '/decision', search: '', icon: Scale, label: 'Decide' },
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing' },
+  { path: '/track-record', search: '', icon: TrendingUp, label: 'Record' },
 ];
 
 export function BottomNav() {
