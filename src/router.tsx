@@ -42,6 +42,7 @@ const KitReading = lazyWithRetry(() => import('@/pages/kit/KitReading'))
 const BriefingPage = lazyWithRetry(() => import('@/pages/BriefingPage'))
 const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
 const Goals = lazyWithRetry(() => import('@/pages/Goals'))
+const TrackRecord = lazyWithRetry(() => import('@/pages/TrackRecord'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
@@ -128,6 +129,10 @@ export const router = createBrowserRouter([
       {
         path: '/goals',
         element: <LazyWrapper><RequireAuth><Goals /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/track-record',
+        element: <LazyWrapper><RequireAuth><TrackRecord /></RequireAuth></LazyWrapper>,
       },
       {
         path: '/enrich',
