@@ -40,11 +40,13 @@ export function ConsiderationStone({
   evidence,
   expanded,
   onToggle,
+  animated = true,
 }: {
   claim: DecisionClaim;
   evidence: DecisionEvidence[];
   expanded: boolean;
   onToggle: () => void;
+  animated?: boolean; // false renders at final state (QC harness / static capture)
 }) {
   const onlyYou = isOnlyYou(claim);
   const stone = STONE[claim.verdict] ?? STONE.pending;
@@ -61,7 +63,7 @@ export function ConsiderationStone({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 4 }}
+      initial={animated ? { opacity: 0, y: 4 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
       className={cn('rounded-xl border', onlyYou ? 'border-border bg-foreground/[0.03]' : stone.ring)}

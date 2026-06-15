@@ -37,15 +37,17 @@ export function DecisionCard({
   row,
   onRecord,
   busy,
+  animated = true,
 }: {
   row: TrackRecordRow;
   onRecord: (id: string, p: PlayedOut) => void;
   busy: boolean;
+  animated?: boolean; // false renders at final state (QC harness / static capture)
 }) {
   const match = calibrationMatch(row.breakpoint_call, row.breakpoint_verdict);
   return (
     <motion.div
-      initial={{ opacity: 0, y: 4 }}
+      initial={animated ? { opacity: 0, y: 4 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
       className="rounded-xl border border-border bg-card p-4"
