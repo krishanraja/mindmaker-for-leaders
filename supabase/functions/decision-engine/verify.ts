@@ -9,6 +9,7 @@
 
 import { adjudicateCall, parseLLMJson } from "./llm.ts";
 import { gatherEvidence } from "./retrievers.ts";
+import { governByCorroboration } from "../_shared/corroboration.ts";
 import type { ClaimVerdict, Evidence, ExtractedClaim } from "./types.ts";
 
 const ADJUDICATOR_SYSTEM = `You are the adjudication stage of a decision-verification engine.
@@ -95,11 +96,17 @@ Return JSON exactly:
       }
     }
 
+    // Corroboration governor: a confident "supported" needs >= 2 INDEPENDENT supporting
+    // sources (distinct domains). The LLM does not reliably enforce independence; this does.
+    const gov = governByCorroboration(verdict, confidence, evidence);
+    const baseRationale = (parsed.rationale ?? "").slice(0, gov.governed ? 460 : 600);
     return {
       verdict: {
-        verdict: verdict as ClaimVerdict["verdict"],
-        confidence,
-        rationale: (parsed.rationale ?? "").slice(0, 600) || "Adjudicated against retrieved evidence.",
+        verdict: gov.verdict as ClaimVerdict["verdict"],
+        confidence: gov.confidence,
+        rationale: gov.governed
+          ? `${baseRationale} (Only ${gov.independentSources} independent source${gov.independentSources === 1 ? "" : "s"} found - not enough to confirm.)`.trim()
+          : baseRationale || "Adjudicated against retrieved evidence.",
       },
       evidence,
     };
