@@ -44,6 +44,7 @@ const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
 const Goals = lazyWithRetry(() => import('@/pages/Goals'))
 const TrackRecord = lazyWithRetry(() => import('@/pages/TrackRecord'))
 const DecisionMap = lazyWithRetry(() => import('@/pages/DecisionMap'))
+const Preview = lazyWithRetry(() => import('@/pages/Preview'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
@@ -85,6 +86,11 @@ export const router = createBrowserRouter([
   {
     path: '/kit',
     element: <LazyWrapper><KitRedeem /></LazyWrapper>,
+  },
+  {
+    // Dev/QC fixture-render harness (public so it can be screenshot without auth). Unlinked.
+    path: '/preview',
+    element: <LazyWrapper><Preview /></LazyWrapper>,
   },
   {
     path: '/kit/me',
