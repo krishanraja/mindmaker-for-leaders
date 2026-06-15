@@ -7,6 +7,7 @@ import { useDevice } from '@/hooks/useDevice';
 import { useDecisionEngine } from '@/hooks/useDecisionEngine';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { ConsiderationStone, isOnlyYou } from '@/components/decision-map/ConsiderationStone';
+import { ContestLongPress } from '@/contexts/ContestProvider';
 
 const SUBTITLE = 'A bet, decomposed. Each consideration shows where the evidence stands - and where only you can answer.';
 
@@ -57,16 +58,20 @@ function MapBody({ caseId }: { caseId: string }) {
       {/* The spine */}
       <div className="mt-3 space-y-2">
         {claims.map((c) => (
-          <ConsiderationStone
+          <ContestLongPress
             key={c.id}
-            claim={c}
-            evidence={evidence.filter((e) => e.claim_id === c.id)}
-            expanded={openId === c.id}
-            onToggle={() => setOpenId(openId === c.id ? null : c.id)}
-          />
+            target={{ target_type: 'decision_claim', target_id: c.id, element: c.text, surface: '/decision-map' }}
+          >
+            <ConsiderationStone
+              claim={c}
+              evidence={evidence.filter((e) => e.claim_id === c.id)}
+              expanded={openId === c.id}
+              onToggle={() => setOpenId(openId === c.id ? null : c.id)}
+            />
+          </ContestLongPress>
         ))}
       </div>
-      {claims.length > 0 && <p className="mt-4 text-center text-[11px] text-muted-foreground">Tap a consideration to go deeper</p>}
+      {claims.length > 0 && <p className="mt-4 text-center text-[11px] text-muted-foreground">Tap to go deeper &middot; press &amp; hold to flag</p>}
     </div>
   );
 }
