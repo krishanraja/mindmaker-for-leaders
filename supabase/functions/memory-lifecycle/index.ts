@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     let promoted = 0;
     let demoted = 0;
     let archived = 0;
-    let superseded = 0;
+    const superseded = 0;
 
     // 1. Promote to hot: warm facts referenced 3+ times in last 7 days
     const { data: promoteTargets } = await supabase
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       .gte("last_referenced_at", sevenDaysAgo);
 
     if (promoteTargets?.length) {
-      const ids = promoteTargets.map((f: any) => f.id);
+      const ids = promoteTargets.map((f: { id: string }) => f.id);
       await supabase
         .from("user_memory")
         .update({ temperature: "hot" })
@@ -85,7 +85,29 @@ Deno.serve(async (req) => {
       promoted = ids.length;
     }
 
-    // 2. Demote hot -> warm: not referenced in 14 days
+    // 1b. Promote to hot: high-importance facts (the leader's core identity / bets) stay
+    // hot even without references - critical while the touch/reference loop is sparse, so
+    // the most load-bearing facts are always in context. (CTRL Brain delta 4.)
+    const { data: importantTargets } = await supabase
+      .from("user_memory")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("is_current", true)
+      .is("archived_at", null)
+      .in("temperature", ["warm", "cold"])
+      .gte("importance", 8);
+
+    if (importantTargets?.length) {
+      const ids = importantTargets.map((f: { id: string }) => f.id);
+      await supabase
+        .from("user_memory")
+        .update({ temperature: "hot" })
+        .in("id", ids);
+      promoted += ids.length;
+    }
+
+    // 2. Demote hot -> warm: not referenced in 14 days. High-importance facts are
+    // exempt (sticky hot) so they are never demoted purely for lack of recent touches.
     const { data: demoteHotTargets } = await supabase
       .from("user_memory")
       .select("id")
@@ -93,10 +115,11 @@ Deno.serve(async (req) => {
       .eq("is_current", true)
       .is("archived_at", null)
       .eq("temperature", "hot")
-      .lt("last_referenced_at", fourteenDaysAgo);
+      .lt("last_referenced_at", fourteenDaysAgo)
+      .or("importance.lt.8,importance.is.null");
 
     if (demoteHotTargets?.length) {
-      const ids = demoteHotTargets.map((f: any) => f.id);
+      const ids = demoteHotTargets.map((f: { id: string }) => f.id);
       await supabase
         .from("user_memory")
         .update({ temperature: "warm" })
@@ -112,10 +135,11 @@ Deno.serve(async (req) => {
       .eq("is_current", true)
       .is("archived_at", null)
       .eq("temperature", "warm")
-      .lt("last_referenced_at", thirtyDaysAgo);
+      .lt("last_referenced_at", thirtyDaysAgo)
+      .or("importance.lt.8,importance.is.null");
 
     if (demoteWarmTargets?.length) {
-      const ids = demoteWarmTargets.map((f: any) => f.id);
+      const ids = demoteWarmTargets.map((f: { id: string }) => f.id);
       await supabase
         .from("user_memory")
         .update({ temperature: "cold" })
@@ -134,7 +158,7 @@ Deno.serve(async (req) => {
       .lt("last_referenced_at", ninetyDaysAgo);
 
     if (archiveTargets?.length) {
-      const ids = archiveTargets.map((f: any) => f.id);
+      const ids = archiveTargets.map((f: { id: string }) => f.id);
       await supabase
         .from("user_memory")
         .update({ archived_at: now.toISOString() })
@@ -166,8 +190,8 @@ Deno.serve(async (req) => {
       .eq("is_current", true)
       .is("archived_at", null);
 
-    const hotTokens = (hotFacts || []).reduce((acc: number, f: any) => acc + Math.ceil((f.fact_value?.length || 0) / 4), 0);
-    const warmTokens = (warmFacts || []).reduce((acc: number, f: any) => acc + Math.ceil((f.fact_value?.length || 0) / 4), 0);
+    const hotTokens = (hotFacts || []).reduce((acc: number, f: { fact_value?: string | null }) => acc + Math.ceil((f.fact_value?.length || 0) / 4), 0);
+    const warmTokens = (warmFacts || []).reduce((acc: number, f: { fact_value?: string | null }) => acc + Math.ceil((f.fact_value?.length || 0) / 4), 0);
 
     // Upsert budget
     await supabase
@@ -203,7 +227,7 @@ Deno.serve(async (req) => {
         await supabase
           .from("user_memory")
           .update({ temperature: "warm" })
-          .in("id", lowestHot.map((f: any) => f.id));
+          .in("id", lowestHot.map((f: { id: string }) => f.id));
         demoted += lowestHot.length;
       }
     }
