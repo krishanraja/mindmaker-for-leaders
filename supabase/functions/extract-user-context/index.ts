@@ -453,7 +453,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
       // === SEMANTIC DEDUPLICATION ===
       // Use embeddings to detect duplicate or contradictory facts even when
       // fact_key strings differ (e.g. "role" vs "job_title" for the same info).
-      let semanticDuplicates = new Map<string, { existingId: string; existingKey: string; similarity: number }>();
+      const semanticDuplicates = new Map<string, { existingId: string; existingKey: string; similarity: number }>();
 
       // Only run embedding-based dedup for new facts (keys not already in DB)
       const newFacts = extractedFacts.filter(f => !existingKeys.has(f.fact_key));
