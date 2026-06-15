@@ -5,6 +5,7 @@ import { SettingsSheetProvider } from '@/contexts/SettingsSheetContext'
 import { GlobalFAB } from '@/components/mobile/GlobalFAB'
 import { SettingsSheet } from '@/components/settings/SettingsSheet'
 import { CommandPaletteProvider } from '@/components/layout/CommandPalette'
+import { ContestProvider } from '@/contexts/ContestProvider'
 
 function AuthedChrome() {
   const { isAuthenticated } = useAuth()
@@ -24,8 +25,10 @@ export function AuthedLayoutRoute() {
   return (
     <SettingsSheetProvider>
       <CommandPaletteProvider>
-        <Outlet />
-        <AuthedChrome />
+        <ContestProvider>
+          <Outlet />
+          <AuthedChrome />
+        </ContestProvider>
       </CommandPaletteProvider>
     </SettingsSheetProvider>
   )

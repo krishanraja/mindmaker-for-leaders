@@ -5,9 +5,11 @@ import { useState, type ReactNode } from 'react';
 import { DecisionCard } from '@/components/track-record/DecisionCard';
 import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone';
 import { MemoryItemCard } from '@/components/memory/MemoryItemCard';
+import { ContestPanel } from '@/components/contest/ContestPanel';
 import type { TrackRecordRow } from '@/types/track-record';
 import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
 import type { UserMemoryFact } from '@/types/memory';
+import type { ContestKind, ContestResult, ContestTarget } from '@/types/contest';
 
 const noop = () => {};
 
@@ -101,6 +103,14 @@ const MEMORY_FIXTURES: { label: string; memory: UserMemoryFact }[] = [
   },
 ];
 
+const CONTEST_TARGET: ContestTarget = { target_type: 'decision_claim', target_id: 'x', element: '~40% cheaper to rent than build', surface: '/cockpit' };
+const CONTEST_FIXTURES: { label: string; target: ContestTarget; kind: ContestKind | null; note: string; result: ContestResult | null }[] = [
+  { label: 'pick a kind (nothing selected yet)', target: CONTEST_TARGET, kind: null, note: '', result: null },
+  { label: 'factual selected + a note', target: CONTEST_TARGET, kind: 'factual', note: 'This looks too high vs what vendors actually quote us.', result: null },
+  { label: 'sent - factual HONORED (fed the brain)', target: CONTEST_TARGET, kind: 'factual', note: '', result: { report_id: 'r1', honored: true, verdict: 'contested' } },
+  { label: 'sent - visual bug (operational, not honored)', target: { target_type: 'ui_element', element: 'bet row icon', surface: '/cockpit' }, kind: 'visual', note: '', result: { report_id: 'r2', honored: false, verdict: null } },
+];
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-10">
@@ -149,6 +159,27 @@ export default function PreviewPage() {
             <div key={f.memory.id}>
               <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
               <MemoryItemCard memory={f.memory} onEdit={noop} onDelete={noop} animated={false} />
+            </div>
+          ))}
+        </Section>
+
+        <Section title="Contest this - ContestPanel">
+          {CONTEST_FIXTURES.map((f) => (
+            <div key={f.label}>
+              <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
+              <div className="overflow-hidden rounded-2xl border border-border bg-background">
+                <ContestPanel
+                  target={f.target}
+                  selectedKind={f.kind}
+                  onSelectKind={noop}
+                  note={f.note}
+                  onNoteChange={noop}
+                  onSubmit={noop}
+                  result={f.result}
+                  onClose={noop}
+                  animated={false}
+                />
+              </div>
             </div>
           ))}
         </Section>
