@@ -85,7 +85,29 @@ Deno.serve(async (req) => {
       promoted = ids.length;
     }
 
-    // 2. Demote hot -> warm: not referenced in 14 days
+    // 1b. Promote to hot: high-importance facts (the leader's core identity / bets) stay
+    // hot even without references - critical while the touch/reference loop is sparse, so
+    // the most load-bearing facts are always in context. (CTRL Brain delta 4.)
+    const { data: importantTargets } = await supabase
+      .from("user_memory")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("is_current", true)
+      .is("archived_at", null)
+      .in("temperature", ["warm", "cold"])
+      .gte("importance", 8);
+
+    if (importantTargets?.length) {
+      const ids = importantTargets.map((f: any) => f.id);
+      await supabase
+        .from("user_memory")
+        .update({ temperature: "hot" })
+        .in("id", ids);
+      promoted += ids.length;
+    }
+
+    // 2. Demote hot -> warm: not referenced in 14 days. High-importance facts are
+    // exempt (sticky hot) so they are never demoted purely for lack of recent touches.
     const { data: demoteHotTargets } = await supabase
       .from("user_memory")
       .select("id")
@@ -93,7 +115,8 @@ Deno.serve(async (req) => {
       .eq("is_current", true)
       .is("archived_at", null)
       .eq("temperature", "hot")
-      .lt("last_referenced_at", fourteenDaysAgo);
+      .lt("last_referenced_at", fourteenDaysAgo)
+      .or("importance.lt.8,importance.is.null");
 
     if (demoteHotTargets?.length) {
       const ids = demoteHotTargets.map((f: any) => f.id);
@@ -112,7 +135,8 @@ Deno.serve(async (req) => {
       .eq("is_current", true)
       .is("archived_at", null)
       .eq("temperature", "warm")
-      .lt("last_referenced_at", thirtyDaysAgo);
+      .lt("last_referenced_at", thirtyDaysAgo)
+      .or("importance.lt.8,importance.is.null");
 
     if (demoteWarmTargets?.length) {
       const ids = demoteWarmTargets.map((f: any) => f.id);
