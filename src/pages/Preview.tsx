@@ -2,6 +2,7 @@
 // the RANGE of content they must hold - so every state can be screenshot + checked before it
 // reaches a user (no auth, no data round-trip). Not linked in nav; remove when the redesign is done.
 import { useState, type ReactNode } from 'react';
+import { MotionConfig } from 'framer-motion';
 import { DecisionCard } from '@/components/track-record/DecisionCard';
 import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone';
 import type { TrackRecordRow } from '@/types/track-record';
@@ -80,6 +81,9 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export default function PreviewPage() {
   const [open, setOpen] = useState<Record<string, boolean>>({ c1: true, c4: true });
   return (
+    // reducedMotion 'always' so entrance animations settle instantly - the surfaces render at
+    // their final state for a clean static screenshot (they still animate normally in the app).
+    <MotionConfig reducedMotion="always">
     <div className="min-h-screen bg-background px-4 py-8">
       <div className="mx-auto w-full max-w-md">
         <h1 className="mb-1 text-lg font-semibold text-foreground">Surface fixtures</h1>
@@ -109,5 +113,6 @@ export default function PreviewPage() {
         </Section>
       </div>
     </div>
+    </MotionConfig>
   );
 }
