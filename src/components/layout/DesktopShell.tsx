@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   Target,
   TrendingUp,
+  Map as MapIcon,
   Settings,
   Shield,
   LogOut,
@@ -25,6 +26,7 @@ const navItems = [
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing', shortcut: 'B' },
   { path: '/goals', search: '', icon: Target, label: 'Goals', shortcut: 'G' },
   { path: '/track-record', search: '', icon: TrendingUp, label: 'Track Record', shortcut: 'T' },
+  { path: '/decision-map', search: '', icon: MapIcon, label: 'Decision Map', shortcut: 'D' },
 ];
 
 const accountItems = [
