@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { runGuardrails, type IncomingFact } from '../_shared/fact-guardrails.ts';
 import { fetchWithTimeout, ProviderUnavailableError } from '../_shared/with-timeout.ts';
 import { encryptFactContent } from '../_shared/memory-crypto.ts';
+import { resolveContradiction } from '../_shared/contradiction.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -290,7 +291,7 @@ Return a JSON object with a "results" array. Each entry has:
         });
         const { data: existingForContradiction } = await supabaseForContradictions
           .from('user_memory')
-          .select('fact_key, fact_value, fact_category')
+          .select('id, fact_key, fact_value, fact_category')
           .eq('user_id', userId)
           .eq('is_current', true)
           .eq('verification_status', 'inferred');
@@ -302,6 +303,12 @@ Return a JSON object with a "results" array. Each entry has:
             const list = existingByCategory.get(f.fact_category) || [];
             list.push({ fact_key: f.fact_key, fact_value: f.fact_value });
             existingByCategory.set(f.fact_category, list);
+          }
+
+          // fact_key -> id lookup for the existing facts (to supersede the loser on recency-wins)
+          const existingFactIdByKey = new Map<string, string>();
+          for (const f of existingForContradiction) {
+            if (!existingFactIdByKey.has(f.fact_key)) existingFactIdByKey.set(f.fact_key, f.id);
           }
 
           // Check each new fact against existing facts in the same category
@@ -374,25 +381,52 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
 
               if (contradictions.length > 0) {
                 console.log(`Found ${contradictions.length} contradictions:`);
-                for (const c of contradictions) {
-                  console.log(`  "${c.new_fact}" contradicts "${c.existing_fact}": ${c.explanation}`);
+                // Resolve each contradiction by the locked policy (resolveContradiction):
+                // mutable, low-stakes -> recency wins (supersede the old fact);
+                // high-stakes / identity / business -> ask user (flag the new fact).
+                const flagKeys = new Set<string>();
+                const retireIds = new Set<string>();
+                const events: Record<string, unknown>[] = [];
+                for (const c of contradictions as { new_fact: string; existing_fact: string; explanation?: string }[]) {
+                  const newKey = String(c.new_fact || '').split(':')[0].trim();
+                  const existingKey = String(c.existing_fact || '').split(':')[0].trim();
+                  const newFact = extractedFacts.find(f => f.fact_key === newKey);
+                  if (!newFact) continue;
+                  const existingId = existingFactIdByKey.get(existingKey) ?? null;
+                  const res = resolveContradiction(newFact.fact_category, newFact.is_high_stakes);
+                  console.log(`  "${c.new_fact}" vs "${c.existing_fact}" -> ${res.strategy}`);
+                  if (res.flagNew) flagKeys.add(newKey);
+                  if (res.retireExisting && existingId) retireIds.add(existingId);
+                  events.push({
+                    user_id: userId,
+                    fact_id: null,
+                    kind: 'contradiction_resolved',
+                    strategy: res.strategy,
+                    related_fact_id: existingId,
+                    payload: { new_fact_key: newKey, existing_fact_key: existingKey, explanation: c.explanation ?? null },
+                  });
                 }
-                // For now, flag contradicting new facts by reducing confidence
-                // and marking them as high_stakes so user can verify
-                const contradictingNewFacts = new Set(
-                  contradictions.map((c: { new_fact: string }) => c.new_fact.split(':')[0].trim())
-                );
-                extractedFacts = extractedFacts.map(fact => {
-                  if (contradictingNewFacts.has(fact.fact_key)) {
-                    console.log(`Flagging "${fact.fact_key}" as high-stakes due to contradiction`);
-                    return {
-                      ...fact,
-                      confidence_score: Math.max(fact.confidence_score - 0.2, 0.3),
-                      is_high_stakes: true,
-                    };
-                  }
-                  return fact;
-                });
+                // ask-user: flag the new facts high-stakes for verification
+                if (flagKeys.size > 0) {
+                  extractedFacts = extractedFacts.map(fact =>
+                    flagKeys.has(fact.fact_key)
+                      ? { ...fact, confidence_score: Math.max(fact.confidence_score - 0.2, 0.3), is_high_stakes: true }
+                      : fact
+                  );
+                }
+                // recency-wins: supersede the contradicted existing facts
+                // (the close_validity_on_retire trigger closes their valid_until).
+                if (retireIds.size > 0) {
+                  await supabaseForContradictions
+                    .from('user_memory')
+                    .update({ is_current: false })
+                    .in('id', Array.from(retireIds))
+                    .eq('user_id', userId);
+                }
+                // record the resolutions (audit + Calibration Mirror feed)
+                if (events.length > 0) {
+                  await supabaseForContradictions.from('memory_events').insert(events);
+                }
               }
             }
           }
