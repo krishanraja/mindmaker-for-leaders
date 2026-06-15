@@ -12,7 +12,7 @@ import { Pencil, Trash2, Check, AlertCircle, User, Building, Target, AlertTriang
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { haptics } from '@/lib/haptics';
-import { IMPORTANCE_LOAD_BEARING, type UserMemoryFact, type FactCategory } from '@/types/memory';
+import { IMPORTANCE_HOT_TIER, type UserMemoryFact, type FactCategory } from '@/types/memory';
 import type { SkillSeed } from '@/types/skill';
 
 interface MemoryItemCardProps {
@@ -90,8 +90,10 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
   const CategoryIcon = categoryIcons[memory.fact_category] || User;
   const categoryColor = categoryColors[memory.fact_category] || categoryColors.identity;
   const verificationBadge = verificationBadges[memory.verification_status] || verificationBadges.inferred;
-  // The brain hot-tiers these - they are always kept in the model's context.
-  const isLoadBearing = (memory.importance ?? 0) >= IMPORTANCE_LOAD_BEARING;
+  // Hot-tier facts: the brain always keeps these loaded in the model's context.
+  // Behavioural claim ("kept in context"), never a truth claim ("this is important")
+  // - importance is mostly a day-1 estimate until an outcome sharpens it.
+  const isCoreContext = (memory.importance ?? 0) >= IMPORTANCE_HOT_TIER;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -217,14 +219,14 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
 
       {/* Footer with badges */}
       <div className="flex items-center gap-2 flex-wrap">
-        {isLoadBearing && (
+        {isCoreContext && (
           <Badge
             variant="secondary"
             className="text-xs bg-accent/10 text-accent"
-            title="Load-bearing - the brain keeps this in context"
+            title="Core context - the brain keeps this fact loaded in every session"
           >
             <Anchor className="w-3 h-3 mr-1" />
-            Load-bearing
+            Core context
           </Badge>
         )}
 

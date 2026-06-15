@@ -80,23 +80,23 @@ function fact(p: Partial<UserMemoryFact> & { fact_label: string; fact_value: str
 
 const MEMORY_FIXTURES: { label: string; memory: UserMemoryFact }[] = [
   {
-    label: 'load-bearing (importance 9), verified',
+    label: 'core context (importance 9), verified',
     memory: fact({ fact_label: 'Primary objective', fact_value: 'Reach $1M ARR by end of next year, currently at $340K and growing ~12% MoM.', fact_category: 'objective', importance: 9 }),
   },
   {
-    label: 'load-bearing blocker (importance 8) - has the automate zap',
+    label: 'core context blocker (importance 8) - has the automate zap',
     memory: fact({ fact_label: 'Biggest bottleneck', fact_value: 'Manual lead qualification eats ~10 hours a week of the founder\'s time.', fact_category: 'blocker', importance: 8, is_high_stakes: true }),
   },
   {
-    label: 'normal importance (6), inferred + low confidence',
+    label: 'below threshold (importance 6), inferred + low confidence - no marker',
     memory: fact({ fact_label: 'Prefers async comms', fact_value: 'Tends to favour written updates over meetings.', fact_category: 'preference', importance: 6, verification_status: 'inferred', confidence_score: 0.55 }),
   },
   {
-    label: 'no importance (pre-brain row) - no load-bearing badge',
+    label: 'no importance (pre-brain row) - no marker',
     memory: fact({ fact_label: 'Company', fact_value: 'Runs a 12-person B2B SaaS in the compliance space.', fact_category: 'business', source_type: 'form' }),
   },
   {
-    label: 'load-bearing identity, long value (clamp) + context',
+    label: 'core context identity, long value (clamp) + context',
     memory: fact({ fact_label: 'Role and mandate', fact_value: 'Founder and CEO, also acting head of product and de-facto head of sales until the next two hires land; owns the board relationship and the fundraising narrative end to end.', fact_category: 'identity', importance: 10, fact_context: 'said on the onboarding call' }),
   },
 ];
