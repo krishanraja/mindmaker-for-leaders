@@ -17,6 +17,7 @@ interface ExtractedFact {
   fact_context: string;
   confidence_score: number;
   is_high_stakes: boolean;
+  importance: number;
 }
 
 const EXTRACTION_PROMPT = `You are an expert at extracting structured facts about business leaders from their written or spoken input.
@@ -53,6 +54,7 @@ For each fact you extract:
 - fact_context: exact quote or paraphrase supporting the fact
 - confidence_score: 0.0-1.0 (conservative)
 - is_high_stakes: true for role, company name, main objective
+- importance: integer 1-10, how load-bearing this fact is to who they are and their biggest decisions (10 = defines them or a core bet they are making; 6-7 = a real strategic fact; 4-5 = useful context; 1-2 = trivial). Be discriminating; do NOT cluster everything at 5.
 
 RULES:
 - Only extract facts actually mentioned or strongly implied
@@ -62,7 +64,7 @@ RULES:
 
 Return a JSON object with two arrays:
 {
-  "facts": [ {fact_key, fact_category, fact_label, fact_value, fact_context, confidence_score, is_high_stakes}, ... ],
+  "facts": [ {fact_key, fact_category, fact_label, fact_value, fact_context, confidence_score, is_high_stakes, importance}, ... ],
   "rejected": [ {candidate: string, reason: string}, ... ]
 }
 If nothing extractable, return {"facts": [], "rejected": []}.`;
@@ -451,7 +453,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
       // === SEMANTIC DEDUPLICATION ===
       // Use embeddings to detect duplicate or contradictory facts even when
       // fact_key strings differ (e.g. "role" vs "job_title" for the same info).
-      let semanticDuplicates = new Map<string, { existingId: string; existingKey: string; similarity: number }>();
+      const semanticDuplicates = new Map<string, { existingId: string; existingKey: string; similarity: number }>();
 
       // Only run embedding-based dedup for new facts (keys not already in DB)
       const newFacts = extractedFacts.filter(f => !existingKeys.has(f.fact_key));
@@ -547,6 +549,11 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
             encryption_version: 1,
             confidence_score: fact.confidence_score,
             is_high_stakes: fact.is_high_stakes,
+            // LLM-assigned poignancy (1-10), written once at creation; clamped with a
+            // category/high-stakes fallback if the model omits it. (CTRL Brain delta 1.)
+            importance: Math.max(1, Math.min(10, Math.round(
+              Number.isFinite(fact.importance) ? fact.importance : (fact.is_high_stakes ? 7 : 5),
+            ))),
             // ALL new extractions are inferred; only an explicit user action
             // (update-fact-verification) may promote to 'verified'.
             verification_status: 'inferred' as const,
