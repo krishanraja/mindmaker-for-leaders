@@ -2,7 +2,6 @@
 // the RANGE of content they must hold - so every state can be screenshot + checked before it
 // reaches a user (no auth, no data round-trip). Not linked in nav; remove when the redesign is done.
 import { useState, type ReactNode } from 'react';
-import { MotionConfig } from 'framer-motion';
 import { DecisionCard } from '@/components/track-record/DecisionCard';
 import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone';
 import type { TrackRecordRow } from '@/types/track-record';
@@ -81,9 +80,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export default function PreviewPage() {
   const [open, setOpen] = useState<Record<string, boolean>>({ c1: true, c4: true });
   return (
-    // reducedMotion 'always' so entrance animations settle instantly - the surfaces render at
-    // their final state for a clean static screenshot (they still animate normally in the app).
-    <MotionConfig reducedMotion="always">
+    // animated={false} renders each component at its final state (no entrance fade) so the
+    // static screenshot is clean - headless Chrome pauses framer-motion entrance animations.
     <div className="min-h-screen bg-background px-4 py-8">
       <div className="mx-auto w-full max-w-md">
         <h1 className="mb-1 text-lg font-semibold text-foreground">Surface fixtures</h1>
@@ -93,7 +91,7 @@ export default function PreviewPage() {
           {TRACK_FIXTURES.map((f) => (
             <div key={f.row.decision_id}>
               <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
-              <DecisionCard row={f.row} onRecord={noop} busy={false} />
+              <DecisionCard row={f.row} onRecord={noop} busy={false} animated={false} />
             </div>
           ))}
         </Section>
@@ -107,12 +105,12 @@ export default function PreviewPage() {
                 evidence={f.evidence}
                 expanded={!!open[f.claim.id]}
                 onToggle={() => setOpen((o) => ({ ...o, [f.claim.id]: !o[f.claim.id] }))}
+                animated={false}
               />
             </div>
           ))}
         </Section>
       </div>
     </div>
-    </MotionConfig>
   );
 }
