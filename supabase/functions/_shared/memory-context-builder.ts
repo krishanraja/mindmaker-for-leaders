@@ -519,6 +519,7 @@ export async function buildMemoryContext(
     .eq("is_current", true)
     .is("archived_at", null)
     .eq("temperature", "hot")
+    .order("importance", { ascending: false, nullsFirst: false })
     .order("last_referenced_at", { ascending: false });
 
   // Fetch warm facts (if requested)
@@ -531,7 +532,8 @@ export async function buildMemoryContext(
       .eq("is_current", true)
       .is("archived_at", null)
       .eq("temperature", "warm")
-      .order("last_referenced_at", { ascending: false });
+      .order("importance", { ascending: false, nullsFirst: false })
+    .order("last_referenced_at", { ascending: false });
     warmFacts = (data || []) as Fact[];
   }
 

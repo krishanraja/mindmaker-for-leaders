@@ -92,6 +92,10 @@ export async function getUserContext(
       .eq("user_id", userId)
       .eq("is_current", true)
       .in("fact_category", ["identity", "business", "objective", "blocker", "preference"])
+      // Importance-first so the most load-bearing facts survive the budget cap (CTRL Brain
+      // delta 4); confidence breaks ties. (Query-relevance/cosine has no consumer yet - there
+      // is no query-time memory search - so the third signal is deferred to that feature.)
+      .order("importance", { ascending: false, nullsFirst: false })
       .order("confidence_score", { ascending: false })
       .limit(40);
 
