@@ -9,6 +9,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { IntakeAnswers, KitTool } from "@/content/kits";
+import type { OrgChart } from "@/components/kit/OrgChartView";
 
 /* ------------------------------------------------------------------ */
 /* Row shapes                                                           */
@@ -231,6 +232,51 @@ export function parseKitMap(body: string | null): KitMap | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Parse an org-chart artifact body (the 'agentic-org-chart' json artifact,
+ * flagged metadata.render === "orgchart") into the OrgChartView contract.
+ * Returns null when the body is missing or not a usable chart, so KitHome can
+ * skip the hero gracefully.
+ */
+export function parseOrgChart(body: string | null): OrgChart | null {
+  try {
+    const parsed = JSON.parse(body ?? "") as Partial<OrgChart>;
+    if (
+      parsed &&
+      (parsed.pathway === "self" || parsed.pathway === "biz") &&
+      Array.isArray(parsed.boxes) &&
+      parsed.boxes.length > 0
+    ) {
+      return {
+        businessName: typeof parsed.businessName === "string" ? parsed.businessName : "",
+        pathway: parsed.pathway,
+        leadershipLabel:
+          typeof parsed.leadershipLabel === "string" ? parsed.leadershipLabel : "Leadership",
+        boxes: parsed.boxes.map((b) => ({
+          id: String(b.id ?? b.label ?? ""),
+          label: String(b.label ?? ""),
+          tag:
+            b.tag === "led" || b.tag === "assisted" || b.tag === "excluded" ? b.tag : null,
+          agentRole: typeof b.agentRole === "string" ? b.agentRole : undefined,
+          agentDesc: typeof b.agentDesc === "string" ? b.agentDesc : undefined,
+          humanRole: typeof b.humanRole === "string" ? b.humanRole : undefined,
+          isStart: Boolean(b.isStart),
+        })),
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** True when an artifact row is an org-chart, to render OrgChartView for it. */
+export function isOrgChartArtifact(artifact: KitArtifactRow | undefined): boolean {
+  if (!artifact) return false;
+  const meta = artifact.metadata as { render?: unknown } | null;
+  return meta?.render === "orgchart" || artifact.artifact_id === "agentic-org-chart";
 }
 
 export interface KitPlanDay {

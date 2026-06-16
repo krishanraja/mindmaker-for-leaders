@@ -365,6 +365,27 @@ async function processBuild(args: ProcessArgs): Promise<void> {
     await flushStatuses();
   }
 
+  // 4b. The org chart (one structured-JSON call). Stored as a json artifact
+  //     flagged metadata.render = "orgchart" so KitHome renders OrgChartView.
+  //     Deterministic honest fallback (spec.render) when the call fails or the
+  //     payload is unusable, so the hero artifact is never empty.
+  const chartSpec = targets.find((t) => t.strategy === "llm_chart");
+  if (chartSpec) {
+    statuses[chartSpec.id] = { status: "running" };
+    await flushStatuses();
+    try {
+      const chartJson = await runChart(args, ctx, chartSpec);
+      const id = await persistArtifact(args, chartSpec, {
+        body: chartJson,
+        metadata: { render: "orgchart" },
+      });
+      statuses[chartSpec.id] = { status: "done", kit_artifact_id: id };
+    } catch (err) {
+      statuses[chartSpec.id] = { status: "failed", error: friendlyError(err) };
+    }
+    await flushStatuses();
+  }
+
   // 5. Batched polish call: one request covers every llm_polish artifact.
   const polishSpecs = targets.filter((t) => t.strategy === "llm_polish");
   if (polishSpecs.length > 0) {
@@ -767,6 +788,97 @@ async function runPlan(
   } catch {
     return fallback;
   }
+}
+
+/**
+ * The org-chart call. One structured-JSON request returning the OrgChartView
+ * contract. Validated structurally here (preset-agnostic); on any failure or
+ * malformed payload it falls back to the preset's deterministic honest chart
+ * (spec.render), so the hero artifact is never empty and never fabricated.
+ */
+async function runChart(
+  args: ProcessArgs,
+  ctx: ArtifactBuildContext,
+  spec: ArtifactSpec,
+): Promise<string> {
+  const { serviceClient, userId } = args;
+  const fallback = spec.render ? spec.render(ctx) : "";
+  if (!spec.buildPrompt) {
+    if (!fallback) throw new Error("chart artifact has no buildPrompt and no fallback render()");
+    return fallback;
+  }
+
+  try {
+    const aiResponse = await callLLMWithFallback(
+      {
+        messages: [
+          {
+            role: "system",
+            content:
+              "You author an honest agentic org chart as strict JSON for a named student. Use only what their answers support; never invent boxes, roles, metrics, or claims. Keep box labels exactly as given. No em dashes anywhere (use hyphens or commas). Return JSON only.",
+          },
+          { role: "user", content: spec.buildPrompt(ctx) },
+        ],
+        model: selectModel("complex"),
+        temperature: 0.3,
+        max_tokens: 2000,
+        response_format: { type: "json_object" },
+      },
+      { useCache: false },
+    );
+    await recordAiUsage(serviceClient, {
+      userId,
+      functionName: "kit-compose",
+      provider: providerFromModel(aiResponse.model),
+      model: aiResponse.model,
+      purpose: "kit-chart",
+      promptTokens: aiResponse.usage?.prompt_tokens,
+      completionTokens: aiResponse.usage?.completion_tokens,
+      totalTokens: aiResponse.usage?.total_tokens,
+      status: "ok",
+    });
+    const parsed = JSON.parse(aiResponse.content || "{}") as Record<string, unknown>;
+    if (isUsableChart(parsed)) {
+      return JSON.stringify(sanitizeChart(parsed));
+    }
+    return fallback || JSON.stringify(parsed);
+  } catch {
+    if (!fallback) throw new Error("chart compose failed and no fallback render()");
+    return fallback;
+  }
+}
+
+/** Structural gate: a chart object with a non-empty array of labelled boxes. */
+function isUsableChart(raw: unknown): raw is Record<string, unknown> {
+  if (!raw || typeof raw !== "object") return false;
+  const boxes = (raw as { boxes?: unknown }).boxes;
+  if (!Array.isArray(boxes) || boxes.length === 0) return false;
+  return boxes.every(
+    (b) => b && typeof b === "object" && typeof (b as { label?: unknown }).label === "string",
+  );
+}
+
+/** Drop any em dashes the model slipped in (house rule), shallow over strings. */
+function sanitizeChart(raw: Record<string, unknown>): Record<string, unknown> {
+  // Strip em dashes the model may slip in; the house rule is no em dashes
+  // anywhere, and the source itself must not contain a literal one, so the
+  // char is built from its code point (U+2014) rather than written inline.
+  const emDash = new RegExp(String.fromCharCode(0x2014), "g");
+  const fix = (v: unknown): unknown =>
+    typeof v === "string" ? v.replace(emDash, "-") : v;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (Array.isArray(v)) {
+      out[k] = v.map((item) =>
+        item && typeof item === "object"
+          ? Object.fromEntries(Object.entries(item as Record<string, unknown>).map(([ik, iv]) => [ik, fix(iv)]))
+          : fix(item),
+      );
+    } else {
+      out[k] = fix(v);
+    }
+  }
+  return out;
 }
 
 /**

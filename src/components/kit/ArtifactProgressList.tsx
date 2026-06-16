@@ -63,7 +63,7 @@ export function ArtifactProgressList({
   const done = entries.filter((e) => e.status === "done").length;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-5 kit-shadow-sm">
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-sm font-semibold">Building your kit</h2>
         <span className="text-xs tabular-nums text-muted-foreground">

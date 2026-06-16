@@ -89,7 +89,7 @@ export function SendPackCard({
   };
 
   return (
-    <div className={cn("space-y-3 rounded-2xl border border-border bg-card p-5", className)}>
+    <div className={cn("space-y-3 rounded-2xl border border-border bg-card p-5 kit-shadow-sm", className)}>
       <div className="flex items-center gap-2">
         <Mail className="h-4 w-4 text-accent" />
         <h3 className="text-sm font-semibold">Send my pack</h3>

@@ -38,12 +38,12 @@ export default function KitReading() {
 
         {page ? (
           <article className="space-y-4">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{page.title}</h1>
+            <h1 className="kit-headline text-3xl sm:text-4xl">{page.title}</h1>
             <div className="space-y-4">{renderMarkdownish(page.markdown)}</div>
           </article>
         ) : (
           <div className="space-y-3 py-12 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">Page not found</h1>
+            <h1 className="kit-headline text-2xl">page not found</h1>
             <p className="text-sm text-muted-foreground">
               This page is not part of your kit. Head back and pick a reading link from there.
             </p>
