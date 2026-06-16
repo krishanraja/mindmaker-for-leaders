@@ -6,10 +6,12 @@ import { DecisionCard } from '@/components/track-record/DecisionCard';
 import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone';
 import { MemoryItemCard } from '@/components/memory/MemoryItemCard';
 import { ContestPanel } from '@/components/contest/ContestPanel';
+import { CockpitHome } from '@/components/cockpit/CockpitHome';
 import type { TrackRecordRow } from '@/types/track-record';
 import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
 import type { UserMemoryFact } from '@/types/memory';
 import type { ContestKind, ContestResult, ContestTarget } from '@/types/contest';
+import type { CockpitData } from '@/types/cockpit';
 
 const noop = () => {};
 
@@ -111,6 +113,31 @@ const CONTEST_FIXTURES: { label: string; target: ContestTarget; kind: ContestKin
   { label: 'sent - visual bug (operational, not honored)', target: { target_type: 'ui_element', element: 'bet row icon', surface: '/cockpit' }, kind: 'visual', note: '', result: { report_id: 'r2', honored: false, verdict: null } },
 ];
 
+const COCKPIT_BETS: CockpitData['bets'] = [
+  { id: 'b1', question: 'Buy the agent stack, or build our own?', state: 'countered', freshness: 'cost moved 6d ago' },
+  { id: 'b2', question: 'Move customer support to an AI agent first?', state: 'explore', freshness: 'new model landed 2d ago' },
+  { id: 'b3', question: 'Build the data moat now, or wait?', state: 'quiet', freshness: 'no fresh signal' },
+  { id: 'b4', question: 'Replatform onto the new agent framework?', state: 'quiet', freshness: 'no fresh signal' },
+];
+const COCKPIT_FIXTURES: { label: string; data: CockpitData }[] = [
+  {
+    label: 'signal hero WITH magnitude (number earns it, kind-marked) + board',
+    data: { hero: { kind: 'signal', category: 'PRICING', headline: 'Renting just pulled clear on cost.', magnitude: { value: '~40%', label: 'cheaper to rent than build', kind: 'est.' }, betId: 'b1', betQuestion: 'Buy the agent stack, or build our own?', betState: 'countered' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 },
+  },
+  {
+    label: 'signal hero NO honest number -> words lead (event signal)',
+    data: { hero: { kind: 'signal', category: 'COMPETITOR', headline: 'A rival just shipped the agent you were going to build.', magnitude: null, betId: 'b2', betQuestion: 'Move customer support to an AI agent first?', betState: 'explore' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 },
+  },
+  {
+    label: 'quiet day (bets, no open signal) - honest calm state',
+    data: { hero: { kind: 'quiet', headline: 'Nothing moved on your bets today.' }, bets: COCKPIT_BETS.map((b) => ({ ...b, state: 'quiet' as const, freshness: 'no fresh signal' })), liveCount: 4, needsYouCount: 0 },
+  },
+  {
+    label: 'cold start (no bets yet)',
+    data: { hero: { kind: 'cold', headline: 'No live bets yet. Pressure-test a decision and it lands here.' }, bets: [], liveCount: 0, needsYouCount: 0 },
+  },
+];
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-10">
@@ -129,6 +156,17 @@ export default function PreviewPage() {
       <div className="mx-auto w-full max-w-md">
         <h1 className="mb-1 text-lg font-semibold text-foreground">Surface fixtures</h1>
         <p className="mb-8 text-xs text-muted-foreground">Every state each component must hold. Screenshot + check for cram / clip / overflow.</p>
+
+        <Section title="Cockpit (mobile home) - CockpitHome">
+          {COCKPIT_FIXTURES.map((f) => (
+            <div key={f.label}>
+              <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
+              <div className="rounded-2xl border border-border bg-background p-3">
+                <CockpitHome data={f.data} onOpenRead={noop} onOpenBet={noop} onGoDecide={noop} animated={false} />
+              </div>
+            </div>
+          ))}
+        </Section>
 
         <Section title="Track Record - DecisionCard">
           {TRACK_FIXTURES.map((f) => (

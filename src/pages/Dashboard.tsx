@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Hand, X } from "lucide-react"
 import { MobileMemoryDashboard } from "@/components/memory-web/MobileMemoryDashboard"
 import { DesktopMemoryDashboard } from "@/components/memory-web/DesktopMemoryDashboard"
+import { CockpitView } from "@/components/cockpit/CockpitView"
 import { OnboardingInterview } from "@/components/onboarding/OnboardingInterview"
 import { BottomNav } from "@/components/memory-web/BottomNav"
 import { DesktopShell } from "@/components/layout/DesktopShell"
@@ -16,6 +17,10 @@ import { supabase } from "@/integrations/supabase/client"
 import type { EdgeView } from "@/types/edge"
 
 const EdgeViewLazy = React.lazy(() => import("@/components/edge/EdgeView"))
+
+// Cockpit v1: on mobile, the cockpit replaces the Memory-Web home (desktop keeps
+// its command-centre). Behind a flag for safe rollout.
+const COCKPIT_ENABLED = import.meta.env.VITE_COCKPIT_ENABLED === 'true'
 
 export default function Dashboard() {
   const { isMobile } = useDevice()
@@ -161,7 +166,9 @@ export default function Dashboard() {
   return (
     <>
       {onboardingBanner}
-      {isMobile ? <MobileMemoryDashboard /> : <DesktopMemoryDashboard />}
+      {isMobile
+        ? (COCKPIT_ENABLED ? <CockpitView /> : <MobileMemoryDashboard />)
+        : <DesktopMemoryDashboard />}
     </>
   )
 }

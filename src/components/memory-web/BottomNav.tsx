@@ -1,12 +1,20 @@
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Zap, Brain, Scale, Radio, TrendingUp } from 'lucide-react';
+import { Home, Zap, Brain, Scale, Radio, TrendingUp, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// "Decide" leads here over the old "Export" tab: pressure-testing a real call is
-// the marquee, everyday action. Context Export stays reachable via dashboard
-// quick actions, /context, and the command palette.
-const navItems = [
+// COCKPIT v1 (flag on): the 4-tab model. Home=cockpit, Decisions=Decide + map,
+// Brain=memory, You=profile + record. Briefing dissolves into the cockpit hero;
+// Edge/automate is contextual (zap on a blocker + an Edge card on Home).
+const cockpitNav = [
+  { path: '/dashboard', search: '', icon: Home, label: 'Home' },
+  { path: '/decision', search: '', icon: Scale, label: 'Decisions' },
+  { path: '/memory', search: '', icon: Brain, label: 'Brain' },
+  { path: '/profile', search: '', icon: User, label: 'You' },
+];
+
+// Legacy 6-tab nav (flag off). "Decide" leads over the old "Export" tab.
+const legacyNav = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
   { path: '/dashboard', search: '?view=edge', icon: Zap, label: 'Edge' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory' },
@@ -14,6 +22,9 @@ const navItems = [
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing' },
   { path: '/track-record', search: '', icon: TrendingUp, label: 'Record' },
 ];
+
+const COCKPIT_ENABLED = import.meta.env.VITE_COCKPIT_ENABLED === 'true';
+const navItems = COCKPIT_ENABLED ? cockpitNav : legacyNav;
 
 export function BottomNav() {
   const navigate = useNavigate();
