@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { HeroSection } from "@/components/landing/HeroSection"
+import { ClarityHome } from "@/components/landing/ClarityHome"
 import { useAuth } from "@/components/auth/AuthProvider"
 
 export default function Landing() {
@@ -22,5 +22,5 @@ export default function Landing() {
     )
   }
 
-  return <HeroSection />
+  return <ClarityHome />
 }
