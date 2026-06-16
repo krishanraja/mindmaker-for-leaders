@@ -45,6 +45,7 @@ const Goals = lazyWithRetry(() => import('@/pages/Goals'))
 const TrackRecord = lazyWithRetry(() => import('@/pages/TrackRecord'))
 const DecisionMap = lazyWithRetry(() => import('@/pages/DecisionMap'))
 const Preview = lazyWithRetry(() => import('@/pages/Preview'))
+const Agents = lazyWithRetry(() => import('@/pages/Agents'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
@@ -91,6 +92,11 @@ export const router = createBrowserRouter([
     // Dev/QC fixture-render harness (public so it can be screenshot without auth). Unlinked.
     path: '/preview',
     element: <LazyWrapper><Preview /></LazyWrapper>,
+  },
+  {
+    // Agent-native marketing page (public): the read-only Memory Web MCP offering.
+    path: '/agents',
+    element: <LazyWrapper><Agents /></LazyWrapper>,
   },
   {
     path: '/kit/me',
