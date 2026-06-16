@@ -37,7 +37,7 @@ export function SevenDayPlan({
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card">
+    <div className="rounded-2xl border border-border bg-card kit-shadow-sm">
       <div className="flex items-baseline justify-between border-b border-border px-5 py-4">
         <h3 className="text-sm font-semibold">Your seven days</h3>
         <span className="text-xs tabular-nums text-muted-foreground">

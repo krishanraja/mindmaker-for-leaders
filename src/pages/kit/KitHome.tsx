@@ -24,6 +24,7 @@ import { SendPackCard } from "@/components/kit/SendPackCard";
 import { SevenDayPlan } from "@/components/kit/SevenDayPlan";
 import { ShipSection } from "@/components/kit/ShipSection";
 import { ArtifactCard } from "@/components/kit/ArtifactCard";
+import { OrgChartView } from "@/components/kit/OrgChartView";
 import { CapsuleCard } from "@/components/kit/CapsuleCard";
 import { EdgeProCard } from "@/components/kit/EdgeProCard";
 import { RegenerateSheet } from "@/components/kit/RegenerateSheet";
@@ -41,6 +42,7 @@ import {
   isTerminalBuildStatus,
   parseKitMap,
   parseKitPlan,
+  parseOrgChart,
   readKitHint,
   skillMetaFromArtifact,
 } from "@/lib/kit";
@@ -57,6 +59,7 @@ const FEATURED_ARTIFACT_IDS = new Set([
   "seven-day-plan",
   "personal-map",
   "pack-map",
+  "agentic-org-chart",
 ]);
 
 interface JourneyState {
@@ -329,8 +332,8 @@ export default function KitHome() {
         <div className="space-y-5 py-12 text-center">
           <QrCode className="mx-auto h-10 w-10 text-muted-foreground/50" />
           <div className="space-y-2">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Scan the class code to start
+            <h1 className="kit-headline text-2xl">
+              scan the class code to start
             </h1>
             <p className="mx-auto max-w-sm text-sm text-muted-foreground">
               Your kit appears here the moment a class code is redeemed on this device.
@@ -375,6 +378,8 @@ export default function KitHome() {
   const skillMeta = skillMetaFromArtifact(firstSkillArtifact);
   const mapArtifact = byArtifactId["personal-map"] ?? byArtifactId["pack-map"];
   const kitMap = mapArtifact ? parseKitMap(mapArtifact.body) : null;
+  const orgChartArtifact = byArtifactId["agentic-org-chart"];
+  const orgChart = orgChartArtifact ? parseOrgChart(orgChartArtifact.body) : null;
   const planArtifact = byArtifactId["seven-day-plan"];
   const planDays = planArtifact ? parseKitPlan(planArtifact.body) : null;
   const testPrompt = skillMeta?.test_prompts?.[0] ?? null;
@@ -434,8 +439,8 @@ export default function KitHome() {
               >
                 <CheckCircle2 className="h-8 w-8 text-accent" />
               </motion.div>
-              <p className="text-sm font-medium text-accent">Built from what you said in class</p>
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              <p className="kit-eyebrow">Built from what you said in class</p>
+              <h1 className="kit-headline text-3xl sm:text-[2.35rem]">
                 {skillMeta?.name ?? preset.title}
               </h1>
               <p className="mx-auto max-w-md text-muted-foreground">
@@ -473,6 +478,9 @@ export default function KitHome() {
             {skillMeta && (
               <SkillInstallGuide skillName={skillMeta.name} preferredTool={tool} />
             )}
+
+            {/* 0. The hero: the agentic org chart */}
+            {orgChart && <OrgChartView chart={orgChart} />}
 
             {/* 1. The capstone map */}
             {kitMap && <PersonalMapCard map={kitMap} />}
@@ -637,7 +645,7 @@ function ArtifactGroups({
     <div className="space-y-6">
       {groups.map((group) => (
         <section key={group.part} className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="kit-label text-[11px] text-[color:var(--kit-mut)]">
             {group.part}
           </h3>
           {group.specs.map((spec) => {
@@ -667,7 +675,7 @@ function ArtifactGroups({
 
       {extraSkills.length > 0 && (
         <section className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="kit-label text-[11px] text-[color:var(--kit-mut)]">
             Built on your pass
           </h3>
           {extraSkills.map((artifact) => (
@@ -730,8 +738,8 @@ function BuildSafetyNet({
   };
 
   return (
-    <div className="space-y-4 rounded-2xl border border-border bg-card p-6 text-center">
-      <h2 className="text-xl font-semibold tracking-tight">The build hit a snag</h2>
+    <div className="space-y-4 rounded-2xl border border-border bg-card p-6 text-center kit-shadow-sm">
+      <h2 className="kit-headline text-xl">the build hit a snag</h2>
       <p className="mx-auto max-w-sm text-sm text-muted-foreground">
         Rare, but it happens. Retry now, or leave your email and the kit lands in your inbox the
         moment it is ready.

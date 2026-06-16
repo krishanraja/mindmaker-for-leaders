@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { ClipboardPaste, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,9 +55,9 @@ export function CapsuleCard({
   };
 
   return (
-    <div className="space-y-3 rounded-2xl border border-border bg-card p-5">
+    <div className="space-y-3 rounded-2xl border border-border bg-card p-5 kit-shadow-sm">
       <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-accent" />
+        <ClipboardPaste className="h-4 w-4 text-accent" />
         <h3 className="text-sm font-semibold">Paste your AI's homework</h3>
       </div>
       <p className="text-sm text-muted-foreground">

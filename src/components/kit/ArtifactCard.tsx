@@ -67,7 +67,7 @@ export function ArtifactCard({
   };
 
   return (
-    <div className="space-y-3 rounded-2xl border border-border bg-card p-5">
+    <div className="space-y-3 rounded-2xl border border-border bg-card p-5 kit-shadow-sm">
       <div className="space-y-1">
         <h4 className="font-semibold leading-snug">{spec.title}</h4>
         <p className="text-sm text-muted-foreground">{spec.description}</p>

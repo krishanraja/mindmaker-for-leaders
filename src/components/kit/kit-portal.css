@@ -1,0 +1,157 @@
+/* ============================================================
+   KIT PORTAL BRAND (locked spec: prototypes/kit-orgchart.html)
+   Agent A - portal chrome re-skin.
+
+   The kit portal is the ONE light-mode, Mindmaker-branded surface in
+   an otherwise forced-dark CTRL app. Rather than rewrite every child
+   component, we re-map the existing shadcn token NAMES (--background,
+   --card, --accent, --border, --muted-foreground...) to the mock's
+   premium light palette inside a single `.kit-portal` scope. Every
+   Tailwind utility already in the kit pages (bg-card, text-accent,
+   border-border, text-muted-foreground...) then renders on-brand with
+   no per-utility churn.
+
+   HOW OTHER AGENTS REFERENCE THIS
+   - Import is owned by KitPortalLayout; any page rendered inside the
+     layout already sits under `.kit-portal`, so the tokens + utilities
+     below are available with no extra import.
+   - Brand tokens (raw hex, for the org chart's bespoke styling) are
+     exposed as `--kit-*` custom properties on `.kit-portal`. Agent C's
+     OrgChartView and Agent B's intake should read those (e.g.
+     `var(--kit-acc)`, `var(--kit-acc-soft)`, `var(--kit-rail)`) so the
+     chart matches the mock exactly.
+   - Brand utility classes: `.kit-eyebrow` (Gobold uppercase label),
+     `.kit-headline` (Inter lowercase headline), `.kit-tag` /
+     `.kit-pill-label` (Gobold uppercase micro-label), `.kit-wordmark`.
+   - Font families: `font-gobold` (Tailwind) or `--kit-display` for the
+     wordmark + small uppercase labels ONLY. Body + headlines stay Inter.
+   ============================================================ */
+
+/* Gobold: wordmark + small UPPERCASE labels only. The real OTF files
+   live in public/fonts (the prior index.css @font-face pointed at a
+   non-existent .woff2; these are the working faces). */
+@font-face {
+  font-family: 'Gobold';
+  src: url('/fonts/Gobold-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GoboldThin';
+  src: url('/fonts/Gobold-Thin.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+.kit-portal {
+  /* --- mock palette as raw hex, for bespoke (non-token) brand styling --- */
+  --kit-bg: #f3f5f1;
+  --kit-card: #ffffff;
+  --kit-ink: #13282c;
+  --kit-ink2: #2b4248;
+  --kit-mut: #697578;
+  --kit-faint: #99a4a5;
+  --kit-line: #e5e8e2;
+  --kit-line2: #eef1eb;
+  --kit-rail: #d5dad2;
+  --kit-acc: #2a9e7c;
+  --kit-acc-deep: #1e7860;
+  --kit-acc-soft: #e6f4ee;
+  --kit-acc-line: #bce2d2;
+  --kit-ind: #3e6e94;
+  --kit-ind-soft: #e9f0f5;
+  --kit-ind-line: #d2e0ea;
+  --kit-slate: #5a6a6d;
+  --kit-slate-soft: #edf1ef;
+  --kit-slate-line: #dbe3e0;
+  --kit-display: 'Gobold', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+
+  /* --- re-map shadcn tokens (space-separated HSL, hsl(var(--x))) so
+         existing Tailwind utilities inherit the brand light palette --- */
+  --background: 90 17% 95%;        /* #F3F5F1 warm-clean light */
+  --foreground: 190 40% 12%;       /* #13282C dark-teal ink */
+  --card: 0 0% 100%;               /* #FFFFFF */
+  --card-foreground: 190 40% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 190 40% 12%;
+  --primary: 162 58% 39%;          /* emerald #2A9E7C */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 150 12% 94%;        /* #EDF1EF soft surface */
+  --secondary-foreground: 190 40% 12%;
+  --muted: 90 18% 93%;             /* #EEF1EB */
+  --muted-foreground: 192 7% 44%;  /* #697578 */
+  --accent: 162 58% 39%;           /* brand emerald #2A9E7C */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 5 51% 47%;        /* warm clay, on-brand */
+  --destructive-foreground: 0 0% 100%;
+  --success: 162 58% 39%;
+  --success-foreground: 0 0% 100%;
+  --border: 90 12% 90%;            /* #E5E8E2 */
+  --input: 90 12% 90%;
+  --ring: 162 58% 39%;
+
+  background:
+    radial-gradient(130% 80% at 50% -20%, #fbfbfa 0%, var(--kit-bg) 60%) fixed;
+  color: var(--kit-ink);
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* The Mindmaker wordmark in the header. Sized by height; width auto. */
+.kit-wordmark {
+  height: 18px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Gobold uppercase eyebrow / section label. Tracked, emerald by default. */
+.kit-eyebrow {
+  font-family: var(--kit-display);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kit-acc-deep);
+  font-size: 0.72rem;
+  line-height: 1.1;
+}
+
+/* Faint variant for quiet labels (chart tags, "your kit", group headings). */
+.kit-label {
+  font-family: var(--kit-display);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kit-faint);
+}
+
+/* Inter LOWERCASE headline. Slightly smaller so it does not wrap; tight
+   tracking; editorial weight. Use for the page H1 in the chrome. */
+.kit-headline {
+  font-family: 'Inter', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+  text-transform: lowercase;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  line-height: 1.12;
+  color: var(--kit-ink);
+}
+
+/* Gobold uppercase micro-tag (Live pill, header chip). */
+.kit-tag {
+  font-family: var(--kit-display);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+}
+
+/* Card shadow matching the mock's editorial elevation. */
+.kit-shadow {
+  box-shadow:
+    0 1px 2px rgba(16, 28, 30, 0.05),
+    0 18px 40px -24px rgba(16, 28, 30, 0.2);
+}
+.kit-shadow-sm {
+  box-shadow: 0 1px 2px rgba(16, 28, 30, 0.05);
+}
