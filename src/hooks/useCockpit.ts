@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
-import type { BetState, CockpitData, CockpitHero, HeroMagnitude } from '@/types/cockpit';
+import type { BetState, CockpitBlocker, CockpitData, CockpitHero, HeroMagnitude } from '@/types/cockpit';
 
 const db = supabase as unknown as SupabaseClient;
 
@@ -40,6 +40,27 @@ function stateFromAlertKind(kind: string | undefined): BetState {
 export function useCockpit(): { data: CockpitData; loading: boolean } {
   const { cases, alerts, loading } = useDecisionInbox();
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
+  const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
+
+  // The contextual Edge pain-card: the leader's highest-importance blocker (if any).
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { data, error } = await db
+        .from('user_memory')
+        .select('id, fact_label, fact_value')
+        .eq('fact_category', 'blocker')
+        .eq('is_current', true)
+        .order('importance', { ascending: false, nullsFirst: false })
+        .limit(1);
+      if (cancelled || error) return;
+      const row = (data as { id: string; fact_label: string; fact_value: string }[] | null)?.[0];
+      setTopBlocker(row ? { id: row.id, label: row.fact_label, value: row.fact_value } : null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Pull the gated reactions for the live cases (the hero's magnitude, when honest).
   const liveIds = useMemo(() => cases.filter((c) => c.status === 'active').map((c) => c.id), [cases]);
@@ -116,5 +137,5 @@ export function useCockpit(): { data: CockpitData; loading: boolean } {
     return { hero, bets, liveCount: bets.length, needsYouCount };
   }, [cases, alerts, reactions]);
 
-  return { data, loading };
+  return { data: { ...data, topBlocker }, loading };
 }

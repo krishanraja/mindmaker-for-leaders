@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { GitFork, ArrowRight, Radio } from 'lucide-react';
+import { GitFork, ArrowRight, Radio, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import type { BetState, CockpitBet, CockpitData } from '@/types/cockpit';
+import type { BetState, CockpitBet, CockpitBlocker, CockpitData } from '@/types/cockpit';
 
 const STATE_CHIP: Record<BetState, { label: string; cls: string }> = {
   countered: { label: 'Countered', cls: 'border-amber-500/30 bg-amber-500/10 text-amber-300' },
@@ -49,11 +49,12 @@ interface CockpitHomeProps {
   onOpenRead: (betId: string | null | undefined) => void;
   onOpenBet: (id: string) => void;
   onGoDecide: () => void;
+  onAutomate?: (blocker: CockpitBlocker) => void;
   animated?: boolean;
 }
 
-export function CockpitHome({ data, onOpenRead, onOpenBet, onGoDecide, animated = true }: CockpitHomeProps) {
-  const { hero, bets, liveCount, needsYouCount } = data;
+export function CockpitHome({ data, onOpenRead, onOpenBet, onGoDecide, onAutomate, animated = true }: CockpitHomeProps) {
+  const { hero, bets, liveCount, needsYouCount, topBlocker } = data;
 
   return (
     <motion.div
@@ -125,6 +126,25 @@ export function CockpitHome({ data, onOpenRead, onOpenBet, onGoDecide, animated 
             ))}
           </div>
         </div>
+      )}
+
+      {/* Contextual Edge: a real blocker on record -> turn the pain into a Claude skill.
+          Only shown when the leader actually has a blocker (never an invented pain). */}
+      {topBlocker && onAutomate && (
+        <button
+          type="button"
+          onClick={() => onAutomate(topBlocker)}
+          className="flex w-full items-center gap-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.05] p-3 text-left transition-colors hover:bg-amber-500/[0.09]"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300" aria-hidden>
+            <Zap className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] font-semibold uppercase tracking-wider text-amber-400/80">Automate a pain</span>
+            <span className="block truncate text-sm text-foreground">{topBlocker.label}</span>
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
       )}
     </motion.div>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ChevronRight, GitFork, Loader2, Map as MapIcon } from 'lucide-react';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import { BottomNav } from '@/components/memory-web/BottomNav';
@@ -112,9 +113,13 @@ function CasePicker({ onPick }: { onPick: (id: string) => void }) {
 
 export default function DecisionMapPage() {
   const { isMobile } = useDevice();
-  const [caseId, setCaseId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  // Deep-link target: the cockpit (and other surfaces) route here as ?case=<id>.
+  const deepLinked = searchParams.get('case');
+  const [picked, setPicked] = useState<string | null>(null);
+  const caseId = deepLinked || picked;
 
-  const inner = caseId ? <MapBody caseId={caseId} /> : <CasePicker onPick={setCaseId} />;
+  const inner = caseId ? <MapBody caseId={caseId} /> : <CasePicker onPick={setPicked} />;
 
   if (!isMobile) {
     return (
