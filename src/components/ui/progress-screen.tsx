@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Brain, TrendingUp, Target, Lightbulb, Users, Zap, LucideIcon } from 'lucide-react';
+import { CtrlLogo } from '@/components/landing/CtrlLogo';
 
 interface ProgressPhase {
   label: string;
@@ -115,11 +116,7 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({
         <CardContent className="p-6 sm:p-8 space-y-6 sm:space-y-8 flex flex-col justify-center">
           {/* Logo first - most important for branding */}
           <div className="flex justify-center">
-            <img 
-              src="/mindmaker-favicon.png" 
-              alt="Mindmaker" 
-              className="w-32 sm:w-40 h-auto"
-            />
+            <CtrlLogo className="h-9 sm:h-11 w-auto" />
           </div>
           
           {/* Title & Current Phase */}

@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { BriefingCard } from "@/components/dashboard/BriefingCard";
 import {
   BriefingSheet,
   MiniPlayer,
@@ -26,6 +25,8 @@ import {
   VoiceSteerBar,
   InterestChipsRow,
   SuggestedInterestsCard,
+  BriefingHero,
+  deriveBriefingRead,
 } from "@/components/briefing";
 import { InterestsSheet } from "@/components/briefing/InterestsSheet";
 import { BottomNav } from "@/components/memory-web/BottomNav";
@@ -75,7 +76,7 @@ function BriefingPage() {
   const hasDeclaredOrInferred = declaredInterests.length >= 3;
 
   const { generate, generating, phase, error: generateError, sparseProfile, clearSparseProfile } = useGenerateBriefing();
-  const { setBriefing, setSheetOpen, playback } = useBriefingContext();
+  const { setBriefing, setSheetOpen } = useBriefingContext();
   const [customSheetOpen, setCustomSheetOpen] = useState(false);
   const [interestsSheetOpen, setInterestsSheetOpen] = useState(false);
   const [presetCustomPrompt, setPresetCustomPrompt] = useState<string | null>(null);
@@ -152,6 +153,20 @@ function BriefingPage() {
       return key && key !== todayKey;
     });
   }, [briefings, defaultBriefing]);
+
+  // Honest "what just moved" read derived from the real briefing segments.
+  // Leads with a kind-marked number ONLY where one is genuinely present;
+  // otherwise the words read leads (clearest-unit-first, never fabricated).
+  const briefingRead = useMemo(
+    () => (defaultBriefing ? deriveBriefingRead(defaultBriefing) : null),
+    [defaultBriefing],
+  );
+
+  // The hero's primary affordance reuses the existing play flow (opening the
+  // sheet, which owns synthesis + the streaming/preparing states). When audio
+  // already exists it reads "Listen"; otherwise it kicks the synth-on-open.
+  const heroHasAudio = !!defaultBriefing?.audio_url;
+  const heroCtaLabel = heroHasAudio ? "Listen" : "Listen to your briefing";
 
   const liveStatus = (() => {
     if (loading) return "Loading...";
@@ -307,15 +322,12 @@ function BriefingPage() {
                   Generate today's briefing
                 </Button>
               </div>
-            ) : defaultBriefing ? (
-              <BriefingCard
-                briefing={defaultBriefing}
-                hasListened={playback.hasListened}
-                onPlay={() => handlePlayBriefing(defaultBriefing)}
-                onRefresh={handleRefreshBriefing}
-                refreshing={refreshingBriefing}
-                onCustomBriefing={() => setCustomSheetOpen(true)}
-                customBriefingCount={customBriefings.length}
+            ) : defaultBriefing && briefingRead ? (
+              <BriefingHero
+                read={briefingRead}
+                ctaLabel={heroCtaLabel}
+                onCta={() => handlePlayBriefing(defaultBriefing)}
+                onGoDeeper={() => handlePlayBriefing(defaultBriefing)}
               />
             ) : null}
 
@@ -761,16 +773,15 @@ function BriefingPage() {
                 </Button>
               </div>
             </motion.div>
-          ) : defaultBriefing ? (
-            <BriefingCard
-              briefing={defaultBriefing}
-              hasListened={playback.hasListened}
-              onPlay={() => handlePlayBriefing(defaultBriefing)}
-              onRefresh={handleRefreshBriefing}
-              refreshing={refreshingBriefing}
-              onCustomBriefing={() => setCustomSheetOpen(true)}
-              customBriefingCount={customBriefings.length}
-            />
+          ) : defaultBriefing && briefingRead ? (
+            <div className="max-w-md mx-auto w-full">
+              <BriefingHero
+                read={briefingRead}
+                ctaLabel={heroCtaLabel}
+                onCta={() => handlePlayBriefing(defaultBriefing)}
+                onGoDeeper={() => handlePlayBriefing(defaultBriefing)}
+              />
+            </div>
           ) : null}
 
           {/* Voice steer - hero CTA */}

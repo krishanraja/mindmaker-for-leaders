@@ -7,6 +7,9 @@ import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone
 import { MemoryItemCard } from '@/components/memory/MemoryItemCard';
 import { ContestPanel } from '@/components/contest/ContestPanel';
 import { CockpitHome } from '@/components/cockpit/CockpitHome';
+import { StoneRead } from '@/components/decision-map/StoneRead';
+import { BriefingHero } from '@/components/briefing/BriefingHero';
+import type { BriefingRead } from '@/components/briefing/briefingRead';
 import type { TrackRecordRow } from '@/types/track-record';
 import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
 import type { UserMemoryFact } from '@/types/memory';
@@ -142,6 +145,61 @@ const COCKPIT_FIXTURES: { label: string; data: CockpitData }[] = [
   },
 ];
 
+const BRIEFING_FIXTURES: { label: string; read: BriefingRead }[] = [
+  {
+    label: 'countered + modelled number (flagship)',
+    read: {
+      bet: 'Buy the agent stack, or build our own?',
+      betState: 'countered',
+      magnitude: { value: '10x', kind: 'est.' },
+      headline: 'A free model matched the paid frontier at a tenth the cost.',
+      considerations: [
+        { label: 'Cost gap', state: 'moved', tag: 'signal' },
+        { label: 'Your data', state: 'you', tag: 'krishs_take' },
+        { label: 'Switching', state: 'you', tag: 'krishs_take' },
+        { label: 'Capability', state: 'thin', tag: 'krishs_take' },
+        { label: 'Lock-in', state: 'you', tag: 'krishs_take' },
+      ],
+      movedCount: 1,
+      youCount: 3,
+      sourceCount: 23,
+      segmentCount: 8,
+    },
+  },
+  {
+    label: 'no honest number -> words lead (explore)',
+    read: {
+      bet: 'Move customer support to an AI agent first?',
+      betState: 'explore',
+      magnitude: null,
+      headline: 'A rival just shipped the agent you were going to build.',
+      sub: 'It is live, and your window to be first just narrowed.',
+      considerations: [
+        { label: 'Competitor', state: 'moved', tag: 'signal' },
+        { label: 'Your roadmap', state: 'you', tag: 'krishs_take' },
+        { label: 'Support load', state: 'thin', tag: 'krishs_take' },
+      ],
+      movedCount: 1,
+      youCount: 1,
+      sourceCount: 11,
+      segmentCount: 6,
+    },
+  },
+  {
+    label: 'quiet day (no spine)',
+    read: {
+      betState: 'quiet',
+      magnitude: null,
+      headline: 'A calm read today. Nothing pressing moved on your bets.',
+      considerations: [],
+      movedCount: 0,
+      youCount: 0,
+      sourceCount: 4,
+      segmentCount: 4,
+    },
+  },
+];
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-10">
@@ -167,6 +225,28 @@ export default function PreviewPage() {
               <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
               <div className="rounded-2xl border border-border bg-background p-3">
                 <CockpitHome data={f.data} onOpenRead={noop} onOpenBet={noop} onGoDecide={noop} onAutomate={noop} animated={false} />
+              </div>
+            </div>
+          ))}
+        </Section>
+
+        <Section title="Stone Read (number-or-words hero) - StoneRead">
+          {STONE_FIXTURES.map((f) => (
+            <div key={f.claim.id}>
+              <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
+              <div className="rounded-2xl border border-border bg-background p-3">
+                <StoneRead claim={f.claim} evidence={f.evidence} call={null} onSetCall={noop} onGoDeeper={noop} animated={false} />
+              </div>
+            </div>
+          ))}
+        </Section>
+
+        <Section title="Briefing hero - BriefingHero">
+          {BRIEFING_FIXTURES.map((f) => (
+            <div key={f.label}>
+              <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
+              <div className="rounded-2xl border border-border bg-background p-3">
+                <BriefingHero read={f.read} ctaLabel="Generate today's briefing" onCta={noop} onGoDeeper={noop} animated={false} />
               </div>
             </div>
           ))}

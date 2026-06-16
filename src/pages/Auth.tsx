@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react"
 import { SignInForm } from "@/components/auth/SignInForm"
 import { SignUpForm } from "@/components/auth/SignUpForm"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { CtrlLogo } from "@/components/landing/CtrlLogo"
 import { motion } from "framer-motion"
 
 export default function Auth() {
@@ -46,11 +47,7 @@ export default function Auth() {
           className="w-full max-w-sm"
         >
           <div className="flex justify-center mb-6">
-            <img
-              src="/mindmaker-full-logo.png"
-              alt="Mindmaker"
-              className="h-6 w-auto"
-            />
+            <CtrlLogo className="h-7 w-auto" />
           </div>
 
           <h2 className="text-xl font-semibold text-center text-foreground mb-1">

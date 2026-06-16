@@ -25,7 +25,6 @@ export function DesktopSidebar() {
         className="px-5 py-4 border-b border-border flex items-center gap-2.5 cursor-pointer hover:bg-secondary/30 transition-colors"
         onClick={() => navigate('/dashboard')}
       >
-        <img src="/mindmaker-favicon.png" alt="" className="h-7 w-7" />
         <CtrlLogo className="h-4 w-auto translate-x-0.5" />
       </div>
 

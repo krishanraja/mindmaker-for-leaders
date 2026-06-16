@@ -8,6 +8,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { transitions } from '@/lib/motion';
+import { CtrlLogo } from '@/components/landing/CtrlLogo';
 
 interface FaviconMarkProps {
   className?: string;
@@ -15,9 +16,9 @@ interface FaviconMarkProps {
 }
 
 const sizeClasses = {
-  sm: 'h-6 w-6',
-  md: 'h-8 w-8',
-  lg: 'h-10 w-10',
+  sm: 'h-4 w-auto',
+  md: 'h-5 w-auto',
+  lg: 'h-6 w-auto',
 };
 
 export const FaviconMark: React.FC<FaviconMarkProps> = ({ 
@@ -31,14 +32,13 @@ export const FaviconMark: React.FC<FaviconMarkProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={transitions.default}
     >
-      <motion.img 
-        src="/mindmaker-favicon.png" 
-        alt="Mindmaker" 
-        className={`${sizeClasses[size]} object-contain`}
+      <motion.div
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         transition={transitions.fast}
-      />
+      >
+        <CtrlLogo className={sizeClasses[size]} />
+      </motion.div>
     </motion.div>
   );
 };

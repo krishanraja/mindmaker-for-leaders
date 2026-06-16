@@ -37,7 +37,6 @@ export function KitPortalLayout({ classTitle, passEndsAt, children }: KitPortalL
       <header className="shrink-0 border-b border-border/60 bg-background/85 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-3 px-5 py-3.5">
           <Link to="/kit/me" aria-label="Your kit" className="flex shrink-0 items-center gap-2">
-            <img src="/mindmaker-favicon.png" alt="" className="h-6 w-6" />
             <CtrlLogo className="h-3.5 w-auto" />
           </Link>
           <div className="flex min-w-0 items-center gap-3">

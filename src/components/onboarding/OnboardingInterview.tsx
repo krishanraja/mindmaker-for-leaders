@@ -169,7 +169,7 @@ export function OnboardingInterview({ onComplete }: Props) {
       {/* Main content area */}
       <div className="flex-1 flex items-center justify-center px-6 overflow-y-auto">
         <AnimatePresence mode="wait">
-          {/* WELCOME */}
+          {/* WELCOME - the calm anchor door */}
           {step === 'welcome' && (
             <motion.div
               key="welcome"
@@ -178,12 +178,20 @@ export function OnboardingInterview({ onComplete }: Props) {
               exit={{ opacity: 0, y: -20 }}
               className="text-center space-y-8 max-w-md"
             >
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70"
+              >
+                Set up
+              </motion.p>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.3, type: 'spring' }}
               >
-                <div className="w-20 h-20 rounded-2xl bg-accent flex items-center justify-center mx-auto shadow-lg shadow-accent/25">
+                <div className="w-20 h-20 rounded-2xl bg-accent flex items-center justify-center mx-auto shadow-lg shadow-accent/25 glow-accent">
                   <img src={mindmakerIcon} alt="Mindmaker" className="h-10 w-10 object-contain" />
                 </div>
               </motion.div>
@@ -193,15 +201,16 @@ export function OnboardingInterview({ onComplete }: Props) {
                 transition={{ delay: 0.5 }}
                 className="space-y-4"
               >
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight text-balance">
                   Welcome to CTRL
                 </h1>
-                <p className="text-muted-foreground leading-relaxed text-sm">
+                <p className="text-muted-foreground leading-relaxed text-sm text-balance">
                   {welcomeText}
                 </p>
-                <p className="text-muted-foreground leading-relaxed text-sm">
+                <p className="text-muted-foreground leading-relaxed text-sm text-balance">
                   Everything you share stays private, and you can edit or delete any of it
-                  later. Let's start with a few quick questions.
+                  later. We never pretend to know more than you have told us. Let's start with a
+                  few quick questions.
                 </p>
               </motion.div>
               <motion.div
@@ -256,10 +265,10 @@ export function OnboardingInterview({ onComplete }: Props) {
                 </div>
               </motion.div>
               <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent">
                   {isAudioLoading ? 'Preparing...' : 'Krishan'}
                 </p>
-                <p className="text-lg font-medium text-foreground leading-relaxed">
+                <p className="text-lg font-medium text-foreground leading-relaxed text-balance">
                   {currentQuestion}
                 </p>
               </div>
@@ -283,9 +292,11 @@ export function OnboardingInterview({ onComplete }: Props) {
               exit={{ opacity: 0 }}
               className="text-center space-y-6 max-w-md"
             >
-              <div className="bg-muted/30 rounded-xl p-4 text-left">
-                <p className="text-xs text-muted-foreground/60 mb-1">Krishan asked:</p>
-                <p className="text-sm text-foreground leading-relaxed">
+              <div className="bg-card border border-border rounded-xl p-4 text-left">
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70 mb-1.5">
+                  Krishan asked
+                </p>
+                <p className="text-sm text-foreground leading-relaxed text-balance">
                   {currentQuestion}
                 </p>
               </div>
@@ -293,9 +304,9 @@ export function OnboardingInterview({ onComplete }: Props) {
                 onClick={handleVoiceToggle}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-20 h-20 rounded-full mx-auto bg-accent flex items-center justify-center shadow-lg shadow-accent/25"
+                className="w-20 h-20 rounded-full mx-auto bg-accent flex items-center justify-center shadow-lg shadow-accent/25 glow-accent-sm"
               >
-                <Mic className="w-9 h-9 text-white" />
+                <Mic className="w-9 h-9 text-accent-foreground" />
               </motion.button>
               <div className="flex items-center justify-center gap-3">
                 <p className="text-xs text-muted-foreground/50">Tap to speak</p>
@@ -323,9 +334,11 @@ export function OnboardingInterview({ onComplete }: Props) {
               exit={{ opacity: 0 }}
               className="w-full max-w-md space-y-4"
             >
-              <div className="bg-muted/30 rounded-xl p-4 text-left">
-                <p className="text-xs text-muted-foreground/60 mb-1">Krishan asked:</p>
-                <p className="text-sm text-foreground leading-relaxed">
+              <div className="bg-card border border-border rounded-xl p-4 text-left">
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70 mb-1.5">
+                  Krishan asked
+                </p>
+                <p className="text-sm text-foreground leading-relaxed text-balance">
                   {currentQuestion}
                 </p>
               </div>
@@ -373,8 +386,8 @@ export function OnboardingInterview({ onComplete }: Props) {
               exit={{ opacity: 0 }}
               className="text-center space-y-6"
             >
-              <div className="bg-muted/30 rounded-xl p-3 text-left max-w-md mx-auto">
-                <p className="text-xs text-muted-foreground/60 leading-relaxed">
+              <div className="bg-card border border-border rounded-xl p-3 text-left max-w-md mx-auto">
+                <p className="text-xs text-muted-foreground leading-relaxed text-balance">
                   {currentQuestion}
                 </p>
               </div>
@@ -384,7 +397,7 @@ export function OnboardingInterview({ onComplete }: Props) {
                 transition={{ repeat: Infinity, duration: 1.5 }}
                 className="w-24 h-24 rounded-full mx-auto bg-destructive flex items-center justify-center shadow-lg shadow-destructive/25"
               >
-                <MicOff className="w-10 h-10 text-white" />
+                <MicOff className="w-10 h-10 text-destructive-foreground" />
               </motion.button>
               <div className="text-2xl font-bold tabular-nums">{formatTime(duration)}</div>
               <div className="flex items-center justify-center gap-0.5 h-6">
@@ -475,7 +488,7 @@ export function OnboardingInterview({ onComplete }: Props) {
             </motion.div>
           )}
 
-          {/* BLOOMING - watch the Memory Web come alive */}
+          {/* BLOOMING - the brain comes alive: the four-world memory bloom */}
           {step === 'blooming' && (
             <motion.div
               key="blooming"
@@ -484,17 +497,58 @@ export function OnboardingInterview({ onComplete }: Props) {
               exit={{ opacity: 0 }}
               className="w-full max-w-lg flex flex-col items-center text-center py-6"
             >
-              <div className="space-y-1.5 mb-3">
-                <h2 className="text-xl font-bold text-foreground">Your Memory Web is live</h2>
-                <p className="text-sm text-muted-foreground">
-                  {extractedFactCount > 0
-                    ? `${extractedFactCount} ${extractedFactCount === 1 ? 'point' : 'points'} from our conversation, mapped against your world.`
-                    : 'A living map of your world, ready to sharpen every AI you use.'}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="space-y-2 mb-4"
+              >
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent">
+                  Your brain is live
                 </p>
-              </div>
-              <div className="w-full h-[48vh] rounded-2xl border border-border bg-card/40 overflow-hidden">
+                <h2 className="text-xl font-bold text-foreground tracking-tight text-balance">
+                  Four worlds, mapped against your own
+                </h2>
+                <p className="text-sm text-muted-foreground text-balance">
+                  {extractedFactCount > 0
+                    ? `${extractedFactCount} ${extractedFactCount === 1 ? 'point' : 'points'} from our conversation, set over your world. It stays thin until you sharpen it.`
+                    : 'A living map of your world, ready to sharpen every AI you use. It stays thin until you sharpen it.'}
+                </p>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.25, duration: 0.6 }}
+                className="w-full h-[48vh] rounded-2xl border border-border bg-card/40 overflow-hidden glow-accent-sm"
+              >
                 <MemoryWebVisualization facts={webFacts} showEmptyState={webFacts.length === 0} />
+              </motion.div>
+
+              {/* Honest brain readout - mirrors the mock's "thin until you sharpen it" rail */}
+              <div className="mt-4 flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left w-full max-w-sm">
+                <svg width="34" height="34" viewBox="0 0 44 44" aria-hidden="true" className="flex-shrink-0">
+                  <g stroke="hsl(var(--accent) / 0.4)" strokeWidth="1">
+                    <line x1="22" y1="22" x2="9" y2="13" />
+                    <line x1="22" y1="22" x2="35" y2="17" />
+                    <line x1="22" y1="22" x2="15" y2="34" />
+                  </g>
+                  <g fill="hsl(var(--accent))">
+                    <circle cx="22" cy="22" r="3.6" />
+                    <circle cx="9" cy="13" r="2.2" />
+                    <circle cx="35" cy="17" r="2.2" />
+                    <circle cx="15" cy="34" r="2.2" />
+                  </g>
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-foreground">Your brain</p>
+                  <p className="text-xs text-muted-foreground">
+                    {extractedFactCount > 0
+                      ? `${extractedFactCount} ${extractedFactCount === 1 ? 'fact' : 'facts'} · thin until you sharpen it`
+                      : 'thin until you sharpen it'}
+                  </p>
+                </div>
               </div>
+
               <button
                 onClick={() => setStep('first_artifact')}
                 className="mt-5 px-8 py-3 rounded-xl bg-accent text-accent-foreground font-semibold flex items-center gap-2 shadow-lg shadow-accent/25"
@@ -538,7 +592,7 @@ export function OnboardingInterview({ onComplete }: Props) {
                 <div className="space-y-4">
                   <div className="flex items-center justify-center gap-2 text-accent">
                     <Scale className="h-5 w-5" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">One real decision</span>
+                    <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em]">One real decision</span>
                   </div>
                   <div className="rounded-2xl border border-border bg-card p-5">
                     <CaptureView
@@ -572,13 +626,16 @@ export function OnboardingInterview({ onComplete }: Props) {
               exit={{ opacity: 0 }}
               className="text-center space-y-5 max-w-md w-full"
             >
-              <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center mx-auto shadow-lg">
-                <Check className="h-7 w-7 text-white" />
+              <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center mx-auto shadow-lg shadow-accent/25 glow-accent-sm">
+                <Check className="h-7 w-7 text-accent-foreground" />
               </div>
-              <h2 className="text-xl font-bold text-foreground">
-                Your Memory Web is live
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-accent">
+                Your brain is live
+              </p>
+              <h2 className="text-xl font-bold text-foreground tracking-tight text-balance">
+                It stays thin until you sharpen it
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground text-balance">
                 Come back anytime to add more. The more you think out loud, the clearer
                 everything gets.
               </p>

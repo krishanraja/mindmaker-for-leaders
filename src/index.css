@@ -9,31 +9,45 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* === LIGHT MODE === */
-    --background: 0 0% 98%;           /* #fafafa */
-    --foreground: 0 0% 9%;            /* #171717 */
-    --card: 0 0% 100%;                /* #ffffff */
-    --card-foreground: 0 0% 9%;       /* #171717 */
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
-    --primary: 0 0% 9%;               /* #171717 */
-    --primary-foreground: 0 0% 98%;   /* #fafafa */
-    --secondary: 0 0% 96%;            /* #f5f5f5 */
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;     /* #737373 */
-    --accent: 158 64% 40%;            /* #24a06b - Mindmaker green */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+  /* ============================================================
+     CTRL DARK INSTRUMENT PALETTE (ported from ctrl-ds.css 2026-06-16)
+     The whole app re-skins by mapping the mock's near-black blue-tinged
+     surfaces + emerald accent onto the existing shadcn token NAMES.
+     Format kept as space-separated HSL triplets consumed via
+     hsl(var(--x)). Dark is FORCED: identical values on :root and .dark
+     so the app is dark regardless of the active theme class.
+     Source hex -> HSL:
+       background  #08090c
+       card        #101319   popover #0e1014   secondary #14171d
+       border/input#22262e   muted bg #1c2027  muted-fg #8b94a3
+       foreground  #E6EAF2 (light ink)
+       accent emerald #00D9B6 = 171 100% 43%
+       accent text (on emerald) near-black 222 30% 6%
+     ============================================================ */
+  :root, .dark {
+    --background: 225 20% 4%;         /* #08090c near-black blue-tinged */
+    --foreground: 220 32% 93%;        /* #E6EAF2 light ink */
+    --card: 220 22% 8%;               /* #101319 */
+    --card-foreground: 220 32% 93%;   /* #E6EAF2 */
+    --popover: 220 18% 7%;            /* #0e1014 panel */
+    --popover-foreground: 220 32% 93%;
+    --primary: 171 100% 43%;          /* emerald #00D9B6 */
+    --primary-foreground: 222 30% 6%; /* near-black, dark text on emerald */
+    --secondary: 220 18% 10%;         /* #14171d */
+    --secondary-foreground: 220 32% 93%;
+    --muted: 218 16% 13%;             /* #1c2027 line-soft as a muted surface */
+    --muted-foreground: 217 12% 59%;  /* #8b94a3 */
+    --accent: 171 100% 43%;           /* emerald #00D9B6 */
+    --accent-foreground: 222 30% 6%;  /* near-black, dark text on emerald */
+    --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 72% 38%;           /* fixes broken token referenced in tailwind.config.ts */
-    --success-foreground: 0 0% 100%;
-    --border: 0 0% 90%;               /* #e5e5e5 */
-    --input: 0 0% 90%;
-    --ring: 158 64% 40%;
+    --success: 171 100% 43%;          /* fold into the one emerald accent */
+    --success-foreground: 222 30% 6%;
+    --border: 220 15% 16%;            /* #22262e line */
+    --input: 220 15% 16%;             /* #22262e line */
+    --ring: 171 100% 43%;             /* emerald focus ring */
     --radius: 0.75rem;
-    
+
     /* === SHADOWS === */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -41,36 +55,19 @@
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   }
 
-  .dark {
-    /* === DARK MODE === */
-    --background: 0 0% 7%;            /* #121212 */
-    --foreground: 0 0% 95%;           /* #f2f2f2 */
-    --card: 0 0% 10%;                 /* #1a1a1a */
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 158 64% 45%;           /* #2db77a - Mindmaker green */
-    --primary-foreground: 0 0% 7%;
-    --secondary: 0 0% 14%;            /* #242424 */
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 60%;     /* #999999 */
-    --accent: 158 64% 45%;            /* #2db77a */
-    --accent-foreground: 0 0% 7%;
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 142 64% 45%;           /* fixes broken token referenced in tailwind.config.ts */
-    --success-foreground: 0 0% 7%;
-    --border: 0 0% 18%;               /* #2e2e2e */
-    --input: 0 0% 18%;
-    --ring: 158 64% 45%;
-  }
-  
   * {
     border-color: hsl(var(--border));
   }
-  
+
+  /* Layout sizing only. overflow/overscroll are SCOPED below to
+     body.app-locked so public marketing pages can scroll the window;
+     authed app surfaces add the .app-locked class to keep the pinned frame. */
   html, body, #root {
+    height: 100%;
+  }
+
+  body.app-locked,
+  body.app-locked #root {
     height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
@@ -89,6 +86,71 @@
     font-family: 'Space Grotesk', 'Gobold Bold', sans-serif;
     letter-spacing: 0.08em;
     font-weight: 600;
+  }
+}
+
+/* ============================================================
+   NUMERICAL-FIRST TYPE SCALE (ported from ctrl-ds.css 2026-06-16)
+   The mock's big-number type system. Class names kept identical to the
+   mock (.num, .num.phrase, .num .x, .c-bignum) so future surface work can
+   reuse them. Emerald accent for the load-bearing numbers; tabular-nums
+   so digits never jitter; tight tracking for the display sizes.
+   The accent glow uses #00d9b6 (the mock emerald) directly so it reads
+   the same whether or not a component opts into the token.
+   ============================================================ */
+:root {
+  /* type scale vars (raw px in components is drift; snap to these) */
+  --t-micro: 8.5px;
+  --t-chip: 10px;
+  --t-label: 10.5px;
+  --t-tile: 11px;
+  --t-meta: 11.5px;
+  --t-body: 13px;
+  --t-cta: 14px;
+  --t-title: 15.5px;
+  --t-consider: 16px;
+  --t-bignum: 40px;
+  --t-h: 21px;
+  /* the mock emerald, available to the number utilities below */
+  --ctrl-accent: #00d9b6;
+  --ctrl-accent-ink-bright: #aef6ea;
+}
+
+@layer utilities {
+  /* THE NUMBER - the hero value. Read it and you are done.
+     CONTENT CONTRACT: default = a short number/multiplier/percent/money
+     (<=5 chars), nowrap. .num.phrase = the fallback short phrase when there
+     is no clean number. The words always live elsewhere, never in the big number. */
+  .num {
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.92;
+    color: var(--ctrl-accent-ink-bright);
+    text-shadow: 0 0 30px rgba(0, 217, 182, 0.67);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .num.phrase {
+    font-size: 34px;
+    letter-spacing: -0.02em;
+    white-space: normal;
+    text-wrap: balance;
+  }
+  .num .x {
+    font-size: 46px;
+    font-weight: 700;
+    opacity: 0.9;
+  }
+  /* the compact big number (recap rows, tiles) */
+  .c-bignum {
+    font-size: var(--t-bignum);
+    font-weight: 720;
+    letter-spacing: -0.03em;
+    color: var(--ctrl-accent-ink-bright);
+    text-shadow: 0 0 22px var(--ctrl-accent);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
   }
 }
 

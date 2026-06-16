@@ -84,7 +84,6 @@ export default function BuildLap() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="flex items-center justify-between px-5 py-4 border-b border-border">
         <button onClick={() => navigate('/')} className="flex items-center gap-2" aria-label="Home">
-          <img src="/mindmaker-favicon.png" alt="" className="h-7 w-7" />
           <CtrlLogo className="h-4 w-auto" />
         </button>
         <button
