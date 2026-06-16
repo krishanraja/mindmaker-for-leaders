@@ -26,9 +26,12 @@ export function CockpitView() {
           ) : (
             <CockpitHome
               data={data}
-              onOpenRead={() => navigate('/decision-map')}
-              onOpenBet={() => navigate('/decision-map')}
+              onOpenRead={(betId) => navigate(betId ? `/decision-map?case=${betId}` : '/decision-map')}
+              onOpenBet={(id) => navigate(`/decision-map?case=${id}`)}
               onGoDecide={() => navigate('/decision')}
+              onAutomate={(b) =>
+                navigate('/context', { state: { seed: { kind: 'blocker', text: b.value, fact_id: b.id, label: b.label } } })
+              }
             />
           )}
         </div>

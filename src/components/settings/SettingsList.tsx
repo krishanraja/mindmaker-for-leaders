@@ -1,8 +1,11 @@
-import { ChevronRight, User, UserCircle, Radio, Bell, Shield, Sliders, Zap, Scroll } from 'lucide-react'
+/* eslint-disable react-refresh/only-export-components -- this file also exports the SETTINGS_SECTION_LABELS map */
+import { useNavigate } from 'react-router-dom'
+import { ChevronRight, User, UserCircle, Radio, Bell, Shield, Sliders, Zap, Scroll, TrendingUp } from 'lucide-react'
 import type { SettingsSection } from '@/contexts/SettingsSheetContext'
 
 interface SettingsRow {
-  section: SettingsSection
+  section?: SettingsSection
+  route?: string // navigate to a route instead of opening a section
   label: string
   description: string
   icon: React.ComponentType<{ className?: string }>
@@ -11,6 +14,7 @@ interface SettingsRow {
 const ROWS: SettingsRow[] = [
   { section: 'account', label: 'Account', description: 'Email, password, sign out', icon: User },
   { section: 'profile', label: 'Profile', description: 'Work context and background', icon: UserCircle },
+  { route: '/track-record', label: 'Track record', description: 'How your judgment is holding up', icon: TrendingUp },
   { section: 'briefing-interests', label: 'Interests', description: 'Beats, people, companies', icon: Scroll },
   { section: 'briefing', label: 'Briefing rules', description: 'Voice directives for your daily brief', icon: Radio },
   { section: 'notifications', label: 'Notifications', description: 'Delivery and quiet hours', icon: Bell },
@@ -25,12 +29,13 @@ interface SettingsListProps {
 }
 
 export function SettingsList({ onSelect }: SettingsListProps) {
+  const navigate = useNavigate()
   return (
     <div className="divide-y divide-border">
-      {ROWS.map(({ section, label, description, icon: Icon }) => (
+      {ROWS.map(({ section, route, label, description, icon: Icon }) => (
         <button
-          key={section}
-          onClick={() => onSelect(section)}
+          key={section ?? route}
+          onClick={() => (route ? navigate(route) : section && onSelect(section))}
           className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[56px] hover:bg-muted/50 active:bg-muted transition-colors text-left"
         >
           <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">

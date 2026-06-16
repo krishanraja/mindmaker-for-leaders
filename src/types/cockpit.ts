@@ -34,9 +34,18 @@ export interface CockpitHero {
   betState?: BetState | null;
 }
 
+// A declared pain, surfaced as the contextual Edge upsell (pain -> Claude skill).
+// Present only when the leader actually has a blocker on record (never invented).
+export interface CockpitBlocker {
+  id: string;
+  label: string;
+  value: string;
+}
+
 export interface CockpitData {
   hero: CockpitHero;
   bets: CockpitBet[];
   liveCount: number;
   needsYouCount: number;
+  topBlocker?: CockpitBlocker | null;
 }

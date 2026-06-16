@@ -121,8 +121,8 @@ const COCKPIT_BETS: CockpitData['bets'] = [
 ];
 const COCKPIT_FIXTURES: { label: string; data: CockpitData }[] = [
   {
-    label: 'signal hero, SOURCED number (stands clean, no est.) + board',
-    data: { hero: { kind: 'signal', category: 'PRICING', headline: 'Renting just pulled clear on cost.', magnitude: { value: '40%', label: 'cheaper to rent than build', kind: '' }, betId: 'b1', betQuestion: 'Buy the agent stack, or build our own?', betState: 'countered' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 },
+    label: 'signal hero, SOURCED number (clean) + board + Edge pain-card',
+    data: { hero: { kind: 'signal', category: 'PRICING', headline: 'Renting just pulled clear on cost.', magnitude: { value: '40%', label: 'cheaper to rent than build', kind: '' }, betId: 'b1', betQuestion: 'Buy the agent stack, or build our own?', betState: 'countered' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1, topBlocker: { id: 'bl1', label: 'Manual lead qualification', value: 'Eats ~10 hours a week of the founder\'s time.' } },
   },
   {
     label: 'signal hero, MODELLED number (carries est. mark) + board',
@@ -166,7 +166,7 @@ export default function PreviewPage() {
             <div key={f.label}>
               <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
               <div className="rounded-2xl border border-border bg-background p-3">
-                <CockpitHome data={f.data} onOpenRead={noop} onOpenBet={noop} onGoDecide={noop} animated={false} />
+                <CockpitHome data={f.data} onOpenRead={noop} onOpenBet={noop} onGoDecide={noop} onAutomate={noop} animated={false} />
               </div>
             </div>
           ))}
