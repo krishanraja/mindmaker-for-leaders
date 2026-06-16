@@ -59,6 +59,11 @@ interface BriefingSegment {
   // Honest, gated magnitude extracted at generation time. Null/absent when no
   // figure passes the honesty gate, in which case the hero leads with words.
   magnitude?: SegmentMagnitude | null;
+  // Decision linkage, stamped only on real decision-alert segments by
+  // prependDecisionAlerts (from the open decision_alerts row + its
+  // decision_cases). Absent on every news/lens segment - never fabricated.
+  decision_case_id?: string;
+  decision_statement?: string;
 }
 
 // ── News Fetching ──────────────────────────────────────────────────

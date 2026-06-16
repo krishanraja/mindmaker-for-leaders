@@ -21,6 +21,8 @@ import { buildSeedFacts, toWebFact } from '@/lib/seedFacts';
 import { MemoryWebVisualization } from '@/components/memory-web/MemoryWebVisualization';
 import { useDecisionEngine } from '@/hooks/useDecisionEngine';
 import { DecisionResult, CaptureView } from '@/components/operator/decision/decision-views';
+import { DraftCockpit } from '@/components/onboarding/DraftCockpit';
+import type { SuggestedBet } from '@/hooks/useSuggestedBets';
 
 interface Props {
   onComplete: () => void;
@@ -57,6 +59,11 @@ export function OnboardingInterview({ onComplete }: Props) {
   const [textInput, setTextInput] = useState('');
   const [extractedFactCount, setExtractedFactCount] = useState(0);
   const [decisionStatement, setDecisionStatement] = useState('');
+  // Bets the leader chose to Keep in the draft cockpit. Recorded in state and
+  // carried into the pressure-test step (the first kept bet pre-seeds the
+  // decision capture). We do not write these to the decision engine here; that
+  // happens honestly when the leader actually runs the pressure test.
+  const [keptBets, setKeptBets] = useState<SuggestedBet[]>([]);
 
   // Handle user voice transcript
   const handleTranscript = useCallback(
@@ -96,15 +103,24 @@ export function OnboardingInterview({ onComplete }: Props) {
   );
 
   // Prefill the decision capture with a challenge the leader just named, so the
-  // pressure test feels drawn from their own words (still fully editable).
+  // pressure test feels drawn from their own words (still fully editable). A bet
+  // they kept in the draft cockpit wins over a raw blocker/objective fact, since
+  // it is already framed as a real decision they chose.
   useEffect(() => {
     if (step === 'first_artifact' && !decisionStatement) {
+      const keptBet = keptBets[0]?.statement;
       const blocker = memory.find((m) => m.fact_category === 'blocker');
       const objective = memory.find((m) => m.fact_category === 'objective');
-      const seedText = blocker?.fact_value || objective?.fact_value || '';
+      const seedText = keptBet || blocker?.fact_value || objective?.fact_value || '';
       if (seedText) setDecisionStatement(seedText);
     }
-  }, [step, decisionStatement, memory]);
+  }, [step, decisionStatement, memory, keptBets]);
+
+  // Cockpit -> pressure test. Record kept bets in state and advance honestly.
+  const handleCockpitContinue = useCallback((accepted: SuggestedBet[]) => {
+    setKeptBets(accepted);
+    setStep('first_artifact');
+  }, [setStep]);
 
   // Handle voice toggle
   const handleVoiceToggle = useCallback(() => {
@@ -143,6 +159,7 @@ export function OnboardingInterview({ onComplete }: Props) {
     step !== 'welcome' &&
     step !== 'complete' &&
     step !== 'blooming' &&
+    step !== 'draft_cockpit' &&
     step !== 'first_artifact';
 
   return (
@@ -550,13 +567,18 @@ export function OnboardingInterview({ onComplete }: Props) {
               </div>
 
               <button
-                onClick={() => setStep('first_artifact')}
+                onClick={() => setStep('draft_cockpit')}
                 className="mt-5 px-8 py-3 rounded-xl bg-accent text-accent-foreground font-semibold flex items-center gap-2 shadow-lg shadow-accent/25"
               >
                 See it in action
                 <ArrowRight className="h-4 w-4" />
               </button>
             </motion.div>
+          )}
+
+          {/* DRAFT COCKPIT - curate the open decisions CTRL drafts from your facts */}
+          {step === 'draft_cockpit' && (
+            <DraftCockpit onContinue={handleCockpitContinue} />
           )}
 
           {/* FIRST ARTIFACT - pressure-test a real decision */}

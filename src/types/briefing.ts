@@ -101,6 +101,13 @@ export interface BriefingSegment {
   // Stored honest magnitude (sourced or modelled). Null/undefined on pre-magnitude
   // rows and whenever the honesty gate finds no defensible number for the segment.
   magnitude?: BriefingSegmentMagnitude | null;
+  // Decision linkage. Populated ONLY on segments that come from a real decision
+  // alert/trigger (prependDecisionAlerts stamps these from the open
+  // decision_alerts row + its decision_cases). They carry the real
+  // decision_case_id and the decision statement so the hero can lead with the
+  // actual bet. Absent on every non-decision segment (never invent a link).
+  decision_case_id?: string;
+  decision_statement?: string;
 }
 
 export interface Briefing {

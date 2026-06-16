@@ -48,6 +48,11 @@ export interface DecisionClaim {
   reaction_evidence_id: string | null;
 }
 
+// reliability_tier is the REAL stored trust level of the source, set honestly at insert
+// from the retriever / source host (see decision-engine/reliability.ts). null on older
+// rows that predate the column -> the UI falls back to its render-time heuristic.
+export type ReliabilityTier = 'primary' | 'reputable' | 'community' | 'unverified';
+
 export interface DecisionEvidence {
   id: string;
   claim_id: string;
@@ -58,6 +63,7 @@ export interface DecisionEvidence {
   retriever: string;
   retrieved_at: string | null;
   relevance_score: number | null;
+  reliability_tier: ReliabilityTier | null;
 }
 
 export interface DecisionTension {
@@ -134,6 +140,40 @@ export function useDecisionEngine() {
     setCaseId(existingCaseId);
   }, []);
 
+  // Re-read the case, its claims, and its evidence once (no polling). Used after an
+  // enrich so the freshly-inserted evidence + refreshed verdict land without a reload.
+  const refetch = useCallback(async () => {
+    if (!caseId) return;
+    const [{ data: caseRow }, { data: claimRows }, { data: tensionRows }] = await Promise.all([
+      db.from('decision_cases').select('*').eq('id', caseId).maybeSingle(),
+      db.from('decision_claims').select('*').eq('decision_case_id', caseId).order('created_at'),
+      db.from('decision_tensions').select('*').eq('decision_case_id', caseId),
+    ]);
+    if (caseRow) setDecisionCase(caseRow as DecisionCase);
+    if (claimRows) setClaims(claimRows as DecisionClaim[]);
+    if (tensionRows) setTensions(tensionRows as DecisionTension[]);
+    const claimIds = (claimRows ?? []).map((c: { id: string }) => c.id);
+    if (claimIds.length) {
+      const { data: ev } = await db.from('decision_evidence').select('*').in('claim_id', claimIds);
+      if (ev) setEvidence(ev as DecisionEvidence[]);
+    }
+  }, [caseId]);
+
+  // "Add what's missing" for one claim: re-run retrieval server-side, then refetch so the
+  // new evidence (with real reliability tiers) and the refreshed verdict appear. Returns
+  // the number of new sources added (0 is a valid, honest outcome).
+  const enrichClaim = useCallback(
+    async (claimId: string): Promise<number> => {
+      const { data, error: invokeError } = await supabase.functions.invoke('enrich-decision', {
+        body: { claim_id: claimId },
+      });
+      if (invokeError) throw invokeError;
+      await refetch();
+      return typeof data?.added === 'number' ? data.added : 0;
+    },
+    [refetch],
+  );
+
   useEffect(() => {
     if (!caseId) return;
     let active = true;
@@ -173,5 +213,5 @@ export function useDecisionEngine() {
   const isRunning = Boolean(caseId) && !!decisionCase && !TERMINAL.includes(decisionCase.stage);
   const isComplete = decisionCase?.stage === 'complete';
 
-  return { start, load, reset, starting, isRunning, isComplete, error, upgradeRequired, upgradeMessage, decisionCase, claims, evidence, tensions };
+  return { start, load, reset, refetch, enrichClaim, starting, isRunning, isComplete, error, upgradeRequired, upgradeMessage, decisionCase, claims, evidence, tensions };
 }

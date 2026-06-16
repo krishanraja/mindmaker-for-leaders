@@ -102,9 +102,12 @@ export function DecisionCard({
         <h3 className="min-w-0 flex-1 text-sm font-medium leading-snug text-foreground [overflow-wrap:anywhere]">
           {row.statement}
         </h3>
-        <span className="mt-px shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-          {relativeTime(row.decided_at)}
-        </span>
+        {/* Freshness: how long ago this call was banked. Computed client-side from decided_at. */}
+        {relativeTime(row.decided_at) && (
+          <span className="mt-px shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+            decided {relativeTime(row.decided_at)}
+          </span>
+        )}
       </div>
 
       {/* Calibration signal: your call vs the ground, read honestly (no fake validated). */}

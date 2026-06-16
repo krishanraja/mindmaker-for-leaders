@@ -83,6 +83,14 @@ verify_jwt = false
 [functions.decision-reactions]
 verify_jwt = false
 
+# Enrich a single decision claim with fresh evidence ("add what's missing"). Authed user.
+[functions.enrich-decision]
+verify_jwt = true
+
+# Propose candidate decisions during onboarding (the draft-cockpit chip-rail). Authed user.
+[functions.suggest-bets]
+verify_jwt = true
+
 # === BRIEFING FUNCTIONS ===
 [functions.generate-briefing]
 verify_jwt = true

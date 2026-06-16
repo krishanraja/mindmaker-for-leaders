@@ -16,7 +16,7 @@ import { ContestLongPress } from '@/contexts/ContestProvider';
 const SUBTITLE = 'A bet, decomposed. Each consideration shows where the evidence stands - and where only you can answer.';
 
 function MapBody({ caseId }: { caseId: string }) {
-  const { decisionCase, claims, evidence, isRunning, load } = useDecisionEngine();
+  const { decisionCase, claims, evidence, isRunning, load, enrichClaim } = useDecisionEngine();
   const { getCallsForCase, recordCall } = useDecisionCall();
   // The opened stone (its read shows inline); and whether the receipts drawer is up.
   const [openId, setOpenId] = useState<string | null>(null);
@@ -157,6 +157,7 @@ function MapBody({ caseId }: { caseId: string }) {
         onSetCall={(call) => deeperId && setCall(deeperId, call)}
         onClose={() => setDeeperId(null)}
         onVerify={() => load(caseId)}
+        onEnrich={deeperId ? () => enrichClaim(deeperId) : undefined}
       />
     </div>
   );
