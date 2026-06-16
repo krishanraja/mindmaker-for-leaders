@@ -1,0 +1,28 @@
+# CTRL — Clarity for Leaders
+
+> CTRL is an AI decision-clarity product for senior leaders. It builds a portable "AI double" of you so every AI tool knows your context, pressure-tests your real decisions against live evidence, and — newest — exposes your live Memory Web to your OWN AI agents via a read-only MCP server. Your agents act on who you are *right now*, not a pasted snapshot that goes stale the moment the tab closes.
+
+## What it does
+- **Memory Web** — your structured operating context (identity, company, objectives, blockers, confirmed patterns), ranked by importance and kept fresh; contradictions are resolved at write-time and stale facts age out.
+- **Context Export** — one-click copy / Markdown export of your context, formatted for ChatGPT, Claude, Gemini, Cursor, and Claude Code.
+- **Decision engine** — pressure-test a real decision: it decomposes the bet into considerations, verifies the load-bearing claims against the web, and surfaces where *only you* can decide (it clarifies; it never recommends from a thin signal).
+- **Daily Briefing** — a ~3-minute audio read anchored to your real priorities.
+- **Agent-native (Edge Pro)** — a read-only Model Context Protocol (MCP) server so your own agents pull your live, brain-ranked context on every call. An opt-in scope also exposes today's briefing as a structured feed.
+
+## For AI agents
+- **MCP server** (read-only, per-leader API key, requires Edge Pro):
+  `https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/mcp-context`
+  - Transport: Streamable HTTP (MCP spec 2025-06-18), stateless JSON responses.
+  - Tools: `get_leader_context` (the leader's live operating context), `get_todays_briefing` (opt-in scope).
+  - Auth: a per-leader key the leader mints in **Settings → Edge Pro** and passes as a bearer token. Read-only; revocable anytime.
+- **Machine-readable product facts:** `https://ctrl.themindmaker.ai/.well-known/product.json`
+
+## Key links
+- Home: https://ctrl.themindmaker.ai/
+- Pricing: https://ctrl.themindmaker.ai/pricing
+- Book a call: https://ctrl.themindmaker.ai/booking
+
+## Who it's for
+Senior individual leaders — C-suite, VPs, founders — at 50–5,000-person companies who already use AI daily but get generic output. Not for individual contributors with no team, students, or people wanting a generic chatbot.
+
+Built by Mindmaker. Production: https://ctrl.themindmaker.ai
