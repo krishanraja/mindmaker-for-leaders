@@ -87,7 +87,11 @@ export function CockpitHome({ data, onOpenRead, onOpenBet, onGoDecide, animated 
             <div className="flex flex-wrap items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight text-foreground">{hero.magnitude.value}</span>
               <span className="text-sm font-medium text-foreground/90">{hero.magnitude.label}</span>
-              <span className="self-center whitespace-nowrap rounded border border-border px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider text-muted-foreground">{hero.magnitude.kind}</span>
+              {/* a sourced figure stands clean; only a modelled one is marked, so an
+                  estimate never reads as measured */}
+              {hero.magnitude.kind && (
+                <span className="self-center whitespace-nowrap rounded border border-border px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider text-muted-foreground">{hero.magnitude.kind}</span>
+              )}
             </div>
           ) : (
             <h2 className="text-lg font-semibold leading-snug tracking-tight text-foreground">{hero.headline}</h2>

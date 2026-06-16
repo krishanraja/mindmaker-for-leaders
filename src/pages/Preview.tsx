@@ -121,8 +121,12 @@ const COCKPIT_BETS: CockpitData['bets'] = [
 ];
 const COCKPIT_FIXTURES: { label: string; data: CockpitData }[] = [
   {
-    label: 'signal hero WITH magnitude (number earns it, kind-marked) + board',
-    data: { hero: { kind: 'signal', category: 'PRICING', headline: 'Renting just pulled clear on cost.', magnitude: { value: '~40%', label: 'cheaper to rent than build', kind: 'est.' }, betId: 'b1', betQuestion: 'Buy the agent stack, or build our own?', betState: 'countered' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 },
+    label: 'signal hero, SOURCED number (stands clean, no est.) + board',
+    data: { hero: { kind: 'signal', category: 'PRICING', headline: 'Renting just pulled clear on cost.', magnitude: { value: '40%', label: 'cheaper to rent than build', kind: '' }, betId: 'b1', betQuestion: 'Buy the agent stack, or build our own?', betState: 'countered' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 },
+  },
+  {
+    label: 'signal hero, MODELLED number (carries est. mark) + board',
+    data: { hero: { kind: 'signal', category: 'PRICING', headline: 'Renting just pulled clear on cost.', magnitude: { value: '~10x', label: 'cheaper to rent than build', kind: 'est.' }, betId: 'b1', betQuestion: 'Buy the agent stack, or build our own?', betState: 'countered' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 },
   },
   {
     label: 'signal hero NO honest number -> words lead (event signal)',
