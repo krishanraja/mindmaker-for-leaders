@@ -13,6 +13,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createLogger } from "../_shared/logger.ts";
 import { verifyClaim } from "../decision-engine/verify.ts";
+import { proposeReaction } from "../decision-engine/reaction.ts";
 import type { ClaimType } from "../decision-engine/types.ts";
 
 const corsHeaders = {
@@ -85,6 +86,25 @@ serve(async (req) => {
           .from("decision_claims")
           .update({ verdict: verdict.verdict, confidence: verdict.confidence, rationale: verdict.rationale, updated_at: new Date().toISOString() })
           .eq("id", claim.id);
+
+        // Reaction-number: distil an honest, gated hero magnitude from the claim's
+        // persisted evidence (null => the hero leads with words). Precomputed here so
+        // the cockpit/stone/briefing heroes render instantly from the store.
+        try {
+          const { data: ev } = await admin.from("decision_evidence").select("id, excerpt").eq("claim_id", claim.id);
+          const reaction = await proposeReaction(claim.text, (ev ?? []).map((e) => ({ id: e.id as string, excerpt: e.excerpt as string | null })));
+          await admin
+            .from("decision_claims")
+            .update({
+              reaction_value: reaction?.value ?? null,
+              reaction_descriptor: reaction?.descriptor ?? null,
+              reaction_kind: reaction?.kind ?? null,
+              reaction_evidence_id: reaction?.evidence_id ?? null,
+            })
+            .eq("id", claim.id);
+        } catch (_e) {
+          // never let reaction extraction break the watch loop
+        }
 
         // Alert-worthy change?
         const wasSolid = before.verdict === "supported";
