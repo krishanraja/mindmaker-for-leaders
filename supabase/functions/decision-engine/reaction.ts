@@ -1,8 +1,9 @@
 // Propose a hero magnitude for a claim, then HARD-GATE it for honesty. The LLM
 // only proposes; supabase/functions/_shared/reaction-extraction.ts decides whether
-// it is allowed to surface (sourced / modelled / rejected). Gemini-primary (the
-// app's working model); any failure -> null -> the hero leads with words.
-import { judgeWithModel, parseLLMJson } from "./llm.ts";
+// it is allowed to surface (sourced / modelled / rejected). Uses the engine's
+// proven reasoning path (reason(): Claude primary, OpenAI fallback) - the prior
+// Gemini-only call was 400-ing; any failure -> null -> the hero leads with words.
+import { reason, parseLLMJson } from "./llm.ts";
 import { gateReaction, type EvidenceLite, type Reaction, type ReactionCandidate } from "../_shared/reaction-extraction.ts";
 
 const SYSTEM = `You distil ONE short magnitude from a claim's evidence for a glanceable hero number.
@@ -15,19 +16,39 @@ Return STRICT JSON only: {"value": string|null, "descriptor": string, "modelled"
 - descriptor: <=6 words beside the number ("cheaper to rent than build"). NEVER put a number in the descriptor.
 - Never invent a figure the evidence does not support. A wrong number is far worse than no number.`;
 
-export async function proposeReaction(claimText: string, evidence: EvidenceLite[]): Promise<Reaction | null> {
-  if (!evidence.some((e) => e.excerpt)) return null; // nothing to source from
+export interface ReactionVerbose {
+  raw: string | null;
+  parsedValue: string | null;
+  modelled: boolean;
+  gated: Reaction | null;
+  error?: string;
+}
+
+// The full proposal pass, with the raw model output exposed for observability.
+// proposeReaction() is the thin production wrapper that returns only the gated result.
+export async function proposeReactionVerbose(claimText: string, evidence: EvidenceLite[]): Promise<ReactionVerbose> {
+  if (!evidence.some((e) => e.excerpt)) return { raw: null, parsedValue: null, modelled: false, gated: null, error: "no-excerpt" };
   const snippets = evidence.map((e, i) => `[${i}] ${e.excerpt ?? "(link only)"}`).join("\n");
   const user = `Claim: ${claimText}\n\nEvidence:\n${snippets}\n\nReturn the JSON.`;
+  let raw: string | null = null;
   let candidate: ReactionCandidate | null = null;
   try {
-    const raw = await judgeWithModel("gemini", SYSTEM, user);
+    raw = await reason(SYSTEM, user, 300);
     const parsed = parseLLMJson<{ value?: string | null; descriptor?: string; modelled?: boolean }>(raw);
     if (parsed && parsed.value) {
       candidate = { value: String(parsed.value), descriptor: String(parsed.descriptor ?? ""), modelled: !!parsed.modelled };
     }
-  } catch (_e) {
-    return null; // model/parse failure -> words lead
+    return {
+      raw: raw ? String(raw).slice(0, 300) : null,
+      parsedValue: parsed?.value != null ? String(parsed.value) : null,
+      modelled: !!parsed?.modelled,
+      gated: gateReaction(candidate, evidence),
+    };
+  } catch (e) {
+    return { raw: raw ? String(raw).slice(0, 300) : null, parsedValue: null, modelled: false, gated: null, error: String(e).slice(0, 160) };
   }
-  return gateReaction(candidate, evidence); // the honesty guarantee
+}
+
+export async function proposeReaction(claimText: string, evidence: EvidenceLite[]): Promise<Reaction | null> {
+  return (await proposeReactionVerbose(claimText, evidence)).gated; // the honesty guarantee lives in gateReaction
 }
