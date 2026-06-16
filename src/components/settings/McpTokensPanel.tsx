@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMcpTokens, MCP_ENDPOINT_URL, type MintedToken } from '@/hooks/useMcpTokens';
+import { ShareWinButton } from '@/components/share/ShareWinButton';
 
 function CopyButton({ value, label }: { value: string; label?: string }) {
   const [done, setDone] = useState(false);
@@ -171,6 +172,20 @@ export function McpTokensPanel() {
       <p className="text-[11px] leading-relaxed text-muted-foreground/80">
         In Claude, Cursor, or any MCP client, add an MCP server with the URL above and your key as the bearer token. Access is read-only and tied to your Edge Pro subscription.
       </p>
+
+      {active.length > 0 && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-accent/20 bg-accent/[0.05] p-3">
+          <p className="text-xs text-muted-foreground">Your agents now read your live context. Worth a flex.</p>
+          <ShareWinButton
+            win={{
+              title: 'My agents now read my live context',
+              sub: 'live, brain-ranked - never a stale paste',
+              text: 'My AI agents now pull my live context from CTRL on every call — no more pasting a snapshot that goes stale. Agent-native leadership.',
+            }}
+            label="Share"
+          />
+        </div>
+      )}
     </div>
   );
 }
