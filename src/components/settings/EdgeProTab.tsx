@@ -1,5 +1,6 @@
 // src/components/settings/EdgeProTab.tsx
 import { useState, useEffect } from 'react'
+import { McpTokensPanel } from './McpTokensPanel'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -397,6 +398,13 @@ export function EdgeProTab() {
           </div>
         )}
       </div>
+
+      {/* Agent access (MCP) - only for active Edge Pro */}
+      {status === 'active' && (
+        <div className="bg-card p-6 rounded-lg border border-border">
+          <McpTokensPanel />
+        </div>
+      )}
     </div>
   )
 }
