@@ -15,6 +15,9 @@ interface BriefingSegmentLike {
   framework_tag: string;
   source: string;
   relevance_reason: string;
+  // Decision linkage, stamped only on real decision-alert segments below.
+  decision_case_id?: string;
+  decision_statement?: string;
   [key: string]: unknown;
 }
 
@@ -22,6 +25,7 @@ interface OpenAlert {
   id: string;
   headline: string;
   detail: string | null;
+  decision_case_id: string | null;
   decision_cases: { title: string | null } | null;
 }
 
@@ -41,7 +45,7 @@ export async function prependDecisionAlerts<T extends BriefingSegmentLike>(
   try {
     const { data } = await supabase
       .from("decision_alerts")
-      .select("id, headline, detail, decision_cases(title)")
+      .select("id, headline, detail, decision_case_id, decision_cases(title)")
       .eq("user_id", userId)
       .eq("status", "open")
       .order("created_at", { ascending: false })
@@ -50,13 +54,24 @@ export async function prependDecisionAlerts<T extends BriefingSegmentLike>(
     const alerts = (data ?? []) as unknown as OpenAlert[];
     if (alerts.length === 0) return { script, segments };
 
-    const alertSegments = alerts.map((a) => ({
-      headline: a.headline,
-      analysis: a.detail ?? "",
-      framework_tag: "decision_alert",
-      source: "CTRL Decision Engine",
-      relevance_reason: `You asked CTRL to pressure-test "${a.decision_cases?.title ?? "a decision"}". An assumption behind it has shifted, so this leads your briefing.`,
-    })) as unknown as T[];
+    const alertSegments = alerts.map((a) => {
+      // The decision statement that grounds this alert: the real case title.
+      // Only stamp the linkage when we genuinely have it (both the FK and a
+      // title); never fabricate a bet for an alert that lacks a linked case.
+      const caseTitle = a.decision_cases?.title?.trim() ?? "";
+      const seg: BriefingSegmentLike = {
+        headline: a.headline,
+        analysis: a.detail ?? "",
+        framework_tag: "decision_alert",
+        source: "CTRL Decision Engine",
+        relevance_reason: `You asked CTRL to pressure-test "${a.decision_cases?.title ?? "a decision"}". An assumption behind it has shifted, so this leads your briefing.`,
+      };
+      if (a.decision_case_id && caseTitle.length > 0) {
+        seg.decision_case_id = a.decision_case_id;
+        seg.decision_statement = caseTitle;
+      }
+      return seg;
+    }) as unknown as T[];
 
     const spoken = alerts
       .map((a) => `${a.headline}. ${a.detail ?? ""}`.trim())

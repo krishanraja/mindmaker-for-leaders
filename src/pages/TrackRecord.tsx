@@ -56,6 +56,61 @@ function groupRecords(records: TrackRecordRow[]) {
   return { held, broke, watching };
 }
 
+// "Getting sharper" - calibration over time, computed HONESTLY from the rows.
+// We take only the rows where a gut-vs-ground call can actually be scored (calibrationMatch
+// is non-null), order them oldest -> newest by decided_at, then ask: is the read-rate on your
+// recent half better than your earlier half? That is the only honest trend the data supports:
+// no fabricated sparkline, no invented per-day series. If there are too few scored calls to
+// split into two halves, there is no trend to claim - the caller shows the honest "sharpens as
+// more calls play out" state instead.
+type SharpenTrend = {
+  scored: number; // total calls we could actually score (call + verdict both present)
+  read: number; // of those, how many you read the way the evidence did
+  recentRate: number | null; // read-rate over your more recent scored half (0..1)
+  earlierRate: number | null; // read-rate over your earlier scored half (0..1)
+  direction: 'up' | 'down' | 'flat' | null; // null = not enough to claim a trend
+};
+
+function computeSharpenTrend(records: TrackRecordRow[]): SharpenTrend {
+  // Oldest -> newest. The RPC returns newest-first (decided_at DESC), so reverse a sorted copy.
+  const scoredRows = records
+    .map((r) => ({ at: new Date(r.decided_at).getTime(), m: calibrationMatch(r.breakpoint_call, r.breakpoint_verdict) }))
+    .filter((x): x is { at: number; m: boolean } => x.m !== null && !Number.isNaN(x.at))
+    .sort((a, b) => a.at - b.at);
+
+  const scored = scoredRows.length;
+  const read = scoredRows.filter((x) => x.m).length;
+
+  // Need at least 4 scored calls to honestly split into an earlier vs recent half.
+  if (scored < 4) {
+    return { scored, read, recentRate: null, earlierRate: null, direction: null };
+  }
+
+  const mid = Math.floor(scored / 2);
+  const earlier = scoredRows.slice(0, mid);
+  const recent = scoredRows.slice(scored - mid); // same-size recent half (drops the middle row on odds)
+  const rate = (rows: { m: boolean }[]) => rows.filter((x) => x.m).length / rows.length;
+  const earlierRate = rate(earlier);
+  const recentRate = rate(recent);
+
+  // A small epsilon so a one-call wobble doesn't read as a "trend".
+  const delta = recentRate - earlierRate;
+  const direction = delta > 0.05 ? 'up' : delta < -0.05 ? 'down' : 'flat';
+  return { scored, read, recentRate, earlierRate, direction };
+}
+
+// Freshness of the whole record: days since the most recent decided_at. Computed client-side;
+// there is no freshness-event feed, so this is the honest "how live is this record" read.
+function daysSinceLatest(records: TrackRecordRow[]): number | null {
+  let newest = -Infinity;
+  for (const r of records) {
+    const t = new Date(r.decided_at).getTime();
+    if (!Number.isNaN(t) && t > newest) newest = t;
+  }
+  if (newest === -Infinity) return null;
+  return Math.max(0, Math.floor((Date.now() - newest) / 86_400_000));
+}
+
 export default function TrackRecordPage() {
   const { isMobile } = useDevice();
   const { records, loading, recordOutcome } = useTrackRecord();
@@ -78,6 +133,8 @@ export default function TrackRecordPage() {
   }, [records]);
 
   const groups = useMemo(() => groupRecords(records), [records]);
+  const trend = useMemo(() => computeSharpenTrend(records), [records]);
+  const freshDays = useMemo(() => daysSinceLatest(records), [records]);
 
   async function handleRecord(id: string, playedOut: PlayedOut) {
     setBusyId(id);
@@ -119,18 +176,85 @@ export default function TrackRecordPage() {
         <StatTile value={String(stats.sharpened)} label="Facts sharpened" tone={stats.sharpened > 0 ? 'go' : undefined} />
       </div>
 
-      {/* The honest one-liner + share, only once a calibration signal actually exists. */}
+      {/* Getting sharper: calibration over time + how calls have played out. Only rendered
+          once a real calibration signal exists; the trend line is shown only when there are
+          enough scored calls to honestly split, otherwise the honest "sharpens" state. */}
       {stats.total > 0 && (
         <div className="rounded-2xl border border-border bg-card/60 p-4">
-          <p className="text-sm text-foreground">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Getting sharper</p>
+            {freshDays !== null && (
+              <span className="text-[11px] text-muted-foreground">
+                {freshDays === 0 ? 'updated today' : `last call ${freshDays}d ago`}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-2 text-sm text-foreground">
             You read{' '}
             <span className="font-semibold text-accent">
               {stats.read} of {stats.total}
             </span>{' '}
             breakpoints the way the evidence did.
           </p>
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">Your calibration sharpens as you log how decisions play out.</p>
+
+          {/* The honest trend: recent half vs earlier half of your SCORED calls. */}
+          {trend.direction && trend.recentRate !== null && trend.earlierRate !== null ? (
+            <div className="mt-3 flex items-center gap-2 text-xs">
+              <span
+                className={
+                  trend.direction === 'up'
+                    ? 'inline-flex items-center gap-1 font-medium text-accent'
+                    : trend.direction === 'down'
+                      ? 'inline-flex items-center gap-1 font-medium text-amber-500'
+                      : 'inline-flex items-center gap-1 font-medium text-muted-foreground'
+                }
+              >
+                <TrendingUp
+                  className={
+                    trend.direction === 'down'
+                      ? 'h-3.5 w-3.5 rotate-180'
+                      : trend.direction === 'flat'
+                        ? 'h-3.5 w-3.5 rotate-90'
+                        : 'h-3.5 w-3.5'
+                  }
+                />
+                {trend.direction === 'up'
+                  ? 'Getting sharper'
+                  : trend.direction === 'down'
+                    ? 'Calibration slipped'
+                    : 'Holding steady'}
+              </span>
+              <span className="text-muted-foreground">
+                {Math.round(trend.earlierRate * 100)}% then to {Math.round(trend.recentRate * 100)}% now
+              </span>
+            </div>
+          ) : (
+            <p className="mt-2 text-xs text-muted-foreground">Sharpens as more calls play out.</p>
+          )}
+
+          {/* How the harvested calls actually landed - real counts, never a verdict on a watching call. */}
+          {(groups.held.length > 0 || groups.broke.length > 0 || groups.watching.length > 0) && (
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+              {groups.held.length > 0 && (
+                <span>
+                  <span className="font-semibold text-accent">{groups.held.length}</span> held up
+                </span>
+              )}
+              {groups.broke.length > 0 && (
+                <span>
+                  <span className="font-semibold text-amber-500">{groups.broke.length}</span> didn't hold
+                </span>
+              )}
+              {groups.watching.length > 0 && (
+                <span>
+                  <span className="font-semibold text-foreground">{groups.watching.length}</span> watching
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="mt-3 flex items-center justify-end">
             <ShareWinButton
               win={{
                 title: 'My decision calibration, on the record',
@@ -149,7 +273,10 @@ export default function TrackRecordPage() {
       {renderGroup("Didn't hold", groups.broke)}
       {renderGroup('Watching', groups.watching)}
 
-      <p className="pt-1 text-center text-[11px] text-muted-foreground">Sharpens as more calls play out</p>
+      {/* Honest closer - only when no calibration section is carrying the "sharpens" line yet. */}
+      {stats.total === 0 && (
+        <p className="pt-1 text-center text-[11px] text-muted-foreground">Sharpens as more calls play out</p>
+      )}
     </div>
   );
 

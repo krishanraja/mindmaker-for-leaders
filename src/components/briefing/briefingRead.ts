@@ -143,6 +143,13 @@ export function deriveBriefingRead(briefing: Briefing): BriefingRead {
 
   const lead = ranked[0];
   const headline = lead?.headline?.trim() || 'Your read is ready';
+  // The bet/question this read answers, in the leader's own words. Set ONLY when
+  // the lead segment is decision-linked (prependDecisionAlerts stamped a real
+  // decision_statement from the open alert's decision_case). When no
+  // decision-linked segment leads, bet stays undefined and the hero shows no
+  // bet line - the honest empty state.
+  const betStatement = lead?.decision_statement?.trim();
+  const bet = betStatement && betStatement.length > 0 ? betStatement : undefined;
   // a magnitude leads only when one is honestly present: prefer the stored,
   // gated segment.magnitude, else fall back to the headline regex.
   const magnitude: ReadMagnitude | null = magnitudeForLead(lead);
@@ -167,6 +174,7 @@ export function deriveBriefingRead(briefing: Briefing): BriefingRead {
   }
 
   return {
+    bet,
     betState: readState(segments),
     magnitude,
     headline: magnitude ? (lead?.headline?.trim() || headline) : headline,

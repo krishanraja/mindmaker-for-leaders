@@ -19,9 +19,11 @@ export type InterviewStep =
   | 'extracting'
   | 'verification'
   // Session-one resequence: after extraction the leader watches their Memory
-  // Web bloom to life, then pressure-tests a real decision (the concrete
-  // payoff) before landing on the dashboard.
+  // Web bloom to life, curates the open decisions CTRL drafts for them (the
+  // draft cockpit), then pressure-tests a real decision (the concrete payoff)
+  // before landing on the dashboard.
   | 'blooming'
+  | 'draft_cockpit'
   | 'first_artifact'
   | 'complete';
 

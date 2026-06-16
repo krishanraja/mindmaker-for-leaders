@@ -1,21 +1,35 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, ExternalLink, Plus, X, Zap } from 'lucide-react';
+import { Check, ExternalLink, Loader2, Plus, X, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
+import type { DecisionEvidence, DecisionClaim, ReliabilityTier } from '@/hooks/useDecisionEngine';
 import type { UserCall } from '@/hooks/useDecisionCall';
 import { STONE, claimGlyph, domainOf, isOnlyYou, magnitudeFrom } from './ConsiderationStone';
 
-// Evidence reliability tier, read honestly from the retriever + stance. "Original" =
-// a primary/official pull; "Reputable" = a known analyst/press source; "Yours" = the
-// leader's own input; otherwise neutral.
+// Evidence reliability tier. We now prefer the REAL stored reliability_tier (stamped
+// honestly at retrieval in decision-engine/reliability.ts); the old render-time heuristic
+// off the retriever string is the fallback ONLY for rows that predate the column (null).
 type Tier = 'high' | 'med' | 'thin';
-function tierOf(e: DecisionEvidence): { tier: Tier; label: string } {
+
+const TIER_DISPLAY: Record<ReliabilityTier, { tier: Tier; label: string }> = {
+  primary: { tier: 'high', label: 'Original' },
+  reputable: { tier: 'med', label: 'Reputable' },
+  community: { tier: 'thin', label: 'Community' },
+  unverified: { tier: 'thin', label: 'Unverified' },
+};
+
+// The legacy heuristic - kept only for evidence rows with no stored tier.
+function heuristicTier(e: DecisionEvidence): { tier: Tier; label: string } {
   const r = (e.retriever || '').toLowerCase();
   if (/you|yours|self|manual|input/.test(r)) return { tier: 'thin', label: 'Yours' };
   if (/pricing|official|primary|original|filing|sec/.test(r)) return { tier: 'high', label: 'Original' };
   if ((e.relevance_score ?? 0) >= 0.7) return { tier: 'med', label: 'Reputable' };
   return { tier: 'thin', label: 'Unverified' };
+}
+
+function tierOf(e: DecisionEvidence): { tier: Tier; label: string } {
+  if (e.reliability_tier) return TIER_DISPLAY[e.reliability_tier];
+  return heuristicTier(e);
 }
 
 const TIER_CLASS: Record<Tier, string> = {
@@ -67,10 +81,39 @@ export function StoneDeeper({
   onSetCall: (call: UserCall) => void;
   onClose: () => void;
   onVerify?: () => void;
-  onEnrich?: () => void;
+  // "Add what's missing": re-runs retrieval for this claim. May return the number of
+  // new sources added (resolves the inline result line); a plain void handler still works.
+  onEnrich?: () => void | Promise<number | void>;
   verifying?: boolean;
   animated?: boolean;
 }) {
+  // Local enrich state: the "Add what's missing" pass is async, so the drawer owns its
+  // own spinner + a transient result line ("+N source(s)" / "Nothing new to add").
+  const [enriching, setEnriching] = useState(false);
+  const [enrichResult, setEnrichResult] = useState<string | null>(null);
+
+  // Clear the transient enrich result whenever the drawer reopens or switches claim.
+  useEffect(() => {
+    setEnrichResult(null);
+    setEnriching(false);
+  }, [claim?.id, open]);
+
+  const handleEnrich = async () => {
+    if (!onEnrich || enriching) return;
+    setEnriching(true);
+    setEnrichResult(null);
+    try {
+      const added = await onEnrich();
+      if (typeof added === 'number') {
+        setEnrichResult(added > 0 ? `+${added} new source${added === 1 ? '' : 's'}` : 'Nothing new to add');
+      }
+    } catch {
+      setEnrichResult('Could not enrich - try again');
+    } finally {
+      setEnriching(false);
+    }
+  };
+
   // Close on Escape (the app's standard dismissal ritual).
   useEffect(() => {
     if (!open) return;
@@ -343,23 +386,29 @@ export function StoneDeeper({
             </div>
 
             {/* foot: verify + enrich (confirm what's known, add what's missing) */}
-            <div className="flex shrink-0 gap-2.5 border-t border-border bg-card/40 px-[18px] pb-3.5 pt-3">
-              <button
-                type="button"
-                onClick={onVerify}
-                disabled={verifying || !onVerify}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/[0.06] px-3 py-2.5 text-sm font-semibold text-emerald-300 transition-opacity hover:opacity-90 disabled:opacity-50"
-              >
-                <Check className="h-4 w-4" /> {verifying ? 'Checking...' : 'Still true?'}
-              </button>
-              <button
-                type="button"
-                onClick={onEnrich}
-                disabled={!onEnrich}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground/90 transition-colors hover:bg-secondary/40 disabled:opacity-50"
-              >
-                <Plus className="h-4 w-4" /> Add what's missing
-              </button>
+            <div className="shrink-0 border-t border-border bg-card/40 px-[18px] pb-3.5 pt-3">
+              <div className="flex gap-2.5">
+                <button
+                  type="button"
+                  onClick={onVerify}
+                  disabled={verifying || !onVerify}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/[0.06] px-3 py-2.5 text-sm font-semibold text-emerald-300 transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  <Check className="h-4 w-4" /> {verifying ? 'Checking...' : 'Still true?'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEnrich}
+                  disabled={!onEnrich || enriching}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground/90 transition-colors hover:bg-secondary/40 disabled:opacity-50"
+                >
+                  {enriching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  {enriching ? 'Searching...' : "Add what's missing"}
+                </button>
+              </div>
+              {enrichResult && (
+                <p className="mt-2 text-center text-[11.5px] font-medium text-muted-foreground">{enrichResult}</p>
+              )}
             </div>
           </motion.div>
         </motion.div>

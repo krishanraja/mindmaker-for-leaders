@@ -11,6 +11,7 @@ import { verifyClaim } from "./verify.ts";
 import { advise, type AdversarialInput } from "./advise.ts";
 import { crossExamine } from "./crossexamine.ts";
 import { type EvidenceLite } from "../_shared/reaction-extraction.ts";
+import { tierForEvidence } from "./reliability.ts";
 import type { ClaimVerdict, ExtractedClaim } from "./types.ts";
 
 export interface PipelineParams {
@@ -108,6 +109,7 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
               stance: e.stance,
               retriever: e.retriever,
               relevance_score: e.relevance_score,
+              reliability_tier: tierForEvidence(e),
             })),
           )
           .select("id, excerpt");
