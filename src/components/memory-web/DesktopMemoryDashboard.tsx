@@ -4,21 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic,
   Send,
-  Edit3,
-  Trash2,
-  CheckCircle2,
   Brain,
-  Zap,
   Download,
   Upload,
-  Target,
-  User,
-  Briefcase,
-  AlertTriangle,
-  Settings,
-  TrendingUp,
-  Shield,
-  Eye,
   Copy,
   Check,
   Loader2,
@@ -28,8 +16,7 @@ import {
   Activity,
   AlertCircle,
   RefreshCw,
-  Scale,
-  ArrowRight,
+  LayoutGrid,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -40,138 +27,19 @@ import { useMemoryExport } from '@/hooks/useMemoryExport';
 import { useMarkdownImport } from '@/hooks/useMarkdownImport';
 import { useIndustrySeeds } from '@/hooks/useIndustrySeeds';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
+import { useCockpit } from '@/hooks/useCockpit';
 import { buildSeedFacts } from '@/lib/seedFacts';
-import { AlertBanner } from '@/components/operator/decision/decision-views';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MemoryWebVisualization } from './MemoryWebVisualization';
+import { BetsRail, type OvernightLine } from './BetsRail';
+import { DesktopSignalHero, type NeedsCallItem } from './DesktopSignalHero';
 import { SeedBeatsPrompt } from '@/components/briefing/SeedBeatsPrompt';
 import { BriefingSheet } from '@/components/briefing/BriefingSheet';
 import { TranscriptReviewPanel } from '@/components/voice/TranscriptReviewPanel';
 import { useTodaysBriefing, useGenerateBriefing } from '@/hooks/useBriefing';
 import { useBriefingContext } from '@/contexts/BriefingContext';
-import type {
-  MemoryWebFact,
-  Temperature,
-  FactCategory,
-  PatternType,
-} from '@/types/memory';
-
-const TEMP_PILL_STYLES: Record<Temperature, string> = {
-  hot: 'bg-red-500/10 text-red-400',
-  warm: 'bg-amber-500/10 text-amber-400',
-  cold: 'bg-slate-500/10 text-slate-400',
-};
-
-const CATEGORY_CONFIG: Record<FactCategory, { icon: typeof User; label: string; gradient: string; bg: string; dot: string }> = {
-  identity: { icon: User, label: 'Identity', gradient: 'from-violet-500 to-purple-600', bg: 'bg-violet-500/10 text-violet-400', dot: 'bg-violet-400' },
-  business: { icon: Briefcase, label: 'Business', gradient: 'from-blue-500 to-indigo-600', bg: 'bg-blue-500/10 text-blue-400', dot: 'bg-blue-400' },
-  objective: { icon: Target, label: 'Goals', gradient: 'from-emerald-500 to-teal-600', bg: 'bg-emerald-500/10 text-emerald-400', dot: 'bg-emerald-400' },
-  blocker: { icon: AlertTriangle, label: 'Challenges', gradient: 'from-red-500 to-orange-600', bg: 'bg-red-500/10 text-red-400', dot: 'bg-red-400' },
-  preference: { icon: Settings, label: 'Preferences', gradient: 'from-amber-500 to-yellow-600', bg: 'bg-amber-500/10 text-amber-400', dot: 'bg-amber-400' },
-};
-
-const PATTERN_CONFIG: Record<PatternType, { label: string; color: string }> = {
-  strength: { label: 'Strength', color: 'bg-emerald-500/10 text-emerald-400' },
-  preference: { label: 'Preference', color: 'bg-blue-500/10 text-blue-400' },
-  behavior: { label: 'Behavior', color: 'bg-purple-500/10 text-purple-400' },
-  blindspot: { label: 'Blind Spot', color: 'bg-amber-500/10 text-amber-400' },
-  anti_preference: { label: 'Avoids', color: 'bg-red-500/10 text-red-400' },
-};
-
-function FactCard({
-  fact,
-  onEdit,
-  onDelete,
-  onVerify,
-}: {
-  fact: MemoryWebFact;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
-  onVerify?: (id: string) => void;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const config = CATEGORY_CONFIG[fact.fact_category];
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-lg border border-border/60 bg-card hover:border-accent/30 transition-colors group cursor-pointer"
-      onClick={() => setExpanded(!expanded)}
-    >
-      <div className="p-3.5">
-        <div className="flex items-start justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className={cn('h-1.5 w-1.5 rounded-full flex-shrink-0', config?.dot)} />
-            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">
-              {fact.fact_label}
-            </h4>
-          </div>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-            {fact.verification_status !== 'verified' && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onVerify?.(fact.id); }}
-                className="p-1 rounded hover:bg-secondary text-emerald-500"
-                title="Verify"
-              >
-                <CheckCircle2 className="h-3 w-3" />
-              </button>
-            )}
-            <button
-              onClick={(e) => { e.stopPropagation(); onEdit?.(fact.id); }}
-              className="p-1 rounded hover:bg-secondary text-muted-foreground"
-              title="Edit"
-            >
-              <Edit3 className="h-3 w-3" />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete?.(fact.id); }}
-              className="p-1 rounded hover:bg-secondary text-red-400"
-              title="Delete"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-          </div>
-        </div>
-        <p className="text-sm text-foreground leading-relaxed line-clamp-3 group-hover:line-clamp-none">
-          {fact.fact_value}
-        </p>
-        <div className="flex items-center flex-wrap gap-1 mt-2">
-          {(fact.reference_count ?? 0) > 0 && (
-            <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-medium', TEMP_PILL_STYLES[fact.temperature])}>
-              {fact.temperature}
-            </span>
-          )}
-          {fact.verification_status === 'verified' && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-emerald-500/10 text-emerald-400">
-              verified
-            </span>
-          )}
-          <span className="text-[9px] text-muted-foreground/50 ml-auto">
-            {Math.round(fact.confidence_score * 100)}%
-          </span>
-        </div>
-        <AnimatePresence>
-          {expanded && fact.fact_context && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="overflow-hidden"
-            >
-              <p className="pt-2.5 mt-2.5 border-t border-border/60 text-xs text-muted-foreground">
-                {fact.fact_context}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
-  );
-}
+import type { BetState } from '@/types/cockpit';
 
 /* ─── Right rail components ────────────────────────────────────── */
 
@@ -275,6 +143,49 @@ function RailBriefingSlot({
   );
 }
 
+const RECENT_CHIP: Record<BetState, string> = {
+  countered: 'bg-amber-400',
+  explore: 'bg-sky-400',
+  quiet: 'bg-muted-foreground/50',
+};
+
+/** Recent decisions: the living board's recent cases, honestly state-dotted. */
+function RailRecentDecisions({
+  items,
+  onOpen,
+}: {
+  items: { id: string; title: string; state: BetState; freshness: string }[];
+  onOpen: (id: string) => void;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <div className="border-b border-border/60 p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <LayoutGrid className="h-3.5 w-3.5 text-accent" />
+        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Recent decisions
+        </h3>
+      </div>
+      <div className="space-y-2.5">
+        {items.slice(0, 5).map((it) => (
+          <button
+            key={it.id}
+            type="button"
+            onClick={() => onOpen(it.id)}
+            className="flex w-full items-start gap-2.5 rounded-md px-1 py-1 text-left transition-colors hover:bg-secondary/40"
+          >
+            <span className={cn('mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full', RECENT_CHIP[it.state])} aria-hidden />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13px] leading-snug text-foreground line-clamp-2">{it.title}</span>
+              <span className="mt-0.5 block text-[11px] text-muted-foreground">{it.freshness}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function RailQuickActions({
   onQuickExport,
   onImport,
@@ -289,7 +200,7 @@ function RailQuickActions({
   navigate: ReturnType<typeof useNavigate>;
 }) {
   return (
-    <div className="border-b border-border/60 p-5">
+    <div className="p-5">
       <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
         Quick actions
       </h3>
@@ -328,66 +239,6 @@ function RailQuickActions({
   );
 }
 
-function RailCoverage({ stats }: { stats: ReturnType<typeof useMemoryWeb>['stats'] }) {
-  const total = stats?.total_facts || 0;
-  return (
-    <div className="border-b border-border/60 p-5">
-      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-        Coverage
-      </h3>
-      <div className="space-y-2">
-        {(Object.entries(stats?.category_distribution || {}) as [FactCategory, number][])
-          .sort((a, b) => b[1] - a[1])
-          .map(([cat, count]) => {
-            const config = CATEGORY_CONFIG[cat];
-            if (!config) return null;
-            const pct = total > 0 ? (count / total) * 100 : 0;
-            return (
-              <div key={cat} className="flex items-center gap-2.5">
-                <span className="text-xs text-muted-foreground w-16 truncate">
-                  {config.label}
-                </span>
-                <div className="flex-1 h-1.5 rounded-full bg-muted/60 overflow-hidden">
-                  <motion.div
-                    className={cn('h-full rounded-full bg-gradient-to-r', config.gradient)}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.8 }}
-                  />
-                </div>
-                <span className="text-xs font-mono text-foreground/70 w-5 text-right">
-                  {count}
-                </span>
-              </div>
-            );
-          })}
-      </div>
-    </div>
-  );
-}
-
-/* The marquee recurring action: pressure-test a real decision. Elevated out of
-   Edge so it reads as a primary, everyday move, grounded in the Memory Web. */
-function DecisionCtaCard({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="group w-full flex items-center gap-4 rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 text-left transition-colors hover:bg-primary/10"
-    >
-      <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-        <Scale className="h-5 w-5 text-primary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground">Pressure-test a decision</p>
-        <p className="text-xs text-muted-foreground leading-snug">
-          Break a real call into the claims it rests on, check each against the evidence and your own context.
-        </p>
-      </div>
-      <ArrowRight className="h-4 w-4 text-primary/70 group-hover:translate-x-0.5 transition-transform shrink-0" />
-    </button>
-  );
-}
-
 /* ─── Main dashboard ───────────────────────────────────────────── */
 
 export function DesktopMemoryDashboard() {
@@ -395,27 +246,36 @@ export function DesktopMemoryDashboard() {
   const { user } = useAuth();
   const {
     facts,
-    patterns,
     stats,
     delta,
     isLoading,
     error: memoryError,
     refresh: refreshMemory,
-    editFact,
-    deleteFact,
-    verifyFact,
     submitInput,
   } = useMemoryWeb();
   const { isExporting, generateExport, copyToClipboard } = useMemoryExport();
   const { briefing: todaysBriefing, loading: briefingLoading, refetch: refetchBriefing } = useTodaysBriefing();
-  const { setBriefing, setSheetOpen, playback } = useBriefingContext();
+  const { setBriefing, setSheetOpen } = useBriefingContext();
   const { generate, generating, phase } = useGenerateBriefing();
   const hasData = facts.length > 0;
   const { toast } = useToast();
 
-  // Decision Engine: open alerts pull the leader back; the CTA leads with the
-  // marquee action.
+  // The living decision board (cases + open alerts) and the honest cockpit
+  // projection (bets board + the day's strongest signal hero).
   const decisionInbox = useDecisionInbox();
+  const { data: cockpit } = useCockpit();
+
+  // The command-centre is a state machine: Board (the signal hero) OR Brain (the
+  // memory-web canvas). One state at a time, never both.
+  const [canvasMode, setCanvasMode] = useState<'board' | 'brain'>('board');
+
+  // The selected bet drives the centre's "your call" quote-back. It defaults to
+  // the bet the day's signal hit (the call that moved hardest overnight).
+  const [selectedBetId, setSelectedBetId] = useState<string | null>(null);
+  useEffect(() => {
+    if (selectedBetId && cockpit.bets.some((b) => b.id === selectedBetId)) return;
+    setSelectedBetId(cockpit.hero.betId ?? cockpit.bets[0]?.id ?? null);
+  }, [cockpit.hero.betId, cockpit.bets, selectedBetId]);
 
   // Cold start: seed the web with ambient industry context so the canvas is
   // never empty. Only fetched when there is genuinely nothing to show.
@@ -433,6 +293,15 @@ export function DesktopMemoryDashboard() {
       setSheetOpen(true);
     }
   };
+
+  const handleOpenBriefing = useCallback(() => {
+    if (todaysBriefing) {
+      setBriefing(todaysBriefing);
+      setSheetOpen(true);
+    } else {
+      navigate('/briefing');
+    }
+  }, [todaysBriefing, setBriefing, setSheetOpen, navigate]);
 
   const handleGenerateBriefing = async () => {
     await generate(undefined, undefined, undefined, refetchBriefing);
@@ -523,6 +392,17 @@ export function DesktopMemoryDashboard() {
 
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || '';
 
+  // The human date header for the command panel (e.g. "Tuesday, 12 June").
+  const dateLabel = useMemo(
+    () =>
+      new Date().toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }),
+    [],
+  );
+
   const handleSubmit = async () => {
     if (!inputText.trim() || isSubmitting) return;
     const text = inputText.trim();
@@ -558,9 +438,63 @@ export function DesktopMemoryDashboard() {
     }
   };
 
-  const strengthPatterns = patterns.filter((p) => p.pattern_type === 'strength');
-  const blindspotPatterns = patterns.filter((p) => p.pattern_type === 'blindspot');
-  const otherPatterns = patterns.filter((p) => p.pattern_type !== 'strength' && p.pattern_type !== 'blindspot');
+  const handleOpenRead = useCallback(
+    (betId: string | null | undefined) => {
+      navigate(betId ? `/decision?case=${betId}` : '/decision');
+    },
+    [navigate],
+  );
+
+  const handleSelectBet = useCallback(
+    (id: string) => {
+      setSelectedBetId(id);
+      setCanvasMode('board');
+    },
+    [],
+  );
+
+  // The selected bet's call (its statement) + honest state, for the "your call"
+  // quote-back. Falls back to the bet the signal hit.
+  const selectedCase = useMemo(
+    () => decisionInbox.cases.find((c) => c.id === selectedBetId) ?? null,
+    [decisionInbox.cases, selectedBetId],
+  );
+  const selectedBet = useMemo(
+    () => cockpit.bets.find((b) => b.id === selectedBetId) ?? null,
+    [cockpit.bets, selectedBetId],
+  );
+
+  // Overnight summary lines from the open alerts (the rail's "since yesterday").
+  const overnight: OvernightLine[] = useMemo(() => {
+    return decisionInbox.alerts.slice(0, 3).map((a): OvernightLine => ({
+      tone: a.kind === 'evidence_shifted' ? 'ok' : 'down',
+      text: a.headline,
+    }));
+  }, [decisionInbox.alerts]);
+
+  // "Needs your call" cards: the bets carrying an open signal (cap handled in the hero).
+  const needs: NeedsCallItem[] = useMemo(() => {
+    const byId = new Map(decisionInbox.cases.map((c) => [c.id, c]));
+    return cockpit.bets
+      .filter((b) => b.state !== 'quiet')
+      .map((b): NeedsCallItem => {
+        const alert = decisionInbox.alerts.find((a) => a.decision_case_id === b.id);
+        return {
+          id: b.id,
+          title: alert?.headline || byId.get(b.id)?.title || b.question,
+          detail: alert?.detail || '',
+          betState: b.state,
+        };
+      });
+  }, [cockpit.bets, decisionInbox.cases, decisionInbox.alerts]);
+  const needsExtra = Math.max(0, needs.length - 2);
+
+  // Recent decisions for the right rail (the living board, honestly dotted).
+  const recentDecisions = useMemo(
+    () =>
+      cockpit.bets.map((b) => ({ id: b.id, title: b.question, state: b.state, freshness: b.freshness })),
+    [cockpit.bets],
+  );
 
   const rightRail = hasData ? (
     <div className="flex flex-col">
@@ -572,6 +506,7 @@ export function DesktopMemoryDashboard() {
         onGenerate={handleGenerateBriefing}
         onPlay={handlePlayBriefing}
       />
+      <RailRecentDecisions items={recentDecisions} onOpen={(id) => handleOpenRead(id)} />
       <RailQuickActions
         onQuickExport={handleQuickExport}
         onImport={triggerImport}
@@ -579,9 +514,8 @@ export function DesktopMemoryDashboard() {
         copied={quickExportCopied}
         navigate={navigate}
       />
-      <RailCoverage stats={stats} />
       {delta && delta.new_facts > 0 && (
-        <div className="p-5">
+        <div className="border-t border-border/60 p-5">
           <div className="flex items-center gap-2 mb-3">
             <Activity className="h-3.5 w-3.5 text-accent" />
             <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -650,25 +584,37 @@ export function DesktopMemoryDashboard() {
 
       <DesktopShell
         eyebrow={greeting + (firstName ? `, ${firstName}` : '')}
-        title="Memory Web"
+        title="Command centre"
+        bleed
         actions={
           hasData ? (
             <>
-              <div className="hidden lg:flex items-center gap-3 text-xs text-muted-foreground mr-2 px-3 border-r border-border/60">
-                <span>
-                  <span className="text-foreground font-semibold">{stats?.total_facts || 0}</span>{' '}
-                  facts
-                </span>
-                <span>
-                  <span className="text-foreground font-semibold">{stats?.patterns_count || 0}</span>{' '}
-                  patterns
-                </span>
-                <span>
-                  Profile{' '}
-                  <span className="text-emerald-400 font-semibold">
-                    {stats?.health_score || 0}%
-                  </span>
-                </span>
+              {/* Board / Brain state toggle - one canvas state at a time */}
+              <div className="hidden md:flex items-center overflow-hidden rounded-lg border border-border">
+                <button
+                  type="button"
+                  onClick={() => setCanvasMode('board')}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-semibold transition-colors',
+                    canvasMode === 'board'
+                      ? 'bg-accent/15 text-accent'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  Board
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCanvasMode('brain')}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-semibold transition-colors',
+                    canvasMode === 'brain'
+                      ? 'bg-accent/15 text-accent'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  Brain
+                </button>
               </div>
               <button
                 onClick={handleQuickExport}
@@ -688,285 +634,150 @@ export function DesktopMemoryDashboard() {
         }
         rightRail={rightRail}
       >
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide space-y-6">
-          {/* Decision alerts: a re-verified call whose evidence shifted pulls
-              the leader back. */}
-          {decisionInbox.alerts.length > 0 && (
-            <AlertBanner
-              alerts={decisionInbox.alerts}
-              onReRun={() => navigate('/decision')}
-              onDismiss={(a) => decisionInbox.acknowledge(a.id)}
-            />
-          )}
-
-          {/* Marquee action, shown once the leader has context to ground it. */}
-          {hasData && <DecisionCtaCard onClick={() => navigate('/decision')} />}
-
-          {/* Input bar - sticky-feeling, primary action */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-sm hover:border-accent/30 focus-within:border-accent/40 transition-colors">
-              <button
-                onClick={isRecording ? stopRecording : startRecording}
-                disabled={!!pendingReview || isVoiceProcessing}
-                className={cn(
-                  'flex-shrink-0 p-2 rounded-lg transition-colors',
-                  isRecording
-                    ? 'bg-red-500/10 text-red-400 animate-pulse'
-                    : 'hover:bg-secondary text-muted-foreground hover:text-foreground',
-                  (pendingReview || isVoiceProcessing) && 'opacity-50 cursor-not-allowed',
-                )}
-                title={isRecording ? 'Stop recording' : 'Start recording'}
-              >
-                <Mic className="h-4 w-4" />
-              </button>
-              <button
-                onClick={triggerImport}
-                disabled={isImporting}
-                className="flex-shrink-0 p-2 rounded-lg transition-colors hover:bg-secondary text-muted-foreground hover:text-foreground"
-                title="Import markdown or text file"
-              >
-                <Upload className="h-4 w-4" />
-              </button>
-              <div className="w-px h-5 bg-border flex-shrink-0" />
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  hasData
-                    ? 'Type a thought, paste a note, or drop a markdown file...'
-                    : 'Tell me about your role, company, and goals - or drop a .md file...'
-                }
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
-              />
-              <kbd className="hidden sm:inline-flex items-center justify-center h-5 px-1.5 rounded border border-border bg-background text-[10px] font-mono text-muted-foreground">
-                Enter
-              </kbd>
-              <button
-                onClick={handleSubmit}
-                disabled={!inputText.trim() || isSubmitting || !!pendingReview}
-                className={cn(
-                  'flex-shrink-0 p-2 rounded-lg transition-colors',
-                  isSubmitting
-                    ? 'text-accent animate-pulse cursor-wait'
-                    : inputText.trim()
-                    ? 'text-accent hover:bg-accent/10'
-                    : 'text-muted-foreground/40 cursor-not-allowed',
-                )}
-              >
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </button>
+        {/* ── LOADING ──────────────────────────────────────────────────── */}
+        {isLoading && (
+          <div className="flex-1 min-h-0 p-8 space-y-4" aria-busy="true" aria-label="Loading your command centre">
+            <Skeleton className="h-10 w-64 rounded-lg" />
+            <Skeleton className="h-72 w-full rounded-2xl" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+              ))}
             </div>
-            {(isRecording || isVoiceProcessing) && browserCaptionPreview ? (
-              <p className="text-[10px] text-muted-foreground px-1 italic line-clamp-2">
-                {isVoiceProcessing ? 'Preview (may differ): ' : 'Live caption (approx.): '}
-                {browserCaptionPreview}
-              </p>
-            ) : null}
-            {pendingReview && (
-              <TranscriptReviewPanel
-                transcript={pendingReview.transcript}
-                rawTranscript={pendingReview.rawTranscript}
-                refined={pendingReview.refined}
-                editedText={editDesktopReviewText}
-                onEditedTextChange={setEditDesktopReviewText}
-                onConfirm={handleConfirmDesktopReview}
-                onDismiss={() => dismissPendingReview()}
-                confirmLabel="Insert into field"
-                className="border-border"
-              />
-            )}
           </div>
+        )}
 
-          {/* Seed beats prompt for cold-start interests */}
-          {hasData && <SeedBeatsPrompt />}
+        {/* ── COMMAND CENTRE (board read / bet focus / brain) ──────────── */}
+        {!isLoading && hasData && (
+          <div className="flex min-h-0 flex-1">
+            {/* LEFT: the whole honest bets board */}
+            <BetsRail
+              bets={cockpit.bets}
+              liveCount={cockpit.liveCount}
+              selectedBetId={selectedBetId}
+              onSelectBet={handleSelectBet}
+              onAddBet={() => navigate('/decision')}
+              overnight={overnight}
+            />
 
-          {isLoading && (
-            // Content-shaped skeleton (hero canvas + fact cards) so the 3-6s
-            // first load reads as "your memory is arriving", not a blank spinner.
-            <div className="space-y-4" aria-busy="true" aria-label="Loading your memory">
-              <Skeleton className="h-64 w-full rounded-2xl" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
-                ))}
+            {/* CENTRE: the command panel - one canvas state at a time */}
+            <div className="flex min-w-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide px-7 py-6">
+                {canvasMode === 'brain' ? (
+                  <div className="flex h-full min-h-0 flex-col">
+                    <div className="mb-3 flex items-center gap-2.5">
+                      <Brain className="h-4 w-4 text-accent" />
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                        Your brain
+                      </h3>
+                      <span className="text-[10px] text-muted-foreground/60">
+                        {facts.length} things CTRL knows - click to explore
+                      </span>
+                    </div>
+                    <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/60 bg-card/40">
+                      <MemoryWebVisualization facts={facts} />
+                    </div>
+                  </div>
+                ) : (
+                  <DesktopSignalHero
+                    hero={cockpit.hero}
+                    call={selectedCase?.statement ?? cockpit.hero.betQuestion}
+                    callState={(selectedBet?.state ?? cockpit.hero.betState) as BetState | null}
+                    dateLabel={dateLabel}
+                    needs={needs}
+                    needsExtra={needsExtra}
+                    onOpenRead={handleOpenRead}
+                    onPressureTest={() => navigate('/decision')}
+                    onOpenBriefing={handleOpenBriefing}
+                    onGoDecide={() => navigate('/decision')}
+                  />
+                )}
               </div>
-            </div>
-          )}
 
-          {!isLoading && hasData && (
-            <>
-              {/* Memory Web - hero canvas */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-border/60 bg-card/60 overflow-hidden shadow-sm"
-              >
-                <div className="px-5 py-3 border-b border-border/60 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Brain className="h-4 w-4 text-accent" />
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                      Memory Web
-                    </h3>
-                    <span className="text-[10px] text-muted-foreground/60 ml-2">
-                      {facts.length} nodes - click to explore
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {(Object.keys(CATEGORY_CONFIG) as FactCategory[]).map((cat) => {
-                      const c = CATEGORY_CONFIG[cat];
-                      const count = stats?.category_distribution?.[cat] || 0;
-                      if (count === 0) return null;
-                      return (
-                        <div
-                          key={cat}
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
-                          title={`${c.label}: ${count}`}
-                        >
-                          <span className={cn('h-1.5 w-1.5 rounded-full', c.dot)} />
-                          <span className="text-muted-foreground/70">{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="h-[clamp(420px,_calc(100dvh-360px),_640px)] relative">
-                  <MemoryWebVisualization facts={facts} />
-                </div>
-              </motion.div>
-
-              {/* Patterns - 3 columns */}
-              {patterns.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Zap className="h-3.5 w-3.5 text-amber-400" />
-                    <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                      Skills & Patterns
-                    </h2>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    {/* Strengths */}
-                    <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.03] p-4">
-                      <h4 className="text-xs font-semibold text-emerald-400 mb-2.5 flex items-center gap-1.5">
-                        <TrendingUp className="h-3 w-3" /> Strengths to 10X
-                      </h4>
-                      <div className="space-y-2">
-                        {strengthPatterns.length > 0 ? (
-                          strengthPatterns.slice(0, 4).map((p) => (
-                            <div key={p.id} className="rounded-md bg-emerald-500/[0.05] border border-emerald-500/10 p-2.5">
-                              <p className="text-xs text-foreground leading-relaxed">{p.pattern_text}</p>
-                              <span className="text-[10px] text-emerald-400 mt-1 block">
-                                {Math.round(p.confidence * 100)}% confidence
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-xs text-muted-foreground/50 py-3 text-center">
-                            Share more wins to discover strengths
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Blind Spots */}
-                    <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.03] p-4">
-                      <h4 className="text-xs font-semibold text-amber-400 mb-2.5 flex items-center gap-1.5">
-                        <Shield className="h-3 w-3" /> Blind Spots
-                      </h4>
-                      <div className="space-y-2">
-                        {blindspotPatterns.length > 0 ? (
-                          blindspotPatterns.slice(0, 4).map((p) => (
-                            <div key={p.id} className="rounded-md bg-amber-500/[0.05] border border-amber-500/10 p-2.5">
-                              <p className="text-xs text-foreground leading-relaxed">{p.pattern_text}</p>
-                              <span className="text-[10px] text-amber-400 mt-1 block">
-                                {Math.round(p.confidence * 100)}% confidence
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-xs text-muted-foreground/50 py-3 text-center">
-                            Narrate more to uncover blind spots
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Behaviors */}
-                    <div className="rounded-xl border border-purple-500/15 bg-purple-500/[0.03] p-4">
-                      <h4 className="text-xs font-semibold text-purple-400 mb-2.5 flex items-center gap-1.5">
-                        <Eye className="h-3 w-3" /> Behaviors
-                      </h4>
-                      <div className="space-y-2">
-                        {otherPatterns.length > 0 ? (
-                          otherPatterns.slice(0, 4).map((p) => {
-                            const config = PATTERN_CONFIG[p.pattern_type] || PATTERN_CONFIG.behavior;
-                            return (
-                              <div key={p.id} className="rounded-md bg-purple-500/[0.05] border border-purple-500/10 p-2.5">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                  <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-semibold', config.color)}>
-                                    {config.label}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-foreground leading-relaxed">{p.pattern_text}</p>
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <p className="text-xs text-muted-foreground/50 py-3 text-center">
-                            More narration reveals patterns
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Facts grid - denser, 4 cols */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                    <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                      Facts
-                    </h2>
-                    <span className="text-[10px] text-muted-foreground/60">
-                      {facts.length} total
-                    </span>
-                  </div>
+              {/* Capture bar - the always-available "voice a thought / drop a note"
+                  input that grows the brain. Sits below the canvas, full-width. */}
+              <div className="shrink-0 border-t border-border/60 bg-background/60 px-7 py-3">
+                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-sm focus-within:border-accent/40 transition-colors">
                   <button
-                    onClick={() => navigate('/memory')}
-                    className="text-[11px] text-accent hover:underline"
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={!!pendingReview || isVoiceProcessing}
+                    className={cn(
+                      'flex-shrink-0 p-2 rounded-lg transition-colors',
+                      isRecording
+                        ? 'bg-red-500/10 text-red-400 animate-pulse'
+                        : 'hover:bg-secondary text-muted-foreground hover:text-foreground',
+                      (pendingReview || isVoiceProcessing) && 'opacity-50 cursor-not-allowed',
+                    )}
+                    title={isRecording ? 'Stop recording' : 'Start recording'}
                   >
-                    View all →
+                    <Mic className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={triggerImport}
+                    disabled={isImporting}
+                    className="flex-shrink-0 p-2 rounded-lg transition-colors hover:bg-secondary text-muted-foreground hover:text-foreground"
+                    title="Import markdown or text file"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </button>
+                  <div className="w-px h-5 bg-border flex-shrink-0" />
+                  <input
+                    type="text"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type a thought, paste a note, or drop a markdown file..."
+                    className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
+                  />
+                  <kbd className="hidden sm:inline-flex items-center justify-center h-5 px-1.5 rounded border border-border bg-background text-[10px] font-mono text-muted-foreground">
+                    Enter
+                  </kbd>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!inputText.trim() || isSubmitting || !!pendingReview}
+                    className={cn(
+                      'flex-shrink-0 p-2 rounded-lg transition-colors',
+                      isSubmitting
+                        ? 'text-accent animate-pulse cursor-wait'
+                        : inputText.trim()
+                        ? 'text-accent hover:bg-accent/10'
+                        : 'text-muted-foreground/40 cursor-not-allowed',
+                    )}
+                  >
+                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </button>
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-2.5">
-                  {facts.slice(0, 24).map((fact) => (
-                    <FactCard
-                      key={fact.id}
-                      fact={fact}
-                      onEdit={editFact}
-                      onDelete={deleteFact}
-                      onVerify={verifyFact}
+                {(isRecording || isVoiceProcessing) && browserCaptionPreview ? (
+                  <p className="mt-1.5 text-[10px] text-muted-foreground px-1 italic line-clamp-2">
+                    {isVoiceProcessing ? 'Preview (may differ): ' : 'Live caption (approx.): '}
+                    {browserCaptionPreview}
+                  </p>
+                ) : null}
+                {pendingReview && (
+                  <div className="mt-2">
+                    <TranscriptReviewPanel
+                      transcript={pendingReview.transcript}
+                      rawTranscript={pendingReview.rawTranscript}
+                      refined={pendingReview.refined}
+                      editedText={editDesktopReviewText}
+                      onEditedTextChange={setEditDesktopReviewText}
+                      onConfirm={handleConfirmDesktopReview}
+                      onDismiss={() => dismissPendingReview()}
+                      confirmLabel="Insert into field"
+                      className="border-border"
                     />
-                  ))}
-                </div>
-              </motion.div>
-            </>
-          )}
+                  </div>
+                )}
+                {/* Seed beats prompt for cold-start interests */}
+                <SeedBeatsPrompt />
+              </div>
+            </div>
+          </div>
+        )}
 
-          {/* Error state - shown only when query failed and there is no cached data */}
-          {!isLoading && !!memoryError && !hasData && (
+        {/* ── ERROR ────────────────────────────────────────────────────── */}
+        {!isLoading && !!memoryError && !hasData && (
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-8">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -974,7 +785,7 @@ export function DesktopMemoryDashboard() {
             >
               <AlertCircle className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
               <h2 className="text-lg font-semibold text-foreground mb-1">
-                Could not load your Memory Web
+                Could not load your command centre
               </h2>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
                 Something went wrong fetching your memories. Check your connection and try again.
@@ -987,11 +798,13 @@ export function DesktopMemoryDashboard() {
                 Retry
               </button>
             </motion.div>
-          )}
+          </div>
+        )}
 
-          {/* Empty state - the web is never bare: ambient industry seeds bloom
-              behind the call to action so the canvas reads as alive. */}
-          {showEmpty && (
+        {/* ── EMPTY / COLD START ───────────────────────────────────────── */}
+        {showEmpty && (
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-8">
+            <input {...fileInputProps} />
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1032,9 +845,6 @@ export function DesktopMemoryDashboard() {
                     Import markdown
                   </button>
                 </div>
-                <div className="max-w-md mx-auto mt-6">
-                  <DecisionCtaCard onClick={() => navigate('/decision')} />
-                </div>
                 <p className="text-[11px] text-muted-foreground/50 mt-4">
                   Tip: press{' '}
                   <kbd className="px-1.5 py-0.5 rounded border border-border bg-secondary text-[10px] font-mono">
@@ -1044,8 +854,8 @@ export function DesktopMemoryDashboard() {
                 </p>
               </div>
             </motion.div>
-          )}
-        </div>
+          </div>
+        )}
       </DesktopShell>
 
       <BriefingSheet />

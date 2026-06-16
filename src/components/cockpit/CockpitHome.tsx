@@ -72,30 +72,16 @@ function BetRow({ bet, onOpen }: { bet: CockpitBet; onOpen: (id: string) => void
   );
 }
 
-// ---- hero tone governor: a countered bet warms the hero; explore cools it; otherwise emerald.
-// (mirrors the .c-hero / .c-hero.contested honesty governor: a contested read drops the emerald glow.)
-function heroTone(betState?: BetState | null): {
+// ---- hero tone: the "strongest signal" hero is emerald, exactly as cockpit-web.html shows it
+// (a strong signal the brain surfaced). The bet's honest state (countered/explore/quiet) is
+// carried by the StateChip on the bet below, not by recolouring the whole hero. (The briefing
+// hero warms to amber when countered - that is a different frame with its own mock.)
+function heroTone(_betState?: BetState | null): {
   viz: HeroVizTone;
   shell: string;
   eyebrow: string;
   dot: string;
 } {
-  if (betState === 'countered') {
-    return {
-      viz: 'contested',
-      shell: 'border-amber-900/50 bg-[radial-gradient(120%_95%_at_72%_0%,#241a0c_0%,#0d1014_60%)]',
-      eyebrow: 'text-amber-200/70',
-      dot: 'text-amber-400/80',
-    };
-  }
-  if (betState === 'explore') {
-    return {
-      viz: 'neutral',
-      shell: 'border-sky-900/50 bg-[radial-gradient(120%_95%_at_72%_0%,#0e1f33_0%,#0d1014_60%)]',
-      eyebrow: 'text-sky-200/70',
-      dot: 'text-sky-400/80',
-    };
-  }
   return {
     viz: 'signal',
     shell: 'border-accent/25 bg-[radial-gradient(120%_95%_at_72%_0%,#10261f_0%,#0d1014_60%)] shadow-[0_0_55px_-22px_#00d9b6]',

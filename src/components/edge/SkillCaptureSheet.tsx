@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, MessageSquare, Loader2, Send, Zap, Lightbulb, AlertTriangle, X } from "lucide-react";
+import { Mic, MicOff, MessageSquare, Loader2, Send, Zap, Lightbulb, AlertTriangle, X, GitBranch, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -323,16 +323,17 @@ function CaptureContent({
 
   return (
     <div className="space-y-5">
-      {/* Header */}
+      {/* Header - single calm row, emerald accent disc (matches the capture
+          mock's mic/accent disc; no off-token amber gradient). */}
       <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20">
-          <Zap className="h-5 w-5 text-amber-500" />
+        <div className="flex-shrink-0 grid place-items-center w-10 h-10 rounded-xl bg-accent/10 border border-accent/20">
+          <Zap className="h-5 w-5 text-accent" />
         </div>
-        <div>
-          <h3 className="text-lg font-bold text-foreground">
+        <div className="min-w-0">
+          <h3 className="text-lg font-semibold text-foreground tracking-tight">
             {activeSeed ? "Automate this pain" : "Describe your workflow"}
           </h3>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground leading-snug">
             {activeSeed
               ? "Add the steps you follow today and we'll turn it into a skill that triggers automatically."
               : "What do you do every week that you wish AI could help with?"}
@@ -399,20 +400,38 @@ function CaptureContent({
       {!activeSeed && !painsLoading && visiblePains.length > 0 && (
         <div className="space-y-2">
           <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-            Or start from a pain you've already told us about
+            Pick a pain you've already told us about
           </p>
-          <div className="flex flex-wrap gap-1.5">
+          {/* Pick-first rows (mock: pick, don't type). Each is a full-width
+              selectable row with a neutral fork mark, the pain headline that
+              wraps freely, and an emerald add affordance - tapping anchors the
+              seed and drops the open box below to a secondary escape hatch. */}
+          <div className="flex flex-col gap-2">
             {visiblePains.map((pain, i) => (
               <button
                 key={`${pain.kind}-${pain.fact_id ?? pain.decision_id ?? i}`}
                 onClick={() => handlePickPain(pain)}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors text-left max-w-full",
+                  "group flex items-center gap-3 w-full rounded-xl border p-3 text-left transition-colors",
                   painChipTone(pain.kind),
                 )}
                 title={pain.text}
               >
-                <span className="line-clamp-1">{pain.label ?? pain.text}</span>
+                <span
+                  aria-hidden
+                  className="flex-shrink-0 grid place-items-center w-7 h-7 rounded-lg bg-secondary border border-border text-muted-foreground"
+                >
+                  <GitBranch className="h-4 w-4" />
+                </span>
+                <span className="flex-1 min-w-0 text-sm font-medium text-foreground line-clamp-2 leading-snug">
+                  {pain.label ?? pain.text}
+                </span>
+                <span
+                  aria-hidden
+                  className="flex-shrink-0 grid place-items-center w-7 h-7 rounded-lg border border-accent/40 bg-accent/10 text-accent group-hover:bg-accent group-hover:text-accent-foreground transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                </span>
               </button>
             ))}
           </div>
@@ -440,32 +459,38 @@ function CaptureContent({
         </div>
       )}
 
-      {/* Input mode segmented control - equal weight, no buried toggle. */}
-      <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-foreground/5 border border-foreground/10">
-        <button
-          onClick={() => setInputMode("voice")}
-          className={cn(
-            "flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-            inputMode === "voice"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Mic className="w-3.5 h-3.5" />
-          Voice
-        </button>
-        <button
-          onClick={() => setInputMode("text")}
-          className={cn(
-            "flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-            inputMode === "text"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <MessageSquare className="w-3.5 h-3.5" />
-          Text
-        </button>
+      {/* Add your own - the escape hatch (mock: secondary, not the default).
+          A calm on-token segmented control; voice or type, equal weight. */}
+      <div className="space-y-2">
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          {activeSeed ? "Add the detail" : "Add your own"}
+        </p>
+        <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-secondary border border-border">
+          <button
+            onClick={() => setInputMode("voice")}
+            className={cn(
+              "flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+              inputMode === "voice"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Mic className="w-3.5 h-3.5" />
+            Voice
+          </button>
+          <button
+            onClick={() => setInputMode("text")}
+            className={cn(
+              "flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors",
+              inputMode === "text"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            Text
+          </button>
+        </div>
       </div>
 
       {/* Voice input */}
@@ -553,7 +578,7 @@ function CaptureContent({
                 <motion.div
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="w-full rounded-xl bg-foreground/5 border border-foreground/10 p-3"
+                  className="w-full rounded-xl bg-secondary/40 border border-border p-3"
                 >
                   <p className="text-xs text-muted-foreground mb-1 font-medium">
                     Your description:
@@ -603,9 +628,9 @@ function CaptureContent({
                     rows={3}
                     className={cn(
                       "w-full px-4 py-3 rounded-xl",
-                      "bg-foreground/5 border border-foreground/10",
-                      "text-foreground placeholder:text-foreground/30",
-                      "focus:outline-none focus:ring-2 focus:ring-accent/30",
+                      "bg-secondary/40 border border-border",
+                      "text-foreground placeholder:text-muted-foreground/50",
+                      "focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40",
                       "resize-none text-sm",
                     )}
                   />
@@ -625,9 +650,9 @@ function CaptureContent({
                     rows={2}
                     className={cn(
                       "w-full px-4 py-3 rounded-xl",
-                      "bg-foreground/5 border border-foreground/10",
-                      "text-foreground placeholder:text-foreground/30",
-                      "focus:outline-none focus:ring-2 focus:ring-accent/30",
+                      "bg-secondary/40 border border-border",
+                      "text-foreground placeholder:text-muted-foreground/50",
+                      "focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40",
                       "resize-none text-sm",
                     )}
                   />
@@ -655,9 +680,9 @@ function CaptureContent({
                   rows={6}
                   className={cn(
                     "w-full px-4 py-3 rounded-xl",
-                    "bg-foreground/5 border border-foreground/10",
-                    "text-foreground placeholder:text-foreground/30",
-                    "focus:outline-none focus:ring-2 focus:ring-accent/30",
+                    "bg-secondary/40 border border-border",
+                    "text-foreground placeholder:text-muted-foreground/50",
+                    "focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/40",
                     "resize-none text-sm",
                   )}
                 />
@@ -765,23 +790,26 @@ function seedKindLabel(kind: SkillSeed["kind"]): string {
   }
 }
 
+// Seed banner tone. The dark instrument palette has one emerald accent; a
+// pain (blocker/decision/mission) is a neutral card surface, while an example
+// starter carries the emerald accent (it is the affordance we are offering, not
+// the leader's own self-report). No off-token amber/orange/blue scales.
 function seedTone(kind: SkillSeed["kind"]): string {
   switch (kind) {
+    case "example":
+      return "border-accent/30 bg-accent/10 text-foreground";
     case "blocker":
-      return "border-orange-500/30 bg-orange-500/15 text-orange-900 dark:text-orange-100";
     case "decision":
     case "briefing_segment":
-      return "border-blue-500/30 bg-blue-500/15 text-blue-900 dark:text-blue-100";
     case "mission":
-      return "border-emerald-500/30 bg-emerald-500/15 text-emerald-900 dark:text-emerald-100";
-    case "example":
     default:
-      return "border-accent/30 bg-accent/15 text-foreground";
+      return "border-border bg-card text-foreground";
   }
 }
 
-function painChipTone(kind: SkillSeed["kind"]): string {
-  return kind === "blocker"
-    ? "border-orange-500/30 bg-orange-500/15 text-orange-700 hover:bg-orange-500/25 dark:text-orange-300"
-    : "border-blue-500/30 bg-blue-500/15 text-blue-700 hover:bg-blue-500/25 dark:text-blue-300";
+// Pain chip tone. Neutral, on-token card surface for all pain kinds; the
+// distinction between blocker/decision is carried by the seed banner copy,
+// not by a hardcoded colour scale.
+function painChipTone(_kind: SkillSeed["kind"]): string {
+  return "border-border bg-card text-foreground hover:border-accent/30 hover:bg-secondary";
 }

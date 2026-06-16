@@ -425,24 +425,28 @@ export default function ContextExport() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => handleUseCaseSelect(rec.useCase)}
-                  className="flex items-start gap-3 p-3 rounded-lg text-left transition-all border border-border bg-card hover:border-accent/30"
+                  className="group flex items-start gap-3 p-3 rounded-xl text-left transition-all border border-border bg-card hover:border-accent/30"
                 >
-                  <Icon className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                  {/* Neutral leading disc (mock's fork-mark column): the option
+                      is offered, not yet picked, so it stays neutral - never emerald. */}
+                  <span className="flex-shrink-0 grid place-items-center w-8 h-8 rounded-lg bg-secondary border border-border text-muted-foreground">
+                    <Icon className="h-4 w-4" />
+                  </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-foreground">{rec.label}</span>
                       <span className={cn(
-                        'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium',
+                        'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border',
                         rec.badgeVariant === 'teal'
-                          ? 'bg-emerald-500/10 text-emerald-600'
-                          : 'bg-amber-500/10 text-amber-600'
+                          ? 'bg-accent/10 text-accent border-accent/30'
+                          : 'bg-secondary text-muted-foreground border-border'
                       )}>
                         {rec.badgeText}
                       </span>
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{rec.description}</p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/40 mt-0.5 flex-shrink-0" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-accent transition-colors mt-0.5 flex-shrink-0" />
                 </motion.button>
               );
             })}
@@ -462,10 +466,12 @@ export default function ContextExport() {
               <button
                 key={option.value}
                 onClick={() => handleUseCaseSelect(option.value)}
-                className="flex flex-col items-start gap-1.5 p-3 rounded-lg text-left transition-all border border-border bg-card hover:border-accent/30"
+                className="flex flex-col items-start gap-2 p-3 rounded-xl text-left transition-all border border-border bg-card hover:border-accent/30"
               >
                 <div className="flex items-center gap-2">
-                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="grid place-items-center w-7 h-7 rounded-lg bg-secondary border border-border text-muted-foreground">
+                    <Icon className="h-4 w-4" />
+                  </span>
                   <span className="text-sm font-medium text-foreground">{option.label}</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-snug">{option.description}</p>
@@ -510,16 +516,16 @@ export default function ContextExport() {
             <button
               key={option.value}
               onClick={() => handleFormatSelect(option.value)}
-              className="flex items-center gap-3 p-4 rounded-lg text-left transition-all border border-border bg-card hover:border-accent/30"
+              className="group flex items-center gap-3 p-4 rounded-xl text-left transition-all border border-border bg-card hover:border-accent/30"
             >
-              <div className="w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-secondary border border-border flex items-center justify-center flex-shrink-0">
                 <Icon className="h-5 w-5 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-medium text-foreground">{option.label}</span>
                 <p className="text-xs text-muted-foreground mt-0.5">{option.description}</p>
               </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground/40 flex-shrink-0" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-accent transition-colors flex-shrink-0" />
             </button>
           );
         })}
@@ -620,8 +626,8 @@ export default function ContextExport() {
             <button
               onClick={handleCopy}
               className={cn(
-                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all',
-                'bg-accent text-white hover:bg-accent/90'
+                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all',
+                'bg-accent text-accent-foreground hover:bg-accent/90'
               )}
             >
               <AnimatePresence mode="wait">
@@ -744,7 +750,7 @@ export default function ContextExport() {
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <button
                         onClick={() => submitExportFeedback('positive')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-accent/30 bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
                       >
                         <ThumbsUp className="h-3.5 w-3.5" />
                         Yes
