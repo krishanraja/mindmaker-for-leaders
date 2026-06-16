@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   Home,
@@ -56,7 +57,6 @@ function DesktopRail() {
         onClick={() => navigate('/dashboard')}
         className="h-14 px-4 flex items-center gap-2.5 border-b border-border/60 hover:bg-secondary/40 transition-colors text-left"
       >
-        <img src="/mindmaker-favicon.png" alt="" className="h-6 w-6" />
         <CtrlLogo className="h-3.5 w-auto" />
       </button>
 
@@ -228,6 +228,17 @@ export function DesktopShell({
   fit = true,
   children,
 }: DesktopShellProps) {
+  // Lock the body/window scroll only while an authed app surface is mounted.
+  // The CSS rule `body.app-locked { overflow: hidden }` keys off this class, and
+  // the touchmove rubber-band suppression in mobileViewport.ts is gated on it too.
+  // Public marketing pages never mount this shell, so they scroll normally.
+  useEffect(() => {
+    document.body.classList.add('app-locked');
+    return () => {
+      document.body.classList.remove('app-locked');
+    };
+  }, []);
+
   return (
     <div className="h-screen-safe overflow-hidden bg-background">
       <DesktopRail />

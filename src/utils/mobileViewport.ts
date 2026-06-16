@@ -17,8 +17,14 @@ export function initMobileViewport(): () => void {
   document.body.style.overscrollBehavior = 'none'
   document.documentElement.style.overscrollBehavior = 'none'
 
-  // Prevent pull-to-refresh and rubber banding
+  // Prevent pull-to-refresh and rubber banding, but ONLY on authed app
+  // surfaces. Those surfaces add `app-locked` to <body> while mounted; public
+  // marketing pages do not, so touch scroll works normally there.
   document.addEventListener('touchmove', (e) => {
+    // Public pages (no app-locked): do nothing, let the browser scroll.
+    if (!document.body.classList.contains('app-locked')) {
+      return
+    }
     // Allow scrolling inside elements with overflow-y-auto or overscroll-contain
     const target = e.target as HTMLElement
     const scrollable = target.closest('.overflow-y-auto, .overscroll-contain, [data-allow-scroll]')

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Scale, Brain, Plug, Radio, ShieldCheck, GitFork } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CtrlLogo } from '@/components/landing/CtrlLogo';
 
 const TOOLS = ['ChatGPT', 'Claude', 'Gemini', 'Cursor', 'Claude Code'];
 
@@ -19,37 +20,55 @@ export function ClarityHome() {
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* HERO - complete above the fold, no-scroll feel */}
-      <Section className="flex min-h-[88vh] flex-col items-center justify-center py-16 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent">
-          CTRL · Clarity for leaders
-        </span>
-        <h1 className="mt-6 text-balance text-[2rem] font-bold leading-[1.1] tracking-tight sm:text-6xl">
-          See clearly through the spaghetti.
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
-          Most leaders run a business they can&rsquo;t quite see through, with no time for a two-year transformation.
-          CTRL pressure-tests your decisions against live evidence and gives your own AI agents your live context -
-          so you decide with the full picture, and your fleet acts on who you are <em>right now</em>.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Button size="lg" className="h-12 px-7 text-base" onClick={() => navigate('/auth')}>
-            Start free <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Button>
-          <Button size="lg" variant="secondary" className="h-12 px-7 text-base" onClick={() => navigate('/try')}>
-            Watch it work
-          </Button>
+      {/* HERO - full-bleed background video behind constrained copy. The hero is
+          relative + overflow-hidden so the video is clipped to the hero only; the
+          OUTER page container stays normal-flow so the page keeps scrolling. */}
+      <section className="relative flex min-h-[88vh] flex-col items-center justify-center overflow-hidden px-5 py-16 text-center">
+        {/* Background video - sits behind everything, dimmed for legibility */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none"
+        >
+          <source src="/Mindmaker for Leaders - background video.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+
+        {/* Hero content - lifted above the video */}
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center">
+          <CtrlLogo className="h-10 w-auto text-accent" />
+          <span className="mt-7 inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent">
+            CTRL &middot; Clarity for leaders
+          </span>
+          <h1 className="mt-6 text-balance text-[2rem] font-bold leading-[1.1] tracking-tight sm:text-6xl">
+            Clarity for the calls only you can make.
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
+            Most leaders run a business they can&rsquo;t quite see through, with no time for a two-year transformation.
+            CTRL pressure-tests your real decisions against live evidence and gives your own AI agents your live context -
+            so you decide with the full picture, and your fleet acts on who you are <em>right now</em>.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button size="lg" className="h-12 px-7 text-base" onClick={() => navigate('/auth')}>
+              Start free <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
+            <Button size="lg" variant="secondary" className="h-12 px-7 text-base" onClick={() => navigate('/try')}>
+              Watch it work
+            </Button>
+          </div>
+          <p className="mt-5 flex items-center gap-1.5 text-xs text-muted-foreground/70">
+            <ShieldCheck className="h-3.5 w-3.5" /> No integrations, no plugins. Just your voice.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/40">Works with</span>
+            {TOOLS.map((t) => (
+              <span key={t} className="text-xs font-medium text-muted-foreground/50">{t}</span>
+            ))}
+          </div>
         </div>
-        <p className="mt-5 flex items-center gap-1.5 text-xs text-muted-foreground/70">
-          <ShieldCheck className="h-3.5 w-3.5" /> No integrations, no plugins. Just your voice.
-        </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/40">Works with</span>
-          {TOOLS.map((t) => (
-            <span key={t} className="text-xs font-medium text-muted-foreground/50">{t}</span>
-          ))}
-        </div>
-      </Section>
+      </section>
 
       {/* PROBLEM */}
       <Section className="py-16">

@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { VoiceInput } from '@/components/ui/voice-input';
 import { Brain, ArrowRight, ArrowLeft, Check, Mic } from 'lucide-react';
+import { CtrlLogo } from '@/components/landing/CtrlLogo';
 
 export interface DeepProfileData {
   thinkingProcess: string;
@@ -562,11 +563,7 @@ export const DeepProfileQuestionnaire: React.FC<DeepProfileQuestionnaireProps> =
         <div className="max-w-2xl mx-auto w-full shrink-0 py-2">
           {/* Brand Icon */}
           <div className="flex items-center justify-between mb-2">
-            <img 
-              src="/mindmaker-favicon.png" 
-              alt="Mindmaker" 
-              className="h-6 sm:h-7 w-auto"
-            />
+            <CtrlLogo className="h-5 sm:h-6 w-auto" />
             <span className="text-xs text-muted-foreground">Personalization</span>
           </div>
           

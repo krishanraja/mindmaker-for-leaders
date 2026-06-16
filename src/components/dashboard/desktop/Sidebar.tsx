@@ -4,6 +4,7 @@ import { Home, BarChart3, Calendar, Mic, Target, ClipboardList, Settings, LogOut
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { Button } from "@/components/ui/button"
+import { CtrlLogo } from "@/components/landing/CtrlLogo"
 
 const navItems = [
   { path: '/dashboard', icon: Home, label: 'Dashboard' },
@@ -23,11 +24,7 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r border-border flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-border">
-        <img 
-          src="/mindmaker-favicon.png" 
-          alt="Mindmaker" 
-          className="h-8 w-8"
-        />
+        <CtrlLogo className="h-5 w-auto" />
       </div>
 
       {/* Navigation */}
