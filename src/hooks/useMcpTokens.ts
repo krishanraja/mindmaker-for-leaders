@@ -8,6 +8,7 @@ export interface McpToken {
   id: string;
   token_prefix: string;
   label: string | null;
+  scopes: string[];
   created_at: string;
   last_used_at: string | null;
   revoked_at: string | null;
@@ -38,8 +39,11 @@ export function useMcpTokens() {
   }, [refetch]);
 
   const mint = useCallback(
-    async (label: string): Promise<MintedToken> => {
-      const { data, error } = await db.rpc('mint_mcp_token', { p_label: label.trim() || null });
+    async (label: string, includeBriefing = false): Promise<MintedToken> => {
+      const { data, error } = await db.rpc('mint_mcp_token', {
+        p_label: label.trim() || null,
+        p_include_briefing: includeBriefing,
+      });
       if (error) throw error;
       await refetch();
       return data as MintedToken;

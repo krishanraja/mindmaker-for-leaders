@@ -41,6 +41,7 @@ function relTime(iso: string | null): string {
 export function McpTokensPanel() {
   const { tokens, loading, mint, revoke } = useMcpTokens();
   const [label, setLabel] = useState('');
+  const [includeBriefing, setIncludeBriefing] = useState(false);
   const [minting, setMinting] = useState(false);
   const [justMinted, setJustMinted] = useState<MintedToken | null>(null);
 
@@ -49,9 +50,10 @@ export function McpTokensPanel() {
   async function handleMint() {
     setMinting(true);
     try {
-      const m = await mint(label);
+      const m = await mint(label, includeBriefing);
       setJustMinted(m);
       setLabel('');
+      setIncludeBriefing(false);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not generate a key');
     } finally {
@@ -97,6 +99,15 @@ export function McpTokensPanel() {
             Generate
           </Button>
         </div>
+        <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={includeBriefing}
+            onChange={(e) => setIncludeBriefing(e.target.checked)}
+            className="h-3.5 w-3.5 accent-accent"
+          />
+          Also expose today's Daily Briefing to this agent
+        </label>
       </div>
 
       {/* Just-minted token, shown ONCE */}
@@ -124,7 +135,12 @@ export function McpTokensPanel() {
             <div key={t.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-2.5">
               <KeyRound className="h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{t.label || 'Unnamed key'}</p>
+                <p className="flex items-center gap-1.5 truncate text-sm font-medium text-foreground">
+                  {t.label || 'Unnamed key'}
+                  {t.scopes?.includes('briefing') && (
+                    <span className="rounded border border-accent/30 bg-accent/10 px-1 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider text-accent">+ briefing</span>
+                  )}
+                </p>
                 <p className="text-[11px] text-muted-foreground">
                   <code>{t.token_prefix}…</code> &middot; {relTime(t.last_used_at)}
                 </p>
