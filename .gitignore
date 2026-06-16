@@ -44,3 +44,4 @@ playwright-report/
 .env*.local
 scripts/_kitshots/
 scripts/_kitlive/
+.prerender
