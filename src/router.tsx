@@ -46,6 +46,7 @@ const TrackRecord = lazyWithRetry(() => import('@/pages/TrackRecord'))
 const DecisionMap = lazyWithRetry(() => import('@/pages/DecisionMap'))
 const Preview = lazyWithRetry(() => import('@/pages/Preview'))
 const Agents = lazyWithRetry(() => import('@/pages/Agents'))
+const Try = lazyWithRetry(() => import('@/pages/Try'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
@@ -97,6 +98,11 @@ export const router = createBrowserRouter([
     // Agent-native marketing page (public): the read-only Memory Web MCP offering.
     path: '/agents',
     element: <LazyWrapper><Agents /></LazyWrapper>,
+  },
+  {
+    // Pre-login magic moment (public): a canned but real-shaped pressure-test demo.
+    path: '/try',
+    element: <LazyWrapper><Try /></LazyWrapper>,
   },
   {
     path: '/kit/me',
