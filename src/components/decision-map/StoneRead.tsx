@@ -103,13 +103,14 @@ export function StoneRead({
             : 'border-border bg-[radial-gradient(120%_100%_at_50%_0%,#15161c_0%,#0c0f13_62%)]',
         )}
       >
-        {/* the soft-number mark: this read is MODELLED, never a measured quote (sanctity) */}
-        {magnitude && (
+        {/* the soft-number mark: shown ONLY for a modelled read (an estimate), never for a
+            SOURCED figure (which is verbatim in evidence and stands clean) - sanctity. */}
+        {magnitude && magnitude.mark && (
           <span
             className="absolute right-3 top-3 inline-flex items-center rounded-[5px] border border-border px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.07em] text-muted-foreground"
             title="CTRL's modelled read - not a measured quote"
           >
-            {magnitude.kind}
+            {magnitude.mark}
           </span>
         )}
 
@@ -207,9 +208,12 @@ export function StoneRead({
   );
 }
 
-// A short, honest subline for the hero number. Derived only when a magnitude exists;
-// prefers a clause from the rationale so the words match the figure.
+// A short, honest subline for the hero number. Derived only when a magnitude exists.
+// Prefers the stored, gate-approved reaction descriptor (the words that ride beside the
+// sourced/modelled figure); falls back to a clause from the rationale, then the claim.
 function deriveSubline(claim: DecisionClaim): string {
+  const descriptor = claim.reaction_descriptor?.trim();
+  if (descriptor && descriptor.length > 0 && descriptor.length <= 64) return descriptor.toLowerCase();
   const r = claim.rationale ?? '';
   // Take the clause around the first sentence, trimmed to a tidy length.
   const first = r.split(/[.;]/)[0]?.trim();

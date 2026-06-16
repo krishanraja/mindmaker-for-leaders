@@ -43,7 +43,7 @@ Ensure `mindmaker-full-logo.png` is accessible at your site URL:
 - **Primary Text**: `#f2f2f2`
 - **Secondary Text**: `#999999`
 - **Muted Text**: `#666666`
-- **Accent (CTA)**: `#2db77a` (CTRL green)
+- **Accent (CTA)**: `#00D9B6` (CTRL emerald)
 
 ### Typography
 - Font: System fonts (-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto)
@@ -52,7 +52,7 @@ Ensure `mindmaker-full-logo.png` is accessible at your site URL:
 - Small: 12-13px
 
 ### Button Style
-- Background: `#2db77a`
+- Background: `#00D9B6`
 - Text: `#121212` (dark on green)
 - Border radius: 10px
 - Padding: 14px 32px

@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
     const emailContent = `
       <p><strong>New feedback received!</strong></p>
       
-      <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #3d8b6e;">
+      <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #00D9B6;">
         <p style="margin: 0; white-space: pre-wrap;">${feedback.trim()}</p>
       </div>
       

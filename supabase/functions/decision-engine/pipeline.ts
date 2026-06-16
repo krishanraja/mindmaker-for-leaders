@@ -10,6 +10,8 @@ import { decompose } from "./decompose.ts";
 import { verifyClaim } from "./verify.ts";
 import { advise, type AdversarialInput } from "./advise.ts";
 import { crossExamine } from "./crossexamine.ts";
+import { proposeReaction } from "./reaction.ts";
+import { hasNumericEvidence, type EvidenceLite } from "../_shared/reaction-extraction.ts";
 import type { ClaimVerdict, ExtractedClaim } from "./types.ts";
 
 export interface PipelineParams {
@@ -89,19 +91,29 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
       const claim: ExtractedClaim = { text: row.text, type: row.type, is_load_bearing: row.is_load_bearing };
       const { verdict, evidence } = await verifyClaim(claim);
 
+      // Insert evidence and capture the persisted ids so a SOURCED reaction can
+      // point reaction_evidence_id at the exact row its number was lifted from.
+      // PostgREST preserves input order on return, so the ids line up 1:1.
+      let evidenceLite: EvidenceLite[] = [];
       if (evidence.length) {
-        await admin.from("decision_evidence").insert(
-          evidence.map((e) => ({
-            claim_id: row.id,
-            user_id: userId,
-            source_url: e.source_url,
-            source_type: e.retriever,
-            source_title: e.source_title,
-            excerpt: e.excerpt,
-            stance: e.stance,
-            retriever: e.retriever,
-            relevance_score: e.relevance_score,
-          })),
+        const { data: insertedEvidence } = await admin
+          .from("decision_evidence")
+          .insert(
+            evidence.map((e) => ({
+              claim_id: row.id,
+              user_id: userId,
+              source_url: e.source_url,
+              source_type: e.retriever,
+              source_title: e.source_title,
+              excerpt: e.excerpt,
+              stance: e.stance,
+              retriever: e.retriever,
+              relevance_score: e.relevance_score,
+            })),
+          )
+          .select("id, excerpt");
+        evidenceLite = (insertedEvidence ?? evidence.map((e) => ({ id: null, excerpt: e.excerpt }))).map(
+          (e: { id?: string | null; excerpt?: string | null }) => ({ id: e.id ?? null, excerpt: e.excerpt ?? null }),
         );
       }
 
@@ -115,7 +127,7 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
         })
         .eq("id", row.id);
 
-      return { claimId: row.id, claim, verdict };
+      return { claimId: row.id, claim, verdict, evidenceLite };
     });
 
     const verifiedForJudging = verified.map((v) => ({ claim: v.claim, verdict: v.verdict as ClaimVerdict }));
@@ -185,6 +197,40 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
     });
 
     log.info("decision pipeline complete", { userId, duration_ms: Date.now() - started, claim_count: claims.length });
+
+    // --- Stage 5: reaction numbers (non-blocking, post-complete) ------------
+    // The case is already "complete" and the response long since returned; this
+    // only enriches the hero numbers on the stones/cockpit. It is fully fenced:
+    // any failure here NEVER touches the verdicts or the case outcome. The honesty
+    // gate lives inside proposeReaction -> gateReaction; a null reaction leaves the
+    // claim words-led (the correct, honest default).
+    try {
+      // Only worth proposing where there is something honest to source from:
+      // load-bearing claims, or any claim whose evidence actually carries a figure.
+      const reactionTargets = verified.filter(
+        (v) => v.evidenceLite.length > 0 && (v.claim.is_load_bearing || hasNumericEvidence(v.evidenceLite)),
+      );
+      await mapLimit(reactionTargets, 3, async (v) => {
+        try {
+          const reaction = await proposeReaction(v.claim.text, v.evidenceLite);
+          if (!reaction) return; // gate returned null -> hero stays words-led (honest)
+          await admin
+            .from("decision_claims")
+            .update({
+              reaction_value: reaction.value,
+              reaction_descriptor: reaction.descriptor,
+              reaction_kind: reaction.kind,
+              reaction_evidence_id: reaction.evidence_id,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", v.claimId);
+        } catch (re) {
+          log.warn("reaction proposal failed for claim, leaving words-led", { claimId: v.claimId, error: re });
+        }
+      });
+    } catch (re) {
+      log.warn("reaction pass failed, claims remain words-led", { userId, error: re });
+    }
   } catch (e) {
     log.error("decision pipeline failed", { userId, error: e });
     await admin

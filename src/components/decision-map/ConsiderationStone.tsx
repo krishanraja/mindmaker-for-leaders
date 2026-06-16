@@ -106,16 +106,22 @@ export function claimGlyph(claim: DecisionClaim) {
 
 // ---------------------------------------------------------------------------
 // HONEST MAGNITUDE EXTRACTION
-// The engine produces a synthesised rationale, not a structured figure. When that
-// rationale contains a clean, short measurable quantity (a multiplier, a percent,
-// a money figure - <=6 chars), it can lead the read as the hero NUMBER. Because it
-// is read out of a modelled synthesis (never a measured quote), it is always marked
-// `est.` so an estimate can NEVER read as a measured fact. If no clean number is
-// present, the read leads with WORDS - we never fabricate a figure.
+// PRIMARY (the honest path): the engine's reaction pass distils ONE magnitude per
+// claim through the honesty gate (proposeReaction -> gateReaction) and STORES it on
+// the claim row. A 'sourced' reaction (numeric core appears verbatim in a retrieved
+// excerpt) renders CLEAN, with no soft-number mark. A 'modelled' reaction (an explicit
+// CTRL derivation) always renders with the 'est.' mark so it can never read as measured.
+//
+// FALLBACK ONLY: when no stored reaction exists (older case, gate returned null, or the
+// reaction pass has not landed yet), we scrape a clean short figure out of the synthesised
+// rationale - which is a modelled read, so it is always marked 'est.'. If neither path
+// yields a number, the read leads with WORDS. We never fabricate a figure.
 // ---------------------------------------------------------------------------
 export interface Magnitude {
   value: string; // the short hero token, e.g. "10x" "40%" "$2M"
-  kind: 'est.' | 'modelled'; // soft-number tag (this is never a measured fact)
+  // The soft-number mark shown beside the value. '' for a SOURCED figure (it stands
+  // clean); 'est.' for a modelled derivation or a rationale scrape (never a measured fact).
+  mark: '' | 'est.';
 }
 
 const MAGNITUDE_RE = /(~?\$\d[\d.,]*[kmb]?|~?\d[\d.,]*\s?x|~?[-+]?\d[\d.,]*\s?%|~?\d[\d.,]*x)/i;
@@ -123,8 +129,17 @@ const MAGNITUDE_RE = /(~?\$\d[\d.,]*[kmb]?|~?\d[\d.,]*\s?x|~?[-+]?\d[\d.,]*\s?%|
 export function magnitudeFrom(claim: DecisionClaim): Magnitude | null {
   // Only-you claims have no honest external number, full stop.
   if (isOnlyYou(claim)) return null;
-  // A still-checking or thin claim has not earned a confident hero number.
+  // A still-checking claim has not earned a confident hero number.
   if (claim.verdict === 'pending') return null;
+
+  // PRIMARY: the stored, honesty-gated reaction. Prefer it whenever present.
+  const stored = claim.reaction_value?.trim();
+  if (stored) {
+    // sourced -> clean (verbatim in evidence); modelled -> 'est.' (a derivation).
+    return { value: stored, mark: claim.reaction_kind === 'modelled' ? 'est.' : '' };
+  }
+
+  // FALLBACK: scrape the synthesised rationale. This is a modelled read, so 'est.'.
   const hay = claim.rationale ?? '';
   const m = hay.match(MAGNITUDE_RE);
   if (!m) return null;
@@ -134,7 +149,7 @@ export function magnitudeFrom(claim: DecisionClaim): Magnitude | null {
   if (token.length > 6) return null;
   // Normalise an "x"-multiplier to a tidy form ("10x" not "10X").
   token = token.replace(/X$/, 'x');
-  return { value: token, kind: 'est.' };
+  return { value: token, mark: 'est.' };
 }
 
 const STANCE_DOT: Record<DecisionEvidence['stance'], string> = {

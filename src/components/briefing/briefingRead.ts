@@ -2,13 +2,16 @@
 // numerical-first briefing hero (mock: briefing-num.html).
 //
 // Cardinal rule: clearest-unit-first + NEVER fabricate a number.
-// A briefing SEGMENT carries no stored magnitude figure (only a headline,
-// a framework_tag, an optional matched_profile_fact anchor, a source and a
-// soft relevance_score). So the hero leads with WORDS (the strongest
-// headline) unless a real, short magnitude token is literally present in
-// that headline (e.g. "10x", "-40%", "$2M") - in which case we surface it
-// as a MODELLED read and mark it `est.` (it is a read of the move, never a
-// measured quote). We never invent a value the data does not contain.
+// As of the stored-magnitude pass, segments now carry an honest, gated
+// `magnitude` populated at GENERATION time (sourced = the numeric core is
+// verbatim in the segment's evidence; modelled = an explicit estimate shown
+// `est.`). We PREFER that stored figure: a sourced number stands clean (no
+// mark), a modelled one keeps the `est.` mark. Only when no segment carries a
+// stored magnitude do we fall back to the legacy read-time headline regex,
+// which surfaces a short token (e.g. "10x", "-40%", "$2M") as a MODELLED read
+// marked `est.` (a read of the move, never a measured quote). Either way we
+// never invent a value the data does not contain; if neither exists the hero
+// leads with WORDS (the strongest headline).
 //
 // The "rests on" mini-spine is the few segments the read draws from, each
 // shown VISUALLY by its honest state (moved / only-you / thin / quiet),
@@ -26,10 +29,13 @@ export interface ReadConsideration {
   tag: FrameworkTag;
 }
 
-// A modelled magnitude pulled from the headline text. kind is the soft mark.
+// The magnitude the hero leads with. `kind` is the soft mark rendered beside the
+// value: '' for a sourced (verbatim-grounded) figure, which stands clean; 'est.'
+// for a modelled figure or a legacy headline-regex read, which must never read as
+// measured.
 export interface ReadMagnitude {
   value: string; // "10x" | "-40%" | "$2M"
-  kind: 'est.'; // always modelled here (a read of the move, never measured)
+  kind: 'est.' | '';
 }
 
 // The honest signal-state of the whole read (mirrors the bet board chips).
@@ -66,6 +72,20 @@ function extractMagnitude(text: string): string | null {
   const raw = m[1].trim();
   // keep it short - a hero number is <=6 chars or it isn't a clean unit
   return raw.length > 0 && raw.length <= 6 ? raw : null;
+}
+
+// Resolve the hero magnitude for the lead segment. PREFER the stored, gated
+// segment.magnitude (sourced => clean mark, modelled => `est.`); only when none
+// is stored do we fall back to the legacy read-time headline regex (marked
+// `est.`, a read of the move). Returns null => the hero leads with words.
+function magnitudeForLead(lead: BriefingSegment | undefined): ReadMagnitude | null {
+  if (!lead) return null;
+  const stored = lead.magnitude;
+  if (stored && typeof stored.value === 'string' && stored.value.trim().length > 0) {
+    return { value: stored.value.trim(), kind: stored.kind === 'modelled' ? 'est.' : '' };
+  }
+  const token = extractMagnitude(lead.headline);
+  return token ? { value: token, kind: 'est.' } : null;
 }
 
 // Map a framework tag to the honest consideration state.
@@ -123,9 +143,9 @@ export function deriveBriefingRead(briefing: Briefing): BriefingRead {
 
   const lead = ranked[0];
   const headline = lead?.headline?.trim() || 'Your read is ready';
-  // a magnitude leads only when one is honestly present in the lead headline
-  const magToken = lead ? extractMagnitude(lead.headline) : null;
-  const magnitude: ReadMagnitude | null = magToken ? { value: magToken, kind: 'est.' } : null;
+  // a magnitude leads only when one is honestly present: prefer the stored,
+  // gated segment.magnitude, else fall back to the headline regex.
+  const magnitude: ReadMagnitude | null = magnitudeForLead(lead);
   // if a number leads, the words move to the sub-line so the hero stays clean
   const sub = magnitude ? headline : lead?.relevance_reason?.trim() || undefined;
 

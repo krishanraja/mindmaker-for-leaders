@@ -58,7 +58,7 @@ const QUESTIONS: QuestionConfig[] = [
     prompt:
       'What would make the biggest difference in your work this quarter?',
     icon: Target,
-    color: 'bg-graphite',
+    color: 'bg-secondary',
   },
 ];
 
