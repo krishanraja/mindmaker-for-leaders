@@ -8,6 +8,7 @@ import { useDevice } from '@/hooks/useDevice';
 import { useTrackRecord } from '@/hooks/useTrackRecord';
 import type { PlayedOut } from '@/types/track-record';
 import { DecisionCard, calibrationMatch } from '@/components/track-record/DecisionCard';
+import { ShareWinButton } from '@/components/share/ShareWinButton';
 
 const SUBTITLE = 'How your judgment is holding up. Banked decisions, judged on process - not luck.';
 
@@ -49,7 +50,19 @@ export default function TrackRecordPage() {
             You read <span className="font-semibold text-accent">{calibration.read} of {calibration.total}</span> breakpoints
             the way the evidence did.
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">Your calibration sharpens as you log how decisions play out.</p>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">Your calibration sharpens as you log how decisions play out.</p>
+            <ShareWinButton
+              win={{
+                title: 'My decision calibration, on the record',
+                stat: `${calibration.read}/${calibration.total}`,
+                sub: 'breakpoints read the way the evidence did',
+                text: `I read ${calibration.read}/${calibration.total} of my decision breakpoints the way the evidence did. CTRL keeps my judgment honest.`,
+              }}
+              label="Share"
+              variant="ghost"
+            />
+          </div>
         </div>
       )}
       {records.map((r) => (
