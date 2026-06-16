@@ -180,7 +180,7 @@ export function McpTokensPanel() {
             win={{
               title: 'My agents now read my live context',
               sub: 'live, brain-ranked - never a stale paste',
-              text: 'My AI agents now pull my live context from CTRL on every call — no more pasting a snapshot that goes stale. Agent-native leadership.',
+              text: 'My AI agents now pull my live context from CTRL on every call - no more pasting a snapshot that goes stale. Agent-native leadership.',
             }}
             label="Share"
           />
