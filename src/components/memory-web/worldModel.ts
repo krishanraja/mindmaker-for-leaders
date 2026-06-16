@@ -99,6 +99,47 @@ export function factProvenance(fact: MemoryWebFact): string {
   }
 }
 
+/**
+ * The honest rope grammar for a cross-fact edge from the `memory_edges` table.
+ * Thickness tracks the edge's real strength; an edge the leader drew by hand
+ * (source='user') is LIT in emerald, while an inferred edge stays neutral and
+ * dashed - the same honesty grammar the fact-to-world ropes already use. We
+ * never invent an edge here; this only styles a row the table actually returned.
+ */
+export interface EdgeStyle {
+  /** SVG stroke (rgba string). Emerald for user-drawn, neutral for inferred. */
+  stroke: string;
+  /** stroke width in viewBox units, scaled by strength. */
+  width: number;
+  /** dash pattern for inferred edges; undefined (solid) for user-drawn. */
+  dash?: string;
+  /** whether the rope glows (only the lit, user-drawn edges). */
+  glow: boolean;
+}
+
+/**
+ * Map an edge's real strength + source to its rope style. Pure: no fabrication,
+ * just presentation of a row that exists.
+ */
+export function edgeStyle(strength: number, source: 'inferred' | 'user'): EdgeStyle {
+  const s = Math.max(0, Math.min(1, strength));
+  const width = 1.1 + s * 2.6;
+  if (source === 'user') {
+    return {
+      stroke: `rgba(${CONFIRMED_RGB},${0.5 + s * 0.4})`,
+      width,
+      dash: undefined,
+      glow: true,
+    };
+  }
+  return {
+    stroke: `rgba(165,176,191,${0.28 + s * 0.32})`,
+    width: Math.min(2.2, width),
+    dash: '5 6',
+    glow: false,
+  };
+}
+
 /** A "bond" = a rope the user can read + act on. */
 export interface MemoryBond {
   /** stable id (the fact id this rope reads from) */

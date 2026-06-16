@@ -5,15 +5,18 @@
  *   the connected detail (label + value + provenance)
  *   Confirm / Strengthen / Fix actions.
  *
- * HONESTY: only Confirm has a real backend (verifyFact on the memory hook), so
- * Strengthen and Fix render but are DISABLED with an honest "not wired yet"
- * note - we never fake an action. The reader also never shows a green
- * "validated" tick for an inferred bond; it reflects the real state
- * (confirmed vs inferred / only-you).
+ * HONESTY: every action here is backed by a real RPC. Confirm verifies the
+ * fact (verifyFact); Strengthen vouches for it (strengthen_memory_fact: bumps
+ * confidence + marks verified); Fix flags it wrong (fix_memory_fact: disputes
+ * the fact + deactivates its edges). A handler is only rendered live when the
+ * parent actually wires it; absent handlers still render DISABLED rather than
+ * faking an action. The reader never shows a green "validated" tick for an
+ * inferred bond; it reflects the real state (confirmed vs inferred / only-you).
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { Check, Plus, Scissors, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WORLD_META, factImportance, type MemoryBond } from './worldModel';
@@ -46,6 +49,30 @@ export function BondReader({
   className,
   variant = 'rail',
 }: BondReaderProps) {
+  // Which action is mid-flight, so we disable the row + show honest progress.
+  // Declared before any early return to keep hook order stable.
+  const [busy, setBusy] = useState<'confirm' | 'strengthen' | 'fix' | null>(null);
+
+  // Run a wired action with an honest result toast. The handler does the real
+  // RPC + refetch; we only narrate the outcome (never claim success on error).
+  const run = async (
+    kind: 'confirm' | 'strengthen' | 'fix',
+    handler: ((factId: string) => void | Promise<void>) | undefined,
+    factId: string,
+    okMessage: string,
+  ) => {
+    if (!handler || busy) return;
+    setBusy(kind);
+    try {
+      await handler(factId);
+      toast.success(okMessage);
+    } catch {
+      toast.error('Could not save that. Please try again.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
   if (!bond) {
     return (
       <div className={cn('flex flex-col items-center justify-center text-center px-6 py-12', className)}>
@@ -122,13 +149,13 @@ export function BondReader({
       <div className={cn('flex flex-col gap-2', variant === 'rail' ? 'mt-auto pt-4' : 'mt-5')}>
         {/* Confirm - real backend (verify) */}
         <button
-          onClick={() => canConfirm && onConfirm?.(fact.id)}
-          disabled={!canConfirm}
+          onClick={() => canConfirm && run('confirm', onConfirm, fact.id, 'Confirmed')}
+          disabled={!canConfirm || busy !== null}
           className={cn(
             'flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors',
             bond.confirmed
               ? 'border-accent/30 bg-accent/5 cursor-default'
-              : canConfirm
+              : canConfirm && busy === null
                 ? 'border-border bg-card hover:border-accent/40'
                 : 'border-border bg-card opacity-50 cursor-not-allowed',
           )}
@@ -138,7 +165,7 @@ export function BondReader({
           </span>
           <span className="flex-1 min-w-0">
             <span className="block text-[12.5px] font-semibold text-foreground">
-              {bond.confirmed ? 'Confirmed' : 'Confirm'}
+              {bond.confirmed ? 'Confirmed' : busy === 'confirm' ? 'Confirming...' : 'Confirm'}
             </span>
             <span className="block text-[10.5px] text-muted-foreground mt-0.5">
               {bond.confirmed ? 'You stand behind this; CTRL trusts it' : 'Snap it taut - CTRL trusts it'}
@@ -146,42 +173,46 @@ export function BondReader({
           </span>
         </button>
 
-        {/* Strengthen - rendered honest: disabled unless a real handler exists */}
+        {/* Strengthen - real backend (strengthen_memory_fact); disabled unless wired */}
         <button
-          onClick={() => onStrengthen?.(fact.id)}
-          disabled={!onStrengthen}
+          onClick={() => run('strengthen', onStrengthen, fact.id, 'Strengthened')}
+          disabled={!onStrengthen || busy !== null}
           className={cn(
             'flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-colors',
-            onStrengthen ? 'hover:border-blue-400/40' : 'opacity-50 cursor-not-allowed',
+            onStrengthen && busy === null ? 'hover:border-blue-400/40' : 'opacity-50 cursor-not-allowed',
           )}
         >
           <span className="flex-shrink-0 w-6 h-6 rounded-lg grid place-items-center bg-blue-500/10 border border-blue-500/30 text-blue-400">
             <Plus className="w-3.5 h-3.5" />
           </span>
           <span className="flex-1 min-w-0">
-            <span className="block text-[12.5px] font-semibold text-foreground">Strengthen</span>
+            <span className="block text-[12.5px] font-semibold text-foreground">
+              {busy === 'strengthen' ? 'Strengthening...' : 'Strengthen'}
+            </span>
             <span className="block text-[10.5px] text-muted-foreground mt-0.5">
-              {onStrengthen ? "Add the one thing it's missing" : 'Add the missing piece (coming soon)'}
+              {onStrengthen ? 'Vouch for it - CTRL leans on it harder' : 'Vouch for it (coming soon)'}
             </span>
           </span>
         </button>
 
-        {/* Fix - rendered honest: disabled unless a real handler exists */}
+        {/* Fix - real backend (fix_memory_fact); disabled unless wired */}
         <button
-          onClick={() => onFix?.(fact.id)}
-          disabled={!onFix}
+          onClick={() => run('fix', onFix, fact.id, 'Flagged as wrong')}
+          disabled={!onFix || busy !== null}
           className={cn(
             'flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-colors',
-            onFix ? 'hover:border-amber-400/40' : 'opacity-50 cursor-not-allowed',
+            onFix && busy === null ? 'hover:border-amber-400/40' : 'opacity-50 cursor-not-allowed',
           )}
         >
           <span className="flex-shrink-0 w-6 h-6 rounded-lg grid place-items-center bg-amber-500/10 border border-amber-500/30 text-amber-400">
             {onFix ? <Scissors className="w-3.5 h-3.5" /> : <Lock className="w-3 h-3" />}
           </span>
           <span className="flex-1 min-w-0">
-            <span className="block text-[12.5px] font-semibold text-foreground">Fix</span>
+            <span className="block text-[12.5px] font-semibold text-foreground">
+              {busy === 'fix' ? 'Flagging...' : 'Fix'}
+            </span>
             <span className="block text-[10.5px] text-muted-foreground mt-0.5">
-              {onFix ? 'Cut a wrong one, or re-point it' : 'Cut or re-point (coming soon)'}
+              {onFix ? 'Flag it wrong - CTRL drops it and its links' : 'Cut or re-point (coming soon)'}
             </span>
           </span>
         </button>

@@ -39,9 +39,11 @@ import {
   factStrength,
   isConfirmed,
   factProvenance,
+  edgeStyle,
   type World,
   type MemoryBond,
 } from './worldModel';
+import type { MemoryEdge } from '@/hooks/useMemoryEdges';
 
 // Re-export the world-model TYPES so embedders that import them from this
 // module keep compiling. Type-only re-exports don't break fast-refresh; the
@@ -200,6 +202,15 @@ interface MemoryWebVisualizationProps {
   selectedFactId?: string | null;
   /** NEW (optional). Hide the floating tooltip even without onBondSelect. */
   suppressTooltip?: boolean;
+  /**
+   * NEW (optional). The REAL cross-fact ropes from the `memory_edges` table.
+   * Each is drawn between the two fact nodes it connects (only when BOTH ends
+   * are on the canvas), thickness ~ strength, lit emerald for source='user'
+   * and dashed/neutral for source='inferred'. We never fabricate an edge - if
+   * this prop is empty, no cross-fact ropes are drawn. Backward compatible:
+   * callers that omit it keep their existing fact-to-world ropes + spine.
+   */
+  edges?: MemoryEdge[];
 }
 
 export function MemoryWebVisualization({
@@ -211,6 +222,7 @@ export function MemoryWebVisualization({
   onBondSelect,
   selectedFactId = null,
   suppressTooltip = false,
+  edges = [],
 }: MemoryWebVisualizationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ w: 360, h: 400 });
@@ -254,6 +266,44 @@ export function MemoryWebVisualization({
   );
   // index lookup so a spine rope can mark its nodes as load-bearing
   const spineIds = useMemo(() => new Set(spine.anchors.map((n) => n.fact.id)), [spine]);
+
+  // fact id -> its laid-out node position, so a real cross-fact edge can be
+  // drawn between the two nodes it connects.
+  const nodeById = useMemo(() => {
+    const m = new Map<string, NodePosition>();
+    for (const n of nodes) m.set(n.fact.id, n);
+    return m;
+  }, [nodes]);
+
+  // Resolve the REAL edges to drawable ropes. Honesty: we only draw an edge when
+  // BOTH of its fact nodes are on the canvas (an edge to a fact that is not
+  // is_current / not shown is silently skipped, never faked to a centre). We
+  // never invent an edge; this is a pure projection of the `edges` prop.
+  const edgeRopes = useMemo(() => {
+    const out: {
+      key: string;
+      x1: number; y1: number; x2: number; y2: number;
+      mx: number; my: number;
+      stroke: string; width: number; dash?: string; glow: boolean;
+    }[] = [];
+    for (const e of edges) {
+      if (e.from_fact_id === e.to_fact_id) continue;
+      const a = nodeById.get(e.from_fact_id);
+      const b = nodeById.get(e.to_fact_id);
+      if (!a || !b) continue;
+      const style = edgeStyle(e.strength, e.source);
+      // gentle perpendicular bow so overlapping ropes stay readable
+      const mx = (a.x + b.x) / 2 + (a.y - b.y) * 0.1;
+      const my = (a.y + b.y) / 2 - (a.x - b.x) * 0.1;
+      out.push({
+        key: e.id,
+        x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+        mx, my,
+        stroke: style.stroke, width: style.width, dash: style.dash, glow: style.glow,
+      });
+    }
+    return out;
+  }, [edges, nodeById]);
 
   const particles = useMemo(
     () => generateParticles(42, facts.length > 0 ? 16 : 9, dims.w, dims.h),
@@ -455,6 +505,26 @@ export function MemoryWebVisualization({
               />
             );
           })}
+
+          {/* ===== REAL CROSS-FACT ROPES (from the memory_edges table) ===== */}
+          {/* Drawn only between two on-canvas fact nodes. Thickness ~ strength;
+              user-drawn edges glow emerald, inferred edges are neutral + dashed.
+              Never fabricated - this maps 1:1 to rows the table returned. */}
+          {edgeRopes.map((r) => (
+            <motion.path
+              key={`edge-${r.key}`}
+              d={`M ${r.x1} ${r.y1} Q ${r.mx} ${r.my} ${r.x2} ${r.y2}`}
+              fill="none"
+              stroke={r.stroke}
+              strokeWidth={r.width}
+              strokeLinecap="round"
+              strokeDasharray={r.dash}
+              filter={r.glow ? 'url(#web-glow)' : undefined}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 1.1, ease: 'easeOut' }}
+            />
+          ))}
 
           {/* the bright load-bearing spine across the worlds */}
           {spine.anchors.map((n, i) => {

@@ -133,3 +133,7 @@ verify_jwt = false
 # Nightly memory learning sweep. Cron-only (enforces service_role internally).
 [functions.memory-sweep]
 verify_jwt = false
+
+# Derives honest fact-to-fact edges for the current user (authed, JWT required).
+[functions.memory-edges-derive]
+verify_jwt = true

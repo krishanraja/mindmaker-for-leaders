@@ -17,6 +17,7 @@ import { LibraryTab } from '@/components/library/LibraryTab';
 import { useGeneratedArtifacts } from '@/hooks/useGeneratedArtifacts';
 import { useDevice } from '@/hooks/useDevice';
 import { useMemoryWeb } from '@/hooks/useMemoryWeb';
+import { useMemoryEdges } from '@/hooks/useMemoryEdges';
 import { useMarkdownImport } from '@/hooks/useMarkdownImport';
 import { useVerificationFlow } from '@/hooks/useVerificationFlow';
 import { DesktopShell } from '@/components/layout/DesktopShell';
@@ -30,7 +31,8 @@ import type { UserMemoryFact } from '@/types/memory';
 export default function MemoryCenter() {
   const navigate = useNavigate();
   const { isMobile } = useDevice();
-  const { stats, facts, verifyFact: verifyMemoryFact } = useMemoryWeb();
+  const { stats, facts, verifyFact: verifyMemoryFact, refresh: refreshMemoryWeb } = useMemoryWeb();
+  const { edges, strengthenFact, fixFact, refetch: refetchEdges } = useMemoryEdges();
   const {
     isFlowOpen,
     pendingFacts,
