@@ -182,9 +182,9 @@ function chartPromptInput(ctx: ArtifactBuildContext): ChartPromptInput {
   const pathway = pathwayOf(intake);
   return {
     pathway,
-    businessName: textOf(intake, "pathway"),
+    businessName: textOf(intake, "profile"),
     whatItDoes:
-      labelOfSelected(pathway === "biz" ? BIZ_SECTORS : SOLO_ROLES, intake["pathway"]?.optionId) ||
+      labelOfSelected(pathway === "biz" ? BIZ_SECTORS : SOLO_ROLES, intake["profile"]?.optionId) ||
       "",
     boxLabels: boxLabelsOf(intake),
     timeSink: startLabelOf(intake),
@@ -204,7 +204,7 @@ function chartPromptInput(ctx: ArtifactBuildContext): ChartPromptInput {
 function fallbackChartOf(intake: IntakeAnswers): ChartJson {
   return buildFallbackChart({
     pathway: pathwayOf(intake),
-    businessName: textOf(intake, "pathway"),
+    businessName: textOf(intake, "profile"),
     boxLabels: boxLabelsOf(intake),
     startLabel: startLabelOf(intake),
     guardrailIds: guardrailIdsOf(intake),
@@ -261,7 +261,7 @@ export const orgchartPreset: KitPreset = {
 
   /* ---- the coherent forked, adaptive, chart-building cascade -------- */
   intake: [
-    // 0. THE FORK + name + what-it-does (the first chart slot: leadership node)
+    // 0. THE FORK - who are we drawing this for. Pathway only.
     {
       id: "pathway",
       type: "chips",
@@ -269,27 +269,33 @@ export const orgchartPreset: KitPreset = {
       eyebrow: "Let's draw your chart",
       prompt: "Who are we drawing this for?",
       helper: "This changes what we ask, and the chart you walk away with.",
-      nameField: { label: "Name on the chart", placeholder: "e.g. Northstar Media" },
-      pathwayCopy: {
-        self: {
-          prompt: "Tell us about you.",
-          helper: "A team of one. We map what you do, what an agent takes, and the role you grow into.",
-        },
-        biz: {
-          prompt: "Tell us about your business.",
-          helper: "You are drawing it for a team. We map your functions, the agent roles, and the new human roles to add.",
-        },
-      },
-      // The fork options carry both the pathway AND the "what it does" choice.
-      // KitIntake shows SOLO_ROLES for self and BIZ_SECTORS for biz via the
-      // pathway-scoped option groups below; the picked option's pathway sets
-      // the branch. (Both groups are listed; KitIntake filters by pathway.)
       options: [
         { id: "self", label: "I'm building for myself", pathway: "self" },
         { id: "biz", label: "I'm scoping for my business", pathway: "biz" },
       ],
       factMappings: [
         { fact_key: "kit_orgchart_pathway", fact_category: "identity", fact_label: "Org chart pathway" },
+      ],
+    },
+
+    // 0b. PROFILE - the name on the chart + what it does (the leadership node).
+    // Carries the nameField (the branding on the chart) and the sector/role.
+    {
+      id: "profile",
+      type: "chips",
+      eyebrow: "Your business",
+      prompt: "Tell us about your business.",
+      helper: "This is the line at the top of your chart.",
+      showIf: { answeredQuestionId: "pathway" },
+      nameField: { label: "Name on the chart", placeholder: "e.g. Northstar Media" },
+      pathwayCopy: {
+        self: { prompt: "Tell us about you.", helper: "This is the line at the top of your chart." },
+        biz: { prompt: "Tell us about your business.", helper: "This is the line at the top of your chart." },
+      },
+      pathwayOptions: { biz: BIZ_SECTORS, self: SOLO_ROLES },
+      options: [...BIZ_SECTORS, ...SOLO_ROLES],
+      factMappings: [
+        { fact_key: "kit_orgchart_sector", fact_category: "business", fact_label: "What the business does" },
       ],
     },
 
