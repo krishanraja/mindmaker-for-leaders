@@ -7,10 +7,13 @@ import { gateReaction, type EvidenceLite, type Reaction, type ReactionCandidate 
 
 const SYSTEM = `You distil ONE short magnitude from a claim's evidence for a glanceable hero number.
 Return STRICT JSON only: {"value": string|null, "descriptor": string, "modelled": boolean}.
-- value: a single short figure, <=8 chars - a percent, multiplier, or money ("40%", "10x", "$2M"). This is THE hero number.
-- The figure MUST be supported by the evidence. If a figure appears in the evidence, use it verbatim and set modelled=false. If you must DERIVE/estimate it from the evidence, set modelled=true. If there is no honest number, set value=null.
-- descriptor: <=6 words that sit beside the number ("cheaper to rent than build"). NEVER put a number in the descriptor.
-- Never invent a figure the evidence does not support.`;
+- value: a single short figure, <=8 chars - a percent, multiplier, or money ("40%", "10x", "$2M"). This is THE hero number, the thing a leader reads in one glance.
+- Grounding (critical):
+  - If the evidence STATES the headline figure directly, use it verbatim and set modelled=false.
+  - If the meaningful magnitude is a COMPARISON or ratio you must COMPUTE from figures that are present in the evidence (e.g. two prices -> "10x cheaper", two latencies -> "3x faster"), compute it, keep it round/approximate, and set modelled=true. Only derive from numbers that actually appear in the evidence.
+  - If the claim has no quantitative grounding, or no single figure captures it, set value=null (the surface will lead with words instead - that is fine and honest).
+- descriptor: <=6 words beside the number ("cheaper to rent than build"). NEVER put a number in the descriptor.
+- Never invent a figure the evidence does not support. A wrong number is far worse than no number.`;
 
 export async function proposeReaction(claimText: string, evidence: EvidenceLite[]): Promise<Reaction | null> {
   if (!evidence.some((e) => e.excerpt)) return null; // nothing to source from

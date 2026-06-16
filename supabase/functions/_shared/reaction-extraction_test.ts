@@ -23,13 +23,19 @@ Deno.test('INVENTION: a number in no excerpt and not flagged modelled is REJECTE
   assertEquals(gateReaction({ value: '10x', descriptor: 'cheaper' }, ev), null);
 });
 
-Deno.test('MODELLED: an explicit derivation is accepted, marked est.', () => {
-  const ev = [{ id: 'e1', excerpt: 'Renting is cheaper now; no single figure given.' }];
+Deno.test('MODELLED: a derivation on a quantitatively-grounded claim is accepted, marked est.', () => {
+  // evidence carries figures ($3 vs $0.30) the 10x is derived from, but not "10" verbatim
+  const ev = [{ id: 'e1', excerpt: 'Build runs about $3 per 1k tokens; renting is $0.30.' }];
   const r = gateReaction({ value: '10x', descriptor: 'cheaper to rent', modelled: true }, ev);
   assertEquals(r?.kind, 'modelled');
   assertEquals(r?.evidence_id, null);
   assertEquals(reactionKindMark('modelled'), 'est.');
   assertEquals(reactionKindMark('sourced'), '');
+});
+
+Deno.test('MODELLED guard: a derivation on a purely-qualitative claim is REJECTED', () => {
+  const ev = [{ id: 'e1', excerpt: 'Renting is cheaper now; no figures given at all.' }];
+  assertEquals(gateReaction({ value: '10x', descriptor: 'cheaper to rent', modelled: true }, ev), null);
 });
 
 Deno.test('BUDGET: an over-long value is rejected (hero number is a glance)', () => {

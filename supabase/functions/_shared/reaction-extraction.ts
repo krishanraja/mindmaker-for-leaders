@@ -47,6 +47,13 @@ export function findInEvidence(value: string, evidence: EvidenceLite[]): Evidenc
   return null;
 }
 
+// Is the claim quantitatively grounded - does ANY excerpt carry a figure? A modelled
+// (derived) magnitude is only honest on a claim that has real numbers to derive from;
+// this blocks a modelled figure on a purely-qualitative claim (sanctity guard).
+export function hasNumericEvidence(evidence: EvidenceLite[]): boolean {
+  return evidence.some((e) => !!e.excerpt && /\d/.test(e.excerpt));
+}
+
 /**
  * THE GATE. Validate a proposed reaction against its evidence. Returns a Reaction
  * only if it is sourced or an explicit modelled derivation; otherwise null (the
@@ -66,8 +73,10 @@ export function gateReaction(
 
   const src = findInEvidence(value, evidence);
   if (src) return { value, descriptor, kind: 'sourced', evidence_id: src.id ?? null };
-  if (candidate.modelled) return { value, descriptor, kind: 'modelled', evidence_id: null };
-  return null; // invented figure -> rejected
+  // A modelled (derived) magnitude is allowed only on a quantitatively-grounded claim,
+  // and renders with the 'est.' mark so it never reads as measured.
+  if (candidate.modelled && hasNumericEvidence(evidence)) return { value, descriptor, kind: 'modelled', evidence_id: null };
+  return null; // invented / ungrounded figure -> rejected, hero leads with words
 }
 
 // The soft-number mark the UI shows beside the value. A sourced figure stands clean;
