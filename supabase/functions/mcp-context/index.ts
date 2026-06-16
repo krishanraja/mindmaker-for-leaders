@@ -33,14 +33,14 @@ async function sha256Hex(s: string): Promise<string> {
 
 // Resolve a bearer token -> the owning leader, enforcing not-revoked + active Edge Pro.
 async function authLeader(admin: SupabaseClient, authHeader: string | null): Promise<
-  { ok: true; userId: string } | { ok: false; status: number; message: string }
+  { ok: true; userId: string; scopes: string[] } | { ok: false; status: number; message: string }
 > {
   const token = (authHeader ?? "").replace(/^Bearer\s+/i, "").trim();
   if (!token.startsWith("ctrl_mcp_")) return { ok: false, status: 401, message: "Missing or malformed MCP token" };
   const hash = await sha256Hex(token);
   const { data: row } = await admin
     .from("mcp_tokens")
-    .select("id, user_id, revoked_at")
+    .select("id, user_id, revoked_at, scopes")
     .eq("token_hash", hash)
     .maybeSingle();
   if (!row || row.revoked_at) return { ok: false, status: 401, message: "Invalid or revoked MCP token" };
@@ -54,17 +54,28 @@ async function authLeader(admin: SupabaseClient, authHeader: string | null): Pro
   if (!sub) return { ok: false, status: 403, message: "This Memory Web requires an active Edge Pro subscription" };
   // best-effort last-used stamp
   void admin.from("mcp_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", row.id);
-  return { ok: true, userId: row.user_id };
+  return { ok: true, userId: row.user_id, scopes: (row.scopes as string[]) ?? ["read"] };
 }
 
-const TOOLS = [
-  {
-    name: "get_leader_context",
-    description:
-      "The leader's LIVE operating context from CTRL's Memory Web - identity, company, current objectives, blockers, confirmed patterns, and recent decisions, ranked by importance. Pull this at the start of a task so you act on who they are right now, not a stale snapshot.",
-    inputSchema: { type: "object", properties: {}, additionalProperties: false },
-  },
-];
+const CONTEXT_TOOL = {
+  name: "get_leader_context",
+  description:
+    "The leader's LIVE operating context from CTRL's Memory Web - identity, company, current objectives, blockers, confirmed patterns, and recent decisions, ranked by importance. Pull this at the start of a task so you act on who they are right now, not a stale snapshot.",
+  inputSchema: { type: "object", properties: {}, additionalProperties: false },
+};
+const BRIEFING_TOOL = {
+  name: "get_todays_briefing",
+  description:
+    "The leader's latest CTRL Daily Briefing as text - today's macro read and priorities. Use it so your actions align with what matters to the leader today (e.g. a scheduling agent knows the priorities, an email agent knows the macro view).",
+  inputSchema: { type: "object", properties: {}, additionalProperties: false },
+};
+
+// The tools a token may use, by scope. 'briefing' is opt-in at mint time.
+function toolsFor(scopes: string[]) {
+  const t = [CONTEXT_TOOL];
+  if (scopes.includes("briefing")) t.push(BRIEFING_TOOL);
+  return t;
+}
 
 function formatContext(c: Awaited<ReturnType<typeof getUserContext>>): string {
   const lines: string[] = [];
@@ -121,18 +132,32 @@ Deno.serve(async (req) => {
   const auth = await authLeader(admin, req.headers.get("Authorization"));
   if (!auth.ok) return json(rpcError(id, -32001, auth.message), auth.status);
 
-  if (method === "tools/list") return json(rpc(id, { tools: TOOLS }));
+  if (method === "tools/list") return json(rpc(id, { tools: toolsFor(auth.scopes) }));
 
   if (method === "tools/call") {
     const name = (msg.params?.name as string) ?? "";
-    if (name !== "get_leader_context") {
-      return json(rpc(id, { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true }));
-    }
+    const ok = (text: string) => json(rpc(id, { content: [{ type: "text", text }] }));
+    const err = (text: string) => json(rpc(id, { content: [{ type: "text", text }], isError: true }));
     try {
-      const ctx = await getUserContext(admin, auth.userId);
-      return json(rpc(id, { content: [{ type: "text", text: formatContext(ctx) }] }));
+      if (name === "get_leader_context") {
+        const ctx = await getUserContext(admin, auth.userId);
+        return ok(formatContext(ctx));
+      }
+      if (name === "get_todays_briefing") {
+        if (!auth.scopes.includes("briefing")) return err("This key is not authorized for the briefing. Mint a key with the briefing scope enabled.");
+        const { data: b } = await admin
+          .from("briefings")
+          .select("script_text, briefing_date")
+          .eq("user_id", auth.userId)
+          .order("briefing_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!b?.script_text) return ok("No briefing has been generated yet.");
+        return ok(`# CTRL Daily Briefing - ${b.briefing_date}\n\n${b.script_text}`);
+      }
+      return err(`Unknown tool: ${name}`);
     } catch (e) {
-      return json(rpc(id, { content: [{ type: "text", text: `Failed to load context: ${e instanceof Error ? e.message : e}` }], isError: true }));
+      return err(`Tool failed: ${e instanceof Error ? e.message : e}`);
     }
   }
 
