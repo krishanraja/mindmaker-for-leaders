@@ -380,6 +380,7 @@ export default function KitHome() {
   const kitMap = mapArtifact ? parseKitMap(mapArtifact.body) : null;
   const orgChartArtifact = byArtifactId["agentic-org-chart"];
   const orgChart = orgChartArtifact ? parseOrgChart(orgChartArtifact.body) : null;
+  const expectsSkill = preset.artifacts.some((spec) => spec.id === "first-skill");
   const planArtifact = byArtifactId["seven-day-plan"];
   const planDays = planArtifact ? parseKitPlan(planArtifact.body) : null;
   const testPrompt = skillMeta?.test_prompts?.[0] ?? null;
@@ -460,7 +461,7 @@ export default function KitHome() {
                   Download your skill (ZIP)
                 </Button>
               )}
-              {!firstSkillArtifact && (
+              {!firstSkillArtifact && expectsSkill && (
                 <p className="text-sm text-muted-foreground">
                   Your first skill needs another pass.{" "}
                   <button
