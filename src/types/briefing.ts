@@ -75,6 +75,18 @@ export const BRIEFING_TYPES: BriefingTypeConfig[] = [
   },
 ];
 
+/**
+ * An honest, gated magnitude stored on a segment at generation time.
+ * `sourced` = the numeric core appears verbatim in the segment's own evidence
+ * text. `modelled` = an explicit CTRL estimate, rendered with the `est.` mark so
+ * it never reads as measured. Absent/null when no figure passes the honesty gate
+ * (the hero then leads with words).
+ */
+export interface BriefingSegmentMagnitude {
+  value: string; // "10x" | "-40%" | "$2M"
+  kind: 'sourced' | 'modelled';
+}
+
 export interface BriefingSegment {
   headline: string;
   analysis: string;
@@ -86,6 +98,9 @@ export interface BriefingSegment {
   lens_item_id?: string | null;
   relevance_score?: number | null;
   matched_profile_fact?: string | null;
+  // Stored honest magnitude (sourced or modelled). Null/undefined on pre-magnitude
+  // rows and whenever the honesty gate finds no defensible number for the segment.
+  magnitude?: BriefingSegmentMagnitude | null;
 }
 
 export interface Briefing {

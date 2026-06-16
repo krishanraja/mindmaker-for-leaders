@@ -10,6 +10,7 @@ import { decompose } from "./decompose.ts";
 import { verifyClaim } from "./verify.ts";
 import { advise, type AdversarialInput } from "./advise.ts";
 import { crossExamine } from "./crossexamine.ts";
+import { type EvidenceLite } from "../_shared/reaction-extraction.ts";
 import type { ClaimVerdict, ExtractedClaim } from "./types.ts";
 
 export interface PipelineParams {
@@ -89,19 +90,29 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
       const claim: ExtractedClaim = { text: row.text, type: row.type, is_load_bearing: row.is_load_bearing };
       const { verdict, evidence } = await verifyClaim(claim);
 
+      // Insert evidence and capture the persisted ids so a SOURCED reaction can
+      // point reaction_evidence_id at the exact row its number was lifted from.
+      // PostgREST preserves input order on return, so the ids line up 1:1.
+      let evidenceLite: EvidenceLite[] = [];
       if (evidence.length) {
-        await admin.from("decision_evidence").insert(
-          evidence.map((e) => ({
-            claim_id: row.id,
-            user_id: userId,
-            source_url: e.source_url,
-            source_type: e.retriever,
-            source_title: e.source_title,
-            excerpt: e.excerpt,
-            stance: e.stance,
-            retriever: e.retriever,
-            relevance_score: e.relevance_score,
-          })),
+        const { data: insertedEvidence } = await admin
+          .from("decision_evidence")
+          .insert(
+            evidence.map((e) => ({
+              claim_id: row.id,
+              user_id: userId,
+              source_url: e.source_url,
+              source_type: e.retriever,
+              source_title: e.source_title,
+              excerpt: e.excerpt,
+              stance: e.stance,
+              retriever: e.retriever,
+              relevance_score: e.relevance_score,
+            })),
+          )
+          .select("id, excerpt");
+        evidenceLite = (insertedEvidence ?? evidence.map((e) => ({ id: null, excerpt: e.excerpt }))).map(
+          (e: { id?: string | null; excerpt?: string | null }) => ({ id: e.id ?? null, excerpt: e.excerpt ?? null }),
         );
       }
 
@@ -115,7 +126,7 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
         })
         .eq("id", row.id);
 
-      return { claimId: row.id, claim, verdict };
+      return { claimId: row.id, claim, verdict, evidenceLite };
     });
 
     const verifiedForJudging = verified.map((v) => ({ claim: v.claim, verdict: v.verdict as ClaimVerdict }));
@@ -185,6 +196,31 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
     });
 
     log.info("decision pipeline complete", { userId, duration_ms: Date.now() - started, claim_count: claims.length });
+
+    // --- Stage 5: hero reaction numbers (decoupled, own wall-clock) ---------
+    // Dispatch the reaction LLM pass to a SEPARATE decision-reactions invocation so
+    // it runs in its own time budget instead of racing this pipeline's wall-clock
+    // after the heavy retrieval (which was starving the inline pass). Fully fenced:
+    // any failure here NEVER touches the verdicts. The honesty gate still lives in
+    // proposeReaction -> gateReaction inside that function; a null reaction leaves
+    // the claim words-led (the correct, honest default).
+    try {
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      const baseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      if (serviceKey && baseUrl) {
+        await fetch(`${baseUrl}/functions/v1/decision-reactions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${serviceKey}`,
+            apikey: serviceKey,
+          },
+          body: JSON.stringify({ case_id: caseId }),
+        });
+      }
+    } catch (re) {
+      log.warn("reaction dispatch failed, claims remain words-led", { userId, error: re });
+    }
   } catch (e) {
     log.error("decision pipeline failed", { userId, error: e });
     await admin

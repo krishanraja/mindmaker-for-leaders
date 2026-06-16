@@ -27,6 +27,13 @@ export interface DecisionCase {
   last_verified_at: string | null;
 }
 
+// The stored, honesty-gated hero magnitude. Populated by the decision-engine
+// reaction pass (proposeReaction -> gateReaction). null on every field means
+// "no honest number" -> the hero leads with words. kind: 'sourced' (numeric core
+// appears verbatim in a retrieved excerpt, renders clean) | 'modelled' (an explicit
+// CTRL derivation, always rendered with the 'est.' mark).
+export type ReactionKind = 'sourced' | 'modelled';
+
 export interface DecisionClaim {
   id: string;
   text: string;
@@ -35,6 +42,10 @@ export interface DecisionClaim {
   verdict: Verdict;
   confidence: number | null;
   rationale: string | null;
+  reaction_value: string | null;
+  reaction_descriptor: string | null;
+  reaction_kind: ReactionKind | null;
+  reaction_evidence_id: string | null;
 }
 
 export interface DecisionEvidence {

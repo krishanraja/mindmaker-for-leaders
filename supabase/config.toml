@@ -77,6 +77,12 @@ verify_jwt = false
 [functions.track-event]
 verify_jwt = false
 
+# === DECISION ENGINE ===
+# Internal: invoked server-to-server with the service-role key (pipeline self-call
+# + backfill). Guards on the service key itself, so JWT verification is off.
+[functions.decision-reactions]
+verify_jwt = false
+
 # === BRIEFING FUNCTIONS ===
 [functions.generate-briefing]
 verify_jwt = true

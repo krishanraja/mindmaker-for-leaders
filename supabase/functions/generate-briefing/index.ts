@@ -27,6 +27,7 @@ import { getUserContext, toLensSource, resolveLeaderIds, type UserContext } from
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
 import { prependDecisionAlerts } from "../_shared/decision-alerts.ts";
+import { extractSegmentMagnitude, type SegmentMagnitude } from "../_shared/briefing-magnitude.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,6 +56,9 @@ interface BriefingSegment {
   lens_item_id?: string;
   relevance_score?: number;
   matched_profile_fact?: string;
+  // Honest, gated magnitude extracted at generation time. Null/absent when no
+  // figure passes the honesty gate, in which case the hero leads with words.
+  magnitude?: SegmentMagnitude | null;
 }
 
 // ── News Fetching ──────────────────────────────────────────────────
@@ -921,6 +925,11 @@ Total: 500-600 words. 3-4 minutes spoken. Every sentence earns its place.`,
       if (seg && typeof seg.headline === "string") {
         seg.headline = normalizeHeadline(seg.headline);
       }
+      // Gated, honest magnitude (sourced or modelled `est.`) or null. Stored on
+      // the segment so the hero reads it instead of re-regexing the headline.
+      if (seg && typeof seg === "object") {
+        seg.magnitude = extractSegmentMagnitude(seg as BriefingSegment);
+      }
     }
   }
 
@@ -1471,16 +1480,21 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   // Merge v2 curated segments with any script-side rewrites: we keep the v2
   // segments as-is because they carry the evidence fields; the script is the
   // narrative layer on top.
-  const finalSegments: BriefingSegment[] = curated.map(c => ({
-    headline: normalizeHeadline(c.headline),
-    analysis: c.analysis,
-    framework_tag: c.framework_tag,
-    source: c.source,
-    relevance_reason: c.relevance_reason,
-    lens_item_id: c.lens_item_id,
-    relevance_score: Number(c.relevance_score.toFixed(4)),
-    matched_profile_fact: c.matched_profile_fact,
-  }));
+  const finalSegments: BriefingSegment[] = curated.map(c => {
+    const seg: BriefingSegment = {
+      headline: normalizeHeadline(c.headline),
+      analysis: c.analysis,
+      framework_tag: c.framework_tag,
+      source: c.source,
+      relevance_reason: c.relevance_reason,
+      lens_item_id: c.lens_item_id,
+      relevance_score: Number(c.relevance_score.toFixed(4)),
+      matched_profile_fact: c.matched_profile_fact,
+    };
+    // Gated, honest magnitude (sourced or modelled `est.`) or null -> words lead.
+    seg.magnitude = extractSegmentMagnitude(seg);
+    return seg;
+  });
 
   // Lead with any open decision-watch alerts (audio preamble + leading segment).
   const injected = await prependDecisionAlerts(supabase, userId, briefingId, script, finalSegments);

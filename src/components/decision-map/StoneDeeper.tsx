@@ -204,7 +204,7 @@ export function StoneDeeper({
                     Synthesised from <b className="font-semibold text-foreground/80">{sourceCount} {sourceCount === 1 ? 'source' : 'sources'}</b>
                     {originalCount > 0 && <> &middot; {originalCount} original</>}
                     {newest && <> &middot; newest {relTime(newest)}</>}
-                    {magnitude && <> &middot; figure is {magnitude.kind}</>}
+                    {magnitude && <> &middot; figure is {magnitude.mark === 'est.' ? 'a modelled est.' : 'sourced'}</>}
                   </p>
                 )}
               </Section>
