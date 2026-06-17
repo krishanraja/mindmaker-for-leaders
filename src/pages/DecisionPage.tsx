@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { DesktopShell } from '@/components/layout/DesktopShell';
@@ -15,13 +16,16 @@ import { PressureTestPanel } from '@/components/operator/decision/PressureTestPa
  */
 export default function DecisionPage() {
   const { isMobile } = useDevice();
+  const location = useLocation();
+  // A starter picked on the Decision Map empty state arrives as location.state.prefill.
+  const prefill = (location.state as { prefill?: string } | null)?.prefill;
 
   if (!isMobile) {
     return (
       <DesktopShell eyebrow="Decide" title="Pressure-test a decision">
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
           <div className="mx-auto w-full max-w-5xl">
-            <PressureTestPanel />
+            <PressureTestPanel initialStatement={prefill} />
           </div>
         </div>
       </DesktopShell>
@@ -33,7 +37,7 @@ export default function DecisionPage() {
       <AppHeader />
       <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 scrollbar-hide">
         <div className="mx-auto w-full max-w-3xl py-4">
-          <PressureTestPanel />
+          <PressureTestPanel initialStatement={prefill} />
         </div>
       </main>
       <BottomNav />
