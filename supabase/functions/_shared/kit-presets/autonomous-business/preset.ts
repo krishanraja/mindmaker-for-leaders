@@ -4,6 +4,30 @@
  * Everything class-specific for the Autonomous Business Lightning Lesson:
  * intake, artifacts, miner prompts, deterministic scoring, and email copy.
  * The engine renders purely from this contract.
+ *
+ * INTAKE (the forked recognition cascade, no open-ended voice blob):
+ *   pathway (fork: self / business)
+ *     -> profile (nameField + what-it-does chip)
+ *     -> area    (multi, chartFeed:boxes        - the areas / hats with recurring work)
+ *     -> timeSink(one,   chartFeed:startBox      - the one that eats the most time;
+ *                        adaptiveOptions.fromQuestionId: area)
+ *     -> workflow(one,   adaptiveOptions.matrixKey "workflow" keyed on the area
+ *                        - the specific recurring workflow there)
+ *     -> involves(multi  - what that workflow involves)
+ *     -> hours   (one    - how many hours a week it eats)
+ *     -> revenue (one    - how close it is to money; feeds the leverage maths)
+ *     -> spectrum(one    - AI maturity stage)
+ *     -> tool    (one    - the AI tool they actually use)
+ *     -> leaves  (multi, chartFeed:tags          - what leaves the building / guardrails)
+ *
+ * previewKind: "picks" renders the generic KitPicksBoard (a title node + the
+ * picked areas as cards, the time-sink flagged) as the live preview; this kit
+ * does not warrant a full org chart.
+ *
+ * Every artifact reads the STRUCTURED answers via the scoring.ts readers; there
+ * is no free-text parsing anywhere. The six artifacts and their strategies are
+ * unchanged (leverage-audit, first-skill, anchor-scaffold, context-pull,
+ * seven-day-plan, pack-map).
  */
 
 import type {
@@ -16,11 +40,27 @@ import type {
 import { KIT_TOOL_LABELS } from "../types.ts";
 import type { LeverageScore } from "./scoring.ts";
 import {
+  areaLabelsOf,
+  BIZ_AREAS,
+  BIZ_SECTORS,
+  externalLeaves,
+  firstBuildName,
   formatScore,
   HOURS_LABELS,
-  parseWorkflows,
+  INVOLVES,
+  involvesOf,
+  LEAVES,
+  nameOf,
+  pathwayOf,
   REVENUE_LABELS,
   scoreLeverage,
+  SELF_HATS,
+  SOLO_ROLES,
+  timeSinkOf,
+  whatItDoesOf,
+  WORKFLOW_FALLBACK,
+  WORKFLOW_MATRIX,
+  workflowOf,
 } from "./scoring.ts";
 import { voiceMinerPrompt, workflowMinerPrompt } from "./prompts.ts";
 import {
@@ -59,32 +99,8 @@ const LEAVES_LABELS: Record<string, string> = {
   "client-comms": "client communications",
 };
 
-function answerText(intake: IntakeAnswers, id: string): string {
-  return intake[id]?.text?.trim() ?? "";
-}
-
 function answerOption(intake: IntakeAnswers, id: string): string {
   return intake[id]?.optionId ?? "";
-}
-
-function answerOptions(intake: IntakeAnswers, id: string): string[] {
-  return intake[id]?.optionIds ?? [];
-}
-
-function externalLeaves(intake: IntakeAnswers): string[] {
-  return answerOptions(intake, "leaves").filter((id) => id !== "none");
-}
-
-/** Short display name for the first build, derived from the primary workflow. */
-function shortName(workflow: string): string {
-  let base = workflow.replace(/[.?!,;:]+$/, "").trim();
-  // Drop trailing time-cost clauses like "takes me about three hours".
-  const costAt = base.search(/\s+(?:that\s+|which\s+)?(?:takes?|taking|eats?|costs?)\b/i);
-  if (costAt > 0) base = base.slice(0, costAt).trim();
-  const words = base.split(/\s+/).filter(Boolean);
-  const name = words.slice(0, 6).join(" ");
-  if (name.length === 0) return "your first workflow";
-  return name.length > 48 ? name.slice(0, 48).trimEnd() : name;
 }
 
 function scoresFor(ctx: ArtifactBuildContext): LeverageScore {
@@ -96,15 +112,16 @@ function scoresFor(ctx: ArtifactBuildContext): LeverageScore {
 }
 
 function scaffoldInput(ctx: ArtifactBuildContext): ScaffoldInput {
-  const workflowsText = answerText(ctx.intake, "workflows");
-  const { primary, additional } = parseWorkflows(workflowsText);
   return {
     stageLabel: STAGE_LABELS[answerOption(ctx.intake, "spectrum")] ?? "Prompting",
-    workflowsText,
-    primaryWorkflow: primary,
-    additionalWorkflows: additional,
+    name: nameOf(ctx.intake),
+    whatItDoes: whatItDoesOf(ctx.intake),
+    areas: areaLabelsOf(ctx.intake),
+    timeSink: timeSinkOf(ctx.intake),
+    workflow: workflowOf(ctx.intake),
+    involves: involvesOf(ctx.intake),
     tool: ctx.tool,
-    leaves: answerOptions(ctx.intake, "leaves"),
+    leaves: ctx.intake["leaves"]?.optionIds ?? [],
     dateLabel: (ctx.redeemedAt ?? "").slice(0, 10),
   };
 }
@@ -144,7 +161,7 @@ function emailShell(body: string, ctx: KitEmailContext, buttonLabel: string): st
 
 export const autonomousBusinessPreset: KitPreset = {
   slug: "autonomous-business",
-  version: "1.0.0",
+  version: "2.0.0",
   title: "Autonomous Business Pack",
   classTitle: "Autonomous Business Lightning Lesson",
   tagline: "One workflow off your plate by day 7, built from your own history.",
@@ -153,42 +170,125 @@ export const autonomousBusinessPreset: KitPreset = {
   passDays: 30,
   skillQuota: 3,
 
+  /* ---- the generic picks-board preview + the curated workflow matrix ---- */
+  previewKind: "picks",
+  optionMatrices: { workflow: WORKFLOW_MATRIX },
+
+  /* ---- the forked, adaptive recognition cascade ------------------------- */
   intake: [
+    // 0. THE FORK - who are we building this for. Pathway only.
     {
-      id: "spectrum",
+      id: "pathway",
       type: "chips",
-      prompt: "Where are you today?",
-      helper: "Honest answer beats aspirational answer. The pack adapts either way.",
+      pathwayFork: true,
+      eyebrow: "Let's build your pack",
+      prompt: "Who are we building this for?",
+      helper: "This changes what we ask, and the pack you walk away with.",
       options: [
-        { id: "prompting", label: "Prompting", description: "I write prompts when I remember to" },
-        { id: "vibe-coding", label: "Vibe coding", description: "I have built small tools with AI" },
-        { id: "agents", label: "Agents", description: "I have automations or agents running" },
-        { id: "fleets", label: "Fleets", description: "Multiple agents run parts of my business" },
+        { id: "self", label: "I'm building for myself", pathway: "self" },
+        { id: "biz", label: "I'm scoping for my business", pathway: "biz" },
       ],
       factMappings: [
-        {
-          fact_key: "ai_journey_stage",
-          fact_category: "identity",
-          fact_label: "AI journey stage",
-        },
+        { fact_key: "kit_autonomy_pathway", fact_category: "identity", fact_label: "Autonomy pathway" },
       ],
     },
+
+    // 0b. PROFILE - the name on the pack + what it does. Carries the nameField.
     {
-      id: "workflows",
-      type: "voice_text",
-      prompt:
-        "What did you do this week that you will do again next week? Walk through it. Up to three things.",
-      helper: "Say it like you would to a colleague. Rough is fine; specific beats polished.",
-      examples: [
-        "Weekly client update emails, about three hours of writing",
-        "Turning discovery calls into proposals",
-        "Monday pipeline review and chasing follow-ups",
+      id: "profile",
+      type: "chips",
+      eyebrow: "Your business",
+      prompt: "Tell us about your business.",
+      helper: "This is the line at the top of your pack.",
+      showIf: { answeredQuestionId: "pathway" },
+      nameField: { label: "Name on the pack", placeholder: "e.g. Northstar Media" },
+      pathwayCopy: {
+        self: { prompt: "Tell us about you.", helper: "This is the line at the top of your pack." },
+        biz: { prompt: "Tell us about your business.", helper: "This is the line at the top of your pack." },
+      },
+      pathwayOptions: { biz: BIZ_SECTORS, self: SOLO_ROLES },
+      options: [...BIZ_SECTORS, ...SOLO_ROLES],
+      factMappings: [
+        { fact_key: "kit_autonomy_sector", fact_category: "business", fact_label: "What the business does" },
       ],
     },
+
+    // 1. AREA (multi) - the areas / hats with recurring work. The boxes.
+    {
+      id: "area",
+      type: "chips_multi",
+      eyebrow: "The shape",
+      prompt: "Which areas of the business run on repeat?",
+      chartFeed: "boxes",
+      showIf: { answeredQuestionId: "pathway" },
+      pathwayCopy: {
+        self: {
+          prompt: "Which hats do you wear every week?",
+          helper: "Tap all that apply. These are where your repeating work lives.",
+        },
+        biz: {
+          prompt: "Which areas of the business run on repeat?",
+          helper: "Tap all that apply. These are where your repeating work lives.",
+        },
+      },
+      pathwayOptions: { biz: BIZ_AREAS, self: SELF_HATS },
+      options: [...BIZ_AREAS, ...SELF_HATS],
+    },
+
+    // 2. TIME-SINK (one) - the start box. Options adapt from the chosen areas.
+    {
+      id: "timeSink",
+      type: "chips",
+      eyebrow: "Where it hurts",
+      prompt: "Which one eats the most time?",
+      chartFeed: "startBox",
+      showIf: { answeredQuestionId: "area" },
+      adaptiveOptions: { fromQuestionId: "area" },
+      pathwayCopy: {
+        self: {
+          prompt: "Which hat eats the most time?",
+          helper: "This is your first build: the one worth handing over first.",
+        },
+        biz: {
+          prompt: "Which area eats the most time?",
+          helper: "This is your first build: the one worth handing over first.",
+        },
+      },
+    },
+
+    // 3. WORKFLOW (one) - the specific recurring workflow there, from the matrix.
+    {
+      id: "workflow",
+      type: "chips",
+      eyebrow: "The grind",
+      prompt: "What's the recurring workflow there?",
+      helper: "Pick the closest one. This is the workflow we build first.",
+      showIf: { answeredQuestionId: "timeSink" },
+      adaptiveOptions: {
+        matrixKey: "workflow",
+        matrixFromQuestionId: "timeSink",
+        fallback: WORKFLOW_FALLBACK,
+      },
+    },
+
+    // 4. INVOLVES (multi) - what the workflow actually involves. Shapes the skill.
+    {
+      id: "involves",
+      type: "chips_multi",
+      eyebrow: "The grind",
+      prompt: "What does that actually involve?",
+      helper: "Tap the steps. This shapes the skill we build.",
+      showIf: { answeredQuestionId: "workflow" },
+      options: INVOLVES,
+    },
+
+    // 5. HOURS (one) - how many hours a week it eats. Feeds the leverage maths.
     {
       id: "hours",
       type: "chips",
-      prompt: "The biggest one: how many hours a week does it eat?",
+      eyebrow: "The cost",
+      prompt: "How many hours a week does it eat?",
+      showIf: { answeredQuestionId: "involves" },
       options: [
         { id: "under-2", label: "Under 2" },
         { id: "2-5", label: "2 to 5" },
@@ -196,21 +296,52 @@ export const autonomousBusinessPreset: KitPreset = {
         { id: "10-plus", label: "More than 10" },
       ],
     },
+
+    // 6. REVENUE (one) - how close it is to money. Feeds the leverage maths.
     {
       id: "revenue",
       type: "chips",
+      eyebrow: "The value",
       prompt: "How close is it to money?",
+      showIf: { answeredQuestionId: "hours" },
       options: [
         { id: "direct", label: "It directly makes money" },
         { id: "supports", label: "It supports sales or clients" },
         { id: "internal", label: "It keeps the lights on internally" },
       ],
     },
+
+    // 7. SPECTRUM (one) - AI maturity stage. Adapts the plan + scaffold.
+    {
+      id: "spectrum",
+      type: "chips",
+      eyebrow: "Today",
+      prompt: "Where are you today with AI?",
+      helper: "Honest answer beats aspirational answer. The pack adapts either way.",
+      showIf: { answeredQuestionId: "revenue" },
+      pathwayCopy: {
+        self: { prompt: "Where are you today with AI?" },
+        biz: { prompt: "Where is the business today with AI?" },
+      },
+      options: [
+        { id: "prompting", label: "Prompting", description: "I write prompts when I remember to" },
+        { id: "vibe-coding", label: "Vibe coding", description: "I have built small tools with AI" },
+        { id: "agents", label: "Agents", description: "I have automations or agents running" },
+        { id: "fleets", label: "Fleets", description: "Multiple agents run parts of my business" },
+      ],
+      factMappings: [
+        { fact_key: "ai_journey_stage", fact_category: "identity", fact_label: "AI journey stage" },
+      ],
+    },
+
+    // 8. TOOL (one) - the AI tool they actually use.
     {
       id: "tool",
       type: "chips",
+      eyebrow: "Your tool",
       prompt: "Which AI tool do you actually use?",
       helper: "Not the one you mean to try. The one you opened this week.",
+      showIf: { answeredQuestionId: "spectrum" },
       options: [
         { id: "chatgpt", label: "ChatGPT", tool: "chatgpt" },
         { id: "claude", label: "Claude", tool: "claude" },
@@ -219,25 +350,24 @@ export const autonomousBusinessPreset: KitPreset = {
         { id: "gemini", label: "Gemini", tool: "gemini" },
       ],
       factMappings: [
-        {
-          fact_key: "primary_ai_tool",
-          fact_category: "preference",
-          fact_label: "Primary AI tool",
-        },
+        { fact_key: "primary_ai_tool", fact_category: "preference", fact_label: "Primary AI tool" },
       ],
     },
+
+    // 9. LEAVES (multi) - what leaves the building. The guardrails. Feeds tags.
     {
       id: "leaves",
       type: "chips_multi",
-      prompt: "What leaves the building? Tick everything these workflows touch.",
-      helper: "This sets your guardrails. Anything ticked always asks before acting.",
-      options: [
-        { id: "email", label: "Email to real people" },
-        { id: "posting", label: "Posting publicly" },
-        { id: "payments", label: "Payments or invoices" },
-        { id: "client-comms", label: "Client communications" },
-        { id: "none", label: "None of these" },
-      ],
+      eyebrow: "Guardrails",
+      prompt: "What leaves the building?",
+      helper: "Tick everything this work touches. Anything ticked always asks before acting.",
+      chartFeed: "tags",
+      showIf: { answeredQuestionId: "tool" },
+      pathwayCopy: {
+        self: { prompt: "What would you never hand off blind?" },
+        biz: { prompt: "What leaves the building?" },
+      },
+      options: LEAVES,
     },
   ],
 
@@ -253,8 +383,10 @@ export const autonomousBusinessPreset: KitPreset = {
         "Read the verdict, then build the flagged workflow first. The arithmetic is shown so you can re-run it on anything.",
       render: (ctx) => {
         const scores = scoresFor(ctx);
-        const { primary } = parseWorkflows(answerText(ctx.intake, "workflows"));
-        const primaryLabel = primary || "your repeating weekly workflow";
+        const workflow = workflowOf(ctx.intake);
+        const timeSink = timeSinkOf(ctx.intake);
+        const primaryLabel =
+          workflow || (timeSink ? `your recurring work in ${timeSink}` : "your repeating weekly workflow");
         const hoursId = answerOption(ctx.intake, "hours");
         const revenueId = answerOption(ctx.intake, "revenue");
         const hoursLabel = HOURS_LABELS[hoursId] ?? "a few hours a week";
@@ -269,6 +401,13 @@ export const autonomousBusinessPreset: KitPreset = {
           "",
           `**${primaryLabel}**`,
           "",
+        ];
+
+        if (timeSink) {
+          lines.push(`This sits in ${timeSink}, the area you told us eats the most time.`, "");
+        }
+
+        lines.push(
           `The maths: ${formatScore(scores.hoursPerWeek)} hours a week x ${scores.revenueProximity} (${revenueLabel}) = **${formatScore(scores.score)}**`,
           "",
           `Verdict: **${scores.verdict}**`,
@@ -277,7 +416,7 @@ export const autonomousBusinessPreset: KitPreset = {
           "",
           "## Next candidates",
           "",
-        ];
+        );
 
         if (scores.additionalCandidates.length > 0) {
           for (const candidate of scores.additionalCandidates) {
@@ -285,11 +424,11 @@ export const autonomousBusinessPreset: KitPreset = {
           }
           lines.push(
             "",
-            "Score these the same way once the first build is running. One build at a time; a working skill beats three half-built ones.",
+            "These are the other areas you picked. Score each the same way once the first build is running: find the recurring workflow inside it, estimate its hours, weigh how close it is to money. One build at a time; a working skill beats three half-built ones.",
           );
         } else {
           lines.push(
-            "You named one workflow. Good; focus wins. When the first build is running, come back and score the next one.",
+            "You picked one area. Good; focus wins. When the first build is running, come back and score the next one.",
           );
         }
 
@@ -319,23 +458,31 @@ export const autonomousBusinessPreset: KitPreset = {
         const stageId = answerOption(ctx.intake, "spectrum") || "prompting";
         const stageLabel = STAGE_LABELS[stageId] ?? "Prompting";
         const stageDesc = STAGE_DESCRIPTIONS[stageId] ?? STAGE_DESCRIPTIONS["prompting"];
-        const workflowsText = answerText(ctx.intake, "workflows");
-        const { primary } = parseWorkflows(workflowsText);
-        const primaryLabel = primary || "the workflow I repeat every week";
+        const whatItDoes = whatItDoesOf(ctx.intake);
+        const area = timeSinkOf(ctx.intake);
+        const workflow = workflowOf(ctx.intake);
+        const involves = involvesOf(ctx.intake);
+        const primaryLabel =
+          workflow || (area ? `the recurring work in ${area}` : "the workflow I repeat every week");
         const hoursId = answerOption(ctx.intake, "hours");
         const revenueId = answerOption(ctx.intake, "revenue");
-        const leaves = externalLeaves(ctx.intake);
-        const leavesLabels = leaves
+        const leavesLabels = externalLeaves(ctx.intake)
           .map((id) => LEAVES_LABELS[id])
           .filter((label): label is string => Boolean(label));
 
         const lines: string[] = [
           `I am at the ${stageLabel.toLowerCase()} stage with AI: ${stageDesc}.`,
         ];
-        if (workflowsText) {
-          lines.push(`Here is what I repeat every week, in my own words: ${workflowsText}`);
+        if (whatItDoes) {
+          lines.push(`What I do: ${whatItDoes}.`);
+        }
+        if (area) {
+          lines.push(`The area of my work that eats the most time is ${area}.`);
         }
         lines.push(`The workflow I want to hand over first is: ${primaryLabel}.`);
+        if (involves.length > 0) {
+          lines.push(`That workflow involves: ${involves.join(", ").toLowerCase()}.`);
+        }
         const hoursLabel = HOURS_LABELS[hoursId];
         const revenueLabel = REVENUE_LABELS[revenueId];
         if (hoursLabel && revenueLabel) {
@@ -362,7 +509,7 @@ export const autonomousBusinessPreset: KitPreset = {
 
         return {
           transcript: lines.join("\n"),
-          nameHint: shortName(primary),
+          nameHint: firstBuildName(ctx.intake),
         };
       },
     },
@@ -397,7 +544,9 @@ export const autonomousBusinessPreset: KitPreset = {
         "Copy each prompt into your AI tool, run it, then paste the CONTEXT BLOCK back into CTRL to sharpen your pack. Rerun monthly.",
       render: (ctx) => {
         const toolLabel = KIT_TOOL_LABELS[ctx.tool];
-        const { primary } = parseWorkflows(answerText(ctx.intake, "workflows"));
+        const workflow = workflowOf(ctx.intake);
+        const area = timeSinkOf(ctx.intake);
+        const involves = involvesOf(ctx.intake);
         return [
           "# Context pull prompts",
           "",
@@ -408,7 +557,7 @@ export const autonomousBusinessPreset: KitPreset = {
           `Copy this into ${toolLabel}:`,
           "",
           FENCE,
-          workflowMinerPrompt(ctx.tool, primary),
+          workflowMinerPrompt(ctx.tool, workflow, { area, involves }),
           FENCE,
           "",
           "## Prompt 2: the voice miner",
@@ -440,10 +589,13 @@ export const autonomousBusinessPreset: KitPreset = {
         const stageLabel = STAGE_LABELS[stageId] ?? "Prompting";
         const stageDesc = STAGE_DESCRIPTIONS[stageId] ?? STAGE_DESCRIPTIONS["prompting"];
         const toolLabel = KIT_TOOL_LABELS[ctx.tool];
-        const { primary } = parseWorkflows(answerText(ctx.intake, "workflows"));
-        const skillName = ctx.firstSkillName ?? shortName(primary);
-        const leaves = externalLeaves(ctx.intake);
-        const leavesLabels = leaves
+        const workflow = workflowOf(ctx.intake);
+        const area = timeSinkOf(ctx.intake);
+        const involves = involvesOf(ctx.intake);
+        const skillName = ctx.firstSkillName ?? firstBuildName(ctx.intake);
+        const buildTarget =
+          workflow || (area ? `their recurring work in ${area}` : "their main repeating weekly workflow");
+        const leavesLabels = externalLeaves(ctx.intake)
           .map((id) => LEAVES_LABELS[id])
           .filter((label): label is string => Boolean(label));
 
@@ -460,8 +612,13 @@ export const autonomousBusinessPreset: KitPreset = {
 
         const tierLine =
           leavesLabels.length > 0
-            ? `their workflows touch ${leavesLabels.join(", ")}; the plan must include an explicit review-and-approve step before anything leaves the building`
+            ? `their work touches ${leavesLabels.join(", ")}; the plan must include an explicit review-and-approve step before anything leaves the building`
             : "nothing leaves the building; the plan can push toward fully hands-off runs";
+
+        const involvesLine =
+          involves.length > 0
+            ? `The workflow involves: ${involves.join(", ").toLowerCase()}.`
+            : "";
 
         const parts: string[] = [
           "Write a 7 day plan for a student of the Autonomous Business Lightning Lesson. They just downloaded a personalised pack containing their first AI skill.",
@@ -470,7 +627,8 @@ export const autonomousBusinessPreset: KitPreset = {
           `- Stage: ${stageLabel} (${stageDesc})`,
           `- Tool: ${toolLabel}`,
           `- First skill: ${skillName}`,
-          `- First build target: ${primary || "their main repeating weekly workflow"}`,
+          `- First build target: ${buildTarget}${area ? ` (in ${area})` : ""}`,
+          involvesLine ? `- ${involvesLine}` : "",
           `- Guardrails: ${tierLine}`,
           "",
           "Return ONLY valid JSON, no prose, no markdown fences, exactly this shape:",
@@ -484,7 +642,7 @@ export const autonomousBusinessPreset: KitPreset = {
           `- Stage rules: ${stageRules[stageId] ?? stageRules["prompting"]}`,
           "- Day 7 ends with one workflow running without them and a final note logged in BUILD_LOG.md.",
           "- Voice: operator tone, sentence case, plain English, no buzzwords, no em dashes (use hyphens or commas instead).",
-        ];
+        ].filter((l) => l !== "");
 
         if (ctx.memoryContext) {
           parts.push(
@@ -518,7 +676,6 @@ export const autonomousBusinessPreset: KitPreset = {
       description: "Your pack at a glance: stage, first build, tool, and the week ahead.",
       render: (ctx) => {
         const stageId = answerOption(ctx.intake, "spectrum") || "prompting";
-        const { primary } = parseWorkflows(answerText(ctx.intake, "workflows"));
         const ticked = externalLeaves(ctx.intake);
 
         const stagePaths: Record<string, string> = {
@@ -534,8 +691,10 @@ export const autonomousBusinessPreset: KitPreset = {
 
         return JSON.stringify(
           {
+            pathway: pathwayOf(ctx.intake),
             stage: stageId,
-            firstBuild: shortName(primary),
+            area: timeSinkOf(ctx.intake),
+            firstBuild: firstBuildName(ctx.intake),
             tool: KIT_TOOL_LABELS[ctx.tool],
             tier: ticked.length > 0 ? "with review" : "full speed",
             path: stagePaths[stageId] ?? stagePaths["prompting"],
@@ -548,8 +707,11 @@ export const autonomousBusinessPreset: KitPreset = {
   ],
 
   contextPullPrompt: (tool: KitTool, ctx?: Partial<ArtifactBuildContext>) => {
-    const { primary } = parseWorkflows(ctx?.intake?.["workflows"]?.text ?? "");
-    return workflowMinerPrompt(tool, primary);
+    const intake = (ctx?.intake ?? {}) as IntakeAnswers;
+    const workflow = workflowOf(intake);
+    const area = timeSinkOf(intake);
+    const involves = involvesOf(intake);
+    return workflowMinerPrompt(tool, workflow, { area, involves });
   },
 
   score: (intake: IntakeAnswers) => scoreLeverage(intake),
@@ -572,9 +734,7 @@ export const autonomousBusinessPreset: KitPreset = {
       subject: () => "Day 3. Has it run yet?",
       html: (ctx) => {
         const skillName = escapeHtml(ctx.skillName ?? "your first skill");
-        const testPrompt = escapeHtml(
-          ctx.testPrompt ?? "test prompt 1 from your pack page",
-        );
+        const testPrompt = escapeHtml(ctx.testPrompt ?? "test prompt 1 from your pack page");
         return emailShell(
           [
             `<p style="margin:0 0 16px;">Your skill ${skillName} has been idle for 3 days, if you have not run it yet.</p>`,

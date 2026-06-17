@@ -4,15 +4,30 @@
  * Pure functions only: no LLM calls, no IO, no runtime globals. Every
  * heuristic that reads intake answers lives here so templates, prompts and
  * the preset all derive from one place.
+ *
+ * Intake is now a forked pick-cascade (no open-ended voice question): the
+ * student forks self vs business, names a profile, picks the repetitive AREAS
+ * (multi), picks the one to BUILD FIRST (one), picks the specific WORKFLOW from
+ * a curated matrix (one), then the steps it INVOLVES (multi). Every derivation
+ * below reads those structured answers, never a free-text blob, so the prompts
+ * and templates compose from the deterministic cascade.
  */
 
-import type { IntakeAnswers } from "../types.ts";
+import type { IntakeAnswers, IntakeOption } from "../types.ts";
+import {
+  AREA_OPTIONS_BIZ,
+  AREA_OPTIONS_SELF,
+  INVOLVES_OPTIONS,
+  WORKFLOW_FALLBACK,
+  WORKFLOW_MATRIX,
+} from "./templates.ts";
 
 export type Frequency = "daily" | "weekly" | "adhoc";
 export type Judgment = "low" | "high";
 export type StakesTier = "full-speed" | "with-review" | "human-led";
 export type ExperienceLevel = "never" | "few-prompts" | "shipped";
 export type MapStage = "prompting" | "first-builds" | "agents";
+export type VibePathway = "self" | "biz";
 
 export interface VibeScore {
   frequency: Frequency;
@@ -42,19 +57,117 @@ export const EXPERIENCE_LABELS: Record<ExperienceLevel, string> = {
   shipped: "has shipped something before",
 };
 
-/** High-frequency wording: daily rhythms and "constantly" phrasing. */
-const DAILY_PATTERN =
-  /\b(every|each) (day|morning|afternoon|evening|night)\b|\bdaily\b|\ball day\b|\btwice a day\b|\bseveral times a day\b|\bconstantly\b|\bevery time\b|\bover and over\b|\bagain and again\b|\bkeep having to\b/;
+/* ------------------------------------------------------------------ */
+/* Small read helpers                                                   */
+/* ------------------------------------------------------------------ */
 
-/** Weekly rhythms, including named weekdays. */
-const WEEKLY_PATTERN =
-  /\b(every|each) (week|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\bweekly\b|\bonce a week\b|\bevery other week\b|\bmost weeks\b/;
+function labelOf(options: IntakeOption[], id: string | undefined): string {
+  return options.find((o) => o.id === id)?.label ?? "";
+}
 
-export function inferFrequency(grind: string): Frequency {
-  const text = grind.toLowerCase();
-  if (DAILY_PATTERN.test(text)) return "daily";
-  if (WEEKLY_PATTERN.test(text)) return "weekly";
-  return "adhoc";
+function slugifyLabel(label: string): string {
+  return (
+    label
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "opt"
+  );
+}
+
+export function pathwayFromIntake(intake: IntakeAnswers): VibePathway {
+  return intake["pathway"]?.optionId === "biz" ? "biz" : "self";
+}
+
+/** The area option set for the active pathway. */
+function areaOptions(intake: IntakeAnswers): IntakeOption[] {
+  return pathwayFromIntake(intake) === "biz" ? AREA_OPTIONS_BIZ : AREA_OPTIONS_SELF;
+}
+
+/* ------------------------------------------------------------------ */
+/* Cascade derivations (structured, no free text)                       */
+/* ------------------------------------------------------------------ */
+
+/** The repetitive areas the student picked (multi). */
+export function areasFromIntake(intake: IntakeAnswers): string[] {
+  const opts = areaOptions(intake);
+  const ids = intake["areas"]?.optionIds ?? [];
+  return ids
+    .map((oid) => opts.find((o) => o.id === oid)?.label)
+    .filter((l): l is string => Boolean(l));
+}
+
+/**
+ * The one area to build first (the start box). Its options are drawn from the
+ * picked areas (adaptiveOptions.fromQuestionId), so the stored optionId is the
+ * slug of the chosen area label. Falls back to the first picked area.
+ */
+export function buildFirstFromIntake(intake: IntakeAnswers): string {
+  const areas = areasFromIntake(intake);
+  const pickedId = intake["buildFirst"]?.optionId;
+  const match = areas.find((a) => slugifyLabel(a) === pickedId);
+  return match ?? areas[0] ?? "";
+}
+
+/** The curated workflow options for the chosen build-first area. */
+export function workflowOptionsFor(buildFirstLabel: string): IntakeOption[] {
+  return WORKFLOW_MATRIX[buildFirstLabel] ?? WORKFLOW_FALLBACK;
+}
+
+/**
+ * The specific workflow the student picked from the curated matrix. This is the
+ * structured replacement for the old open-ended "grind" voice answer: a clean,
+ * concrete label the prompts and templates can quote verbatim.
+ */
+export function workflowFromIntake(intake: IntakeAnswers): string {
+  const buildFirst = buildFirstFromIntake(intake);
+  const opts = workflowOptionsFor(buildFirst);
+  return labelOf(opts, intake["workflow"]?.optionId);
+}
+
+/**
+ * The steps the workflow involves (multi). Shapes how concrete the brief and
+ * skill seed are about what the tool actually does.
+ */
+export function involvesFromIntake(intake: IntakeAnswers): string[] {
+  const ids = intake["involves"]?.optionIds ?? [];
+  return ids
+    .map((oid) => INVOLVES_OPTIONS.find((o) => o.id === oid)?.label)
+    .filter((l): l is string => Boolean(l));
+}
+
+/**
+ * The plain-English description of the workflow used everywhere the old code
+ * read the voice blob. Composed from the structured cascade: the workflow
+ * label, scoped to the area it lives in. Never free text.
+ */
+export function grindFromIntake(intake: IntakeAnswers): string {
+  const workflow = workflowFromIntake(intake);
+  const area = buildFirstFromIntake(intake);
+  if (workflow && area) {
+    return `${workflow.charAt(0).toLowerCase()}${workflow.slice(1)} (in ${area.toLowerCase()})`;
+  }
+  return workflow || area || "";
+}
+
+/* ------------------------------------------------------------------ */
+/* Frequency / judgment scoring                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Frequency now reads the chosen WORKFLOW label and how many steps it involves,
+ * not a regex over free text. The curated workflows are inherently recurring
+ * (they are the repetitive ones, by construction), so the signal is the rhythm
+ * words baked into the labels plus the involves count.
+ */
+const DAILY_WORKFLOW = /\b(every|each)\b|\bdaily\b|inbox|triage|chasing|chase|same\b/i;
+const WEEKLY_WORKFLOW = /weekly|update|report|recap|newsletter|digest|calendar|round-?up/i;
+
+export function inferFrequency(workflow: string): Frequency {
+  const text = workflow.toLowerCase();
+  if (DAILY_WORKFLOW.test(text)) return "daily";
+  if (WEEKLY_WORKFLOW.test(text)) return "weekly";
+  // Curated workflows are repetitive by construction; default to weekly cadence.
+  return "weekly";
 }
 
 export function frequencyLabel(frequency: Frequency): string {
@@ -75,9 +188,9 @@ export function inferJudgment(
   return "low";
 }
 
-/** Places the grind workflow on the frequency x judgment 2x2. */
+/** Places the chosen workflow on the frequency x judgment 2x2. */
 export function scoreVibeCoding(intake: IntakeAnswers): VibeScore {
-  const frequency = inferFrequency(grindFromIntake(intake));
+  const frequency = inferFrequency(workflowFromIntake(intake));
   const judgment = inferJudgment(
     intake["stakes"]?.optionId ?? "just-me",
     experienceFromIntake(intake),
@@ -109,35 +222,54 @@ export function scoreVibeCoding(intake: IntakeAnswers): VibeScore {
 }
 
 /* ------------------------------------------------------------------ */
-/* Intake derivations                                                   */
+/* Profile / tier / experience derivations                              */
 /* ------------------------------------------------------------------ */
 
-export function grindFromIntake(intake: IntakeAnswers): string {
-  return intake["grind"]?.text?.trim() ?? "";
-}
-
-const ROLE_LABELS: Record<string, string> = {
+const ROLE_LABELS_BIZ: Record<string, string> = {
   founder: "Founder",
   "run-a-team": "Team lead",
   "solo-operator": "Solo operator",
   consultant: "Consultant",
   "side-builder": "Side builder",
+  student: "Student or early-career",
+};
+
+const ROLE_LABELS_SELF: Record<string, string> = {
+  student: "Student or early-career",
+  "side-builder": "Building on the side",
+  "solo-operator": "Solo operator",
+  freelancer: "Freelancer",
+  "career-switcher": "Switching into a new field",
+  curious: "Just curious",
 };
 
 export function roleFromIntake(intake: IntakeAnswers): string {
-  return ROLE_LABELS[intake["role"]?.optionId ?? ""] ?? "Operator";
+  const id = intake["profile"]?.optionId ?? "";
+  const map = pathwayFromIntake(intake) === "biz" ? ROLE_LABELS_BIZ : ROLE_LABELS_SELF;
+  return map[id] ?? (pathwayFromIntake(intake) === "biz" ? "Operator" : "Builder");
 }
 
+/** The "name on the kit" the student typed in the profile nameField. */
+export function nameFromIntake(intake: IntakeAnswers): string {
+  return intake["profile"]?.text?.trim() ?? "";
+}
+
+/**
+ * The working name the student gave their build in the profile nameField, if
+ * any. Surfaced as context in the brief and skill seed; empty when they skipped
+ * it. Kept under the name `offeringFromIntake` for call-site parity with the
+ * other presets' derive() blocks.
+ */
 export function offeringFromIntake(intake: IntakeAnswers): string {
-  return intake["role"]?.text?.trim() ?? "";
+  return nameFromIntake(intake);
 }
 
 const DEFAULT_WIN = "a working tool you use yourself";
 
 const WIN_LABELS: Record<string, string> = {
   "use-myself": DEFAULT_WIN,
-  "someone-touched": "something a teammate or customer has touched",
-  demo: "a demo you can show",
+  "someone-touched": "something a teammate or friend has actually used",
+  "show-it": "something you can show someone and walk them through",
   "you-pick":
     "a working tool you use yourself (the kit picked: start where the time savings are yours)",
 };
@@ -157,7 +289,7 @@ export function stakesTierFromIntake(intake: IntakeAnswers): StakesTier {
   }
 }
 
-/** What the first build touches, for the registry row. */
+/** What the first build touches, for the personal map. */
 export function stakesTouchesFromIntake(intake: IntakeAnswers): string {
   switch (intake["stakes"]?.optionId) {
     case "customers":
@@ -187,30 +319,21 @@ export function stageFromExperience(level: ExperienceLevel): MapStage {
 }
 
 /**
- * A short, human build name derived from the grind answer. Used as the skill
- * nameHint, the registry row and the personal map. Deterministic and rough
- * by design; the student can rename later.
+ * A short, human build name derived from the chosen workflow label. Used as the
+ * skill nameHint and the personal map. Deterministic; the student can rename.
  */
-export function shortBuildName(grind: string): string {
-  const cleaned = grind.replace(/\s+/g, " ").trim();
+export function shortBuildName(workflow: string): string {
+  const cleaned = workflow.replace(/\s+/g, " ").trim();
   if (!cleaned) return "Your first build";
 
-  const stripped = cleaned
-    .replace(
-      /^(every|each) (monday|tuesday|wednesday|thursday|friday|saturday|sunday|day|week|morning|month|quarter)[,\s]+/i,
-      "",
-    )
-    .replace(/^(i|we) (have to |need to |always |usually |currently |manually )?/i, "")
-    .trim();
+  const stripped = cleaned.replace(/^(the|a|an)\s+/i, "").trim();
 
-  const clause = (stripped.split(/[.;,]/)[0] ?? stripped).trim();
-  let name = clause || cleaned;
+  let name = (stripped.split(/[.;,(]/)[0] ?? stripped).trim() || cleaned;
   if (name.length > 48) {
     const cut = name.slice(0, 48);
     const lastSpace = cut.lastIndexOf(" ");
     name = (lastSpace > 20 ? cut.slice(0, lastSpace) : cut).trim();
   }
-  // Drop dangling connectives left behind by truncation ("...into one").
   const filler =
     /\s(a|an|and|at|by|for|from|in|into|my|of|on|one|or|our|the|then|to|with)$/i;
   while (filler.test(name)) {

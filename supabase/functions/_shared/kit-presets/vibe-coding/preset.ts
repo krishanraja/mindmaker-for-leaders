@@ -1,11 +1,25 @@
 /**
  * Vibe Coding Field Kit preset.
  *
- * Everything class-specific for the Vibe Coding Lightning Lesson follow-up:
- * intake, the 15-artifact manifest across Spot + Spec / Brief + Build /
- * Verify + Govern, deterministic scoring, per-tool prompts and the three
- * nudge emails. Plain TypeScript only; bundled into both the Deno edge
- * runtime and the Vite client.
+ * Everything class-specific for the Vibe Coding Lightning Lesson follow-up.
+ *
+ * Intake is a forked pick-cascade (no open-ended voice question): the student
+ * forks self vs business, names a profile, recognises their repetitive AREAS
+ * from a curated list (multi), picks the one to BUILD FIRST (one), picks the
+ * specific WORKFLOW from a curated matrix (one), then the steps it INVOLVES
+ * (multi), then tool / win / stakes / experience. The copy is deliberately
+ * gentle: a casual mid-level student should not feel they need Cursor or Lovable
+ * or any developer setup. A live picks preview (previewKind 'picks') assembles a
+ * board of what they could build as they tap.
+ *
+ * The take-home pack is trimmed to six heroes: the leverage audit, the five-part
+ * brief, the first skill (the ZIP), the acceptance pack, the seven-day plan and
+ * the personal map. Every compose prompt reads the STRUCTURED cascade answers
+ * (the chosen workflow label, the steps it involves), never a free-text blob,
+ * and stays honesty-gated by a deterministic fallback.
+ *
+ * Plain TypeScript only; bundled into both the Deno edge runtime and the Vite
+ * client. No Deno or Node globals.
  */
 
 import type {
@@ -20,8 +34,10 @@ import {
   EXPERIENCE_LABELS,
   STAKES_TIER_LABELS,
   STAKES_TIER_RULES,
+  areasFromIntake,
+  buildFirstFromIntake,
   experienceFromIntake,
-  grindFromIntake,
+  involvesFromIntake,
   offeringFromIntake,
   roleFromIntake,
   scoreVibeCoding,
@@ -30,27 +46,23 @@ import {
   stakesTierFromIntake,
   stakesTouchesFromIntake,
   winFromIntake,
+  workflowFromIntake,
 } from "./scoring.ts";
 import type { VibeScore } from "./scoring.ts";
 import {
-  EXPERIENCE_GUARDRAILS,
-  TIER_GUARDRAILS,
+  AGENT_PICKS_STUB,
+  AREA_OPTIONS_BIZ,
+  AREA_OPTIONS_SELF,
+  INVOLVES_OPTIONS,
   VOICE_RULES,
+  WORKFLOW_FALLBACK,
+  WORKFLOW_MATRIX,
   acceptancePackFallback,
-  buildLogTemplate,
-  buildabilityCard,
-  briefUpgraderTemplate,
-  constitutionTemplate,
   fivePartBriefTemplate,
-  lessonsTemplate,
   leverageAuditFallback,
-  sessionScripts,
-  stakesDialCard,
-  startingPath,
-  toolRegistryTemplate,
 } from "./templates.ts";
 import { MERIDIAN_WORKED_EXAMPLE } from "./examples.ts";
-import { contextCapsulePrompt, specInterviewerPrompt } from "./prompts.ts";
+import { contextPullPrompt } from "./prompts.ts";
 
 /* ------------------------------------------------------------------ */
 /* Shared derivations                                                   */
@@ -65,7 +77,12 @@ function resolveScore(ctx: ArtifactBuildContext): VibeScore {
 interface Derived {
   role: string;
   offering: string;
-  grind: string;
+  /** The chosen build-first area (the start box). */
+  area: string;
+  /** The specific workflow label picked from the curated matrix. */
+  workflow: string;
+  /** What the workflow involves (multi). */
+  involves: string[];
   buildName: string;
   toolLabel: string;
   win: string;
@@ -77,12 +94,14 @@ interface Derived {
 
 function derive(ctx: ArtifactBuildContext): Derived {
   const tier = stakesTierFromIntake(ctx.intake);
-  const grind = grindFromIntake(ctx.intake);
+  const workflow = workflowFromIntake(ctx.intake);
   return {
     role: roleFromIntake(ctx.intake),
     offering: offeringFromIntake(ctx.intake),
-    grind,
-    buildName: shortBuildName(grind),
+    area: buildFirstFromIntake(ctx.intake),
+    workflow,
+    involves: involvesFromIntake(ctx.intake),
+    buildName: shortBuildName(workflow),
     toolLabel: KIT_TOOL_LABELS[ctx.tool],
     win: winFromIntake(ctx.intake),
     tier,
@@ -95,9 +114,11 @@ function derive(ctx: ArtifactBuildContext): Derived {
 function profileBlock(ctx: ArtifactBuildContext): string {
   const d = derive(ctx);
   return [
-    `Role: ${d.role}${d.offering ? ` (the business sells: ${d.offering})` : ""}`,
-    `Workflow they named: ${d.grind || "not given; they skipped the question"}`,
-    `Tool they build in: ${d.toolLabel}`,
+    `Who they are: ${d.role}${d.offering ? ` (they are calling their build "${d.offering}")` : ""}`,
+    `The area they are starting in: ${d.area || "not specified"}`,
+    `The specific workflow they picked: ${d.workflow || "not specified"}`,
+    `What that workflow involves: ${d.involves.length > 0 ? d.involves.join(", ") : "not specified"}`,
+    `Tool they will build in: ${d.toolLabel}`,
     `Shipped means: ${d.win}`,
     `Stakes tier: ${d.tierLabel} (${d.tierRule})`,
     `Experience: ${EXPERIENCE_LABELS[d.experience]}`,
@@ -116,100 +137,196 @@ function contextBlock(ctx: ArtifactBuildContext): string {
 }
 
 const PROMPT_PREAMBLE =
-  "You are writing one artifact of the Vibe Coding Field Kit for a student who just finished the Vibe Coding Lightning Lesson. They are not a developer; they are an operator building their first small tool.";
+  "You are writing one artifact of the Vibe Coding Field Kit for a student who just finished the Vibe Coding Lightning Lesson. They are not a developer; they may be a student or an operator building their very first small tool. Be encouraging and plain. Never assume they have Cursor, Lovable or any developer setup; the tool is whatever they already have open.";
 
 /* ------------------------------------------------------------------ */
-/* Intake                                                               */
+/* Intake: the forked pick-cascade (no open-ended voice question)       */
 /* ------------------------------------------------------------------ */
 
 const intake: KitPreset["intake"] = [
+  // 0. THE FORK - self vs business. Pathway only.
   {
-    id: "role",
+    id: "pathway",
     type: "chips",
-    prompt: "What do you do?",
+    pathwayFork: true,
+    eyebrow: "Let's find your first build",
+    prompt: "Who are you building for?",
+    helper: "This changes what we ask, and what you walk away with.",
     options: [
-      { id: "founder", label: "Founder" },
-      { id: "run-a-team", label: "Run a team" },
-      { id: "solo-operator", label: "Solo operator" },
-      { id: "consultant", label: "Consultant" },
-      { id: "side-builder", label: "Building on the side" },
+      { id: "self", label: "Myself", pathway: "self" },
+      { id: "biz", label: "My work or business", pathway: "biz" },
     ],
-    optionalText: {
-      prompt: "What does your company sell or make?",
-      placeholder: "e.g. advertising across three sites and a podcast network",
+    factMappings: [
+      { fact_key: "kit_vibe_pathway", fact_category: "identity", fact_label: "Vibe coding pathway" },
+    ],
+  },
+
+  // 0b. PROFILE - the name on the kit + who they are (nameField + role chips).
+  {
+    id: "profile",
+    type: "chips",
+    eyebrow: "About you",
+    prompt: "Tell us a little about you.",
+    helper: "No wrong answer. This just tunes what we suggest.",
+    showIf: { answeredQuestionId: "pathway" },
+    nameField: { label: "What should we call this build of yours?", placeholder: "e.g. my study helper" },
+    pathwayCopy: {
+      self: { prompt: "Tell us a little about you.", helper: "No wrong answer. This just tunes what we suggest." },
+      biz: { prompt: "Tell us a little about your work.", helper: "No wrong answer. This just tunes what we suggest." },
     },
+    pathwayOptions: {
+      self: [
+        { id: "student", label: "Student or early-career" },
+        { id: "side-builder", label: "Building on the side" },
+        { id: "solo-operator", label: "Solo operator" },
+        { id: "freelancer", label: "Freelancer" },
+        { id: "career-switcher", label: "Switching into a new field" },
+        { id: "curious", label: "Just curious" },
+      ],
+      biz: [
+        { id: "founder", label: "Founder" },
+        { id: "run-a-team", label: "Run a team" },
+        { id: "solo-operator", label: "Solo operator" },
+        { id: "consultant", label: "Consultant" },
+        { id: "side-builder", label: "Building on the side" },
+        { id: "student", label: "Student or early-career" },
+      ],
+    },
+    options: [
+      { id: "student", label: "Student or early-career" },
+      { id: "side-builder", label: "Building on the side" },
+      { id: "solo-operator", label: "Solo operator" },
+      { id: "freelancer", label: "Freelancer" },
+      { id: "founder", label: "Founder" },
+      { id: "consultant", label: "Consultant" },
+    ],
     factMappings: [
       { fact_key: "role", fact_category: "identity", fact_label: "Role" },
-      {
-        fact_key: "company_offering",
-        fact_category: "business",
-        fact_label: "What the company sells or makes",
-      },
     ],
   },
+
+  // 1. AREAS (multi, chartFeed:boxes) - the repetitive areas, recognised from a list.
   {
-    id: "grind",
-    type: "voice_text",
-    prompt:
-      "Describe one thing you do over and over that a tool should be doing for you. Talk through the steps.",
-    helper: "Say it like you would to a colleague: the steps, the tools, how often. Messy is fine.",
-    examples: [
-      "Every Monday I pull numbers from three dashboards into one update for my team.",
-      "After every client call I retype my notes into the CRM and write the follow-up email.",
-      "Each week I chase the same people for status updates and paste them into a report.",
-    ],
+    id: "areas",
+    type: "chips_multi",
+    eyebrow: "Where the time goes",
+    prompt: "Where does your time go on repeat?",
+    chartFeed: "boxes",
+    showIf: { answeredQuestionId: "pathway" },
+    pathwayCopy: {
+      self: {
+        prompt: "Where does your time go on repeat?",
+        helper: "Tap the areas where you do the same kind of thing again and again.",
+      },
+      biz: {
+        prompt: "Where does your time go on repeat?",
+        helper: "Tap the areas where the same work comes around again and again.",
+      },
+    },
+    pathwayOptions: { self: AREA_OPTIONS_SELF, biz: AREA_OPTIONS_BIZ },
+    options: [...AREA_OPTIONS_SELF, ...AREA_OPTIONS_BIZ],
   },
+
+  // 2. BUILD FIRST (one, chartFeed:startBox) - drawn from the picked areas.
+  {
+    id: "buildFirst",
+    type: "chips",
+    eyebrow: "Start here",
+    prompt: "Which one would you build first?",
+    helper: "Pick the one that would save you the most, or just annoys you the most.",
+    chartFeed: "startBox",
+    showIf: { answeredQuestionId: "areas" },
+    adaptiveOptions: { fromQuestionId: "areas" },
+  },
+
+  // 3. WORKFLOW (one) - the specific repetitive thing, recognised from a curated matrix.
+  {
+    id: "workflow",
+    type: "chips",
+    eyebrow: "The repetitive thing",
+    prompt: "Which of these is the repetitive thing?",
+    helper: "Tap the closest one. This is what your tool will take off your plate.",
+    showIf: { answeredQuestionId: "buildFirst" },
+    adaptiveOptions: {
+      matrixKey: "workflow",
+      matrixFromQuestionId: "buildFirst",
+      fallback: WORKFLOW_FALLBACK,
+    },
+  },
+
+  // 4. INVOLVES (multi) - what the workflow actually involves. Shapes the build.
+  {
+    id: "involves",
+    type: "chips_multi",
+    eyebrow: "The steps",
+    prompt: "What does that actually involve?",
+    helper: "Tap the steps. This shapes the tool we help you build.",
+    showIf: { answeredQuestionId: "workflow" },
+    options: INVOLVES_OPTIONS,
+  },
+
+  // 5. TOOL - where will you build. Softened, "not sure yet" is first-class.
   {
     id: "tool",
     type: "chips",
-    prompt: "Where will you build?",
+    eyebrow: "Your tool",
+    prompt: "Which AI do you already use?",
+    helper: "Whatever you have open is fine. No special software needed.",
+    showIf: { answeredQuestionId: "involves" },
     options: [
-      { id: "claude", label: "Claude", tool: "claude" },
       { id: "chatgpt", label: "ChatGPT", tool: "chatgpt" },
+      { id: "claude", label: "Claude", tool: "claude" },
+      { id: "gemini", label: "Gemini", tool: "gemini" },
       { id: "cursor", label: "Cursor", tool: "cursor" },
       { id: "lovable", label: "Lovable", tool: "lovable" },
       { id: "none", label: "Not sure yet", tool: "none" },
     ],
     factMappings: [
-      {
-        fact_key: "primary_ai_tool",
-        fact_category: "preference",
-        fact_label: "Primary AI tool",
-      },
+      { fact_key: "primary_ai_tool", fact_category: "preference", fact_label: "Primary AI tool" },
     ],
   },
+
+  // 6. WIN - what counts as shipped.
   {
     id: "win",
     type: "chips",
-    prompt: "What counts as shipped, one week from now?",
+    eyebrow: "Done looks like",
+    prompt: "What would count as a win, a week from now?",
+    showIf: { answeredQuestionId: "tool" },
     options: [
       { id: "use-myself", label: "A working tool I use myself" },
-      { id: "someone-touched", label: "Something a teammate or customer touched" },
-      { id: "demo", label: "A demo I can show" },
+      { id: "someone-touched", label: "Something a friend or teammate actually used" },
+      { id: "show-it", label: "Something I can show and walk through" },
       { id: "you-pick", label: "You pick for me" },
     ],
     factMappings: [
-      {
-        fact_key: "first_ship_definition",
-        fact_category: "objective",
-        fact_label: "First ship definition",
-      },
+      { fact_key: "first_ship_definition", fact_category: "objective", fact_label: "First ship definition" },
     ],
   },
+
+  // 7. STAKES (chartFeed:tags) - who uses it and what it touches.
   {
     id: "stakes",
     type: "chips",
+    eyebrow: "Who it touches",
     prompt: "Who will use it, and what does it touch?",
+    chartFeed: "tags",
+    showIf: { answeredQuestionId: "win" },
     options: [
       { id: "just-me", label: "Just me, nothing sensitive" },
-      { id: "team-internal", label: "My team, internal data" },
-      { id: "customers", label: "Customers or customer data" },
+      { id: "team-internal", label: "My team or friends, internal stuff" },
+      { id: "customers", label: "Customers or their data" },
     ],
   },
+
+  // 8. EXPERIENCE - built anything with AI before.
   {
     id: "experience",
     type: "chips",
+    eyebrow: "Where you're at",
     prompt: "Built anything with AI before?",
+    helper: "Totally fine if not. This just sets the pace.",
+    showIf: { answeredQuestionId: "stakes" },
     options: [
       { id: "never", label: "Never" },
       { id: "few-prompts", label: "A few prompts" },
@@ -219,11 +336,11 @@ const intake: KitPreset["intake"] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Artifacts                                                            */
+/* Artifacts: the six kept heroes                                       */
 /* ------------------------------------------------------------------ */
 
 const artifacts: KitPreset["artifacts"] = [
-  /* ----- Part 1: Spot + Spec ----- */
+  /* ----- Spot + Spec ----- */
   {
     id: "leverage-audit",
     title: "Leverage audit",
@@ -233,17 +350,18 @@ const artifacts: KitPreset["artifacts"] = [
     part: "Spot + Spec",
     description: "Read it once, accept or swap the recommended first build, then start there.",
     buildPrompt: (ctx) => {
+      const d = derive(ctx);
       const score = resolveScore(ctx);
       return `${PROMPT_PREAMBLE}
 
 Student:
 ${profileBlock(ctx)}
 
-Deterministic scoring already placed their named workflow on the frequency x judgment 2x2: frequency ${score.frequency}, judgment ${score.judgment}, quadrant "${score.quadrant}".
+Deterministic scoring already placed their chosen workflow on the frequency x judgment 2x2: frequency ${score.frequency}, judgment ${score.judgment}, quadrant "${score.quadrant}".
 
 Write their leverage audit as a single markdown card titled "# Your leverage audit". It must:
-1. Show their named workflow and one line on where it sits on the 2x2 and why. Use the scoring above; do not contradict it.
-2. Infer 3 to 5 more automation candidates from their role and the context below. One line each, with the candidate's 2x2 position in brackets.
+1. Show their chosen workflow ("${d.workflow || "the one they picked"}") and one line on where it sits on the 2x2 and why. Use the scoring above; do not contradict it.
+2. Infer 3 to 5 more candidates from the other areas they picked (${areasFromIntake(ctx.intake).join(", ") || "their areas"}) and the context below. One line each, with the candidate's 2x2 position in brackets.
 3. Rank everything, best first build at the top: high frequency, low judgment, smallest scope wins.
 4. Recommend exactly ONE first build. Scope it down until it feels almost too small: one input, one output, one run. Say what version one does and what it deliberately does not.
 
@@ -253,74 +371,30 @@ ${VOICE_RULES}${contextBlock(ctx)}
 
 Return only the markdown.`;
     },
-    render: (ctx) => leverageAuditFallback(resolveScore(ctx), grindFromIntake(ctx.intake)),
-  },
-  {
-    id: "spec-interviewer",
-    title: "Spec interviewer",
-    order: 2,
-    contentType: "markdown",
-    strategy: "deterministic",
-    part: "Spot + Spec",
-    description: "Paste it into your tool, answer one question at a time, keep the spec it writes.",
-    render: (ctx) => {
-      const d = derive(ctx);
-      const prompt = specInterviewerPrompt(ctx.tool, {
-        role: d.role,
-        grind: d.grind,
-        win: d.win,
-      });
-      const onRamp =
-        ctx.tool === "none"
-          ? "\n\nNo tool yet? This doubles as your first ever session. Open claude.ai or chatgpt.com in a browser, sign up free, start a new chat, and paste the block below as your first message.\n"
-          : "";
-      return `# Spec interviewer
-
-Your AI interviews you; you talk; it writes the spec. Copy the block, paste it into ${d.toolLabel}, and answer one question at a time.${onRamp}
-
-\`\`\`text
-${prompt}
-\`\`\`
-
-Keep the spec it writes. The five-part brief, the acceptance pack and your first skill all build on it.`;
-    },
-  },
-  {
-    id: "buildability-card",
-    title: "Buildability card",
-    order: 3,
-    contentType: "markdown",
-    strategy: "deterministic",
-    part: "Spot + Spec",
-    description: "Open the tool it names and start on the path it gives you. One screen, no setup.",
-    render: (ctx) => {
-      const d = derive(ctx);
-      return buildabilityCard({
-        buildName: d.buildName,
-        toolLabel: d.toolLabel,
-        startPath: startingPath(ctx.tool),
-        tierLabel: d.tierLabel,
-        tierGuardrail: TIER_GUARDRAILS[d.tier],
-        experienceGuardrail: EXPERIENCE_GUARDRAILS[d.experience],
-      });
-    },
+    render: (ctx) => leverageAuditFallback(resolveScore(ctx), workflowFromIntake(ctx.intake)),
   },
 
-  /* ----- Part 2: Brief + Build ----- */
+  /* ----- Brief + Build ----- */
   {
     id: "five-part-brief",
     title: "Five-part brief",
-    order: 4,
+    order: 2,
     contentType: "markdown",
     strategy: "llm_polish",
     part: "Brief + Build",
     description: "Fill the [FILL IN] gaps, then paste the whole brief into your first build session.",
     buildPrompt: (ctx) => {
       const d = derive(ctx);
+      const involvesLine =
+        d.involves.length > 0
+          ? `What it involves today: ${d.involves.join(", ")}.`
+          : "They did not detail the steps.";
       return `${PROMPT_PREAMBLE}
 
 Student:
 ${profileBlock(ctx)}
+
+${involvesLine}
 
 Write their five-part build brief in markdown using exactly this skeleton, headings verbatim:
 
@@ -336,11 +410,11 @@ Rules for filling it:
 - Pre-fill every line you can defend from the profile and context. Do not invent systems, names or numbers they have not given you.
 - Where only the student can know the answer, write a gap as [FILL IN: what goes here] followed by one line starting "Guidance:" that teaches what good looks like for that slot.
 - Goal is one sentence: who feels the difference, what changes, by when.
-- Context names where the data lives today and the manual steps as they happen.
-- Format describes what the output literally looks like: sections, columns, sort order.
-- Constraints include the tool (${d.toolLabel}), the stakes tier rule (${d.tierLabel}: ${d.tierRule}), read-only against sources unless they said otherwise, and what it must never touch, send or spend.
-- Acceptance is three checks a stranger could run; tie one to their definition of shipped (${d.win}). If a check cannot fail, it is not a check.
-- The whole brief fits on one page. Open with one line telling them to fill the gaps, run it through the brief upgrader, then paste it as the first message of their build session.
+- Context names where the information lives today and the manual steps as they happen. Use what they told you it involves: ${d.involves.join(", ") || "(not given)"}.
+- Format describes what the output literally looks like: sections, order, what goes where.
+- Constraints include the tool (${d.toolLabel}), the stakes tier rule (${d.tierLabel}: ${d.tierRule}), read-only against sources unless they said otherwise, and what it must never touch, send or change.
+- Acceptance is three checks anyone could run; tie one to their definition of shipped (${d.win}). If a check cannot fail, it is not a check.
+- The whole brief fits on one page. Open with one line telling them to fill the gaps, then paste it as the first message of their build session. Reassure them a normal AI chat is enough; no developer tool required.
 
 After the brief, append this divider and worked example exactly as given, character for character, changing nothing:
 
@@ -358,7 +432,8 @@ Return only the markdown.`;
       const d = derive(ctx);
       const brief = fivePartBriefTemplate({
         buildName: d.buildName,
-        grind: d.grind,
+        workflow: d.workflow,
+        involves: d.involves,
         role: d.role,
         offering: d.offering,
         toolLabel: d.toolLabel,
@@ -370,35 +445,29 @@ Return only the markdown.`;
     },
   },
   {
-    id: "brief-upgrader",
-    title: "Brief upgrader",
-    order: 5,
-    contentType: "markdown",
-    strategy: "deterministic",
-    part: "Brief + Build",
-    description: "Paste it with your draft brief underneath; ship the tightened version it returns.",
-    render: () => briefUpgraderTemplate(),
-  },
-  {
     id: "first-skill",
     title: "Your first skill",
-    order: 6,
+    order: 3,
     contentType: "zip",
     strategy: "skill_pipeline",
     part: "Brief + Build",
     description: "Download, install in your tool, run test prompt 1 tonight.",
     buildSeed: (ctx) => {
       const d = derive(ctx);
-      const grind = d.grind || "a recurring manual workflow I described in class";
-      const transcript = `I am a ${d.role.toLowerCase()}.${d.offering ? ` The business sells ${d.offering}.` : ""}
+      const workflow = d.workflow || "a recurring thing I do over and over";
+      const involvesLine =
+        d.involves.length > 0
+          ? `Here is what it involves: ${d.involves.map((s) => s.toLowerCase()).join("; ")}.`
+          : "";
+      const transcript = `I am a ${d.role.toLowerCase()}.${d.offering ? ` I am calling this build "${d.offering}".` : ""}
 
-Here is the thing I do over and over that a tool should be doing for me, in my own words: ${grind}
+The repetitive thing I want a tool to take off my plate, in the area of ${d.area.toLowerCase() || "my work"}: ${workflow.toLowerCase()}. ${involvesLine}
 
-One week from now, shipped means ${d.win}. The build runs in ${d.toolLabel}.
+One week from now, shipped means ${d.win}. I will build it in ${d.toolLabel}.
 
 Who it touches: stakes tier ${d.tierLabel}. ${d.tierRule}
 
-My experience with AI builds: ${EXPERIENCE_LABELS[d.experience]}. Pitch the skill's instructions at that level.
+My experience with AI builds: ${EXPERIENCE_LABELS[d.experience]}. Pitch the skill's instructions at that level, and assume I have no developer tools, just a normal AI chat.
 
 Requirements for the generated skill (must follow exactly):
 - The skill body MUST include a section titled "Learning loop" that instructs the agent to do two things without being asked:
@@ -408,107 +477,26 @@ Requirements for the generated skill (must follow exactly):
       return { transcript, nameHint: d.buildName };
     },
   },
-  {
-    id: "project-constitution",
-    title: "Project constitution",
-    order: 7,
-    contentType: "markdown",
-    strategy: "llm_polish",
-    part: "Brief + Build",
-    description: "Fill the gaps once; paste it at the top of every fresh session.",
-    buildPrompt: (ctx) => {
-      const d = derive(ctx);
-      const draft = constitutionTemplate({
-        buildName: d.buildName,
-        toolLabel: d.toolLabel,
-        tierLabel: d.tierLabel,
-        tierRule: d.tierRule,
-        role: d.role,
-        offering: d.offering,
-        grind: d.grind,
-      });
-      return `${PROMPT_PREAMBLE}
 
-Student:
-${profileBlock(ctx)}
-
-Below is the deterministic draft of their project constitution: the rules file they paste at the top of every fresh session. Improve it:
-- Fill any [FILL IN] gap you can defend from the profile and context. Leave [FILL IN: ...] markers wherever only the student can know the answer.
-- Sharpen the prose. Keep every heading and the overall shape. Do not add new sections.
-- Keep it to one page.
-
-${draft}
-
-${VOICE_RULES}${contextBlock(ctx)}
-
-Return only the markdown.`;
-    },
-    render: (ctx) => {
-      const d = derive(ctx);
-      return constitutionTemplate({
-        buildName: d.buildName,
-        toolLabel: d.toolLabel,
-        tierLabel: d.tierLabel,
-        tierRule: d.tierRule,
-        role: d.role,
-        offering: d.offering,
-        grind: d.grind,
-      });
-    },
-  },
-  {
-    id: "session-scripts",
-    title: "Session scripts",
-    order: 8,
-    contentType: "markdown",
-    strategy: "deterministic",
-    part: "Brief + Build",
-    description: "Copy the opener that matches the moment: plan, fresh session, debug, wrap up.",
-    render: (ctx) => sessionScripts(ctx.tool),
-  },
-  {
-    id: "context-capsule",
-    title: "Context capsule",
-    order: 9,
-    contentType: "markdown",
-    strategy: "deterministic",
-    part: "Brief + Build",
-    description: "Paste it into your tool, answer up to ten questions, paste the capsule back into CTRL.",
-    render: (ctx) => {
-      const d = derive(ctx);
-      return `# Context capsule
-
-Ten minutes that makes every other artifact sharper. Copy the block, paste it into ${d.toolLabel}, and answer up to ten questions.
-
-\`\`\`text
-${contextCapsulePrompt(ctx.tool)}
-\`\`\`
-
-When the capsule comes back, paste it into CTRL at /kit/me to sharpen every artifact.`;
-    },
-  },
-
-  /* ----- Part 3: Verify + Govern ----- */
+  /* ----- Verify + Govern ----- */
   {
     id: "acceptance-pack",
     title: "Acceptance pack",
-    order: 10,
+    order: 4,
     contentType: "markdown",
     strategy: "llm_polish",
     part: "Verify + Govern",
     description: "Run the checklist before you call it shipped; paste the verifier after any \"done\".",
     buildPrompt: (ctx) => {
-      const draft = acceptancePackFallback({
-        grind: grindFromIntake(ctx.intake),
-        win: winFromIntake(ctx.intake),
-      });
+      const d = derive(ctx);
+      const draft = acceptancePackFallback({ workflow: d.workflow, win: d.win });
       return `${PROMPT_PREAMBLE}
 
 Student:
 ${profileBlock(ctx)}
 
-Below is the deterministic draft of their acceptance pack: a runnable shipped checklist plus the false green verifier, a prompt that makes their AI prove outputs against real artifacts (the row, the file, the email that sent), never its own claims. Improve it:
-- Rewrite the checklist so each item is specific to their build and workflow: the real place the output lands, the real thing to spot-check against. Keep it to 5 to 7 checkboxes, each one able to fail.
+Below is the deterministic draft of their acceptance pack: a runnable shipped checklist plus the false green verifier, a prompt that makes their AI prove outputs against real results (the text it wrote, the file it made, the thing it produced), never its own claims. Improve it:
+- Rewrite the checklist so each item is specific to their build and chosen workflow ("${d.workflow || "their workflow"}"): the real place the output lands, the real thing to check against. Keep it to 5 to 7 checkboxes, each one able to fail.
 - Keep the false green verifier's four-step structure intact, but make step 3's re-run instruction specific to their workflow.
 - Keep both section headings exactly as they are. Keep the verifier inside its fenced text block.
 
@@ -518,62 +506,15 @@ ${VOICE_RULES}${contextBlock(ctx)}
 
 Return only the markdown.`;
     },
-    render: (ctx) =>
-      acceptancePackFallback({
-        grind: grindFromIntake(ctx.intake),
-        win: winFromIntake(ctx.intake),
-      }),
-  },
-  {
-    id: "tool-registry",
-    title: "Tool registry",
-    order: 11,
-    contentType: "markdown",
-    strategy: "deterministic",
-    part: "Verify + Govern",
-    description: "Keep one row per build; review the table monthly.",
     render: (ctx) => {
       const d = derive(ctx);
-      return toolRegistryTemplate({
-        buildName: d.buildName,
-        touches: stakesTouchesFromIntake(ctx.intake),
-        tierLabel: d.tierLabel,
-      });
-    },
-  },
-  {
-    id: "stakes-dial",
-    title: "Stakes dial",
-    order: 12,
-    contentType: "markdown",
-    strategy: "deterministic",
-    part: "Verify + Govern",
-    description: "Check your tier, note the trigger that moves you up one, save the handoff packet.",
-    render: (ctx) => {
-      const d = derive(ctx);
-      return stakesDialCard({ buildName: d.buildName, tier: d.tier });
-    },
-  },
-  {
-    id: "learning-loop",
-    title: "Learning loop pack",
-    order: 13,
-    contentType: "zip",
-    strategy: "scaffold_zip",
-    part: "Verify + Govern",
-    description: "Drop both files into your project folder; your skill writes to them on every run.",
-    renderFiles: (ctx) => {
-      const buildName = shortBuildName(grindFromIntake(ctx.intake));
-      return [
-        { path: "BUILD_LOG.md", content: buildLogTemplate(buildName) },
-        { path: "LESSONS.md", content: lessonsTemplate() },
-      ];
+      return acceptancePackFallback({ workflow: d.workflow, win: d.win });
     },
   },
   {
     id: "seven-day-plan",
     title: "Seven-day plan",
-    order: 14,
+    order: 5,
     contentType: "json",
     strategy: "llm_plan",
     part: "Verify + Govern",
@@ -581,7 +522,7 @@ Return only the markdown.`;
     buildPrompt: (ctx) => {
       const d = derive(ctx);
       const skill = ctx.firstSkillName || "their first skill";
-      return `You are writing the 7-day plan for a Vibe Coding Field Kit student.
+      return `You are writing the 7-day plan for a Vibe Coding Field Kit student. They are not a developer; keep it gentle and assume only a normal AI chat.
 
 Student:
 ${profileBlock(ctx)}
@@ -595,8 +536,8 @@ Rules:
 - "minutes" is an integer, 30 or less, honest for the action described.
 - Day 1 is always: install ${skill} in ${d.toolLabel} and run test prompt 1.
 - Day 7 is always: ship it scrappy. Their definition of shipped is "${d.win}"; scrappy counts.
-- Days 2 to 6 walk from spec to brief to build to verify, calibrated to their experience (${EXPERIENCE_LABELS[d.experience]}). Never built means smaller steps and more checking; shipped before means compress the early days and spend more on verify and govern.
-- "title" is 6 words or fewer. "action" is one or two sentences, imperative, and names the exact kit artifact to use that day (spec interviewer, five-part brief, brief upgrader, session scripts, acceptance pack, tool registry).
+- Days 2 to 6 walk from brief to build to verify, calibrated to their experience (${EXPERIENCE_LABELS[d.experience]}). Never built means smaller steps and more checking; shipped before means compress the early days and spend more on verify.
+- "title" is 6 words or fewer. "action" is one or two sentences, imperative, and names the exact kit artifact to use that day (five-part brief, acceptance pack, leverage audit).
 - Plain language, sentence case, no buzzwords, no em dashes.`;
     },
     render: (ctx) => {
@@ -604,12 +545,12 @@ Rules:
       const skill = ctx.firstSkillName || "your first skill";
       const days = [
         { day: 1, title: "Install and run", action: `Install ${skill} in ${d.toolLabel} and run test prompt 1.`, minutes: 15 },
-        { day: 2, title: "Get interviewed", action: "Paste the spec interviewer into your tool and answer one question at a time. Keep the spec.", minutes: 30 },
-        { day: 3, title: "Write the brief", action: "Fill every [FILL IN] gap in your five-part brief from the spec.", minutes: 25 },
-        { day: 4, title: "Upgrade the brief", action: "Run your draft through the brief upgrader and accept or reject each [ASSUMED] line.", minutes: 20 },
-        { day: 5, title: "Build version one", action: "Open a fresh session with the plan-first opener from session scripts, paste your brief, and build the happy path only.", minutes: 30 },
+        { day: 2, title: "Read the audit", action: "Read your leverage audit and lock in the one build it recommends. Do not widen the scope.", minutes: 15 },
+        { day: 3, title: "Write the brief", action: "Fill every [FILL IN] gap in your five-part brief.", minutes: 25 },
+        { day: 4, title: "Sharpen the brief", action: "Read the brief back as a stranger. Tighten the goal and the acceptance checks until each one could fail.", minutes: 20 },
+        { day: 5, title: "Build version one", action: "Open a fresh session, paste your brief, and build the happy path only. Nothing extra.", minutes: 30 },
         { day: 6, title: "Verify it honestly", action: "Run the acceptance pack checklist, then paste the false green verifier after your tool says done.", minutes: 25 },
-        { day: 7, title: "Ship it scrappy", action: `Put it in front of its first user. Shipped means ${d.win}. Add the registry row, then log it in CTRL.`, minutes: 30 },
+        { day: 7, title: "Ship it scrappy", action: `Put it in front of its first user: you. Shipped means ${d.win}. Then log it in CTRL.`, minutes: 30 },
       ];
       return JSON.stringify({ days }, null, 2);
     },
@@ -617,7 +558,7 @@ Rules:
   {
     id: "personal-map",
     title: "Your personal map",
-    order: 15,
+    order: 6,
     contentType: "json",
     strategy: "deterministic",
     part: "Verify + Govern",
@@ -630,7 +571,8 @@ Rules:
           firstBuild: d.buildName,
           tool: d.toolLabel,
           tier: d.tierLabel,
-          path: `Day 1 install your skill and run it; days 2 to 6 spec, brief, build and verify; day 7 ship it scrappy.`,
+          touches: stakesTouchesFromIntake(ctx.intake),
+          path: "Day 1 install your skill and run it; days 2 to 6 read the audit, write the brief, build and verify; day 7 ship it scrappy.",
         },
         null,
         2,
@@ -670,8 +612,8 @@ const emails: KitPreset["emails"] = {
         heading: "Your Vibe Coding Field Kit",
         kitUrl: ctx.kitUrl,
         buttonLabel: "Open your kit",
-        bodyHtml: `<p style="margin:0 0 16px 0;">Your kit lives at the button below. Inside: fifteen artifacts that take the workflow you named in class from idea to shipped in seven days.</p>
-<p style="margin:0 0 16px 0;">Do day 1 tonight: install your skill and run test prompt 1. Ten minutes, and the kit stops being a bookmark.</p>`,
+        bodyHtml: `<p style="margin:0 0 16px 0;">Your kit lives at the button below. Inside: six things that take the repetitive workflow you picked from idea to shipped in seven days.</p>
+<p style="margin:0 0 16px 0;">Do day 1 tonight: install your skill and run test prompt 1. Ten minutes, and the kit stops being a bookmark. A normal AI chat is all you need.</p>`,
       }),
   },
   day3: {
@@ -685,7 +627,7 @@ const emails: KitPreset["emails"] = {
         heading: "Day 3. Did your skill run yet?",
         kitUrl: ctx.kitUrl,
         buttonLabel: "Open the 7-day plan",
-        bodyHtml: `<p style="margin:0 0 16px 0;">You built ${skillName} in class. If it has not run yet, it is a file, not a tool.</p>
+        bodyHtml: `<p style="margin:0 0 16px 0;">You picked your first build in the kit. If your skill has not run yet, it is a file, not a tool.</p>
 <p style="margin:0 0 16px 0;">Two minutes, right now: open ${toolLabel}, load the skill, and run this:</p>
 <p style="margin:0 0 16px 0;padding:12px 16px;background-color:#e7e5e4;border-radius:6px;font-family:Consolas,Menlo,monospace;font-size:14px;">${testPrompt}</p>
 <p style="margin:0 0 16px 0;">If it breaks, reply and tell me what happened. I read every reply.</p>`,
@@ -712,7 +654,7 @@ const emails: KitPreset["emails"] = {
 
 export const vibeCodingPreset: KitPreset = {
   slug: "vibe-coding",
-  version: "1.0.0",
+  version: "2.0.0",
   title: "Vibe Coding Field Kit",
   classTitle: "Vibe Coding Lightning Lesson",
   tagline: "One workflow, one week, one shipped build.",
@@ -720,15 +662,16 @@ export const vibeCodingPreset: KitPreset = {
   codePrefixes: ["VIBE"],
   passDays: 30,
   skillQuota: 3,
+  previewKind: "picks",
+  optionMatrices: { workflow: WORKFLOW_MATRIX },
+  agentRoles: Object.fromEntries(
+    Object.entries(AGENT_PICKS_STUB).map(([k, v]) => [k, { agentRole: v.pick, agentDesc: v.desc }]),
+  ),
   intake,
   artifacts,
   contextPullPrompt: (tool: KitTool, ctx?: Partial<ArtifactBuildContext>): string => {
-    const base = contextCapsulePrompt(tool);
-    const grind = ctx?.intake ? grindFromIntake(ctx.intake as IntakeAnswers) : "";
-    if (!grind) return base;
-    return `${base}
-
-One thing you already know: the workflow I named in class was "${grind}". Use it when we get to the first build candidate.`;
+    const workflow = ctx?.intake ? workflowFromIntake(ctx.intake as IntakeAnswers) : "";
+    return contextPullPrompt(tool, workflow || undefined);
   },
   score: (intakeAnswers: IntakeAnswers) => scoreVibeCoding(intakeAnswers),
   emails,

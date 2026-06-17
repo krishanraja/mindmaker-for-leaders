@@ -142,7 +142,7 @@ export default function KitRedeem() {
             <Ticket className="h-3.5 w-3.5" />
             {preset ? preset.classTitle : "Class follow-up"}
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="kit-headline text-3xl sm:text-4xl">
             {preset ? preset.title : "Your class kit"}
           </h1>
           <p className="mx-auto max-w-md text-muted-foreground">

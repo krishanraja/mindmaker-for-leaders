@@ -16,10 +16,12 @@ import { Progress } from "@/components/ui/progress";
 import { VoiceInput } from "@/components/ui/voice-input";
 import { KitPortalLayout } from "@/components/kit/KitPortalLayout";
 import { OrgChartView } from "@/components/kit/OrgChartView";
+import { KitPicksBoard } from "@/components/kit/KitPicksBoard";
 import { useKitRedemption } from "@/hooks/useKitRedemption";
 import { fetchLatestKitBuild } from "@/hooks/useKitBuild";
 import {
   buildChartModel,
+  buildPicksModel,
   helperFor,
   isAnswered,
   promptFor,
@@ -403,10 +405,21 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
   const step = steps[stepIndex];
   const revealed = phase === "reveal";
 
-  // The live preview chart, assembled from the chart-feeding answers.
+  // Which live-preview component this forked preset shows (the SHARED field).
+  // "orgchart" -> the bespoke OrgChartView; "picks" -> the generic
+  // KitPicksBoard; absent -> no preview pane (single column cascade).
+  const previewKind = preset.previewKind;
+
+  // The live preview chart, assembled from the chart-feeding answers. Only the
+  // org-chart preset builds the full chart model; the picks board builds the
+  // lighter picks model. Both are deterministic in-intake previews.
   const chart = useMemo(
-    () => buildChartModel(preset, pathway, answers, revealed),
-    [preset, pathway, answers, revealed],
+    () => (previewKind === "orgchart" ? buildChartModel(preset, pathway, answers, revealed) : null),
+    [previewKind, preset, pathway, answers, revealed],
+  );
+  const picks = useMemo(
+    () => (previewKind === "picks" ? buildPicksModel(preset, pathway, answers) : null),
+    [previewKind, preset, pathway, answers],
   );
 
   const pickPathway = (q: IntakeQuestion, option: IntakeOption) => {
@@ -457,7 +470,16 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
     return 5 + ((stepIndex + 1) / (steps.length + 1)) * 95;
   }, [phase, stepIndex, steps.length]);
 
-  const startBoxLabel = chart?.boxes.find((b) => b.isStart)?.label ?? "";
+  // The start label + title, read from whichever preview model is active so the
+  // RevealCard copy is correct for every previewKind (and for none).
+  const startBoxLabel =
+    chart?.boxes.find((b) => b.isStart)?.label ??
+    picks?.items.find((it) => it.isStart)?.label ??
+    "";
+  const previewTitle = chart?.businessName ?? picks?.title ?? "";
+
+  // Whether to render the two-pane layout: only when a preview model exists.
+  const hasPreview = !!chart || !!picks;
 
   return (
     <KitPortalLayout classTitle={preset.title} passEndsAt={passEndsAt}>
@@ -478,22 +500,38 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
           <ForkSplash question={forkQuestion} onPick={pickPathway} />
         )}
 
-        {/* Cascade + reveal: two-pane on desktop, stacked on mobile. */}
+        {/* Cascade + reveal. Two-pane on desktop (with a live preview), stacked
+            on mobile. With no previewKind the preset gets a single column. */}
         {phase !== "fork" && (
-          <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:gap-8">
-            {/* Chart preview. Mobile: on top (order-first), compact. Desktop: right, sticky. */}
-            <aside className="order-first md:order-last md:sticky md:top-4">
-              <div
-                className="rounded-2xl border p-4 sm:p-5"
-                style={{
-                  background: "var(--kit-card)",
-                  borderColor: "var(--kit-line)",
-                  boxShadow: "0 1px 2px rgba(16,28,30,.05), 0 18px 40px -24px rgba(16,28,30,.20)",
-                }}
-              >
-                {chart && <OrgChartView chart={chart} building={!revealed} />}
-              </div>
-            </aside>
+          <div
+            className={cn(
+              "grid grid-cols-1 items-start gap-5",
+              hasPreview
+                ? "md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:gap-8"
+                : "mx-auto max-w-xl",
+            )}
+          >
+            {/* Live preview. Mobile: on top (order-first), compact. Desktop:
+                right, sticky. Rendered only when a preview model exists. */}
+            {hasPreview && (
+              <aside className="order-first md:order-last md:sticky md:top-4">
+                <div
+                  className="rounded-2xl border p-4 sm:p-5"
+                  style={{
+                    background: "var(--kit-card)",
+                    borderColor: "var(--kit-line)",
+                    boxShadow: "0 1px 2px rgba(16,28,30,.05), 0 18px 40px -24px rgba(16,28,30,.20)",
+                  }}
+                >
+                  {previewKind === "orgchart" && chart && (
+                    <OrgChartView chart={chart} building={!revealed} />
+                  )}
+                  {previewKind === "picks" && picks && (
+                    <KitPicksBoard model={picks} building={!revealed} />
+                  )}
+                </div>
+              </aside>
+            )}
 
             {/* Question column / reveal. */}
             <section className="min-w-0">
@@ -508,7 +546,7 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
                   >
                     <RevealCard
                       pathway={pathway}
-                      businessName={chart?.businessName ?? ""}
+                      businessName={previewTitle}
                       startBoxLabel={startBoxLabel}
                       onStartOver={goBack}
                       onSubmit={onSubmit}
@@ -529,6 +567,8 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
                       answers={answers}
                       answer={answers[step.id]}
                       isLast={stepIndex === steps.length - 1}
+                      hasPreview={hasPreview}
+                      previewKind={previewKind}
                       setAnswer={setAnswer}
                       onSelectAdvance={scheduleAdvance}
                       onNext={goNext}
@@ -637,6 +677,8 @@ function StepCard({
   answers,
   answer,
   isLast,
+  hasPreview,
+  previewKind,
   setAnswer,
   onSelectAdvance,
   onNext,
@@ -648,6 +690,8 @@ function StepCard({
   answers: IntakeAnswers;
   answer: IntakeAnswer | undefined;
   isLast: boolean;
+  hasPreview: boolean;
+  previewKind: KitPreset["previewKind"];
   setAnswer: (questionId: string, patch: Partial<IntakeAnswer>) => void;
   onSelectAdvance: () => void;
   onNext: () => void;
@@ -660,7 +704,10 @@ function StepCard({
   const prompt = promptFor(step, pathway);
   const helper = helperFor(step, pathway);
   const ok = isAnswered(step, answer);
-  const showChartHint = !!step.chartFeed && (step.chartFeed === "boxes" || step.chartFeed === "startBox");
+  // "Watch it fill in" only makes sense when there is a live preview to watch.
+  const feedsPreview = !!step.chartFeed && (step.chartFeed === "boxes" || step.chartFeed === "startBox");
+  const showChartHint = hasPreview && feedsPreview;
+  const previewWord = previewKind === "picks" ? "board" : "chart";
 
   return (
     <KitCard>
@@ -711,7 +758,7 @@ function StepCard({
 
       {showChartHint && (
         <p className="mt-3.5 ml-0.5 text-[12.5px]" style={{ color: "var(--kit-faint)" }}>
-          Watch the chart fill in as you answer &rarr;
+          Watch the {previewWord} fill in as you answer &rarr;
         </p>
       )}
 

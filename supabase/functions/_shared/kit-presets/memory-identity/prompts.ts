@@ -2,13 +2,59 @@
  * The Prompt Pack (Memory, Identity and Self-Healing): paste-ready prompts.
  *
  * These are the take-home blocks from the lesson, productized. Every prompt is
- * a deterministic template with light slot-filling (the student's tool and the
- * job they picked). The LLM lives on the student's side of the fence: their AI
- * tool holds months of their real history, and these prompts make it do the
- * mining and the drafting. No LLM call here. No Deno or Node globals.
+ * a deterministic template with light slot-filling. The big change from the
+ * thin 2-question original: the intake is now a coherent pick-cascade (role ->
+ * first job -> the tasks it covers -> tool -> what it must never store), so the
+ * prompts read STRUCTURED answers, not a single open-ended voice blob. A richer
+ * intake means the paste-ready prompt arrives already knowing the role, the
+ * exact tasks, and the honesty guardrail, so the student confirms rather than
+ * explains.
+ *
+ * The LLM still lives on the student's side of the fence: their AI tool holds
+ * months of their real history, and these prompts make it do the mining and the
+ * drafting. No LLM call here. No Deno or Node globals.
  */
 
 import type { KitTool } from "../types.ts";
+
+/**
+ * The structured answers the cascade collects, read once in preset.ts and
+ * threaded through every prompt and renderer. Replaces the old single `job`
+ * voice blob. Each field is honest about being empty: an absent value renders a
+ * safe placeholder, never an invented specific.
+ */
+export interface JobInput {
+  /** self = a team of one; biz = building this inside a business. */
+  pathway: "self" | "biz";
+  /** The name the student put on the pack (nameField). May be empty. */
+  name: string;
+  /** What they do / their role headline (the profile chip). May be empty. */
+  role: string;
+  /** The role/domain(s) they chose to build an operator for (boxes). */
+  domains: string[];
+  /** The first job to stand up (startBox), drawn from the domains. */
+  job: string;
+  /** The tasks that job actually covers (adaptive matrix off the job). */
+  tasks: string[];
+  /** What the operator must never store (the honesty guardrail, tags). */
+  neverStore: string[];
+}
+
+/** A safe role label for prose: the picked role, else a neutral stand-in. */
+function roleLabel(input: JobInput): string {
+  return input.role.trim() || (input.pathway === "biz" ? "your team's work" : "the work you do most");
+}
+
+/** A safe job label for prose: the chosen first job, else a neutral stand-in. */
+function jobLabel(input: JobInput): string {
+  return input.job.trim() || "the job you do most";
+}
+
+/** Render a picked list as a clean inline phrase, or a placeholder when empty. */
+function listOr(items: string[], placeholder: string): string {
+  const clean = items.map((i) => i.trim()).filter(Boolean);
+  return clean.length > 0 ? clean.join(", ") : placeholder;
+}
 
 /**
  * Where each tool should look for the student's history. ChatGPT leans on its
@@ -38,44 +84,84 @@ const CANNOT_READ_LINE =
   "If you cannot, say so and ask me to paste 2 or 3 recent things I made in that role.";
 
 /**
- * STEP 01, the hero. Turn the student's history into a working operator for
- * one job. This is the context-pull prompt shown the moment composition starts,
- * so the wait becomes the student's first real action.
+ * STEP 01, the hero. Turn the student's history into a working operator for the
+ * one job they named in the cascade. Because the cascade already pinned the
+ * role, the first job, and the tasks it covers, this prompt hands the student's
+ * AI those as the starting truth and asks it to CONFIRM rather than interview
+ * from scratch. The honesty guardrail (never-store) is carried in verbatim so
+ * the operator is told, up front, what it must keep out of the file.
  */
-export function jobFileBuildPrompt(tool: KitTool, job: string): string {
-  const trimmed = job.trim();
-  const hasJob = trimmed.length > 0;
+export function jobFileBuildPrompt(input: JobInput): string {
+  const job = jobLabel(input);
+  const role = roleLabel(input);
+  const tasks = input.tasks.map((t) => t.trim()).filter(Boolean);
+  const never = input.neverStore.map((n) => n.trim()).filter(Boolean);
 
-  const step1 = hasJob
-    ? `Step 1. The job to run for me is: ${trimmed}. If that is clear, go. If it is too broad to be one operator, tell me how you would split it and let me pick.`
-    : "Step 1. Ask me one thing first: which job should you run for me? (content marketer, recruiter, analyst, chief of staff, whatever I do a lot). One line from me, then go.";
-
-  return [
+  const lines: string[] = [
     "# Turn my history into a working operator for one job.",
     "",
-    step1,
+    `Step 1. The job to run for me is: ${job}${
+      input.role.trim() ? ` (my role: ${role})` : ""
+    }. This is one operator, not my whole job. If it is still too broad to be one operator, tell me how you would split it and let me pick.`,
+  ];
+
+  if (tasks.length > 0) {
+    lines.push(
+      "",
+      `Step 2. This job covers these tasks for me: ${tasks.join(
+        ", ",
+      )}. Treat that as the scope. Add anything obvious you see in my history, and flag anything in the list you think does not belong.`,
+    );
+  } else {
+    lines.push(
+      "",
+      "Step 2. Ask me, in one line, the handful of tasks this job actually covers, then treat that as the scope.",
+    );
+  }
+
+  lines.push(
     "",
-    `Step 2. ${TOOL_SEARCH_LINES[tool]} ${CANNOT_READ_LINE}`,
+    `Step 3. ${TOOL_SEARCH_LINES[input.tool]} ${CANNOT_READ_LINE}`,
     "",
-    "Step 3. Confirm it with me, one quick question at a time. Every question answerable in a sentence, off the top of my head. Never make me go away and prepare anything. If you can infer it, propose it and let me just say yes or fix it. Ask:",
+    "Step 4. Confirm it with me, one quick question at a time. Every question answerable in a sentence, off the top of my head. Never make me go away and prepare anything. If you can infer it, propose it and let me just say yes or fix it. Ask:",
     "  1. This is the work you do most in this role: [list]. Right, or fix it.",
     "  2. From your past work, good looks like [X] to me. Fair, or adjust it.",
     "  3. You usually need these to do it: [tools, people, files]. Anything missing?",
     "  4. Anything in this job you never want gotten wrong?",
     "If an answer is vague, do not bounce it back. Offer a sharper version from what you already know and let me confirm.",
+  );
+
+  if (never.length > 0) {
+    lines.push(
+      "",
+      `Step 5. Hard rule for this file: never write down or store ${never.join(
+        ", ",
+      )}. If any of that shows up while you are drafting, leave it out and tell me you did.`,
+    );
+  }
+
+  lines.push(
     "",
-    "Step 4. Write the file and name it after the job, like content-marketer.md, not memory.md. Under a page. Mark anything you guessed with (assumed). This file is the role you play for me, not who I am.",
-  ].join("\n");
+    `Step 6. Write the file and name it after the job, like ${jobFilename(
+      input,
+    )}, not memory.md. Under a page. Mark anything you guessed with (assumed). This file is the role you play for me, not who I am.`,
+  );
+
+  return lines.join("\n");
 }
 
-/** STEP 01, the proof. Run cold vs loaded, compare. */
-export function beforeAfterTest(job: string): string {
-  const role = job.trim().length > 0 ? job.trim() : "this role";
+/** STEP 01, the proof. Run cold vs loaded, compare. Reads the chosen job. */
+export function beforeAfterTest(input: JobInput): string {
+  const role = jobLabel(input);
+  const firstTask = input.tasks.map((t) => t.trim()).filter(Boolean)[0];
+  const taskLine = firstTask
+    ? `Ask: ${firstTask}`
+    : `Ask: [one task you do every week in ${role}]`;
   return [
     "# Prove the job file earns its place.",
     "",
     "RUN 1 (cold): Open a brand-new chat with nothing loaded.",
-    `Ask: [one task you do every week in ${role}]`,
+    taskLine,
     "",
     "RUN 2 (loaded): Paste the job file at the top, then ask the exact same thing.",
     "",
@@ -84,14 +170,18 @@ export function beforeAfterTest(job: string): string {
 }
 
 /** STEP 02. about-me.md build prompt. About the person, never a role. */
-export function aboutMeBuildPrompt(tool: KitTool): string {
+export function aboutMeBuildPrompt(input: JobInput): string {
+  const role = input.role.trim();
+  const seed = role
+    ? `  1. I think you work as ${role}. Right, or fix it.`
+    : "  1. I think you do [X] for [Y]. Right, or fix it.";
   return [
     "# Build my about-me file. This is about me, the person, not a role for you to play.",
     "",
-    `Step 1. ${TOOL_SEARCH_LINES[tool]} Draft a rough about-me from what you see. If you cannot, say so.`,
+    `Step 1. ${TOOL_SEARCH_LINES[input.tool]} Draft a rough about-me from what you see. If you cannot, say so.`,
     "",
     "Step 2. Confirm it with me, one quick question at a time. Every question answerable in a sentence, off the top of my head. Never make me go away and prepare anything. If you can infer it, propose it and let me just say yes or fix it. Ask:",
-    "  1. I think you do [X] for [Y]. Right, or fix it.",
+    seed,
     "  2. What are you spending most of your time on right now?",
     "  3. Who comes to you for help, and with what?",
     "  4. Anything you are known for that I would not want you to get wrong?",
@@ -102,11 +192,11 @@ export function aboutMeBuildPrompt(tool: KitTool): string {
 }
 
 /** STEP 02. my-voice.md build prompt. Pulled from things the student wrote. */
-export function voiceBuildPrompt(tool: KitTool): string {
+export function voiceBuildPrompt(input: JobInput): string {
   return [
     "# Build my voice file from things I actually wrote.",
     "",
-    `Step 1. Find 3 things I wrote recently. ${TOOL_SEARCH_LINES[tool]} If you cannot, ask me to paste 3 short ones. Read the writing itself.`,
+    `Step 1. Find 3 things I wrote recently. ${TOOL_SEARCH_LINES[input.tool]} If you cannot, ask me to paste 3 short ones. Read the writing itself.`,
     "",
     "Step 2. You do the work, I just react. Show me your read and let me confirm or nudge it, one quick thing at a time:",
     "  1. Here is how you sound to me: [2 lines]. Sound right?",
@@ -119,11 +209,11 @@ export function voiceBuildPrompt(tool: KitTool): string {
 }
 
 /** STEP 02. my-channels.md build prompt. Where the student publishes and why. */
-export function channelsBuildPrompt(tool: KitTool): string {
+export function channelsBuildPrompt(input: JobInput): string {
   return [
     "# Build my content channels file.",
     "",
-    `Step 1. ${TOOL_SEARCH_LINES[tool]} List the places I seem to post (newsletter, LinkedIn, email, decks, talks, a podcast, wherever) and what I put on each. If you cannot, ask me to name them.`,
+    `Step 1. ${TOOL_SEARCH_LINES[input.tool]} List the places I seem to post (newsletter, LinkedIn, email, decks, talks, a podcast, wherever) and what I put on each. If you cannot, ask me to name them.`,
     "",
     "Step 2. Confirm the list with me, one quick question at a time. Keep every answer to a sentence or a pick:",
     "  1. Here are the channels I found: [list]. Which are real, which do I drop?",
@@ -135,17 +225,35 @@ export function channelsBuildPrompt(tool: KitTool): string {
   ].join("\n");
 }
 
-/** STEP 03. The self-correcting loop. One footer, dropped into any file. */
-export function selfCorrectFooter(): string {
-  return [
+/**
+ * STEP 03. The self-correcting loop. One footer, dropped into any file. When
+ * the student named things the operator must never store, those are baked into
+ * the loop as a standing rule so the honesty guardrail is enforced on every run,
+ * not just at build time.
+ */
+export function selfCorrectFooter(input?: JobInput): string {
+  const never = input
+    ? input.neverStore.map((n) => n.trim()).filter(Boolean)
+    : [];
+  const lines = [
     "# SELF-CORRECTION. Run this on any failure or correction, before anything else:",
     "",
     "1. When the session feels complete, LOG anything that broke and the root cause, not just the symptom. Look back at previous sessions for similar errors that can be easily avoided next time with clearer instructions.",
     '2. PROPOSE one rule that prevents the whole class of this mistake, not the single instance. (Instance: "that 30% stat is invented." Class: "never give a number or cite a source unless I gave it to you or you verified it, and flag anything unverified.")',
     "3. If I pasted my skill file into this session, edit it and reproduce the new file. If it is a Claude skill, use the skill-creator tool to update the skill, keeping it under 1024 characters. If neither, ask me to attach the file.",
+  ];
+  if (never.length > 0) {
+    lines.push(
+      `4. Standing rule, never to be relaxed: never store or write down ${never.join(
+        ", ",
+      )}. If a correction would require keeping any of that, refuse and tell me.`,
+    );
+  }
+  lines.push(
     "",
     "Never mark a task complete without running this check first. The same mistake does not get to happen twice.",
-  ].join("\n");
+  );
+  return lines.join("\n");
 }
 
 /** Power-up. Turn the files into a single Claude skill. */
@@ -178,4 +286,16 @@ export function weeklyHygienePrompt(tool: KitTool): string {
     "",
     actLine,
   ].join("\n");
+}
+
+/** Kebab filename for the job file, like content-marketer.md, from the job. */
+export function jobFilename(input: JobInput): string {
+  const slug = jobLabel(input)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .split("-")
+    .slice(0, 4)
+    .join("-");
+  return `${slug.length > 0 ? slug : "the-job"}.md`;
 }

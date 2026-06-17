@@ -1,17 +1,22 @@
 /**
  * Autonomous Business Pack: context-pull miner prompts.
  *
- * Deterministic templates with slot-filling, varied per tool. The student's
- * AI holds their history; these prompts make it do the mining. No LLM here,
- * the LLM is on the student's side of the fence.
+ * Deterministic templates with slot-filling, varied per tool. The student's AI
+ * holds their history; these prompts make it do the mining. No LLM here, the
+ * LLM is on the student's side of the fence.
+ *
+ * The workflow miner is now fed the STRUCTURED first build (the chosen workflow
+ * inside the chosen time-sink area) plus what that workflow involves, so the
+ * student's tool mines the exact recurring process they recognised at intake,
+ * not a free-text paraphrase.
  */
 
 import type { KitTool } from "../types.ts";
 
 /**
- * Where each tool should look. ChatGPT leans on its memory feature; Claude
- * has Projects and history; Claude Code and Cursor have the repo and past
- * sessions; Gemini has chat history. Everything else gets the safe generic.
+ * Where each tool should look. ChatGPT leans on its memory feature; Claude has
+ * Projects and history; Claude Code and Cursor have the repo and past sessions;
+ * Gemini has chat history. Everything else gets the safe generic.
  */
 const TOOL_SEARCH_LINES: Record<KitTool, string> = {
   chatgpt:
@@ -30,17 +35,46 @@ const TOOL_SEARCH_LINES: Record<KitTool, string> = {
     "Search our conversation history and any files I have shared with you.",
 };
 
+export interface WorkflowMinerContext {
+  /** The area / hat the workflow sits in (the time-sink), e.g. "Sales". */
+  area?: string;
+  /** What the workflow involves (pull / write / update / wait / decide / send). */
+  involves?: string[];
+}
+
 /**
  * The workflow miner. Pulls how the student actually does one workflow:
- * process, corrections, voice, tools, open problems. Output is a CONTEXT
- * BLOCK they paste back into CTRL.
+ * process, corrections, voice, tools, open problems. Output is a CONTEXT BLOCK
+ * they paste back into CTRL.
+ *
+ * `workflow` is the structured first build (the chosen workflow label). When the
+ * optional context is given, the miner is told the area it sits in and the steps
+ * it involves, so the search is sharper and stays inside the truth the student
+ * already picked.
  */
-export function workflowMinerPrompt(tool: KitTool, workflow: string): string {
-  const target =
-    workflow.trim().length > 0 ? workflow.trim() : "[describe your workflow here]";
-  return [
-    `${TOOL_SEARCH_LINES[tool]} Find everything relevant to this workflow: ${target}.`,
-    "",
+export function workflowMinerPrompt(
+  tool: KitTool,
+  workflow: string,
+  context?: WorkflowMinerContext,
+): string {
+  const target = workflow.trim().length > 0 ? workflow.trim() : "[describe your workflow here]";
+  const area = context?.area?.trim();
+  const involves = (context?.involves ?? []).filter((s) => s.trim().length > 0);
+
+  const anchor = area
+    ? `Find everything relevant to this recurring workflow in ${area}: ${target}.`
+    : `Find everything relevant to this workflow: ${target}.`;
+
+  const lines: string[] = [`${TOOL_SEARCH_LINES[tool]} ${anchor}`, ""];
+
+  if (involves.length > 0) {
+    lines.push(
+      `I told CTRL this workflow involves: ${involves.join(", ").toLowerCase()}. Pay attention to those steps in particular.`,
+      "",
+    );
+  }
+
+  lines.push(
     "I want: how I describe it, the steps I follow, the tools I mention, mistakes I have corrected you on, and my tone and phrasing while doing it.",
     "",
     "Output a CONTEXT BLOCK with these sections:",
@@ -51,7 +85,9 @@ export function workflowMinerPrompt(tool: KitTool, workflow: string): string {
     "- OPEN PROBLEMS",
     "",
     "Format: markdown, under 600 words, my actual words wherever possible. Do not invent anything; if a section is thin, say so.",
-  ].join("\n");
+  );
+
+  return lines.join("\n");
 }
 
 /**

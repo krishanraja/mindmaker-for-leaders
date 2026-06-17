@@ -255,6 +255,9 @@ export const orgchartPreset: KitPreset = {
   passDays: 30,
   skillQuota: 3,
 
+  /* ---- the live preview is the bespoke OrgChartView ---------------- */
+  previewKind: "orgchart",
+
   /* ---- the curated, deterministic option matrices + preview stub ---- */
   optionMatrices: { grind: GRIND_MATRIX },
   agentRoles: AGENT_ROLE_STUB,
