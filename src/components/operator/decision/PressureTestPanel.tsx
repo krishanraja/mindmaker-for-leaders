@@ -11,9 +11,10 @@ import { CriticalCallStep } from '@/components/operator/decision/CriticalCallSte
 
 // ----- orchestrator ---------------------------------------------------------
 
-export function PressureTestPanel() {
+export function PressureTestPanel({ initialStatement }: { initialStatement?: string } = {}) {
   const isMobile = useIsMobile();
-  const [statement, setStatement] = useState('');
+  // Seed from a starter the leader picked on the Decision Map empty state.
+  const [statement, setStatement] = useState(initialStatement ?? '');
   const engine = useDecisionEngine();
   const inbox = useDecisionInbox();
   const { subscribe, isProcessing } = useEdgeSubscription();
