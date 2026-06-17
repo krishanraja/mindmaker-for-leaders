@@ -1,14 +1,18 @@
 /**
- * ContextExport Page - Multi-step wizard
- * Step 1: "What do you need?" - voice-led workflow capture or preset
- * Step 2: "Where will you use it?" - pick AI platform (presets only)
- * Step 3: "Your export is ready" - copy/download + platform-specific guide
+ * ContextExport Page - two paths from one /context entry:
  *
- * The voice-led entry opens SkillCaptureSheet (which owns its own voice
- * capture). On submit, the skill triage decides the artifact:
- *   - skill_success → SkillPreviewSheet with downloadable ZIP
- *   - any other outcome → fall back to generate-custom-export and surface
- *     the result as a one-off markdown context blob in Step 3
+ * 1. BUILD A SKILL (the default, headline path): the redesigned Automator
+ *    (AutomatorFlow) takes over the column - suggestions, a recognition
+ *    pick-cascade, then the skill-ready payoff. It composes the cascade picks
+ *    into a transcript and feeds the existing generate-skill-export backend.
+ *    Entry points that pass a SkillSeed via route state open it pre-anchored.
+ *
+ * 2. EXPORT PRESET (the secondary path): the original 3-step wizard - pick a
+ *    use case, pick an AI platform, copy/download a context blob.
+ *
+ * If the Automator's triage decides the cascade is not a repeatable workflow,
+ * it reroutes the transcript here via generate-custom-export and lands the
+ * user on Step 3 with a one-off markdown context blob (the preserved fallback).
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -40,7 +44,6 @@ import {
   X,
   ArrowLeft,
   ArrowRight,
-  Mic,
   Lock,
   ChevronDown,
   ChevronUp,
@@ -65,12 +68,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { PLATFORM_GUIDES } from '@/lib/platform-guides';
 import { ModelRecommendationCard } from '@/components/export/ModelRecommendationCard';
 import { BroadcastBar } from '@/components/export/BroadcastBar';
-import { SkillCaptureSheet } from '@/components/edge/SkillCaptureSheet';
-import { SkillPreviewSheet } from '@/components/edge/SkillPreviewSheet';
-import { useSkillExport } from '@/hooks/useSkillExport';
+import { AutomatorFlow } from '@/components/automator/AutomatorFlow';
 import type { ExportFormat, ExportUseCase } from '@/types/memory';
 import type { ExportRecommendation } from '@/types/edge';
-import { isSkillSuccess, type SkillSeed } from '@/types/skill';
+import type { SkillSeed } from '@/types/skill';
 
 // Icon lookup for dynamic recommendation icons
 const ICON_MAP: Record<string, typeof Bot> = {
@@ -140,38 +141,37 @@ export default function ContextExport() {
   const { recommendations, hasRecommendations } = useExportRecommendations();
   const { hasAccess: isPaidUser, subscribe } = useEdgeSubscription();
   const { userId, email } = useAuth();
-  const skillExport = useSkillExport();
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [skillCaptureOpen, setSkillCaptureOpen] = useState(false);
-  const [skillPreviewOpen, setSkillPreviewOpen] = useState(false);
+  // The redesigned skill builder (AutomatorFlow) is the DEFAULT skill-build
+  // experience here. skillFocus puts the page into the full-column builder:
+  //   - 'browse' (default for Pro): suggestions -> cascade -> ready
+  //   - a seed: arrived from an entry point, opens the cascade pre-anchored
+  // null = the export wizard (use-case presets) is showing.
+  const [skillFocus, setSkillFocus] = useState<boolean>(false);
   const [skillSeed, setSkillSeed] = useState<SkillSeed | null>(null);
 
   // Entry points (Edge AutomatePainCard, Memory blocker button, Briefing
   // decision_trigger button) navigate to /context with location.state.seed.
-  // We consume the seed once, open the capture sheet pre-anchored, and clear
-  // the route state so a refresh doesn't replay it.
+  // We consume the seed once, open the Automator pre-anchored, and clear the
+  // route state so a refresh doesn't replay it.
   useEffect(() => {
     const state = location.state as
       | { seed?: SkillSeed; openSkillBuilder?: boolean }
       | null;
     if (state?.seed && state.seed.text) {
       setSkillSeed(state.seed);
-      skillExport.reset();
-      setSkillCaptureOpen(true);
+      setSkillFocus(true);
       navigate(location.pathname, { replace: true, state: null });
     } else if (state?.openSkillBuilder) {
-      // No-seed entry: open the capture sheet so the leader can voice a fresh
-      // pain. The sheet renders its own pain-picker / examples row.
+      // No-seed entry: open the Automator on its suggestions screen.
       setSkillSeed(null);
-      skillExport.reset();
-      setSkillCaptureOpen(true);
+      setSkillFocus(true);
       navigate(location.pathname, { replace: true, state: null });
     }
-    // Intentional: only run on first relevant state change. skillExport.reset
-    // and setters are stable.
+    // Intentional: only run on first relevant state change. Setters are stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
@@ -283,42 +283,38 @@ export default function ContextExport() {
     setTimeout(() => setShowFeedback(false), 1800);
   }, [userId, email, selectedFormat, selectedUseCase, isCustomMode]);
 
-  const handleOpenSkillCapture = useCallback(() => {
-    skillExport.reset();
+  const handleOpenSkillBuilder = useCallback(() => {
     setSkillSeed(null);
-    setSkillCaptureOpen(true);
-  }, [skillExport]);
+    setSkillFocus(true);
+  }, []);
 
-  const handleSkillCaptureSubmit = useCallback(async (transcript: string, seed?: SkillSeed | null) => {
-    const response = await skillExport.generateSkill(transcript, { seed: seed ?? null });
-    if (!response) return;
+  const handleCloseSkillBuilder = useCallback(() => {
+    setSkillFocus(false);
+    setSkillSeed(null);
+  }, []);
 
-    if (isSkillSuccess(response)) {
-      setSkillCaptureOpen(false);
-      setSkillPreviewOpen(true);
-      return;
-    }
-
-    // Triage rejected the skill - the voice clip is a one-off task, a
-    // preference, or a memory fact rather than a repeatable workflow. Rescue
-    // the transcript by routing it through generate-custom-export and landing
-    // the user on Step 3 with a markdown context blob they can paste anywhere.
+  // The Automator reroutes here when triage decides the cascade is not a
+  // repeatable workflow (a one-off task, a preference, or a memory fact).
+  // Rescue the transcript through generate-custom-export and land the user on
+  // Step 3 with a markdown context blob they can paste anywhere - preserving
+  // the exact fallback the old voice flow had.
+  const handleTriageReroute = useCallback(async (transcript: string, result: string, reasoning?: string) => {
     const routingPrefix: Record<string, string> = {
       custom_instruction: "This is more of a universal preference than a repeatable workflow - here's a markdown context blob you can paste into any AI's custom instructions.",
       memory_fact: "This reads as context about you, not a workflow - here's a markdown blob you can paste into any AI to brief it on you.",
       saved_style: "This sounds like a tone or style preference - here's a markdown blob you can paste into any AI to anchor its voice.",
     };
-    const prefix = routingPrefix[response.triage.result] || "This isn't a repeatable workflow - here's a markdown context blob you can paste into any AI.";
-    const reasoning = response.triage.reasoning ? ` ${response.triage.reasoning}` : '';
-    setTriageBanner(`${prefix}${reasoning}`);
+    const prefix = routingPrefix[result] || "This isn't a repeatable workflow - here's a markdown context blob you can paste into any AI.";
+    setTriageBanner(`${prefix}${reasoning ? ` ${reasoning}` : ''}`);
     setIsCustomMode(true);
     setSelectedUseCase(null);
     setSelectedFormat('markdown');
-    setSkillCaptureOpen(false);
+    setSkillFocus(false);
+    setSkillSeed(null);
     setDirection(1);
     setStep(3);
     await generateCustomExport(transcript, 'markdown');
-  }, [skillExport, generateCustomExport]);
+  }, [generateCustomExport]);
 
   const handleStartOver = useCallback(() => {
     setStep(1);
@@ -347,32 +343,32 @@ export default function ContextExport() {
       <div>
         <h2 className="text-lg font-semibold text-foreground">What do you need?</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Pick a preset or describe your task with voice
+          Build a skill from something you repeat, or grab a one-click context preset
         </p>
       </div>
 
-      {/* Voice-led capture - the single entry point for both skill builder
-          and one-off context blobs. Opens SkillCaptureSheet (which owns voice
-          capture); on submit, triage decides whether the artifact is a
-          downloadable skill ZIP or a markdown context blob shown in Step 3. */}
+      {/* Build a skill - the DEFAULT, headline entry. Opens the redesigned
+          Automator (suggestions -> recognition cascade -> skill ready). For
+          non-Pro it shows the upgrade nudge. The use-case presets below are the
+          secondary, one-click context path. */}
       <div className={cn(
         'rounded-xl border p-4',
-        isPaidUser ? 'border-accent/20 bg-accent/5' : 'border-border bg-card',
+        isPaidUser ? 'border-accent/30 bg-accent/[0.06]' : 'border-border bg-card',
       )}>
         <div className="flex items-start gap-3">
           <div className={cn(
-            'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
-            isPaidUser ? 'bg-accent/10' : 'bg-secondary',
+            'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border',
+            isPaidUser ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-secondary border-border text-muted-foreground',
           )}>
             {isPaidUser ? (
-              <Zap className="h-5 w-5 text-accent" />
+              <Zap className="h-5 w-5" />
             ) : (
-              <Lock className="h-4 w-4 text-muted-foreground" />
+              <Lock className="h-4 w-4" />
             )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-foreground">Describe a workflow</span>
+              <span className="text-sm font-semibold text-foreground">Build a skill</span>
               {!isPaidUser && (
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-accent/10 text-accent">
                   Pro
@@ -380,16 +376,15 @@ export default function ContextExport() {
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-              Voice or type a task. We'll turn recurring workflows into a triggered Claude skill, and one-off tasks into a markdown context blob.
+              Pick something you do over and over. CTRL learns how you do it, then writes you an agent that does it for you - in your voice.
             </p>
 
             {isPaidUser ? (
               <button
-                onClick={handleOpenSkillCapture}
-                className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-accent bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                onClick={handleOpenSkillBuilder}
+                className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-accent bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
               >
-                <Mic className="h-4 w-4" />
-                Start with voice
+                Start building
                 <ArrowRight className="h-4 w-4" />
               </button>
             ) : (
@@ -799,28 +794,32 @@ export default function ContextExport() {
     </AnimatePresence>
   );
 
-  // ─── Skill Builder sheets (rendered at page root) ───────────────
-  const skillSheets = (
-    <>
-      <SkillCaptureSheet
-        isOpen={skillCaptureOpen}
-        onClose={() => setSkillCaptureOpen(false)}
-        onSubmit={handleSkillCaptureSubmit}
-        isGenerating={skillExport.isGenerating}
-        generationError={skillExport.error}
-        initialSeed={skillSeed}
-      />
-      {skillExport.skillData && skillExport.qualityGate && skillExport.zipFilename && (
-        <SkillPreviewSheet
-          isOpen={skillPreviewOpen}
-          onClose={() => setSkillPreviewOpen(false)}
-          skill={skillExport.skillData}
-          qualityGate={skillExport.qualityGate}
-          onDownload={skillExport.downloadZip}
-          zipFilename={skillExport.zipFilename}
+  // ─── Skill Builder takeover (the redesigned Automator) ──────────
+  // Rendered with its own topbar (back / title / brand), keyed on the seed so a
+  // fresh seed re-mounts the flow at the right anchor. Used in both layouts.
+  const automatorTakeover = (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex flex-shrink-0 items-center gap-2.5 pb-3">
+        <button
+          type="button"
+          onClick={handleCloseSkillBuilder}
+          aria-label="Back to export"
+          className="grid h-8 w-8 place-items-center rounded-[10px] border border-border bg-card text-foreground/80 transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-[18px] w-[18px]" />
+        </button>
+        <span className="text-[15px] font-semibold tracking-[-0.01em] text-foreground">
+          Build a skill
+        </span>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
+        <AutomatorFlow
+          key={skillSeed?.text ?? 'browse'}
+          initialSeed={skillSeed}
+          onTriageReroute={handleTriageReroute}
         />
-      )}
-    </>
+      </div>
+    </div>
   );
 
   // ─── Desktop layout ─────────────────────────────────────────────
@@ -935,23 +934,29 @@ export default function ContextExport() {
     );
 
     return (
-      <>
-        <DesktopShell
-          eyebrow="Export"
-          title="Export to AI"
-          actions={
-            step > 1 ? (
-              <button
-                onClick={handleStartOver}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-secondary transition-colors"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                Start over
-              </button>
-            ) : null
-          }
-          rightRail={desktopRail}
-        >
+      <DesktopShell
+        eyebrow={skillFocus ? 'Build' : 'Export'}
+        title={skillFocus ? 'Build a skill' : 'Export to AI'}
+        actions={
+          !skillFocus && step > 1 ? (
+            <button
+              onClick={handleStartOver}
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Start over
+            </button>
+          ) : null
+        }
+        rightRail={skillFocus ? undefined : desktopRail}
+      >
+        {skillFocus ? (
+          <div className="flex-1 min-h-0">
+            <div className="mx-auto h-full w-full max-w-[402px]">
+              {automatorTakeover}
+            </div>
+          </div>
+        ) : (
           <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
             <div className="max-w-3xl">
               <motion.div
@@ -973,13 +978,25 @@ export default function ContextExport() {
               {wizardContent}
             </div>
           </div>
-        </DesktopShell>
-        {skillSheets}
-      </>
+        )}
+      </DesktopShell>
     );
   }
 
   // ─── Mobile layout ──────────────────────────────────────────────
+  // Skill-builder takeover: the redesigned Automator owns the full column.
+  if (skillFocus) {
+    return (
+      <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
+        <AppHeader />
+        <main className="flex-1 min-h-0 px-4 pb-20 pt-1">
+          {automatorTakeover}
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
       <AppHeader />
@@ -1046,7 +1063,6 @@ export default function ContextExport() {
       </main>
 
       <BottomNav />
-      {skillSheets}
     </div>
   );
 }

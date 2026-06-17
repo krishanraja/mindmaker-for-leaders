@@ -9,12 +9,22 @@ import { ContestPanel } from '@/components/contest/ContestPanel';
 import { CockpitHome } from '@/components/cockpit/CockpitHome';
 import { StoneRead } from '@/components/decision-map/StoneRead';
 import { BriefingHero } from '@/components/briefing/BriefingHero';
+import { AutomatorSuggestions } from '@/components/automator/AutomatorSuggestions';
+import { AutomatorCascade } from '@/components/automator/AutomatorCascade';
+import { AutomatorSkillReady } from '@/components/automator/AutomatorSkillReady';
+import {
+  builtYourWayChips,
+  cascadeFor,
+  type CascadePicks,
+  type DeliverableCandidate,
+} from '@/components/automator/automatorModel';
 import type { BriefingRead } from '@/components/briefing/briefingRead';
 import type { TrackRecordRow } from '@/types/track-record';
 import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
 import type { UserMemoryFact } from '@/types/memory';
 import type { ContestKind, ContestResult, ContestTarget } from '@/types/contest';
 import type { CockpitData, DeckCard } from '@/types/cockpit';
+import type { SkillData } from '@/types/skill';
 
 const noop = () => {};
 
@@ -192,6 +202,49 @@ const BRIEFING_FIXTURES: { label: string; read: BriefingRead }[] = [
   },
 ];
 
+// ── Automator (Build a skill) fixtures ─────────────────────────────────────
+const AUTOMATOR_CANDIDATES: DeliverableCandidate[] = [
+  {
+    id: 'a1', title: 'Your weekly investor update', mined: true, archetype: 'report',
+    reasonLead: 'You write one most Mondays', reasonRest: ' - CTRL has seen it in 6 of your last 8 weeks.',
+    effortChip: '~45 min each', frequencyChip: 'repeats weekly',
+  },
+  {
+    id: 'a2', title: 'Turn a discovery call into a first proposal', mined: true, archetype: 'proposal',
+    reasonLead: 'You do this a few times a week', reasonRest: ' - same shape each time: notes in, proposal out.',
+    effortChip: '~30 min each', frequencyChip: 'several a week',
+  },
+  {
+    id: 'a3', title: 'Your monthly board one-pager', mined: false, archetype: 'report',
+    reasonLead: 'High effort, same structure', reasonRest: ' every month - the kind of slog a skill removes.',
+    effortChip: '~2 hrs', frequencyChip: 'repeats monthly',
+  },
+];
+
+// A proposal candidate drives the cascade content for the two cascade fixtures
+// (an options step + the tone-samples step).
+const CASCADE_CANDIDATE = AUTOMATOR_CANDIDATES[1];
+const CASCADE_STEPS = cascadeFor(CASCADE_CANDIDATE);
+const CASCADE_PICKS: CascadePicks = {
+  how: CASCADE_STEPS[0].options[0].id,
+  inputs: CASCADE_STEPS[1].options[0].id,
+  structure: CASCADE_STEPS[2].options[0].id,
+  tone: 'warm',
+  guardrails: CASCADE_STEPS[4].options[0].id,
+};
+
+const READY_SKILL: SkillData = {
+  name: 'discovery-call-to-proposal',
+  description:
+    'Turns a discovery call transcript into a first proposal in your voice. Use whenever you say draft the proposal, write up the proposal, or turn this call into a proposal.',
+  body: '## When this skill activates\n...',
+  references: [],
+  test_prompts: [],
+  gotchas: [],
+  archetype: 'reporting-engine',
+};
+const READY_CHIPS = builtYourWayChips(CASCADE_STEPS, CASCADE_PICKS);
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-10">
@@ -210,6 +263,125 @@ export default function PreviewPage() {
       <div className="mx-auto w-full max-w-md">
         <h1 className="mb-1 text-lg font-semibold text-foreground">Surface fixtures</h1>
         <p className="mb-8 text-xs text-muted-foreground">Every state each component must hold. Screenshot + check for cram / clip / overflow.</p>
+
+        <Section title="Automator - Suggestions (screen 1)">
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">mined + curated mix, brain badge on</p>
+            <div className="rounded-2xl border border-border bg-background p-3">
+              <AutomatorSuggestions
+                candidates={AUTOMATOR_CANDIDATES}
+                loading={false}
+                hasMined
+                onPick={noop}
+                onCustomDeliverable={noop}
+                animated={false}
+              />
+            </div>
+          </div>
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">curated only (thin brain), no badge</p>
+            <div className="rounded-2xl border border-border bg-background p-3">
+              <AutomatorSuggestions
+                candidates={AUTOMATOR_CANDIDATES.map((c) => ({ ...c, mined: false }))}
+                loading={false}
+                hasMined={false}
+                onPick={noop}
+                onCustomDeliverable={noop}
+                animated={false}
+              />
+            </div>
+          </div>
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">loading skeletons</p>
+            <div className="rounded-2xl border border-border bg-background p-3">
+              <AutomatorSuggestions
+                candidates={[]}
+                loading
+                hasMined={false}
+                onPick={noop}
+                onCustomDeliverable={noop}
+                animated={false}
+              />
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Automator - Cascade (screen 2)">
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">step 1 (options): how do you do this now?</p>
+            <div className="h-[560px] rounded-2xl border border-border bg-background p-3">
+              <AutomatorCascade
+                candidate={CASCADE_CANDIDATE}
+                steps={CASCADE_STEPS}
+                stepIndex={0}
+                picks={{ how: CASCADE_STEPS[0].options[0].id }}
+                direction={1}
+                isGenerating={false}
+                onSelect={noop}
+                onBack={noop}
+                onNext={noop}
+                animated={false}
+              />
+            </div>
+          </div>
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">step 4 (samples): which sounds most like you?</p>
+            <div className="h-[560px] rounded-2xl border border-border bg-background p-3">
+              <AutomatorCascade
+                candidate={CASCADE_CANDIDATE}
+                steps={CASCADE_STEPS}
+                stepIndex={3}
+                picks={{ tone: 'warm' }}
+                direction={1}
+                isGenerating={false}
+                onSelect={noop}
+                onBack={noop}
+                onNext={noop}
+                animated={false}
+              />
+            </div>
+          </div>
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">last step, building (generating)</p>
+            <div className="h-[560px] rounded-2xl border border-border bg-background p-3">
+              <AutomatorCascade
+                candidate={CASCADE_CANDIDATE}
+                steps={CASCADE_STEPS}
+                stepIndex={4}
+                picks={CASCADE_PICKS}
+                direction={1}
+                isGenerating
+                onSelect={noop}
+                onBack={noop}
+                onNext={noop}
+                animated={false}
+              />
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Automator - Skill ready (screen 3)">
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">payoff + built-your-way chips + library peek</p>
+            <div className="rounded-2xl border border-border bg-background p-3">
+              <AutomatorSkillReady
+                skill={READY_SKILL}
+                chips={READY_CHIPS}
+                whatItDoes="Turns a discovery call transcript into a first proposal in your voice."
+                library={[
+                  { id: 'new', label: 'Discovery -> proposal' },
+                  { id: 'l2', label: 'Weekly investor update' },
+                  { id: 'l3', label: 'Board one-pager' },
+                ]}
+                onRun={noop}
+                onExport={noop}
+                onSeeAll={noop}
+                onBuildAnother={noop}
+                animated={false}
+              />
+            </div>
+          </div>
+        </Section>
 
         <Section title="Cockpit (mobile home) - CockpitHome">
           {COCKPIT_FIXTURES.map((f) => (
