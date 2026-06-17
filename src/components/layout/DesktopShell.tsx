@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { CtrlLogo } from '@/components/landing/CtrlLogo';
+import { BrandLockup } from '@/components/landing/BrandLockup';
 import { CommandPaletteTrigger } from './CommandPalette';
 
 const navItems = [
@@ -57,7 +57,7 @@ function DesktopRail() {
         onClick={() => navigate('/dashboard')}
         className="h-14 px-4 flex items-center gap-2.5 border-b border-border/60 hover:bg-secondary/40 transition-colors text-left"
       >
-        <CtrlLogo className="h-3.5 w-auto" />
+        <BrandLockup />
       </button>
 
       {/* Primary nav */}

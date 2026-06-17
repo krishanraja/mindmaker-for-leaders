@@ -12,7 +12,7 @@ import { CockpitHome } from './CockpitHome';
  */
 export function CockpitView() {
   const navigate = useNavigate();
-  const { data, loading } = useCockpit();
+  const { data, loading, recordDeckReaction } = useCockpit();
 
   return (
     <div className="h-screen-safe flex flex-col overflow-hidden bg-background">
@@ -30,6 +30,7 @@ export function CockpitView() {
               onGoDecide={() => navigate('/decision')}
               onBuildSkill={() => navigate('/context')}
               onOpenBet={(id) => navigate(`/decision-map?case=${id}`)}
+              onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
             />
           )}
         </div>

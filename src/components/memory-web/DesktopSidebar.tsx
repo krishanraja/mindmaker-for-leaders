@@ -2,7 +2,7 @@ import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Home, Zap, Brain, Radio, ArrowUpRight, Settings, Shield, LogOut, User, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { CtrlLogo } from '@/components/landing/CtrlLogo';
+import { BrandLockup } from '@/components/landing/BrandLockup';
 
 const navItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
@@ -25,7 +25,7 @@ export function DesktopSidebar() {
         className="px-5 py-4 border-b border-border flex items-center gap-2.5 cursor-pointer hover:bg-secondary/30 transition-colors"
         onClick={() => navigate('/dashboard')}
       >
-        <CtrlLogo className="h-4 w-auto translate-x-0.5" />
+        <BrandLockup />
       </div>
 
       <nav className="flex-1 p-3 space-y-0.5">
