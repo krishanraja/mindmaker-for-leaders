@@ -41,13 +41,12 @@ const MIGRATIONS = [
 ];
 
 const SEED = `
-INSERT INTO public.kit_codes (code, class_slug, label, skill_quota, pass_days, max_redemptions)
+INSERT INTO public.kit_codes (code, class_slug, label, skill_quota, pass_days)
 VALUES
-  ('VIBE-TEST',     'vibe-coding',         'internal test code', 3, 30, 200),
-  ('AUTONOMY-TEST', 'autonomous-business', 'internal test code', 3, 30, 200)
-ON CONFLICT (code) DO NOTHING;
-INSERT INTO public.kit_codes (code, class_slug, label, expires_at)
-VALUES ('VIBE-DEAD', 'vibe-coding', 'expired fixture', now() - interval '1 day')
+  ('VIBE',     'vibe-coding',         'Vibe Coding',                       3, 30),
+  ('AUTONOMY', 'autonomous-business', 'Autonomous Business',               3, 30),
+  ('ORGCHART', 'orgchart',            'Agentic Org Chart',                 3, 30),
+  ('MEMORY',   'memory-identity',     'Memory, Identity and Self-Healing', 3, 30)
 ON CONFLICT (code) DO NOTHING;`;
 
 const main = async () => {
