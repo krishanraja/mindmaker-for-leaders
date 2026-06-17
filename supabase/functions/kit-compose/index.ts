@@ -838,6 +838,15 @@ async function runChart(
       status: "ok",
     });
     const parsed = JSON.parse(aiResponse.content || "{}") as Record<string, unknown>;
+    // Preset-owned validation + honesty floor (label-lock, one start box, the
+    // guardrails -> minimum-oversight tag floor). Falls back when unusable.
+    if (spec.refineChart) {
+      const refined = spec.refineChart(parsed, ctx);
+      if (isUsableChart(refined)) {
+        return JSON.stringify(sanitizeChart(refined as Record<string, unknown>));
+      }
+      return fallback || JSON.stringify(parsed);
+    }
     if (isUsableChart(parsed)) {
       return JSON.stringify(sanitizeChart(parsed));
     }

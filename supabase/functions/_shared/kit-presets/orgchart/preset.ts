@@ -44,6 +44,7 @@ import {
   buildPackMap,
   GRIND_FALLBACK,
   GRIND_MATRIX,
+  normaliseChart,
   type ChartJson,
 } from "./templates.ts";
 
@@ -421,6 +422,17 @@ export const orgchartPreset: KitPreset = {
       description:
         "Your work as a chart: every box tagged agent-led, assisted, or you-only, with the agent to add and the human role beside it.",
       buildPrompt: (ctx) => chartComposePrompt(chartPromptInput(ctx)),
+      // Validate the model's chart against the intake and apply the honesty
+      // floor (label-lock, one start box, guardrails -> minimum oversight) so a
+      // box the student fenced can never come back agent-led.
+      refineChart: (raw, ctx) =>
+        normaliseChart(raw, {
+          pathway: pathwayOf(ctx.intake),
+          boxLabels: boxLabelsOf(ctx.intake),
+          startLabel: startLabelOf(ctx.intake),
+          businessName: textOf(ctx.intake, "profile"),
+          guardrailIds: guardrailIdsOf(ctx.intake),
+        }),
       // Deterministic honest fallback when the chart call fails or is malformed.
       render: (ctx) => JSON.stringify(fallbackChartOf(ctx.intake)),
     },
