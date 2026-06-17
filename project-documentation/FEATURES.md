@@ -45,6 +45,53 @@ The current look and feel of CTRL. Shipped to `main` (merge 1c01db5) and prod-ve
 
 ---
 
+## Home / Decision Map / Automator UX Redesign (shipped LIVE 2026-06-17, PRs #197-200)
+
+The latest layer on top of the PR #186 brand redesign. A founder review of live prod found three surfaces that looked finished but did not feel right: Home did not say "I'm back", its "strongest signal" hero was cryptic and the AI-bets read as a wall of sameness; the Decision Map read as unrelated cards with a "something wrong?" drawer popping on every scroll; and the Automator suggested a vague, uncodifiable "Hiring Challenge". A mock-driven rebuild locked all three to the `ctrl-ds` design floor and shipped them to `main`, prod-verified by screenshot at `ctrl.themindmaker.ai`.
+
+### Home (PR #197, merge 7b5f0ef)
+
+The mobile cockpit Home, behind `VITE_COCKPIT_ENABLED`.
+
+**Removed:** the cryptic "strongest signal" hero and the wall of identical AI-bets. Bets no longer live on Home; they moved into the Decisions case-picker.
+
+**New:**
+- A plain, time-aware greeting (no cryptic hero).
+- The swipeable **"worth a look" deck** - a mix of broad AI news (drawn from the briefing pipeline's curated segments) and the leader's own signals (`decision_alerts`). Swipe heart = "more like this", swipe skip = dismiss. A peeking card stack with dots shows what is behind the current card.
+- **3 value actions:** Play my briefing (-> `/briefing`), Run a decision (-> `/decision`), Build a skill (-> `/context`).
+- Plain language throughout (e.g. "We found developments you might want to look at").
+- A new brand lockup (Mindmaker icon + `ctrl-logo`) replaced the generated "ctrl." text in the header.
+
+### Decision Map (PR #198, merge 33fb818)
+
+**One pinned decision** (star eyebrow + statement + a DESCRIPTIVE "where it stands" status derived from the tally, e.g. Holding / Checking / Contested - never a recommendation), with a "Change" affordance to swap which decision is pinned. Considerations sit on a connector **rail**; evidence is one tap deeper (StoneRead).
+
+The long-press "something wrong?" scroll-popup was **killed**; in its place a quiet "Flag it" lives inside the opened stone and in the footer. Empty state: role / sector-seeded starter decisions, one tap to Decide prefilled.
+
+### Automator (PR #199, merge 24f7d15)
+
+The retention hook: turn a recurring deliverable into a reusable skill. Three screens:
+
+1. **Suggestions** - concrete recurring DELIVERABLES mined from the brain (blockers + decisions), each with a "why we picked this" and a "pulled from your brain" badge; role / sector fallback when the brain is thin; a clean inline "Something else" (not a native prompt). It NEVER proposes a vague "Hiring Challenge".
+2. **Cascade** - a roughly 5-step all-recognition pick-cascade reusing the kit engine. The voice step shows real samples to PICK from, never "describe your tone".
+3. **Skill ready** - "Built your way" chips + Run it now + Export as markdown + a "Your skills" library peek.
+
+The Automator feeds the existing `generate-skill-export` pipeline (untouched).
+
+### Follow-ups (PR #200, merge 387af84)
+
+- Desktop brand lockup placements.
+- Deck like / dislike now **persists and trains the feed**: a swipe down-weights that news category in future decks, stored in the feedback table (no new migration).
+
+**Honest residuals (disclose, don't hide):**
+- The old `SkillCaptureSheet` / `SkillPreviewSheet` are now dead code.
+- "Run it now" downloads the skill; there is no in-app skill-runner yet.
+- The deck's news half depends on a briefing existing; with no briefing the deck shows a calm caught-up state.
+
+**Sales Anchor - Home / Decision Map / Automator**: "Open CTRL and it feels like coming back to your desk: a plain greeting, a deck of what's worth a look, and one tap to your briefing, a decision, or a new skill. The decision you care about is pinned with where it stands, not a verdict. And one recurring deliverable becomes a skill you own."
+
+---
+
 ## Brain Engine (PRs #153-164; "limits" phases #187-189)
 
 CTRL's memory rendered as a connected graph: the leader's facts wired to each other, with reaction signals, evidence tiers, and a track record.
@@ -264,7 +311,7 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 - Email delivery via `deliver-edge-artifact`
 - All capability types
 - All 7 briefing types (incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice)
-- **Unlimited Agent Skill Builder generation** (`generate-skill-export`): voice-to-Skill ZIP, downloadable into `~/.claude/skills/`
+- **Unlimited Agent Skill Builder generation** (`generate-skill-export`): the Skill Builder. As of the 2026-06-17 UX redesign (PR #199) the `/context` entry is the **Automator deliverable flow** - Suggestions (recurring deliverables mined from the brain) -> a recognition pick-cascade -> Skill ready (Run it now + Export as markdown + a "Your skills" library peek). It still feeds the same `generate-skill-export` pipeline and produces a Skill downloadable into `~/.claude/skills/`. See **Home / Decision Map / Automator UX Redesign** above.
 - Custom Voice Export (`generate-custom-export`)
 - Subscription management UI via `create-billing-portal-session`
 - Stripe webhook idempotency table (`stripe_events_processed`) prevents double-charges (Audit Week 1)
@@ -281,14 +328,16 @@ The Dashboard is the main authenticated hub, rendering either the **Memory Web**
 
 **Desktop** (`memory-web/DesktopSidebar.tsx`):
 - Fixed left sidebar (264px)
-- Emerald `ctrl.` wordmark (replaced the old green Mindmaker logo)
+- Brand lockup (Mindmaker icon + `ctrl-logo`), which replaced the generated "ctrl." text in the 2026-06-17 follow-ups (PR #200). The old green Mindmaker logo is long gone.
 - 4 nav items: Home, Edge, Memory Web, Export to AI
 - Settings + Sign Out at bottom
 
 **Mobile** (`memory-web/BottomNav.tsx`):
 - Fixed bottom nav bar with 4 tabs: Home, Edge, Memory, Export
-- AppHeader at top
+- AppHeader at top (brand lockup, not the generated "ctrl." text, since PR #197)
 - Backdrop blur effect
+
+> **Home is now the cockpit deck (PR #197, merge 7b5f0ef, behind `VITE_COCKPIT_ENABLED`).** The Home tab no longer shows the old "strongest signal" hero or the wall of AI-bets (bets moved to the Decisions case-picker). It now shows a plain time-aware greeting, the swipeable "worth a look" deck (broad AI news from the briefing pipeline's curated segments mixed with the leader's own `decision_alerts`; swipe heart = more-like-this, skip = dismiss; peeking card stack + dots; deck like/dislike persists and trains the feed per PR #200), and 3 value actions (Play my briefing -> `/briefing`, Run a decision -> `/decision`, Build a skill -> `/context`). Full detail in **Home / Decision Map / Automator UX Redesign** above.
 
 ### Memory Web View (Default)
 
@@ -511,13 +560,15 @@ Turns a repetitive leader workflow into a downloadable, **agentskills.io-complia
 
 This is the third surface on the Context Export page (`/context`). Two minutes describing a Monday-morning ritual is enough to generate a permanent piece of agent infrastructure the leader owns.
 
+> **UI updated 2026-06-17 (PR #199, merge 24f7d15):** the `/context` capture UI is now the **Automator deliverable flow** (Suggestions -> recognition pick-cascade -> Skill ready), not the old voice/text capture sheet. The Automator mines concrete recurring deliverables from the brain (blockers + decisions, with role / sector fallback), runs a roughly 5-step all-recognition cascade reusing the kit engine, and lands on Skill ready with Run it now + Export as markdown + a "Your skills" library peek. The seven-stage `generate-skill-export` pipeline, archetypes, triage routing, and data model below are UNCHANGED; the Automator feeds the same edge function. The old `SkillCaptureSheet` and `SkillPreviewSheet` (described later in this section) are now dead code, retained only for reference. See **Home / Decision Map / Automator UX Redesign** above.
+
 **Pages / surfaces:**
-- `/context` (Step 1): `SkillExportCard` promoted above the Custom Voice card, gated behind Edge Pro
+- `/context`: the Automator deliverable flow (PR #199), gated behind Edge Pro
 - Edge view (`/dashboard?view=edge`): `AutomatePainCard` chip row of declared blockers + active decisions
 - Memory Web blocker cards: zap button on each blocker
 - Briefing: zap button on every `decision_trigger` segment (v1 + v2)
 
-All four entry points hand the user's already-declared pain to the Skill Builder via a `SkillSeed`, navigate to `/context`, and auto-open `SkillCaptureSheet` pre-anchored. The LLM grounds extraction in the leader's actual words instead of inventing an abstract trigger.
+These pain-anchored entry points hand the user's already-declared pain to the Skill Builder via a `SkillSeed` and navigate to `/context`. The LLM grounds extraction in the leader's actual words instead of inventing an abstract trigger.
 
 ### The Pipeline (shipped May 2026)
 
@@ -558,7 +609,7 @@ Skill creation is a reflex on the page where the pain shows up, not a standalone
 
 The seed flows: entry point → `useNavigate('/context', { state: { skillSeed } })` → `ContextExport` page detects and auto-opens `SkillCaptureSheet` with a pre-filled scaffold. The user only adds the steps they follow today; the leading pain is already there.
 
-### The SkillCaptureSheet (mobile bottom sheet / desktop dialog)
+### The SkillCaptureSheet (mobile bottom sheet / desktop dialog) [dead code as of PR #199, 2026-06-17 - replaced by the Automator flow; kept for reference]
 
 - Voice mode (default when no seed): up to 5 minutes of recording, OpenAI Whisper transcript, optional review/edit before submit
 - Text mode (default when arriving with a seed): pre-filled scaffold built from the seed text
@@ -566,7 +617,7 @@ The seed flows: entry point → `useNavigate('/context', { state: { skillSeed } 
 - Curated example chips fallback when the leader has no declared pains yet (Monday board update, Weekly hiring sync, RFP triage, Investor update)
 - 20-character minimum on the description
 
-### The SkillPreviewSheet
+### The SkillPreviewSheet [dead code as of PR #199, 2026-06-17 - replaced by the Automator "Skill ready" screen; kept for reference]
 
 - Skill description and archetype
 - Big Download CTA (decodes the base64 ZIP into a Blob in-browser)
@@ -1485,6 +1536,7 @@ A condensed list of one-liners pullable for outbound. Each tied to a real shippe
 - **Memory Web**: "Talk for two minutes. Get a portable AI double that works in every AI tool."
 - **Context Export**: "One click. ChatGPT, Claude, Gemini, Cursor, Claude Code. All of them. Yours."
 - **Skill Builder (Agent Skill Builder)**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Permanent leverage from two minutes of speaking."
+- **Home / Decision Map / Automator (PRs #197-200)**: "Open CTRL and it feels like coming back to your desk: a plain greeting, a deck of what's worth a look, one tap to your briefing, a decision, or a new skill. The decision you care about is pinned with where it stands, not a verdict."
 - **Kit Engine**: "Scan a QR after class. No login. Six questions. A personalised pack you install, a 7-day plan to ship it, and nudges that stop when you do."
 - **Daily Briefing v2**: "Three minutes of audio. Every story anchored to a specific priority on your desk. No mystery algorithm."
 - **Edge - Sharpen/Cover**: "Your strengths systemized. Your weaknesses covered. Board memos and strategy docs in your register, on demand."

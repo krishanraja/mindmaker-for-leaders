@@ -240,6 +240,7 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 6.0 | Jun 2026 | Phase 12 - Redesign / forced-dark cockpit (PR #186, merge 1c01db5, 2026-06-16). Globally forced dark (index.html class="dark"), ctrl-ds instrument palette, emerald #00D9B6 primary, emerald "ctrl." wordmark replacing the old green Mindmaker logo everywhere. Rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. (Honest backstory: it had earlier been falsely claimed "live" while the app was still the old UI - #186 is the real ship.) |
 | 6.1 | Jun 2026 | Phase 13 - Brain engine + limits edge-graph (PRs #153-164, #187-189). Fact-to-fact edge graph, Strengthen/Fix RPCs, reliable reaction numbers, evidence tiers, track-record depth. Migrations 20260615*_brain_* + 20260616120000_memory_edges. |
 | 6.2 | Jun 2026 | Phase 14 - Kit Program: Agentic Org Chart kit (#190/#191), parity retrofit of all 3 existing kits to fork + pick-cascade + live picks-board (#192), PR #193 (merge 090dda2, 2026-06-17): cascade-bug fix (forked-kit intake silently dropped the back half of every kit's cascade since launch) + honesty floor on the composed org chart. |
+| 6.3 | Jun 2026 | Phase 15 - Home / Decision Map / Automator UX redesign (PRs #197-200, 2026-06-17). Founder review of live prod rebuilt three surfaces against the ctrl-ds design floor: mobile Home is now a time-aware greeting + the swipeable "worth a look" deck + 3 value actions (bets moved to Decisions) (#197, merge 7b5f0ef); the Decision Map is one pinned decision with considerations on a rail (#198, merge 33fb818); the Automator turns a recurring deliverable into a reusable skill via an all-recognition pick-cascade (#199, merge 24f7d15); brand lockup + persisted deck-training follow-ups (#200, merge 387af84). |
 
 ---
 
@@ -633,6 +634,57 @@ Pre-#193 `kit_builds.intake` rows are **TRUNCATED and untrustworthy**: because t
 ### Outcome
 
 The Kit Program now has the org-chart kit, consistent fork + pick-cascade + picks-board behaviour across all kits, a captured full cascade for every new build, and an honesty floor that prevents an agent-led box on a flagged guardrail.
+
+---
+
+## Phase 15: Home / Decision Map / Automator UX Redesign (PRs #197-200, 2026-06-17)
+
+### Context
+
+A founder review of live production (screenshots in `ctrl-corpus/issues 17-6-26`) found that the three surfaces a leader hits most did not hold the bar. The Home tab did not feel like "I'm back"; the "strongest signal" hero read as cryptic; the AI-bets were a wall of sameness. The Decision Map read as unrelated cards with a "something wrong?" drawer that popped on every scroll. The Automator suggested a vague, uncodifiable "Hiring Challenge". A mock-driven rebuild with the founder locked all three surfaces, which were then built to the ctrl-ds design floor and shipped.
+
+### Sub-track 1 - Home redesign (PR #197, merge 7b5f0ef)
+
+The mobile cockpit Home (behind `VITE_COCKPIT_ENABLED`) was rebuilt. Removed: the cryptic "strongest signal" hero and the wall of identical AI-bets. New:
+
+- A plain, time-aware greeting (no jargon; e.g. "We found developments you might want to look at").
+- The swipeable "worth a look" **deck** (`CockpitDeck`) - a mix of broad AI news (from the briefing pipeline's curated segments) and the leader's own signals (`decision_alerts`). Swipe heart = more-like-this, swipe skip = dismiss; a peeking card stack with dots underneath.
+- The 3 value actions: Play my briefing (-> `/briefing`), Run a decision (-> `/decision`), Build a skill (-> `/context`).
+
+Bets moved off Home; they now live in the Decisions case-picker. New components `src/components/cockpit/CockpitDeck.tsx` + a rewritten `CockpitHome.tsx`; `DeckCard` / `DeckCardKind` types + a `deck` field added to `src/types/cockpit.ts`; `useCockpit` assembles the deck (no new backend). A new `src/components/landing/BrandLockup.tsx` (the Mindmaker icon `mindmaker-icon.png` + the `ctrl-logo.png` wordmark) replaced the generated "ctrl." text in the header.
+
+### Sub-track 2 - Decision Map rework (PR #198, merge 33fb818)
+
+`src/pages/DecisionMap.tsx` was rebuilt. The case is now ONE pinned decision hero (star eyebrow + the decision statement + an honest, descriptive "where it stands" status derived from the consideration tally - e.g. "Holding", "Checking", "Contested", never a recommendation) plus a "Change" affordance to swap the pinned decision. Considerations hang off a connector **rail** (not unrelated cards); evidence is one tap deeper (reuses `StoneRead` / `StoneDeeper`, unchanged). The long-press `ContestLongPress` scroll-popup drawer was killed and replaced with a quiet "Flag it" inside the opened stone plus a footer affordance (uses `useContestActions.openContest`). Empty state (nothing pinned): role/sector-seeded starter decisions from `user_memory` identity/role, one tap navigating to Decide prefilled (prefill threaded through `DecisionPage` -> `PressureTestPanel` via an `initialStatement` prop).
+
+### Sub-track 3 - Automator rebuild (PR #199, merge 24f7d15)
+
+This is the retention hook: turning a recurring deliverable into a reusable skill. New components `src/components/automator/{AutomatorFlow,AutomatorSuggestions,AutomatorCascade,AutomatorSkillReady,automatorModel}` + new hook `src/hooks/useSkillSuggestions.ts`. It is now the default flow on `/context` (`ContextExport` modified). Three screens:
+
+1. **Suggestions** - concrete recurring deliverables mined from the brain (`user_memory` blockers + decisions) with a "why we picked this" line and a "pulled from your brain" badge; a role/sector curated fallback when the brain is thin; a clean inline "Something else" input (not a native `window.prompt`). Never the vague "Hiring Challenge".
+2. **Cascade** - a ~5-step all-recognition pick-cascade (how you do it now / inputs / voice [shows real samples to PICK, never "describe your tone"] / structure / guardrails), reusing the kit cascade pattern.
+3. **Skill ready** - "Built your way" chips + Run it now + Export as markdown + a "Your skills" library peek.
+
+`automatorModel.composeTranscript` maps the picks into a transcript for the existing `generate-skill-export` edge function (untouched). The old `SkillCaptureSheet` / `SkillPreviewSheet` are now unimported dead code (left in place).
+
+### Sub-track 4 - Follow-ups (PR #200, merge 387af84)
+
+- Desktop brand lockup (`BrandLockup` added to `DesktopShell` + memory-web `DesktopSidebar` + legacy dashboard `Sidebar`).
+- Deck like/dislike now persists and trains the feed: a swipe writes a `deck_reaction` JSON row to the existing `feedback` table (`page_context` `'cockpit-deck'`, no new migration); `useCockpit` reads 30 days of dislikes and down-weights those news categories out of future decks.
+
+### Honest Residuals (do not hide these)
+
+- The old `SkillCaptureSheet` / `SkillPreviewSheet` are now dead code (left in place, unimported).
+- "Run it now" downloads the skill; there is no in-app skill-runner yet.
+- The deck's news half depends on a briefing existing; otherwise it shows a calm caught-up state.
+
+### Method (held throughout)
+
+Built on the real ctrl-ds components, never hand-rolled chrome - a v2 of the decision map was rejected as "amateur" for hand-rolled, cramped chrome, and v3 was rebuilt on the actual ctrl-ds components. `build` + `eslint --max-warnings 0` clean, no em dashes, no sparkle icons, every surface prod-verified by screenshot on `ctrl.themindmaker.ai`.
+
+### Outcome
+
+Home reads as "I'm back" (greeting + a deck worth looking at + 3 clear actions); the Decision Map is one pinned decision with considerations on a rail and evidence one tap deeper; the Automator turns a real recurring deliverable into a reusable skill; the brand lockup is consistent on mobile and desktop; and the deck learns from every swipe. All four PRs merged to main and prod-verified by screenshot on 2026-06-17.
 
 ---
 
