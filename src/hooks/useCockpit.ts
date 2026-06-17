@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
@@ -59,6 +59,53 @@ export function useCockpit(): { data: CockpitData; loading: boolean } {
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
   const [segments, setSegments] = useState<BriefingSeg[]>([]);
+  // Categories the leader has recently disliked on the deck -> down-weighted out
+  // of the news half (the swipe trains the feed). Best-effort; empty on error.
+  const [dislikedCats, setDislikedCats] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+      const { data, error } = await db
+        .from('feedback')
+        .select('feedback_text')
+        .eq('user_id', user.id)
+        .eq('page_context', 'cockpit-deck')
+        .gte('created_at', since)
+        .limit(200);
+      if (cancelled || error || !data) return;
+      const dis = new Set<string>();
+      for (const row of data as { feedback_text: string }[]) {
+        try {
+          const p = JSON.parse(row.feedback_text) as { reaction?: string; category?: string };
+          if (p.reaction === 'dislike' && p.category) dis.add(p.category);
+        } catch { /* skip malformed */ }
+      }
+      setDislikedCats(dis);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Persist a deck swipe (the like/dislike that trains the feed) to the feedback
+  // table. Recorded as JSON so no new table/migration is needed; useCockpit reads
+  // recent dislikes above to down-weight categories.
+  const recordDeckReaction = useCallback(async (card: DeckCard, reaction: 'like' | 'dislike') => {
+    if (reaction === 'dislike' && card.category) {
+      setDislikedCats((prev) => new Set(prev).add(card.category!)); // optimistic
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await db.from('feedback').insert({
+      user_id: user.id,
+      user_email: user.email,
+      feedback_text: JSON.stringify({ type: 'deck_reaction', card_kind: card.kind, category: card.category ?? null, headline: card.headline, reaction }),
+      page_context: 'cockpit-deck',
+      user_agent: navigator.userAgent,
+    }).then(undefined, () => { /* best-effort */ });
+  }, []);
 
   // The deck's NEWS half: the latest briefing's already-curated segments (the
   // briefing pipeline does the fetch + score + plain-language work for us).
@@ -173,7 +220,7 @@ export function useCockpit(): { data: CockpitData; loading: boolean } {
 
     // ---- the "worth a look" deck: news (briefing) + own signals (alerts) ----
     const newsCards: DeckCard[] = segments
-      .filter((s) => s.headline)
+      .filter((s) => s.headline && !(s.framework_tag && dislikedCats.has(s.framework_tag)))
       .map((s, i) => ({
         id: `news-${i}`,
         kind: 'news' as const,
@@ -209,7 +256,7 @@ export function useCockpit(): { data: CockpitData; loading: boolean } {
     }
 
     return { hero, bets, liveCount: bets.length, needsYouCount, deck: deck.slice(0, 5) };
-  }, [cases, alerts, reactions, segments]);
+  }, [cases, alerts, reactions, segments, dislikedCats]);
 
-  return { data: { ...data, topBlocker }, loading };
+  return { data: { ...data, topBlocker }, loading, recordDeckReaction };
 }
