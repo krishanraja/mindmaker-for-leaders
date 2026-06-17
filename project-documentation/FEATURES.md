@@ -2,22 +2,68 @@
 
 Complete feature inventory across all three CTRL tools.
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-17
 
 > **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
 
+> **Current brand (2026-06-16, PR #186):** CTRL is **globally forced dark** on the `ctrl-ds` instrument palette, emerald `#00D9B6` accent, and the emerald `ctrl.` wordmark replacing the old green Mindmaker logo. It is NOT light-mode, NOT warm off-white, NOT white cards, NOT the green logo. Any older "white card / off-white / green logo" phrasing in this doc is stale and corrected inline. See **Redesign** and **Brain Engine** below.
+
 ---
 
-## Repo at a glance (verified 2026-06-09)
+## Repo at a glance (counts verified 2026-06-09; not re-counted since)
 
-- **80 Supabase edge functions** (Deno runtime), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules
-- **59 React hooks** under `src/hooks/` (added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
-- **110 PostgreSQL migrations** applied to remote (added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening)
+> **Updated 2026-06-17.** The brand redesign (PR #186), Brain engine (PRs #153-164, #187-189), and 4-kit program (PRs #190-#193) all shipped after these counts were last taken. Treat the edge-function / hook / migration totals below as **verified counts pending re-count**.
+
+- **80 Supabase edge functions** (Deno runtime; count as of 2026-06-09), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules
+- **59 React hooks** under `src/hooks/` (count as of 2026-06-09; added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
+- **110 PostgreSQL migrations** applied to remote (count as of 2026-06-09; added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening; later additions include `20260615*_brain_*` and `20260616120000_memory_edges`)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
+- **Brand redesign shipped LIVE** (PR #186, merge 1c01db5, 2026-06-16): globally forced dark, `ctrl-ds` instrument palette, emerald `#00D9B6`, the emerald `ctrl.` wordmark; rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. See **Redesign** below.
 - **Desktop UI redesign shipped** (PR #104, Phase 8; extended through Phase 10, PR #130-#139): every authenticated surface now wears the same `DesktopShell` (sticky top bar with page eyebrow + title + actions, optional right rail, Cmd/Ctrl+K Command Palette), viewport-pinned so the window never scrolls. No more stretched mobile markup on desktop.
 - **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
 - **Tests**: 6 Vitest unit/shared + 7 Playwright e2e in `src/__tests__/e2e/` (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency, desktop-zero-scroll)
+
+---
+
+## Redesign (shipped LIVE 2026-06-16, PR #186)
+
+The current look and feel of CTRL. Shipped to `main` (merge 1c01db5) and prod-verified at `ctrl.themindmaker.ai` with screenshots of the actual surfaces.
+
+**What changed:**
+- **Globally forced dark.** No light mode. `index.html` ships `class="dark"`.
+- **`ctrl-ds` instrument palette** with emerald `#00D9B6` as the primary accent (`--primary 171 100% 43%`).
+- **The emerald `ctrl.` wordmark** everywhere, replacing the old green Mindmaker logo.
+- **Rebuilt surfaces:** mobile cockpit, decision spine, StoneRead (full-screen reading), the brain four-world rope canvas, capture, and onboarding.
+
+**Honest gaps (disclose, don't hide):**
+- **Residual green not yet purged:** `index.html` OG / `theme-color` meta tags, the `--mint` token alias in `tokens.css`, and `EdgeOnboarding` / `SampleResultsDialog` still carry residual green.
+
+> **Backstory:** the redesign was at one earlier point falsely claimed "live" while prod was still the old UI, and the cause was deflected onto the user's cache. That was a trust breach. PR #186 is the real ship, prod-verified by screenshot. "Live" means a prod screenshot only; "it's still old" is ground truth.
+
+**Sales Anchor - Redesign**: "An instrument panel for decisions, not a dashboard. Forced-dark, emerald, built to be read at a glance under pressure."
+
+---
+
+## Brain Engine (PRs #153-164; "limits" phases #187-189)
+
+CTRL's memory rendered as a connected graph: the leader's facts wired to each other, with reaction signals, evidence tiers, and a track record.
+
+**What shipped:**
+- **Fact-to-fact edge graph** - facts connected by edges, rendered as the four-world rope canvas.
+- **Strengthen / Fix RPCs** - backend RPCs to strengthen or fix a fact / edge.
+- **Reliable reaction numbers** - reaction counts on facts now computed reliably.
+- **Evidence tiers** - each fact carries an evidence tier.
+- **Track-record depth** - the brain shows the track record behind a fact over time.
+
+**Migrations:** `20260615*_brain_*`, `20260616120000_memory_edges`.
+
+**Honest gaps (disclose, never hide):**
+- **Strengthen / Fix canvas actions are UI-disabled** - the buttons render but no backend RPC is wired behind them yet.
+- **Brain edges are derived, not stored** - the graph is computed at read time, not persisted as rows.
+- **Number-heroes fall back to words-led on thin current data** - when there is not enough current data for a numeric hero stat, the UI shows a words-led presentation instead of a misleading number.
+
+**Sales Anchor - Brain**: "Your context isn't a list, it's a wired map. See which of your facts hold each other up, and which are running on thin evidence."
 
 ---
 
@@ -26,9 +72,10 @@ Complete feature inventory across all three CTRL tools.
 ### Entry & Assessment
 
 **Landing Page** (`HeroSection.tsx`)
-- Apple-like, executive-grade design
+- Executive-grade design on the forced-dark `ctrl-ds` instrument palette
 - Subtle video background (12% opacity)
-- Centered white card with generous padding
+- Centered card on the dark surface (NOT a white card) with generous padding
+- Emerald `ctrl.` wordmark
 - Plain-language value proposition
 - Single "Start diagnostic" CTA
 - Trust indicators (checkmarks, muted text)
@@ -234,7 +281,7 @@ The Dashboard is the main authenticated hub, rendering either the **Memory Web**
 
 **Desktop** (`memory-web/DesktopSidebar.tsx`):
 - Fixed left sidebar (264px)
-- CTRL logo + Mindmaker icon
+- Emerald `ctrl.` wordmark (replaced the old green Mindmaker logo)
 - 4 nav items: Home, Edge, Memory Web, Export to AI
 - Settings + Sign Out at bottom
 
@@ -594,7 +641,9 @@ This replaces the static Google Docs follow-up that every class used to send. Th
 
 The engine is also the front door to the full CTRL app. Intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` once they hand over an email.
 
-Shipped as PR #141 (branch `claude/kit-engine`), 2026-06-10. Verified live end to end against the production Supabase project on both shipped presets (`vibe-coding`, `autonomous-business`) before merge.
+Shipped as PR #141 (branch `claude/kit-engine`), 2026-06-10, with two presets. It has since grown into a **4-kit program** (see "The 4-Kit Program" below) and survived a major intake-cascade bug fix in PR #193.
+
+> **DATA TRUST WARNING (2026-06-17):** any `kit_builds.intake` row written **before PR #193** (merge 090dda2, 2026-06-17) is **TRUNCATED and untrustworthy.** A latent cascade bug silently dropped the back half of every kit's pick-cascade for all users since launch, so those rows never captured the later intake steps (for the org-chart kit: `guardrails`, `grind`, `involves`, `maturity` were never recorded). Do not use pre-#193 kit intake data for analysis or personalisation backfills.
 
 **Pages / surfaces (outside the authed app shell):**
 - `/kit` - code entry. Starts an anonymous Supabase session, redeems the code, lands the student in the portal.
@@ -625,9 +674,25 @@ One engine, many class presets. A preset is the only thing that differs between 
 - The database stores only `class_slug` + `preset_version`. The preset content lives in code.
 - **Adding a new class is not new code.** It's a new preset folder, a registry entry, and one `kit_codes` row.
 
-Ships with two presets:
-- **Vibe Coding Field Kit** (`vibe-coding`)
-- **Autonomous Business Pack** (`autonomous-business`)
+### The 4-Kit Program (2026-06-16/17)
+
+The engine now ships **four kits**, all on the fork + pick-cascade + live-picks-board model:
+
+1. **Vibe Coding Field Kit** (`vibe-coding`) - original.
+2. **Autonomous Business Pack** (`autonomous-business`) - original.
+3. **Memory & Identity Prompt Pack** (`memory-identity`, code MEMORY-JUN26) - original.
+4. **Agentic Org Chart** kit - added in PRs #190 / #191. Composes an org chart of agent-led vs human-led boxes from the student's intake cascade.
+
+**Parity retrofit (PR #192):** all three pre-existing kits were brought up to the model the org-chart kit introduced:
+- **Fork** - a kit forks per student.
+- **Pick-cascade** - a sequence of pick steps where each pick narrows the next.
+- **Live picks-board** - the student's running picks are shown back to them as they go.
+
+**PR #193 (merge 090dda2, 2026-06-17) - two fixes, both prod-verified:**
+1. **Cascade bug fix (the latent bug above).** A deferred single-select auto-advance closed over a stale `steps.length`, so the cascade stopped early and the back half of every intake was dropped for all users since launch. Fixed by reading live refs in `goNext`. (Consequence: pre-#193 `kit_builds.intake` rows are truncated - see the DATA TRUST WARNING above.)
+2. **Honesty floor on the composed org chart.** A box that touches a flagged guardrail can **never** be left agent-led. This is a hard floor in compose, not advice: if the student flagged a guardrail on something a box touches, that box is forced human-led.
+
+**Sales Anchor - Agentic Org Chart kit**: "Walk out of class with a real org chart of what your agents run and what stays human, with the lines you flagged as no-go locked human-led. Not a worksheet, a decision."
 
 ### Entitlement & Quota
 

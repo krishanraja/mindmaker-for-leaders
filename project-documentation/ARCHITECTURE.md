@@ -2,9 +2,15 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-17
 
-> **Verified counts (2026-06-09)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop).
+> **Brand + redesign (2026-06-16, PR #186 merge 1c01db5)**: CTRL is now **globally forced dark** (`index.html` ships `class="dark"`), on the `ctrl-ds` instrument palette with emerald `#00D9B6` as primary (`--primary 171 100% 43%`), and the emerald `ctrl.` wordmark replacing the old green Mindmaker logo everywhere. It is NOT light-mode, NOT warm off-white, NOT white cards, NOT the green logo. Any older assertion in this doc to that effect has been corrected inline. See the **Redesign** section below. The redesign rebuilt the mobile cockpit, decision spine, StoneRead, the brain four-world rope canvas, capture, and onboarding, all prod-verified with screenshots.
+>
+> **Brain engine (PRs #153-164; "limits" phases #187-189)**: fact-to-fact edge graph, Strengthen/Fix RPCs, reliable reaction numbers, evidence tiers, track-record depth. Migrations `20260615*_brain_*` + `20260616120000_memory_edges`. See the **Brain Engine** section below. Honest gaps: Strengthen/Fix canvas actions are UI-disabled (no backend RPC); brain edges are derived-not-stored; number-heroes fall back to words-led on thin current data.
+>
+> **Kit program (4 kits at `/kit`)**: Agentic Org Chart kit (PRs #190/#191); parity retrofit of all 3 existing kits to fork + pick-cascade + live picks-board (#192); PR #193 (merge 090dda2, 2026-06-17) fixed a latent cascade bug that silently dropped the back half of every kit's intake since launch, plus added an honesty floor to the composed org chart. **Pre-#193 `kit_builds.intake` rows are TRUNCATED and untrustworthy.** See the rewritten **Kit Engine** section below.
+>
+> **Verified counts (as of 2026-06-09; not re-counted since the redesign)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop). Edge-function / hook / migration counts after the redesign, brain engine, and kit program are **verified counts pending re-count**.
 >
 > **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) = 85, +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`) = 62, +4 migrations = 114, +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
 
@@ -27,6 +33,49 @@ Complete system architecture and data flow documentation.
 
 ---
 
+## Redesign (2026-06-16, PR #186 merge 1c01db5)
+
+The current visual system. Shipped live and prod-verified with screenshots.
+
+**Brand + theme:**
+- **Globally forced dark.** `index.html` ships `class="dark"` on the root; there is no light mode. Any reference in older docs to light mode, warm off-white backgrounds, or pure-white cards is wrong and has been corrected.
+- **`ctrl-ds` instrument palette.** A dark instrument-panel design system. Emerald is the accent: `--primary 171 100% 43%` (`#00D9B6`).
+- **The emerald `ctrl.` wordmark** replaces the old green Mindmaker logo everywhere (sidebar, landing, kit portal, etc.). `CtrlLogo.tsx` renders it.
+
+**Surfaces rebuilt in the redesign:**
+- **Mobile cockpit** - the primary mobile authed surface, rebuilt on the dark instrument palette.
+- **Decision spine** - the decision flow rebuilt as a vertical "spine".
+- **StoneRead** - the full-screen reading surface.
+- **Brain four-world rope canvas** - the brain visualization (see Brain Engine section), rendered as a rope canvas across four "worlds".
+- **Capture** - the capture flow.
+- **Onboarding** - the first-run experience.
+
+**Honest residual green (not yet fully purged):** `index.html` OG / `theme-color` meta tags, the `--mint` token alias in `tokens.css`, and `EdgeOnboarding` / `SampleResultsDialog` still carry residual green. These are known and tracked, not asserted as resolved.
+
+> **Backstory (so the trust breach is on record):** the redesign was at one earlier point falsely claimed "live" while the app was still serving the old UI, and the cause was deflected onto the user's browser cache. That was a trust breach. PR #186 is the real ship: prod screenshots of the actual surfaces, not a claim. "Live" means a prod screenshot of `ctrl.themindmaker.ai`, never "it should be deployed", and "it's still old" is taken as ground truth.
+
+---
+
+## Brain Engine (PRs #153-164; "limits" phases #187-189)
+
+The Brain is CTRL's memory-as-a-graph layer: the leader's facts connected to each other, with reaction signals, evidence tiers, and a track record.
+
+**What shipped:**
+- **Fact-to-fact edge graph.** Facts are connected by edges (e.g. a fact supports, tensions with, or follows from another). Rendered as the four-world rope canvas (see Redesign).
+- **Strengthen / Fix RPCs.** Backend RPCs intended to strengthen or fix a fact / edge.
+- **Reliable reaction numbers.** Reaction counts on facts are now computed reliably (the "limits" phases hardened the numbers).
+- **Evidence tiers.** Facts carry an evidence tier.
+- **Track-record depth.** The brain shows the track record behind a fact over time.
+
+**Migrations:** `20260615*_brain_*` and `20260616120000_memory_edges`.
+
+**Honest gaps (disclose, never hide):**
+- The **Strengthen / Fix actions on the brain canvas are UI-disabled** - the buttons exist but there is no backend RPC wired behind them yet.
+- **Brain edges are derived, not stored.** The edge graph is computed at read time, not persisted as rows. ("verified storage model pending re-check" if this changes.)
+- **Number-heroes fall back to words-led on thin current data.** When a leader does not yet have enough current data for a numeric hero stat, the UI falls back to a words-led presentation rather than showing a misleading number.
+
+---
+
 ## Frontend Architecture
 
 ### Directory Structure
@@ -39,7 +88,7 @@ src/
 │   ├── voice/                 # Voice assessment components
 │   ├── landing/               # Landing page components
 │   │   ├── HeroSection.tsx    # Landing page hero with video background
-│   │   ├── CtrlLogo.tsx       # CTRL product logo SVG
+│   │   ├── CtrlLogo.tsx       # Renders the emerald `ctrl.` wordmark (replaced the old green Mindmaker logo)
 │   │   └── TrustIndicators.tsx
 │   ├── dashboard/             # Dashboard hub (renders Memory Web or Edge)
 │   │   ├── DashboardProvider.tsx  # Dashboard data context
@@ -274,7 +323,7 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 
 | Route | Page | Auth | Notes |
 |-------|------|------|-------|
-| `/` | Landing | No | Video background hero, CTRL branding |
+| `/` | Landing | No | Video background hero, forced-dark CTRL branding with the emerald `ctrl.` wordmark |
 | `/auth` | Auth | No | Email + Google OAuth |
 | `/auth/callback` | AuthCallback | No | OAuth redirect handler |
 | `/booking` | Booking | No | External booking |
@@ -311,7 +360,7 @@ The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outsid
 All active pages are lazy-loaded with `React.lazy()` and wrapped in `<Suspense>` boundaries.
 
 **Navigation:**
-- **Desktop**: Fixed left sidebar (264px) - `memory-web/DesktopSidebar.tsx` with CTRL logo, 4 nav items (Home, Edge, Memory Web, Export to AI), settings, sign out, user footer + keyboard hints (v5.2)
+- **Desktop**: Fixed left sidebar (264px) - `memory-web/DesktopSidebar.tsx` with the emerald `ctrl.` wordmark, 4 nav items (Home, Edge, Memory Web, Export to AI), settings, sign out, user footer + keyboard hints (v5.2)
 - **Mobile**: Bottom nav bar - `memory-web/BottomNav.tsx` with 4 tabs (Home, Edge, Memory, Export)
 
 ### Desktop Shell (v5.2)
@@ -335,7 +384,7 @@ The shell exists to make the product feel like a desktop-native tool, not stretc
 #### Button Component (`src/components/ui/button.tsx`)
 
 **Variants:**
-- `default`: Primary action (ink background, white text)
+- `default`: Primary action (emerald `--primary` fill on the dark surface)
 - `outline`: Secondary action (transparent, bordered)
 - `ghost`: Tertiary action (transparent, hover background)
 - `hero`: Large primary CTA (for landing page)
@@ -356,15 +405,15 @@ The shell exists to make the product feel like a desktop-native tool, not stretc
 #### Card Component (`src/components/ui/card.tsx`)
 
 **Structure:**
-- `Card`: Base container (white, rounded-3xl, shadow-lg)
+- `Card`: Base container (dark `ctrl-ds` surface, rounded-3xl, elevation via border + subtle shadow)
 - `CardHeader`: Title section (p-8 pb-6, space-y-3)
 - `CardContent`: Main content (p-8 pt-4)
 - `CardTitle`: Heading (text-xl, font-bold)
 
 **Styling:**
-- Background: Pure white
+- Background: dark `ctrl-ds` card surface (NOT white; the app is globally forced dark)
 - Border: Subtle (border/40)
-- Shadow: Soft, Apple-like
+- Shadow: Soft, on-dark
 - Padding: Generous (p-8 minimum)
 
 ### Landing Page Components
@@ -380,7 +429,7 @@ The shell exists to make the product feel like a desktop-native tool, not stretc
 **Content Card:**
 - Max width: `max-w-2xl`
 - Padding: `p-8 sm:p-12 md:p-16 lg:p-20`
-- Background: White
+- Background: dark `ctrl-ds` surface (the app is globally forced dark; not a white card)
 - Border radius: `rounded-3xl`
 - Shadow: `shadow-lg`
 
@@ -452,7 +501,7 @@ The shell exists to make the product feel like a desktop-native tool, not stretc
 **Requirements:**
 - No scroll on mobile
 - Video background (subtle)
-- Centered white card
+- Centered card on the dark `ctrl-ds` surface (not a white card)
 - Large, readable typography
 - Clear CTAs
 - Trust indicators below
@@ -1377,7 +1426,9 @@ The CTRL landing page (`/`) and any other public routes are pre-rendered at buil
 
 ## Kit Engine Portal (Phase 11, 2026-06-10)
 
-The Kit Engine is CTRL's class follow-up portal. It is a standalone, light, mobile-first surface that lives **outside** the authed app shell on four public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`). It is also a bridge into the full CTRL app: intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` after email capture.
+The Kit Engine is CTRL's class follow-up portal. It is a standalone, forced-dark, mobile-first surface (same `ctrl-ds` dark instrument palette as the rest of the app) that lives **outside** the authed app shell on four public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`). It is also a bridge into the full CTRL app: intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` after email capture.
+
+> **Updated 2026-06-17:** the kit program has since grown to **four kits** (Agentic Org Chart added, all three prior kits retrofit to fork + pick-cascade) and PR #193 fixed a latent cascade bug plus added an honesty floor. The current 4-kit program is documented in the **Kit Engine (4-kit program)** section below; the description here covers the original Phase 11 portal architecture, which still holds.
 
 ### Anon-first identity
 
@@ -1412,7 +1463,29 @@ Redeeming grants a 30-day pass + a 3-net-new-build quota on `kit_redemptions`, g
 
 ### Verification
 
-Verified live end to end against the production Supabase project on both presets (`vibe-coding`, `autonomous-business`) before merge: redeem, intake, real-LLM compose, ZIP download, journey, ship.
+Verified live end to end against the production Supabase project on the original two presets (`vibe-coding`, `autonomous-business`) before merge: redeem, intake, real-LLM compose, ZIP download, journey, ship.
+
+---
+
+## Kit Engine (4-kit program, 2026-06-16/17)
+
+The Phase 11 portal (above) was a 2-preset engine. The kit program has since grown into a **4-kit program** and survived a significant bug fix. Both prod-verified.
+
+**The four kits (lesson-kit engine at `/kit`):**
+1. **Vibe Coding Field Kit** (`vibe-coding`) - original.
+2. **Autonomous Business Pack** (`autonomous-business`) - original.
+3. **Memory & Identity Prompt Pack** (`memory-identity`, code MEMORY-JUN26) - original.
+4. **Agentic Org Chart** kit - added in PRs #190 / #191. Composes an org chart of agent-led vs human-led boxes from the student's intake.
+
+**Parity retrofit (PR #192):** all three pre-existing kits were retrofit to the same model the org-chart kit introduced - **fork** (a kit can be forked per student), **pick-cascade** (a sequence of pick steps where each pick narrows the next), and a **live picks-board** (the running picks are shown back to the student as they go).
+
+**PR #193 (merge 090dda2, 2026-06-17) - two fixes, both prod-verified:**
+
+1. **The cascade bug (latent since kit launch).** The forked-kit intake silently dropped the back half of every kit's pick-cascade for **all** users. A deferred single-select auto-advance closed over a stale `steps.length`, so the cascade stopped early. For the org-chart kit specifically, every build in `kit_builds` only ever captured `[boxes, pathway, profile, timeSink]` - the later steps `guardrails`, `grind`, `involves`, and `maturity` were **never captured**. Fixed by reading live refs in `goNext` instead of the stale closed-over length.
+   - **Consequence for the data:** every `kit_builds.intake` row written **before** PR #193 is **TRUNCATED and untrustworthy** - the back-half answers were never recorded. Do not trust historical kit intake data for analysis.
+2. **The honesty floor on the composed org chart.** A box that touches a flagged guardrail can now **never** be left agent-led. This is a hard floor in the compose step, not advice - if the student flagged a guardrail on something a box touches, that box is forced human-led.
+
+**Honesty/method note:** the cascade bug is a textbook stale-closure-over-`length` defect (the same class of bug as the stale-`setTimeout`-closure lessons elsewhere in this codebase). The fix and the honesty floor both encode the project method: lock the rule (what must never happen) before composing, and disclose the truncated historical data rather than hiding it.
 
 ---
 

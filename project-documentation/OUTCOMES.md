@@ -2,7 +2,7 @@
 
 Expected outcomes and success metrics for CTRL users. Every outcome ties back to **decision speed** and **auditable relevance**.
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-17
 
 ---
 
@@ -164,6 +164,43 @@ Expected outcomes and success metrics for CTRL users. Every outcome ties back to
 - 40%+ initiated a workflow redesign conversation based on AI-informed insight
 - 30%+ report measurable competitive advantage gained
 - 20%+ have referred CTRL to another senior leader
+
+---
+
+## New-Surface Outcomes (Brain engine, Kit Program, Redesign - 2026-06)
+
+These outcomes attach to surfaces that shipped after the original 30/90-day framing above. They are stated with their honest caveats; do not market past the caveat.
+
+### Brain engine (PRs #153-164, "limits" phases #187-189)
+
+**Memory becomes a connected map, not a flat list**
+- The leader sees their Memory Web as a fact-to-fact edge graph (the four-world rope canvas in the redesign), so they can read how their facts relate, not just what they are.
+- Evidence tiers and track-record depth make the "why does CTRL believe this" question answerable at a glance, extending the auditable-relevance promise from the Briefing into the Memory itself.
+- Reaction numbers on the canvas are reliable post-#187-189, so the leader can trust the counts they see rather than guessing.
+
+**Honest caveats (disclose, never hide):**
+- The canvas **Strengthen / Fix actions are UI-disabled** - the buttons exist but no backend RPC is wired yet, so they do not change anything. Do not promise the leader they can act on the graph from the canvas today.
+- Brain **edges are derived, not stored**, so the map is recomputed rather than a persisted record.
+- **Number-heroes fall back to a words-led display** when the current data is thin, so a leader early in their Memory Web will see prose where a richer profile would show numbers.
+
+### Kit Program (`/kit`; PRs #190-193)
+
+**A class or lesson turns into a usable, forkable artifact**
+- The leader can fork any of the four kits (including the Agentic Org Chart kit), run its pick-cascade, and watch a live picks-board assemble their choices - the lesson becomes a thing they built, not a thing they watched.
+- The composed org chart carries an **honesty floor** (PR #193): a box that touches a flagged guardrail can never be left agent-led, so the output cannot quietly recommend an unsafe hand-off.
+
+**Honest caveats (disclose, never hide):**
+- **Pre-#193 `kit_builds.intake` rows are TRUNCATED and untrustworthy.** A latent bug silently dropped the back half of every cascade for all users since launch - guardrails, grind, involves, and maturity were never captured - so historical kit builds only contain `[boxes, pathway, profile, timeSink]`. Do not report or benchmark on pre-#193 intake data.
+- The fix (live step refs in `goNext`) and the honesty floor are both prod-verified, but they only protect builds from PR #193 (merge 090dda2, 2026-06-17) forward.
+
+### Redesigned surfaces (PR #186, merge 1c01db5, 2026-06-16)
+
+**The product finally looks like the instrument it claims to be**
+- Every authenticated surface is now the forced-dark `ctrl-ds` instrument cockpit with the emerald `ctrl.` wordmark - the rebuilt mobile cockpit, decision spine, StoneRead reader, brain four-world rope canvas, capture flow, and onboarding ship together.
+- "Live" here means prod-verified with screenshots, not asserted. The earlier claim that the redesign was live while the app still showed the old UI was a trust breach; PR #186 is the real ship.
+
+**Honest caveats (disclose, never hide):**
+- Residual green remains in `index.html` OG / theme-color meta, the `tokens.css` `--mint` alias, and the EdgeOnboarding / SampleResultsDialog surfaces. The product is forced-dark emerald everywhere else; these are the known stragglers.
 
 ---
 

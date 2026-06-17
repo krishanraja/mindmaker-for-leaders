@@ -4,8 +4,8 @@
 
 This folder is the canonical source of truth for the CTRL portable AI context platform. Everything else at the repo root has been removed in the 2026-04-26 docs refresh - if it's not in this folder or in the root `README.md` / `CLAUDE.md` / `CHANGELOG.md`, it was historical noise.
 
-**Last Updated:** 2026-06-09
-**Current Version:** v5.4 (every authenticated surface unified onto `DesktopShell` + Goals + Enrich loop, shipped on top of v5.3's Decision Engine and v5.2's Skill Builder)
+**Last Updated:** 2026-06-17
+**Current Version:** Post-redesign (forced-dark instrument cockpit). The dark `ctrl-ds` palette, globally forced dark, and the emerald `ctrl.` wordmark shipped live in PR #186 (merge 1c01db5, 2026-06-16, prod-verified), on top of the Brain engine (PRs #153-164, "limits" phases #187-189) and the Kit Program (PRs #190-193). This succeeds the v5.4 DesktopShell unification + Goals + Enrich loop, the v5.3 Decision Engine, and the v5.2 Skill Builder.
 
 ---
 
@@ -14,8 +14,11 @@ This folder is the canonical source of truth for the CTRL portable AI context pl
 ### Sales & Outbound (start here for sales/marketing AI agents)
 - [SALES_BRIEF.md](./SALES_BRIEF.md) - Outbound brief with email angles, objection handling, pricing, ICP fit signals
 - [Master_Messaging_and_FAQ.md](./Master_Messaging_and_FAQ.md) - Founder narrative, enterprise pitch, master FAQ
+- [AGENT_BRIEFING.md](./AGENT_BRIEFING.md) - One-read briefing for Mindmaker OS fleet agents to sell, market, and represent CTRL with zero extra context
 
 ### Strategic Foundation
+- [CTRL-CORPUS.md](./CTRL-CORPUS.md) - The opinionated single source of truth for what CTRL must be (the clarity-engine destination, above the build)
+- [CTRL-BUILD-ROADMAP.md](./CTRL-BUILD-ROADMAP.md) - The route to the Corpus; value-and-proof-sequenced build plan (clean-room frontend rebuild on the existing Supabase backend, learn-loop first)
 - [PURPOSE.md](./PURPOSE.md) - Core mission and problem statement
 - [ICP.md](./ICP.md) - Ideal customer profile + anti-ICP + buying triggers + pricing anchors
 - [VALUE_PROP.md](./VALUE_PROP.md) - Per-audience value props with differentiation matrices
@@ -31,9 +34,9 @@ This folder is the canonical source of truth for the CTRL portable AI context pl
 - [BRANDING.md](./BRANDING.md) - Brand voice, tone, and messaging guidelines
 
 ### Operational Knowledge
-- [HISTORY.md](./HISTORY.md) - Phases 1-7. Includes the April 2026 audit hardening track record.
+- [HISTORY.md](./HISTORY.md) - Phases 1-14. Includes the April 2026 audit hardening track record, the Brain engine, the Kit Program, and the forced-dark redesign (Phase 12, PR #186).
 - [COMMON_ISSUES.md](./COMMON_ISSUES.md) - Recurring bugs, architectural pain points, audit-aftermath notes
-- [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 41 architectural and product decisions with rationale and outcomes
+- [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 47 architectural and product decisions with rationale and outcomes
 - [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - Step-by-step rebuild instructions
 - [MASTER_INSTRUCTIONS.md](./MASTER_INSTRUCTIONS.md) - Engineering principles and AI assistant behavior guidelines
 
@@ -55,8 +58,8 @@ Each strategic doc ends with a **"Sales & Marketing Anchors"** section - pull fr
 1. [PURPOSE.md](./PURPOSE.md) - what you're building and why
 2. [ARCHITECTURE.md](./ARCHITECTURE.md) - system design, data flow, edge functions
 3. [FEATURES.md](./FEATURES.md) - what each feature does + sales anchors
-4. [HISTORY.md](./HISTORY.md) - Phase 7 audit details (revenue/data/UX/reliability/observability/cleanup)
-5. [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 41 decisions with trade-offs
+4. [HISTORY.md](./HISTORY.md) - Phases 1-14, including the Phase 7 audit details, the Brain engine, the Kit Program, and the Phase 12 forced-dark redesign
+5. [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 47 decisions with trade-offs
 6. [COMMON_ISSUES.md](./COMMON_ISSUES.md) - known issues and resolutions
 7. [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - to set up a new instance
 8. [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - UI tokens and patterns
@@ -85,7 +88,7 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 ---
 
-## Current State (v5.4 - verified 2026-06-09)
+## Current State (post-redesign - updated 2026-06-17)
 
 ### Product Positioning
 - **Tagline**: "Clarity for Leaders"
@@ -96,9 +99,12 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 - **Apple-like quality**: Executive-grade, 10/10 visual polish - extended in v5.2 with a desktop-native shell (sticky top bar + optional right rail + global Command Palette via Cmd/Ctrl+K)
 - **Voice-first**: Talk naturally, structure extracted automatically
 - **Mobile-first**: No-scroll experience on key authed surfaces, with a parallel desktop shell that is no longer stretched mobile markup
-- **Light mode**: Warm off-white backgrounds, deep ink text, pure white cards
+- **Forced dark, instrument cockpit**: Globally forced dark (`index.html` carries `class="dark"`), the `ctrl-ds` instrument palette, emerald `#00D9B6` primary (`--primary 171 100% 43%`), and the emerald `ctrl.` wordmark in place of the old green Mindmaker logo. Shipped live in PR #186 (merge 1c01db5, 2026-06-16, prod-verified with screenshots). This is NOT light mode, NOT warm off-white, NOT white cards, NOT the green logo. Honest residual green still lives in `index.html` OG / theme-color meta, the `tokens.css` `--mint` alias, and the EdgeOnboarding / SampleResultsDialog surfaces.
 
-### Verified Repo Counts
+### Repo Counts (as of 2026-06-09 - pending re-count 2026-06-17)
+
+These were verified on 2026-06-09 and predate the Brain engine (PRs #153-164, #187-189), the Kit Program (PRs #190-193), and the forced-dark redesign (PR #186); migrations `20260615*_brain_*` and `20260616120000_memory_edges` landed after. Treat the figures below as a lower bound until re-counted.
+
 | Item | Count |
 |---|---|
 | Supabase edge functions | 80 |
@@ -142,6 +148,9 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 - **Enrich loop** (`/enrich`): Inbound "borrow your own AI" loop - copy one prompt, run it in ChatGPT or Claude, paste the answer back, and CTRL learns in two minutes what would take weeks to tell it.
 - **Command Palette** (desktop): Cmd/Ctrl+K opens a global launcher across authenticated routes. Pages opt into actions via custom `mm:capture-voice` and `mm:generate-briefing` window events.
 - **Unified desktop shell**: Every authenticated surface wears the same `DesktopShell` (sidebar + sticky top bar + optional right rail), viewport-pinned so the window never scrolls; phones fall back to the mobile header + bottom nav.
+- **Brain engine** (PRs #153-164, "limits" phases #187-189): a fact-to-fact edge graph over the Memory Web with evidence tiers, track-record depth, and reliable reaction numbers, surfaced as the four-world rope canvas in the redesign. Migrations `20260615*_brain_*` + `20260616120000_memory_edges`. Honest gaps: the canvas Strengthen/Fix actions are UI-disabled (no backend RPC wired yet); brain edges are derived-not-stored; number-heroes fall back to words-led when current data is thin.
+- **Kit Program** (`/kit`): the lesson-kit engine. Four kits, each forkable with a pick-cascade and a live picks-board, including the Agentic Org Chart kit (PRs #190/#191) and a parity retrofit of the three prior kits (PR #192). PR #193 (merge 090dda2, 2026-06-17) fixed a latent bug where the forked-kit intake silently dropped the back half of every cascade (guardrails/grind/involves/maturity were never captured) and added an honesty floor so a box touching a flagged guardrail can never be left agent-led. Pre-#193 `kit_builds.intake` rows are TRUNCATED and untrustworthy.
+- **Redesigned surfaces** (PR #186, merge 1c01db5, 2026-06-16, prod-verified): forced-dark `ctrl-ds` instrument palette + emerald `ctrl.` wordmark, with a rebuilt mobile cockpit, decision spine, StoneRead reader, brain four-world rope canvas, capture flow, and onboarding.
 
 ### Pricing (Current)
 | SKU | Price | What |
@@ -186,18 +195,18 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 
 | Field | Value |
 |-------|-------|
-| Documentation last updated | 2026-06-09 |
-| Current product version | v5.4 (DesktopShell unified across all authed surfaces + Goals + Enrich loop, on the v5.3 Decision Engine base) |
-| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder + Decision Engine) with desktop-native shell on every authenticated surface |
-| Design system version | v3.2 (Light mode, Apple-like, with desktop-native sidebar + sticky top bar + right rail + Command Palette + viewport-pinned zero-scroll) |
+| Documentation last updated | 2026-06-17 |
+| Current product version | Post-redesign forced-dark instrument cockpit (PR #186, merge 1c01db5, 2026-06-16) on the Brain-engine + Kit-Program base, succeeding the v5.4 DesktopShell unification + Goals + Enrich loop |
+| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder + Decision Engine + Brain engine + Kit Program) with desktop-native shell on every authenticated surface |
+| Design system version | Forced dark, `ctrl-ds` instrument palette (emerald #00D9B6 primary, emerald `ctrl.` wordmark), Apple-like, with desktop-native sidebar + sticky top bar + right rail + Command Palette + viewport-pinned zero-scroll |
 | AI primary model | Vertex AI (Gemini 2.0 Flash) |
 | AI fallback model | OpenAI GPT-4o |
 | Embedding model | OpenAI text-embedding-3-small (1536-dim, pgvector) |
-| Edge functions | 80 |
-| Database migrations | 110 |
+| Edge functions | 80 (as of 2026-06-09, pending re-count 2026-06-17) |
+| Database migrations | 110 + (later: `20260615*_brain_*`, `20260616120000_memory_edges`; pending re-count 2026-06-17) |
 | Database extensions | pgvector, pgcrypto, pg_cron |
-| Active routes | 15 (+ 5 legacy redirects) |
-| Custom hooks | 59 |
-| E2E specs / Vitest specs | 7 / 6 |
+| Active routes | 15 (+ 5 legacy redirects); plus `/kit` (pending re-count 2026-06-17) |
+| Custom hooks | 59 (as of 2026-06-09, pending re-count 2026-06-17) |
+| E2E specs / Vitest specs | 7 / 6 (as of 2026-06-09, pending re-count 2026-06-17) |
 | Node.js requirement | >=22 <24 |
 | Audit-week tracks shipped | 6 (revenue path, data path, UX, reliability, observability, cleanup) |

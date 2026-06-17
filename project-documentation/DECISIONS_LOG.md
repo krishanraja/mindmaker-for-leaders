@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-17
 
 ---
 
@@ -330,3 +330,48 @@ Key architectural and product decisions with rationale.
 **Rationale**: The static Google Docs follow-up got 0% adoption - a link in an email nobody opened. A no-login portal the student reaches with a QR while still in the room, that hands back something they install and a 7-day plan to ship it, is the difference between a follow-up that's read and one that's used. The preset model keeps the cost of every future class near zero. Reusing the `/build` pipeline and the base64-in-DB pattern kept the engine almost entirely additive on top of code that was already hardened and live.
 **Trade-off**: Preset content lives in code, so a new class still needs a (tiny) deploy rather than a pure DB edit. Base64-in-DB caps practical artifact size (fine here; the artifacts are small). Anon-first means an abandoned intake leaves an orphan anonymous session until cleanup.
 **Outcome**: ✅ Backend deployed and verified live end to end on both presets against the production Supabase project; routes shipped behind the PR #141 merge on 2026-06-10. A long-kit-page mobile clipping bug (the portal not owning its own scroll under the app shell's `overflow: hidden`) was found and fixed during testing.
+
+## Decision 44: Forced-Dark Instrument Cockpit - RETIRES the Light-Mode Brand (PR #186, 2026-06-16)
+**Date**: 2026-06-16
+**Decision**: Make the app globally forced dark and ship the ctrl-ds instrument design system as the only mode. `index.html` carries `class="dark"`; primary is emerald `#00D9B6` (`--primary 171 100% 43%`); the emerald "ctrl." wordmark replaces the old green Mindmaker logo everywhere. Rebuilt the mobile cockpit, decision spine, StoneRead, the brain four-world rope canvas, capture, and onboarding against the new system.
+
+**SUPERSEDES the light-mode design decision.** Every prior decision and history note that asserts a "light mode" brand (warm off-white #faf9f7 / #faf9f7 backgrounds, deep ink text, pure white cards, the green Mindmaker logo) is hereby RETIRED. As of PR #186 the live app is NOT light mode, NOT warm off-white, NOT white cards, NOT the green logo. Any document still asserting that brand is wrong and should be corrected when next touched. (Specifically: the Phase 4 "light mode color system" design-system note in HISTORY.md and the old "Light mode design" line in the repo CLAUDE.md Key Conventions are both superseded by this decision; the CLAUDE.md line has been corrected to the forced-dark instrument brand.)
+
+**Rationale**: The light brand had drifted and no longer read as an executive-grade instrument. The dark ctrl-ds palette with the emerald accent and the `ctrl.` wordmark gives the product a single, coherent, instrument-panel identity.
+**Trade-off**: One forced mode (no light fallback) and a one-time rebuild of the core surfaces vs a coherent, single brand that cannot drift back into the old look.
+**Honest caveats**: Residual green still lives in `index.html` OG / theme-color meta, the `tokens.css` `--mint` alias, and in `EdgeOnboarding` / `SampleResultsDialog`; these leftover references have not all been swept even though the live default everywhere a user goes is the forced-dark instrument brand.
+**Honest backstory (recorded deliberately)**: This redesign was at one point falsely claimed "live" while production still served the old UI, and the founder's "it's still old" was deflected onto their browser cache. That was a trust breach. PR #186 (merge 1c01db5, 2026-06-16) is the real ship and was prod-verified with screenshots of the actual production surfaces before being called done. See Decision 47 and the HISTORY.md post-mortems.
+**Outcome**: ✅ Live and prod-verified with screenshots, 2026-06-16. Globally dark, ctrl-ds instrument palette, emerald `ctrl.` wordmark.
+
+## Decision 45: Brain Engine - Fact Graph with Derived Edges and Disabled Actions (PRs #153-164, #187-189)
+**Date**: Jun 2026
+**Decision**: Build the Brain engine on top of the Memory Web: facts become nodes in a four-world rope canvas, with a fact-to-fact edge graph, evidence tiers, reliable reaction numbers, and track-record depth ("limits" phases #187-189 on top of the brain canvas #153-164). Add `Strengthen` / `Fix` RPCs and migrations `20260615*_brain_*` + `20260616120000_memory_edges`.
+
+**Rationale**: A flat fact pool can't show a leader where their AI double's knowledge reinforces itself, contradicts itself, or runs thin. Modelling facts as a graph with evidence tiers and a track record makes the brain's confidence honest and inspectable rather than asserted.
+**Trade-off**: A graph view + evidence tiers + track-record depth is more surface to build and reason about than a flat list, accepted because the inspectability is the point.
+**Honest caveats (must be disclosed, never hidden)**:
+- The brain canvas `Strengthen` / `Fix` actions are **UI-disabled**: the buttons render but no backend RPC is wired behind them yet. They must not be presented as working.
+- Brain edges are **derived, not stored**: fact-to-fact relationships are computed on read, not persisted as first-class rows. Deliberate current state, not a finished durable graph.
+- **Number-heroes fall back to words-led** for thin current data: when there isn't enough current data to stand behind a numeric hero, the surface falls back to a words-led presentation rather than asserting a number it can't support.
+**Outcome**: ✅ Shipped. Facts are a graph with edges, evidence tiers, and track-record depth, with the honest fallbacks and disabled actions noted above.
+
+## Decision 46: Org-Chart Honesty Floor - A Flagged-Guardrail Box Can Never Be Agent-Led (PR #193, 2026-06-17)
+**Date**: 2026-06-17
+**Decision**: Add an honesty floor to the composed Agentic Org Chart: any box that touches a flagged guardrail can never be left agent-led in the composed output. This is a hard constraint on the composition itself, not a softer constraint on copy.
+
+**Rationale**: The org-chart kit composes a recommendation for how much of each role can be agent-led. If a role touches a guardrail the leader flagged (something they explicitly said must stay human-governed), composing it as agent-led would be the kind of overstated, can't-stand-behind-it recommendation the product exists to refuse. The honesty floor encodes "lock the honesty of the signal before you ship the recommendation" directly into the composer.
+**Trade-off**: The composer is slightly less aggressive about recommending automation (a guardrail box is held back from agent-led even where the rest of the signal points that way) vs a recommendation the leader can trust.
+**Outcome**: ✅ Shipped in PR #193 (merge 090dda2) and prod-verified, 2026-06-17.
+
+## Decision 47: Record the Kit-Intake Cascade Bug and the Redesign Trust Breach as Learnings (PR #193 / PR #186)
+**Date**: 2026-06-17
+**Decision**: Record two failures as durable learnings in the decisions log (not only in commit history), so the lessons survive.
+
+**Learning A - the kit-intake cascade bug (fixed in PR #193, merge 090dda2).** From the forked-kit intake's launch until PR #193, the intake silently dropped the back half of EVERY kit's cascade for ALL users. A deferred single-select auto-advance closed over a stale `steps.length`, so once the cascade grew steps the auto-advance ran past the end and stopped early. Every org-chart build in `kit_builds` captured only `[boxes, pathway, profile, timeSink]`; `guardrails`, `grind`, `involves`, and `maturity` were never captured. Nothing errored, so it stayed hidden until the data was audited. Fixed by reading live refs (current step list + index) in `goNext` instead of a closed-over length.
+- **The rule**: a `setTimeout` / deferred callback that closes over a length or list captured at setup time is a stale-closure trap; read live refs in the deferred path. A silent data-truncation bug is worse than a loud crash, because the corrupted data looks plausible.
+- **Data caveat**: pre-#193 `kit_builds.intake` rows are TRUNCATED and must not be trusted.
+
+**Learning B - the redesign trust breach (real ship in PR #186).** The forced-dark redesign was falsely claimed "live" while production still served the old UI, and the founder's "it's still old" was deflected onto their browser cache. That was a trust breach.
+- **The rule**: "live" means a real production screenshot of the actual surface, never an assertion and never a cache excuse; treat "it's still old" as ground truth every time; verify your own work before calling it done. Lock the honesty of the signal before you ship.
+
+**Outcome**: ✅ Recorded. Both are also written up as post-mortems in HISTORY.md.

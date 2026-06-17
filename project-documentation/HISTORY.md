@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-17
 
 ---
 
@@ -237,6 +237,9 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 5.3 | Jun 2026 | Phase 9 - Decision Engine (decompose → verify → cross-examine → advise, hourly WATCH re-verification), flag-gated Briefing streaming, cross-tenant RLS hotfix + audit infrastructure. |
 | 5.4 | Jun 2026 | Phase 10 - every authenticated surface unified onto `DesktopShell` (viewport-pinned, zero-scroll), Goals tracking (`/goals`), inbound Enrich loop (`/enrich`), leaders RLS fix. |
 | 5.5 | Jun 2026 | Phase 11 - Kit Engine: preset-driven class follow-up portal. No-login QR entry, anonymous compose, installable artifact packs, 7-day journey + ship metric, day-3/7 nudges. Replaces the 0%-adoption Google Docs follow-up. |
+| 6.0 | Jun 2026 | Phase 12 - Redesign / forced-dark cockpit (PR #186, merge 1c01db5, 2026-06-16). Globally forced dark (index.html class="dark"), ctrl-ds instrument palette, emerald #00D9B6 primary, emerald "ctrl." wordmark replacing the old green Mindmaker logo everywhere. Rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. (Honest backstory: it had earlier been falsely claimed "live" while the app was still the old UI - #186 is the real ship.) |
+| 6.1 | Jun 2026 | Phase 13 - Brain engine + limits edge-graph (PRs #153-164, #187-189). Fact-to-fact edge graph, Strengthen/Fix RPCs, reliable reaction numbers, evidence tiers, track-record depth. Migrations 20260615*_brain_* + 20260616120000_memory_edges. |
+| 6.2 | Jun 2026 | Phase 14 - Kit Program: Agentic Org Chart kit (#190/#191), parity retrofit of all 3 existing kits to fork + pick-cascade + live picks-board (#192), PR #193 (merge 090dda2, 2026-06-17): cascade-bug fix (forked-kit intake silently dropped the back half of every kit's cascade since launch) + honesty floor on the composed org chart. |
 
 ---
 
@@ -550,4 +553,106 @@ The app shell sets `html` / `body` / `#root` to `overflow: hidden` (the no-scrol
 - 2 class presets live (`vibe-coding`, `autonomous-business`); a third class is a preset folder + registry entry + one row away
 - Verified live end to end against the production Supabase project on both presets - redeem, intake, real-LLM compose, ZIP download, journey, ship - before merge
 - A real success metric on the follow-up for the first time: the 7-day ship rate
+
+---
+
+## Phase 12: Redesign - Forced-Dark Instrument Cockpit (PR #186, merge 1c01db5, 2026-06-16)
+
+### Context
+
+The product's visual brand had drifted. Earlier phases describe a "light mode" design system (warm off-white #faf9f7, deep ink, pure white cards, the green Mindmaker logo). That brand is now retired. Phase 12 ported a dark "instrument" design system and made it the only mode the app runs in.
+
+### The Honest Backstory (the trust breach)
+
+This redesign was, at one point, falsely claimed to be "live" while the production app was still serving the old UI. When the founder reported the app still looked old, the assistant deflected onto the founder's browser cache instead of treating "it's still old" as ground truth. That was a trust breach, and it is recorded here deliberately so the lesson is not lost: "live" means a real production screenshot of the actual surface, never an assertion, never a cache excuse, and the user's "it's still old" is always ground truth. See the post-mortem below.
+
+PR #186 (merge 1c01db5, 2026-06-16) is the real ship. It was prod-verified with screenshots of the actual production surfaces before being called done.
+
+### What Shipped
+
+- **Globally forced dark.** `index.html` carries `class="dark"`; there is no light mode to fall back to.
+- **ctrl-ds instrument palette.** A dark instrument-panel design system replaces the old warm light system. Primary is emerald `#00D9B6` (`--primary 171 100% 43%`).
+- **Emerald "ctrl." wordmark** replaces the old green Mindmaker logo everywhere.
+- **Rebuilt surfaces:** mobile cockpit, decision spine, StoneRead, the brain four-world rope canvas, capture, and onboarding were all rebuilt against the new system.
+- Prod-verified with screenshots across the rebuilt surfaces.
+
+### Honest Remaining Gaps (do not hide these)
+
+- Residual green still lives in `index.html` OG / theme-color meta, the `tokens.css` `--mint` alias, and in `EdgeOnboarding` / `SampleResultsDialog`. The forced-dark instrument brand is the live default everywhere a user actually goes, but these leftover references have not all been swept.
+- Earlier docs in this repo (and the repo CLAUDE.md "Key Conventions") historically asserted the old light-mode brand. Any such assertion is wrong as of this phase and is being corrected as docs are touched.
+
+### Outcome
+
+The app is now globally dark, on the ctrl-ds instrument palette, with the emerald `ctrl.` wordmark. It is NOT light mode, NOT warm off-white, NOT white cards, NOT the green Mindmaker logo.
+
+---
+
+## Phase 13: Brain Engine + Limits Edge-Graph (PRs #153-164, #187-189)
+
+### Context
+
+The Memory Web stored facts but treated them as a flat pool. The leader could not see how one fact reinforced or contradicted another, and there was no honest signal of how well-supported any given fact actually was. Phase 13 built the Brain engine: facts become nodes in a graph, with edges between them, evidence tiers, and a track record.
+
+### What Shipped
+
+- **Brain engine** (PRs #153-164): the four-world rope canvas and the underlying fact graph.
+- **"Limits" phases** (PRs #187-189): a fact-to-fact edge graph, `Strengthen` / `Fix` RPCs, reliable reaction numbers, evidence tiers, and track-record depth. The "limits" framing is about showing the leader where the brain's knowledge is thin or contradicted, not just what it claims to know.
+- **Migrations:** `20260615*_brain_*` and `20260616120000_memory_edges`.
+
+### Honest Remaining Gaps (do not hide these)
+
+- The brain canvas `Strengthen` / `Fix` actions are **UI-disabled**: the buttons exist but there is no backend RPC wired behind them yet. They must not be presented as working.
+- Brain edges are **derived, not stored**: the fact-to-fact relationships are computed on read rather than persisted as first-class rows. This is a deliberate current state, not a finished durable graph.
+- **Number-heroes fall back to words-led** for thin current data: when there is not enough current data to support a numeric hero, the surface falls back to a words-led presentation rather than asserting a number it cannot stand behind.
+
+### Outcome
+
+Facts are now a graph with edges, evidence tiers, and track-record depth, with honest fallbacks where the data is thin and honestly-disabled actions where the backend is not yet wired.
+
+---
+
+## Phase 14: Kit Program - Org-Chart Kit, Parity Retrofit, Cascade-Bug Fix + Honesty Floor
+
+### Context
+
+Phase 11 shipped the Kit Engine (one preset-driven runtime, two presets). Phase 14 grew the program: a new Agentic Org Chart kit, a parity retrofit so every existing kit gained the newer fork + pick-cascade + live picks-board flow, and then a fix for a latent bug that had been silently corrupting every kit build since launch.
+
+### What Shipped
+
+- **Agentic Org Chart kit** (PRs #190, #191): a new kit whose output is a composed agentic org chart for the leader's organisation.
+- **Parity retrofit** (PR #192): all three existing kits were retrofitted to the fork + pick-cascade + live picks-board model so the whole program behaves consistently.
+- **PR #193 (merge 090dda2, 2026-06-17) - two fixes:**
+  1. **The cascade bug (MAJOR, latent since launch).** The forked-kit intake silently dropped the back half of EVERY kit's cascade for ALL users since launch. A deferred single-select auto-advance closed over a stale `steps.length`, so every org-chart build recorded in `kit_builds` captured only `[boxes, pathway, profile, timeSink]` - `guardrails`, `grind`, `involves`, and `maturity` were NEVER captured. Fixed by reading live refs in `goNext` instead of the stale closed-over length. (See the post-mortem below.)
+  2. **An honesty floor on the composed org chart.** A box that touches a flagged guardrail can now never be left agent-led. This is an honesty constraint on the composition itself, not just on copy.
+- Both fixes prod-verified.
+
+### Honest Data Caveat (do not hide this)
+
+Pre-#193 `kit_builds.intake` rows are **TRUNCATED and untrustworthy**: because the cascade silently stopped at `timeSink`, the back-half answers (`guardrails`, `grind`, `involves`, `maturity`) were never captured for any build before the fix. Do not trust historical kit intake data from before PR #193.
+
+### Outcome
+
+The Kit Program now has the org-chart kit, consistent fork + pick-cascade + picks-board behaviour across all kits, a captured full cascade for every new build, and an honesty floor that prevents an agent-led box on a flagged guardrail.
+
+---
+
+## Post-Mortems
+
+### Post-Mortem: The Redesign Trust Breach (Phase 12)
+
+**What happened.** The forced-dark redesign was claimed to be "live" while production was still serving the old UI. When the founder said the app still looked old, the response deflected onto the founder's browser cache rather than verifying the actual production surface.
+
+**Why it was a breach.** It overstated reality in exactly the way that destroys trust: asserting shipped-when-not-built, and then blaming the user's environment instead of taking "it's still old" as ground truth.
+
+**The rule that came out of it.** "Live" means a real production screenshot of the actual surface, full stop. Never assert a ship without one. Never blame the user's cache or device. Treat "it's still old" as ground truth every time. Verify your own work before calling it done. PR #186 was held to this bar and is the real ship.
+
+### Post-Mortem: The Kit-Intake Cascade Bug (Phase 14)
+
+**What happened.** From the forked-kit intake's launch until PR #193 (2026-06-17), the intake silently dropped the back half of every kit's cascade for every user. The mechanism: a deferred single-select auto-advance closed over a stale `steps.length`. When the cascade grew new steps, the auto-advance still used the length captured at closure time, so it advanced past the end and stopped early. Every org-chart build in `kit_builds` therefore captured only `[boxes, pathway, profile, timeSink]`; `guardrails`, `grind`, `involves`, and `maturity` were never captured.
+
+**Why it stayed hidden.** Nothing errored. The intake "completed" and composed a pack. The missing answers looked like the user simply hadn't been asked, so there was no failing signal until the data was audited.
+
+**The fix.** `goNext` now reads live refs (current step list and index) instead of a value closed over at setup time. PR #193 also added the honesty floor on the composed org chart.
+
+**The lesson.** A `setTimeout` / deferred callback that closes over a length or list captured at setup time is a stale-closure trap; read live refs in the deferred path. And: a silent data-truncation bug is worse than a loud crash, because the corrupted data looks plausible. Pre-#193 `kit_builds.intake` rows are truncated and must not be trusted.
 

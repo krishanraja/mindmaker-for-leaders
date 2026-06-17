@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-17 (updated 2026-06-17)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://ctrl.themindmaker.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
@@ -125,6 +125,15 @@ This record describes the processing activities Mindmaker carries out as control
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: minimized; reviewed periodically.
 - Security: scoped service credentials, TLS.
+
+### M. Lesson-kit builds
+- Personal data: org/team/workflow intake provided when forking a lesson kit (boxes, pathway, profile, time sinks, guardrails, grind, what work involves, team maturity), stored in `kit_builds.intake`.
+- Data subjects: registered users.
+- Lawful basis: contract (Art 6(1)(b)).
+- Recipients/subprocessors: Supabase (US); LLM providers for composition (see Activity E).
+- Transfers: EU/UK to US, SCCs (in progress).
+- Retention: life of account; deleted on account deletion (confirm delete-account cascade covers `kit_builds`, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)).
+- Security: RLS owner-scoping, TLS. Note: kit_builds.intake rows created before PR #193 are truncated (the back half of the cascade was not captured); fully captured thereafter.
 
 ## General security measures (all activities)
 
