@@ -1,6 +1,6 @@
 # Purpose
 
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-06-17
 
 ---
 
@@ -10,7 +10,7 @@ CTRL is a portable AI context platform for leaders. It builds a **digital double
 
 The result: every AI conversation starts sharp. Not from zero. From you.
 
-CTRL is the decision-speed layer between leaders and AI.
+CTRL is the decision-speed layer between leaders and AI - a clarity engine that helps a leader see one step clearer today. It now wears a forced-dark instrument cockpit (the `ctrl-ds` palette with the emerald `ctrl.` wordmark), shipped live and prod-verified in the 2026-06-16 redesign.
 
 It **is**:
 - A voice-first platform that builds a Memory Web from natural conversation

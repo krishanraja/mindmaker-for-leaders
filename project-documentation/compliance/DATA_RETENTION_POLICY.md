@@ -1,6 +1,6 @@
 # CTRL Data Retention Policy
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-17 (updated 2026-06-17)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Defines how long CTRL keeps each category of personal data and how it is deleted. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 12 and [ROPA.md](./ROPA.md).
@@ -20,6 +20,7 @@ Defines how long CTRL keeps each category of personal data and how it is deleted
 | Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` (pg_cron) enforces per-user retention window; `delete-account` cascade on closure |
 | Conversation / chat messages | Life of account (subject to any configured retention) | `delete-account` cascade; retention cleanup where applicable |
 | Assessment / diagnostic responses | Life of account | `delete-account` cascade |
+| Kit builds / lesson-kit inputs (`kit_builds.intake`) | Life of account | `delete-account` cascade (confirm cascade covers `kit_builds`, flagged for review) |
 | Daily-briefing preferences and interests | Life of account | `delete-account` cascade |
 | Generated briefings | Rolling window per briefing settings; not retained indefinitely | Scheduled cleanup / superseded by new briefings |
 | Voice transcripts | Treated as user content; life of account or per Memory retention if stored as Memory | `delete-account` cascade; retention cleanup where applicable |
