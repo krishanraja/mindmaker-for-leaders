@@ -60,6 +60,19 @@ export type KitPathway = "self" | "biz";
  */
 export type ChartFeed = "boxes" | "startBox" | "tags";
 
+/**
+ * Which live-preview component the intake renders for a forked preset.
+ * - "orgchart": the bespoke OrgChartView (the org-chart preset's leadership
+ *               node + connector-railed boxes). Reads buildChartModel.
+ * - "picks":   the generic KitPicksBoard (a leadership/title node + the picked
+ *              chartFeed items as cards, the startBox flagged). Reads
+ *              buildPicksModel. Used by the three retrofitted kits, which emit
+ *              chartFeed questions but do not warrant a full org chart.
+ * Absent (no previewKind): no preview pane; the intake renders single-column.
+ * Linear (non-forked) presets ignore this entirely.
+ */
+export type KitPreviewKind = "orgchart" | "picks";
+
 export interface IntakeFactMapping {
   /** Only write the fact when this option was selected. Omit = always (chip label or text becomes the value). */
   fromOptionId?: string;
@@ -305,6 +318,15 @@ export interface KitPreset {
   skillQuota: number;
 
   /* ---- org-chart preset extensions (optional, additive) ---------------- */
+
+  /**
+   * Which live-preview component the intake assembles for this forked preset
+   * as the student answers (see KitPreviewKind). "orgchart" uses OrgChartView
+   * + buildChartModel; "picks" uses the generic KitPicksBoard + buildPicksModel
+   * (the three retrofitted kits). Absent = no preview pane (single column).
+   * Linear (non-forked) presets ignore it.
+   */
+  previewKind?: KitPreviewKind;
 
   /**
    * Curated deterministic option matrices for AdaptiveOptions.matrixKey. Keyed

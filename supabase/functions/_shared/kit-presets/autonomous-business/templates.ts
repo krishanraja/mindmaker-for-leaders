@@ -2,9 +2,10 @@
  * Autonomous Business Pack: anchor-file scaffold templates.
  *
  * Renders USER.md, voice.md, MEMORY.md, GUARDRAILS.md and skills/README.md
- * from intake answers. This mirrors the deck's memory stack. Deterministic
- * string building only; the [FILL IN] gaps are deliberate and the miner
- * prompts exist to fill them.
+ * from the STRUCTURED intake cascade (no free-text workflows blob). The first
+ * build is the chosen workflow inside the chosen time-sink area; the recognised
+ * areas seed the weekly-work list. Deterministic string building only; the
+ * [FILL IN] gaps are deliberate and the miner prompts exist to fill them.
  */
 
 import type { KitTool } from "../types.ts";
@@ -16,12 +17,18 @@ const FENCE = "```";
 export interface ScaffoldInput {
   /** Human label for the spectrum stage, e.g. "Prompting". */
   stageLabel: string;
-  /** Raw free text from the workflows question. */
-  workflowsText: string;
-  /** First workflow parsed from the text. */
-  primaryWorkflow: string;
-  /** Remaining workflows parsed from the text. */
-  additionalWorkflows: string[];
+  /** Name on the pack (profile nameField), may be empty. */
+  name: string;
+  /** What the business does / who the operator is (profile chip label). */
+  whatItDoes: string;
+  /** The recognised areas / hats (the boxes). */
+  areas: string[];
+  /** The chosen time-sink area (the start box). */
+  timeSink: string;
+  /** The specific recurring workflow inside the time-sink (the first build). */
+  workflow: string;
+  /** What that workflow involves (pull / write / update / wait / decide / send). */
+  involves: string[];
   tool: KitTool;
   /** Ticked option ids from the leaves question (may include "none"). */
   leaves: string[];
@@ -29,14 +36,30 @@ export interface ScaffoldInput {
   dateLabel: string;
 }
 
-function workflowBullets(input: ScaffoldInput): string {
-  const all = [input.primaryWorkflow, ...input.additionalWorkflows].filter(
-    (w) => w.length > 0,
-  );
-  if (all.length === 0) {
+/** The first build, written as a line: the workflow, anchored to its area. */
+function firstBuildLine(input: ScaffoldInput): string {
+  if (input.workflow && input.timeSink) {
+    return `${input.workflow} (in ${input.timeSink})`;
+  }
+  if (input.workflow) return input.workflow;
+  if (input.timeSink) return `the recurring work in ${input.timeSink}`;
+  return "[FILL IN: the workflow you repeat every week]";
+}
+
+function weeklyWorkBullets(input: ScaffoldInput): string {
+  // Lead with the first build, then the other recognised areas as the rest of
+  // the week. Nothing invented: every line is something the student tapped.
+  const lines: string[] = [];
+  const first = firstBuildLine(input);
+  lines.push(`- ${first}  <- first build`);
+  for (const area of input.areas) {
+    if (area === input.timeSink) continue;
+    lines.push(`- Recurring work in ${area}`);
+  }
+  if (lines.length === 1 && !input.workflow && !input.timeSink) {
     return "- [FILL IN: what you did this week that you will do again next week]";
   }
-  return all.map((w) => `- ${w}`).join("\n");
+  return lines.join("\n");
 }
 
 export function renderUserMd(input: ScaffoldInput): string {
@@ -47,8 +70,8 @@ export function renderUserMd(input: ScaffoldInput): string {
     "Who I am and how I work. Read this first, every session.",
     "",
     "## Who I am",
-    "- Name: [FILL IN]",
-    "- Business: [FILL IN: what you sell and who buys it]",
+    `- Name: ${input.name || "[FILL IN]"}`,
+    `- Business: ${input.whatItDoes ? `${input.whatItDoes} ([FILL IN: what you sell and who buys it])` : "[FILL IN: what you sell and who buys it]"}`,
     "- Role: [FILL IN: what you actually do day to day]",
     "",
     "## Where I am with AI",
@@ -56,7 +79,7 @@ export function renderUserMd(input: ScaffoldInput): string {
     `- Primary tool: ${toolLabel}`,
     "",
     "## What I repeat every week",
-    workflowBullets(input),
+    weeklyWorkBullets(input),
     "",
     "## How I like to work",
     "- [FILL IN: how you want drafts presented, and how much should be done before you are asked]",
@@ -101,13 +124,18 @@ export function renderMemoryMd(input: ScaffoldInput): string {
   const date = input.dateLabel || "[date]";
   const entries: string[] = [];
   entries.push(`- ${date}: Stage: ${input.stageLabel}.`);
-  const all = [input.primaryWorkflow, ...input.additionalWorkflows].filter(
-    (w) => w.length > 0,
-  );
-  if (all.length > 0) {
-    entries.push(`- ${date}: Weekly workflows: ${all.join("; ")}.`);
-    entries.push(`- ${date}: First build target: ${all[0]}.`);
-  } else {
+  if (input.whatItDoes) {
+    entries.push(`- ${date}: What I do: ${input.whatItDoes}.`);
+  }
+  if (input.areas.length > 0) {
+    entries.push(`- ${date}: Areas with recurring work: ${input.areas.join("; ")}.`);
+  }
+  if (input.timeSink) {
+    entries.push(`- ${date}: Biggest time-sink: ${input.timeSink}.`);
+  }
+  if (input.workflow) {
+    entries.push(`- ${date}: First build target: ${input.workflow} (in ${input.timeSink || "that area"}).`);
+  } else if (input.areas.length === 0) {
     entries.push(`- ${date}: [FILL IN: the workflows you repeat weekly]`);
   }
   return [

@@ -311,6 +311,90 @@ export function buildChartModel(
 }
 
 /* ------------------------------------------------------------------ */
+/* Generic picks model (the 'picks' previewKind)                        */
+/* ------------------------------------------------------------------ */
+
+/** One picked item rendered as a card on the KitPicksBoard. */
+export interface PicksItem {
+  /** Stable id (option id, used as the React key). */
+  id: string;
+  /** The picked option's label. */
+  label: string;
+  /** The START item: the chosen startBox, flagged on the board. */
+  isStart?: boolean;
+  /** Optional one-line note under the card (unused by the cascade today). */
+  note?: string;
+}
+
+/**
+ * The model the generic KitPicksBoard renders. Analogous to OrgChartModel but
+ * preview-kind agnostic: a leadership/title node + the picked chartFeed items.
+ * The three retrofitted kits emit a `boxes` chartFeed question (the items) and,
+ * optionally, a `startBox` chartFeed question (the flagged item) plus a
+ * nameField on their first question (the title). This is a deterministic,
+ * in-intake preview only: the honest final artifact is authored by that kit's
+ * SHARED agent (the picks-board renderer) off the same structured answers.
+ */
+export interface PicksModel {
+  /** The title node, from the nameField answer or a pathway-appropriate default. */
+  title: string;
+  /** A small framing label above the items (the boxes question's eyebrow). */
+  framingLabel: string;
+  /** The picked items, in selection order; the startBox flagged isStart. */
+  items: PicksItem[];
+}
+
+/**
+ * Assemble the generic PicksModel from the preset's chartFeed questions:
+ * - boxes    -> items (the picked options, in selection order)
+ * - startBox -> the item flagged isStart
+ * - nameField (or pathway default) -> title
+ *
+ * Pathway-aware like buildChartModel: items are resolved against the
+ * pathway-correct option set so the preview reads the same labels the backend
+ * will. Returns an empty-items model before any boxes are picked (the board
+ * shows its empty state). Used only when preset.previewKind === "picks".
+ */
+export function buildPicksModel(
+  preset: KitPreset,
+  pathway: KitPathway | null,
+  answers: IntakeAnswers,
+): PicksModel | null {
+  const boxesQ = questionByFeed(preset, "boxes");
+  const startQ = questionByFeed(preset, "startBox");
+  if (!boxesQ) return null;
+
+  // Title node: the name field's answer, else a pathway-appropriate default.
+  const nameQ = preset.intake.find((q) => q.nameField);
+  const name = nameQ ? (answers[nameQ.id]?.text?.trim() ?? "") : "";
+  const titleDefault = pathway === "self" ? "You" : "Your kit";
+  const title = name || titleDefault;
+
+  // Framing label: prefer the boxes question's eyebrow, else a neutral line.
+  const framingLabel = boxesQ.eyebrow ?? "Your picks";
+
+  // Resolve the picked items against the pathway-correct option set.
+  const boxResolved = resolveOptions(preset, boxesQ, pathway, answers);
+  const chosen = selectedOptions(boxResolved, answers[boxesQ.id]);
+
+  // The start item's stored optionId is the slug of the chosen item (the
+  // startBox options are drawn from the boxes). Resolve it back to a label.
+  let startLabel: string | undefined;
+  if (startQ) {
+    const startResolved = resolveOptions(preset, startQ, pathway, answers);
+    startLabel = selectedOptions(startResolved, answers[startQ.id])[0]?.label;
+  }
+
+  const items: PicksItem[] = chosen.map((o) => ({
+    id: o.id,
+    label: o.label,
+    isStart: !!startLabel && o.label === startLabel,
+  }));
+
+  return { title, framingLabel, items };
+}
+
+/* ------------------------------------------------------------------ */
 /* The hook                                                             */
 /* ------------------------------------------------------------------ */
 

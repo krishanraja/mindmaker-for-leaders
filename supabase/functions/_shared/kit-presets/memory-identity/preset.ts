@@ -1,16 +1,43 @@
 /**
  * The Prompt Pack preset (Memory, Identity and Self-Healing Lightning Lesson).
  *
- * The inverted-flow pilot: the typed intake is deliberately tiny (which tool,
- * which job). Everything else is mined from the student's own AI history by the
- * paste-ready prompts in this pack, and the student only ever confirms. The
- * engine renders purely from this contract; nothing here branches on class.
+ * Originally the inverted-flow pilot with a deliberately tiny 2-question intake
+ * (which tool, one open-ended "job" voice). That was input-starved: an open
+ * blob gives a generic operator. This version keeps the inverted spirit (the
+ * student's own AI still does the mining and drafting) but feeds it a coherent
+ * RECOGNITION cascade so the output is uniquely theirs:
+ *
+ *   pathwayFork (self / business)
+ *     -> profile         (nameField + role chip, per pathway)
+ *     -> boxes  (multi)  which role/domain to build an operator for      [chartFeed: boxes]
+ *     -> firstJob (one)  the first job to stand up, drawn from the boxes  [chartFeed: startBox]
+ *     -> tasks  (multi)  the tasks that job covers (adaptive matrix)
+ *     -> tool   (one)    the AI tool the operator lives in
+ *     -> neverStore (multi) what it must never store (honesty guardrail)  [chartFeed: tags]
+ *
+ * The live preview is the generic KitPicksBoard (previewKind: "picks"): a title
+ * node from nameField, the picked domains as cards, the first job flagged. The
+ * SHARED agent builds that board off the same chartFeed slots; this preset only
+ * shapes the intake and the compose reads.
+ *
+ * Every artifact (all 9 kept) now reads the STRUCTURED answers
+ * (role / job / tasks / tool / neverStore) via jobInput(), never the old single
+ * "job" blob. Honesty-gated: a never-store pick becomes a standing rule in the
+ * job-file prompt and the self-correction footer; nothing is fabricated, empty
+ * answers render safe placeholders.
+ *
+ * Engine fit: this preset now uses the additive IntakeQuestion extensions
+ * (pathwayFork / pathwayCopy / showIf / adaptiveOptions / nameField /
+ * chartFeed) and KitPreset.optionMatrices + previewKind, all owned by the types
+ * module. No Deno or Node globals; plain TypeScript only.
  */
 
 import type {
   ArtifactBuildContext,
   IntakeAnswers,
+  IntakeOption,
   KitEmailContext,
+  KitPathway,
   KitPreset,
   KitTool,
 } from "../types.ts";
@@ -18,51 +45,129 @@ import { KIT_TOOL_LABELS } from "../types.ts";
 import {
   beforeAfterTest,
   jobFileBuildPrompt,
+  jobFilename,
   makeItASkillPrompt,
   selfCorrectFooter,
   weeklyHygienePrompt,
+  type JobInput,
 } from "./prompts.ts";
 import {
+  BIZ_DOMAINS,
+  BIZ_ROLES,
+  NEVER_STORE,
   renderAboutMe,
   renderChannels,
   renderIdentityReadme,
   renderVoice,
-  type IdentityInput,
+  SELF_DOMAINS,
+  SELF_ROLES,
+  TASK_FALLBACK,
+  TASK_MATRIX,
 } from "./templates.ts";
 
 const FENCE = "```";
 
 /* ------------------------------------------------------------------ */
-/* Intake helpers                                                      */
+/* Intake read helpers (the structured cascade -> JobInput)            */
 /* ------------------------------------------------------------------ */
 
-function answerText(intake: IntakeAnswers, id: string): string {
+function pathwayOf(intake: IntakeAnswers): KitPathway {
+  return intake["pathway"]?.optionId === "biz" ? "biz" : "self";
+}
+
+function textOf(intake: IntakeAnswers, id: string): string {
   return intake[id]?.text?.trim() ?? "";
 }
 
-function answerOption(intake: IntakeAnswers, id: string): string {
-  return intake[id]?.optionId ?? "";
+function labelOfSelected(options: IntakeOption[], id: string | undefined): string {
+  if (!id) return "";
+  return options.find((o) => o.id === id)?.label ?? "";
 }
 
-/** The job the student named, or an honest placeholder. */
-function jobLabel(intake: IntakeAnswers): string {
-  return answerText(intake, "job") || "the job you do most";
+function selectedLabels(
+  intake: IntakeAnswers,
+  id: string,
+  options: IntakeOption[],
+): string[] {
+  const ids = intake[id]?.optionIds ?? [];
+  return ids
+    .map((oid) => options.find((o) => o.id === oid)?.label)
+    .filter((l): l is string => Boolean(l));
 }
 
-/** Kebab filename for the job file, like content-marketer.md. */
-function jobSlug(job: string): string {
-  const slug = job
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .split("-")
-    .slice(0, 4)
-    .join("-");
-  return slug.length > 0 ? slug : "the-job";
+function slugify(label: string): string {
+  return (
+    label
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "opt"
+  );
 }
 
-function identityInput(ctx: ArtifactBuildContext): IdentityInput {
-  return { tool: ctx.tool, job: answerText(ctx.intake, "job") };
+/** The domains (boxes) the student picked, pathway-correct. */
+function domainsOf(intake: IntakeAnswers): string[] {
+  const pathway = pathwayOf(intake);
+  return selectedLabels(intake, "boxes", pathway === "biz" ? BIZ_DOMAINS : SELF_DOMAINS);
+}
+
+/**
+ * The first job (startBox). Its options are drawn from the chosen domains
+ * (adaptiveOptions.fromQuestionId), so the stored optionId is the slug of the
+ * chosen domain label; resolve it back to the label, falling back to the first
+ * picked domain.
+ */
+function firstJobOf(intake: IntakeAnswers): string {
+  const domains = domainsOf(intake);
+  const jobId = intake["firstJob"]?.optionId;
+  const match = domains.find((d) => slugify(d) === jobId);
+  return match ?? domains[0] ?? "";
+}
+
+/**
+ * The tasks (adaptive matrix keyed by the first-job label). The stored ids are
+ * slugs of the matrix-row labels, so resolve against the row for the chosen
+ * job, falling back to the generic row.
+ */
+function tasksOf(intake: IntakeAnswers): string[] {
+  const job = firstJobOf(intake);
+  const rows = TASK_MATRIX[job] ?? TASK_FALLBACK;
+  return selectedLabels(intake, "tasks", rows);
+}
+
+function neverStoreOf(intake: IntakeAnswers): string[] {
+  // "Nothing is off-limits" is an explicit no-op: it carries no guardrail.
+  return selectedLabels(intake, "neverStore", NEVER_STORE).filter(
+    (l) => l !== "Nothing is off-limits",
+  );
+}
+
+function roleOf(intake: IntakeAnswers): string {
+  const pathway = pathwayOf(intake);
+  const role = labelOfSelected(
+    pathway === "biz" ? BIZ_ROLES : SELF_ROLES,
+    intake["profile"]?.optionId,
+  );
+  return role === "Something else" ? "" : role;
+}
+
+/** The single structured contract every prompt and renderer reads. */
+function jobInput(ctx: ArtifactBuildContext): JobInput {
+  const intake = ctx.intake;
+  return {
+    pathway: pathwayOf(intake),
+    name: textOf(intake, "profile"),
+    role: roleOf(intake),
+    domains: domainsOf(intake),
+    job: firstJobOf(intake),
+    tasks: tasksOf(intake),
+    neverStore: neverStoreOf(intake),
+    tool: ctx.tool,
+  };
+}
+
+/** The job label for copy, with an honest placeholder when empty. */
+function jobLabel(input: JobInput): string {
+  return input.job.trim() || "the job you do most";
 }
 
 /* ------------------------------------------------------------------ */
@@ -100,7 +205,7 @@ function emailShell(body: string, ctx: KitEmailContext, buttonLabel: string): st
 
 export const memoryIdentityPreset: KitPreset = {
   slug: "memory-identity",
-  version: "1.0.0",
+  version: "2.0.0",
   title: "The Prompt Pack",
   classTitle: "Memory, Identity and Self-Healing",
   tagline:
@@ -110,12 +215,116 @@ export const memoryIdentityPreset: KitPreset = {
   passDays: 30,
   skillQuota: 3,
 
+  // The generic picks board (title node + picked domains, first job flagged).
+  previewKind: "picks",
+  // The curated, deterministic firstJob -> tasks matrix for the adaptive step.
+  optionMatrices: { tasks: TASK_MATRIX },
+
   intake: [
+    // 0. THE FORK - who is this operator for. Pathway only.
+    {
+      id: "pathway",
+      type: "chips",
+      pathwayFork: true,
+      eyebrow: "Let's build your operator",
+      prompt: "Who are you building this for?",
+      helper: "This changes what we ask, and the operator you walk away with.",
+      options: [
+        { id: "self", label: "Myself - a team of one", pathway: "self" },
+        { id: "biz", label: "My business - a small team", pathway: "biz" },
+      ],
+      factMappings: [
+        {
+          fact_key: "kit_memory_pathway",
+          fact_category: "identity",
+          fact_label: "Prompt Pack pathway",
+        },
+      ],
+    },
+
+    // 0b. PROFILE - the name on the pack + the role headline. nameField + chip.
+    {
+      id: "profile",
+      type: "chips",
+      eyebrow: "You",
+      prompt: "Tell us who's behind this.",
+      helper: "This is the name on your pack, and what you do.",
+      showIf: { answeredQuestionId: "pathway" },
+      nameField: { label: "Name on the pack", placeholder: "e.g. Alex Rivera" },
+      pathwayCopy: {
+        self: { prompt: "Tell us about you.", helper: "This is the name on your pack, and what you do." },
+        biz: { prompt: "Tell us about your team.", helper: "This is the name on your pack, and your role." },
+      },
+      pathwayOptions: { self: SELF_ROLES, biz: BIZ_ROLES },
+      options: [...SELF_ROLES, ...BIZ_ROLES],
+      factMappings: [
+        {
+          fact_key: "kit_memory_role",
+          fact_category: "identity",
+          fact_label: "Role",
+        },
+      ],
+    },
+
+    // 1. BOXES (multi) - which role/domain to build an operator for. Recognition.
+    {
+      id: "boxes",
+      type: "chips_multi",
+      eyebrow: "The work",
+      prompt: "Which part of your work should learn to run itself first?",
+      helper: "Tap all that apply. We build the first operator for one of these.",
+      chartFeed: "boxes",
+      showIf: { answeredQuestionId: "pathway" },
+      pathwayCopy: {
+        self: {
+          prompt: "Which hats do you wear?",
+          helper: "Tap all that apply. We build your first operator for one of them.",
+        },
+        biz: {
+          prompt: "Which functions does your team run?",
+          helper: "Tap all that apply. We build the first operator for one of them.",
+        },
+      },
+      pathwayOptions: { self: SELF_DOMAINS, biz: BIZ_DOMAINS },
+      options: [...SELF_DOMAINS, ...BIZ_DOMAINS],
+    },
+
+    // 2. FIRST JOB (one) - the first operator to stand up. Drawn from the boxes.
+    {
+      id: "firstJob",
+      type: "chips",
+      eyebrow: "Start here",
+      prompt: "Which one do you want your AI to run first?",
+      helper: "Pick the one you do most. This becomes your first operator.",
+      chartFeed: "startBox",
+      showIf: { answeredQuestionId: "boxes" },
+      adaptiveOptions: { fromQuestionId: "boxes" },
+    },
+
+    // 3. TASKS (multi) - what that job covers. Adaptive matrix keyed off the job.
+    {
+      id: "tasks",
+      type: "chips_multi",
+      eyebrow: "The scope",
+      prompt: "What does that job actually cover?",
+      helper: "Tap the tasks it owns. This is the scope your operator learns.",
+      showIf: { answeredQuestionId: "firstJob" },
+      adaptiveOptions: {
+        matrixKey: "tasks",
+        matrixFromQuestionId: "firstJob",
+        fallback: TASK_FALLBACK,
+      },
+    },
+
+    // 4. TOOL (one) - the AI tool the operator lives in.
     {
       id: "tool",
       type: "chips",
+      eyebrow: "Your tool",
       prompt: "Which AI tool do you actually use?",
-      helper: "Not the one you mean to try. The one you opened this week. Every prompt in your pack is tuned to it.",
+      helper:
+        "Not the one you mean to try. The one you opened this week. Every prompt in your pack is tuned to it.",
+      showIf: { answeredQuestionId: "tasks" },
       options: [
         { id: "claude", label: "Claude", tool: "claude" },
         { id: "chatgpt", label: "ChatGPT", tool: "chatgpt" },
@@ -131,24 +340,22 @@ export const memoryIdentityPreset: KitPreset = {
         },
       ],
     },
+
+    // 5. NEVER-STORE (multi) - the honesty guardrail. Feeds the tags slot.
     {
-      id: "job",
-      type: "voice_text",
-      prompt: "Which job do you want your AI to run first?",
-      helper:
-        "One you do a lot. One line is enough; tap an example or say it. If you are not sure, leave it - your pack's first prompt will ask your AI to pick the obvious one from your history.",
-      examples: [
-        "Content marketer",
-        "Recruiter",
-        "Analyst",
-        "Chief of staff",
-        "Customer support",
-      ],
+      id: "neverStore",
+      type: "chips_multi",
+      eyebrow: "Keep it honest",
+      prompt: "What should this operator never store?",
+      helper: "These become a hard rule baked into your files. Tap all that apply.",
+      chartFeed: "tags",
+      showIf: { answeredQuestionId: "tool" },
+      options: NEVER_STORE,
       factMappings: [
         {
-          fact_key: "first_operator_job",
-          fact_category: "objective",
-          fact_label: "First operator job",
+          fact_key: "kit_memory_never_store",
+          fact_category: "preference",
+          fact_label: "Never store",
         },
       ],
     },
@@ -166,19 +373,24 @@ export const memoryIdentityPreset: KitPreset = {
       description:
         "Paste this into your AI tonight. It drafts the file from your past work and confirms it with you. Name it after the job, like content-marketer.md.",
       render: (ctx) => {
-        const job = jobLabel(ctx.intake);
-        const file = `${jobSlug(answerText(ctx.intake, "job"))}.md`;
+        const input = jobInput(ctx);
+        const job = jobLabel(input);
+        const file = jobFilename(input);
+        const scope =
+          input.tasks.length > 0
+            ? `Its scope is the tasks you picked: ${input.tasks.join(", ")}.`
+            : "Its scope is the handful of tasks this job owns; the prompt will pin them with you.";
         return [
           "# Your job file",
           "",
           "One giant memory file becomes a junk drawer, broad enough to be useless. Start narrow. Pick a job you do a lot, turn your history into an operator for it, and let the file name itself after the job.",
           "",
-          `For you, that job is **${job}**, and the file should land as \`${file}\` (not memory.md).`,
+          `For you, that job is **${job}**, and the file should land as \`${file}\` (not memory.md). ${scope}`,
           "",
           "## Paste this into your AI tool",
           "",
           FENCE,
-          jobFileBuildPrompt(ctx.tool, answerText(ctx.intake, "job")),
+          jobFileBuildPrompt(input),
           FENCE,
           "",
           "## Done when",
@@ -203,7 +415,7 @@ export const memoryIdentityPreset: KitPreset = {
           "Prove the job file earns its place before you trust it.",
           "",
           FENCE,
-          beforeAfterTest(answerText(ctx.intake, "job")),
+          beforeAfterTest(jobInput(ctx)),
           FENCE,
           "",
           "## Done when",
@@ -224,7 +436,7 @@ export const memoryIdentityPreset: KitPreset = {
       description:
         "Unzip and keep one click away. Each file carries the prompt that fills it from your history. Drop any one into a task on its own.",
       renderFiles: (ctx) => {
-        const input = identityInput(ctx);
+        const input = jobInput(ctx);
         return [
           { path: "README.md", content: renderIdentityReadme(input) },
           { path: "about-me.md", content: renderAboutMe(input) },
@@ -242,7 +454,18 @@ export const memoryIdentityPreset: KitPreset = {
       part: "Identity",
       description:
         "What belongs in these files and what must never go in. Read once, remember forever.",
-      render: () => {
+      render: (ctx) => {
+        const input = jobInput(ctx);
+        const yourLine =
+          input.neverStore.length > 0
+            ? [
+                "",
+                "## Your hard rules (from your intake)",
+                "You told us your operator must never store:",
+                ...input.neverStore.map((n) => `- ${n}`),
+                "These are baked into your job-file prompt and the self-correction footer as a standing rule.",
+              ]
+            : [];
         return [
           "# What goes in, what stays out",
           "",
@@ -257,6 +480,7 @@ export const memoryIdentityPreset: KitPreset = {
           "- Other people's private data you would not want quoted back.",
           "- Half-thoughts and noise that bloat the file.",
           "- Anything you would hate to see in an export.",
+          ...yourLine,
           "",
           "## Done when",
           "A file answers a you-shaped question like it has read you, not like it met you today.",
@@ -275,7 +499,7 @@ export const memoryIdentityPreset: KitPreset = {
       part: "Self-healing",
       description:
         "Paste at the bottom of any file above, and your job file. It turns every correction into a rule the system keeps, so a mistake dies the first time you catch it.",
-      render: () => {
+      render: (ctx) => {
         return [
           "# The self-correcting loop",
           "",
@@ -284,7 +508,7 @@ export const memoryIdentityPreset: KitPreset = {
           "## Paste at the bottom of any file",
           "",
           FENCE,
-          selfCorrectFooter(),
+          selfCorrectFooter(jobInput(ctx)),
           FENCE,
           "",
           "## Done when",
@@ -305,12 +529,30 @@ export const memoryIdentityPreset: KitPreset = {
       description:
         "Unzip into your skills folder. Your job file, identity, and self-correction loop, turned into one installed skill that auto-triggers and sharpens itself every run.",
       buildSeed: (ctx) => {
-        const job = jobLabel(ctx.intake);
+        const input = jobInput(ctx);
+        const job = jobLabel(input);
         const toolLabel = KIT_TOOL_LABELS[ctx.tool];
         const lines: string[] = [
           `I want a skill that runs one job for me the way I actually do it: ${job}.`,
+        ];
+        if (input.role.trim()) {
+          lines.push(`My role is ${input.role.trim()}, so write the skill for that context.`);
+        }
+        if (input.tasks.length > 0) {
+          lines.push(`The job covers these tasks; treat them as the scope: ${input.tasks.join(", ")}.`);
+        }
+        lines.push(
           `I live in ${toolLabel}, and this skill should draw on my own history and standards, not a generic version of the role.`,
           "Hold a hard line between two things and never blur them: the role the skill plays for this job, and who I am (my identity, my voice, my channels). The role can change; I do not.",
+        );
+        if (input.neverStore.length > 0) {
+          lines.push(
+            `Hard rule, non-negotiable: this skill must never store or write down ${input.neverStore.join(
+              ", ",
+            )}. If a run would require keeping any of that, refuse and tell me.`,
+          );
+        }
+        lines.push(
           "",
           "INSTRUCTIONS FOR THE SKILL BODY (every one must be honoured):",
           '- Include a section titled "Learning loop".',
@@ -318,7 +560,7 @@ export const memoryIdentityPreset: KitPreset = {
           "- In that section: once a week, run a self-review: read BUILD_LOG.md, summarise what keeps going wrong, and propose updates to LESSONS.md.",
           "- In that section: at the start of every session, read LESSONS.md before doing anything else.",
           "- The self-correction rule is non-negotiable: never mark a task complete without logging the root cause of any mistake and proposing one rule that prevents the whole class of it.",
-        ];
+        );
         if (ctx.memoryContext) {
           lines.push(
             "",
@@ -328,7 +570,7 @@ export const memoryIdentityPreset: KitPreset = {
         }
         return {
           transcript: lines.join("\n"),
-          nameHint: jobSlug(answerText(ctx.intake, "job")),
+          nameHint: jobFilename(input).replace(/\.md$/, ""),
         };
       },
     },
@@ -374,15 +616,21 @@ export const memoryIdentityPreset: KitPreset = {
       description:
         "One move a day. Tonight: build the job file and run it on one real task.",
       buildPrompt: (ctx) => {
-        const job = jobLabel(ctx.intake);
+        const input = jobInput(ctx);
+        const job = jobLabel(input);
         const toolLabel = KIT_TOOL_LABELS[ctx.tool];
-        const skillName = ctx.firstSkillName ?? jobSlug(answerText(ctx.intake, "job"));
+        const skillName = ctx.firstSkillName ?? jobFilename(input).replace(/\.md$/, "");
         const parts: string[] = [
           "Write a 7 day plan for a student of the Memory, Identity and Self-Healing Lightning Lesson. They just downloaded a personalised pack: a prompt that builds their job file from their AI history, three identity files (about-me, voice, channels), a self-correction footer, and a path to turn it all into one installed skill.",
           "",
           "Student:",
           `- Tool: ${toolLabel}`,
           `- First job to operationalise: ${job}`,
+          input.role.trim() ? `- Their role: ${input.role.trim()}` : "",
+          input.tasks.length > 0 ? `- Tasks this job covers: ${input.tasks.join(", ")}` : "",
+          input.neverStore.length > 0
+            ? `- Must never store (honesty guardrail): ${input.neverStore.join(", ")}`
+            : "",
           `- Skill name once built: ${skillName}`,
           "",
           "Return ONLY valid JSON, no prose, no markdown fences, exactly this shape:",
@@ -396,7 +644,7 @@ export const memoryIdentityPreset: KitPreset = {
           '- "minutes" is an integer, 30 or less.',
           "- Day 7 ends with the job running loaded, by their standard, with one logged correction already turned into a rule.",
           "- Voice: operator tone, sentence case, plain English, no buzzwords, no em dashes (use hyphens or commas instead).",
-        ];
+        ].filter(Boolean);
         if (ctx.memoryContext) {
           parts.push(
             "",
@@ -427,12 +675,17 @@ export const memoryIdentityPreset: KitPreset = {
       part: "Operate",
       description: "Your pack at a glance: the job, your tool, the files, and the week ahead.",
       render: (ctx) => {
-        const job = jobLabel(ctx.intake);
+        const input = jobInput(ctx);
+        const job = jobLabel(input);
         return JSON.stringify(
           {
             firstJob: job,
-            jobFile: `${jobSlug(answerText(ctx.intake, "job"))}.md`,
+            role: input.role || undefined,
+            domains: input.domains,
+            tasks: input.tasks,
+            jobFile: jobFilename(input),
             tool: KIT_TOOL_LABELS[ctx.tool],
+            neverStore: input.neverStore,
             files: ["about-me.md", "my-voice.md", "my-channels.md"],
             path: "Tonight: build the job file and run it. This week: add who you are and run loaded. Friday: make it a skill, then run the hygiene pass.",
           },
@@ -444,8 +697,18 @@ export const memoryIdentityPreset: KitPreset = {
   ],
 
   contextPullPrompt: (tool: KitTool, ctx?: Partial<ArtifactBuildContext>) => {
-    const job = ctx?.intake?.["job"]?.text ?? "";
-    return jobFileBuildPrompt(tool, job);
+    const intake = (ctx?.intake ?? {}) as IntakeAnswers;
+    const input: JobInput = {
+      pathway: pathwayOf(intake),
+      name: textOf(intake, "profile"),
+      role: roleOf(intake),
+      domains: domainsOf(intake),
+      job: firstJobOf(intake),
+      tasks: tasksOf(intake),
+      neverStore: neverStoreOf(intake),
+      tool,
+    };
+    return jobFileBuildPrompt(input);
   },
 
   emails: {
