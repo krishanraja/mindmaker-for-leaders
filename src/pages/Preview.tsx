@@ -14,7 +14,7 @@ import type { TrackRecordRow } from '@/types/track-record';
 import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
 import type { UserMemoryFact } from '@/types/memory';
 import type { ContestKind, ContestResult, ContestTarget } from '@/types/contest';
-import type { CockpitData } from '@/types/cockpit';
+import type { CockpitData, DeckCard } from '@/types/cockpit';
 
 const noop = () => {};
 
@@ -122,27 +122,19 @@ const COCKPIT_BETS: CockpitData['bets'] = [
   { id: 'b3', question: 'Build the data moat now, or wait?', state: 'quiet', freshness: 'no fresh signal' },
   { id: 'b4', question: 'Replatform onto the new agent framework?', state: 'quiet', freshness: 'no fresh signal' },
 ];
+// The redesigned Home is greeting + the "worth a look" DECK + 3 value actions.
+// The harness exercises the DECK's content range (mixed, near-empty, empty).
+const COCKPIT_DECK: DeckCard[] = [
+  { id: 'd1', kind: 'signal', eyebrow: 'From your world', headline: 'A call you are weighing just moved.', say: 'On a call you are weighing: Buy the agent stack, or build our own?', betId: 'b1' },
+  { id: 'd2', kind: 'news', eyebrow: 'Worth a look', category: 'AI COSTS', headline: 'Running AI got about 40% cheaper this month.', say: 'Renting an agent now costs less than building one - good news if you are weighing build vs buy.', magnitude: { value: '40%', kind: 'sourced' } },
+  { id: 'd3', kind: 'news', eyebrow: 'Worth a look', category: 'MODELS', headline: 'A new open model matched the paid frontier on coding.', say: 'You could cut your model bill without losing quality on the work you actually do.', magnitude: { value: '~10x', kind: 'modelled' } },
+  { id: 'd4', kind: 'signal', eyebrow: 'From your world', headline: 'Your brain learned 3 new things this week.', say: 'Fresh context from your decisions and notes is now in the loop.' },
+];
+const COCKPIT_BASE: Omit<CockpitData, 'deck'> = { hero: { kind: 'quiet', headline: '' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 };
 const COCKPIT_FIXTURES: { label: string; data: CockpitData }[] = [
-  {
-    label: 'signal hero, SOURCED number (clean) + board + Edge pain-card',
-    data: { hero: { kind: 'signal', category: 'PRICING', headline: 'Renting just pulled clear on cost.', magnitude: { value: '40%', label: 'cheaper to rent than build', kind: '' }, betId: 'b1', betQuestion: 'Buy the agent stack, or build our own?', betState: 'countered' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1, topBlocker: { id: 'bl1', label: 'Manual lead qualification', value: 'Eats ~10 hours a week of the founder\'s time.' } },
-  },
-  {
-    label: 'signal hero, MODELLED number (carries est. mark) + board',
-    data: { hero: { kind: 'signal', category: 'PRICING', headline: 'Renting just pulled clear on cost.', magnitude: { value: '~10x', label: 'cheaper to rent than build', kind: 'est.' }, betId: 'b1', betQuestion: 'Buy the agent stack, or build our own?', betState: 'countered' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 },
-  },
-  {
-    label: 'signal hero NO honest number -> words lead (event signal)',
-    data: { hero: { kind: 'signal', category: 'COMPETITOR', headline: 'A rival just shipped the agent you were going to build.', magnitude: null, betId: 'b2', betQuestion: 'Move customer support to an AI agent first?', betState: 'explore' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 },
-  },
-  {
-    label: 'quiet day (bets, no open signal) - honest calm state',
-    data: { hero: { kind: 'quiet', headline: 'Nothing moved on your bets today.' }, bets: COCKPIT_BETS.map((b) => ({ ...b, state: 'quiet' as const, freshness: 'no fresh signal' })), liveCount: 4, needsYouCount: 0 },
-  },
-  {
-    label: 'cold start (no bets yet)',
-    data: { hero: { kind: 'cold', headline: 'No live bets yet. Pressure-test a decision and it lands here.' }, bets: [], liveCount: 0, needsYouCount: 0 },
-  },
+  { label: 'full deck - mixed news + your own signals + the 3 actions', data: { ...COCKPIT_BASE, deck: COCKPIT_DECK } },
+  { label: 'deck - one card left (near caught-up)', data: { ...COCKPIT_BASE, deck: [COCKPIT_DECK[1]] } },
+  { label: 'empty deck - calm caught-up state + the 3 actions', data: { ...COCKPIT_BASE, deck: [] } },
 ];
 
 const BRIEFING_FIXTURES: { label: string; read: BriefingRead }[] = [
@@ -224,7 +216,7 @@ export default function PreviewPage() {
             <div key={f.label}>
               <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
               <div className="rounded-2xl border border-border bg-background p-3">
-                <CockpitHome data={f.data} onOpenRead={noop} onOpenBet={noop} onGoDecide={noop} onAutomate={noop} animated={false} />
+                <CockpitHome data={f.data} onPlayBriefing={noop} onGoDecide={noop} onBuildSkill={noop} onOpenBet={noop} animated={false} />
               </div>
             </div>
           ))}

@@ -2,9 +2,26 @@ import { useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
-import type { BetState, CockpitBlocker, CockpitData, CockpitHero, HeroMagnitude } from '@/types/cockpit';
+import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, HeroMagnitude } from '@/types/cockpit';
 
 const db = supabase as unknown as SupabaseClient;
+
+// A briefing segment as the deck reads it (the curated, scored news item the
+// briefing pipeline already produced). Read defensively from the jsonb column.
+interface BriefingSeg {
+  headline?: string;
+  analysis?: string;
+  framework_tag?: string | null;
+  magnitude?: { value?: string; kind?: 'sourced' | 'modelled' } | null;
+}
+
+// first plain sentence of an analysis, trimmed - the deck's one-line "why".
+function firstSentence(s: string | undefined): string | null {
+  if (!s) return null;
+  const m = s.trim().match(/^.*?[.!?](\s|$)/);
+  const out = (m ? m[0] : s).trim();
+  return out.length > 140 ? out.slice(0, 137).trimEnd() + '...' : out;
+}
 
 // A claim's stored reaction (the honest, gated magnitude). null fields => words lead.
 interface ClaimReaction {
@@ -41,6 +58,26 @@ export function useCockpit(): { data: CockpitData; loading: boolean } {
   const { cases, alerts, loading } = useDecisionInbox();
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
+  const [segments, setSegments] = useState<BriefingSeg[]>([]);
+
+  // The deck's NEWS half: the latest briefing's already-curated segments (the
+  // briefing pipeline does the fetch + score + plain-language work for us).
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { data, error } = await db
+        .from('briefings')
+        .select('segments')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (cancelled || error) return;
+      const row = (data as { segments?: BriefingSeg[] | null }[] | null)?.[0];
+      setSegments(Array.isArray(row?.segments) ? row!.segments!.slice(0, 4) : []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // The contextual Edge pain-card: the leader's highest-importance blocker (if any).
   useEffect(() => {
@@ -134,8 +171,45 @@ export function useCockpit(): { data: CockpitData; loading: boolean } {
       hero = { kind: 'cold', headline: 'No live bets yet. Pressure-test a decision and it lands here.' };
     }
 
-    return { hero, bets, liveCount: bets.length, needsYouCount };
-  }, [cases, alerts, reactions]);
+    // ---- the "worth a look" deck: news (briefing) + own signals (alerts) ----
+    const newsCards: DeckCard[] = segments
+      .filter((s) => s.headline)
+      .map((s, i) => ({
+        id: `news-${i}`,
+        kind: 'news' as const,
+        eyebrow: 'Worth a look',
+        category: s.framework_tag ?? null,
+        headline: s.headline!.trim(),
+        say: firstSentence(s.analysis),
+        magnitude: s.magnitude?.value
+          ? { value: s.magnitude.value, kind: s.magnitude.kind === 'modelled' ? 'modelled' : 'sourced' }
+          : null,
+      }));
+    const signalCards: DeckCard[] = alerts
+      .filter((a) => live.some((c) => c.id === a.decision_case_id))
+      .slice(0, 3)
+      .map((a) => {
+        const bet = live.find((c) => c.id === a.decision_case_id);
+        return {
+          id: `sig-${a.id}`,
+          kind: 'signal' as const,
+          eyebrow: 'From your world',
+          headline: a.headline,
+          say: bet ? `On a call you are weighing: ${bet.title || bet.statement}` : 'A decision you are weighing just moved.',
+          betId: a.decision_case_id,
+        };
+      });
+    // interleave: lead with a personal signal when there is one, then alternate
+    // news and signals so the deck feels both informed and personal.
+    const deck: DeckCard[] = [];
+    const maxLen = Math.max(newsCards.length, signalCards.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (signalCards[i]) deck.push(signalCards[i]);
+      if (newsCards[i]) deck.push(newsCards[i]);
+    }
+
+    return { hero, bets, liveCount: bets.length, needsYouCount, deck: deck.slice(0, 5) };
+  }, [cases, alerts, reactions, segments]);
 
   return { data: { ...data, topBlocker }, loading };
 }

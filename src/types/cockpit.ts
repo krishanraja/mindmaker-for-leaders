@@ -42,10 +42,32 @@ export interface CockpitBlocker {
   value: string;
 }
 
+// ---- the "worth a look" deck (the new Home hero) -------------------------
+// Locked 2026-06-17 (design-log): Home opens with a swipeable deck of a few
+// "worth a look" cards - a MIX of broad AI news (from the briefing pipeline) +
+// the leader's own signals (a decision moved, the brain learned). Plain
+// language; swipe to skip / like to train the feed. Replaces the cryptic
+// single hero. The pinned-decision deep-dive lives in the Decisions tab.
+export type DeckCardKind = 'news' | 'signal';
+
+export interface DeckCard {
+  id: string;
+  kind: DeckCardKind; // news = from the world (briefing); signal = from your world
+  eyebrow: string; // "Worth a look" | "From your world"
+  category?: string | null; // a short tag, e.g. "AI COSTS" (news only)
+  headline: string; // the plain, simple read
+  say?: string | null; // one plain line of why-it-matters-to-you
+  // a soft (modelled) or sourced figure, only when the source honestly has one
+  magnitude?: { value: string; kind: 'sourced' | 'modelled' } | null;
+  // routing: a signal card may deep-link to the decision it refers to
+  betId?: string | null;
+}
+
 export interface CockpitData {
   hero: CockpitHero;
   bets: CockpitBet[];
   liveCount: number;
   needsYouCount: number;
+  deck: DeckCard[];
   topBlocker?: CockpitBlocker | null;
 }

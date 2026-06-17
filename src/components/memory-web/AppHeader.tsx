@@ -1,5 +1,5 @@
 import { Plus, ArrowUpRight, Settings as SettingsIcon } from 'lucide-react';
-import { CtrlLogo } from '@/components/landing/CtrlLogo';
+import { BrandLockup } from '@/components/landing/BrandLockup';
 import { useSettingsSheet } from '@/contexts/SettingsSheetContext';
 
 interface AppHeaderProps {
@@ -23,7 +23,7 @@ export function AppHeader({ onAdd, onExport }: AppHeaderProps) {
   return (
     <header className="flex-shrink-0 flex items-center justify-between px-5 pt-4 pb-2">
       <div className="flex items-center gap-2">
-        <CtrlLogo className="h-3.5 w-auto translate-x-0.5" />
+        <BrandLockup />
       </div>
       <div className="flex items-center gap-1.5">
         {onExport && (
