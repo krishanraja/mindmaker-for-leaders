@@ -405,6 +405,22 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
   const step = steps[stepIndex];
   const revealed = phase === "reveal";
 
+  // Live mirrors of the position + visible-step count. The cascade GROWS as the
+  // student answers (each step's showIf chains off the prior answer), so a
+  // single-select's deferred auto-advance (scheduleAdvance, ADVANCE_BEAT_MS)
+  // must read the step count AT FIRE TIME, not the stale value captured when the
+  // option was tapped. Without this, selecting the time-sink (which unlocks the
+  // next step) reveals early and silently drops grind / involves / maturity /
+  // guardrails from the intake.
+  const stepIndexRef = useRef(stepIndex);
+  const stepsLenRef = useRef(steps.length);
+  useEffect(() => {
+    stepIndexRef.current = stepIndex;
+  }, [stepIndex]);
+  useEffect(() => {
+    stepsLenRef.current = steps.length;
+  }, [steps.length]);
+
   // Which live-preview component this forked preset shows (the SHARED field).
   // "orgchart" -> the bespoke OrgChartView; "picks" -> the generic
   // KitPicksBoard; absent -> no preview pane (single column cascade).
@@ -429,13 +445,20 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
   };
 
   const goNext = useCallback(() => {
-    if (stepIndex >= steps.length - 1) {
+    // Cancel any pending single-select auto-advance so a fast "tap option then
+    // click Continue" can never fire goNext twice and skip a step.
+    if (advanceTimer.current) {
+      window.clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+    const idx = stepIndexRef.current;
+    if (idx >= stepsLenRef.current - 1) {
       setPhase("reveal");
       return;
     }
     setDirection(1);
-    setStepIndex(stepIndex + 1);
-  }, [stepIndex, steps.length]);
+    setStepIndex(idx + 1);
+  }, []);
 
   const goBack = () => {
     if (advanceTimer.current) {

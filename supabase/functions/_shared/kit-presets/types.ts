@@ -262,6 +262,13 @@ export interface ArtifactSpec {
   buildPrompt?: (ctx: ArtifactBuildContext) => string;
   renderFiles?: (ctx: ArtifactBuildContext) => ArtifactFile[];
   buildSeed?: (ctx: ArtifactBuildContext) => { transcript: string; nameHint?: string };
+  /**
+   * llm_chart only: validate + normalise the model's raw JSON against the
+   * intake before it is stored (label-lock, one start box, the deterministic
+   * honesty floor from the student's guardrails). Returns null when the payload
+   * is unusable so the runner falls back to render().
+   */
+  refineChart?: (raw: unknown, ctx: ArtifactBuildContext) => unknown | null;
 }
 
 export interface KitEmailContext {

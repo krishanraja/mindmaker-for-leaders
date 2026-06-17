@@ -45,3 +45,5 @@ playwright-report/
 scripts/_kitshots/
 scripts/_kitlive/
 .prerender
+
+deno.lock

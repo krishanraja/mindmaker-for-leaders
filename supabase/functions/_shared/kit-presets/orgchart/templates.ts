@@ -65,6 +65,33 @@ const GUARDRAIL_TOUCH: Array<{ boxKeyword: RegExp; guardrailIds: string[] }> = [
 /** Box-label keywords that, absent any agent fit, stay fully human. */
 const STAYS_HUMAN = /product|strategy|the work|doing the work|design|craft|vision/i;
 
+/** Oversight strictness order: led (most agent) < assisted < excluded (most human). */
+const TAG_RANK: Record<string, number> = { led: 0, assisted: 1, excluded: 2 };
+
+/**
+ * The deterministic MINIMUM oversight a box must carry, read straight from the
+ * student's guardrails. Core human work is excluded; a box whose work touches a
+ * flagged guardrail is at least assisted; everything else is free to be led.
+ * This is the honesty floor: the chart can never claim an agent leads a box the
+ * student said an agent must never run alone.
+ */
+function floorTagFor(label: string, flagged: Set<string>): "led" | "assisted" | "excluded" {
+  if (STAYS_HUMAN.test(label)) return "excluded";
+  if (flagged.size > 0 && !flagged.has("none")) {
+    const rule = GUARDRAIL_TOUCH.find((r) => r.boxKeyword.test(label));
+    if (rule && rule.guardrailIds.some((g) => flagged.has(g))) return "assisted";
+  }
+  return "led";
+}
+
+/** Pick the stricter (more human-oversight) of two tags. */
+function stricterTag(
+  a: "led" | "assisted" | "excluded",
+  b: "led" | "assisted" | "excluded",
+): "led" | "assisted" | "excluded" {
+  return TAG_RANK[a] >= TAG_RANK[b] ? a : b;
+}
+
 /**
  * Build the honest fallback chart deterministically from the intake.
  * The roles here are intentionally generic ("agent" / "you grow into the
@@ -80,20 +107,10 @@ export function buildFallbackChart(input: {
 }): ChartJson {
   const { pathway, businessName, boxLabels, startLabel, guardrailIds } = input;
   const flagged = new Set(guardrailIds);
-  const nothingOffLimits = flagged.has("none") || flagged.size === 0;
 
   const boxes: ChartBoxJson[] = boxLabels.map((label) => {
     const isStart = label === startLabel;
-    let tag: ChartBoxJson["tag"] = "led";
-
-    if (STAYS_HUMAN.test(label)) {
-      tag = "excluded";
-    } else if (!nothingOffLimits) {
-      const rule = GUARDRAIL_TOUCH.find((r) => r.boxKeyword.test(label));
-      if (rule && rule.guardrailIds.some((g) => flagged.has(g))) {
-        tag = "assisted";
-      }
-    }
+    const tag: ChartBoxJson["tag"] = floorTagFor(label, flagged);
 
     const box: ChartBoxJson = {
       id: slugify(label),
@@ -132,7 +149,13 @@ export function buildFallbackChart(input: {
  */
 export function normaliseChart(
   raw: unknown,
-  expected: { pathway: "self" | "biz"; boxLabels: string[]; startLabel: string; businessName: string },
+  expected: {
+    pathway: "self" | "biz";
+    boxLabels: string[];
+    startLabel: string;
+    businessName: string;
+    guardrailIds?: string[];
+  },
 ): ChartJson | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
@@ -146,11 +169,20 @@ export function normaliseChart(
     }
   }
 
+  const flagged = new Set(expected.guardrailIds ?? []);
   const validTags = new Set(["led", "assisted", "excluded"]);
   const boxes: ChartBoxJson[] = expected.boxLabels.map((label) => {
     const src = byLabel.get(label.trim().toLowerCase()) ?? {};
     const tagRaw = typeof src.tag === "string" ? src.tag : "";
-    const tag = (validTags.has(tagRaw) ? tagRaw : "led") as ChartBoxJson["tag"];
+    const llmTag = (validTags.has(tagRaw) ? tagRaw : "led") as
+      | "led"
+      | "assisted"
+      | "excluded";
+    // Honesty floor: the chart can never claim less human oversight than the
+    // student's guardrails demand. Take the stricter of the model's tag and the
+    // deterministic floor, so a guardrail box is at least assisted and core
+    // human work stays you-only, even when the model lazily defaults to led.
+    const tag = stricterTag(llmTag, floorTagFor(label, flagged));
     const box: ChartBoxJson = {
       id: slugify(label),
       label, // keep the student's exact label, never the model's rename
@@ -162,7 +194,12 @@ export function normaliseChart(
     const humanRole = typeof src.humanRole === "string" ? src.humanRole.trim() : "";
     if (tag !== "excluded") {
       if (agentRole) box.agentRole = agentRole;
-      if (agentDesc) box.agentDesc = agentDesc;
+      // If the floor pulled a led box down to assisted, the model's "owns it"
+      // description would now overclaim; make the description honest to the tag.
+      box.agentDesc =
+        tag === "assisted" && llmTag === "led"
+          ? "drafts it, you sign off before it leaves"
+          : agentDesc || box.agentDesc;
     }
     if (humanRole) box.humanRole = humanRole;
     return box;
