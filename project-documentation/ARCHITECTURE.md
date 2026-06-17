@@ -10,6 +10,8 @@ Complete system architecture and data flow documentation.
 >
 > **Kit program (4 kits at `/kit`)**: Agentic Org Chart kit (PRs #190/#191); parity retrofit of all 3 existing kits to fork + pick-cascade + live picks-board (#192); PR #193 (merge 090dda2, 2026-06-17) fixed a latent cascade bug that silently dropped the back half of every kit's intake since launch, plus added an honesty floor to the composed org chart. **Pre-#193 `kit_builds.intake` rows are TRUNCATED and untrustworthy.** See the rewritten **Kit Engine** section below.
 >
+> **UX redesign (2026-06-17, PRs #197-200; latest layer on top of everything above; all merged to main + prod-verified on `ctrl.themindmaker.ai`)**: the mobile cockpit Home, the Decision Map, and the Automator (Skill Builder entry) were rebuilt, and a `BrandLockup` (Mindmaker icon + `ctrl-logo.png` wordmark) replaced the generated `ctrl.` text in headers/sidebars. Home now leads with a time-aware greeting + a swipeable "worth a look" deck (`CockpitDeck`) + 3 value actions (the cryptic "strongest signal" hero and the wall of AI-bets were removed; bets moved off Home). The Decision Map is now ONE pinned-decision hero with a descriptive (never recommended) status + a connector rail of considerations; the long-press contest scroll-popup was killed in favour of a quiet "Flag it". The `/context` default is now the Automator flow (brain-mined deliverable suggestions to a recognition pick-cascade to skill-ready export); the old `SkillCaptureSheet` / `SkillPreviewSheet` are now dead code. See the **UX Redesign** section below; the Skill Builder description further down has been corrected to match.
+>
 > **Verified counts (as of 2026-06-09; not re-counted since the redesign)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop). Edge-function / hook / migration counts after the redesign, brain engine, and kit program are **verified counts pending re-count**.
 >
 > **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) = 85, +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`) = 62, +4 migrations = 114, +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
@@ -56,6 +58,51 @@ The current visual system. Shipped live and prod-verified with screenshots.
 
 ---
 
+## UX Redesign (2026-06-17, PRs #197-200)
+
+The latest layer on top of the PR #186 redesign. Home, the Decision Map, and the Automator (the Skill Builder entry on `/context`) were rebuilt, plus a shared brand mark. All merged to main and prod-verified on `ctrl.themindmaker.ai`.
+
+### Cockpit Home (PR #197, merge 7b5f0ef)
+
+The mobile cockpit Home (behind `VITE_COCKPIT_ENABLED`) was rebuilt. `CockpitHome.tsx` was rewritten.
+
+- **Removed:** the cryptic "strongest signal" hero and the wall of identical AI-bets. Bets moved off Home.
+- **Added:** a time-aware greeting + a swipeable **"worth a look" deck** (new component `src/components/cockpit/CockpitDeck.tsx`) + 3 value actions (Play my briefing to `/briefing`, Run a decision to `/decision`, Build a skill to `/context`).
+- **The deck** mixes broad AI news (from the briefing pipeline's curated `briefings.segments`) and the leader's own signals (`decision_alerts` via `useDecisionInbox`). Swipe heart = more-like-this, skip = dismiss; it renders a peeking stack + dots.
+- **`useCockpit` (`src/hooks/useCockpit.ts`)** now also returns `recordDeckReaction` and assembles the deck by interleaving news segments + own-signal alerts, sliced to 5, with disliked categories down-weighted (no new backend table).
+- **Types (`src/types/cockpit.ts`):** new `DeckCard` / `DeckCardKind` types and a `deck` field on `CockpitData`.
+
+### Brand lockup (PR #197; desktop placements PR #200, merge 387af84)
+
+`src/components/landing/BrandLockup.tsx` is the Mindmaker icon (`mindmaker-icon.png`) + the `ctrl-logo.png` wordmark, replacing the generated `ctrl.` text. Used in the mobile `AppHeader`, `DesktopShell`'s `DesktopRail`, the memory-web `DesktopSidebar`, and the legacy dashboard/desktop `Sidebar` (the desktop placements landed in follow-up PR #200).
+
+### Decision Map (PR #198, merge 33fb818)
+
+`src/pages/DecisionMap.tsx` was rebuilt:
+
+- **ONE pinned decision hero** - star eyebrow + statement + a DESCRIPTIVE status derived from the consideration tally (never a recommendation) + a "Change" affordance.
+- **Considerations hang off a connector RAIL**; evidence is one tap deeper (reuses `StoneRead` / `StoneDeeper`).
+- **The long-press contest scroll-popup (`ContestLongPress`) was killed** in favour of a quiet "Flag it" in the opened stone + footer, using `useContestActions.openContest`.
+- **Empty state:** role/sector-seeded starter decisions (from `user_memory` identity/role), one tap to Decide prefilled. The prefill is threaded `DecisionPage` to `PressureTestPanel` via an `initialStatement` prop.
+
+### Automator (Skill Builder entry, PR #199, merge 24f7d15)
+
+The Automator is now the **default flow on `/context`** (`ContextExport` modified). New components `src/components/automator/{AutomatorFlow,AutomatorSuggestions,AutomatorCascade,AutomatorSkillReady,automatorModel}.tsx/ts` and a new hook `src/hooks/useSkillSuggestions.ts`. Flow:
+
+1. **SUGGESTIONS** - concrete recurring DELIVERABLES mined from the brain (`user_memory` blockers + decisions) with a "why we picked this" + a "pulled from your brain" badge; role/sector curated fallback; inline "Something else" input (NOT `window.prompt`).
+2. **CASCADE** - a ~5-step all-recognition pick-cascade reusing the kit cascade pattern; the voice step shows real samples to PICK.
+3. **SKILL READY** - "Built your way" chips + Run it now + Export markdown + a "Your skills" library peek.
+
+`automatorModel.composeTranscript` maps the picks into a transcript for the EXISTING `generate-skill-export` edge function (UNTOUCHED). The old `SkillCaptureSheet` / `SkillPreviewSheet` are now unimported **dead code**.
+
+### Deck persistence + feed-training (PR #200, merge 387af84)
+
+A swipe writes a `deck_reaction` JSON row to the existing `feedback` table (`page_context` 'cockpit-deck', no new migration). `useCockpit` reads 30 days of dislikes and down-weights those news categories.
+
+**Honest residuals:** the old `SkillCaptureSheet` / `SkillPreviewSheet` are dead code; "Run it now" downloads the skill (no in-app skill-runner yet); the deck's news half depends on a briefing existing.
+
+---
+
 ## Brain Engine (PRs #153-164; "limits" phases #187-189)
 
 The Brain is CTRL's memory-as-a-graph layer: the leader's facts connected to each other, with reaction signals, evidence tiers, and a track record.
@@ -88,7 +135,8 @@ src/
 │   ├── voice/                 # Voice assessment components
 │   ├── landing/               # Landing page components
 │   │   ├── HeroSection.tsx    # Landing page hero with video background
-│   │   ├── CtrlLogo.tsx       # Renders the emerald `ctrl.` wordmark (replaced the old green Mindmaker logo)
+│   │   ├── CtrlLogo.tsx       # Renders the emerald `ctrl.` wordmark (now superseded by BrandLockup in app headers/sidebars)
+│   │   ├── BrandLockup.tsx    # App brand mark: Mindmaker icon (mindmaker-icon.png) + ctrl-logo.png wordmark; replaced the generated `ctrl.` text (PR #197; desktop placements #200)
 │   │   └── TrustIndicators.tsx
 │   ├── dashboard/             # Dashboard hub (renders Memory Web or Edge)
 │   │   ├── DashboardProvider.tsx  # Dashboard data context
@@ -126,6 +174,15 @@ src/
 │   │   ├── PatternInsightCard.tsx
 │   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (Edge Pro gated) (v5.2)
 │   │   └── GettingSmarterBanner.tsx
+│   ├── cockpit/               # Mobile cockpit Home (behind VITE_COCKPIT_ENABLED)
+│   │   ├── CockpitHome.tsx        # Rewritten Home: time-aware greeting + "worth a look" deck + 3 value actions (PR #197)
+│   │   └── CockpitDeck.tsx        # Swipeable "worth a look" deck (news segments + own-signal alerts), heart/skip, peeking stack + dots (PR #197)
+│   ├── automator/             # Automator: default Skill Builder flow on /context (PR #199)
+│   │   ├── AutomatorFlow.tsx      # Suggestions -> cascade -> skill-ready orchestrator
+│   │   ├── AutomatorSuggestions.tsx  # Brain-mined deliverable suggestions ("pulled from your brain" badge) + inline "Something else"
+│   │   ├── AutomatorCascade.tsx   # ~5-step all-recognition pick-cascade (reuses the kit cascade pattern)
+│   │   ├── AutomatorSkillReady.tsx   # "Built your way" chips + Run it now + Export markdown + "Your skills" peek
+│   │   └── automatorModel.ts      # composeTranscript maps picks into a transcript for generate-skill-export (unchanged)
 │   ├── edge/                  # Edge: Leadership Amplifier + Skill Builder UI
 │   │   ├── EdgeView.tsx           # Main Edge view (strengths/weaknesses/gaps)
 │   │   ├── EdgeProfileCard.tsx    # Profile summary card
@@ -139,8 +196,8 @@ src/
 │   │   ├── FeedbackButtons.tsx    # Strength/weakness feedback
 │   │   ├── SendToInboxButton.tsx  # Email delivery
 │   │   ├── AutomatePainCard.tsx   # Skill Builder pain-anchored entry chip row (v5.2)
-│   │   ├── SkillCaptureSheet.tsx  # Voice/text Skill Builder capture (bottom sheet on mobile, dialog on desktop) (v5.2)
-│   │   ├── SkillPreviewSheet.tsx  # Generated skill preview + ZIP download + install guide (v5.2)
+│   │   ├── SkillCaptureSheet.tsx  # DEAD CODE (PR #199): voice/text capture, no longer imported; superseded by the Automator flow
+│   │   ├── SkillPreviewSheet.tsx  # DEAD CODE (PR #199): skill preview + ZIP download, no longer imported; superseded by AutomatorSkillReady
 │   │   ├── SkillQualityGate.tsx   # Quality checklist display (v5.2)
 │   │   └── SkillInstallGuide.tsx  # Per-tool install instructions (Claude Code / Claude.ai / Cursor) (v5.2)
 │   ├── action/                # Weekly action components
@@ -205,6 +262,8 @@ src/
 │   ├── useEdge.ts             # Edge profile data + synthesis
 │   ├── useEdgeSubscription.ts # Edge Pro subscription state
 │   ├── useSkillExport.ts      # Skill Builder pipeline (v5.2): wraps generate-skill-export, decodes base64 ZIP into a Blob
+│   ├── useSkillSuggestions.ts # Automator suggestions: brain-mined deliverables (user_memory blockers + decisions) + role/sector fallback (PR #199)
+│   ├── useCockpit.ts          # Cockpit Home data; returns recordDeckReaction + assembles the "worth a look" deck (interleave + dislike down-weight) (PRs #197/#200)
 │   ├── useUserPains.ts        # Top blockers + active decisions, drives pain-anchored entry points (v5.2)
 │   ├── useRevealOnMount.ts    # Smooth reveal helper for below-the-fold components (v5.2)
 │   ├── useMemoryQueries.ts    # Memory Center queries
@@ -250,6 +309,7 @@ src/
 │   ├── memory.ts              # Memory system types
 │   ├── memory-settings.ts     # Memory privacy settings types
 │   ├── missions.ts            # Missions system types
+│   ├── cockpit.ts             # Cockpit Home types; DeckCard / DeckCardKind + a `deck` field on CockpitData (PR #197)
 │   └── video-background.ts    # Video background types
 ├── data/
 │   ├── compassQuestions.ts    # Compass assessment questions
