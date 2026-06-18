@@ -169,16 +169,28 @@ Rules from the Skill-Building Best Practices:
 Required sections in body, in this exact order:
 - "## When this skill activates" (operational context, not a trigger restatement)
 - "## Workflow" (numbered steps with reasoning)
-- "## Voice and tone" (REQUIRED when VOICE_PROFILE is present OR archetype is voice-lock: structural rules from content archetype, rhythm/register, punctuation, verbatim hard rules; include a fenced code block labeled // target voice register when sample voice exists)
+- "## Voice and tone" (REQUIRED when VOICE_PROFILE is present OR archetype is voice-lock: structural rules from content archetype, rhythm/register, punctuation, and the leader's hard rules verbatim. Include a fenced block labeled // target voice register ONLY when a REAL sample exists - the VOICE_PROFILE sample, or a passage the leader quoted verbatim in the TRANSCRIPT - and reproduce it WORD FOR WORD. If no real sample exists, describe the register in prose and include NO fenced sample. NEVER fabricate a quotation and present it as the leader's writing.)
 - "## Gotchas" (specific corrections to mistakes the agent will make - include at least one style regression gotcha for voice-lock skills)
 - "## Output format" (template or structural guide; include a fenced code block when helpful)
+- "## Learning loop" (REQUIRED, 4-6 lines: how this skill sharpens with use - see 2C-LL below)
 - "## References" (bulleted pointers to bundled files; each line begins with "Read [references/<file>.md](references/<file>.md) when ...")
+
+### 2C-LL: Learning loop section
+Always include a "## Learning loop" section. Keep it concrete and honest (4-6 lines):
+- After each run, note whether the leader kept the output as-is, edited it, or rejected it, and capture the single biggest correction in one line.
+- Recurring corrections graduate into new "## Gotchas" entries, so the skill sharpens itself from real mistakes (the highest-value section).
+- To close the loop, the leader brings those corrections back to CTRL, which proposes a sharpened version of this skill.
+- Do NOT claim the skill auto-updates on its own. It sharpens only when its runs are fed back. The literal phrase "learning loop" must appear in the heading.
 
 ### 2D: References
 Split heavy context into separate files. Include only files referenced from the body.
 - company-context.md: Business facts from MEMORY_CONTEXT relevant to this skill (company, role, team, constraints). Skip if MEMORY_CONTEXT is empty.
 - format-rules.md: Formatting preferences extracted from the transcript (only if the leader specified formatting requirements).
-- voice-profile.md: REQUIRED when VOICE_PROFILE is present OR archetype is voice-lock. Structure: Style fingerprint (2-3 sentences), Hard constraints (verbatim rules), Voice reference sample under a // target voice register heading, Dimension map table.
+- voice-profile.md: REQUIRED when VOICE_PROFILE is present (it carries real captured dimensions + a real sample). When the skill is voice-lock but NO VOICE_PROFILE was provided, this file is OPTIONAL - the "## Voice and tone" body section already carries the register; add the file only if it would hold real, non-fabricated detail. Structure:
+  (a) Style fingerprint (2-3 sentences).
+  (b) Hard constraints (the leader's rules, verbatim).
+  (c) Voice reference sample: include a // target voice register block ONLY with a REAL sample (the VOICE_PROFILE sample, or a verbatim TRANSCRIPT quote), word for word. If none exists, write "No verbatim sample captured yet - match the dimensions below." and include NO fenced sample. Never invent one.
+  (d) Dimension map: when VOICE_PROFILE is present, the table MUST list its dimensions with the leader's values - Signoff, Disagreement, Content archetype, Sentence length, First person, Punctuation, Hard rules. When VOICE_PROFILE is absent, map only the dimensions the TRANSCRIPT actually evidences; never pad with generic rows.
 - A domain-specific reference file may be added when the workflow has a heavy domain artifact (pricing, ICP, brand voice notes). Optional.
 
 Each reference file should have a clear scope. Keep each under ~120 lines.

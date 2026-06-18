@@ -85,7 +85,7 @@ export function useVoiceProfile() {
           fact_context: "Self-identified voice profile for skill generation",
           source_type: "form",
           confidence_score: 1,
-          verification_status: "confirmed",
+          verification_status: "verified",
           is_current: true,
           temperature: "hot",
           importance: 8,
