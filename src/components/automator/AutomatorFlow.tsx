@@ -1,17 +1,22 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useSkillSuggestions } from "@/hooks/useSkillSuggestions";
 import { useSkillExport } from "@/hooks/useSkillExport";
 import { useGeneratedArtifacts } from "@/hooks/useGeneratedArtifacts";
+import { useVoiceProfile } from "@/hooks/useVoiceProfile";
 import { isSkillSuccess, type SkillData, type SkillSeed } from "@/types/skill";
 import { AutomatorSuggestions } from "./AutomatorSuggestions";
 import { AutomatorCascade } from "./AutomatorCascade";
 import { AutomatorSkillReady, type LibraryPeekItem } from "./AutomatorSkillReady";
+import { AutomatorScaffold } from "./AutomatorScaffold";
+import { VoiceStyleProfileSheet } from "@/components/edge/VoiceStyleProfileSheet";
 import {
   builtYourWayChips,
   cascadeFor,
   composeTranscript,
+  toneIdFromProfile,
+  toneToVoiceProfile,
   type CascadePicks,
   type CascadeStep,
   type DeliverableCandidate,
@@ -21,14 +26,15 @@ import {
  * AutomatorFlow - the redesigned "Build a skill" experience (3 screens):
  *
  *   1. SUGGESTIONS - pick a recurring deliverable CTRL mined from your brain.
- *   2. CASCADE     - a 5-step recognition pick-cascade (never a blank box).
+ *   2. CASCADE     - a 5-step recognition pick-cascade (never a blank box). Its
+ *                    voice step is unified with the saved voice profile.
  *   3. SKILL READY - the payoff + library peek + export.
  *
  * Owns the flow state and the wiring: it composes the cascade picks into a
  * well-formed transcript and feeds it to useSkillExport (the existing
- * generate-skill-export backend - unchanged). On success it shows the payoff;
- * on a triage reroute it hands the transcript + reason up to the parent so the
- * old context-blob fallback still works.
+ * generate-skill-export backend). Skill building is free for now, so there is
+ * no tier gate here. On success it shows the payoff; on a triage reroute it
+ * hands the transcript + reason up to the parent.
  */
 
 interface AutomatorFlowProps {
@@ -89,6 +95,9 @@ export function AutomatorFlow({
   const suggestions = useSkillSuggestions(3);
   const skillExport = useSkillExport();
   const { artifacts } = useGeneratedArtifacts("skill", 6);
+  const { profile: voiceProfile, saveProfile, refetch: refetchVoice } = useVoiceProfile();
+  const [voiceSheetOpen, setVoiceSheetOpen] = useState(false);
+  const [voiceSheetPaste, setVoiceSheetPaste] = useState(false);
 
   // If we arrived with a seed, start in the cascade on a seed candidate.
   const seedCandidate = useMemo(
@@ -108,6 +117,15 @@ export function AutomatorFlow({
     () => (candidate ? cascadeFor(candidate) : []),
     [candidate],
   );
+
+  // The voice step index, so a saved profile can pre-select the matching tone
+  // (recognition, not re-ask). The cascade renders the confirmation view.
+  const toneIndex = useMemo(() => steps.findIndex((s) => s.id === "tone"), [steps]);
+  useEffect(() => {
+    if (phase === "cascade" && voiceProfile && stepIndex === toneIndex && !picks.tone) {
+      setPicks((prev) => ({ ...prev, tone: toneIdFromProfile(voiceProfile) }));
+    }
+  }, [phase, voiceProfile, stepIndex, toneIndex, picks.tone]);
 
   const resetCascade = useCallback(() => {
     setStepIndex(0);
@@ -138,6 +156,15 @@ export function AutomatorFlow({
   const handleSelect = useCallback((stepId: CascadeStep["id"], optionId: string) => {
     setPicks((prev) => ({ ...prev, [stepId]: optionId }));
   }, []);
+
+  // Adopting an in-flow tone pick saves it as the leader's voice profile, so a
+  // single warm/crisp/formal tap becomes the voice every future skill inherits.
+  const handleAdoptTone = useCallback(
+    (toneId: string) => {
+      void saveProfile(toneToVoiceProfile(toneId, "context"));
+    },
+    [saveProfile],
+  );
 
   const handleBack = useCallback(() => {
     if (stepIndex === 0) {
@@ -238,49 +265,84 @@ export function AutomatorFlow({
   }, [candidate, readySkill, artifacts]);
 
   // ─── Render the active phase ─────────────────────────────────────
+  // Mobile: a single full-height column. Desktop (lg+): a two-pane - the flow on
+  // the left, a live "your skill is taking shape" scaffold on the right - so the
+  // surface where most of this work happens feels purpose-built, not a stretched
+  // phone column.
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="flex h-full min-h-0 flex-col"
     >
-      {phase === "suggestions" && (
-        <AutomatorSuggestions
-          candidates={suggestions.candidates}
-          loading={suggestions.loading}
-          hasMined={suggestions.hasMined}
-          onPick={handlePick}
-          onCustomDeliverable={handleCustomDeliverable}
-        />
-      )}
+      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:grid-rows-1 lg:gap-7">
+        <div className="flex h-full min-h-0 min-w-0 flex-col lg:mx-auto lg:w-full lg:max-w-[520px]">
+          {phase === "suggestions" && (
+            <AutomatorSuggestions
+              candidates={suggestions.candidates}
+              loading={suggestions.loading}
+              hasMined={suggestions.hasMined}
+              onPick={handlePick}
+              onCustomDeliverable={handleCustomDeliverable}
+            />
+          )}
 
-      {phase === "cascade" && candidate && (
-        <AutomatorCascade
-          candidate={candidate}
-          steps={steps}
-          stepIndex={stepIndex}
-          picks={picks}
-          direction={direction}
-          isGenerating={skillExport.isGenerating}
-          generationError={skillExport.error}
-          onSelect={handleSelect}
-          onBack={handleBack}
-          onNext={handleNext}
-        />
-      )}
+          {phase === "cascade" && candidate && (
+            <AutomatorCascade
+              candidate={candidate}
+              steps={steps}
+              stepIndex={stepIndex}
+              picks={picks}
+              direction={direction}
+              isGenerating={skillExport.isGenerating}
+              generationError={skillExport.error}
+              voiceProfile={voiceProfile}
+              onSelect={handleSelect}
+              onAdoptTone={handleAdoptTone}
+              onOpenVoiceSheet={() => {
+                setVoiceSheetPaste(true);
+                setVoiceSheetOpen(true);
+              }}
+              onBack={handleBack}
+              onNext={handleNext}
+            />
+          )}
 
-      {phase === "ready" && readySkill && (
-        <AutomatorSkillReady
-          skill={readySkill}
-          chips={readyChips}
-          whatItDoes={readySkill.description.split(".")[0] + "."}
-          library={library}
-          onRun={handleRun}
-          onExport={handleExport}
-          onSeeAll={handleSeeAll}
-          onBuildAnother={handleBuildAnother}
-        />
-      )}
+          {phase === "ready" && readySkill && (
+            <AutomatorSkillReady
+              skill={readySkill}
+              chips={readyChips}
+              whatItDoes={readySkill.description.split(".")[0] + "."}
+              library={library}
+              onRun={handleRun}
+              onExport={handleExport}
+              onSeeAll={handleSeeAll}
+              onBuildAnother={handleBuildAnother}
+            />
+          )}
+        </div>
+
+        <aside className="hidden lg:block lg:self-start lg:overflow-y-auto lg:pt-1">
+          <AutomatorScaffold
+            phase={phase}
+            candidate={candidate}
+            steps={steps}
+            picks={picks}
+            voiceProfile={voiceProfile}
+          />
+        </aside>
+      </div>
+
+      <VoiceStyleProfileSheet
+        isOpen={voiceSheetOpen}
+        onClose={() => {
+          setVoiceSheetOpen(false);
+          setVoiceSheetPaste(false);
+        }}
+        source="context"
+        initialPasteMode={voiceSheetPaste}
+        onSaved={() => void refetchVoice()}
+      />
     </motion.div>
   );
 }

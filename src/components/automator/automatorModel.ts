@@ -15,6 +15,8 @@
  * so it can be unit-reasoned about and rendered in the QC harness.
  */
 
+import type { VoiceProfile } from "@/types/voiceProfile";
+
 /**
  * Which family a deliverable belongs to. Drives the cascade copy + the tone
  * samples so the captured detail matches the real artifact (a report reads
@@ -171,6 +173,68 @@ function toneStep(archetype: AutomatorArchetype): CascadeStep {
       },
     ],
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Tone <-> voice-profile bridge (the unification)                     */
+/* ------------------------------------------------------------------ */
+
+/** The three in-flow tone ids (the tone step's option ids). */
+export type ToneId = "warm" | "crisp" | "formal";
+
+/**
+ * Map an in-flow tone pick to a full 8-dimension voice profile, so a single
+ * warm/crisp/formal tap becomes the leader's SAVED voice - reused by every
+ * future skill, every kit, and the harness. Inferred defaults for the
+ * dimensions the tone step does not directly capture (signoff, disagreement,
+ * one hard rule); the full sheet or paste-extract can enrich later.
+ */
+export function toneToVoiceProfile(
+  toneId: string,
+  source: VoiceProfile["source"] = "context",
+): VoiceProfile {
+  if (toneId === "crisp") {
+    return {
+      signoff: "none",
+      disagreement: "direct",
+      contentArchetype: "argument",
+      sentenceLength: "short-punchy",
+      firstPerson: "minimal-I",
+      punctuationStyle: "minimal",
+      hardRules: ["Never pad it out. Say the point and stop."],
+      source,
+    };
+  }
+  if (toneId === "formal") {
+    return {
+      signoff: "sincerely",
+      disagreement: "question-led",
+      contentArchetype: "how-to",
+      sentenceLength: "long-flowing",
+      firstPerson: "balanced",
+      punctuationStyle: "formal",
+      hardRules: ["Keep it measured and considered, never too casual."],
+      source,
+    };
+  }
+  // warm (default)
+  return {
+    signoff: "thanks",
+    disagreement: "context-first",
+    contentArchetype: "story-lesson",
+    sentenceLength: "short-punchy",
+    firstPerson: "heavy-I",
+    punctuationStyle: "minimal",
+    hardRules: ["Always sound human and personal, never a generic AI tone."],
+    source,
+  };
+}
+
+/** Recover the closest in-flow tone id from a saved voice profile. */
+export function toneIdFromProfile(p: VoiceProfile): ToneId {
+  if (p.sentenceLength === "long-flowing" || p.punctuationStyle === "formal") return "formal";
+  if (p.firstPerson === "heavy-I" || p.contentArchetype === "story-lesson") return "warm";
+  return "crisp";
 }
 
 /**

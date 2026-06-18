@@ -82,8 +82,6 @@ function FullReadBody({
   weaknesses,
   onReject,
   onMakeNextMove,
-  isPaid,
-  onUpgrade,
 }: Omit<EdgeFullReadSheetProps, 'isOpen' | 'onClose'>) {
   return (
     <div className="space-y-6">
@@ -130,7 +128,7 @@ function FullReadBody({
       </section>
 
       {/* Secondary value prop, demoted below the identity read */}
-      <AutomatePainCard isPaidUser={isPaid} onUpgrade={onUpgrade} />
+      <AutomatePainCard />
 
       <Button onClick={onMakeNextMove} className="w-full">
         Make my next move

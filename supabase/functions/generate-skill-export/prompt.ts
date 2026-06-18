@@ -23,6 +23,7 @@ export interface SkillPromptInputs {
   transcript: string;
   memoryContext: string;
   profileContext: string;
+  voiceProfileContext?: string;
   seed?: SkillSeedContext;
 }
 
@@ -34,6 +35,7 @@ export function buildSkillUserPrompt({
   transcript,
   memoryContext,
   profileContext,
+  voiceProfileContext,
   seed,
 }: SkillPromptInputs): string {
   const lines: string[] = [];
@@ -61,6 +63,14 @@ export function buildSkillUserPrompt({
     profileContext.trim() || "(no edge profile available)",
     ``,
   );
+
+  if (voiceProfileContext && voiceProfileContext.trim().length > 0) {
+    lines.push(
+      `VOICE_PROFILE (self-identified writing voice - MUST shape "## Voice and tone" and voice-profile.md reference):`,
+      voiceProfileContext.trim(),
+      ``,
+    );
+  }
 
   if (seed) {
     lines.push(
@@ -93,16 +103,23 @@ You will receive:
 1. TRANSCRIPT: The leader's raw voice description of their workflow
 2. MEMORY_CONTEXT: Structured facts about the leader (company, role, goals, constraints)
 3. EDGE_PROFILE: The leader's strengths and weaknesses
+4. VOICE_PROFILE (optional): Self-identified writing voice dimensions
 
 ## PHASE 1: TRIAGE
 
-Before generating anything, apply the Three Honest Tests:
+Evaluate BOUNDEDNESS FIRST, then run the Four Honest Tests:
 
-1. REPEATABLE: Is this work done at least weekly? Look for: "every Monday", "whenever I", "each time", "always have to", frequency markers.
-2. SPECIALISED: Would generic Claude get this materially wrong without guidance? Look for: unusual formatting rules, domain-specific constraints, tool-specific workflows, preferences that contradict AI defaults.
-3. BOUNDED: Can you describe when to use it in one or two sentences? If the transcript describes multiple unrelated tasks, pick the strongest single skill from it.
+**Step 0 - Bounded trigger check (run before everything else):**
+- Does this describe a specific, invocable workflow with a clear trigger? (e.g. "draft my board update", "write the LinkedIn post")
+- If NO bounded trigger AND it reads as a universal style preference ("make everything sound like me", "always be more confident") -> route to saved_style or custom_instruction, NOT a skill.
+- If YES bounded trigger -> continue to the four tests below.
 
-If ANY test fails, return:
+1. REPEATABLE: Is this work done at least weekly? Look for: "every Monday", "whenever I", "each time", "always have to", frequency markers, or cascade picks that state recurrence.
+2. SPECIALISED (operational): Would generic Claude get the PROCEDURE materially wrong? Unusual formatting, domain constraints, tool-specific steps.
+3. BOUNDED: Can you describe when to use it in one or two sentences? If multiple unrelated tasks, pick the strongest single skill.
+4. CONSISTENT CREATIVE OUTPUT (voice-lock pass): If the workflow produces written/creative output in the leader's signature style (LinkedIn posts, client emails, board narrative in their voice), ask: "Would generic Claude produce something that sounds like THIS person?" If yes to bounded trigger + creative output + individual voice -> PASS as voice-lock even when test 2 alone would fail.
+
+If ANY of tests 1, 3 fail (or step 0 fails), return:
 {
   "triage": {
     "passed": false,
@@ -112,11 +129,11 @@ If ANY test fails, return:
 }
 
 Choose the result type based on the content:
-- "custom_instruction": universal preferences (tone, register, style of interaction) that apply across all tasks.
+- "custom_instruction": universal preferences (tone, register, style of interaction) that apply across ALL tasks with no bounded trigger.
 - "memory_fact": context about the leader's company, team, or situation that does not describe a procedure.
-- "saved_style": tone/register adjustments (e.g. "make everything more confident").
+- "saved_style": tone/register adjustments with no bounded trigger (e.g. "make everything more confident").
 
-If ALL tests pass, continue to Phase 2.
+If tests 1+3 pass and either test 2 OR test 4 passes, continue to Phase 2.
 
 ## PHASE 2: EXTRACT AND GENERATE
 
@@ -152,7 +169,8 @@ Rules from the Skill-Building Best Practices:
 Required sections in body, in this exact order:
 - "## When this skill activates" (operational context, not a trigger restatement)
 - "## Workflow" (numbered steps with reasoning)
-- "## Gotchas" (specific corrections to mistakes the agent will make - highest-value section)
+- "## Voice and tone" (REQUIRED when VOICE_PROFILE is present OR archetype is voice-lock: structural rules from content archetype, rhythm/register, punctuation, verbatim hard rules; include a fenced code block labeled // target voice register when sample voice exists)
+- "## Gotchas" (specific corrections to mistakes the agent will make - include at least one style regression gotcha for voice-lock skills)
 - "## Output format" (template or structural guide; include a fenced code block when helpful)
 - "## References" (bulleted pointers to bundled files; each line begins with "Read [references/<file>.md](references/<file>.md) when ...")
 
@@ -160,6 +178,7 @@ Required sections in body, in this exact order:
 Split heavy context into separate files. Include only files referenced from the body.
 - company-context.md: Business facts from MEMORY_CONTEXT relevant to this skill (company, role, team, constraints). Skip if MEMORY_CONTEXT is empty.
 - format-rules.md: Formatting preferences extracted from the transcript (only if the leader specified formatting requirements).
+- voice-profile.md: REQUIRED when VOICE_PROFILE is present OR archetype is voice-lock. Structure: Style fingerprint (2-3 sentences), Hard constraints (verbatim rules), Voice reference sample under a // target voice register heading, Dimension map table.
 - A domain-specific reference file may be added when the workflow has a heavy domain artifact (pricing, ICP, brand voice notes). Optional.
 
 Each reference file should have a clear scope. Keep each under ~120 lines.

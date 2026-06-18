@@ -28,6 +28,7 @@ import { OrgChartView } from "@/components/kit/OrgChartView";
 import { CapsuleCard } from "@/components/kit/CapsuleCard";
 import { EdgeProCard } from "@/components/kit/EdgeProCard";
 import { RegenerateSheet } from "@/components/kit/RegenerateSheet";
+import { KitVoiceProfileCard } from "@/components/kit/KitVoiceProfileCard";
 import { SkillInstallGuide } from "@/components/edge/SkillInstallGuide";
 import { useAuth } from "@/hooks/useAuth";
 import { useKitRedemption } from "@/hooks/useKitRedemption";
@@ -480,6 +481,8 @@ export default function KitHome() {
               <SkillInstallGuide skillName={skillMeta.name} preferredTool={tool} />
             )}
 
+            <KitVoiceProfileCard />
+
             {/* 0. The hero: the agentic org chart */}
             {orgChart && <OrgChartView chart={orgChart} />}
 
@@ -818,11 +821,20 @@ function BridgeCard() {
         CTRL already knows {count} thing{count === 1 ? "" : "s"} about you
       </h3>
       <p className="text-sm text-muted-foreground">
-        Your Memory Web, daily briefing, and Edge profile are one step away.
+        Your Memory Web, voice profile, and skill builder are waiting in CTRL, free. The daily
+        briefing and Edge artifacts come with Edge Pro.
       </p>
       <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/dashboard")}>
-        Open CTRL
+        Open CTRL (free)
         <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full text-muted-foreground"
+        onClick={() => navigate("/context")}
+      >
+        Build a skill from your kit
       </Button>
     </div>
   );

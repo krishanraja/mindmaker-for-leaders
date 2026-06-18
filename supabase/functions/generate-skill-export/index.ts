@@ -10,8 +10,9 @@
  * still recorded in skill_exports with triage_result set accordingly, so the
  * UI can route the leader to the right surface without losing the input.
  *
- * Edge Pro gated: same paywall as generate-custom-export. The cost driver is
- * the LLM call (~6-10k tokens in, ~3k out) plus the ZIP assembly.
+ * Free for now: open to any authenticated user (kit graduates and new signups
+ * taste the real pipeline). The cost driver is the LLM call (~6-10k tokens in,
+ * ~3k out) plus the ZIP assembly, bounded by a generous daily soft cap.
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -69,24 +70,12 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
-    // Edge Pro gate (active or past_due grace period - same as generate-custom-export).
+    // Skill building is open to any authenticated user (free for now). The
+    // service client is still used for the soft cap and the row insert below.
     const serviceClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
-
-    const { data: subscription } = await serviceClient
-      .from("edge_subscriptions")
-      .select("status")
-      .eq("user_id", user.id)
-      .single();
-
-    if (
-      !subscription ||
-      (subscription.status !== "active" && subscription.status !== "past_due")
-    ) {
-      return jsonResponse({ error: "Edge Pro subscription required" }, 403);
-    }
 
     // Generous soft cap: logs an overage signal, never blocks. Reported back so
     // the client may show a gentle notice.
@@ -161,6 +150,13 @@ Deno.serve(async (req) => {
       if (weaknesses) profileContext += `LEADER'S GAPS TO COVER:\n${weaknesses}\n`;
     }
 
+    // Extract voice profile block for explicit prompt injection (in addition to
+    // the section embedded in memoryContext by buildMemoryContext).
+    const voiceProfileMatch = memoryResult.context.match(
+      /## Voice profile[\s\S]*?(?=\n## |\n*$)/,
+    );
+    const voiceProfileContext = voiceProfileMatch?.[0]?.trim() ?? "";
+
     // Generate via the LLM. JSON mode keeps the model on-format. The
     // system prompt encodes the triage gate + extraction rules.
     const aiResponse = await callLLMWithFallback(
@@ -173,6 +169,7 @@ Deno.serve(async (req) => {
               transcript,
               memoryContext: memoryResult.context,
               profileContext,
+              voiceProfileContext,
               seed,
             }),
           },

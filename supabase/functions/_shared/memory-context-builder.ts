@@ -40,6 +40,8 @@ interface Fact {
   fact_category: string;
   fact_label: string;
   fact_value: string;
+  fact_key?: string | null;
+  fact_subtype?: string | null;
   temperature: string;
   verification_status: string;
   confidence_score: number;
@@ -73,6 +75,46 @@ function groupFactsByCategory(facts: Fact[]): Record<string, Fact[]> {
     groups[cat].push(fact);
   }
   return groups;
+}
+
+/** ctrl_voice_profile JSON stored as a preference fact with communication_style subtype. */
+function findVoiceProfileFact(facts: Fact[]): Fact | undefined {
+  return facts.find(
+    (f) =>
+      f.fact_key === "ctrl_voice_profile" ||
+      (f.fact_category === "preference" &&
+        f.fact_subtype === "communication_style" &&
+        f.fact_value?.trim().startsWith("{")),
+  );
+}
+
+function formatVoiceProfileSection(fact: Fact): string {
+  try {
+    const p = JSON.parse(fact.fact_value) as Record<string, unknown>;
+    const lines: string[] = ["## Voice profile (self-identified)"];
+    const dims: Array<[string, unknown]> = [
+      ["Signoff", p.signoff],
+      ["Disagreement style", p.disagreement],
+      ["Content archetype", p.contentArchetype],
+      ["Sentence length", p.sentenceLength],
+      ["First person", p.firstPerson],
+      ["Punctuation", p.punctuationStyle],
+    ];
+    for (const [label, val] of dims) {
+      if (val) lines.push(`- ${label}: ${String(val)}`);
+    }
+    const rules = Array.isArray(p.hardRules) ? p.hardRules : [];
+    if (rules.length) {
+      lines.push("- Hard rules:");
+      for (const r of rules) lines.push(`  - ${String(r)}`);
+    }
+    if (typeof p.sampleVoice === "string" && p.sampleVoice.trim()) {
+      lines.push(`- Sample voice register:\n"""${p.sampleVoice.trim().slice(0, 600)}"""`);
+    }
+    return lines.join("\n");
+  } catch {
+    return `## Voice profile\n- ${fact.fact_value}`;
+  }
 }
 
 function buildMarkdownContext(
@@ -124,6 +166,11 @@ function buildMarkdownContext(
   // Preferences
   if (grouped.preference?.length) {
     sections.push(`## Preferences\n${grouped.preference.map(f => `- ${f.fact_value}`).join("\n")}`);
+  }
+
+  const voiceFact = findVoiceProfileFact(facts);
+  if (voiceFact) {
+    sections.push(formatVoiceProfileSection(voiceFact));
   }
 
   return sections.join("\n\n");
@@ -514,7 +561,7 @@ export async function buildMemoryContext(
   // Fetch hot facts (always)
   const { data: hotFacts } = await supabase
     .from("user_memory")
-    .select("id, fact_category, fact_label, fact_value, temperature, verification_status, confidence_score, created_at")
+    .select("id, fact_category, fact_label, fact_value, fact_key, fact_subtype, temperature, verification_status, confidence_score, created_at")
     .eq("user_id", userId)
     .eq("is_current", true)
     .is("archived_at", null)
@@ -527,7 +574,7 @@ export async function buildMemoryContext(
   if (includeWarm) {
     const { data } = await supabase
       .from("user_memory")
-      .select("id, fact_category, fact_label, fact_value, temperature, verification_status, confidence_score, created_at")
+      .select("id, fact_category, fact_label, fact_value, fact_key, fact_subtype, temperature, verification_status, confidence_score, created_at")
       .eq("user_id", userId)
       .eq("is_current", true)
       .is("archived_at", null)

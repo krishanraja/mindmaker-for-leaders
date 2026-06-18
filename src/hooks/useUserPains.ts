@@ -1,19 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { filterAutomatableSeeds } from "@/lib/automatablePain";
 import type { SkillSeed } from "@/types/skill";
 
 /**
  * useUserPains
  *
- * Pulls the leader's recent unresolved "pains" so any surface that lets them
- * automate one (Edge view card, SkillCaptureSheet picker) can render the same
- * chip list. A pain is one of:
- *   - a user_memory fact with fact_category='blocker'
- *   - an active row in user_decisions
- *
- * Returned as a flat SkillSeed[] so callers just hand it straight to the
- * skill builder's route state. Quiet on errors - this is auxiliary surface
- * and should never block the page rendering.
+ * Pulls automatable pains only - blockers and decisions that name a concrete
+ * recurring deliverable, not vague strategic blockers ("Retention Challenge").
+ * Used by AutomatePainCard chip row (Edge Pro entry points).
  */
 export function useUserPains(limit: number = 5) {
   const [pains, setPains] = useState<SkillSeed[]>([]);
@@ -69,7 +64,7 @@ export function useUserPains(limit: number = 5) {
         if (decisionSeeds[i]) merged.push(decisionSeeds[i]);
       }
 
-      setPains(merged.slice(0, limit));
+      setPains(filterAutomatableSeeds(merged).slice(0, limit));
     } catch (err) {
       console.warn("useUserPains: fetch failed", err);
       setPains([]);
