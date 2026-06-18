@@ -481,7 +481,19 @@ export default function KitHome() {
               <SkillInstallGuide skillName={skillMeta.name} preferredTool={tool} />
             )}
 
-            <KitVoiceProfileCard />
+            <KitVoiceProfileCard
+              pitch={
+                preset?.slug === "orgchart"
+                  ? "The agents you stand up from your chart will write in your voice, not generic AI."
+                  : preset?.slug === "memory-identity"
+                    ? "Your CTRL memory and the skills you build will speak in your voice."
+                    : preset?.slug === "vibe-coding"
+                      ? "The skills you ship from CTRL will read in your voice."
+                      : preset?.slug === "autonomous-business"
+                        ? "The automations you build in CTRL will sound like you, not a robot."
+                        : undefined
+              }
+            />
 
             {/* 0. The hero: the agentic org chart */}
             {orgChart && <OrgChartView chart={orgChart} />}

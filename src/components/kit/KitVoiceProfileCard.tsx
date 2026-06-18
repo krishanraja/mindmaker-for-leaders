@@ -9,7 +9,14 @@ import { voiceProfileSummary } from "@/types/voiceProfile";
  * Kit portal card: capture voice profile before bridging to full CTRL.
  * Persists on the same auth.uid() when the student upgrades via SendPackCard.
  */
-export function KitVoiceProfileCard({ onSaved }: { onSaved?: () => void }) {
+export function KitVoiceProfileCard({
+  onSaved,
+  pitch,
+}: {
+  onSaved?: () => void;
+  /** Kit-tailored line on what the saved voice unlocks (honest carry-over). */
+  pitch?: string;
+}) {
   const { profile, hasProfile, loading } = useVoiceProfile();
   const [open, setOpen] = useState(false);
 
@@ -21,8 +28,9 @@ export function KitVoiceProfileCard({ onSaved }: { onSaved?: () => void }) {
           <h3 className="text-sm font-semibold">Save how you write</h3>
         </div>
         <p className="text-sm text-muted-foreground">
-          Five quick picks - no typing. CTRL stores your voice in your Memory Web so skills
-          and exports sound like you, not generic AI.
+          Five quick picks, or paste your writing - no long forms.{" "}
+          {pitch ??
+            "CTRL stores your voice so the skills you build in CTRL sound like you, not generic AI."}
         </p>
         {hasProfile && profile && !loading ? (
           <div className="flex items-start gap-2 rounded-lg border border-accent/25 bg-accent/[0.06] px-3 py-2">
