@@ -135,7 +135,6 @@ export default function EdgeView() {
           setFullReadOpen(false);
           handleMakeMove(weaknesses[0]?.key || strengths[0]?.key || '');
         }}
-        isPaid={hasAccess}
         onUpgrade={() => {
           setPaywallCapability('Skill Builder');
           setPaywallOpen(true);

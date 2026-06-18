@@ -85,21 +85,31 @@ The mobile cockpit Home (behind `VITE_COCKPIT_ENABLED`) was rebuilt. `CockpitHom
 - **The long-press contest scroll-popup (`ContestLongPress`) was killed** in favour of a quiet "Flag it" in the opened stone + footer, using `useContestActions.openContest`.
 - **Empty state:** role/sector-seeded starter decisions (from `user_memory` identity/role), one tap to Decide prefilled. The prefill is threaded `DecisionPage` to `PressureTestPanel` via an `initialStatement` prop.
 
-### Automator (Skill Builder entry, PR #199, merge 24f7d15)
+### Automator (Skill Builder entry, PR #199 + 2026-06-18 overhaul)
 
-The Automator is now the **default flow on `/context`** (`ContextExport` modified). New components `src/components/automator/{AutomatorFlow,AutomatorSuggestions,AutomatorCascade,AutomatorSkillReady,automatorModel}.tsx/ts` and a new hook `src/hooks/useSkillSuggestions.ts`. Flow:
+The Automator is the **default flow on `/context`** (`ContextExport` modified). Components live in `src/components/automator/{AutomatorFlow,AutomatorSuggestions,AutomatorCascade,AutomatorSkillReady,automatorModel}.tsx/ts` with hooks `useSkillSuggestions`, `useTier`, `useAutomatorQuota`. Flow:
 
 1. **SUGGESTIONS** - concrete recurring DELIVERABLES mined from the brain (`user_memory` blockers + decisions) with a "why we picked this" + a "pulled from your brain" badge; role/sector curated fallback; inline "Something else" input (NOT `window.prompt`).
-2. **CASCADE** - a ~5-step all-recognition pick-cascade reusing the kit cascade pattern; the voice step shows real samples to PICK.
+2. **CASCADE** - a 3-step all-recognition pick-cascade (trigger time anchor -> story-mode steps -> output format self-ID). Voice and hard rules are NOT asked here; they flow from `voice_profile.*` rows in `user_memory` through `buildMemoryContext` into the prompt's `VOICE_PROFILE` block.
 3. **SKILL READY** - "Built your way" chips + Run it now + Export markdown + a "Your skills" library peek.
 
-`automatorModel.composeTranscript` maps the picks into a transcript for the EXISTING `generate-skill-export` edge function (UNTOUCHED). The old `SkillCaptureSheet` / `SkillPreviewSheet` are now unimported **dead code**.
+`automatorModel.composeTranscript` maps the picks into a transcript for `generate-skill-export`. The edge function is no longer untouched: the prompt now runs the **Four Honest Tests** (REPEATABLE / SPECIALISED / BOUNDED / **VOICE-LOCK**) with VOICE-LOCK as a passing category, the body must include a `## Voice and tone` section when voice rows exist, and a `voice-profile.md` reference file is auto-emitted. `quality-gate.ts` adds an advisory `body.voiceLockSurfaced` check.
+
+**Tiering:** Free includes 1 Automator skill per calendar month (UTC), tracked atomically in `automator_usage`. Edge Pro is unlimited. On 402 `free_quota_exhausted`, `useSkillExport.quotaExhausted` flips and `AutomatorFlow` opens `EdgePaywall` with `capability='free_quota_exhausted'`.
+
+**Honest residuals:** `SkillCaptureSheet` / `SkillPreviewSheet` are kept as a legacy fallback path (still imported by `ContextExport` for the voice-led non-Automator wizard); "Run it now" downloads the skill (no in-app skill-runner yet); the deck's news half depends on a briefing existing.
 
 ### Deck persistence + feed-training (PR #200, merge 387af84)
 
 A swipe writes a `deck_reaction` JSON row to the existing `feedback` table (`page_context` 'cockpit-deck', no new migration). `useCockpit` reads 30 days of dislikes and down-weights those news categories.
 
-**Honest residuals:** the old `SkillCaptureSheet` / `SkillPreviewSheet` are dead code; "Run it now" downloads the skill (no in-app skill-runner yet); the deck's news half depends on a briefing existing.
+### Tiering + Voice Profile + Kit side-door upgrade (2026-06-18 overhaul)
+
+**Tiering.** Two tiers, no new SKU. Free = read-write Memory Web + Voice Profile + 1 Automator skill / calendar month (UTC). Edge Pro ($29 / month) = unlimited Automator + briefing + decision engine + drafting + MCP. `useTier` composes `useEdgeSubscription`. `useAutomatorQuota` reads `automator_usage(user_id, month, exports_used)` (RLS owner-scoped) for the current `YYYY-MM`. Atomic increments via `increment_automator_usage(p_user_id, p_month)` (SECURITY DEFINER). Edge function `generate-skill-export/index.ts` returns HTTP 402 `{ error: "free_quota_exhausted", upgrade_url: "/settings?tab=edge" }` when the cap is hit. Pricing matrix lives in `docs/PRICING.md` and the `PlanMatrix` block in `EdgeProTab`.
+
+**Voice Profile.** Eight dimensions captured in 90 seconds via `VoiceStyleProfileSheet` (recognition picks, no essays). Persists into `user_memory` with `fact_category='preference'` and `fact_key='voice_profile.<dimension>'` (signoff / archetype / sentence_length / first_person / punctuation / hard_rules / sample_voice / disagreement). Constants in `_shared/voice-profile/keys.ts` and `src/lib/voiceProfile.ts`. `buildMemoryContext` exposes a `voiceProfile` markdown block + `voiceProfileRecord` map; `generate-skill-export/prompt.ts` requires a body `## Voice and tone` section + a `voice-profile.md` reference file when populated. Full data-model + consumption walkthrough in `docs/VOICE_PROFILE.md`.
+
+**Kit side-door upgrade.** Anonymous Kit students see `VoiceProfileCard` above `SendPackCard` once their kit ships. Saving the profile reveals `SaveProfileCard`, which calls `upgradeAnonymousSession()` to graduate the anonymous account into a free CTRL Free user. `kit_redemptions`, `kit_builds`, and `user_memory` rows (including the voice profile) stay linked because `auth.uid()` does not change across upgrade.
 
 ---
 
@@ -195,9 +205,9 @@ src/
 │   │   ├── ArtifactPreview.tsx    # Generated artifact display
 │   │   ├── FeedbackButtons.tsx    # Strength/weakness feedback
 │   │   ├── SendToInboxButton.tsx  # Email delivery
-│   │   ├── AutomatePainCard.tsx   # Skill Builder pain-anchored entry chip row (v5.2)
-│   │   ├── SkillCaptureSheet.tsx  # DEAD CODE (PR #199): voice/text capture, no longer imported; superseded by the Automator flow
-│   │   ├── SkillPreviewSheet.tsx  # DEAD CODE (PR #199): skill preview + ZIP download, no longer imported; superseded by AutomatorSkillReady
+│   │   ├── AutomatePainCard.tsx   # Tier-aware Automator entry chip row (reads useTier + useAutomatorQuota; pain chips from useUserPains filtered to automatable items only)
+│   │   ├── SkillCaptureSheet.tsx  # Legacy fallback path: voice/text capture used when Automator is not anchored; not the primary surface
+│   │   ├── SkillPreviewSheet.tsx  # Legacy fallback path: skill preview + ZIP download used by the SkillCaptureSheet flow
 │   │   ├── SkillQualityGate.tsx   # Quality checklist display (v5.2)
 │   │   └── SkillInstallGuide.tsx  # Per-tool install instructions (Claude Code / Claude.ai / Cursor) (v5.2)
 │   ├── action/                # Weekly action components

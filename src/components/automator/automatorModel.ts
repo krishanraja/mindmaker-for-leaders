@@ -3,22 +3,25 @@
  *
  * The redesigned skill builder is three screens:
  *   1. SUGGESTIONS  - pick a recurring deliverable CTRL mined from your brain
- *   2. CAPTURE      - a 5-step pick-cascade (recognition, never a blank box)
+ *   2. CAPTURE      - a 3-step recognition cascade
+ *                       trigger -> steps -> output
  *   3. SKILL READY  - the payoff + your skills library + export
  *
- * This file owns the pure data: the candidate shape, the per-candidate cascade
- * questions (tailored by archetype), and composeTranscript() - the function
- * that turns the cascade picks into a well-formed transcript the existing
- * generate-skill-export edge function already knows how to parse.
+ * The cascade follows the recognition-over-recall design from the intake
+ * theory appendix: each step picks from concrete chips rather than asking the
+ * leader to write prose. Voice and hard rules are NOT round-tripped through
+ * the transcript - they flow from the leader's `voice_profile.*` rows in
+ * user_memory through buildMemoryContext into the generate-skill-export
+ * prompt as a separate VOICE_PROFILE block.
  *
  * No JSX here, no hooks. Just the shapes + the deterministic transcript build,
  * so it can be unit-reasoned about and rendered in the QC harness.
  */
 
 /**
- * Which family a deliverable belongs to. Drives the cascade copy + the tone
- * samples so the captured detail matches the real artifact (a report reads
- * differently from a proposal). Plain language; never shown raw to the user.
+ * Which family a deliverable belongs to. Drives the cascade copy so the
+ * captured detail matches the real artifact (a report reads differently from
+ * a proposal). Plain language; never shown raw to the user.
  */
 export type AutomatorArchetype =
   | "report" // recurring update written to an audience (investor / board / team)
@@ -67,12 +70,10 @@ export interface DeliverableCandidate {
  */
 export interface CascadeOption {
   id: string;
-  /** Short title shown on the option card / sample header. */
+  /** Short title shown on the option card. */
   label: string;
-  /** One-line description under the title (the mock's .ds line). Optional for tone samples. */
+  /** One-line description under the title. Optional. */
   description?: string;
-  /** For the tone step: the worked SAMPLE text shown italic (one output, three voices). */
-  sample?: string;
   /** The sentence this pick adds to the transcript. */
   transcriptFragment: string;
 }
@@ -80,689 +81,372 @@ export interface CascadeOption {
 /** One step of the recognition cascade. */
 export interface CascadeStep {
   id: CascadeStepId;
-  /** The H1 question, e.g. "How do you do this now?". */
+  /** The H1 question, e.g. "When do you do this?". */
   question: string;
   /** The supporting line under the question. */
   helper: string;
-  /** Whether this step shows worked SAMPLES (the tone step) vs option cards. */
-  kind: "options" | "samples";
+  /**
+   * Render mode. After the brief's redesign every step is "options" (no more
+   * three-way voice samples - voice now flows from the voice profile).
+   */
+  kind: "options";
   options: CascadeOption[];
 }
 
-export type CascadeStepId = "how" | "inputs" | "structure" | "tone" | "guardrails";
+export type CascadeStepId = "trigger" | "steps" | "output";
 
 /** The leader's picks across the cascade: stepId -> selected optionId. */
 export type CascadePicks = Partial<Record<CascadeStepId, string>>;
 
-/** The ordered step ids - always five, so the progress bar reads "Step N of 5". */
-export const CASCADE_STEP_ORDER: CascadeStepId[] = [
-  "how",
-  "inputs",
-  "structure",
-  "tone",
-  "guardrails",
-];
+/** The ordered step ids - always three, so the progress bar reads "Step N of 3". */
+export const CASCADE_STEP_ORDER: CascadeStepId[] = ["trigger", "steps", "output"];
 
 /* ------------------------------------------------------------------ */
 /* Per-archetype cascade content                                       */
 /* ------------------------------------------------------------------ */
 
 /**
- * The tone step is shared across archetypes in spirit (warm / crisp / formal)
- * but the SAMPLE text is written for the family so it reads like the real
- * artifact. We build the three samples per archetype.
+ * Step 1 - the time-anchored trigger. Identical option set across archetypes
+ * because triggers are about WHEN the work happens, not WHAT it is. The
+ * candidate's frequency hint reorders them so the most likely chip leads.
  */
-function toneStep(archetype: AutomatorArchetype): CascadeStep {
-  const samples: Record<AutomatorArchetype, [string, string, string]> = {
+function triggerStep(candidate: DeliverableCandidate): CascadeStep {
+  const baseOptions: CascadeOption[] = [
+    {
+      id: "weekly-monday",
+      label: "Every Monday morning",
+      description: "A standing slot on the calendar.",
+      transcriptFragment:
+        "It triggers every Monday morning - a standing slot on my calendar.",
+    },
+    {
+      id: "monthly",
+      label: "End of each month",
+      description: "The monthly cycle pulls it in.",
+      transcriptFragment:
+        "It triggers at the end of each month, on the monthly cycle.",
+    },
+    {
+      id: "after-event",
+      label: "After every key event",
+      description: "A call, a meeting or a milestone kicks it off.",
+      transcriptFragment:
+        "It triggers right after a key event - a call, a meeting or a milestone closing.",
+    },
+    {
+      id: "when-asked",
+      label: "Whenever an audience asks",
+      description: "An investor pings, a customer churns, a team needs an update.",
+      transcriptFragment:
+        "It triggers whenever the audience asks - an investor pings, a customer churns, a team needs an update.",
+    },
+    {
+      id: "when-deadline",
+      label: "When a deadline lands",
+      description: "Something must ship by a known date.",
+      transcriptFragment:
+        "It triggers when a deadline lands - something has to ship by a known date.",
+    },
+  ];
+  const frequency = candidate.frequencyChip.toLowerCase();
+  const lead = pickLeadTrigger(frequency);
+  if (lead) {
+    const idx = baseOptions.findIndex((o) => o.id === lead);
+    if (idx > 0) {
+      const [moved] = baseOptions.splice(idx, 1);
+      baseOptions.unshift(moved);
+    }
+  }
+  return {
+    id: "trigger",
+    question: "When do you do this?",
+    helper:
+      "Pick the time anchor that fires it. We will encode this as the skill's trigger phrase.",
+    kind: "options",
+    options: baseOptions,
+  };
+}
+
+function pickLeadTrigger(frequency: string): string | null {
+  if (frequency.includes("weekly") || frequency.includes("monday")) return "weekly-monday";
+  if (frequency.includes("monthly")) return "monthly";
+  if (frequency.includes("call") || frequency.includes("meeting")) return "after-event";
+  if (frequency.includes("week") || frequency.includes("several")) return "weekly-monday";
+  return null;
+}
+
+/**
+ * Step 2 - the story-mode steps. Each option is a 3-act compression of the
+ * work, captured in the leader's voice. The archetype tailors the wording so
+ * the captured fragment reads like a real walk-through, not a generic recipe.
+ */
+function stepsStep(archetype: AutomatorArchetype): CascadeStep {
+  const optionsByArchetype: Record<AutomatorArchetype, CascadeOption[]> = {
     report: [
-      "Quick one before the numbers: genuinely good month. The team pulled hard and it shows. Here is where we landed and the one thing on my mind.",
-      "Month in three lines. Revenue up, burn flat, one risk. Numbers and the ask are below.",
-      "Please find below this month's update. Following a strong period of execution, I have set out our performance against plan and the matters requiring attention.",
+      {
+        id: "pull-write-send",
+        label: "Pull numbers, write narrative, send",
+        description: "Open the dashboard, write around the data, send.",
+        transcriptFragment:
+          "Here is how I do it now: I pull the latest numbers, write a short narrative around them, and send.",
+      },
+      {
+        id: "gather-consolidate-send",
+        label: "Gather team updates, consolidate, send",
+        description: "Each area sends an update, I turn them into one voice.",
+        transcriptFragment:
+          "Here is how I do it now: I gather updates from each area, consolidate them into one voice, and send.",
+      },
+      {
+        id: "start-from-last",
+        label: "Start from last time, update what changed",
+        description: "Open the previous one, edit what moved.",
+        transcriptFragment:
+          "Here is how I do it now: I open the previous update and change only the parts that have moved since last time.",
+      },
     ],
     proposal: [
-      "Really enjoyed today. I came away genuinely excited about what you are building, and confident we can get you there faster. Here is how I would approach it.",
-      "Here is the plan. You need to hit the Q3 number. We get you there in three phases. Scope, timeline and price are below.",
-      "Thank you for your time today. Following our discussion, I have outlined a proposed approach to the objectives we covered, structured across three workstreams.",
+      {
+        id: "from-transcript-draft-send",
+        label: "From the call transcript, draft, send",
+        description: "Read the transcript, write the draft straight from it.",
+        transcriptFragment:
+          "Here is how I do it now: I open the call transcript, draft the proposal straight from it, and send.",
+      },
+      {
+        id: "from-notes-draft-send",
+        label: "From rough notes, draft, send",
+        description: "Pull my own notes, write the first cut, send.",
+        transcriptFragment:
+          "Here is how I do it now: I pull my rough notes from the call, write the first cut of the proposal, and send.",
+      },
+      {
+        id: "template-adapt-send",
+        label: "Adapt a template, fill the gaps, send",
+        description: "Open a template, fill in what changed for this client.",
+        transcriptFragment:
+          "Here is how I do it now: I open my template, fill in what is specific for this client, and send.",
+      },
     ],
     summary: [
-      "Short version for anyone who missed it: here is what was decided, who owns what, and the one thing to watch.",
-      "Recap. Three decisions, two owners, one open question. Details below.",
-      "The following is a summary of the discussion, capturing the key decisions reached and the actions assigned to each owner.",
+      {
+        id: "read-distil-share",
+        label: "Read the source, distil, share",
+        description: "Read the full thing, write the short version.",
+        transcriptFragment:
+          "Here is how I do it now: I read the full source, distil it to what matters, and share.",
+      },
+      {
+        id: "pull-decisions-share",
+        label: "Pull decisions and owners, share",
+        description: "Extract what was decided and who owns each action.",
+        transcriptFragment:
+          "Here is how I do it now: I pull the decisions and owners out of the discussion and share the recap.",
+      },
+      {
+        id: "action-only",
+        label: "Strip to action items, share",
+        description: "Just the next steps, nothing else.",
+        transcriptFragment:
+          "Here is how I do it now: I strip the discussion down to action items only and share.",
+      },
     ],
     outreach: [
-      "Great to meet you. I have been thinking about what you said, and I reckon there is a real fit here. Worth a proper chat?",
-      "Following up on the above. One line: I think we can help. Fifteen minutes this week?",
-      "I am writing to follow up on our recent conversation. I believe there may be a valuable opportunity to collaborate, and would welcome the chance to discuss further.",
+      {
+        id: "reread-write-send",
+        label: "Reread last exchange, write next message, send",
+        description: "Skim the thread, write the follow-up, hit send.",
+        transcriptFragment:
+          "Here is how I do it now: I reread the last exchange, write the next message off it, and send.",
+      },
+      {
+        id: "trigger-reach-out",
+        label: "A trigger fires, I reach out",
+        description: "They went quiet or hit a milestone - I reach out.",
+        transcriptFragment:
+          "Here is how I do it now: a trigger fires (they sign, go quiet, hit a milestone) and I reach out.",
+      },
+      {
+        id: "list-personalise",
+        label: "Work a list, personalise each one",
+        description: "Same kind of note, tailored a little for each person.",
+        transcriptFragment:
+          "Here is how I do it now: I work down a list of people and personalise each note a little.",
+      },
     ],
     custom: [
-      "Friendly and direct - I write the way I talk, warm but I get to the point.",
-      "Crisp and stripped back - short sentences, no filler, the point first.",
-      "Considered and formal - full sentences, measured, nothing too casual.",
+      {
+        id: "gather-build-ship",
+        label: "Gather inputs, build the output, ship",
+        description: "Collect a few things, turn them into the output, send.",
+        transcriptFragment:
+          "Here is how I do it now: I gather a few inputs, turn them into the output, and ship.",
+      },
+      {
+        id: "from-scratch",
+        label: "Open a blank page, build it up",
+        description: "Start from nothing each time and build it from scratch.",
+        transcriptFragment:
+          "Here is how I do it now: I open a blank page and build it from scratch each time.",
+      },
+      {
+        id: "reuse-adapt",
+        label: "Reuse the last one, adapt, ship",
+        description: "Past version is the seed, I change what is new.",
+        transcriptFragment:
+          "Here is how I do it now: I open the last one I made, adapt it to what is new, and ship.",
+      },
     ],
   };
-  const [warm, crisp, formal] = samples[archetype];
   return {
-    id: "tone",
-    question: "Which of these sounds most like you?",
+    id: "steps",
+    question: "Walk me through how you do this now",
     helper:
-      "The same opener, three ways. Pick the closest - we will write yours in that voice. No need to describe it.",
-    kind: "samples",
-    options: [
-      {
-        id: "warm",
-        label: "Warm and direct",
-        sample: warm,
-        transcriptFragment:
-          "My voice is warm and direct - human and a little personal, but I get to the point.",
-      },
-      {
-        id: "crisp",
-        label: "Crisp and no-fluff",
-        sample: crisp,
-        transcriptFragment:
-          "My voice is crisp and stripped back - short sentences, the point first, no filler.",
-      },
-      {
-        id: "formal",
-        label: "Considered and formal",
-        sample: formal,
-        transcriptFragment:
-          "My voice is considered and formal - full sentences, measured, nothing too casual.",
-      },
-    ],
+      "Pick the closest version of the actual steps. We will encode these as the skill's workflow.",
+    kind: "options",
+    options: optionsByArchetype[archetype],
   };
 }
 
 /**
- * The five-step cascade for a candidate. Steps 1-3 and 5 are tailored by
- * archetype; step 4 (tone) shares structure but uses family-specific samples.
- * Every step offers options to SELECT - never a blank "describe it" box.
+ * Step 3 - the output format self-ID. Pick the shape of the artifact, not the
+ * tone. Tone comes from the voice profile rows on the leader's account.
+ */
+function outputStep(archetype: AutomatorArchetype): CascadeStep {
+  const optionsByArchetype: Record<AutomatorArchetype, CascadeOption[]> = {
+    report: [
+      {
+        id: "short-paragraph",
+        label: "Short crisp paragraphs",
+        description: "Flowing prose, no bullets, easy to skim.",
+        transcriptFragment:
+          "The output is short crisp paragraphs - flowing prose, no bullets, easy to skim.",
+      },
+      {
+        id: "bulleted-recap",
+        label: "Bulleted recap",
+        description: "Tight bullets under one or two headers.",
+        transcriptFragment:
+          "The output is a bulleted recap - tight bullets under one or two headers.",
+      },
+      {
+        id: "narrative",
+        label: "Long-form narrative",
+        description: "A proper story, sections and all.",
+        transcriptFragment:
+          "The output is a long-form narrative with sections and a proper story arc.",
+      },
+    ],
+    proposal: [
+      {
+        id: "one-pager",
+        label: "Single one-pager",
+        description: "One page, headings, scannable.",
+        transcriptFragment:
+          "The output is a single one-pager - one page, clear headings, scannable.",
+      },
+      {
+        id: "structured-doc",
+        label: "Structured multi-section doc",
+        description: "Several sections, properly laid out.",
+        transcriptFragment:
+          "The output is a structured multi-section document with clear section breaks.",
+      },
+      {
+        id: "email-ready",
+        label: "Email-ready draft",
+        description: "Body of an email, ready to send.",
+        transcriptFragment:
+          "The output is an email-ready draft - body text only, ready to paste and send.",
+      },
+    ],
+    summary: [
+      {
+        id: "three-bullets",
+        label: "Three-bullet recap",
+        description: "Three bullets. Done.",
+        transcriptFragment:
+          "The output is a three-bullet recap - three bullets and nothing else.",
+      },
+      {
+        id: "headed-sections",
+        label: "Headed sections",
+        description: "Decisions / Owners / Open questions style.",
+        transcriptFragment:
+          "The output uses headed sections like Decisions, Owners, and Open questions.",
+      },
+      {
+        id: "paragraph",
+        label: "Short paragraph",
+        description: "A single tight paragraph anyone can skim.",
+        transcriptFragment:
+          "The output is a single short paragraph that anyone can skim in seconds.",
+      },
+    ],
+    outreach: [
+      {
+        id: "email-ready",
+        label: "Email-ready draft",
+        description: "Body of an email, ready to send.",
+        transcriptFragment:
+          "The output is an email-ready draft - body text only, ready to paste and send.",
+      },
+      {
+        id: "chat-snippet",
+        label: "Chat-ready message",
+        description: "Conversational, one or two lines.",
+        transcriptFragment:
+          "The output is a chat-ready message - conversational, one or two lines.",
+      },
+      {
+        id: "linkedin-style",
+        label: "LinkedIn-style post",
+        description: "Hook, body, payoff.",
+        transcriptFragment:
+          "The output is a LinkedIn-style post - hook, body, payoff structure.",
+      },
+    ],
+    custom: [
+      {
+        id: "short-paragraph",
+        label: "Short crisp paragraphs",
+        description: "Flowing prose, easy to read.",
+        transcriptFragment:
+          "The output is short crisp paragraphs - flowing prose, easy to read.",
+      },
+      {
+        id: "structured-doc",
+        label: "Structured doc",
+        description: "Sections and headings.",
+        transcriptFragment:
+          "The output is a structured document with sections and headings.",
+      },
+      {
+        id: "list",
+        label: "Bulleted list",
+        description: "Bullets only, scannable.",
+        transcriptFragment:
+          "The output is a bulleted list - bullets only, designed to be scanned.",
+      },
+    ],
+  };
+  return {
+    id: "output",
+    question: "What does the output look like?",
+    helper:
+      "Pick the shape. We will encode this as the skill's output format. Voice and tone come from the voice profile you saved.",
+    kind: "options",
+    options: optionsByArchetype[archetype],
+  };
+}
+
+/**
+ * The three-step cascade for a candidate. Steps are tailored by archetype so
+ * the captured detail reads like the real artifact. Voice and hard rules are
+ * NOT in the cascade - they flow from the leader's voice_profile.* rows.
  */
 export function cascadeFor(candidate: DeliverableCandidate): CascadeStep[] {
-  const a = candidate.archetype;
-
-  const howByArchetype: Record<AutomatorArchetype, CascadeStep> = {
-    report: {
-      id: "how",
-      question: "How do you do this now?",
-      helper: "Pick the closest. CTRL tailors everything after this from your choice - no long forms.",
-      kind: "options",
-      options: [
-        {
-          id: "from-numbers",
-          label: "From the numbers",
-          description: "You pull the latest metrics and write the update around them.",
-          transcriptFragment: "I start from the latest numbers and write the update around them.",
-        },
-        {
-          id: "from-team",
-          label: "From the team's updates",
-          description: "You gather what each area sent and turn it into one voice.",
-          transcriptFragment:
-            "I gather updates from each area or team and turn them into one update in my voice.",
-        },
-        {
-          id: "from-lastweek",
-          label: "From last time, updated",
-          description: "You start from the previous one and update what changed.",
-          transcriptFragment:
-            "I start from the previous update and change the parts that moved since last time.",
-        },
-      ],
-    },
-    proposal: {
-      id: "how",
-      question: "How do you do this now?",
-      helper: "Pick the closest. CTRL tailors everything after this from your choice - no long forms.",
-      kind: "options",
-      options: [
-        {
-          id: "from-transcript",
-          label: "From the call transcript",
-          description: "You work from the full recording or transcript after the call.",
-          transcriptFragment:
-            "I work from the full call transcript or recording and write the first draft from that.",
-        },
-        {
-          id: "from-notes",
-          label: "From your rough notes",
-          description: "You jot a few notes during the call and write from those.",
-          transcriptFragment:
-            "I jot a few rough notes during the call and write the draft from those.",
-        },
-        {
-          id: "from-template",
-          label: "From a template you adapt",
-          description: "You start from a template and fill in the gaps each time.",
-          transcriptFragment:
-            "I start from a template I keep and fill in the gaps for each new one.",
-        },
-      ],
-    },
-    summary: {
-      id: "how",
-      question: "How do you do this now?",
-      helper: "Pick the closest. CTRL tailors everything after this from your choice - no long forms.",
-      kind: "options",
-      options: [
-        {
-          id: "from-transcript",
-          label: "From a transcript",
-          description: "You work from the full recording or transcript of the thing.",
-          transcriptFragment: "I work from the full transcript or recording and distil it down.",
-        },
-        {
-          id: "from-notes",
-          label: "From your own notes",
-          description: "You read back your notes and pull out what matters.",
-          transcriptFragment: "I read back my own notes and pull out the parts that matter.",
-        },
-        {
-          id: "from-thread",
-          label: "From a long thread or doc",
-          description: "You scan a long email thread or document and condense it.",
-          transcriptFragment: "I scan a long thread or document and condense it into the short version.",
-        },
-      ],
-    },
-    outreach: {
-      id: "how",
-      question: "How do you do this now?",
-      helper: "Pick the closest. CTRL tailors everything after this from your choice - no long forms.",
-      kind: "options",
-      options: [
-        {
-          id: "from-context",
-          label: "From the last exchange",
-          description: "You reread the thread or call and write the next message off it.",
-          transcriptFragment:
-            "I reread the last exchange or call and write the next message off the back of it.",
-        },
-        {
-          id: "from-trigger",
-          label: "From a trigger",
-          description: "Something happens (they signed, went quiet) and you reach out.",
-          transcriptFragment:
-            "I reach out when something triggers it - they signed, went quiet, or hit a milestone.",
-        },
-        {
-          id: "from-list",
-          label: "From a list",
-          description: "You work down a list of people who each need the same kind of note.",
-          transcriptFragment:
-            "I work down a list of people who each need the same kind of note, tailored a little.",
-        },
-      ],
-    },
-    custom: {
-      id: "how",
-      question: "How do you do this now?",
-      helper: "Pick the closest. CTRL tailors everything after this from your choice - no long forms.",
-      kind: "options",
-      options: [
-        {
-          id: "from-scratch",
-          label: "Mostly from scratch",
-          description: "You start with a blank page each time and build it up.",
-          transcriptFragment: "I mostly start from a blank page each time and build it up.",
-        },
-        {
-          id: "from-inputs",
-          label: "From inputs you gather",
-          description: "You collect a few things first, then turn them into the output.",
-          transcriptFragment: "I gather a few inputs first, then turn them into the output.",
-        },
-        {
-          id: "from-template",
-          label: "From something you reuse",
-          description: "You start from a past version or template and adapt it.",
-          transcriptFragment: "I start from a past version or template I reuse and adapt it.",
-        },
-      ],
-    },
-  };
-
-  const inputsByArchetype: Record<AutomatorArchetype, CascadeStep> = {
-    report: {
-      id: "inputs",
-      question: "What goes into it?",
-      helper: "The raw material you start with each time. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "metrics",
-          label: "Metrics and a few notes",
-          description: "The numbers plus a line or two of colour on each.",
-          transcriptFragment: "What goes in: the key metrics plus a short note of colour on each.",
-        },
-        {
-          id: "team-updates",
-          label: "Updates from each area",
-          description: "What sales, product, ops and so on each sent in.",
-          transcriptFragment:
-            "What goes in: written updates from each area (sales, product, ops, and so on).",
-        },
-        {
-          id: "mixed",
-          label: "A mix of numbers and wins",
-          description: "Some metrics, some wins, some risks, loosely gathered.",
-          transcriptFragment:
-            "What goes in: a loose mix of metrics, wins, and risks I gather through the period.",
-        },
-      ],
-    },
-    proposal: {
-      id: "inputs",
-      question: "What goes into it?",
-      helper: "The raw material you start with each time. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "needs",
-          label: "Their needs and goals",
-          description: "What they said they want and where they are trying to get to.",
-          transcriptFragment:
-            "What goes in: the prospect's stated needs and the goal they are trying to reach.",
-        },
-        {
-          id: "scope-budget",
-          label: "Scope, budget, timeline",
-          description: "The practical constraints they gave you on the call.",
-          transcriptFragment:
-            "What goes in: the practical constraints they gave - scope, budget, and timeline.",
-        },
-        {
-          id: "pains",
-          label: "Their pains, in their words",
-          description: "The specific problems they described, quoted back.",
-          transcriptFragment:
-            "What goes in: the specific pains they described, kept in their own words.",
-        },
-      ],
-    },
-    summary: {
-      id: "inputs",
-      question: "What goes into it?",
-      helper: "The raw material you start with each time. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "decisions",
-          label: "Decisions and owners",
-          description: "What was decided and who picked up each action.",
-          transcriptFragment: "What goes in: the decisions reached and who owns each action.",
-        },
-        {
-          id: "discussion",
-          label: "The whole discussion",
-          description: "Everything said, which you boil down to what matters.",
-          transcriptFragment:
-            "What goes in: the whole discussion, which I boil down to only what matters.",
-        },
-        {
-          id: "actions",
-          label: "Just the action items",
-          description: "The next steps, stripped of the back and forth.",
-          transcriptFragment: "What goes in: the action items, stripped of the back and forth.",
-        },
-      ],
-    },
-    outreach: {
-      id: "inputs",
-      question: "What goes into it?",
-      helper: "The raw material you start with each time. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "history",
-          label: "The history with them",
-          description: "What you have already said and where you left it.",
-          transcriptFragment:
-            "What goes in: the history with this person and where the last exchange left off.",
-        },
-        {
-          id: "one-detail",
-          label: "One specific detail",
-          description: "A single thing they said that you can anchor the note to.",
-          transcriptFragment:
-            "What goes in: one specific detail they mentioned that I anchor the note to.",
-        },
-        {
-          id: "their-role",
-          label: "Who they are",
-          description: "Their role and what they care about, to pitch it right.",
-          transcriptFragment:
-            "What goes in: their role and what they care about, so I pitch the note right.",
-        },
-      ],
-    },
-    custom: {
-      id: "inputs",
-      question: "What goes into it?",
-      helper: "The raw material you start with each time. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "notes",
-          label: "Notes or a transcript",
-          description: "Something written you start from each time.",
-          transcriptFragment: "What goes in: notes or a transcript I start from each time.",
-        },
-        {
-          id: "data",
-          label: "Numbers or data",
-          description: "Figures you pull together before writing.",
-          transcriptFragment: "What goes in: numbers or data I pull together before writing.",
-        },
-        {
-          id: "context",
-          label: "Context in my head",
-          description: "Things you know that you turn into the output.",
-          transcriptFragment: "What goes in: context I already hold, which I turn into the output.",
-        },
-      ],
-    },
-  };
-
-  const structureByArchetype: Record<AutomatorArchetype, CascadeStep> = {
-    report: {
-      id: "structure",
-      question: "What shape does it take?",
-      helper: "The order it always seems to land in. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "tldr-metrics-asks",
-          label: "TLDR, metrics, asks",
-          description: "Headline first, then the numbers, then what you need.",
-          transcriptFragment:
-            "The shape is: a TLDR up top, then the key metrics, then my asks at the end.",
-        },
-        {
-          id: "wins-risks-next",
-          label: "Wins, risks, what's next",
-          description: "What went well, what to watch, where you are headed.",
-          transcriptFragment:
-            "The shape is: wins first, then risks to watch, then what is next.",
-        },
-        {
-          id: "narrative",
-          label: "One flowing narrative",
-          description: "No headers - a continuous read, start to finish.",
-          transcriptFragment:
-            "The shape is one flowing narrative with no headers - a continuous read start to finish.",
-        },
-      ],
-    },
-    proposal: {
-      id: "structure",
-      question: "What shape does it take?",
-      helper: "The order it always seems to land in. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "problem-approach-price",
-          label: "Problem, approach, price",
-          description: "Name the problem, lay out how, then the cost.",
-          transcriptFragment:
-            "The shape is: problem first, then my approach, then the price.",
-        },
-        {
-          id: "phases",
-          label: "Phased plan",
-          description: "Break the work into phases with what each delivers.",
-          transcriptFragment:
-            "The shape is a phased plan - the work split into phases with what each delivers.",
-        },
-        {
-          id: "outcomes-first",
-          label: "Outcomes first",
-          description: "Lead with what they get, then how you deliver it.",
-          transcriptFragment:
-            "The shape leads with the outcomes they get, then how I deliver them.",
-        },
-      ],
-    },
-    summary: {
-      id: "structure",
-      question: "What shape does it take?",
-      helper: "The order it always seems to land in. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "decisions-actions-watch",
-          label: "Decisions, actions, watch",
-          description: "What was decided, who does what, what to keep an eye on.",
-          transcriptFragment:
-            "The shape is: decisions, then actions and owners, then one thing to watch.",
-        },
-        {
-          id: "three-bullets",
-          label: "Three tight bullets",
-          description: "The whole thing in three scannable lines.",
-          transcriptFragment:
-            "The shape is three tight bullets - the whole thing scannable in three lines.",
-        },
-        {
-          id: "tldr-detail",
-          label: "TLDR then detail",
-          description: "A one-line headline, then the detail under it.",
-          transcriptFragment:
-            "The shape is a one-line TLDR, then the supporting detail underneath.",
-        },
-      ],
-    },
-    outreach: {
-      id: "structure",
-      question: "What shape does it take?",
-      helper: "The order it always seems to land in. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "hook-value-ask",
-          label: "Hook, value, ask",
-          description: "Open with the hook, show the value, make one ask.",
-          transcriptFragment:
-            "The shape is: a hook, then the value, then one clear ask.",
-        },
-        {
-          id: "short-personal",
-          label: "Short and personal",
-          description: "Two or three lines that feel written just for them.",
-          transcriptFragment:
-            "The shape is short and personal - two or three lines that feel written just for them.",
-        },
-        {
-          id: "context-then-cta",
-          label: "Context, then a CTA",
-          description: "Remind them where you left it, then the next step.",
-          transcriptFragment:
-            "The shape is context first (where we left it), then a single call to action.",
-        },
-      ],
-    },
-    custom: {
-      id: "structure",
-      question: "What shape does it take?",
-      helper: "The order it always seems to land in. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "headers",
-          label: "Clear sections",
-          description: "Headed sections in a set order.",
-          transcriptFragment: "The shape is clear, headed sections in a set order each time.",
-        },
-        {
-          id: "narrative",
-          label: "One flowing piece",
-          description: "No headers - a single continuous read.",
-          transcriptFragment: "The shape is one flowing piece with no headers.",
-        },
-        {
-          id: "bullets",
-          label: "Scannable bullets",
-          description: "Tight bullets, easy to skim.",
-          transcriptFragment: "The shape is scannable bullets, easy to skim.",
-        },
-      ],
-    },
-  };
-
-  const guardrailsByArchetype: Record<AutomatorArchetype, CascadeStep> = {
-    report: {
-      id: "guardrails",
-      question: "Any rule it must never break?",
-      helper: "The one thing you would catch if it got it wrong. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "no-spin",
-          label: "Never spin a bad month",
-          description: "Be straight about misses - no dressing them up.",
-          transcriptFragment:
-            "A hard rule: never spin a bad month. Be straight about misses, do not dress them up.",
-        },
-        {
-          id: "no-bullets",
-          label: "Never bullet-point it",
-          description: "The audience wants flowing paragraphs, not lists.",
-          transcriptFragment:
-            "A hard rule: never use bullet points. The audience wants flowing paragraphs, not lists.",
-        },
-        {
-          id: "always-ask",
-          label: "Always end on the ask",
-          description: "Every update closes with one specific ask.",
-          transcriptFragment:
-            "A hard rule: always close with one specific ask, every single time.",
-        },
-      ],
-    },
-    proposal: {
-      id: "guardrails",
-      question: "Any rule it must never break?",
-      helper: "The one thing you would catch if it got it wrong. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "no-date",
-          label: "Never commit a date",
-          description: "Talk timeline in ranges, never a hard delivery date.",
-          transcriptFragment:
-            "A hard rule: never commit to a date. Talk timeline in ranges, never a hard delivery date.",
-        },
-        {
-          id: "no-price-first",
-          label: "Never lead with price",
-          description: "Price comes last, after the value is clear.",
-          transcriptFragment:
-            "A hard rule: never lead with price. Price comes last, after the value is clear.",
-        },
-        {
-          id: "their-words",
-          label: "Always use their words",
-          description: "Mirror their language back, not your jargon.",
-          transcriptFragment:
-            "A hard rule: always mirror their own words back, never my internal jargon.",
-        },
-      ],
-    },
-    summary: {
-      id: "guardrails",
-      question: "Any rule it must never break?",
-      helper: "The one thing you would catch if it got it wrong. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "no-invent",
-          label: "Never invent a decision",
-          description: "Only capture what was actually decided.",
-          transcriptFragment:
-            "A hard rule: never invent a decision. Only capture what was actually decided.",
-        },
-        {
-          id: "name-owners",
-          label: "Always name the owner",
-          description: "Every action has a name attached to it.",
-          transcriptFragment:
-            "A hard rule: every action item names its owner, no orphan tasks.",
-        },
-        {
-          id: "stay-short",
-          label: "Never run long",
-          description: "If it cannot be skimmed fast, it is too long.",
-          transcriptFragment:
-            "A hard rule: keep it skimmable. If it cannot be read fast, it is too long.",
-        },
-      ],
-    },
-    outreach: {
-      id: "guardrails",
-      question: "Any rule it must never break?",
-      helper: "The one thing you would catch if it got it wrong. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "no-needy",
-          label: "Never sound needy",
-          description: "Confident and easy, never chasing or apologetic.",
-          transcriptFragment:
-            "A hard rule: never sound needy. Confident and easy, never chasing or apologetic.",
-        },
-        {
-          id: "no-generic",
-          label: "Never feel like a template",
-          description: "Always one specific, personal detail.",
-          transcriptFragment:
-            "A hard rule: never feel like a template. Always include one specific, personal detail.",
-        },
-        {
-          id: "one-ask",
-          label: "Never more than one ask",
-          description: "Exactly one next step, never a list.",
-          transcriptFragment:
-            "A hard rule: exactly one ask per message, never a list of next steps.",
-        },
-      ],
-    },
-    custom: {
-      id: "guardrails",
-      question: "Any rule it must never break?",
-      helper: "The one thing you would catch if it got it wrong. Pick the closest.",
-      kind: "options",
-      options: [
-        {
-          id: "no-invent",
-          label: "Never make things up",
-          description: "Only use what I actually gave it.",
-          transcriptFragment:
-            "A hard rule: never make things up. Only use what I actually provided.",
-        },
-        {
-          id: "my-voice",
-          label: "Always sound like me",
-          description: "My voice, not a generic AI tone.",
-          transcriptFragment:
-            "A hard rule: always sound like me, never a generic AI tone.",
-        },
-        {
-          id: "stay-tight",
-          label: "Never pad it out",
-          description: "No filler - say it and stop.",
-          transcriptFragment: "A hard rule: never pad it out. No filler, say it and stop.",
-        },
-      ],
-    },
-  };
-
-  return [
-    howByArchetype[a],
-    inputsByArchetype[a],
-    structureByArchetype[a],
-    toneStep(a),
-    guardrailsByArchetype[a],
-  ];
+  return [triggerStep(candidate), stepsStep(candidate.archetype), outputStep(candidate.archetype)];
 }
 
 /* ------------------------------------------------------------------ */
@@ -770,47 +454,37 @@ export function cascadeFor(candidate: DeliverableCandidate): CascadeStep[] {
 /* ------------------------------------------------------------------ */
 
 export interface BuiltYourWayChip {
-  /** The dimension, e.g. "in", "voice", "shape", "rule". */
+  /** The dimension, e.g. "when", "how", "shape". */
   key: string;
-  /** The picked value, e.g. "a transcript", "warm and direct". */
+  /** The picked value, e.g. "Every Monday morning". */
   value: string;
 }
 
 const CHIP_KEY_BY_STEP: Record<CascadeStepId, string> = {
-  how: "from",
-  inputs: "in",
-  structure: "shape",
-  tone: "voice",
-  guardrails: "rule",
+  trigger: "when",
+  steps: "how",
+  output: "shape",
 };
 
 /**
  * Distil the cascade picks into the short "Built your way" chips shown on the
  * skill-ready card. Uses the picked option's label (short) rather than its
- * transcript fragment (long). Order mirrors the mock: in, voice, shape, rule.
+ * transcript fragment (long).
  */
 export function builtYourWayChips(
   steps: CascadeStep[],
   picks: CascadePicks,
 ): BuiltYourWayChip[] {
-  const order: CascadeStepId[] = ["inputs", "tone", "structure", "guardrails"];
   const chips: BuiltYourWayChip[] = [];
-  for (const stepId of order) {
+  for (const stepId of CASCADE_STEP_ORDER) {
     const step = steps.find((s) => s.id === stepId);
     const pickedId = picks[stepId];
     if (!step || !pickedId) continue;
     const opt = step.options.find((o) => o.id === pickedId);
     if (!opt) continue;
-    chips.push({ key: CHIP_KEY_BY_STEP[stepId], value: chipValue(stepId, opt) });
+    chips.push({ key: CHIP_KEY_BY_STEP[stepId], value: opt.label.toLowerCase() });
   }
   return chips;
-}
-
-function chipValue(stepId: CascadeStepId, opt: CascadeOption): string {
-  // The tone chip reads better in lower case ("warm and direct"); structure
-  // and guardrail chips use the short label as-is.
-  if (stepId === "tone") return opt.label.toLowerCase();
-  return opt.label.toLowerCase();
 }
 
 /* ------------------------------------------------------------------ */
@@ -819,19 +493,15 @@ function chipValue(stepId: CascadeStepId, opt: CascadeOption): string {
 
 /**
  * Turn the candidate + cascade picks into a well-formed transcript the
- * generate-skill-export edge function already knows how to parse.
+ * generate-skill-export edge function knows how to parse.
  *
- * The edge prompt (supabase/functions/generate-skill-export/prompt.ts) runs
- * the Three Honest Tests on the transcript and extracts trigger phrases,
- * format rules, structure, and guardrails from the leader's "voice". So the
- * composed transcript is written in first person, present tense, and:
+ * The composed transcript reads like a leader narrating their workflow:
  *   - states the deliverable + that it RECURS (passes the REPEATABLE test)
- *   - states the trigger phrase the leader would say (seeds trigger phrases)
- *   - threads each pick's fragment (how / inputs / structure / voice / rule)
- *   - names a specialised constraint (passes the SPECIALISED test)
- * The result reads like a leader narrating their workflow, which is exactly
- * the input shape the prompt was tuned on - so the backend produces the skill
- * with no edge-function change.
+ *   - states WHEN it triggers (seeds trigger phrases for the description)
+ *   - threads the steps fragment (the workflow)
+ *   - states the output shape (seeds the output format section)
+ * Voice rules are NOT in the transcript - they flow from voice_profile.* rows
+ * through buildMemoryContext into the prompt's VOICE_PROFILE block.
  */
 export function composeTranscript(
   candidate: DeliverableCandidate,
@@ -841,23 +511,24 @@ export function composeTranscript(
   const lines: string[] = [];
   const title = candidate.title.replace(/^your\s+/i, "").trim() || candidate.title;
 
-  // Opening: what it is + that it recurs (REPEATABLE) + the trigger phrase.
-  lines.push(
-    `I regularly produce my ${lowerFirst(title)}. ${candidate.frequencyChip
-      .replace(/^repeats\s+/i, "It repeats ")
-      .replace(/^/, (m) => m)}.`.replace("..", "."),
-  );
+  // Opening: what it is + that it recurs (REPEATABLE).
+  const frequencyLine = candidate.frequencyChip
+    .replace(/^repeats\s+/i, "It repeats ")
+    .replace(/^(\d)/, "It happens $1");
+  lines.push(`I regularly produce my ${lowerFirst(title)}. ${frequencyLine}.`);
+
+  // Trigger phrase the leader would actually say.
   lines.push(
     `I would kick this off by saying something like "draft my ${lowerFirst(
       title,
     )}" or "write the ${lowerFirst(title)}".`,
   );
 
-  // Thread the picks in cascade order so the narration flows how -> in ->
-  // shape -> voice -> rule, each contributing one sentence.
-  for (const step of steps) {
-    const pickedId = picks[step.id];
-    if (!pickedId) continue;
+  // Thread the picks: trigger -> steps -> output. Each contributes one sentence.
+  for (const stepId of CASCADE_STEP_ORDER) {
+    const step = steps.find((s) => s.id === stepId);
+    const pickedId = picks[stepId];
+    if (!step || !pickedId) continue;
     const opt = step.options.find((o) => o.id === pickedId);
     if (opt) lines.push(opt.transcriptFragment);
   }

@@ -18,6 +18,13 @@ export interface SkillData {
   body: string;
   references?: Array<{ filename: string; content: string }>;
   test_prompts?: string[];
+  archetype?: string;
+  /**
+   * Set when the request carried a non-empty VOICE_PROFILE. The voice-lock
+   * advisory check uses this to decide whether the "## Voice and tone" body
+   * section is required.
+   */
+  voice_profile_present?: boolean;
 }
 
 export interface QualityCheck {
@@ -141,6 +148,25 @@ export function runQualityGate(skill: SkillData): QualityGateResult {
     label: "Learning loop block present",
     passed: /learning loop|BUILD_LOG\.md|LESSONS\.md/i.test(body),
     detail: "A learning loop section makes the skill log its runs and sharpen with use",
+  });
+
+  // Advisory voice-lock check: when the request carried voice profile rows OR
+  // the archetype classified as voice-lock, the body must surface a
+  // "## Voice and tone" section. Non-blocking - the export still ships - but
+  // the UI can prompt the user to regenerate when it fires.
+  const voiceLockExpected =
+    skill.voice_profile_present === true ||
+    (skill.archetype ?? "").toLowerCase() === "voice-lock";
+  const voiceSectionPresent = /^##\s+Voice and tone/im.test(body);
+  checks.push({
+    id: "body.voiceLockSurfaced",
+    label: "Voice and tone section present when expected",
+    passed: voiceLockExpected ? voiceSectionPresent : true,
+    detail: voiceLockExpected
+      ? voiceSectionPresent
+        ? "Voice section is present"
+        : "Voice profile provided but body has no ## Voice and tone section"
+      : "Not required (no voice profile, archetype is not voice-lock)",
   });
 
   // -------- Package checks --------------------------------------------

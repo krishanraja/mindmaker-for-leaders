@@ -11,13 +11,17 @@ import {
 /**
  * AutomatorCascade - screen 2 of the Build-a-skill flow.
  *
- * A 5-step RECOGNITION pick-cascade. Every step shows options to SELECT, never
- * a blank "describe it" box. Step 4 (tone) shows worked SAMPLES - the same
- * output written three ways - and asks you to pick the one that sounds like
- * you (it never asks "what is your tone").
+ * A 3-step RECOGNITION pick-cascade per the redesign:
+ *   1. Trigger  - when do you do this?
+ *   2. Steps    - walk me through how you do this now
+ *   3. Output   - what does the output look like?
  *
- * A progress bar (step N of 5) and a fixed bottom Next / Build CTA. Mocks:
- * prototypes/capture-v1.html (step 1) + capture-tone.html (the voice step).
+ * Every step shows options to SELECT, never a blank "describe it" box. Voice
+ * and tone are NOT asked here - they flow from the leader's voice_profile.*
+ * rows (captured in the Kit's VoiceStyleProfileSheet) through buildMemoryContext
+ * into the prompt's VOICE_PROFILE block.
+ *
+ * A progress bar (step N of 3) and a fixed bottom Next / Build CTA.
  *
  * Stateless: the parent owns `stepIndex` + `picks` and drives selection. This
  * keeps the QC harness able to render any step at its final state.
@@ -105,83 +109,37 @@ export function AutomatorCascade({
               </p>
             </div>
 
-            {step.kind === "samples" ? (
-              <div className="mt-4 flex flex-col gap-2.5">
-                {step.options.map((opt) => {
-                  const on = selectedId === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => onSelect(step.id, opt.id)}
-                      aria-pressed={on}
-                      className={cn(
-                        "rounded-[16px] border p-[14px] text-left transition-colors",
-                        on
-                          ? "border-accent bg-[linear-gradient(180deg,#0e1a17,#0a0f12)] shadow-[0_0_0_1px_hsl(var(--accent))_inset]"
-                          : "border-border bg-card hover:border-accent/30",
-                      )}
-                    >
-                      <span className="mb-2 flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "text-[10px] font-bold uppercase tracking-[0.06em]",
-                            on ? "text-accent" : "text-muted-foreground",
-                          )}
-                        >
-                          {opt.label}
-                        </span>
-                        <Radio on={on} className="ml-auto" />
+            <div className="mt-4 flex flex-col gap-2.5">
+              {step.options.map((opt) => {
+                const on = selectedId === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => onSelect(step.id, opt.id)}
+                    aria-pressed={on}
+                    className={cn(
+                      "flex items-start gap-3 rounded-[16px] border p-[15px] text-left transition-colors",
+                      on
+                        ? "border-accent bg-[linear-gradient(180deg,#0e1a17,#0a0f12)] shadow-[0_0_0_1px_hsl(var(--accent))_inset]"
+                        : "border-border bg-card hover:border-accent/30",
+                    )}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold leading-snug text-foreground">
+                        {opt.label}
                       </span>
-                      <p
-                        className={cn(
-                          "m-0 text-[13px] italic leading-relaxed",
-                          on ? "text-foreground" : "text-foreground/70",
-                        )}
-                      >
-                        &ldquo;{opt.sample}&rdquo;
-                      </p>
-                    </button>
-                  );
-                })}
-                <p className="px-2 pt-1.5 text-center text-[11.5px] leading-relaxed text-muted-foreground/70">
-                  CTRL learns your voice from the one you pick. You can fine-tune
-                  any line once it writes the first draft.
-                </p>
-              </div>
-            ) : (
-              <div className="mt-4 flex flex-col gap-2.5">
-                {step.options.map((opt) => {
-                  const on = selectedId === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => onSelect(step.id, opt.id)}
-                      aria-pressed={on}
-                      className={cn(
-                        "flex items-start gap-3 rounded-[16px] border p-[15px] text-left transition-colors",
-                        on
-                          ? "border-accent bg-[linear-gradient(180deg,#0e1a17,#0a0f12)] shadow-[0_0_0_1px_hsl(var(--accent))_inset]"
-                          : "border-border bg-card hover:border-accent/30",
-                      )}
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[15px] font-semibold leading-snug text-foreground">
-                          {opt.label}
+                      {opt.description && (
+                        <span className="mt-0.5 block text-[12px] leading-snug text-muted-foreground">
+                          {opt.description}
                         </span>
-                        {opt.description && (
-                          <span className="mt-0.5 block text-[12px] leading-snug text-muted-foreground">
-                            {opt.description}
-                          </span>
-                        )}
-                      </span>
-                      <Radio on={on} className="mt-0.5" />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                      )}
+                    </span>
+                    <Radio on={on} className="mt-0.5" />
+                  </button>
+                );
+              })}
+            </div>
           </motion.div>
         </AnimatePresence>
 

@@ -300,23 +300,31 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 
 ### Free vs Pro
 
-**Free:**
+Full pricing matrix lives in `docs/PRICING.md` and the `PlanMatrix` block in `EdgeProTab`. The two tiers as of the 2026-06-18 overhaul:
+
+**Free (no card required, available to Kit-side-door students too):**
 - Full strength/weakness profile
 - Intelligence gap detection
 - Feedback loops
+- Read-write Memory Web
+- Voice Profile capture (`VoiceStyleProfileSheet`)
+- **1 Automator skill export per calendar month (UTC)** - the front-door demonstration
 - Limited artifact previews (samples only)
 
 **Edge Pro** ($29/month, Stripe subscription):
+- **Unlimited Automator skill exports** (`generate-skill-export`): the Skill Builder. The `/context` entry is the **Automator deliverable flow** - Suggestions (recurring deliverables mined from the brain) -> a 3-step recognition pick-cascade (trigger -> steps -> output) -> Skill ready (Run it now + Export as markdown + a "Your skills" library peek). The prompt runs the Four Honest Tests (REPEATABLE / SPECIALISED / BOUNDED / VOICE-LOCK) and consumes the leader's Voice Profile to produce a body `## Voice and tone` section + a `voice-profile.md` reference file. Output is an agentskills.io ZIP downloadable into `~/.claude/skills/`.
 - Unlimited artifact generation
 - Email delivery via `deliver-edge-artifact`
 - All capability types
 - All 7 briefing types (incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice)
-- **Unlimited Agent Skill Builder generation** (`generate-skill-export`): the Skill Builder. As of the 2026-06-17 UX redesign (PR #199) the `/context` entry is the **Automator deliverable flow** - Suggestions (recurring deliverables mined from the brain) -> a recognition pick-cascade -> Skill ready (Run it now + Export as markdown + a "Your skills" library peek). It still feeds the same `generate-skill-export` pipeline and produces a Skill downloadable into `~/.claude/skills/`. See **Home / Decision Map / Automator UX Redesign** above.
+- Decision Engine (`decision-engine` / `decision-watch`)
 - Custom Voice Export (`generate-custom-export`)
 - Subscription management UI via `create-billing-portal-session`
 - Stripe webhook idempotency table (`stripe_events_processed`) prevents double-charges (Audit Week 1)
 
-**Sales Anchor - Edge Pro**: "$29/month. Less than a coffee a week. Generates board memos, strategy docs, and meeting agendas in your register, on demand. Skip the blank page entirely."
+**Quota enforcement.** The free 1-per-month cap is enforced by `generate-skill-export/index.ts` against `automator_usage(user_id, month, exports_used)`. Hitting it returns HTTP 402 `{ error: "free_quota_exhausted", upgrade_url: "/settings?tab=edge" }`. `useSkillExport.quotaExhausted` surfaces it on the client; `AutomatorFlow` opens `EdgePaywall` with `capability='free_quota_exhausted'`.
+
+**Sales Anchor - Edge Pro**: "$29/month. Unlimited Automator skills + daily briefing + decision engine. Free tier ships one skill per month so you see the value before paying."
 
 ---
 

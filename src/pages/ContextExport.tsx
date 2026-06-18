@@ -69,6 +69,7 @@ import { PLATFORM_GUIDES } from '@/lib/platform-guides';
 import { ModelRecommendationCard } from '@/components/export/ModelRecommendationCard';
 import { BroadcastBar } from '@/components/export/BroadcastBar';
 import { AutomatorFlow } from '@/components/automator/AutomatorFlow';
+import { EdgePaywall } from '@/components/edge/EdgePaywall';
 import type { ExportFormat, ExportUseCase } from '@/types/memory';
 import type { ExportRecommendation } from '@/types/edge';
 import type { SkillSeed } from '@/types/skill';
@@ -152,6 +153,7 @@ export default function ContextExport() {
   // null = the export wizard (use-case presets) is showing.
   const [skillFocus, setSkillFocus] = useState<boolean>(false);
   const [skillSeed, setSkillSeed] = useState<SkillSeed | null>(null);
+  const [quotaPaywallOpen, setQuotaPaywallOpen] = useState(false);
 
   // Entry points (Edge AutomatePainCard, Memory blocker button, Briefing
   // decision_trigger button) navigate to /context with location.state.seed.
@@ -817,6 +819,12 @@ export default function ContextExport() {
           key={skillSeed?.text ?? 'browse'}
           initialSeed={skillSeed}
           onTriageReroute={handleTriageReroute}
+          onQuotaExhausted={() => setQuotaPaywallOpen(true)}
+        />
+        <EdgePaywall
+          isOpen={quotaPaywallOpen}
+          onClose={() => setQuotaPaywallOpen(false)}
+          capability="free_quota_exhausted"
         />
       </div>
     </div>

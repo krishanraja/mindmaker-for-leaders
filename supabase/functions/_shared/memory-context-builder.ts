@@ -1,6 +1,12 @@
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { loadGlobalTraining } from "./training-loader.ts";
 import type { TrainingMaterial } from "./training-schema.ts";
+import {
+  VOICE_PROFILE_DIMENSION_LABELS,
+  VOICE_PROFILE_KEYS,
+  VOICE_PROFILE_PREFIX,
+  type VoiceProfileKey,
+} from "./voice-profile/keys.ts";
 
 export interface MemoryContextOptions {
   includeWarm?: boolean;
@@ -26,6 +32,12 @@ export interface MemoryContextResult {
   // token-budget trim). Callers fire-and-forget touch_memory_facts on these so
   // reference_count reflects genuine reliance, never trimmed-out facts.
   touchedFactIds?: string[];
+  // Voice profile section: markdown block from user_memory rows with
+  // fact_key LIKE 'voice_profile.%'. Optional and additive - callers that do
+  // not want voice (e.g. briefing) ignore it; the skill-export pipeline reads
+  // this explicitly and injects it into the body Voice and tone section.
+  voiceProfile?: string;
+  voiceProfileRecord?: Partial<Record<VoiceProfileKey, string>>;
 }
 
 export interface ExportArtefact {
@@ -63,6 +75,52 @@ interface Decision {
 
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
+}
+
+interface VoiceRow {
+  fact_key: string;
+  fact_value: string | null;
+}
+
+function buildVoiceProfileSection(rows: VoiceRow[]): {
+  markdown: string;
+  record: Partial<Record<VoiceProfileKey, string>>;
+} {
+  if (!rows.length) return { markdown: "", record: {} };
+  const record: Partial<Record<VoiceProfileKey, string>> = {};
+  for (const row of rows) {
+    if (!row.fact_value) continue;
+    record[row.fact_key as VoiceProfileKey] = row.fact_value;
+  }
+  const lines: string[] = ["## Voice & Style Profile"];
+  const ordered: VoiceProfileKey[] = [
+    VOICE_PROFILE_KEYS.archetype,
+    VOICE_PROFILE_KEYS.sentenceLength,
+    VOICE_PROFILE_KEYS.firstPerson,
+    VOICE_PROFILE_KEYS.punctuation,
+    VOICE_PROFILE_KEYS.signoff,
+    VOICE_PROFILE_KEYS.disagreement,
+  ];
+  for (const key of ordered) {
+    const value = record[key];
+    if (!value) continue;
+    lines.push(`- ${VOICE_PROFILE_DIMENSION_LABELS[key]}: ${value}`);
+  }
+  const hardRules = record[VOICE_PROFILE_KEYS.hardRules];
+  if (hardRules) {
+    lines.push(`- ${VOICE_PROFILE_DIMENSION_LABELS[VOICE_PROFILE_KEYS.hardRules]}:`);
+    for (const rule of hardRules.split("\n").map((s) => s.trim()).filter(Boolean)) {
+      lines.push(`  - ${rule}`);
+    }
+  }
+  const sample = record[VOICE_PROFILE_KEYS.sampleVoice];
+  if (sample) {
+    lines.push(`- ${VOICE_PROFILE_DIMENSION_LABELS[VOICE_PROFILE_KEYS.sampleVoice]}:`);
+    for (const line of sample.split("\n")) {
+      lines.push(`  > ${line}`);
+    }
+  }
+  return { markdown: lines.join("\n"), record };
 }
 
 function groupFactsByCategory(facts: Fact[]): Record<string, Fact[]> {
@@ -559,6 +617,17 @@ export async function buildMemoryContext(
 
   const decisions = (decisionData || []) as Decision[];
 
+  // Voice profile rows: separate query, separate budget. Voice rows never enter
+  // the trimmable fact pool because they're advisory style anchors, not
+  // capacity-eating content.
+  const { data: voiceRows } = await supabase
+    .from("user_memory")
+    .select("fact_key, fact_value")
+    .eq("user_id", userId)
+    .eq("is_current", true)
+    .like("fact_key", `${VOICE_PROFILE_PREFIX}%`);
+  const voiceSection = buildVoiceProfileSection((voiceRows ?? []) as VoiceRow[]);
+
   // Get user name from identity facts
   const nameFact = allFacts.find(f => f.fact_category === "identity" && f.fact_label?.toLowerCase().includes("name"));
   const userName = nameFact?.fact_value || null;
@@ -615,6 +684,9 @@ export async function buildMemoryContext(
     lastUpdated: new Date().toISOString(),
     artefacts,
     touchedFactIds: finalFacts.map((f) => f.id).filter(Boolean),
+    voiceProfile: voiceSection.markdown || undefined,
+    voiceProfileRecord:
+      Object.keys(voiceSection.record).length > 0 ? voiceSection.record : undefined,
   };
 }
 

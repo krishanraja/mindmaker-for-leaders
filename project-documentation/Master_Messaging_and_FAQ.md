@@ -92,13 +92,15 @@ One decision. One trade-off analysis. One commitment. Working systems and a 90-d
 
 | SKU | Price | Audience |
 |---|---|---|
-| CTRL Free / Core | $0 | Every leader. The land in land-and-expand. |
+| CTRL Free | $0 | Every leader. The land in land-and-expand. Includes read-write Memory Web, Voice Profile capture, Kit access, and **1 Automator skill export per month**. The Kit-side-door entry path (anonymous students from `/kit`) graduates into this tier. |
 | Full Diagnostic | $49 one-time | Leaders who want a one-shot deep audit |
 | Deep Context Upgrade | $29 one-time | Pre-meeting / strategy sprint prep |
 | Diagnostic + Deep Context Bundle | $69 one-time (saves $10) | Default upsell after Memory Web is built |
-| Edge Pro | $29/month | Active leaders who treat AI as part of weekly cadence (unlimited Edge artifacts, all 7 briefing types, email delivery, Agent Skill Builder, Custom Voice Export) |
+| Edge Pro | $29/month | Active leaders who treat AI as part of weekly cadence. **Unlimited Automator skills**, daily briefing, decision engine, unlimited Edge artifacts, all 7 briefing types, email delivery, Custom Voice Export, MCP agent access. |
 | Mindmaker Enterprise Sprint | $15K-$50K | Exec teams |
 | Mindmaker Portfolio Engagement | $5K-$25K | VC / PE / consulting partners |
+
+Full plan matrix: see `docs/PRICING.md` and the `PlanMatrix` block in the Edge Pro settings tab.
 
 ---
 
@@ -135,10 +137,13 @@ A: We use Vertex AI (Gemini 2.0 Flash) as primary and OpenAI GPT-4o as fallback 
 A: Yes. Account deletion removes Memory Web facts, briefings, audio artifacts, decisions, missions, assessments, and Skill Builder exports. Audit Week 2 closed an assessment-data leak and codified the storage bucket policy. Your data does not train any AI model. Your data is yours.
 
 **Q: What is the Agent Skill Builder and why should I care?**
-A: It is the third surface on `/context`, alongside Context Export and Custom Voice Export. Edge Pro gated. The leader describes one workflow they do at least weekly - voice or text - and CTRL hands them a downloadable, agentskills.io-compliant Claude Skill (a `SKILL.md` plus references, test prompts, and an install guide, packaged as a ZIP). They drop the ZIP into `~/.claude/skills/` and the skill auto-triggers whenever their team's language matches. Two minutes of speaking, permanent agent infrastructure they own.
+A: It is the **Automator**, the default flow on `/context`. The leader picks a recurring deliverable CTRL mined from their brain, runs a 3-step recognition cascade (when does it trigger, walk me through how you do it, what does the output look like), and CTRL hands them a downloadable, agentskills.io-compliant Claude Skill (a `SKILL.md` plus references, test prompts, and an install guide, packaged as a ZIP). The first skill is free for every leader; Edge Pro unlocks unlimited. Two minutes of picking, permanent agent infrastructure they own.
 
 **Q: Why isn't the Skill Builder just another "AI macro" tool?**
-A: Three reasons. (1) The Three Honest Tests triage gate refuses to generate a skill when the input is really a Memory Web fact, a Custom Instruction, or a Saved Style - it routes the leader to the right surface instead. Most tools generate junk; CTRL refuses. (2) The output is agentskills.io-compliant, not a saved prompt - real agent infrastructure that works in Claude Code, Claude.ai, and Cursor. (3) Pain-anchored entry points: every blocker on Edge, every Memory Web blocker card, every Briefing decision-trigger segment has a one-tap zap into the Skill Builder pre-seeded with that pain. Discovery is built into the pages where the pain shows up.
+A: Four reasons. (1) The **Four Honest Tests** triage gate (REPEATABLE / SPECIALISED / BOUNDED / VOICE-LOCK) refuses to generate a skill when the input is really a Memory Web fact, a Custom Instruction, or a Saved Style - it routes the leader to the right surface instead. Most tools generate junk; CTRL refuses. (2) The **Voice Profile** captured in 90 seconds (`VoiceStyleProfileSheet`) flows into every generated skill, producing a `## Voice and tone` section + a `voice-profile.md` reference that locks the output to the leader's actual voice. Generic AI prose is replaced with their sign-off, sentence rhythm, hard rules, and sample register. (3) The output is agentskills.io-compliant, not a saved prompt - real agent infrastructure that works in Claude Code, Claude.ai, and Cursor. (4) Pain-anchored entry points filtered to **automatable** items only (strategic blockers like "Retention Challenge" are filtered out): every recurring workflow on Edge, every Memory Web blocker card, every Briefing decision-trigger segment has a one-tap zap into the Automator pre-seeded with that pain.
 
 **Q: Where does Skill Builder fit in the Edge Pro upsell?**
-A: Edge Pro is $29/month (moved from $9 on 2026-05-30; existing subscribers are grandfathered). It includes unlimited Edge artifacts, all 7 briefing types, email delivery, Custom Voice Export, and unlimited Agent Skill Builder generation. The Pro tier is now the obvious purchase for any leader who runs the same weekly rituals (board updates, hiring syncs, RFP triage, investor updates).
+A: Edge Pro is $29/month (moved from $9 on 2026-05-30; existing subscribers are grandfathered). The free tier ships **one Automator skill per calendar month** so every leader experiences the full pipeline on day one without payment. Edge Pro unlocks **unlimited Automator skills** plus daily briefing, decision engine, unlimited Edge artifacts, all 7 briefing types, email delivery, Custom Voice Export, and MCP agent access. Anyone automating more than one workflow per month has demonstrated value above $29 and is correctly steered to upgrade. The Kit side door (anonymous students from `/kit`) lands in the free tier directly via `upgradeAnonymousSession()`, removing the auth-and-pay wall between class and first build.
+
+**Q: How do students enter for free without a credit card?**
+A: The Kit program at `/kit` is fully public. A student scans the class QR, redeems a code, and operates inside an anonymous Supabase session - no signup required. Their intake answers, Memory Web facts, voice profile and kit_redemptions are all keyed to the anonymous `user_id`. When they tap "Save my profile" inside `KitHome`, `upgradeAnonymousSession(email, password)` converts the anonymous account into a named CTRL Free user without losing any data (`auth.uid()` is preserved across the upgrade). They land at `/dashboard?welcome=free` with read-write Memory Web, their captured voice profile, and their first free Automator skill of the month waiting.

@@ -21,7 +21,7 @@ import {
  * AutomatorFlow - the redesigned "Build a skill" experience (3 screens):
  *
  *   1. SUGGESTIONS - pick a recurring deliverable CTRL mined from your brain.
- *   2. CASCADE     - a 5-step recognition pick-cascade (never a blank box).
+ *   2. CASCADE     - a 3-step recognition pick-cascade: trigger -> steps -> output.
  *   3. SKILL READY - the payoff + library peek + export.
  *
  * Owns the flow state and the wiring: it composes the cascade picks into a
@@ -45,6 +45,12 @@ interface AutomatorFlowProps {
   onTriageReroute?: (transcript: string, result: string, reasoning?: string) => void;
   /** Called when the leader exports the generated skill (download .zip). */
   onExported?: () => void;
+  /**
+   * Called when the edge function returns 402 free_quota_exhausted. The parent
+   * opens EdgePaywall in quota-exhausted mode so the upgrade CTA carries the
+   * right copy.
+   */
+  onQuotaExhausted?: () => void;
 }
 
 type Phase = "suggestions" | "cascade" | "ready";
@@ -84,6 +90,7 @@ export function AutomatorFlow({
   initialSeed,
   onTriageReroute,
   onExported,
+  onQuotaExhausted,
 }: AutomatorFlowProps) {
   const { toast } = useToast();
   const suggestions = useSkillSuggestions(3);
@@ -168,7 +175,11 @@ export function AutomatorFlow({
 
     const response = await skillExport.generateSkill(transcript, { seed });
     if (!response) {
-      // useSkillExport set the error; the cascade surfaces it inline.
+      // Quota exhausted is a soft fail: the hook set quotaExhausted and the
+      // parent shows the paywall. Other errors surface inline via skillExport.error.
+      if (skillExport.quotaExhausted) {
+        onQuotaExhausted?.();
+      }
       return;
     }
 
@@ -183,7 +194,7 @@ export function AutomatorFlow({
     // Triage rerouted this away from a skill - hand it up to the parent so the
     // existing context-blob fallback can rescue the transcript.
     onTriageReroute?.(transcript, response.triage.result, response.triage.reasoning);
-  }, [candidate, steps, stepIndex, picks, skillExport, onTriageReroute]);
+  }, [candidate, steps, stepIndex, picks, skillExport, onTriageReroute, onQuotaExhausted]);
 
   // ─── Skill-ready handlers ───────────────────────────────────────
   const handleRun = useCallback(() => {

@@ -221,16 +221,14 @@ const AUTOMATOR_CANDIDATES: DeliverableCandidate[] = [
   },
 ];
 
-// A proposal candidate drives the cascade content for the two cascade fixtures
-// (an options step + the tone-samples step).
+// A proposal candidate drives the cascade content for the cascade fixtures.
+// The redesigned cascade is 3 steps: trigger -> steps -> output.
 const CASCADE_CANDIDATE = AUTOMATOR_CANDIDATES[1];
 const CASCADE_STEPS = cascadeFor(CASCADE_CANDIDATE);
 const CASCADE_PICKS: CascadePicks = {
-  how: CASCADE_STEPS[0].options[0].id,
-  inputs: CASCADE_STEPS[1].options[0].id,
-  structure: CASCADE_STEPS[2].options[0].id,
-  tone: 'warm',
-  guardrails: CASCADE_STEPS[4].options[0].id,
+  trigger: CASCADE_STEPS[0].options[0].id,
+  steps: CASCADE_STEPS[1].options[0].id,
+  output: CASCADE_STEPS[2].options[0].id,
 };
 
 const READY_SKILL: SkillData = {

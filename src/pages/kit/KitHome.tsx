@@ -21,6 +21,8 @@ import { ArtifactProgressList } from "@/components/kit/ArtifactProgressList";
 import { HomeworkCard } from "@/components/kit/HomeworkCard";
 import { PersonalMapCard } from "@/components/kit/PersonalMapCard";
 import { SendPackCard } from "@/components/kit/SendPackCard";
+import { VoiceProfileCard } from "@/components/kit/VoiceProfileCard";
+import { SaveProfileCard } from "@/components/kit/SaveProfileCard";
 import { SevenDayPlan } from "@/components/kit/SevenDayPlan";
 import { ShipSection } from "@/components/kit/ShipSection";
 import { ArtifactCard } from "@/components/kit/ArtifactCard";
@@ -485,6 +487,12 @@ export default function KitHome() {
 
             {/* 1. The capstone map */}
             {kitMap && <PersonalMapCard map={kitMap} />}
+
+            {/* 1.5. Voice profile capture - feeds every future Automator export */}
+            {journey.shippedAt && <VoiceProfileCard />}
+
+            {/* 1.6. Side-door upgrade to free CTRL once a voice profile exists */}
+            {journey.shippedAt && <SaveProfileCard />}
 
             {/* 2. Email capture at the moment of value */}
             {showSendPack && (

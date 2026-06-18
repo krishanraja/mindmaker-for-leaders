@@ -23,6 +23,8 @@ import { runQualityGate, type SkillData } from "./quality-gate.ts";
 import { buildSkillZip } from "./zip.ts";
 import { recordAiUsage, checkDailySoftCap } from "../_shared/ai-usage.ts";
 
+const FREE_MONTHLY_AUTOMATOR_EXPORTS = 1;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -81,11 +83,36 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id)
       .single();
 
-    if (
-      !subscription ||
-      (subscription.status !== "active" && subscription.status !== "past_due")
-    ) {
-      return jsonResponse({ error: "Edge Pro subscription required" }, 403);
+    const isEdgePro = Boolean(
+      subscription &&
+        (subscription.status === "active" || subscription.status === "past_due"),
+    );
+
+    // Free tier: one Automator skill export per calendar month (UTC). Edge Pro:
+    // unlimited. We resolve the quota BEFORE doing the LLM call so we never
+    // charge LLM tokens for a request the user can't redeem.
+    const monthKey = new Date().toISOString().slice(0, 7); // YYYY-MM
+    if (!isEdgePro) {
+      const { data: usage } = await serviceClient
+        .from("automator_usage")
+        .select("exports_used")
+        .eq("user_id", user.id)
+        .eq("month", monthKey)
+        .maybeSingle();
+      const used = (usage?.exports_used ?? 0) as number;
+      if (used >= FREE_MONTHLY_AUTOMATOR_EXPORTS) {
+        return jsonResponse(
+          {
+            error: "free_quota_exhausted",
+            message:
+              "Free tier includes one Automator skill per month. Upgrade to Edge Pro for unlimited skills plus the daily briefing and decision engine.",
+            tier: "free",
+            quota: { used, limit: FREE_MONTHLY_AUTOMATOR_EXPORTS, month: monthKey },
+            upgrade_url: "/settings?tab=edge",
+          },
+          402,
+        );
+      }
     }
 
     // Generous soft cap: logs an overage signal, never blocks. Reported back so
@@ -173,6 +200,7 @@ Deno.serve(async (req) => {
               transcript,
               memoryContext: memoryResult.context,
               profileContext,
+              voiceProfile: memoryResult.voiceProfile,
               seed,
             }),
           },
@@ -251,6 +279,8 @@ Deno.serve(async (req) => {
       body: skill.body,
       references: skill.references || [],
       test_prompts: skill.test_prompts || [],
+      archetype: skill.archetype,
+      voice_profile_present: Boolean(memoryResult.voiceProfile),
     };
 
     const qualityGate = runQualityGate(skillData);
@@ -295,6 +325,19 @@ Deno.serve(async (req) => {
       })
       .select("id, created_at")
       .single();
+
+    // Increment the free-tier quota on a successful export. Edge Pro accounts
+    // skip this entirely so their usage table stays empty - the quota check
+    // already short-circuits for them above.
+    if (!isEdgePro) {
+      const { error: rpcError } = await serviceClient.rpc("increment_automator_usage", {
+        p_user_id: user.id,
+        p_month: monthKey,
+      });
+      if (rpcError) {
+        console.warn("generate-skill-export: usage increment failed", rpcError);
+      }
+    }
 
     // Also persist in the unified generated_artifacts table so the Library
     // tab on /memory can surface it alongside drafts, frameworks, exports,

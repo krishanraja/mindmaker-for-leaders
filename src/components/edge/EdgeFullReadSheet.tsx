@@ -33,7 +33,6 @@ interface EdgeFullReadSheetProps {
   weaknesses: EdgeWeakness[];
   onReject: (feedbackType: FeedbackType, key: string) => void;
   onMakeNextMove: () => void;
-  isPaid: boolean;
   onUpgrade: () => void;
 }
 
@@ -82,7 +81,6 @@ function FullReadBody({
   weaknesses,
   onReject,
   onMakeNextMove,
-  isPaid,
   onUpgrade,
 }: Omit<EdgeFullReadSheetProps, 'isOpen' | 'onClose'>) {
   return (
@@ -130,7 +128,7 @@ function FullReadBody({
       </section>
 
       {/* Secondary value prop, demoted below the identity read */}
-      <AutomatePainCard isPaidUser={isPaid} onUpgrade={onUpgrade} />
+      <AutomatePainCard onUpgrade={onUpgrade} />
 
       <Button onClick={onMakeNextMove} className="w-full">
         Make my next move
