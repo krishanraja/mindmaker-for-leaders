@@ -99,7 +99,8 @@ export function SendPackCard({
         <>
           <p className="text-sm text-muted-foreground">
             Your kit lives in this browser right now. Drop your email and the whole pack lands in
-            your inbox, plus a check-in on day 3 and day 7. That is all the email does.
+            your inbox, plus a check-in on day 3 and day 7. Add a password after and your kit,
+            voice profile, and Memory Web open anywhere in CTRL, free.
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input

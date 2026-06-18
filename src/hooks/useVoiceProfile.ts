@@ -1,33 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  VOICE_DIMENSION_LABELS,
-  VOICE_PROFILE_KEYS,
-  VOICE_PROFILE_PREFIX,
-  isProfileMeaningful,
-  voiceProfileRowsToObject,
-  voiceProfileToRows,
+  parseVoiceProfile,
+  VOICE_PROFILE_FACT_KEY,
   type VoiceProfile,
-  type VoiceProfileKey,
-} from "@/lib/voiceProfile";
+} from "@/types/voiceProfile";
 
-interface UseVoiceProfileResult {
-  profile: VoiceProfile;
-  hasProfile: boolean;
-  loading: boolean;
-  save: (
-    next: VoiceProfile,
-    source?: "form" | "voice",
-  ) => Promise<{ ok: boolean; error?: string }>;
-  refetch: () => Promise<void>;
-}
-
-const EMPTY_PROFILE: VoiceProfile = {};
-
-export function useVoiceProfile(): UseVoiceProfileResult {
-  const [profile, setProfile] = useState<VoiceProfile>(EMPTY_PROFILE);
-  const [hasProfile, setHasProfile] = useState(false);
+/**
+ * Load and persist the leader's self-identified voice profile in user_memory.
+ * Works for anonymous kit sessions and full accounts - the profile survives
+ * upgradeAnonymousSession because it stays on the same auth.uid().
+ */
+export function useVoiceProfile() {
+  const [profile, setProfile] = useState<VoiceProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     setLoading(true);
@@ -36,113 +23,98 @@ export function useVoiceProfile(): UseVoiceProfileResult {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setProfile(EMPTY_PROFILE);
-        setHasProfile(false);
+        setProfile(null);
         return;
       }
-      const { data, error } = await supabase
+
+      const { data } = await supabase
         .from("user_memory")
-        .select("fact_key, fact_value")
+        .select("fact_value, updated_at")
         .eq("user_id", user.id)
+        .eq("fact_key", VOICE_PROFILE_FACT_KEY)
         .eq("is_current", true)
-        .like("fact_key", `${VOICE_PROFILE_PREFIX}%`);
-      if (error) {
-        console.warn("useVoiceProfile: fetch failed", error);
-        setProfile(EMPTY_PROFILE);
-        setHasProfile(false);
-        return;
+        .maybeSingle();
+
+      const parsed = parseVoiceProfile(data?.fact_value as string | undefined);
+      if (parsed && data?.updated_at) {
+        parsed.updatedAt = data.updated_at as string;
       }
-      const next = voiceProfileRowsToObject(
-        (data ?? []).map((row) => ({
-          fact_key: row.fact_key as string,
-          fact_value: (row.fact_value as string | null) ?? null,
-        })),
-      );
-      setProfile(next);
-      setHasProfile(isProfileMeaningful(next));
-    } catch (err) {
-      console.warn("useVoiceProfile: fetch threw", err);
-      setProfile(EMPTY_PROFILE);
-      setHasProfile(false);
+      setProfile(parsed);
+    } catch {
+      setProfile(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchProfile();
+    void fetchProfile();
   }, [fetchProfile]);
 
-  const save = useCallback<UseVoiceProfileResult["save"]>(
-    async (next, source = "form") => {
+  const saveProfile = useCallback(
+    async (next: VoiceProfile): Promise<{ ok: boolean; error?: string }> => {
+      setSaving(true);
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
         if (!user) {
-          return { ok: false, error: "No session - sign in or redeem a Kit first." };
+          return { ok: false, error: "Sign in to save your voice profile." };
         }
-        const rows = voiceProfileToRows(next);
-        if (rows.length === 0) {
-          return { ok: false, error: "Add at least one voice dimension before saving." };
-        }
-        const now = new Date().toISOString();
-        const upserts = rows.map((row) => ({
-          user_id: user.id,
-          fact_key: row.fact_key,
-          fact_category: "preference" as const,
-          fact_label: VOICE_DIMENSION_LABELS[mapKeyToDimensionLabel(row.fact_key)],
-          fact_value: row.fact_value,
-          confidence_score: 0.95,
-          source_type: source,
-          verification_status: "verified" as const,
-          is_current: true,
-          updated_at: now,
-        }));
-        const { error } = await supabase
+
+        const payload: VoiceProfile = {
+          ...next,
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Retire any prior row so only one current profile exists.
+        await supabase
           .from("user_memory")
-          .upsert(upserts, { onConflict: "user_id,fact_key" });
+          .update({ is_current: false })
+          .eq("user_id", user.id)
+          .eq("fact_key", VOICE_PROFILE_FACT_KEY)
+          .eq("is_current", true);
+
+        const { error } = await supabase.from("user_memory").insert({
+          user_id: user.id,
+          fact_key: VOICE_PROFILE_FACT_KEY,
+          fact_category: "preference",
+          fact_subtype: "communication_style",
+          fact_label: "Writing voice",
+          fact_value: JSON.stringify(payload),
+          fact_context: "Self-identified voice profile for skill generation",
+          source_type: "form",
+          confidence_score: 1,
+          verification_status: "verified",
+          is_current: true,
+          temperature: "hot",
+          importance: 8,
+        });
+
         if (error) {
-          console.warn("useVoiceProfile: upsert failed", error);
           return { ok: false, error: error.message };
         }
-        await fetchProfile();
+
+        setProfile(payload);
         return { ok: true };
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.warn("useVoiceProfile: save threw", err);
-        return { ok: false, error: msg };
+        return {
+          ok: false,
+          error: err instanceof Error ? err.message : "Could not save profile.",
+        };
+      } finally {
+        setSaving(false);
       }
     },
-    [fetchProfile],
+    [],
   );
 
   return {
     profile,
-    hasProfile,
     loading,
-    save,
+    saving,
+    hasProfile: !!profile,
+    saveProfile,
     refetch: fetchProfile,
   };
-}
-
-function mapKeyToDimensionLabel(key: VoiceProfileKey): keyof VoiceProfile {
-  switch (key) {
-    case VOICE_PROFILE_KEYS.signoff:
-      return "signoff";
-    case VOICE_PROFILE_KEYS.archetype:
-      return "archetype";
-    case VOICE_PROFILE_KEYS.sentenceLength:
-      return "sentenceLength";
-    case VOICE_PROFILE_KEYS.firstPerson:
-      return "firstPerson";
-    case VOICE_PROFILE_KEYS.punctuation:
-      return "punctuation";
-    case VOICE_PROFILE_KEYS.hardRules:
-      return "hardRules";
-    case VOICE_PROFILE_KEYS.sampleVoice:
-      return "sampleVoice";
-    case VOICE_PROFILE_KEYS.disagreement:
-      return "disagreement";
-  }
 }

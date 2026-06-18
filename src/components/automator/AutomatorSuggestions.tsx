@@ -5,7 +5,9 @@ import {
   Brain,
   ChevronRight,
   FileText,
+  Globe,
   Layers,
+  Loader2,
   MessageSquare,
   Plus,
 } from "lucide-react";
@@ -32,6 +34,8 @@ interface AutomatorSuggestionsProps {
   hasMined: boolean;
   onPick: (candidate: DeliverableCandidate) => void;
   onCustomDeliverable: (name: string) => void;
+  /** Optional L0 warm-start: enrich from a company domain, then re-suggest. */
+  onAddDomain?: (domain: string) => Promise<void> | void;
   animated?: boolean;
 }
 
@@ -49,6 +53,7 @@ export function AutomatorSuggestions({
   hasMined,
   onPick,
   onCustomDeliverable,
+  onAddDomain,
   animated = true,
 }: AutomatorSuggestionsProps) {
   const [showCustom, setShowCustom] = useState(false);
@@ -56,6 +61,22 @@ export function AutomatorSuggestions({
   const canBuild = customName.trim().length >= 3;
   const submitCustom = () => {
     if (canBuild) onCustomDeliverable(customName.trim());
+  };
+
+  const [showDomain, setShowDomain] = useState(false);
+  const [domain, setDomain] = useState("");
+  const [enriching, setEnriching] = useState(false);
+  const canEnrich = /\.[a-z]{2,}/i.test(domain.trim());
+  const submitDomain = async () => {
+    if (!canEnrich || enriching || !onAddDomain) return;
+    setEnriching(true);
+    try {
+      await onAddDomain(domain.trim());
+      setShowDomain(false);
+      setDomain("");
+    } finally {
+      setEnriching(false);
+    }
   };
   return (
     <div className="space-y-4">
@@ -192,6 +213,68 @@ export function AutomatorSuggestions({
             </button>
           </div>
         </div>
+      )}
+
+      {onAddDomain && (
+        showDomain ? (
+          <div className="rounded-[14px] border border-accent/30 bg-card p-[14px]">
+            <label className="mb-2 block text-[12px] font-semibold text-foreground">
+              Your company website
+            </label>
+            <input
+              autoFocus
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void submitDomain();
+              }}
+              placeholder="e.g. acme.com"
+              disabled={enriching}
+              className="w-full rounded-[10px] border border-border bg-background px-3 py-2.5 text-[14px] text-foreground outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-accent focus:ring-1 focus:ring-accent disabled:opacity-50"
+            />
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDomain(false);
+                  setDomain("");
+                }}
+                disabled={enriching}
+                className="rounded-[10px] border border-border px-3.5 py-2.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Skip
+              </button>
+              <button
+                type="button"
+                disabled={!canEnrich || enriching}
+                onClick={() => void submitDomain()}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] bg-accent px-3.5 py-2.5 text-[14px] font-bold text-accent-foreground transition-opacity disabled:opacity-40"
+              >
+                {enriching ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Reading your company...
+                  </>
+                ) : (
+                  <>
+                    Sharpen these <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowDomain(true)}
+            className="flex w-full items-center gap-2.5 rounded-[12px] border border-dashed border-border px-[14px] py-2.5 text-left transition-colors hover:border-accent/40"
+          >
+            <Globe className="h-4 w-4 shrink-0 text-accent" />
+            <span className="text-[12.5px] text-muted-foreground">
+              Add your company site for sharper, peer-grounded suggestions.
+            </span>
+            <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/60" />
+          </button>
+        )
       )}
 
       <p className="px-2 text-center text-[11px] leading-relaxed text-muted-foreground/70">

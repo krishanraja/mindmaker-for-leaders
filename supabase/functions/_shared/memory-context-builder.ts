@@ -1,12 +1,6 @@
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { loadGlobalTraining } from "./training-loader.ts";
 import type { TrainingMaterial } from "./training-schema.ts";
-import {
-  VOICE_PROFILE_DIMENSION_LABELS,
-  VOICE_PROFILE_KEYS,
-  VOICE_PROFILE_PREFIX,
-  type VoiceProfileKey,
-} from "./voice-profile/keys.ts";
 
 export interface MemoryContextOptions {
   includeWarm?: boolean;
@@ -32,12 +26,6 @@ export interface MemoryContextResult {
   // token-budget trim). Callers fire-and-forget touch_memory_facts on these so
   // reference_count reflects genuine reliance, never trimmed-out facts.
   touchedFactIds?: string[];
-  // Voice profile section: markdown block from user_memory rows with
-  // fact_key LIKE 'voice_profile.%'. Optional and additive - callers that do
-  // not want voice (e.g. briefing) ignore it; the skill-export pipeline reads
-  // this explicitly and injects it into the body Voice and tone section.
-  voiceProfile?: string;
-  voiceProfileRecord?: Partial<Record<VoiceProfileKey, string>>;
 }
 
 export interface ExportArtefact {
@@ -52,6 +40,8 @@ interface Fact {
   fact_category: string;
   fact_label: string;
   fact_value: string;
+  fact_key?: string | null;
+  fact_subtype?: string | null;
   temperature: string;
   verification_status: string;
   confidence_score: number;
@@ -77,52 +67,6 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-interface VoiceRow {
-  fact_key: string;
-  fact_value: string | null;
-}
-
-function buildVoiceProfileSection(rows: VoiceRow[]): {
-  markdown: string;
-  record: Partial<Record<VoiceProfileKey, string>>;
-} {
-  if (!rows.length) return { markdown: "", record: {} };
-  const record: Partial<Record<VoiceProfileKey, string>> = {};
-  for (const row of rows) {
-    if (!row.fact_value) continue;
-    record[row.fact_key as VoiceProfileKey] = row.fact_value;
-  }
-  const lines: string[] = ["## Voice & Style Profile"];
-  const ordered: VoiceProfileKey[] = [
-    VOICE_PROFILE_KEYS.archetype,
-    VOICE_PROFILE_KEYS.sentenceLength,
-    VOICE_PROFILE_KEYS.firstPerson,
-    VOICE_PROFILE_KEYS.punctuation,
-    VOICE_PROFILE_KEYS.signoff,
-    VOICE_PROFILE_KEYS.disagreement,
-  ];
-  for (const key of ordered) {
-    const value = record[key];
-    if (!value) continue;
-    lines.push(`- ${VOICE_PROFILE_DIMENSION_LABELS[key]}: ${value}`);
-  }
-  const hardRules = record[VOICE_PROFILE_KEYS.hardRules];
-  if (hardRules) {
-    lines.push(`- ${VOICE_PROFILE_DIMENSION_LABELS[VOICE_PROFILE_KEYS.hardRules]}:`);
-    for (const rule of hardRules.split("\n").map((s) => s.trim()).filter(Boolean)) {
-      lines.push(`  - ${rule}`);
-    }
-  }
-  const sample = record[VOICE_PROFILE_KEYS.sampleVoice];
-  if (sample) {
-    lines.push(`- ${VOICE_PROFILE_DIMENSION_LABELS[VOICE_PROFILE_KEYS.sampleVoice]}:`);
-    for (const line of sample.split("\n")) {
-      lines.push(`  > ${line}`);
-    }
-  }
-  return { markdown: lines.join("\n"), record };
-}
-
 function groupFactsByCategory(facts: Fact[]): Record<string, Fact[]> {
   const groups: Record<string, Fact[]> = {};
   for (const fact of facts) {
@@ -131,6 +75,46 @@ function groupFactsByCategory(facts: Fact[]): Record<string, Fact[]> {
     groups[cat].push(fact);
   }
   return groups;
+}
+
+/** ctrl_voice_profile JSON stored as a preference fact with communication_style subtype. */
+function findVoiceProfileFact(facts: Fact[]): Fact | undefined {
+  return facts.find(
+    (f) =>
+      f.fact_key === "ctrl_voice_profile" ||
+      (f.fact_category === "preference" &&
+        f.fact_subtype === "communication_style" &&
+        f.fact_value?.trim().startsWith("{")),
+  );
+}
+
+function formatVoiceProfileSection(fact: Fact): string {
+  try {
+    const p = JSON.parse(fact.fact_value) as Record<string, unknown>;
+    const lines: string[] = ["## Voice profile (self-identified)"];
+    const dims: Array<[string, unknown]> = [
+      ["Signoff", p.signoff],
+      ["Disagreement style", p.disagreement],
+      ["Content archetype", p.contentArchetype],
+      ["Sentence length", p.sentenceLength],
+      ["First person", p.firstPerson],
+      ["Punctuation", p.punctuationStyle],
+    ];
+    for (const [label, val] of dims) {
+      if (val) lines.push(`- ${label}: ${String(val)}`);
+    }
+    const rules = Array.isArray(p.hardRules) ? p.hardRules : [];
+    if (rules.length) {
+      lines.push("- Hard rules:");
+      for (const r of rules) lines.push(`  - ${String(r)}`);
+    }
+    if (typeof p.sampleVoice === "string" && p.sampleVoice.trim()) {
+      lines.push(`- Sample voice register:\n"""${p.sampleVoice.trim().slice(0, 600)}"""`);
+    }
+    return lines.join("\n");
+  } catch {
+    return `## Voice profile\n- ${fact.fact_value}`;
+  }
 }
 
 function buildMarkdownContext(
@@ -182,6 +166,11 @@ function buildMarkdownContext(
   // Preferences
   if (grouped.preference?.length) {
     sections.push(`## Preferences\n${grouped.preference.map(f => `- ${f.fact_value}`).join("\n")}`);
+  }
+
+  const voiceFact = findVoiceProfileFact(facts);
+  if (voiceFact) {
+    sections.push(formatVoiceProfileSection(voiceFact));
   }
 
   return sections.join("\n\n");
@@ -572,7 +561,7 @@ export async function buildMemoryContext(
   // Fetch hot facts (always)
   const { data: hotFacts } = await supabase
     .from("user_memory")
-    .select("id, fact_category, fact_label, fact_value, temperature, verification_status, confidence_score, created_at")
+    .select("id, fact_category, fact_label, fact_value, fact_key, fact_subtype, temperature, verification_status, confidence_score, created_at")
     .eq("user_id", userId)
     .eq("is_current", true)
     .is("archived_at", null)
@@ -585,7 +574,7 @@ export async function buildMemoryContext(
   if (includeWarm) {
     const { data } = await supabase
       .from("user_memory")
-      .select("id, fact_category, fact_label, fact_value, temperature, verification_status, confidence_score, created_at")
+      .select("id, fact_category, fact_label, fact_value, fact_key, fact_subtype, temperature, verification_status, confidence_score, created_at")
       .eq("user_id", userId)
       .eq("is_current", true)
       .is("archived_at", null)
@@ -616,17 +605,6 @@ export async function buildMemoryContext(
     .order("created_at", { ascending: false });
 
   const decisions = (decisionData || []) as Decision[];
-
-  // Voice profile rows: separate query, separate budget. Voice rows never enter
-  // the trimmable fact pool because they're advisory style anchors, not
-  // capacity-eating content.
-  const { data: voiceRows } = await supabase
-    .from("user_memory")
-    .select("fact_key, fact_value")
-    .eq("user_id", userId)
-    .eq("is_current", true)
-    .like("fact_key", `${VOICE_PROFILE_PREFIX}%`);
-  const voiceSection = buildVoiceProfileSection((voiceRows ?? []) as VoiceRow[]);
 
   // Get user name from identity facts
   const nameFact = allFacts.find(f => f.fact_category === "identity" && f.fact_label?.toLowerCase().includes("name"));
@@ -684,9 +662,6 @@ export async function buildMemoryContext(
     lastUpdated: new Date().toISOString(),
     artefacts,
     touchedFactIds: finalFacts.map((f) => f.id).filter(Boolean),
-    voiceProfile: voiceSection.markdown || undefined,
-    voiceProfileRecord:
-      Object.keys(voiceSection.record).length > 0 ? voiceSection.record : undefined,
   };
 }
 

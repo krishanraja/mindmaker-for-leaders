@@ -53,16 +53,17 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 - "Your strengths sharpened, your weaknesses covered."
 - AI synthesizes your Memory Web + assessment data into an actionable leadership profile: strengths to amplify (Sharpen) and weaknesses to compensate for (Cover).
 - On-demand artifacts in your register: board memos, strategy docs, emails, meeting agendas, frameworks, templates.
-- Edge Pro ($29/month) unlocks unlimited generation + email delivery + all 7 briefing types + unlimited Automator skills + decision engine.
+- Edge Pro ($29/month) unlocks unlimited generation + email delivery + all 7 briefing types + the live MCP pull of your built skills + decision engine.
 
-**Automator (free tier: 1 skill/month; Edge Pro: unlimited)**
-- "Pick a recurring workflow, run a 3-step recognition cascade, get a Claude Skill that sounds like you."
+**Automator (free for now: build skills with no quota and no paywall)**
+- "Pick a recurring workflow, run a 5-step recognition cascade, get a Claude Skill that sounds like you."
 - The output is a downloadable, agentskills.io-compliant ZIP. Drop it into `~/.claude/skills/` and forget it. The skill fires whenever a triggering phrase appears in Claude Code, Claude.ai, or Cursor.
-- **Free tier ships one skill per calendar month** so every leader experiences the full pipeline before paying. Edge Pro is unlimited.
-- **Voice Profile (captured in 90 seconds via `VoiceStyleProfileSheet`)** locks every generated skill to the leader's actual voice - sign-off, sentence rhythm, hard rules, sample register. The body carries a `## Voice and tone` section and a `voice-profile.md` reference file.
+- **Building skills is free for now** - any authenticated leader (including anonymous Kit sessions) can run the full pipeline, with no per-month cap. Edge Pro gates the daily briefing, the live MCP pull of your skills, and Edge artifacts, not the build.
+- **Voice-aware tone step**: the cascade's tone step is voice-aware. A cold pick writes the voice profile; a returning leader gets a "still sound like you?" confirmation; a paste-extract affordance lets them paste real writing so `extract-voice-profile` derives the 8 dimensions.
+- **Voice Profile (captured via `VoiceStyleProfileSheet`, five recognition picks or a paste-extract power path)** locks every generated skill to the leader's actual voice - sign-off, sentence rhythm, hard rules, sample register. It is a single `ctrl_voice_profile` fact. The body carries a `## Voice and tone` section and a structured 8-dimension `voice-profile.md` reference file.
 - **Four Honest Tests triage gate** (REPEATABLE / SPECIALISED / BOUNDED / VOICE-LOCK): if the input is really a Memory Web fact, a Custom Instruction, or a Saved Style, CTRL routes you to the right surface instead of generating a junk skill. VOICE-LOCK was added 2026-06-18 so bounded creative-output workflows ("draft LinkedIn posts in my voice") route correctly as `voice-lock` skills instead of being mistaken for universal style preferences.
 - **Pain-anchored entry points** filtered to automatable workflows only (strategic blockers excluded): every recurring workflow in Edge view, every Memory Web blocker card, and every Briefing decision-trigger segment has a one-tap zap into the Automator pre-seeded with that pain.
-- Quality gate enforces 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, valid name format, plus an advisory `body.voiceLockSurfaced` check. Skills you can actually deploy, not drafts you have to clean up.
+- Quality gate (17/17) enforces 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections including a `## Learning loop`, valid name format, no fabricated voice samples, plus an advisory `body.voiceLockSurfaced` check. Skills you can actually deploy, not drafts you have to clean up.
 - Five archetypes covered: decision-framework, voice-lock, reporting-engine, tool-integration, getting-started.
 
 **Decision Advisor**
@@ -98,7 +99,7 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 | **AI Consultants** | $15K+ engagement, creates dependency | Self-serve. Leader owns their data. No dependency. No delay. |
 | **AI Context Tools (Notion AI, Mem, Rewind)** | Connect to Slack, email, calendar - require enterprise approvals, read your whole computer | Self-contained. You talk to it. No integrations. No permissions. No IT review. |
 | **Morning Briefs (Axios, Morning Brew, Techmeme, Feedly)** | Same stories for everyone, light algorithmic reorder | Custom lens per user per briefing type per day. Every segment shows the specific profile fact it was anchored to. |
-| **Macro / Automation / Skill-generation tools** | Generate something from any input, no validation | Three Honest Tests triage gate refuses to generate junk skills; quality gate validates output. agentskills.io-compliant ZIPs that drop into `~/.claude/skills/` and auto-trigger across Claude Code, Claude.ai, and Cursor. |
+| **Macro / Automation / Skill-generation tools** | Generate something from any input, no validation | Four Honest Tests triage gate refuses to generate junk skills; quality gate validates output. agentskills.io-compliant ZIPs that drop into `~/.claude/skills/` and auto-trigger across Claude Code, Claude.ai, and Cursor. |
 | **Doing Nothing** | Re-explain yourself to AI every time. Decisions slow. | Set it once. Works everywhere. Gets better over time. Decisions accelerate. |
 
 ### Why Leaders Choose CTRL
@@ -239,11 +240,11 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 
 | SKU | Price | What's included | Best for |
 |-----|-------|-----------------|----------|
-| **Free / Core** | $0 | Memory Web (read-write), **Voice Profile capture**, Context Export (all 6 tools), Onboarding, basic Daily Briefing, Decision Advisor, Meeting Prep, Prompt Coach, Edge profile (preview), Kit access, **1 Automator skill export per calendar month**. Kit side-door students from `/kit` graduate here. | Every new leader. The "land" in land-and-expand. |
+| **Free / Core** | $0 | Memory Web (read-write), **Voice Profile capture**, Context Export (all 6 tools), Onboarding, basic Daily Briefing, Decision Advisor, Meeting Prep, Prompt Coach, Edge profile (preview), Kit access, **Automator skill builds + exports (free for now, no quota)**. Kit side-door students from `/kit` graduate here. | Every new leader. The "land" in land-and-expand. |
 | **Full Diagnostic** | $49 one-time | Complete tensions, risk signals, org scenarios, full thinking tools library | Leaders who want a one-shot deep audit |
 | **Deep Context Upgrade** | $29 one-time | Enhanced company-context enrichment for sharper AI output | Leaders pre-meeting prep / strategy sprints |
 | **Diagnostic + Deep Context Bundle** | $69 one-time | Both above. Saves $10 vs buying separately. | Default upsell once Memory Web is built |
-| **Edge Pro** | $29/month | **Unlimited Automator skills**, **decision engine**, daily personalised briefing (all 7 types incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice), unlimited Edge artifacts (board memos, strategy docs, emails, agendas), email delivery, Custom Voice Export, MCP agent access | Leaders who treat AI as part of their weekly cadence |
+| **Edge Pro** | $29/month | **decision engine**, daily personalised briefing (all 7 types incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice), **live MCP pull of your built skills (`list_skills` / `get_skill`)**, unlimited Edge artifacts (board memos, strategy docs, emails, agendas), email delivery, Custom Voice Export, MCP agent access | Leaders who treat AI as part of their weekly cadence |
 | **Bootcamp** | $15K-$50K | 4-hour executive sprint + pilot charter + provocation report | Exec teams |
 | **Portfolio** | $5K-$25K | Heatmap + offer pack across portfolio companies | VCs / PE / consultants |
 
@@ -261,5 +262,5 @@ Pick the right hook for the audience and channel:
 - **For peer-comparison audiences**: "Somewhere, a leader in your space is making AI-assisted decisions in seconds because their AI already knows their world. CTRL is how."
 - **For builder/operator audiences**: "Built by Krish Raja - 16 years monetizing emerging tech, $0 → $12M ARR at Captify, $9M → $61M data revenue at Nine. The tool he wished existed when running real P&Ls."
 - **For Claude / Cursor / Claude Code power users**: "CTRL is the first tool that turns your weekly leader workflows into agentskills.io-compliant Skills you drop into `~/.claude/skills/`. Two minutes of voice. Permanent leverage. Triage gate refuses to generate junk."
-- **For "automation fatigue" audiences**: "Most automation tools generate something whether your input was a real workflow or not. CTRL's Three Honest Tests triage gate refuses to generate a skill from a fact, a tone preference, or a writing style. The respect for your time is the product."
-- **CTA progression**: Free signup (or Kit redemption → side-door upgrade) → Voice Profile in 90 seconds → first free Automator skill → seed beats accepted → first Briefing → Diagnostic upsell → Edge Pro upsell (unlimited Automator + Briefing types + Decision Engine + Custom Voice Export).
+- **For "automation fatigue" audiences**: "Most automation tools generate something whether your input was a real workflow or not. CTRL's Four Honest Tests triage gate refuses to generate a skill from a fact, a tone preference, or a writing style. The respect for your time is the product."
+- **CTA progression**: Free signup (or Kit redemption → side-door upgrade) → Voice Profile → free Automator skill (no quota) → seed beats accepted → first Briefing → Diagnostic upsell → Edge Pro upsell (Briefing types + live MCP skills pull + Decision Engine + Edge artifacts + Custom Voice Export).

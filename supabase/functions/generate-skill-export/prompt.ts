@@ -1,21 +1,17 @@
 /**
  * Skill Builder LLM extraction prompt.
  *
- * Encodes the Four Honest Tests triage gate, the description-first generation
+ * Encodes the Three Honest Tests triage gate, the description-first generation
  * rules from Krish's Skill-Building Best Practices PDF, and the agentskills.io
  * specification constraints. The model is forced into JSON mode by the caller;
  * this prompt only describes the JSON shape and the rules that produce it.
  *
- * Failure modes the prompt actively defends against:
+ * Two failure modes the prompt actively defends against:
  *   1. Generating a "skill" for a Memory Web fact or Custom Instruction.
  *      Triage gate routes those out before generation runs.
  *   2. Inventing rules the leader never said. The transcript is the only
  *      source of truth; memory context provides background the leader has
  *      already confirmed elsewhere.
- *   3. Routing a bounded voice-lock workflow (e.g. "draft LinkedIn posts in my
- *      voice") to saved_style. VOICE-LOCK is the fourth passing test; when it
- *      fires alongside REPEATABLE the result is still a skill with archetype
- *      voice-lock.
  */
 
 export interface SkillSeedContext {
@@ -27,13 +23,7 @@ export interface SkillPromptInputs {
   transcript: string;
   memoryContext: string;
   profileContext: string;
-  /**
-   * Markdown block emitted by buildMemoryContext when the leader has any
-   * `voice_profile.*` rows. When present, the body MUST contain a
-   * `## Voice and tone` section and the references array MUST include a
-   * `voice-profile.md` file. When absent, neither is required.
-   */
-  voiceProfile?: string;
+  voiceProfileContext?: string;
   seed?: SkillSeedContext;
 }
 
@@ -45,7 +35,7 @@ export function buildSkillUserPrompt({
   transcript,
   memoryContext,
   profileContext,
-  voiceProfile,
+  voiceProfileContext,
   seed,
 }: SkillPromptInputs): string {
   const lines: string[] = [];
@@ -74,18 +64,10 @@ export function buildSkillUserPrompt({
     ``,
   );
 
-  const trimmedVoice = voiceProfile?.trim();
-  if (trimmedVoice) {
+  if (voiceProfileContext && voiceProfileContext.trim().length > 0) {
     lines.push(
-      `VOICE_PROFILE (verbatim style anchors the leader has set; treat as ground truth that overrides generic AI defaults):`,
-      trimmedVoice,
-      ``,
-      `IMPORTANT: Because VOICE_PROFILE is non-empty, the body MUST include a "## Voice and tone" section that encodes these rules in imperative language with reasoning, the references array MUST include a "voice-profile.md" file, and the "## Gotchas" section MUST include at least one voice-regression gotcha (drift toward business-formal, em-dash absence, generic AI sign-off, etc.).`,
-      ``,
-    );
-  } else {
-    lines.push(
-      `VOICE_PROFILE: (no voice profile rows on this account - body may omit ## Voice and tone unless the transcript itself supplies style rules)`,
+      `VOICE_PROFILE (self-identified writing voice - MUST shape "## Voice and tone" and voice-profile.md reference):`,
+      voiceProfileContext.trim(),
       ``,
     );
   }
@@ -98,7 +80,7 @@ export function buildSkillUserPrompt({
   }
 
   lines.push(
-    `Apply the Four Honest Tests, then generate the skill (or route to a different output type). Return ONLY the JSON object described in the system prompt.`,
+    `Apply the Three Honest Tests, then generate the skill (or route to a different output type). Return ONLY the JSON object described in the system prompt.`,
   );
 
   return lines.join("\n");
@@ -121,24 +103,23 @@ You will receive:
 1. TRANSCRIPT: The leader's raw voice description of their workflow
 2. MEMORY_CONTEXT: Structured facts about the leader (company, role, goals, constraints)
 3. EDGE_PROFILE: The leader's strengths and weaknesses
-4. VOICE_PROFILE: Style anchors the leader has explicitly set (sign-off, sentence length, hard rules, sample voice). May be empty.
+4. VOICE_PROFILE (optional): Self-identified writing voice dimensions
 
-## PHASE 1: TRIAGE - The Four Honest Tests
+## PHASE 1: TRIAGE
 
-Before generating anything, apply all four tests.
+Evaluate BOUNDEDNESS FIRST, then run the Four Honest Tests:
 
-1. REPEATABLE: Is this work done at least weekly? Look for: "every Monday", "whenever I", "each time", "always have to", frequency markers, recurring triggers.
-2. SPECIALISED: Would generic Claude get this materially wrong without guidance? Look for: unusual formatting rules, domain-specific constraints, tool-specific workflows, preferences that contradict AI defaults.
-3. BOUNDED: Can you describe when to use it in one or two sentences? If the transcript describes multiple unrelated tasks, pick the strongest single skill from it.
-4. VOICE-LOCK: Does the output need to be in the leader's specific voice rather than generic AI prose? Look for: tone descriptions, hard never-say rules, sign-offs, sentence-length preferences, "sounds like me / sounds like us", a non-empty VOICE_PROFILE that maps to this workflow. Bounded creative output (LinkedIn posts in my voice, client emails in my tone, product blurbs in our brand voice) is the canonical case.
+**Step 0 - Bounded trigger check (run before everything else):**
+- Does this describe a specific, invocable workflow with a clear trigger? (e.g. "draft my board update", "write the LinkedIn post")
+- If NO bounded trigger AND it reads as a universal style preference ("make everything sound like me", "always be more confident") -> route to saved_style or custom_instruction, NOT a skill.
+- If YES bounded trigger -> continue to the four tests below.
 
-Routing rules:
-- If REPEATABLE + BOUNDED both pass AND (SPECIALISED OR VOICE-LOCK) passes -> PASS. Generate the skill.
-- If REPEATABLE passes but BOUNDED fails (multiple unrelated tasks) -> pick the strongest single skill and treat the others as out of scope.
-- If REPEATABLE fails (one-off task) -> triage out.
-- If only universal style preferences are described with no bounded trigger -> triage out.
+1. REPEATABLE: Is this work done at least weekly? Look for: "every Monday", "whenever I", "each time", "always have to", frequency markers, or cascade picks that state recurrence.
+2. SPECIALISED (operational): Would generic Claude get the PROCEDURE materially wrong? Unusual formatting, domain constraints, tool-specific steps.
+3. BOUNDED: Can you describe when to use it in one or two sentences? If multiple unrelated tasks, pick the strongest single skill.
+4. CONSISTENT CREATIVE OUTPUT (voice-lock pass): If the workflow produces written/creative output in the leader's signature style (LinkedIn posts, client emails, board narrative in their voice), ask: "Would generic Claude produce something that sounds like THIS person?" If yes to bounded trigger + creative output + individual voice -> PASS as voice-lock even when test 2 alone would fail.
 
-When triage fails, return:
+If ANY of tests 1, 3 fail (or step 0 fails), return:
 {
   "triage": {
     "passed": false,
@@ -147,14 +128,12 @@ When triage fails, return:
   }
 }
 
-Choose the result type carefully:
-- "custom_instruction": universal preferences (tone, register, interaction style) that apply across ALL tasks with no bounded trigger ("make everything I write sound like me"). NOT for bounded voice workflows - those are VOICE-LOCK skills.
+Choose the result type based on the content:
+- "custom_instruction": universal preferences (tone, register, style of interaction) that apply across ALL tasks with no bounded trigger.
 - "memory_fact": context about the leader's company, team, or situation that does not describe a procedure.
-- "saved_style": universal tone/register adjustments with no bounded trigger ("I always sound too formal - fix that everywhere"). NOT for bounded voice workflows.
+- "saved_style": tone/register adjustments with no bounded trigger (e.g. "make everything more confident").
 
-Anti-pattern to avoid: "I want my LinkedIn posts to sound like me" looks like a style preference at first glance. It is NOT - it is a VOICE-LOCK skill with the bounded trigger "LinkedIn posts". Route it as a skill, not as saved_style.
-
-If the tests pass (skill route), continue to Phase 2.
+If tests 1+3 pass and either test 2 OR test 4 passes, continue to Phase 2.
 
 ## PHASE 2: EXTRACT AND GENERATE
 
@@ -168,7 +147,7 @@ If the tests pass (skill route), continue to Phase 2.
 ### 2B: Description (THIS IS 80% OF THE SKILL)
 The description determines whether Claude triggers the skill. Rules:
 
-1. First sentence: third-person statement of what the skill does, ending with a period. Under 100 characters. Predictive of what the output looks like.
+1. First sentence: third-person statement of what the skill does, ending with a period. Under 100 characters.
 2. List 5+ trigger phrases using the leader's ACTUAL language from the transcript. Include casual phrasings, partial requests, adjacent topics.
    "Use whenever [phrase 1], [phrase 2], [phrase 3], [phrase 4], or [phrase 5]."
 3. Include push language: "Do not [produce X] without consulting this skill first." or "If in doubt, use this skill."
@@ -184,34 +163,34 @@ Rules from the Skill-Building Best Practices:
    - GOOD: "Avoid bullet points. The audience reads this as a continuous narrative, and bullets fragment the argument."
 3. NO BARE MUST/NEVER: If a hard rule exists, the next sentence must explain why it exists. The model extends reasoning correctly; it breaks on arbitrary rules.
 4. LEAN: Under 500 lines total. If approaching the limit, push detail into references/.
-5. EXTRACT, DON'T INVENT: Every rule must trace back to something the leader said, to clearly relevant facts in MEMORY_CONTEXT, or to VOICE_PROFILE rows. If they did not mention it, do not add it. The skill encodes THEIR expertise, not generic best practices.
+5. EXTRACT, DON'T INVENT: Every rule must trace back to something the leader said or to clearly relevant facts in MEMORY_CONTEXT. If they did not mention it, do not add it. The skill encodes THEIR expertise, not generic best practices.
 6. DO NOT RESTATE THE DESCRIPTION: The body is operational (procedure, examples, edge cases). The description handles triggering. The body's first paragraph must be different language and content from the description.
 
 Required sections in body, in this exact order:
 - "## When this skill activates" (operational context, not a trigger restatement)
 - "## Workflow" (numbered steps with reasoning)
-- "## Voice and tone" (REQUIRED when VOICE_PROFILE is non-empty OR archetype is voice-lock; otherwise OMIT this section entirely). Encode each VOICE_PROFILE dimension as an imperative rule with reasoning. Hard rules carry verbatim. If a sample voice is provided, include a fenced code block labelled "// target voice register" reproducing the sample verbatim.
-- "## Gotchas" (specific corrections to mistakes the agent will make - highest-value section). When VOICE_PROFILE is non-empty OR archetype is voice-lock, include AT LEAST ONE voice-regression gotcha (formality drift, em-dash absence, generic AI sign-off, "leverage" / "synergy" appearance, sentences > 30 words).
+- "## Voice and tone" (REQUIRED when VOICE_PROFILE is present OR archetype is voice-lock: structural rules from content archetype, rhythm/register, punctuation, and the leader's hard rules verbatim. Include a fenced block labeled // target voice register ONLY when a REAL sample exists - the VOICE_PROFILE sample, or a passage the leader quoted verbatim in the TRANSCRIPT - and reproduce it WORD FOR WORD. If no real sample exists, describe the register in prose and include NO fenced sample. NEVER fabricate a quotation and present it as the leader's writing.)
+- "## Gotchas" (specific corrections to mistakes the agent will make - include at least one style regression gotcha for voice-lock skills)
 - "## Output format" (template or structural guide; include a fenced code block when helpful)
+- "## Learning loop" (REQUIRED, 4-6 lines: how this skill sharpens with use - see 2C-LL below)
 - "## References" (bulleted pointers to bundled files; each line begins with "Read [references/<file>.md](references/<file>.md) when ...")
+
+### 2C-LL: Learning loop section
+Always include a "## Learning loop" section. Keep it concrete and honest (4-6 lines):
+- After each run, note whether the leader kept the output as-is, edited it, or rejected it, and capture the single biggest correction in one line.
+- Recurring corrections graduate into new "## Gotchas" entries, so the skill sharpens itself from real mistakes (the highest-value section).
+- To close the loop, the leader brings those corrections back to CTRL, which proposes a sharpened version of this skill.
+- Do NOT claim the skill auto-updates on its own. It sharpens only when its runs are fed back. The literal phrase "learning loop" must appear in the heading.
 
 ### 2D: References
 Split heavy context into separate files. Include only files referenced from the body.
 - company-context.md: Business facts from MEMORY_CONTEXT relevant to this skill (company, role, team, constraints). Skip if MEMORY_CONTEXT is empty.
 - format-rules.md: Formatting preferences extracted from the transcript (only if the leader specified formatting requirements).
-- voice-profile.md: REQUIRED when VOICE_PROFILE is non-empty. Structure:
-    # Voice Profile - <Skill Name>
-    ## Style fingerprint
-    [2-3 sentence synthesis of the dimensions into a readable description]
-    ## Hard constraints
-    [Verbatim hard rules]
-    ## Voice reference sample
-    // target voice register
-    [Verbatim sample voice text if provided, or "(no sample provided)"]
-    ## Dimension map
-    | Dimension | Setting |
-    |---|---|
-    [Every dimension present in VOICE_PROFILE as one row]
+- voice-profile.md: REQUIRED when VOICE_PROFILE is present (it carries real captured dimensions + a real sample). When the skill is voice-lock but NO VOICE_PROFILE was provided, this file is OPTIONAL - the "## Voice and tone" body section already carries the register; add the file only if it would hold real, non-fabricated detail. Structure:
+  (a) Style fingerprint (2-3 sentences).
+  (b) Hard constraints (the leader's rules, verbatim).
+  (c) Voice reference sample: include a // target voice register block ONLY with a REAL sample (the VOICE_PROFILE sample, or a verbatim TRANSCRIPT quote), word for word. If none exists, write "No verbatim sample captured yet - match the dimensions below." and include NO fenced sample. Never invent one.
+  (d) Dimension map: when VOICE_PROFILE is present, the table MUST list its dimensions with the leader's values - Signoff, Disagreement, Content archetype, Sentence length, First person, Punctuation, Hard rules. When VOICE_PROFILE is absent, map only the dimensions the TRANSCRIPT actually evidences; never pad with generic rows.
 - A domain-specific reference file may be added when the workflow has a heavy domain artifact (pricing, ICP, brand voice notes). Optional.
 
 Each reference file should have a clear scope. Keep each under ~120 lines.
@@ -234,7 +213,7 @@ Surface 2-4 of the highest-value gotchas as a separate JSON array. These should 
 ### 2G: Archetype Classification
 Classify which archetype the skill primarily serves:
 - decision-framework: helps with decisions, analysis, strategic thinking
-- voice-lock: bounded creative output in the leader's voice (LinkedIn posts, client emails, brand-voice copy). Assign when VOICE-LOCK was the dominant passing test, or when VOICE_PROFILE is non-empty AND the output is creative writing.
+- voice-lock: enforces tone, style, communication patterns
 - reporting-engine: creates reports, dashboards, summaries from data
 - tool-integration: connects tools, transforms data between systems
 - getting-started: entry-level AI workflows for beginners
@@ -257,15 +236,14 @@ For triage pass:
   "triage": {
     "passed": true,
     "result": "skill",
-    "reasoning": "string explaining which honest tests passed (REPEATABLE / SPECIALISED / BOUNDED / VOICE-LOCK)"
+    "reasoning": "string explaining why it qualifies"
   },
   "skill": {
     "name": "lowercase-hyphenated",
     "description": "full description with triggers and push language",
     "body": "full SKILL.md markdown body, NOT including YAML frontmatter",
     "references": [
-      { "filename": "company-context.md", "content": "markdown content" },
-      { "filename": "voice-profile.md", "content": "markdown content" }
+      { "filename": "company-context.md", "content": "markdown content" }
     ],
     "test_prompts": ["messy prompt 1", "messy prompt 2", "messy prompt 3"],
     "gotchas": ["gotcha 1", "gotcha 2"],

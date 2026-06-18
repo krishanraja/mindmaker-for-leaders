@@ -85,31 +85,23 @@ The mobile cockpit Home (behind `VITE_COCKPIT_ENABLED`) was rebuilt. `CockpitHom
 - **The long-press contest scroll-popup (`ContestLongPress`) was killed** in favour of a quiet "Flag it" in the opened stone + footer, using `useContestActions.openContest`.
 - **Empty state:** role/sector-seeded starter decisions (from `user_memory` identity/role), one tap to Decide prefilled. The prefill is threaded `DecisionPage` to `PressureTestPanel` via an `initialStatement` prop.
 
-### Automator (Skill Builder entry, PR #199 + 2026-06-18 overhaul)
+### Automator (Skill Builder entry, PR #199, merge 24f7d15)
 
-The Automator is the **default flow on `/context`** (`ContextExport` modified). Components live in `src/components/automator/{AutomatorFlow,AutomatorSuggestions,AutomatorCascade,AutomatorSkillReady,automatorModel}.tsx/ts` with hooks `useSkillSuggestions`, `useTier`, `useAutomatorQuota`. Flow:
+The Automator is now the **default flow on `/context`** (`ContextExport` modified). New components `src/components/automator/{AutomatorFlow,AutomatorSuggestions,AutomatorCascade,AutomatorSkillReady,automatorModel}.tsx/ts` and a new hook `src/hooks/useSkillSuggestions.ts`. Flow:
 
 1. **SUGGESTIONS** - concrete recurring DELIVERABLES mined from the brain (`user_memory` blockers + decisions) with a "why we picked this" + a "pulled from your brain" badge; role/sector curated fallback; inline "Something else" input (NOT `window.prompt`).
-2. **CASCADE** - a 3-step all-recognition pick-cascade (trigger time anchor -> story-mode steps -> output format self-ID). Voice and hard rules are NOT asked here; they flow from `voice_profile.*` rows in `user_memory` through `buildMemoryContext` into the prompt's `VOICE_PROFILE` block.
+2. **CASCADE** - a ~5-step all-recognition pick-cascade reusing the kit cascade pattern; the voice step shows real samples to PICK.
 3. **SKILL READY** - "Built your way" chips + Run it now + Export markdown + a "Your skills" library peek.
 
-`automatorModel.composeTranscript` maps the picks into a transcript for `generate-skill-export`. The edge function is no longer untouched: the prompt now runs the **Four Honest Tests** (REPEATABLE / SPECIALISED / BOUNDED / **VOICE-LOCK**) with VOICE-LOCK as a passing category, the body must include a `## Voice and tone` section when voice rows exist, and a `voice-profile.md` reference file is auto-emitted. `quality-gate.ts` adds an advisory `body.voiceLockSurfaced` check.
+`automatorModel.composeTranscript` maps the picks into a transcript for the `generate-skill-export` edge function. The old `SkillCaptureSheet` / `SkillPreviewSheet` are now unimported **dead code**.
 
-**Tiering:** Free includes 1 Automator skill per calendar month (UTC), tracked atomically in `automator_usage`. Edge Pro is unlimited. On 402 `free_quota_exhausted`, `useSkillExport.quotaExhausted` flips and `AutomatorFlow` opens `EdgePaywall` with `capability='free_quota_exhausted'`.
-
-**Honest residuals:** `SkillCaptureSheet` / `SkillPreviewSheet` are kept as a legacy fallback path (still imported by `ContextExport` for the voice-led non-Automator wizard); "Run it now" downloads the skill (no in-app skill-runner yet); the deck's news half depends on a briefing existing.
+> **Intake + harness upgrade (PR #204): see the "Skill Builder + Voice Profile Upgrade" section below.** The Skill Builder is now FREE for now (the Edge Pro gate on `generate-skill-export` was removed; any authenticated user, including anonymous kit sessions, can build skills). `generate-skill-export`'s prompt is no longer untouched: it now checks boundedness, runs the FOUR Honest Tests, injects a self-identified VOICE_PROFILE, forbids fabricated voice samples, renders a structured 8-dimension `voice-profile.md`, and requires a `## Learning loop` section (quality gate now 16/16). A unified `ctrl_voice_profile` fact in `user_memory` is captured by `VoiceStyleProfileSheet`, derivable from pasted writing via the new `extract-voice-profile` edge fn, and surfaced into generated skills by `_shared/memory-context-builder.ts`. The Automator tone step is voice-aware and `AutomatorScaffold` adds a desktop two-pane builder; `mcp-context` gained `list_skills` + `get_skill`.
 
 ### Deck persistence + feed-training (PR #200, merge 387af84)
 
 A swipe writes a `deck_reaction` JSON row to the existing `feedback` table (`page_context` 'cockpit-deck', no new migration). `useCockpit` reads 30 days of dislikes and down-weights those news categories.
 
-### Tiering + Voice Profile + Kit side-door upgrade (2026-06-18 overhaul)
-
-**Tiering.** Two tiers, no new SKU. Free = read-write Memory Web + Voice Profile + 1 Automator skill / calendar month (UTC). Edge Pro ($29 / month) = unlimited Automator + briefing + decision engine + drafting + MCP. `useTier` composes `useEdgeSubscription`. `useAutomatorQuota` reads `automator_usage(user_id, month, exports_used)` (RLS owner-scoped) for the current `YYYY-MM`. Atomic increments via `increment_automator_usage(p_user_id, p_month)` (SECURITY DEFINER). Edge function `generate-skill-export/index.ts` returns HTTP 402 `{ error: "free_quota_exhausted", upgrade_url: "/settings?tab=edge" }` when the cap is hit. Pricing matrix lives in `docs/PRICING.md` and the `PlanMatrix` block in `EdgeProTab`.
-
-**Voice Profile.** Eight dimensions captured in 90 seconds via `VoiceStyleProfileSheet` (recognition picks, no essays). Persists into `user_memory` with `fact_category='preference'` and `fact_key='voice_profile.<dimension>'` (signoff / archetype / sentence_length / first_person / punctuation / hard_rules / sample_voice / disagreement). Constants in `_shared/voice-profile/keys.ts` and `src/lib/voiceProfile.ts`. `buildMemoryContext` exposes a `voiceProfile` markdown block + `voiceProfileRecord` map; `generate-skill-export/prompt.ts` requires a body `## Voice and tone` section + a `voice-profile.md` reference file when populated. Full data-model + consumption walkthrough in `docs/VOICE_PROFILE.md`.
-
-**Kit side-door upgrade.** Anonymous Kit students see `VoiceProfileCard` above `SendPackCard` once their kit ships. Saving the profile reveals `SaveProfileCard`, which calls `upgradeAnonymousSession()` to graduate the anonymous account into a free CTRL Free user. `kit_redemptions`, `kit_builds`, and `user_memory` rows (including the voice profile) stay linked because `auth.uid()` does not change across upgrade.
+**Honest residuals:** the old `SkillCaptureSheet` / `SkillPreviewSheet` are dead code; "Run it now" downloads the skill (no in-app skill-runner yet); the deck's news half depends on a briefing existing.
 
 ---
 
@@ -182,7 +174,8 @@ src/
 │   │   ├── IntelligencePanel.tsx
 │   │   ├── RecentFactsFeed.tsx
 │   │   ├── PatternInsightCard.tsx
-│   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (Edge Pro gated) (v5.2)
+│   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (free for now since PR #204; was Edge Pro gated) (v5.2)
+│   │   ├── VoiceStyleProfileSheet.tsx  # Captures the unified ctrl_voice_profile: 5 recognition picks OR a paste-extract power path (PR #204)
 │   │   └── GettingSmarterBanner.tsx
 │   ├── cockpit/               # Mobile cockpit Home (behind VITE_COCKPIT_ENABLED)
 │   │   ├── CockpitHome.tsx        # Rewritten Home: time-aware greeting + "worth a look" deck + 3 value actions (PR #197)
@@ -192,7 +185,8 @@ src/
 │   │   ├── AutomatorSuggestions.tsx  # Brain-mined deliverable suggestions ("pulled from your brain" badge) + inline "Something else"
 │   │   ├── AutomatorCascade.tsx   # ~5-step all-recognition pick-cascade (reuses the kit cascade pattern)
 │   │   ├── AutomatorSkillReady.tsx   # "Built your way" chips + Run it now + Export markdown + "Your skills" peek
-│   │   └── automatorModel.ts      # composeTranscript maps picks into a transcript for generate-skill-export (unchanged)
+│   │   ├── AutomatorScaffold.tsx  # Desktop two-pane: live "your skill is taking shape" panel beside the flow; widened max-w-4xl, mobile unchanged (PR #204)
+│   │   └── automatorModel.ts      # composeTranscript maps picks into a transcript for generate-skill-export
 │   ├── edge/                  # Edge: Leadership Amplifier + Skill Builder UI
 │   │   ├── EdgeView.tsx           # Main Edge view (strengths/weaknesses/gaps)
 │   │   ├── EdgeProfileCard.tsx    # Profile summary card
@@ -205,9 +199,9 @@ src/
 │   │   ├── ArtifactPreview.tsx    # Generated artifact display
 │   │   ├── FeedbackButtons.tsx    # Strength/weakness feedback
 │   │   ├── SendToInboxButton.tsx  # Email delivery
-│   │   ├── AutomatePainCard.tsx   # Tier-aware Automator entry chip row (reads useTier + useAutomatorQuota; pain chips from useUserPains filtered to automatable items only)
-│   │   ├── SkillCaptureSheet.tsx  # Legacy fallback path: voice/text capture used when Automator is not anchored; not the primary surface
-│   │   ├── SkillPreviewSheet.tsx  # Legacy fallback path: skill preview + ZIP download used by the SkillCaptureSheet flow
+│   │   ├── AutomatePainCard.tsx   # Skill Builder pain-anchored entry chip row (v5.2)
+│   │   ├── SkillCaptureSheet.tsx  # DEAD CODE (PR #199): voice/text capture, no longer imported; superseded by the Automator flow
+│   │   ├── SkillPreviewSheet.tsx  # DEAD CODE (PR #199): skill preview + ZIP download, no longer imported; superseded by AutomatorSkillReady
 │   │   ├── SkillQualityGate.tsx   # Quality checklist display (v5.2)
 │   │   └── SkillInstallGuide.tsx  # Per-tool install instructions (Claude Code / Claude.ai / Cursor) (v5.2)
 │   ├── action/                # Weekly action components
@@ -272,7 +266,8 @@ src/
 │   ├── useEdge.ts             # Edge profile data + synthesis
 │   ├── useEdgeSubscription.ts # Edge Pro subscription state
 │   ├── useSkillExport.ts      # Skill Builder pipeline (v5.2): wraps generate-skill-export, decodes base64 ZIP into a Blob
-│   ├── useSkillSuggestions.ts # Automator suggestions: brain-mined deliverables (user_memory blockers + decisions) + role/sector fallback (PR #199)
+│   ├── useSkillSuggestions.ts # Automator suggestions: brain-mined deliverables (user_memory blockers + decisions) + role/sector fallback (PR #199); warm-start "your peers are using this" voice grounded in role + company profile, optional "Add your company site" -> enrich-company-context re-mine (PR #204)
+│   ├── useVoiceProfile.ts     # Unified ctrl_voice_profile fact CRUD (user_memory preference / communication_style); save enum bug fixed 'confirmed' -> 'verified' (PR #204)
 │   ├── useCockpit.ts          # Cockpit Home data; returns recordDeckReaction + assembles the "worth a look" deck (interleave + dislike down-weight) (PRs #197/#200)
 │   ├── useUserPains.ts        # Top blockers + active decisions, drives pain-anchored entry points (v5.2)
 │   ├── useRevealOnMount.ts    # Smooth reveal helper for below-the-fold components (v5.2)
@@ -320,6 +315,7 @@ src/
 │   ├── memory-settings.ts     # Memory privacy settings types
 │   ├── missions.ts            # Missions system types
 │   ├── cockpit.ts             # Cockpit Home types; DeckCard / DeckCardKind + a `deck` field on CockpitData (PR #197)
+│   ├── voiceProfile.ts        # Unified 8-dimension voice profile types (PR #204)
 │   └── video-background.ts    # Video background types
 ├── data/
 │   ├── compassQuestions.ts    # Compass assessment questions
@@ -940,7 +936,7 @@ kit_nudges                              -- day-3 / day-7 send-dedupe ledger
 
 **Location**: `supabase/functions/`
 
-**Total**: 85 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry.
+**Total**: 85 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry. PR #204 added one function (`extract-voice-profile`: paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text) and redeployed `generate-skill-export` (prompt tightened) and `mcp-context` (gained `list_skills` + `get_skill`) to prod (`bkyuxvschuwngtcdhsyg`); no DB migrations were needed.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)
@@ -1050,13 +1046,17 @@ kit_nudges                              -- day-3 / day-7 send-dedupe ledger
 
 #### Skill Builder Subsystem (Phase 8, May 2026)
 
-60. **generate-skill-export**: Voice-to-Agent-Skill pipeline. Edge Pro gated. Internal modules:
-    - `index.ts`: orchestrator: Edge Pro gate, memory context build, triage LLM call, quality-gate validation, ZIP packaging, `skill_exports` insert
-    - `prompt.ts`: system + user prompts encoding the Three Honest Tests triage rules + extraction rules. Forwards optional `SkillSeed` (kind + text) so extraction grounds in the leader's actual pain language.
-    - `quality-gate.ts`: deterministic validator (5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, no bare MUST/NEVER, valid name format). Returns `{ checks: [...], summary: { passed, total } }`. Only the name-format check is a hard fail; everything else is advisory and surfaced to the user.
-    - `zip.ts`: agentskills.io-compliant packager. Single root folder, `SKILL.md` + `references/` + `01-test-prompts.txt` + `02-maintenance-card.txt` + `03-install-guide.txt`. Returns base64 + byte length.
+60. **generate-skill-export**: Voice-to-Agent-Skill pipeline. **Free for now since PR #204** (the Edge Pro gate was removed: any authenticated user, including anonymous kit sessions, can build skills). Internal modules:
+    - `index.ts`: orchestrator: memory context build, triage LLM call, quality-gate validation, ZIP packaging, `skill_exports` insert. (No longer runs an Edge Pro gate as of PR #204.)
+    - `prompt.ts`: **tightened in PR #204** (no longer untouched). System + user prompts now check boundedness first, then run the FOUR Honest Tests (Test 4 = voice-lock / consistent creative output), inject a self-identified VOICE_PROFILE, forbid fabricated voice samples (reproduce the leader's real sample verbatim, else describe the register, never invent a quote), render a structured 8-dimension `voice-profile.md`, and require a `## Learning loop` section. Still encodes the triage + extraction rules and forwards the optional `SkillSeed` (kind + text) so extraction grounds in the leader's actual pain language.
+    - `quality-gate.ts`: deterministic validator (5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, no bare MUST/NEVER, valid name format, `## Learning loop` section present). Returns `{ checks: [...], summary: { passed, total } }`. As of PR #204 the gate passes **16/16** (the learning-loop check was previously failing). Only the name-format check is a hard fail; everything else is advisory and surfaced to the user.
+    - `zip.ts`: agentskills.io-compliant packager. Single root folder, `SKILL.md` + `references/` (incl. a structured 8-dimension `voice-profile.md`) + `01-test-prompts.txt` + `02-maintenance-card.txt` + `03-install-guide.txt`. Returns base64 + byte length.
 
     Triage routing: when the input is really a Memory Fact / Custom Instruction / Saved Style, the function returns `{ triage: { passed: false, result, reasoning } }` (200 OK, no skill). The attempt is still logged in `skill_exports` with `triage_result` set accordingly so we can learn from misses without re-running the LLM.
+
+61. **extract-voice-profile** (PR #204): paste real writing -> derive the 8 voice dimensions in one LLM pass. Anonymous-session safe; does NOT store the raw pasted text. Backs the paste-extract power path in `VoiceStyleProfileSheet`. The result is saved as the unified `ctrl_voice_profile` fact in `user_memory` (`fact_category` 'preference', `fact_subtype` 'communication_style'); `_shared/memory-context-builder.ts` surfaces it into generated skills, and the harness uses it.
+
+The `mcp-context` MCP server gained two read-scope, Edge-Pro-gated tools in PR #204: **`list_skills`** + **`get_skill`**, so a leader's own agent pulls their built CTRL skills live. Combined with the `library/LibraryTab.tsx` "Connect these to your agent" MCP banner + per-item Download(.md), the three skill output destinations are now real: library (home) + MCP (live agent pull) + download.
 
 #### Kit Engine Subsystem (Phase 11, June 2026)
 

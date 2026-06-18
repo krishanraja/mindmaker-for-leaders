@@ -59,7 +59,6 @@ import { useDevice } from '@/hooks/useDevice';
 import { useAuth } from '@/hooks/useAuth';
 import { useMemoryExport } from '@/hooks/useMemoryExport';
 import { useExportRecommendations } from '@/hooks/useExportRecommendations';
-import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { AppHeader } from '@/components/memory-web/AppHeader';
@@ -69,7 +68,6 @@ import { PLATFORM_GUIDES } from '@/lib/platform-guides';
 import { ModelRecommendationCard } from '@/components/export/ModelRecommendationCard';
 import { BroadcastBar } from '@/components/export/BroadcastBar';
 import { AutomatorFlow } from '@/components/automator/AutomatorFlow';
-import { EdgePaywall } from '@/components/edge/EdgePaywall';
 import type { ExportFormat, ExportUseCase } from '@/types/memory';
 import type { ExportRecommendation } from '@/types/edge';
 import type { SkillSeed } from '@/types/skill';
@@ -140,7 +138,6 @@ export default function ContextExport() {
     customTitle,
   } = useMemoryExport();
   const { recommendations, hasRecommendations } = useExportRecommendations();
-  const { hasAccess: isPaidUser, subscribe } = useEdgeSubscription();
   const { userId, email } = useAuth();
 
   const location = useLocation();
@@ -153,7 +150,6 @@ export default function ContextExport() {
   // null = the export wizard (use-case presets) is showing.
   const [skillFocus, setSkillFocus] = useState<boolean>(false);
   const [skillSeed, setSkillSeed] = useState<SkillSeed | null>(null);
-  const [quotaPaywallOpen, setQuotaPaywallOpen] = useState(false);
 
   // Entry points (Edge AutomatePainCard, Memory blocker button, Briefing
   // decision_trigger button) navigate to /context with location.state.seed.
@@ -350,57 +346,29 @@ export default function ContextExport() {
       </div>
 
       {/* Build a skill - the DEFAULT, headline entry. Opens the redesigned
-          Automator (suggestions -> recognition cascade -> skill ready). For
-          non-Pro it shows the upgrade nudge. The use-case presets below are the
+          Automator (suggestions -> recognition cascade -> skill ready). Free for
+          now: open to every leader. The use-case presets below are the
           secondary, one-click context path. */}
-      <div className={cn(
-        'rounded-xl border p-4',
-        isPaidUser ? 'border-accent/30 bg-accent/[0.06]' : 'border-border bg-card',
-      )}>
+      <div className="rounded-xl border border-accent/30 bg-accent/[0.06] p-4">
         <div className="flex items-start gap-3">
-          <div className={cn(
-            'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border',
-            isPaidUser ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-secondary border-border text-muted-foreground',
-          )}>
-            {isPaidUser ? (
-              <Zap className="h-5 w-5" />
-            ) : (
-              <Lock className="h-4 w-4" />
-            )}
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border bg-accent/10 border-accent/30 text-accent">
+            <Zap className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-semibold text-foreground">Build a skill</span>
-              {!isPaidUser && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-accent/10 text-accent">
-                  Pro
-                </span>
-              )}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-              Pick something you do over and over. CTRL learns how you do it, then writes you an agent that does it for you - in your voice.
+              Pick something you do over and over. CTRL learns how you do it, then writes you an agent that does it for you, in your voice.
             </p>
 
-            {isPaidUser ? (
-              <button
-                onClick={handleOpenSkillBuilder}
-                className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-accent bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
-              >
-                Start building
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                onClick={async () => {
-                  const url = await subscribe();
-                  if (url) window.location.href = url;
-                }}
-                className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-accent/30 text-accent hover:bg-accent/10 transition-colors"
-              >
-                <Zap className="h-3 w-3" />
-                Upgrade to Pro
-              </button>
-            )}
+            <button
+              onClick={handleOpenSkillBuilder}
+              className="mt-3 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-accent bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+            >
+              Start building
+              <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>
@@ -819,12 +787,6 @@ export default function ContextExport() {
           key={skillSeed?.text ?? 'browse'}
           initialSeed={skillSeed}
           onTriageReroute={handleTriageReroute}
-          onQuotaExhausted={() => setQuotaPaywallOpen(true)}
-        />
-        <EdgePaywall
-          isOpen={quotaPaywallOpen}
-          onClose={() => setQuotaPaywallOpen(false)}
-          capability="free_quota_exhausted"
         />
       </div>
     </div>
@@ -960,7 +922,7 @@ export default function ContextExport() {
       >
         {skillFocus ? (
           <div className="flex-1 min-h-0">
-            <div className="mx-auto h-full w-full max-w-[402px]">
+            <div className="mx-auto h-full w-full max-w-4xl">
               {automatorTakeover}
             </div>
           </div>

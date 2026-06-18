@@ -21,8 +21,6 @@ import { ArtifactProgressList } from "@/components/kit/ArtifactProgressList";
 import { HomeworkCard } from "@/components/kit/HomeworkCard";
 import { PersonalMapCard } from "@/components/kit/PersonalMapCard";
 import { SendPackCard } from "@/components/kit/SendPackCard";
-import { VoiceProfileCard } from "@/components/kit/VoiceProfileCard";
-import { SaveProfileCard } from "@/components/kit/SaveProfileCard";
 import { SevenDayPlan } from "@/components/kit/SevenDayPlan";
 import { ShipSection } from "@/components/kit/ShipSection";
 import { ArtifactCard } from "@/components/kit/ArtifactCard";
@@ -30,6 +28,7 @@ import { OrgChartView } from "@/components/kit/OrgChartView";
 import { CapsuleCard } from "@/components/kit/CapsuleCard";
 import { EdgeProCard } from "@/components/kit/EdgeProCard";
 import { RegenerateSheet } from "@/components/kit/RegenerateSheet";
+import { KitVoiceProfileCard } from "@/components/kit/KitVoiceProfileCard";
 import { SkillInstallGuide } from "@/components/edge/SkillInstallGuide";
 import { useAuth } from "@/hooks/useAuth";
 import { useKitRedemption } from "@/hooks/useKitRedemption";
@@ -482,17 +481,25 @@ export default function KitHome() {
               <SkillInstallGuide skillName={skillMeta.name} preferredTool={tool} />
             )}
 
+            <KitVoiceProfileCard
+              pitch={
+                preset?.slug === "orgchart"
+                  ? "The agents you stand up from your chart will write in your voice, not generic AI."
+                  : preset?.slug === "memory-identity"
+                    ? "Your CTRL memory and the skills you build will speak in your voice."
+                    : preset?.slug === "vibe-coding"
+                      ? "The skills you ship from CTRL will read in your voice."
+                      : preset?.slug === "autonomous-business"
+                        ? "The automations you build in CTRL will sound like you, not a robot."
+                        : undefined
+              }
+            />
+
             {/* 0. The hero: the agentic org chart */}
             {orgChart && <OrgChartView chart={orgChart} />}
 
             {/* 1. The capstone map */}
             {kitMap && <PersonalMapCard map={kitMap} />}
-
-            {/* 1.5. Voice profile capture - feeds every future Automator export */}
-            {journey.shippedAt && <VoiceProfileCard />}
-
-            {/* 1.6. Side-door upgrade to free CTRL once a voice profile exists */}
-            {journey.shippedAt && <SaveProfileCard />}
 
             {/* 2. Email capture at the moment of value */}
             {showSendPack && (
@@ -826,11 +833,20 @@ function BridgeCard() {
         CTRL already knows {count} thing{count === 1 ? "" : "s"} about you
       </h3>
       <p className="text-sm text-muted-foreground">
-        Your Memory Web, daily briefing, and Edge profile are one step away.
+        Your Memory Web, voice profile, and skill builder are waiting in CTRL, free. The daily
+        briefing and Edge artifacts come with Edge Pro.
       </p>
       <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/dashboard")}>
-        Open CTRL
+        Open CTRL (free)
         <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full text-muted-foreground"
+        onClick={() => navigate("/context")}
+      >
+        Build a skill from your kit
       </Button>
     </div>
   );
