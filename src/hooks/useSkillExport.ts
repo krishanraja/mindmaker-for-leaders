@@ -17,6 +17,12 @@ export interface GenerateSkillOptions {
 interface UseSkillExport {
   isGenerating: boolean;
   error: string | null;
+  /**
+   * Set to true when the edge function returned 402 free_quota_exhausted. The
+   * parent UI uses this to open the EdgePaywall in quota-exhausted mode rather
+   * than showing a generic error.
+   */
+  quotaExhausted: boolean;
   triageResult: SkillTriage | null;
   skillData: SkillData | null;
   qualityGate: SkillQualityGate | null;
@@ -38,6 +44,7 @@ interface UseSkillExport {
 export function useSkillExport(functionName: string = "generate-skill-export"): UseSkillExport {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quotaExhausted, setQuotaExhausted] = useState(false);
   const [triageResult, setTriageResult] = useState<SkillTriage | null>(null);
   const [skillData, setSkillData] = useState<SkillData | null>(null);
   const [qualityGate, setQualityGate] = useState<SkillQualityGate | null>(null);
@@ -47,6 +54,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
   const reset = useCallback(() => {
     setIsGenerating(false);
     setError(null);
+    setQuotaExhausted(false);
     setTriageResult(null);
     setSkillData(null);
     setQualityGate(null);
@@ -58,6 +66,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
     async (transcript: string, options?: GenerateSkillOptions): Promise<SkillExportResponse | null> => {
       setIsGenerating(true);
       setError(null);
+      setQuotaExhausted(false);
       setTriageResult(null);
       setSkillData(null);
       setQualityGate(null);
@@ -92,6 +101,11 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
             } catch {
               // ignore parse errors
             }
+          }
+          if (serverMessage === "free_quota_exhausted") {
+            setQuotaExhausted(true);
+            setError(null);
+            return null;
           }
           throw new Error(serverMessage || (fnError as Error | null)?.message || "Generation failed");
         }
@@ -135,6 +149,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
   return {
     isGenerating,
     error,
+    quotaExhausted,
     triageResult,
     skillData,
     qualityGate,

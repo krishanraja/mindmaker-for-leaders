@@ -188,6 +188,9 @@ export function EdgeProTab() {
 
   return (
     <div className="space-y-6">
+      {/* Feature matrix - Free vs Edge Pro */}
+      <PlanMatrix />
+
       {/* Subscription card */}
       <div className="bg-card p-6 rounded-lg border border-border">
         <div className="flex items-start justify-between gap-3 mb-4">
@@ -408,3 +411,59 @@ export function EdgeProTab() {
     </div>
   )
 }
+
+interface MatrixRow {
+  label: string
+  free: string | true | false
+  pro: string | true | false
+}
+
+const MATRIX: MatrixRow[] = [
+  { label: 'Memory Web (read-write)', free: true, pro: true },
+  { label: 'Voice profile', free: true, pro: true },
+  { label: 'Automator skill exports', free: '1 / month', pro: 'Unlimited' },
+  { label: 'Daily personalised briefing', free: false, pro: true },
+  { label: 'Decision engine (verify + cross-examine)', free: false, pro: true },
+  { label: 'Drafting + framework generation', free: false, pro: true },
+  { label: 'Email delivery of artifacts', free: false, pro: true },
+  { label: 'Agent access via MCP', free: false, pro: true },
+]
+
+function PlanMatrix() {
+  return (
+    <div className="bg-card p-6 rounded-lg border border-border">
+      <div className="mb-3">
+        <h3 className="text-lg font-semibold text-foreground">What you get</h3>
+        <p className="text-xs text-muted-foreground">
+          Free includes Memory Web, Voice Profile, and 1 Automator skill per month. Edge Pro
+          ($29/mo) unlocks unlimited Automator skills plus the briefing and decision engine.
+        </p>
+      </div>
+      <div className="grid grid-cols-[1fr,auto,auto] gap-x-4 gap-y-1.5 text-sm">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Capability
+        </span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center">
+          Free
+        </span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-accent text-center">
+          Edge Pro
+        </span>
+        {MATRIX.map((row) => (
+          <div key={row.label} className="contents">
+            <span className="text-foreground/90">{row.label}</span>
+            <span className="text-center text-muted-foreground">{renderCell(row.free)}</span>
+            <span className="text-center text-foreground">{renderCell(row.pro)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function renderCell(value: string | true | false): string {
+  if (value === true) return '✓'
+  if (value === false) return '-'
+  return value
+}
+

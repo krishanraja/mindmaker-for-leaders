@@ -9,6 +9,9 @@ import {
   Layers,
   FileText,
   X,
+  Sparkles,
+  Newspaper,
+  Brain,
 } from 'lucide-react';
 import {
   Dialog,
@@ -81,10 +84,19 @@ function findSampleKey(capability?: string): string | null {
 }
 
 const BENEFITS = [
+  { icon: Sparkles, text: 'Unlimited Automator skills (free is 1 per month)' },
+  { icon: Newspaper, text: 'Daily personalised briefing' },
+  { icon: Brain, text: 'Decision engine - claim verification + cross-examination' },
   { icon: PenTool, text: 'Unlimited drafting: emails, memos, strategy docs' },
   { icon: Mail, text: 'Email delivery of generated artifacts' },
   { icon: Layers, text: 'Framework generation from your strengths' },
   { icon: FileText, text: 'All artifact types: agendas, templates, board memos' },
+];
+
+const FREE_INCLUDED = [
+  'Read-write Memory Web',
+  'Voice profile',
+  '1 Automator skill / month',
 ];
 
 const PRICE = EDGE_PRO_PRICE_LABEL;
@@ -101,6 +113,7 @@ function PaywallContent({
   isProcessing: boolean;
 }) {
   const { companyName } = useProfileBasics();
+  const isQuotaExhausted = capability === 'free_quota_exhausted';
 
   return (
     <div className="space-y-5">
@@ -110,12 +123,16 @@ function PaywallContent({
           <Zap className="h-5 w-5 text-accent" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-foreground">Unlock Edge Pro</h3>
-          {capability && (
-            <p className="text-xs text-muted-foreground">
-              Required for: {capability}
-            </p>
-          )}
+          <h3 className="text-lg font-bold text-foreground">
+            {isQuotaExhausted ? 'Free skill used this month' : 'Unlimited Automator skills + briefing + decision engine'}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            {isQuotaExhausted
+              ? 'Your free Automator skill this month is built. Edge Pro unlocks unlimited.'
+              : capability
+                ? `Required for: ${capability}`
+                : 'Everything CTRL ships, no caps - $29/month.'}
+          </p>
         </div>
       </div>
 
@@ -171,6 +188,20 @@ function PaywallContent({
             </motion.div>
           );
         })}
+      </div>
+
+      {/* Free tier reminder so the delta is concrete */}
+      <div className="rounded-xl border border-border bg-muted/30 p-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Free tier still includes
+        </p>
+        <ul className="mt-1.5 space-y-1">
+          {FREE_INCLUDED.map((line) => (
+            <li key={line} className="text-xs text-foreground/80">
+              {line}
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* Price */}
