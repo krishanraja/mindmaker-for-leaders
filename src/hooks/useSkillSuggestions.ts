@@ -52,7 +52,7 @@ export function useSkillSuggestions(limit: number = 3): UseSkillSuggestions {
         return;
       }
 
-      const [blockersRes, decisionsRes, factsRes] = await Promise.all([
+      const [blockersRes, decisionsRes, factsRes, companyRes] = await Promise.all([
         supabase
           .from("user_memory")
           .select("id, fact_value, fact_label, importance, created_at")
@@ -76,10 +76,22 @@ export function useSkillSuggestions(limit: number = 3): UseSkillSuggestions {
           .in("fact_category", ["identity", "business"])
           .eq("is_current", true)
           .limit(12),
+        // Best-effort firmographics from L0 enrichment (enrich-company-context
+        // -> company_context). RLS-filtered to empty if unreadable; never throws.
+        supabase
+          .from("company_context")
+          .select("apollo_data")
+          .eq("leader_id", user.id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
 
       // Role / sector seed from identity + business facts (for curated copy).
       const { role, sector } = readRoleSector(factsRes.data ?? []);
+      // Industry from real firmographics sharpens the peer label when present.
+      const industry = readIndustry(companyRes?.data ?? null);
+      const peers = peerLabel(role, industry || sector);
 
       // Mine deliverable candidates from blockers + decisions.
       const mined: DeliverableCandidate[] = [];
@@ -110,9 +122,12 @@ export function useSkillSuggestions(limit: number = 3): UseSkillSuggestions {
       });
 
       // Top up with curated (role/sector-seeded), skipping titles already mined.
-      const curated = curatedFor(role, sector).filter(
-        (c) => !seenTitles.has(c.title.toLowerCase()),
-      );
+      // Reframe curated in the confident peer voice ("your peers are using this")
+      // grounded in the leader's role + company profile. Mined candidates keep
+      // their own grounded reason (they come from the leader's actual pains).
+      const curated = curatedFor(role, sector)
+        .filter((c) => !seenTitles.has(c.title.toLowerCase()))
+        .map((c) => ({ ...c, reasonLead: `${peers} are using this` }));
 
       const merged = [...minedUnique, ...curated].slice(0, limit);
       setCandidates(merged);
@@ -247,6 +262,33 @@ const DELIVERABLE_MATCHERS: DeliverableMatcher[] = [
 /* ------------------------------------------------------------------ */
 /* Role / sector reading + curated fallback                            */
 /* ------------------------------------------------------------------ */
+
+/** Pull a clean industry string from stored Apollo firmographics, if present. */
+function readIndustry(company: { apollo_data?: unknown } | null): string | null {
+  const apollo = company?.apollo_data as { industry?: unknown } | null | undefined;
+  const industry = apollo && typeof apollo.industry === "string" ? apollo.industry.trim() : "";
+  return industry.length > 0 && industry.length <= 28 ? industry : null;
+}
+
+/**
+ * The confident peer descriptor for the suggestion framing ("your peers are
+ * using this"). Grounded in the leader's role + company profile - never a
+ * fabricated cohort count. Falls back to "Leaders like you" when role is thin.
+ */
+function peerLabel(role: string | null, sectorOrIndustry: string | null): string {
+  const r = (role || "").toLowerCase();
+  let who = "Leaders like you";
+  if (/found|ceo|owner|chief exec/.test(r)) who = "Founders";
+  else if (/sales|revenue|account|bd|business development/.test(r)) who = "Sales leaders";
+  else if (/market|growth|brand|content/.test(r)) who = "Marketing leaders";
+  else if (/ops|operation|coo/.test(r)) who = "Ops leaders";
+  else if (/product|cpo|head of product|pm\b/.test(r)) who = "Product leaders";
+  const s = (sectorOrIndustry || "").trim();
+  if (s && s.length <= 28) {
+    return who === "Leaders like you" ? `Leaders at ${s} companies` : `${who} at ${s} companies`;
+  }
+  return who;
+}
 
 function readRoleSector(
   facts: { fact_category: string; fact_value: string; fact_label: string }[],

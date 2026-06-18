@@ -5,6 +5,7 @@ import { useSkillSuggestions } from "@/hooks/useSkillSuggestions";
 import { useSkillExport } from "@/hooks/useSkillExport";
 import { useGeneratedArtifacts } from "@/hooks/useGeneratedArtifacts";
 import { useVoiceProfile } from "@/hooks/useVoiceProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { isSkillSuccess, type SkillData, type SkillSeed } from "@/types/skill";
 import { AutomatorSuggestions } from "./AutomatorSuggestions";
 import { AutomatorCascade } from "./AutomatorCascade";
@@ -152,6 +153,31 @@ export function AutomatorFlow({
     [handlePick],
   );
 
+  // L0 warm start: enrich from a company domain (Apollo + site + news via
+  // enrich-company-context), then re-mine suggestions so they read as
+  // peer-grounded. Best-effort - never blocks the flow.
+  const handleAddDomain = useCallback(
+    async (raw: string) => {
+      const host = raw.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").trim();
+      if (!host) return;
+      const root = host.replace(/^www\./i, "").split(".")[0] || host;
+      const companyName = root.charAt(0).toUpperCase() + root.slice(1);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      try {
+        await supabase.functions.invoke("enrich-company-context", {
+          body: { company_name: companyName, leader_id: user.id, website_url: `https://${host}` },
+        });
+      } catch {
+        // enrichment is auxiliary; suggestions still refresh from role/sector
+      }
+      suggestions.refetch();
+    },
+    [suggestions],
+  );
+
   // ─── Cascade handlers ───────────────────────────────────────────
   const handleSelect = useCallback((stepId: CascadeStep["id"], optionId: string) => {
     setPicks((prev) => ({ ...prev, [stepId]: optionId }));
@@ -284,6 +310,7 @@ export function AutomatorFlow({
               hasMined={suggestions.hasMined}
               onPick={handlePick}
               onCustomDeliverable={handleCustomDeliverable}
+              onAddDomain={handleAddDomain}
             />
           )}
 
