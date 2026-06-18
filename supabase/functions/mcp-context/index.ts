@@ -9,7 +9,7 @@ import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supa
 import { getUserContext } from "../_shared/user-context.ts";
 
 const PROTOCOL_VERSION = "2025-06-18";
-const SERVER = { name: "CTRL Memory Web", version: "1.0.0" };
+const SERVER = { name: "CTRL Memory Web", version: "1.1.0" };
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -70,11 +70,58 @@ const BRIEFING_TOOL = {
   inputSchema: { type: "object", properties: {}, additionalProperties: false },
 };
 
-// The tools a token may use, by scope. 'briefing' is opt-in at mint time.
+const LIST_SKILLS_TOOL = {
+  name: "list_skills",
+  description:
+    "List the skills (reusable agent workflows) the leader has built in CTRL - each one a bounded, repeatable task written in the leader's own voice and grounded in their Memory Web. Call this to discover what the leader has already codified, then pull one with get_skill before doing that kind of work.",
+  inputSchema: { type: "object", properties: {}, additionalProperties: false },
+};
+const GET_SKILL_TOOL = {
+  name: "get_skill",
+  description:
+    "Fetch one of the leader's CTRL skills by name (as returned by list_skills) - the full skill instructions (SKILL.md) the leader built for a recurring task. Load it and follow it verbatim so the output matches how the leader actually does this work, in their voice.",
+  inputSchema: {
+    type: "object",
+    properties: { name: { type: "string", description: "The skill name from list_skills." } },
+    required: ["name"],
+    additionalProperties: false,
+  },
+};
+
+// The tools a token may use, by scope. 'briefing' is opt-in at mint time;
+// skills ride the base read scope (building skills is free, and the leader's
+// own agent pulling their own skills live is the core of the layered output).
 function toolsFor(scopes: string[]) {
-  const t = [CONTEXT_TOOL];
+  const t = [CONTEXT_TOOL, LIST_SKILLS_TOOL, GET_SKILL_TOOL];
   if (scopes.includes("briefing")) t.push(BRIEFING_TOOL);
   return t;
+}
+
+interface SkillRow {
+  name: string;
+  body: string;
+  created_at: string;
+}
+
+/** The leader's built skills (newest first), from the unified artifact store. */
+async function fetchSkills(admin: SupabaseClient, userId: string): Promise<SkillRow[]> {
+  const { data } = await admin
+    .from("generated_artifacts")
+    .select("name, body, created_at")
+    .eq("user_id", userId)
+    .eq("kind", "skill")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  return (data as SkillRow[]) ?? [];
+}
+
+/** First prose line of a SKILL.md body (skipping headings), for the summary. */
+function skillSummary(body: string): string {
+  const line = (body || "")
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => l.length > 0 && !l.startsWith("#"));
+  return line ? line.slice(0, 120) : "";
 }
 
 function formatContext(c: Awaited<ReturnType<typeof getUserContext>>): string {
@@ -124,7 +171,7 @@ Deno.serve(async (req) => {
       protocolVersion: PROTOCOL_VERSION,
       capabilities: { tools: { listChanged: false } },
       serverInfo: SERVER,
-      instructions: "Read-only access to a CTRL leader's live Memory Web. Call get_leader_context at the start of a task.",
+      instructions: "Read-only access to a CTRL leader's live Memory Web and the skills they have built. Call get_leader_context at the start of a task; call list_skills then get_skill to run a task the way the leader has codified it.",
     }));
   }
   if (method === "ping") return json(rpc(id, {}));
@@ -142,6 +189,35 @@ Deno.serve(async (req) => {
       if (name === "get_leader_context") {
         const ctx = await getUserContext(admin, auth.userId);
         return ok(formatContext(ctx));
+      }
+      if (name === "list_skills") {
+        const skills = await fetchSkills(admin, auth.userId);
+        if (skills.length === 0) {
+          return ok("This leader has not built any CTRL skills yet.");
+        }
+        const list = skills
+          .map((s) => {
+            const summary = skillSummary(s.body);
+            const date = (s.created_at || "").slice(0, 10);
+            return `- ${s.name}${date ? ` (built ${date})` : ""}${summary ? `: ${summary}` : ""}`;
+          })
+          .join("\n");
+        return ok(
+          `# The leader's CTRL skills\n${list}\n\nCall get_skill with a name to load the full instructions.`,
+        );
+      }
+      if (name === "get_skill") {
+        const wanted = String((msg.params?.arguments as Record<string, unknown>)?.name ?? "").trim();
+        if (!wanted) return err("get_skill requires a 'name' argument (use a name from list_skills).");
+        const skills = await fetchSkills(admin, auth.userId);
+        const hit =
+          skills.find((s) => s.name.toLowerCase() === wanted.toLowerCase()) ??
+          skills.find((s) => s.name.toLowerCase().includes(wanted.toLowerCase()));
+        if (!hit) {
+          const names = skills.map((s) => s.name).join(", ") || "(none yet)";
+          return err(`No skill named "${wanted}". Available: ${names}.`);
+        }
+        return ok(`# Skill: ${hit.name}\n\n${hit.body}`);
       }
       if (name === "get_todays_briefing") {
         if (!auth.scopes.includes("briefing")) return err("This key is not authorized for the briefing. Mint a key with the briefing scope enabled.");

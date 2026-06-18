@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Zap,
@@ -9,6 +10,9 @@ import {
   Trash2,
   Copy,
   Check,
+  Download,
+  Plug,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -46,8 +50,24 @@ const KIND_TONE: Record<ArtifactKind, string> = {
 export function LibraryTab() {
   const { artifacts, loading, remove } = useGeneratedArtifacts();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const hasSkills = useMemo(() => artifacts.some((a) => a.kind === "skill"), [artifacts]);
+
+  const handleDownload = (artifact: GeneratedArtifact) => {
+    const blob = new Blob([artifact.body], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${artifact.name}.md`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast({ title: `Downloaded "${artifact.name}.md"` });
+  };
 
   // Group by kind (newest-first within each group) so the leader sees
   // "Skills (4), Drafts (2)..." rather than a jumbled chronology.
@@ -114,6 +134,24 @@ export function LibraryTab() {
 
   return (
     <div className="space-y-5">
+      {hasSkills && (
+        <button
+          type="button"
+          onClick={() => navigate("/settings")}
+          className="w-full flex items-center gap-3 rounded-xl border border-accent/25 bg-accent/[0.06] p-3 text-left transition-colors hover:border-accent/40"
+        >
+          <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+            <Plug className="w-4 h-4 text-accent" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Connect these to your agent</p>
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              Your AI pulls your skills live over MCP - no copy-paste. Set up Agent access in Edge Pro.
+            </p>
+          </div>
+          <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        </button>
+      )}
       {grouped.map(([kind, items]) => {
         const Icon = KIND_ICON[kind];
         return (
@@ -161,6 +199,16 @@ export function LibraryTab() {
                       </p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(artifact);
+                        }}
+                        aria-label="Download markdown"
+                        className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
