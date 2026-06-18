@@ -410,3 +410,45 @@ Key architectural and product decisions with rationale.
 **Rationale**: The generated "ctrl." text was a placeholder-grade brand mark; an actual icon + wordmark lockup reads as an executive-grade product and keeps the brand consistent across every surface a leader sees. Putting the lockup behind a single `BrandLockup` component means the mark is defined once and reused on mobile and desktop rather than re-rendered ad hoc per shell.
 **Trade-off**: A shared component to maintain plus image assets shipped in the bundle vs a consistent, real brand lockup everywhere instead of generated text.
 **Outcome**: ✅ Mobile shipped in PR #197 (merge 7b5f0ef); desktop shipped in PR #200 (merge 387af84). Prod-verified by screenshot on `ctrl.themindmaker.ai`.
+
+## Decision 53: Skill Builder Is Free For Now (Edge Pro Gate Removed) (PR #204, 2026-06-17)
+**Date**: 2026-06-17
+**Decision**: Remove the Edge Pro gate on `generate-skill-export` so any authenticated user, including anonymous kit sessions, can build skills. Strip the in-flight freemium-ladder WIP (`AutomatorTierBanner`, `useSkillBuildAccess`, `constants/skillTier.ts`, `_shared/skill-tier.ts`).
+**Rationale**: The Skill Builder is the retention hook; gating it behind Edge Pro put the highest-leverage "aha" behind a paywall before a leader had felt the value, and the half-built freemium ladder added complexity without earning it. Letting everyone build a skill first (and gating the live MCP pull, not the build) prioritises proving value over capturing it early.
+**Trade-off**: Forgoing direct Skill-Builder paywall revenue for now vs a wider top of funnel and a cleaner codebase; Edge Pro still gates the live MCP skills pull.
+**Outcome**: ✅ Live. `generate-skill-export` deployed to prod open to any authenticated user; freemium-ladder code deleted.
+
+## Decision 54: Unified Voice Profile + No Fabricated Voice Samples (PR #204, 2026-06-17)
+**Date**: 2026-06-17
+**Decision**: Store the leader's writing voice as a single `ctrl_voice_profile` fact in `user_memory` (`fact_category` 'preference', `fact_subtype` 'communication_style'), captured by `VoiceStyleProfileSheet` via 5 recognition picks OR a paste-extract power path (the new `extract-voice-profile` edge fn: paste real writing -> 8 voice dimensions in one LLM pass, anonymous-safe, no raw-text storage). Surface it into generated skills via `_shared/memory-context-builder.ts` and use it in the harness. The `generate-skill-export` prompt now injects a self-identified VOICE_PROFILE and FORBIDS fabricated voice samples: reproduce the leader's real sample verbatim, else describe the register, never invent a quote; the skill renders a structured 8-dimension `voice-profile.md`.
+**Rationale**: Voice was inconsistent and re-asked per surface, and the harness could invent a quote the leader never wrote - exactly the kind of overstated, can't-stand-behind-it output the product exists to refuse. One source of truth for voice, derivable from real writing, plus a hard ban on fabricated samples, makes the voice honest and reusable. (A latent enum bug, `verification_status: 'confirmed'`, had been silently 400-ing every voice save; corrected to `'verified'`.)
+**Trade-off**: A new fact shape, sheet, hook, types, and an extra edge function vs honest, reusable voice grounding instead of per-surface re-asks and invented samples.
+**Outcome**: ✅ Live. Unified fact captured + surfaced + used; save enum bug fixed; deployed to prod.
+
+## Decision 55: Every Generated Skill Requires a Learning-Loop Section (PR #204, 2026-06-17)
+**Date**: 2026-06-17
+**Decision**: Require a `## Learning loop` section in every generated skill, enforced by the quality gate. The `generate-skill-export` prompt now evaluates boundedness first, then runs the FOUR Honest Tests (Test 4 = voice-lock / consistent creative output). The quality gate now passes 16/16 (the learning-loop check was previously failing).
+**Rationale**: A skill that only hands back a one-off output is a dead artifact; a learning-loop section teaches the leader how to keep improving the thing the skill produces, the same principle the Kit Engine packs already encode. Requiring it (not just suggesting it) is what makes it real. Checking boundedness before triage stops the harness wasting an extraction pass on an unbounded ask.
+**Trade-off**: A stricter gate (skills must carry a learning loop) and a slightly longer prompt vs skills that compound rather than expire.
+**Outcome**: ✅ Live. Quality gate 16/16; prompt tightened and deployed.
+
+## Decision 56: Layered Skill Output - Library + Live MCP Pull + Download (PR #204, 2026-06-17)
+**Date**: 2026-06-17
+**Decision**: Make a built skill reach the leader three ways: the library (home), a live MCP pull, and per-item download. The `mcp-context` MCP server gained `list_skills` + `get_skill` (read scope, Edge-Pro gated like the rest of that server) so the leader's own agent pulls their built CTRL skills live; `src/components/library/LibraryTab.tsx` gained a "Connect these to your agent" MCP banner + a per-item Download(.md).
+**Rationale**: A skill that only lives in the app is leverage the leader has to remember to go and get. Exposing skills over MCP means the leader's own agent pulls them live; a per-item download covers the offline / paste-into-tooling path. The three destinations together make the output portable instead of trapped in one surface.
+**Trade-off**: Two new MCP tools + a library banner / download affordance to maintain vs skill output that is actually portable. The live MCP pull is the Edge-Pro-gated layer (the build itself is free).
+**Outcome**: ✅ Live. `mcp-context` redeployed with `list_skills` / `get_skill`; LibraryTab banner + Download(.md) shipped.
+
+## Decision 57: Warm-Start Suggestions Use "Your Peers Are Using This" Grounded in Role + Company, Never a Fabricated Cohort Count (PR #204, 2026-06-17)
+**Date**: 2026-06-17
+**Decision**: `useSkillSuggestions` leads curated deliverables with a confident "your peers are using this" voice grounded in role + company profile (sector, plus a best-effort `company_context` / Apollo industry read), and NEVER a fabricated cohort count; mined candidates keep their own grounded reason. The Automator suggestions screen gains an optional "Add your company site" affordance that fires `enrich-company-context` then re-mines.
+**Rationale**: A confident, peer-anchored framing makes a cold suggestion feel earned, but only if it is honest - inventing a number ("used by 312 CEOs") is the kind of fabricated proof the product must refuse. Grounding the framing in the leader's real role + company (and offering to enrich it from their site) keeps the confidence without inventing data.
+**Trade-off**: A best-effort company read + an enrich affordance vs warm, grounded suggestions instead of either a cold list or a fabricated cohort.
+**Outcome**: ✅ Live. Warm-start framing + optional company-site enrich shipped.
+
+## Decision 58: Kit Artifacts Stay in the Branded Voice, Not the Student's Voice (PR #204, 2026-06-17)
+**Date**: 2026-06-17
+**Decision**: Keep kit-pack artifacts in the branded (Mindmaker / CTRL) voice rather than rewriting them into the student's own voice. The unified voice profile carries over for the leader's OWN built skills (and `KitVoiceProfileCard` shows per-kit voice carry-over copy), but the class pack itself stays in the program's voice. The 4 kit intakes were audited and confirmed already at recognition parity (100% recognition picks, forked adaptive cascade, two-pane desktop). `AutomatePainCard` pain chips now show for everyone (no `isPaidUser` branching).
+**Rationale**: A class follow-up pack is a branded teaching artifact; rewriting it into the student's voice would weaken its authority and muddy what the program said versus what the student would say. The voice profile belongs on the leader's own skills, where their voice is the point, not on the curriculum they were handed.
+**Trade-off**: Two voice contexts to hold straight (branded for kit packs, the leader's own for their built skills) vs kit packs that keep their teaching authority while personal skills still sound like the leader.
+**Outcome**: ✅ Live. Kit packs stay branded; voice carry-over surfaced per-kit via `KitVoiceProfileCard`; kit intakes confirmed at recognition parity.

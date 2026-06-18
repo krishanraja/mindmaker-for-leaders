@@ -241,6 +241,7 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 6.1 | Jun 2026 | Phase 13 - Brain engine + limits edge-graph (PRs #153-164, #187-189). Fact-to-fact edge graph, Strengthen/Fix RPCs, reliable reaction numbers, evidence tiers, track-record depth. Migrations 20260615*_brain_* + 20260616120000_memory_edges. |
 | 6.2 | Jun 2026 | Phase 14 - Kit Program: Agentic Org Chart kit (#190/#191), parity retrofit of all 3 existing kits to fork + pick-cascade + live picks-board (#192), PR #193 (merge 090dda2, 2026-06-17): cascade-bug fix (forked-kit intake silently dropped the back half of every kit's cascade since launch) + honesty floor on the composed org chart. |
 | 6.3 | Jun 2026 | Phase 15 - Home / Decision Map / Automator UX redesign (PRs #197-200, 2026-06-17). Founder review of live prod rebuilt three surfaces against the ctrl-ds design floor: mobile Home is now a time-aware greeting + the swipeable "worth a look" deck + 3 value actions (bets moved to Decisions) (#197, merge 7b5f0ef); the Decision Map is one pinned decision with considerations on a rail (#198, merge 33fb818); the Automator turns a recurring deliverable into a reusable skill via an all-recognition pick-cascade (#199, merge 24f7d15); brand lockup + persisted deck-training follow-ups (#200, merge 387af84). |
+| 6.4 | Jun 2026 | Phase 16 - Skill Builder intake + harness upgrade (PR #204, 2026-06-17). Skill Builder is now FREE for now (Edge Pro gate on `generate-skill-export` removed; freemium-ladder WIP stripped). `generate-skill-export` prompt tightened: boundedness check + FOUR Honest Tests (Test 4 = voice-lock), self-identified VOICE_PROFILE injected, fabricated voice samples forbidden, structured 8-dimension `voice-profile.md`, required `## Learning loop` section (quality gate now 16/16). New `extract-voice-profile` edge fn (paste writing -> 8 voice dimensions; anonymous-safe, no raw-text storage). Unified `ctrl_voice_profile` fact captured by `VoiceStyleProfileSheet`, surfaced via `_shared/memory-context-builder.ts` (voice-save enum bug fixed 'confirmed' -> 'verified'). Voice-aware Automator tone step + desktop two-pane `AutomatorScaffold`. Layered output: library + MCP (`mcp-context` `list_skills` / `get_skill`) + download. Warm-start peer suggestions grounded in role + company. 3 edge fns deployed to prod; no DB migrations. |
 
 ---
 
@@ -685,6 +686,40 @@ Built on the real ctrl-ds components, never hand-rolled chrome - a v2 of the dec
 ### Outcome
 
 Home reads as "I'm back" (greeting + a deck worth looking at + 3 clear actions); the Decision Map is one pinned decision with considerations on a rail and evidence one tap deeper; the Automator turns a real recurring deliverable into a reusable skill; the brand lockup is consistent on mobile and desktop; and the deck learns from every swipe. All four PRs merged to main and prod-verified by screenshot on 2026-06-17.
+
+---
+
+## Phase 16: Skill Builder Intake + Harness Upgrade (PR #204, 2026-06-17)
+
+### Context
+
+Phase 15 made the Automator the retention hook, but the Skill Builder behind it was still Edge Pro gated, the `generate-skill-export` prompt was untouched, and the voice handling was inconsistent: there was no single source of truth for a leader's writing voice, the harness could fabricate voice samples, and a latent enum bug was silently 400-ing every voice save. Phase 16 opened the builder up, hardened the prompt around voice, and unified the voice profile across the surfaces that need it.
+
+### What Shipped (one PR, five pieces)
+
+1. **Skill Builder is free for now.** The Edge Pro gate on `generate-skill-export` was REMOVED: any authenticated user, including anonymous kit sessions, can build skills. The freemium-ladder WIP was stripped (deleted `AutomatorTierBanner`, `useSkillBuildAccess`, `constants/skillTier.ts`, `_shared/skill-tier.ts`).
+
+2. **`generate-skill-export` prompt tightened (no longer untouched).** It now evaluates boundedness first, then runs the FOUR Honest Tests (Test 4 = voice-lock / consistent creative output), injects a self-identified VOICE_PROFILE, FORBIDS fabricated voice samples (reproduce the leader's real sample verbatim, else describe the register, never invent a quote), renders a structured 8-dimension `voice-profile.md`, and REQUIRES a `## Learning loop` section. The quality gate now passes 16/16 (the learning-loop check was previously failing).
+
+3. **New `extract-voice-profile` edge function.** Paste real writing -> derive the 8 voice dimensions in one LLM pass. Anonymous-session safe; does not store the raw pasted text.
+
+4. **Unified voice profile.** A single `ctrl_voice_profile` fact in `user_memory` (`fact_category` 'preference', `fact_subtype` 'communication_style'), captured by `VoiceStyleProfileSheet` (5 recognition picks OR the paste-extract power path), surfaced into generated skills by `_shared/memory-context-builder.ts`, and used by the harness. New files: `src/hooks/useVoiceProfile.ts`, `src/types/voiceProfile.ts`, `src/components/edge/VoiceStyleProfileSheet.tsx`, `src/components/kit/KitVoiceProfileCard.tsx`, `src/lib/automatablePain.ts`. Bug fixed: voice save used an invalid enum value `verification_status: 'confirmed'` -> corrected to `'verified'` (saving a voice profile had been silently 400-ing).
+
+5. **Automator is voice-aware + a desktop two-pane.** A cold tone pick now WRITES the persistent voice profile (`toneToVoiceProfile`); a returning leader gets a "still sound like you?" confirmation instead of a cold re-ask; a paste-extract affordance opens the sheet in paste mode. New `src/components/automator/AutomatorScaffold.tsx` renders a live "your skill is taking shape" panel beside the flow on desktop (the desktop builder was a cramped 402px phone column, now max-w-4xl two-pane; mobile unchanged).
+
+### Also Shipped
+
+- **Layered output.** The `mcp-context` MCP server gained `list_skills` + `get_skill` (a leader's own agent pulls their built CTRL skills LIVE; read scope, Edge-Pro gated like the rest of that server), and `src/components/library/LibraryTab.tsx` gained a "Connect these to your agent" MCP banner + a per-item Download(.md). The three output destinations are now real: library (home) + MCP (live agent pull) + download.
+- **Warm-start peer suggestions.** `useSkillSuggestions` now leads curated deliverables with the confident "your peers are using this" voice grounded in role + company profile (sector, plus a best-effort `company_context` / Apollo industry read), never a fabricated cohort count; mined candidates keep their own grounded reason. The Automator suggestions screen has an optional "Add your company site" affordance that fires `enrich-company-context` then re-mines.
+- **Kits.** `AutomatePainCard` pain chips now show for everyone (free, no `isPaidUser` branching). `KitVoiceProfileCard` shows per-kit voice carry-over copy. The 4 kit intakes were audited and confirmed already at recognition parity (100% recognition picks, forked adaptive cascade, two-pane desktop). `SkillCaptureSheet` / `SkillPreviewSheet` remain dead code.
+
+### Deploys
+
+Edge functions `generate-skill-export`, `extract-voice-profile`, and `mcp-context` deployed to prod (`bkyuxvschuwngtcdhsyg`). No database migrations were needed.
+
+### Outcome
+
+The Skill Builder is open, the harness will not invent a leader's voice, voice lives in one fact across the builder / kits / harness, and a built skill reaches the leader's agent three ways. PR #204, prod-deployed 2026-06-17.
 
 ---
 

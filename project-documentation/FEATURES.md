@@ -14,7 +14,7 @@ Complete feature inventory across all three CTRL tools.
 
 > **Updated 2026-06-17.** The brand redesign (PR #186), Brain engine (PRs #153-164, #187-189), and 4-kit program (PRs #190-#193) all shipped after these counts were last taken. Treat the edge-function / hook / migration totals below as **verified counts pending re-count**.
 
-- **80 Supabase edge functions** (Deno runtime; count as of 2026-06-09), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules
+- **80 Supabase edge functions** (Deno runtime; count as of 2026-06-09, re-count pending), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules; latest added: `extract-voice-profile` (PR #204)
 - **59 React hooks** under `src/hooks/` (count as of 2026-06-09; added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
 - **110 PostgreSQL migrations** applied to remote (count as of 2026-06-09; added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening; later additions include `20260615*_brain_*` and `20260616120000_memory_edges`)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
@@ -76,7 +76,9 @@ The retention hook: turn a recurring deliverable into a reusable skill. Three sc
 2. **Cascade** - a roughly 5-step all-recognition pick-cascade reusing the kit engine. The voice step shows real samples to PICK from, never "describe your tone".
 3. **Skill ready** - "Built your way" chips + Run it now + Export as markdown + a "Your skills" library peek.
 
-The Automator feeds the existing `generate-skill-export` pipeline (untouched).
+The Automator feeds the `generate-skill-export` pipeline (see the intake + harness upgrade note below; the pipeline's prompt was tightened in PR #204 and the Edge Pro gate removed).
+
+> **Intake + harness upgrade (PR #204):** the Skill Builder is now **free for now** (the Edge Pro gate on `generate-skill-export` was removed, so any authenticated user, including anonymous kit sessions, can build skills). The pipeline prompt was tightened (boundedness check, the FOUR Honest Tests with Test 4 = voice-lock, an injected self-identified VOICE_PROFILE, a ban on fabricated voice samples, a structured 8-dimension `voice-profile.md`, and a required `## Learning loop` section; quality gate now 16/16). A unified `ctrl_voice_profile` (one `user_memory` fact) is captured by `VoiceStyleProfileSheet` (5 recognition picks OR a paste-extract power path via the new `extract-voice-profile` edge fn), surfaced into generated skills, and used by the harness. The Automator tone step is voice-aware (a cold pick writes the profile; a returning leader gets a "still sound like you?" confirmation; a paste-extract affordance), `AutomatorScaffold` adds a desktop two-pane "your skill is taking shape" builder (mobile unchanged), Suggestions warm-starts with a "your peers are using this" voice grounded in role + company profile (never a fabricated cohort count), and the output is layered across library + MCP (`mcp-context` gained `list_skills` + `get_skill`, a live agent pull) + per-item download. See the **Agent Skill Builder** section below.
 
 ### Follow-ups (PR #200, merge 387af84)
 
@@ -311,7 +313,7 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 - Email delivery via `deliver-edge-artifact`
 - All capability types
 - All 7 briefing types (incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice)
-- **Unlimited Agent Skill Builder generation** (`generate-skill-export`): the Skill Builder. As of the 2026-06-17 UX redesign (PR #199) the `/context` entry is the **Automator deliverable flow** - Suggestions (recurring deliverables mined from the brain) -> a recognition pick-cascade -> Skill ready (Run it now + Export as markdown + a "Your skills" library peek). It still feeds the same `generate-skill-export` pipeline and produces a Skill downloadable into `~/.claude/skills/`. See **Home / Decision Map / Automator UX Redesign** above.
+- **Agent Skill Builder** (`generate-skill-export`): the Skill Builder. **NOTE (PR #204): the Skill Builder is now FREE for now - the Edge Pro gate was removed, so any authenticated user (including anonymous kit sessions) can build skills; it is no longer an Edge Pro entitlement.** As of the 2026-06-17 UX redesign (PR #199) the `/context` entry is the **Automator deliverable flow** - Suggestions (recurring deliverables mined from the brain) -> a recognition pick-cascade -> Skill ready (Run it now + Export as markdown + a "Your skills" library peek). It feeds the `generate-skill-export` pipeline and produces a Skill downloadable into `~/.claude/skills/`. Edge Pro still gates the live MCP skills pull (`mcp-context` `list_skills` / `get_skill`). See **Home / Decision Map / Automator UX Redesign** above.
 - Custom Voice Export (`generate-custom-export`)
 - Subscription management UI via `create-billing-portal-session`
 - Stripe webhook idempotency table (`stripe_events_processed`) prevents double-charges (Audit Week 1)
@@ -552,7 +554,7 @@ The headline differentiator: export your Memory Web as formatted context to any 
 
 ---
 
-## Agent Skill Builder: Voice-to-Skill Pipeline (Edge Pro)
+## Agent Skill Builder: Voice-to-Skill Pipeline (free for now since PR #204)
 
 ### Overview
 
@@ -560,10 +562,12 @@ Turns a repetitive leader workflow into a downloadable, **agentskills.io-complia
 
 This is the third surface on the Context Export page (`/context`). Two minutes describing a Monday-morning ritual is enough to generate a permanent piece of agent infrastructure the leader owns.
 
-> **UI updated 2026-06-17 (PR #199, merge 24f7d15):** the `/context` capture UI is now the **Automator deliverable flow** (Suggestions -> recognition pick-cascade -> Skill ready), not the old voice/text capture sheet. The Automator mines concrete recurring deliverables from the brain (blockers + decisions, with role / sector fallback), runs a roughly 5-step all-recognition cascade reusing the kit engine, and lands on Skill ready with Run it now + Export as markdown + a "Your skills" library peek. The seven-stage `generate-skill-export` pipeline, archetypes, triage routing, and data model below are UNCHANGED; the Automator feeds the same edge function. The old `SkillCaptureSheet` and `SkillPreviewSheet` (described later in this section) are now dead code, retained only for reference. See **Home / Decision Map / Automator UX Redesign** above.
+> **UI updated 2026-06-17 (PR #199, merge 24f7d15):** the `/context` capture UI is now the **Automator deliverable flow** (Suggestions -> recognition pick-cascade -> Skill ready), not the old voice/text capture sheet. The Automator mines concrete recurring deliverables from the brain (blockers + decisions, with role / sector fallback), runs a roughly 5-step all-recognition cascade reusing the kit engine, and lands on Skill ready with Run it now + Export as markdown + a "Your skills" library peek. The old `SkillCaptureSheet` and `SkillPreviewSheet` (described later in this section) are now dead code, retained only for reference. See **Home / Decision Map / Automator UX Redesign** above.
+
+> **Intake + harness upgrade (PR #204):** (1) **Free for now** - the Edge Pro gate on `generate-skill-export` was removed; any authenticated user, including anonymous kit sessions, can build skills. (2) The pipeline is **no longer untouched**: the prompt now checks boundedness first, runs the FOUR Honest Tests (Test 4 = voice-lock / consistent creative output), injects a self-identified VOICE_PROFILE, FORBIDS fabricated voice samples (reproduce the leader's real sample verbatim, else describe the register, never invent a quote), renders a structured 8-dimension `voice-profile.md`, and requires a `## Learning loop` section. The quality gate now passes 16/16 (the learning-loop check was previously failing). (3) A **unified voice profile** (`ctrl_voice_profile`, one `user_memory` fact, `fact_category` 'preference' / `fact_subtype` 'communication_style') is captured by `VoiceStyleProfileSheet` via 5 recognition picks OR a paste-extract power path backed by the new `extract-voice-profile` edge fn (paste real writing -> 8 voice dimensions in one LLM pass; anonymous-session safe, never stores raw text), surfaced into generated skills by `_shared/memory-context-builder.ts`, and used by the harness. The Automator tone step is voice-aware (a cold pick writes the profile; a returning leader gets a "still sound like you?" confirmation; a paste-extract affordance opens the sheet in paste mode), and `AutomatorScaffold` adds a desktop two-pane "your skill is taking shape" builder (widened to max-w-4xl; mobile unchanged). (4) Suggestions warm-start with a confident "your peers are using this" voice grounded in role + company profile (sector, plus a best-effort `company_context` / Apollo industry read), never a fabricated cohort count; an optional "Add your company site" affordance fires `enrich-company-context` then re-mines. (5) **Layered output**: library (home) + MCP (a live agent pull via `mcp-context`'s new `list_skills` / `get_skill`, read-scope, Edge-Pro gated) + per-item download (`LibraryTab` gained a "Connect these to your agent" MCP banner + Download(.md)).
 
 **Pages / surfaces:**
-- `/context`: the Automator deliverable flow (PR #199), gated behind Edge Pro
+- `/context`: the Automator deliverable flow (PR #199); free for now (PR #204)
 - Edge view (`/dashboard?view=edge`): `AutomatePainCard` chip row of declared blockers + active decisions
 - Memory Web blocker cards: zap button on each blocker
 - Briefing: zap button on every `decision_trigger` segment (v1 + v2)
@@ -576,15 +580,15 @@ Seven stages, all running inside `generate-skill-export/index.ts`:
 
 | Stage | What it does | Model / Tool |
 |---|---|---|
-| 1. Edge Pro gate | Verify `edge_subscriptions.status` is `active` or `past_due` | Postgres |
-| 2. Context build | Pull Memory Web facts + edge profile strengths/weaknesses for grounding | `buildMemoryContext` (3000 token budget) |
-| 3. Triage (Three Honest Tests) | Decide whether the input is really a skill, a Memory Web fact, a Custom Instruction, or a Saved Style. Triage failures route the input to the right surface and are still logged in `skill_exports` for analytics. | OpenAI JSON mode (gpt-4o), temperature 0.3 |
-| 4. Extraction | Generate skill name, description, body, references, test prompts, gotchas, archetype | OpenAI JSON mode |
-| 5. Quality gate | Validate 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections, no bare MUST/NEVER, valid name format | `runQualityGate` (deterministic) |
+| 1. Access | Any authenticated user, including anonymous kit sessions. (PR #204 REMOVED the prior Edge Pro gate; the freemium-ladder WIP was stripped.) | Postgres |
+| 2. Context build | Pull Memory Web facts + edge profile strengths/weaknesses + the unified `ctrl_voice_profile` for grounding | `buildMemoryContext` (3000 token budget) |
+| 3. Boundedness + Four Honest Tests triage | Check boundedness first, then run the FOUR Honest Tests (Test 4 = voice-lock / consistent creative output) to decide whether the input is really a skill, a Memory Web fact, a Custom Instruction, or a Saved Style. Triage failures route the input to the right surface and are still logged in `skill_exports`. (PR #204 tightened this from three tests to four.) | OpenAI JSON mode (gpt-4o), temperature 0.3 |
+| 4. Extraction | Generate skill name, description, body, references, test prompts, gotchas, archetype; inject a self-identified VOICE_PROFILE, forbid fabricated voice samples, render a structured 8-dimension `voice-profile.md` (PR #204) | OpenAI JSON mode |
+| 5. Quality gate | Validate 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections (incl. `## Learning loop`), no bare MUST/NEVER, valid name format. Now passes 16/16 (the learning-loop check was previously failing; PR #204). | `runQualityGate` (deterministic) |
 | 6. ZIP assembly | Build the agentskills.io standard bundle: single root folder, `SKILL.md` + `references/` + `01-test-prompts.txt` + `02-maintenance-card.txt` + `03-install-guide.txt` | `buildSkillZip` (Deno + JSZip) |
 | 7. Persist | Insert into `skill_exports` (one row per attempt, including failed triage), return base64 ZIP inline | Supabase service role |
 
-The Three Honest Tests triage is the value-prop differentiator: when a leader describes a one-time fact ("I worked at Microsoft in 2010"), CTRL routes that to Memory Web rather than generating a useless skill. When they describe a tone preference ("I always write in plain English"), it routes to Custom Instructions. Skills only get generated when the input is a repeatable, triggerable workflow.
+The Honest Tests triage (four tests since PR #204; Test 4 = voice-lock / consistent creative output) is the value-prop differentiator: when a leader describes a one-time fact ("I worked at Microsoft in 2010"), CTRL routes that to Memory Web rather than generating a useless skill. When they describe a tone preference ("I always write in plain English"), it routes to Custom Instructions. Skills only get generated when the input is a repeatable, triggerable workflow.
 
 ### Skill Archetypes
 
@@ -659,24 +663,29 @@ skill_exports
 
 RLS: owner-read, owner-insert. Indexed on `user_id` and `created_at DESC`.
 
-**Edge Function:**
-- `generate-skill-export`: the whole pipeline. Edge Pro gated (`active` or `past_due` grace). 4 internal files: `index.ts`, `prompt.ts` (system + user prompts encoding the triage rules + extraction rules), `quality-gate.ts` (deterministic validator), `zip.ts` (agentskills.io packager).
+**Edge Functions:**
+- `generate-skill-export`: the whole pipeline. **Free for now since PR #204** (the Edge Pro gate was removed; open to any authenticated user, including anonymous kit sessions). 4 internal files: `index.ts`, `prompt.ts` (system + user prompts encoding the triage rules + extraction rules, tightened in PR #204), `quality-gate.ts` (deterministic validator), `zip.ts` (agentskills.io packager).
+- `extract-voice-profile` (PR #204): paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text. Backs the paste-extract power path in `VoiceStyleProfileSheet`.
 
 **Hooks:**
 - `useSkillExport`: wraps the edge function. Manages full lifecycle: call, parse, decode the base64 ZIP into a downloadable Blob.
 - `useUserPains`: returns the top N blockers + active decisions from the leader's Memory Web for seeding entry points.
+- `useVoiceProfile` (PR #204): CRUD for the unified `ctrl_voice_profile` fact (save enum bug fixed: `verification_status` 'confirmed' -> 'verified', which had been silently 400-ing).
 
-**Components** (`src/components/edge/` + `src/components/memory-web/`):
+**Components** (`src/components/edge/` + `src/components/memory-web/` + `src/components/automator/` + `src/components/kit/`):
 - `SkillExportCard`: entry-point card on `/context`
-- `SkillCaptureSheet`: voice/text capture, bottom sheet on mobile, dialog on desktop
-- `SkillPreviewSheet`: preview + download CTA + install guide
+- `VoiceStyleProfileSheet`: captures the unified voice profile (5 recognition picks OR paste-extract power path) (PR #204)
+- `AutomatorScaffold`: desktop two-pane "your skill is taking shape" builder beside the flow; mobile unchanged (PR #204)
+- `KitVoiceProfileCard`: per-kit voice carry-over copy (PR #204)
+- `SkillCaptureSheet`: voice/text capture, bottom sheet on mobile, dialog on desktop (DEAD CODE)
+- `SkillPreviewSheet`: preview + download CTA + install guide (DEAD CODE)
 - `SkillQualityGate`: quality checklist display
 - `SkillInstallGuide`: per-tool install instructions
-- `AutomatePainCard`: pain-anchored entry chip row on Edge view
+- `AutomatePainCard`: pain-anchored entry chip row (PR #204: pain chips now show for everyone, no `isPaidUser` branching)
 
-### Edge Pro Gating
+### Access (free for now since PR #204)
 
-Same paywall as `generate-custom-export`. Free users see the locked `SkillExportCard` with a "Pro" badge that opens the Stripe checkout via `useEdgeSubscription.subscribe`. Subscribers get unlimited skill generation.
+The Edge Pro gate on the Skill Builder was REMOVED in PR #204: any authenticated user, including anonymous kit sessions, can build skills, and the freemium-ladder WIP (`AutomatorTierBanner`, `useSkillBuildAccess`, `constants/skillTier.ts`, `_shared/skill-tier.ts`) was stripped. Edge Pro still gates the live MCP skills pull (`mcp-context` `list_skills` / `get_skill`) like the rest of that server. `AutomatePainCard` pain chips now show for everyone with no `isPaidUser` branching.
 
 **Sales Anchor - Skill Builder**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Two minutes of speaking. Permanent leverage. Drop it in `~/.claude/skills/` and forget it."
 
@@ -744,6 +753,8 @@ The engine now ships **four kits**, all on the fork + pick-cascade + live-picks-
 2. **Honesty floor on the composed org chart.** A box that touches a flagged guardrail can **never** be left agent-led. This is a hard floor in compose, not advice: if the student flagged a guardrail on something a box touches, that box is forced human-led.
 
 **Sales Anchor - Agentic Org Chart kit**: "Walk out of class with a real org chart of what your agents run and what stays human, with the lines you flagged as no-go locked human-led. Not a worksheet, a decision."
+
+> **PR #204 kit notes:** the 4 kit intakes were audited and confirmed already at recognition parity (100% recognition picks, forked adaptive cascade, two-pane desktop). `AutomatePainCard` pain chips now show for everyone (free, no `isPaidUser` branching), and a new `KitVoiceProfileCard` shows per-kit voice carry-over copy from the unified `ctrl_voice_profile`.
 
 ### Entitlement & Quota
 
