@@ -155,6 +155,18 @@ export function renderMemoryMd(input: ScaffoldInput): string {
   ].join("\n");
 }
 
+/**
+ * Short, human phrase for each picked guardrail, used in the warm reflect-back
+ * at the top of GUARDRAILS.md. Reads naturally inside "you told us X stays under
+ * your hand". Single source for the acknowledgement copy.
+ */
+const LEAVES_REFLECT: Record<string, string> = {
+  email: "email to real people",
+  posting: "anything that posts publicly",
+  payments: "payments and invoices",
+  "client-comms": "anything a client will see",
+};
+
 interface GuardrailRule {
   heading: string;
   ticked: string;
@@ -196,6 +208,10 @@ export function renderGuardrailsMd(input: ScaffoldInput): string {
   const ticked = new Set(input.leaves.filter((id) => id !== "none"));
   const saidNone = input.leaves.includes("none") || ticked.size === 0;
 
+  const tickedLabels = [...ticked]
+    .map((id) => LEAVES_REFLECT[id])
+    .filter((label): label is string => Boolean(label));
+
   const lines: string[] = [
     "# GUARDRAILS.md",
     "",
@@ -203,9 +219,20 @@ export function renderGuardrailsMd(input: ScaffoldInput): string {
     "",
   ];
 
-  if (saidNone) {
+  // The warm reflect-back: name the choice the person made and wall it off into
+  // a standing rule, rather than silently storing it (spec 2.0, humanity first).
+  if (tickedLabels.length > 0) {
+    const list =
+      tickedLabels.length === 1
+        ? tickedLabels[0]
+        : `${tickedLabels.slice(0, -1).join(", ")} and ${tickedLabels[tickedLabels.length - 1]}`;
     lines.push(
-      "At intake I said nothing these workflows touch leaves the building. The default rules below apply the moment that changes.",
+      `You told us ${list} stays under your hand. Good call. Everything you named is walled off below, so the automation can move fast on the rest while it always checks with you on these.`,
+      "",
+    );
+  } else if (saidNone) {
+    lines.push(
+      "You said nothing this work touches leaves the building, so the automation can run end to end. The default rules below are still here, and they apply the moment that changes.",
       "",
     );
   }
