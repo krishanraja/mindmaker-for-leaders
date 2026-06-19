@@ -64,19 +64,29 @@ export interface OrgChartViewProps {
 /* Tag presentation (matches the mock's .t-led / .t-ass / .t-exc)      */
 /* ------------------------------------------------------------------ */
 
+/**
+ * The founder's three-way autonomy model, one canonical phrasing per tag:
+ *   led      -> green  -> AI runs it
+ *   assisted -> amber  -> AI assists, you approve the handoff
+ *   excluded -> red    -> you only
+ * `label` is the compact on-box tag; `legend` is the fuller line in the key so
+ * the chart reads the three-way meaning without a wall of text on each box.
+ */
 const TAG_META: Record<
   Exclude<OrgChartTag, null>,
-  { label: string; color: string; bg: string; border: string; legendDot: string }
+  { label: string; legend: string; color: string; bg: string; border: string; legendDot: string }
 > = {
   led: {
-    label: "Agent-led",
+    label: "AI runs it",
+    legend: "Green: AI runs it",
     color: "var(--kit-acc-deep)",
     bg: "var(--kit-acc-soft)",
     border: "var(--kit-acc-line)",
     legendDot: "var(--kit-acc)",
   },
   assisted: {
-    label: "Agent-assisted",
+    label: "You approve the handoff",
+    legend: "Amber: AI assists, you approve the handoff",
     color: "var(--kit-ind)",
     bg: "var(--kit-ind-soft)",
     border: "var(--kit-ind-line)",
@@ -84,6 +94,7 @@ const TAG_META: Record<
   },
   excluded: {
     label: "You only",
+    legend: "Red: you only",
     color: "var(--kit-slate)",
     bg: "var(--kit-slate-soft)",
     border: "var(--kit-slate-line)",
@@ -151,9 +162,9 @@ export function OrgChartView({ chart, building = false }: OrgChartViewProps) {
 
       {showLegend && (
         <div style={S.legend}>
-          <LegendItem color="var(--kit-acc)" label="Agent-led" />
-          <LegendItem color="var(--kit-ind)" label="Agent-assisted" />
-          <LegendItem color="var(--kit-slate)" label="You only" />
+          <LegendItem color="var(--kit-acc)" label={TAG_META.led.legend} />
+          <LegendItem color="var(--kit-ind)" label={TAG_META.assisted.legend} />
+          <LegendItem color="var(--kit-slate)" label={TAG_META.excluded.legend} />
         </div>
       )}
     </div>
