@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Vibe Coding Field Kit - redesign mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  /* Gobold (wordmark + uppercase labels only), loaded from the repo's public/fonts. */
+  @font-face { font-family:'Gobold'; src:url('../public/fonts/Gobold-Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
+
+  /* ---- locked kit palette (mirrors src/components/kit/kit-portal.css) ---- */
+  :root{
+    --kit-bg:#f3f5f1; --kit-card:#fff; --kit-ink:#13282c; --kit-ink2:#2b4248;
+    --kit-mut:#697578; --kit-faint:#99a4a5; --kit-line:#e5e8e2; --kit-line2:#eef1eb;
+    --kit-rail:#d5dad2; --kit-acc:#2a9e7c; --kit-acc-deep:#1e7860; --kit-acc-soft:#e6f4ee;
+    --kit-acc-line:#bce2d2; --kit-ind:#3e6e94; --kit-ind-soft:#e9f0f5; --kit-clay:#b5563f;
+    --kit-clay-soft:#f6e9e5;
+    --kit-display:'Gobold', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    font-family:'Inter', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    color:var(--kit-ink); letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased;
+    background:#11201f;
+    display:grid; place-items:center; min-height:100vh; padding:24px 14px;
+  }
+
+  /* phone frame: fixed height, the screen inside NEVER scrolls (the no-scroll law) */
+  .phone{
+    width:100%; max-width:412px; height:min(860px, calc(100vh - 48px));
+    border-radius:34px; overflow:hidden; position:relative;
+    background:radial-gradient(130% 80% at 50% -20%, #fbfbfa 0%, var(--kit-bg) 60%);
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.04);
+    display:flex; flex-direction:column;
+  }
+
+  /* header chrome */
+  .top{ display:flex; align-items:center; justify-content:space-between; padding:18px 22px 8px; }
+  .wordmark{ font-family:var(--kit-display); font-weight:700; letter-spacing:.02em; font-size:15px; color:var(--kit-ink); }
+  .wordmark .dot{ color:var(--kit-acc); }
+  .chip{ font-family:var(--kit-display); text-transform:uppercase; letter-spacing:.06em; font-size:10px; font-weight:700;
+    color:var(--kit-acc-deep); background:var(--kit-acc-soft); border:1px solid var(--kit-acc-line); padding:5px 9px; border-radius:999px; }
+
+  /* progress rail */
+  .rail{ height:4px; margin:6px 22px 0; border-radius:999px; background:var(--kit-line2); overflow:hidden; }
+  .rail > i{ display:block; height:100%; width:8%; border-radius:999px;
+    background:linear-gradient(90deg, var(--kit-acc), #15c4a4); transition:width .5s cubic-bezier(.22,1,.36,1); }
+
+  /* the one screen at a time */
+  .stage{ flex:1; position:relative; overflow:hidden; }
+  .screen{ position:absolute; inset:0; padding:18px 22px 22px; display:flex; flex-direction:column;
+    opacity:0; transform:translateX(28px); pointer-events:none; transition:opacity .26s ease, transform .26s ease; }
+  .screen.active{ opacity:1; transform:none; pointer-events:auto; }
+  .screen.left{ transform:translateX(-28px); }
+
+  .eyebrow{ font-family:var(--kit-display); text-transform:uppercase; letter-spacing:.1em; font-weight:700;
+    font-size:11.5px; color:var(--kit-acc-deep); margin-bottom:10px; }
+  h1{ font-size:23px; line-height:1.14; font-weight:800; letter-spacing:-.02em; color:var(--kit-ink); }
+  .sub{ margin-top:9px; font-size:14.5px; line-height:1.45; color:var(--kit-mut); max-width:34ch; }
+  .grow{ flex:1; }
+
+  /* pills */
+  .pills{ display:flex; flex-wrap:wrap; gap:9px; margin-top:18px; }
+  .pill{ border:1px solid var(--kit-line); background:var(--kit-card); color:var(--kit-ink2);
+    border-radius:999px; padding:11px 15px; font-size:14px; font-weight:600; cursor:pointer;
+    box-shadow:0 1px 2px rgba(16,28,30,.05); transition:all .14s ease; }
+  .pill:hover{ border-color:#cbcec8; }
+  .pill.on{ background:var(--kit-acc-soft); border-color:var(--kit-acc); color:var(--kit-acc-deep); }
+  .pill .tick{ display:none; margin-left:6px; }
+  .pill.on .tick{ display:inline-flex; }
+  .pill .tick svg{ width:13px; height:13px; stroke:var(--kit-acc-deep); vertical-align:-2px; }
+
+  /* big choice cards (the fork + tool) */
+  .choice{ display:flex; align-items:center; gap:14px; width:100%; text-align:left; cursor:pointer;
+    border:1px solid var(--kit-line); background:var(--kit-card); border-radius:16px; padding:15px;
+    box-shadow:0 1px 2px rgba(16,28,30,.05); transition:all .16s ease; margin-top:11px; }
+  .choice:hover{ transform:translateY(-1px); border-color:var(--kit-acc); box-shadow:0 18px 40px -24px rgba(16,28,30,.25); }
+  .choice .ic{ width:44px; height:44px; flex:none; display:grid; place-items:center; border-radius:13px;
+    color:var(--kit-acc-deep); background:var(--kit-acc-soft); border:1px solid var(--kit-acc-line); }
+  .choice b{ font-size:15.5px; font-weight:800; color:var(--kit-ink); display:block; }
+  .choice span{ font-size:12.5px; color:var(--kit-mut); display:block; margin-top:2px; line-height:1.35; }
+
+  /* text input */
+  .field{ margin-top:16px; }
+  .field label{ font-size:12.5px; font-weight:700; color:var(--kit-ink2); display:block; margin:0 0 6px 2px; }
+  .field input, .field textarea{ width:100%; border:1px solid var(--kit-line); background:#fcfcfb; color:var(--kit-ink);
+    border-radius:13px; padding:12px 14px; font-size:15px; font-family:inherit; outline:none; transition:all .14s ease; }
+  .field textarea{ min-height:96px; resize:none; line-height:1.45; }
+  .field input:focus, .field textarea:focus{ border-color:var(--kit-acc); box-shadow:0 0 0 3px var(--kit-acc-soft); }
+
+  /* the reflect-back (humanity moment) */
+  .reflect{ margin-top:14px; border-radius:13px; padding:13px 14px; font-size:13.5px; line-height:1.45;
+    background:var(--kit-acc-soft); border:1px solid var(--kit-acc-line); color:var(--kit-ink);
+    opacity:0; transform:translateY(6px); transition:all .3s ease; }
+  .reflect.show{ opacity:1; transform:none; }
+  .reflect.clay{ background:var(--kit-clay-soft); border-color:#e9cabf; }
+
+  /* footer nav */
+  .nav{ display:flex; align-items:center; gap:12px; padding-top:16px; }
+  .back{ background:none; border:none; color:var(--kit-mut); font-size:15px; font-weight:600; cursor:pointer; padding:12px 4px; }
+  .btn{ flex:1; display:inline-flex; align-items:center; justify-content:center; gap:7px; cursor:pointer;
+    border:none; border-radius:13px; padding:14px; font-size:15px; font-weight:800; color:#fff; letter-spacing:-.005em;
+    background:linear-gradient(180deg, var(--kit-acc), var(--kit-acc-deep));
+    box-shadow:0 12px 26px -14px rgba(10,158,132,.85); transition:opacity .15s ease, transform .08s ease; }
+  .btn:active{ transform:translateY(1px); }
+  .btn[disabled]{ opacity:.4; cursor:not-allowed; box-shadow:none; }
+  .btn.ghost{ background:#fff; color:var(--kit-ink); border:1px solid var(--kit-line); box-shadow:0 1px 2px rgba(16,28,30,.05); }
+  .btn.full{ flex:none; width:100%; }
+  .linkish{ display:block; text-align:center; width:100%; background:none; border:none; color:var(--kit-mut);
+    font-size:13.5px; font-weight:600; cursor:pointer; padding:12px; }
+
+  /* homework prompt block */
+  .codebox{ margin-top:14px; border:1px solid var(--kit-line); background:#fbfcfb; border-radius:13px; padding:13px 14px;
+    font-family:ui-monospace, 'SF Mono', Menlo, monospace; font-size:11.5px; line-height:1.5; color:var(--kit-ink2);
+    max-height:118px; overflow:hidden; position:relative; }
+  .codebox::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:34px;
+    background:linear-gradient(transparent, #fbfcfb); }
+
+  /* build trace (show the thinking) */
+  .trace{ margin-top:6px; display:flex; flex-direction:column; gap:2px; }
+  .tline{ display:flex; align-items:center; gap:12px; padding:11px 2px; opacity:.25; transform:translateY(4px);
+    transition:all .35s ease; }
+  .tline.in{ opacity:1; transform:none; }
+  .tline .dot{ width:20px; height:20px; flex:none; border-radius:999px; border:2px solid var(--kit-line);
+    display:grid; place-items:center; position:relative; }
+  .tline.run .dot{ border-color:var(--kit-acc); }
+  .tline.run .dot::after{ content:""; position:absolute; inset:3px; border-radius:999px; border:2px solid var(--kit-acc);
+    border-right-color:transparent; animation:spin .7s linear infinite; }
+  .tline.done .dot{ border-color:var(--kit-acc); background:var(--kit-acc); }
+  .tline.done .dot svg{ stroke:#fff; }
+  .tline .dot svg{ width:11px; height:11px; opacity:0; }
+  .tline.done .dot svg{ opacity:1; }
+  .tline .lab{ font-size:14px; font-weight:600; color:var(--kit-ink2); }
+  .tline.run .lab{ color:var(--kit-ink); }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* hero PDF reveal */
+  .pdf{ margin:14px auto 0; width:200px; aspect-ratio:1/1.3; border-radius:14px; position:relative;
+    background:linear-gradient(160deg,#16302e,#0c1f1d); color:#eafaf4; padding:18px 16px;
+    box-shadow:0 30px 60px -24px rgba(10,158,132,.55), 0 0 0 1px rgba(255,255,255,.06); overflow:hidden; }
+  .pdf .pe{ font-family:var(--kit-display); text-transform:uppercase; letter-spacing:.12em; font-size:8.5px; color:#7fe6c8; }
+  .pdf h3{ font-size:17px; line-height:1.12; font-weight:800; margin-top:8px; letter-spacing:-.02em; }
+  .pdf .who{ font-size:9.5px; color:#a7c8bf; margin-top:auto; position:absolute; bottom:16px; left:16px; right:16px; }
+  .pdf .line{ height:5px; border-radius:3px; background:rgba(255,255,255,.1); margin-top:7px; }
+  .pdf .line.s{ width:62%; } .pdf .line.m{ width:84%; }
+  .pdf .glow{ position:absolute; width:160px; height:160px; right:-50px; top:-40px; border-radius:50%;
+    background:radial-gradient(circle, rgba(42,158,124,.5), transparent 70%); }
+
+  /* small celebratory check */
+  .seal{ width:62px; height:62px; margin:6px auto 0; border-radius:999px; display:grid; place-items:center;
+    background:var(--kit-acc-soft); border:1px solid var(--kit-acc-line); color:var(--kit-acc-deep); }
+
+  /* two-button output row */
+  .outrow{ display:flex; gap:10px; margin-top:16px; }
+
+  /* 7-day plan */
+  .day{ display:flex; align-items:center; gap:12px; padding:11px 2px; border-bottom:1px solid var(--kit-line2); }
+  .day:last-child{ border-bottom:none; }
+  .day .box{ width:20px; height:20px; flex:none; border-radius:7px; border:2px solid var(--kit-line); cursor:pointer; display:grid; place-items:center; }
+  .day.on .box{ background:var(--kit-acc); border-color:var(--kit-acc); }
+  .day.on .box svg{ stroke:#fff; } .day .box svg{ width:11px; height:11px; opacity:0; } .day.on .box svg{ opacity:1; }
+  .day .d{ font-family:var(--kit-display); text-transform:uppercase; font-size:10px; letter-spacing:.08em; color:var(--kit-faint); width:38px; flex:none; }
+  .day .t{ font-size:13.5px; color:var(--kit-ink2); }
+  .day.on .t{ color:var(--kit-faint); text-decoration:line-through; }
+
+  .note{ text-align:center; font-size:11px; color:var(--kit-faint); padding:8px 0 0; }
+  .hint{ position:fixed; bottom:10px; left:0; right:0; text-align:center; color:#5f7a76; font-size:11px; }
+
+  /* ---- body wrapper + living panel (desktop two-pane) ---- */
+  .body{ flex:1; min-height:0; display:flex; }
+  .aside{ display:none; }
+
+  .lp{ flex:1; min-width:0; display:flex; flex-direction:column; gap:14px; }
+  .lp-h{ font-size:15px; font-weight:800; letter-spacing:-.01em; color:var(--kit-ink); display:flex; align-items:center; gap:9px; }
+  .lp-h .live{ font-family:var(--kit-display); text-transform:uppercase; font-size:9px; letter-spacing:.08em;
+    color:var(--kit-acc-deep); background:var(--kit-acc-soft); border:1px solid var(--kit-acc-line); padding:3px 7px; border-radius:999px; }
+  .lp-row{ opacity:0; transform:translateY(6px); animation:rowin .4s ease forwards; }
+  @keyframes rowin{ to{ opacity:1; transform:none; } }
+  .lp-lab{ font-family:var(--kit-display); text-transform:uppercase; letter-spacing:.1em; font-size:9.5px; font-weight:700; color:var(--kit-faint); margin-bottom:6px; }
+  .lp-val{ font-size:14px; color:var(--kit-ink2); font-weight:600; line-height:1.4; }
+  .lp-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .lp-chip{ font-size:12px; font-weight:600; color:var(--kit-acc-deep); background:var(--kit-acc-soft);
+    border:1px solid var(--kit-acc-line); border-radius:999px; padding:5px 10px; }
+  .lp-chip.clay{ color:var(--kit-clay); background:var(--kit-clay-soft); border-color:#e9cabf; }
+  .lp-empty{ margin:auto 0; text-align:center; color:var(--kit-faint); font-size:13px; line-height:1.5; padding:0 18px; }
+  .lp-empty .ring{ width:54px; height:54px; margin:0 auto 14px; border-radius:999px; border:2px dashed var(--kit-rail); }
+  .lp-file{ display:flex; align-items:center; gap:11px; padding:11px 12px; border:1px solid var(--kit-line); border-radius:12px;
+    background:var(--kit-card); box-shadow:0 1px 2px rgba(16,28,30,.04); }
+  .lp-file .fi{ width:30px; height:30px; flex:none; border-radius:8px; display:grid; place-items:center;
+    background:var(--kit-acc-soft); color:var(--kit-acc-deep); font-family:var(--kit-display); font-size:8px; letter-spacing:.04em; }
+  .lp-file .fn{ flex:1; min-width:0; font-size:13px; font-weight:600; color:var(--kit-ink2); }
+  .lp-file .fa{ display:flex; gap:6px; }
+  .lp-file .fa button{ font-size:11px; font-weight:700; color:var(--kit-mut); background:var(--kit-line2);
+    border:none; border-radius:7px; padding:5px 9px; cursor:pointer; }
+  .lp-file .fa button:hover{ color:var(--kit-acc-deep); background:var(--kit-acc-soft); }
+
+  @media (min-width:920px){
+    body{ background:radial-gradient(120% 90% at 50% -10%, #ffffff 0%, #edf0ec 70%); padding:0; }
+    .phone{ max-width:1180px; height:min(800px, calc(100vh - 44px)); border-radius:24px;
+      box-shadow:0 30px 80px -40px rgba(16,28,30,.45), 0 0 0 1px var(--kit-line); }
+    .top{ padding:22px 32px 10px; }
+    .rail{ margin:8px 32px 0; }
+    .stage{ flex:0 0 47%; max-width:47%; border-right:1px solid var(--kit-line2); }
+    .aside{ display:flex; flex:1; min-width:0; padding:36px 40px; flex-direction:column;
+      background:linear-gradient(180deg,#fbfdfb,#f4f7f3); }
+    .screen{ padding:40px 46px; justify-content:flex-start; }
+    h1{ font-size:27px; }
+    .pdf{ width:230px; }
+  }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="top">
+    <div class="wordmark">ctrl<span class="dot">.</span></div>
+    <div class="chip" id="topchip">Vibe Coding</div>
+  </div>
+  <div class="rail"><i id="bar"></i></div>
+
+  <div class="body">
+    <div class="stage" id="stage"><!-- screens injected --></div>
+    <aside class="aside" id="aside"><!-- living panel (desktop) --></aside>
+  </div>
+</div>
+<div class="hint">mock - tap through it like a phone. one action per screen, nothing scrolls.</div>
+
+<script>
+const CHK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+const ARROW = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+// ---- the state we collect (the knowledge bank, growing per screen) ----
+const bank = { audience:null, name:'', role:'', prefs:[], pains:[], build:'', tool:null, level:null };
+
+// reflect-back lines for the past-pain screen (the humanity moment)
+const PAIN_REFLECT = {
+  forgot:"That one is the worst. Your kit gives it a memory file so it stops losing the thread.",
+  broke:"Frustrating. Your build brief ships with a run-it-first check so you catch that early.",
+  changed:"We will set a rule: it asks before touching anything you did not point it at.",
+  sprawl:"Scope creep is real. Your kit scopes the build to one thing you can actually finish.",
+  wrong:"It happens. Your kit makes it show its work so confident-and-wrong gets caught.",
+};
+
+// ---- screens ----
+const screens = [
+  // 0 - warm intro (redeem already happened)
+  { p:6, render:s=>`
+    <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
+      <div class="eyebrow">Vibe Coding Field Kit</div>
+      <h1>Let's make any AI work the way <i>you</i> work.</h1>
+      <p class="sub">Six quick questions, then one real thing shipped this week. No fluff, and you can stop any time. We will build it around you.</p>
+    </div>
+    <div class="nav"><button class="btn full" onclick="next()">Start ${ARROW}</button></div>` },
+
+  // 1 - fork: who for
+  { p:14, render:s=>`
+    <div class="eyebrow">First</div>
+    <h1>Who are you building for?</h1>
+    <p class="sub">It changes the examples we use. Nothing else.</p>
+    <div class="grow" style="margin-top:8px">
+      <button class="choice" onclick="bank.audience='self';next()">
+        <span class="ic">${ICON_USER}</span><span><b>Just me</b><span>A tool for my own life or side projects</span></span></button>
+      <button class="choice" onclick="bank.audience='biz';next()">
+        <span class="ic">${ICON_BIZ}</span><span><b>My work or business</b><span>Something I will use at work</span></span></button>
+    </div>` },
+
+  // 2 - identity
+  { p:26, render:s=>`
+    <div class="eyebrow">A little about you</div>
+    <h1>What should we call you?</h1>
+    <p class="sub">This is the first thing your AI will know about you.</p>
+    <div class="grow">
+      <div class="field"><label>Your name</label><input id="f-name" value="${bank.name}" placeholder="First name is fine" oninput="bank.name=this.value;sync()"></div>
+      <div class="field"><label>What you do</label><input id="f-role" value="${bank.role}" placeholder="e.g. founder, marketer, student, curious" oninput="bank.role=this.value"></div>
+    </div>
+    <div class="nav"><button class="back" onclick="back()">Back</button>
+      <button class="btn" id="cont" ${bank.name?'':'disabled'} onclick="next()">Continue ${ARROW}</button></div>` },
+
+  // 3 - preferences (NEW)
+  { p:40, multi:'prefs', render:s=>`
+    <div class="eyebrow">How you like to work</div>
+    <h1>How should it treat you by default?</h1>
+    <p class="sub">There is no right answer. Pick whatever sounds like you.</p>
+    <div class="grow"><div class="pills">
+      ${pill('prefs','explain','Explain as you go')}
+      ${pill('prefs','justdo','Just do it, show me after')}
+      ${pill('prefs','steps','Small steps I can follow')}
+      ${pill('prefs','ask','Ask before big changes')}
+      ${pill('prefs','why','Teach me the why')}
+      ${pill('prefs','brief','Keep it short')}
+    </div></div>
+    <div class="nav"><button class="back" onclick="back()">Back</button>
+      <button class="btn" id="cont" ${bank.prefs.length?'':'disabled'} onclick="next()">Continue ${ARROW}</button></div>` },
+
+  // 4 - past pains (NEW, with reflect-back)
+  { p:54, multi:'pains', render:s=>`
+    <div class="eyebrow">What has burned you</div>
+    <h1>What's gone wrong before?</h1>
+    <p class="sub">Be honest. We turn each of these into a guardrail so it does not happen again.</p>
+    <div class="grow"><div class="pills">
+      ${pill('pains','forgot','It forgot what we were doing')}
+      ${pill('pains','broke','The code would not run')}
+      ${pill('pains','changed','It changed things I did not ask for')}
+      ${pill('pains','sprawl','The project sprawled out')}
+      ${pill('pains','wrong','Confident, and wrong')}
+    </div>
+      <div class="reflect clay" id="reflect"></div>
+    </div>
+    <div class="nav"><button class="back" onclick="back()">Back</button>
+      <button class="btn" id="cont" ${bank.pains.length?'':'disabled'} onclick="next()">Continue ${ARROW}</button></div>` },
+
+  // 5 - the build
+  { p:68, render:s=>`
+    <div class="eyebrow">The one build</div>
+    <h1>What's the one thing you want to build?</h1>
+    <p class="sub">One real thing you would actually use. We will brief it so any AI can build it with you.</p>
+    <div class="grow"><div class="field" style="margin-top:18px">
+      <textarea id="f-build" placeholder="e.g. a little app that turns my messy notes into a weekly plan" oninput="bank.build=this.value;sync()">${bank.build}</textarea>
+    </div></div>
+    <div class="nav"><button class="back" onclick="back()">Back</button>
+      <button class="btn" id="cont" ${bank.build.length>8?'':'disabled'} onclick="next()">Continue ${ARROW}</button></div>` },
+
+  // 6 - tool (platform-agnostic)
+  { p:80, render:s=>`
+    <div class="eyebrow">Your tool</div>
+    <h1>Which AI are you building with?</h1>
+    <p class="sub">We tailor the install steps. The kit itself works with any of them.</p>
+    <div class="grow"><div class="pills">
+      ${ptool('ChatGPT')} ${ptool('Claude')} ${ptool('Cursor')} ${ptool('Gemini')} ${ptool('Lovable')} ${ptool('Not sure yet')}
+    </div></div>
+    <div class="nav"><button class="back" onclick="back()">Back</button>
+      <button class="btn" id="cont" ${bank.tool?'':'disabled'} onclick="next()">Continue ${ARROW}</button></div>` },
+
+  // 7 - homework (now a real, do-able step BEFORE the build)
+  { p:88, render:s=>`
+    <div class="eyebrow">One last thing, optional</div>
+    <h1>Let's catch ${toolName()} up.</h1>
+    <p class="sub">Paste this into ${toolName()}, run it, and bring the answer back. It makes your kit far sharper. Take your time, this screen waits for you.</p>
+    <div class="codebox">Tell me what you already know about how I like to work, the kinds of things I build, and anything I have struggled with before. Be specific and honest, in a short list.</div>
+    <div class="outrow"><button class="btn ghost" onclick="copied(this)">Copy the prompt</button></div>
+    <div class="field" style="margin-top:12px"><label>Paste what it said (optional)</label><textarea placeholder="Paste here, or skip - your call"></textarea></div>
+    <div class="grow"></div>
+    <div class="nav"><button class="back" onclick="back()">Back</button>
+      <button class="btn" onclick="next()">Build my kit ${ARROW}</button></div>` },
+
+  // 8 - build trace (show the thinking)
+  { p:96, onEnter:runTrace, render:s=>`
+    <div class="eyebrow">Building, just for you</div>
+    <h1>Putting your kit together.</h1>
+    <p class="sub">A few seconds. Here is what is happening.</p>
+    <div class="grow"><div class="trace" id="trace">
+      ${tline('Reading what you told us')}
+      ${tline('Pulling in what your AI knows about you')}
+      ${tline('Writing how you like to work into it')}
+      ${tline('Briefing your build so any tool can follow it')}
+      ${tline('Checking every step is followable on any platform')}
+      ${tline('Putting your kit together')}
+    </div></div>` },
+
+  // 9 - reveal (hero PDF, two buttons)
+  { p:100, render:s=>`
+    <div class="eyebrow" style="text-align:center">Your kit is ready</div>
+    <div class="pdf"><div class="glow"></div>
+      <div class="pe">Vibe Coding Operating Kit</div>
+      <h3>${esc(bank.name)?esc(bank.name)+"'s":'Your'} build, briefed.</h3>
+      <div class="line m"></div><div class="line s"></div><div class="line m"></div>
+      <div class="who">Made for how ${esc(bank.name)||'you'} ${esc(bank.name)?'works':'work'} . any AI platform</div>
+    </div>
+    <h1 style="text-align:center;margin-top:18px;font-size:20px">Your Vibe Coding Operating Kit</h1>
+    <p class="sub" style="margin:8px auto 0;text-align:center">Who you are, how you like to work, and your one build briefed so any AI can ship it with you.</p>
+    <div class="grow"></div>
+    <div class="outrow"><button class="btn ghost" onclick="alert('downloads the branded PDF')">Download PDF</button>
+      <button class="btn" onclick="next()">See what's inside ${ARROW}</button></div>` },
+
+  // 10 - voice (own screen)
+  { p:100, render:s=>`
+    <div class="eyebrow">Make it sound like you</div>
+    <h1>Want it to write in your voice?</h1>
+    <p class="sub">Five quick taps, or paste a paragraph you wrote. The skills you ship will read like you, not like a robot.</p>
+    <div class="grow"></div>
+    <button class="btn full" onclick="next()">Set my voice</button>
+    <button class="linkish" onclick="next()">Maybe later</button>` },
+
+  // 11 - keep it (email default, profile as quiet upsell)
+  { p:100, render:s=>`
+    <div class="eyebrow">Keep your kit</div>
+    <h1>Where should we send it?</h1>
+    <p class="sub">Your kit, the PDF, and your training files (ready for any AI) in one zip with instructions.</p>
+    <div class="grow"><div class="field" style="margin-top:18px"><label>Email</label><input placeholder="you@email.com"></div></div>
+    <button class="btn full" onclick="next()">Email me everything</button>
+    <button class="linkish" onclick="next()">Or save it to a free profile to keep forever &rarr;</button>` },
+
+  // 12 - the plan
+  { p:100, render:s=>`
+    <div class="eyebrow">Your week</div>
+    <h1>Thirty minutes a day. Day 1 is tonight.</h1>
+    <div class="grow" style="margin-top:10px">
+      ${day('Ton','Install your skill, run the test prompt')}
+      ${day('Tue','Feed it your build brief')}
+      ${day('Wed','Get the first ugly version working')}
+      ${day('Thu','Fix the one thing that broke')}
+      ${day('Fri','Make it yours, then show one person')}
+    </div>
+    <div class="nav"><button class="btn full" onclick="next()">Got it ${ARROW}</button></div>` },
+
+  // 13 - ship
+  { p:100, render:s=>`
+    <div class="grow" style="display:flex;flex-direction:column;justify-content:center;text-align:center;align-items:center">
+      <div class="seal">${CHK_BIG}</div>
+      <h1 style="margin-top:16px">That's your kit, ${esc(bank.name)||'friend'}.</h1>
+      <p class="sub" style="text-align:center;margin-top:10px">It is yours now. Build the scrappy version tonight. When it runs, come back and tell us.</p>
+    </div>
+    <button class="btn full" onclick="alert('marks it shipped + opens the next kit')">I shipped it</button>
+    <button class="linkish" onclick="go(0)">Replay the mock</button>` },
+];
+
+// ---- tiny view helpers ----
+const ICON_USER = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8" r="3.3"/><path d="M5.7 19.2c0-3.2 2.8-5.4 6.3-5.4s6.3 2.2 6.3 5.4"/></svg>';
+const ICON_BIZ = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="4.5" y="4" width="9" height="16" rx="1.2"/><path d="M13.5 9h5.5v11h-5.5M7.5 8h3M7.5 12h3M7.5 16h3"/></svg>';
+const CHK_BIG = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+function esc(s){ return (s||'').replace(/[<>&]/g,''); }
+function toolName(){ return (bank.tool && bank.tool!=='Not sure yet') ? bank.tool : 'your AI'; }
+function pill(group,id,label){ const on=bank[group].includes(id); return `<button class="pill ${on?'on':''}" onclick="toggle('${group}','${id}')">${label}<span class="tick">${CHK}</span></button>`; }
+function ptool(name){ const on=bank.tool===name; return `<button class="pill ${on?'on':''}" onclick="bank.tool='${name}';render();sync()">${name}</button>`; }
+function tline(label){ return `<div class="tline"><span class="dot">${CHK}</span><span class="lab">${label}</span></div>`; }
+function day(d,t){ return `<div class="day" onclick="this.classList.toggle('on')"><span class="d">${d}</span><span class="box">${CHK}</span><span class="t">${t}</span></div>`; }
+
+// ---- engine ----
+let i = 0;
+const stage = document.getElementById('stage');
+function render(){
+  const sc = screens[i];
+  document.getElementById('bar').style.width = sc.p + '%';
+  stage.innerHTML = `<div class="screen active">${sc.render(sc)}</div>`;
+  document.getElementById('aside').innerHTML = renderAside();
+  if(sc.onEnter) setTimeout(sc.onEnter, 200);
+  if(i===4) updateReflect();
+}
+function go(n){ i = Math.max(0, Math.min(screens.length-1, n)); render(); }
+function next(){ if(i<screens.length-1) go(i+1); }
+function back(){ if(i>0) go(i-1); }
+function sync(){
+  const sc = screens[i]; const cont = document.getElementById('cont'); if(!cont) return;
+  if(i===2) cont.disabled = !bank.name;
+  if(i===5) cont.disabled = bank.build.length<=8;
+}
+function toggle(group,id){
+  const arr = bank[group]; const k = arr.indexOf(id);
+  if(k>=0) arr.splice(k,1); else arr.push(id);
+  render();
+  const cont = document.getElementById('cont'); if(cont) cont.disabled = arr.length===0;
+  if(group==='pains') updateReflect();
+}
+function updateReflect(){
+  const el = document.getElementById('reflect'); if(!el) return;
+  const last = bank.pains[bank.pains.length-1];
+  if(last && PAIN_REFLECT[last]){ el.textContent = PAIN_REFLECT[last]; el.classList.add('show'); }
+  else { el.classList.remove('show'); }
+}
+function copied(btn){ const t=btn.textContent; btn.textContent='Copied'; setTimeout(()=>btn.textContent=t,1400); }
+function runTrace(){
+  const lines = [...document.querySelectorAll('#trace .tline')];
+  let n = 0;
+  const step = ()=>{
+    if(n>0){ lines[n-1].classList.remove('run'); lines[n-1].classList.add('done'); }
+    if(n>=lines.length){ setTimeout(()=>next(), 650); return; }
+    lines[n].classList.add('in','run');
+    n++;
+    setTimeout(step, n<=2 ? 520 : 1100); // instant layers pre-roll fast; async stages dwell
+  };
+  step();
+}
+
+// ---- the living panel (desktop right pane): the knowledge bank, visible ----
+const PREF_LABEL = { explain:'Explains as it goes', justdo:'Acts, shows you after', steps:'Small steps', ask:'Asks before big changes', why:'Teaches the why', brief:'Keeps it short' };
+const PAIN_GUARD = { forgot:'Memory file, never loses the thread', broke:'Run-it-first check', changed:'Asks before touching anything', sprawl:'Scoped to one finishable build', wrong:'Shows its work' };
+function chips(arr, clay){ return `<div class="lp-chips">${arr.map(x=>`<span class="lp-chip ${clay?'clay':''}">${x}</span>`).join('')}</div>`; }
+function renderAside(){
+  if(i>=9){
+    const files = [['PDF','your-vibe-coding-kit.pdf'],['MD','about-me.md'],['MD','how-i-work.md'],['MD','build-brief.md'],['MD','7-day-plan.md']];
+    return `<div class="lp"><div class="lp-h">What's inside <span class="live">ready</span></div>
+      ${files.map(f=>`<div class="lp-file"><span class="fi">${f[0]}</span><span class="fn">${f[1]}</span>
+        <span class="fa"><button onclick="copied(this)">Copy</button><button>Save</button></span></div>`).join('')}
+      <div class="note" style="text-align:left;margin-top:2px">Ready for any AI platform. Download the lot, or copy any file straight into ${toolName()}.</div></div>`;
+  }
+  const rows = [];
+  if(bank.name) rows.push(['You', `${esc(bank.name)}${bank.role?' . '+esc(bank.role):''}`]);
+  if(bank.prefs.length) rows.push(['How it works with you', chips(bank.prefs.map(p=>PREF_LABEL[p]))]);
+  if(bank.pains.length) rows.push(['Guardrails from your pains', chips(bank.pains.map(p=>PAIN_GUARD[p]), true)]);
+  if(bank.build) rows.push(['Your build', esc(bank.build)]);
+  if(bank.tool) rows.push(['Tool', esc(bank.tool)]);
+  const head = i===8 ? 'Assembling your kit' : 'Your kit is taking shape';
+  if(!rows.length){
+    return `<div class="lp"><div class="lp-h">${head}</div>
+      <div class="lp-empty"><div class="ring"></div>Answer along, and your kit assembles here. Built around you, as you go.</div></div>`;
+  }
+  return `<div class="lp"><div class="lp-h">${head} <span class="live">live</span></div>
+    ${rows.map(r=>`<div class="lp-row"><div class="lp-lab">${r[0]}</div><div class="lp-val">${r[1]}</div></div>`).join('')}</div>`;
+}
+
+render();
+</script>
+</body>
+</html>
+</content>
