@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { KitPortalLayout } from "@/components/kit/KitPortalLayout";
 import { ArtifactProgressList } from "@/components/kit/ArtifactProgressList";
-import { HomeworkCard } from "@/components/kit/HomeworkCard";
 import { PersonalMapCard } from "@/components/kit/PersonalMapCard";
 import { SendPackCard } from "@/components/kit/SendPackCard";
 import { SevenDayPlan } from "@/components/kit/SevenDayPlan";
@@ -401,7 +400,12 @@ export default function KitHome() {
             className="space-y-6"
           >
             <ArtifactProgressList preset={preset} build={build} />
-            <HomeworkCard preset={preset} intake={build.intake ?? {}} />
+            {/* The homework now lives as the final intake screen (before this
+                compose), so it is not shown here. A calm placeholder holds the
+                space; the build-trace is a later slice. */}
+            <p className="text-center text-sm text-muted-foreground">
+              Putting your kit together. A few seconds, then the good part.
+            </p>
           </motion.div>
         ) : failedEntirely ? (
           <motion.div

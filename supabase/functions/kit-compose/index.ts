@@ -152,6 +152,10 @@ Deno.serve(async (req) => {
     }
 
     const feedback = typeof body?.feedback === "string" ? body.feedback.slice(0, 2000) : undefined;
+    // Optional homework: the paste from the pre-build "catch your AI up" screen.
+    // Folded into the build context the same way the post-build sharpen path
+    // feeds memory, so the enrichment is actually used, not just collected.
+    const homework = typeof body?.homework === "string" ? body.homework.slice(0, 6000).trim() : "";
     const onlyArtifactIds: string[] | null = Array.isArray(body?.only_artifact_ids)
       ? (body.only_artifact_ids as string[]).filter((x) => typeof x === "string")
       : null;
@@ -218,6 +222,7 @@ Deno.serve(async (req) => {
       kind,
       intake,
       feedback,
+      homework,
       targets,
       statuses,
       newSkillText,
@@ -252,13 +257,15 @@ interface ProcessArgs {
   kind: BuildKind;
   intake: IntakeAnswers;
   feedback?: string;
+  /** Optional pre-build homework paste, folded into the build context. */
+  homework?: string;
   targets: ArtifactSpec[];
   statuses: Record<string, ArtifactStatus>;
   newSkillText: string;
 }
 
 async function processBuild(args: ProcessArgs): Promise<void> {
-  const { serviceClient, userId, buildId, redemption, preset, kind, intake, feedback, targets, statuses } = args;
+  const { serviceClient, userId, buildId, redemption, preset, kind, intake, feedback, homework, targets, statuses } = args;
 
   const flushStatuses = async () => {
     await serviceClient
@@ -298,6 +305,25 @@ async function processBuild(args: ProcessArgs): Promise<void> {
     }
   } catch (err) {
     log.warn("buildMemoryContext failed (cold start)", { buildId, error: (err as Error).message });
+  }
+
+  // Fold the pre-build homework paste into the build context. It is what the
+  // person's own AI says it already knows about them, so it sharpens every
+  // artifact prompt that reads memoryContext (the same channel the post-build
+  // CapsuleCard / sharpen path enriches). Prepended and labelled so the model
+  // weights it as first-hand history. Also fire-and-forget into Memory Web so a
+  // later regenerate still has it (mirrors how chip facts are seeded).
+  if (kind === "initial" && homework && homework.length >= 20) {
+    const homeworkBlock = `What this person's own AI reports it already knows about them (from their homework):\n${homework}`;
+    memoryContext = memoryContext ? `${homeworkBlock}\n\n${memoryContext}` : homeworkBlock;
+    fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/extract-user-context`, {
+      method: "POST",
+      headers: {
+        Authorization: args.authHeader,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ transcript: homework, source_type: "kit" }),
+    }).catch((err) => log.warn("homework extract trigger failed (non-fatal)", { buildId, error: (err as Error).message }));
   }
 
   const ctx: ArtifactBuildContext = {

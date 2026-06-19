@@ -8,7 +8,8 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Keyboard, Loader2, Mic } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Copy, Keyboard, Loader2, Mic } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +38,7 @@ import {
   writeIntakeDraft,
 } from "@/lib/kit";
 import { cn } from "@/lib/utils";
+import { KIT_TOOL_LABELS, toolFromIntake } from "@/content/kits";
 import type {
   IntakeAnswer,
   IntakeAnswers,
@@ -45,6 +47,14 @@ import type {
   KitPathway,
   KitPreset,
 } from "@/content/kits";
+// The pain -> guardrail / -> reflect-back maps and the preference labels live in
+// the Vibe Coding preset (single source). The living panel and the pains
+// reflect-back reuse them so the copy never drifts from what the kit installs.
+import {
+  PAIN_GUARD,
+  PAIN_REFLECT,
+  PREF_LABEL,
+} from "../../../supabase/functions/_shared/kit-presets/vibe-coding/templates.ts";
 
 const MIN_TEXT_LENGTH = 10;
 const ADVANCE_BEAT_MS = 350;
@@ -98,7 +108,10 @@ export default function KitIntake() {
     });
   }, [isLoading, redemption, preset, navigate]);
 
-  const submit = useCallback(async () => {
+  // The homework paste is carried separately from the typed intake answers so
+  // it can flow into the initial compose's context (the same channel the
+  // post-build sharpen path enriches), without polluting the structured bank.
+  const submit = useCallback(async (homework?: string) => {
     if (!redemption) return;
     setSubmitState("submitting");
     setSubmitError(null);
@@ -106,10 +119,12 @@ export default function KitIntake() {
       class_slug: redemption.class_slug,
       redemption_id: redemption.id,
     });
+    const trimmedHomework = homework?.trim();
     const { payload, errorMessage } = await invokeKit<{ build_id?: string }>("kit-compose", {
       redemption_id: redemption.id,
       kind: "initial",
       intake: answersRef.current,
+      ...(trimmedHomework ? { homework: trimmedHomework } : {}),
     });
     if (payload?.build_id) {
       try {
@@ -169,7 +184,7 @@ export default function KitIntake() {
         passEndsAt={redemption.expires_at}
         answers={answers}
         setAnswer={setAnswer}
-        onSubmit={() => void submit()}
+        onSubmit={(homework) => void submit(homework)}
       />
     );
   }
@@ -195,7 +210,8 @@ interface IntakeBodyProps {
   passEndsAt: string | null;
   answers: IntakeAnswers;
   setAnswer: (questionId: string, patch: Partial<IntakeAnswer>) => void;
-  onSubmit: () => void;
+  /** Finish intake and compose. Forked flow may pass the homework paste. */
+  onSubmit: (homework?: string) => void;
 }
 
 function LinearIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: IntakeBodyProps) {
@@ -374,7 +390,7 @@ const KIT_SCOPE_VARS: CSSProperties & Record<`--${string}`, string> = {
   "--kit-display": "'Gobold', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif",
 };
 
-type ForkPhase = "fork" | "steps" | "reveal";
+type ForkPhase = "fork" | "steps" | "homework" | "reveal";
 
 function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: IntakeBodyProps) {
   const flow = useIntakeFlow(preset, answers);
@@ -385,6 +401,8 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
   const [phase, setPhase] = useState<ForkPhase>(() => (pathway ? "steps" : "fork"));
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  // The pre-build homework paste (optional). Carried into the initial compose.
+  const [homework, setHomework] = useState("");
   const advanceTimer = useRef<number | null>(null);
 
   useEffect(
@@ -404,6 +422,7 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
 
   const step = steps[stepIndex];
   const revealed = phase === "reveal";
+  const onHomework = phase === "homework";
 
   // Live mirrors of the position + visible-step count. The cascade GROWS as the
   // student answers (each step's showIf chains off the prior answer), so a
@@ -444,6 +463,12 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
     setPhase("steps");
   };
 
+  // Live mirror of whether a preview model exists, read at advance-fire time.
+  // Preview kits (org-chart, picks) end the cascade on the RevealCard; the
+  // no-preview kit (Vibe Coding) goes straight from the last step to the
+  // homework screen, since its reveal is the post-build hero on KitHome.
+  const hasPreviewRef = useRef(false);
+
   const goNext = useCallback(() => {
     // Cancel any pending single-select auto-advance so a fast "tap option then
     // click Continue" can never fire goNext twice and skip a step.
@@ -453,7 +478,9 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
     }
     const idx = stepIndexRef.current;
     if (idx >= stepsLenRef.current - 1) {
-      setPhase("reveal");
+      // Last step: preview kits show their RevealCard; no-preview kits go to
+      // the homework screen (the final intake step before compose).
+      setPhase(hasPreviewRef.current ? "reveal" : "homework");
       return;
     }
     setDirection(1);
@@ -464,6 +491,16 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
     if (advanceTimer.current) {
       window.clearTimeout(advanceTimer.current);
       advanceTimer.current = null;
+    }
+    if (onHomework) {
+      // Back from homework: to the reveal (preview kits) or the last step.
+      if (hasPreviewRef.current) {
+        setPhase("reveal");
+      } else {
+        setPhase("steps");
+        setStepIndex(Math.max(0, steps.length - 1));
+      }
+      return;
     }
     if (revealed) {
       setPhase("steps");
@@ -486,11 +523,13 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
     }, ADVANCE_BEAT_MS);
   };
 
-  // Progress: 5% on the fork, then evenly across the steps, 100% on reveal.
+  // Progress: 5% on the fork, evenly across the steps, then the homework screen
+  // sits near the end, 100% only when the reveal card shows (preview kits).
   const progress = useMemo(() => {
     if (phase === "fork") return 5;
     if (phase === "reveal") return 100;
-    return 5 + ((stepIndex + 1) / (steps.length + 1)) * 95;
+    if (phase === "homework") return 95;
+    return 5 + ((stepIndex + 1) / (steps.length + 1)) * 90;
   }, [phase, stepIndex, steps.length]);
 
   // The start label + title, read from whichever preview model is active so the
@@ -501,8 +540,21 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
     "";
   const previewTitle = chart?.businessName ?? picks?.title ?? "";
 
-  // Whether to render the two-pane layout: only when a preview model exists.
+  // Whether a live preview model exists (org-chart / picks). When it does, the
+  // right pane is that preview. When it does NOT (the re-centered Vibe Coding
+  // flow, which has no chartFeed questions), the right pane becomes the living
+  // panel "your kit is taking shape", so the horizontal space is never blank.
   const hasPreview = !!chart || !!picks;
+  useEffect(() => {
+    hasPreviewRef.current = hasPreview;
+  }, [hasPreview]);
+
+  // The living panel only makes sense with no preview, and only on desktop (the
+  // mobile flow conveys the same via the inline reflect-back). It is the desktop
+  // right pane for the cascade, the homework screen, and never for the fork.
+  const showLivingPanel = !hasPreview && phase !== "fork";
+  // The right pane exists when there is either a preview or the living panel.
+  const twoPane = hasPreview || showLivingPanel;
 
   return (
     <KitPortalLayout classTitle={preset.title} passEndsAt={passEndsAt}>
@@ -523,20 +575,22 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
           <ForkSplash question={forkQuestion} onPick={pickPathway} />
         )}
 
-        {/* Cascade + reveal. Two-pane on desktop (with a live preview), stacked
-            on mobile. With no previewKind the preset gets a single column. */}
+        {/* Cascade + reveal. Two-pane on desktop (a live preview OR the living
+            panel), stacked on mobile. The living panel is desktop-only; below
+            md the question column carries everything (the inline reflect-back
+            conveys the panel's content). */}
         {phase !== "fork" && (
           <div
             className={cn(
               "grid grid-cols-1 items-start gap-5",
-              hasPreview
+              twoPane
                 ? "md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:gap-8"
                 : "mx-auto max-w-xl",
             )}
           >
-            {/* Live preview. Mobile: on top (order-first), compact. Desktop:
-                right, sticky. Rendered only when a preview model exists. */}
-            {hasPreview && (
+            {/* Right pane. Preview model -> the live preview (mobile on top).
+                No preview -> the living panel (desktop only, md:block). */}
+            {hasPreview ? (
               <aside className="order-first md:order-last md:sticky md:top-4">
                 <div
                   className="rounded-2xl border p-4 sm:p-5"
@@ -554,12 +608,37 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
                   )}
                 </div>
               </aside>
-            )}
+            ) : showLivingPanel ? (
+              <aside className="order-last hidden md:sticky md:top-4 md:block">
+                <KitLivingPanel
+                  preset={preset}
+                  answers={answers}
+                  assembling={onHomework}
+                />
+              </aside>
+            ) : null}
 
-            {/* Question column / reveal. */}
+            {/* Question column / reveal / homework. */}
             <section className="min-w-0">
               <AnimatePresence mode="wait" initial={false}>
-                {revealed ? (
+                {onHomework ? (
+                  <motion.div
+                    key="homework"
+                    initial={{ opacity: 0, x: direction * 28 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: direction * -28 }}
+                    transition={{ duration: 0.24, ease: "easeOut" }}
+                  >
+                    <HomeworkStep
+                      preset={preset}
+                      answers={answers}
+                      homework={homework}
+                      onHomeworkChange={setHomework}
+                      onBuild={() => onSubmit(homework)}
+                      onBack={goBack}
+                    />
+                  </motion.div>
+                ) : revealed ? (
                   <motion.div
                     key="reveal"
                     initial={{ opacity: 0, y: 8 }}
@@ -572,7 +651,10 @@ function ForkedIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
                       businessName={previewTitle}
                       startBoxLabel={startBoxLabel}
                       onStartOver={goBack}
-                      onSubmit={onSubmit}
+                      onSubmit={() => {
+                        setDirection(1);
+                        setPhase("homework");
+                      }}
                     />
                   </motion.div>
                 ) : step ? (
@@ -732,6 +814,17 @@ function StepCard({
   const showChartHint = hasPreview && feedsPreview;
   const previewWord = previewKind === "picks" ? "board" : "chart";
 
+  // The pains reflect-back (the humanity moment). Keyed off the most-recently
+  // selected option that has a reflect line in PAIN_REFLECT (the Vibe Coding
+  // pains step). Single source with the preset so the copy never drifts. Shows
+  // on mobile and desktop; the living panel carries the guardrail chips too.
+  const selectedMulti = answer?.optionIds ?? [];
+  const lastReflectId = [...selectedMulti].reverse().find((id) => id in PAIN_REFLECT);
+  const reflectLine = lastReflectId ? PAIN_REFLECT[lastReflectId] : "";
+  // The last step's primary label: preview kits build their chart here; the
+  // no-preview Vibe Coding flow advances to the homework screen first.
+  const lastLabel = hasPreview ? "Build my chart" : "Continue";
+
   return (
     <KitCard>
       {step.eyebrow && <KitEyebrow>{step.eyebrow}</KitEyebrow>}
@@ -779,6 +872,21 @@ function StepCard({
         />
       )}
 
+      {/* The warm clay reflect-back: one calm sentence acknowledging the most
+          recent pain and how the kit handles it. Single source via PAIN_REFLECT. */}
+      {reflectLine && (
+        <div
+          className="mt-3.5 rounded-[13px] p-3.5 text-[13.5px] leading-relaxed"
+          style={{
+            background: "var(--kit-clay-soft)",
+            border: "1px solid #E9CABF",
+            color: "var(--kit-ink)",
+          }}
+        >
+          {reflectLine}
+        </div>
+      )}
+
       {showChartHint && (
         <p className="mt-3.5 ml-0.5 text-[12.5px]" style={{ color: "var(--kit-faint)" }}>
           Watch the {previewWord} fill in as you answer &rarr;
@@ -795,7 +903,7 @@ function StepCard({
           &larr; Back
         </button>
         <KitPrimaryButton disabled={!ok} onClick={onNext}>
-          {isLast ? "Build my chart" : "Continue"}
+          {isLast ? lastLabel : "Continue"}
           <ArrowRight className="ml-2 h-4 w-4" />
         </KitPrimaryButton>
       </div>
@@ -854,11 +962,254 @@ function RevealCard({
           &larr; Back
         </button>
         <KitPrimaryButton onClick={onSubmit}>
-          Build my pack
+          Continue
           <ArrowRight className="ml-2 h-4 w-4" />
         </KitPrimaryButton>
       </div>
     </KitCard>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Homework step (the final intake screen, before compose)             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The homework, promoted from a card behind the loading spinner to a real,
+ * do-able intake screen. It shows the context-pull prompt named to the chosen
+ * tool, a Copy button, and an OPTIONAL paste field. There is no separate skip
+ * button: pressing "Build my kit" with nothing pasted IS the skip (per the
+ * mock). The paste flows into the initial compose (onBuild(homework)).
+ */
+function HomeworkStep({
+  preset,
+  answers,
+  homework,
+  onHomeworkChange,
+  onBuild,
+  onBack,
+}: {
+  preset: KitPreset;
+  answers: IntakeAnswers;
+  homework: string;
+  onHomeworkChange: (text: string) => void;
+  onBuild: () => void;
+  onBack: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const tool = toolFromIntake(preset, answers);
+  // "your AI" fallback when they picked "Not sure yet" (tool === "none").
+  const toolName = tool === "none" ? "your AI" : KIT_TOOL_LABELS[tool];
+  const prompt = preset.contextPullPrompt(tool, { intake: answers });
+
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopied(true);
+      toast.success(`Copied. Paste it into ${toolName}.`);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy. Select the text and copy it manually.");
+    }
+  };
+
+  return (
+    <KitCard>
+      <KitEyebrow>One last thing, optional</KitEyebrow>
+      <KitHeadline>Let's catch {toolName} up.</KitHeadline>
+      <KitSub>
+        Paste this into {toolName}, run it, and bring the answer back. It makes your kit far
+        sharper. Take your time, this screen waits for you.
+      </KitSub>
+
+      {/* The context-pull prompt, clamped so the screen fits the mobile frame. */}
+      <div
+        className="mt-3.5 max-h-[120px] overflow-hidden rounded-[13px] p-3.5 font-mono text-[11.5px] leading-relaxed"
+        style={{
+          background: "#FBFCFB",
+          border: "1px solid var(--kit-line)",
+          color: "var(--kit-ink2)",
+          maskImage: "linear-gradient(180deg, #000 70%, transparent)",
+          WebkitMaskImage: "linear-gradient(180deg, #000 70%, transparent)",
+        }}
+      >
+        <div className="whitespace-pre-wrap">{prompt}</div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => void copyPrompt()}
+        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[13px] border px-4 py-3 text-[14px] font-bold transition-colors"
+        style={{ background: "var(--kit-card)", borderColor: "var(--kit-line)", color: "var(--kit-ink)" }}
+      >
+        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        {copied ? "Copied" : "Copy the prompt"}
+      </button>
+
+      <div className="mt-3">
+        <label className="mb-1.5 ml-0.5 block text-[12.5px] font-bold" style={{ color: "var(--kit-ink2)" }}>
+          Paste what it said (optional)
+        </label>
+        <Textarea
+          value={homework}
+          onChange={(e) => onHomeworkChange(e.target.value)}
+          placeholder="Paste here, or skip. Your call."
+          className="min-h-[88px] resize-none text-sm"
+          aria-label="Paste your AI's homework answer"
+        />
+      </div>
+
+      <div className="mt-5 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="rounded-[13px] px-1.5 py-3.5 text-[15px] font-medium transition-colors"
+          style={{ color: "var(--kit-mut)" }}
+        >
+          &larr; Back
+        </button>
+        <KitPrimaryButton onClick={onBuild}>
+          Build my kit
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </KitPrimaryButton>
+      </div>
+    </KitCard>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Living panel (desktop right pane when there is no chart and no picks) */
+/* ------------------------------------------------------------------ */
+
+/**
+ * "Your kit is taking shape": the desktop right pane that accretes the knowledge
+ * bank as the person answers, exactly per the mock's renderAside(). Rendered
+ * only when the preset has NO chart and NO picks model (the re-centered Vibe
+ * Coding flow). Desktop-only; the mobile flow conveys the same inline (the
+ * reflect-back). Empty until the first answer lands, then fills row by row. The
+ * preference labels and the pains-as-guardrails reuse PREF_LABEL / PAIN_GUARD
+ * (single source with the preset) so the chips never drift from what ships.
+ */
+function KitLivingPanel({
+  preset,
+  answers,
+  assembling,
+}: {
+  preset: KitPreset;
+  answers: IntakeAnswers;
+  assembling: boolean;
+}) {
+  // Read the bank the same deterministic way the preset and compose do, off the
+  // typed answers, so the panel mirrors what the kit will actually build.
+  const name = answers["profile"]?.text?.trim() ?? "";
+  const roleId = answers["profile"]?.optionId ?? "";
+  const roleOpt = preset.intake
+    .find((q) => q.id === "profile")
+    ?.options?.find((o) => o.id === roleId);
+  const roleLabel = roleOpt?.label ?? "";
+
+  const prefIds = answers["preferences"]?.optionIds ?? [];
+  const prefChips = prefIds.map((id) => PREF_LABEL[id]).filter((l): l is string => Boolean(l));
+
+  const painIds = answers["pains"]?.optionIds ?? [];
+  // Guardrails read naturally after "we add ..."; the panel shows the guardrail
+  // phrase, capitalised, as a chip. Single source via PAIN_GUARD.
+  const guardChips = painIds
+    .map((id) => PAIN_GUARD[id])
+    .filter((g): g is string => Boolean(g))
+    .map((g) => g.charAt(0).toUpperCase() + g.slice(1));
+
+  const build = answers["build"]?.text?.trim() ?? "";
+  const toolId = answers["tool"]?.optionId ?? "";
+  const toolLabel = preset.intake
+    .find((q) => q.id === "tool")
+    ?.options?.find((o) => o.id === toolId)?.label ?? "";
+
+  const rows: { label: string; node: React.ReactNode }[] = [];
+  if (name || roleLabel) {
+    rows.push({
+      label: "You",
+      node: <span>{[name, roleLabel].filter(Boolean).join(" . ")}</span>,
+    });
+  }
+  if (prefChips.length) rows.push({ label: "How it works with you", node: <PanelChips items={prefChips} /> });
+  if (guardChips.length) rows.push({ label: "Guardrails from your pains", node: <PanelChips items={guardChips} clay /> });
+  if (build) rows.push({ label: "Your build", node: <span>{build}</span> });
+  if (toolLabel) rows.push({ label: "Tool", node: <span>{toolLabel}</span> });
+
+  const heading = assembling ? "Assembling your kit" : "Your kit is taking shape";
+
+  return (
+    <div
+      className="flex flex-col gap-3.5 rounded-2xl border p-5"
+      style={{
+        background: "linear-gradient(180deg,#FBFDFB,#F4F7F3)",
+        borderColor: "var(--kit-line)",
+        boxShadow: "0 1px 2px rgba(16,28,30,.05)",
+      }}
+    >
+      <div className="flex items-center gap-2 text-[15px] font-extrabold" style={{ color: "var(--kit-ink)" }}>
+        {heading}
+        {rows.length > 0 && (
+          <span
+            className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase"
+            style={{
+              fontFamily: "var(--kit-display)",
+              letterSpacing: "0.08em",
+              color: "var(--kit-acc-deep)",
+              background: "var(--kit-acc-soft)",
+              border: "1px solid var(--kit-acc-line)",
+            }}
+          >
+            live
+          </span>
+        )}
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="my-auto px-4 text-center text-[13px] leading-relaxed" style={{ color: "var(--kit-faint)" }}>
+          <div
+            className="mx-auto mb-3.5 h-[54px] w-[54px] rounded-full"
+            style={{ border: "2px dashed var(--kit-rail)" }}
+          />
+          Answer along, and your kit assembles here. Built around you, as you go.
+        </div>
+      ) : (
+        rows.map((r) => (
+          <div key={r.label}>
+            <div
+              className="mb-1.5 text-[9.5px] font-bold uppercase"
+              style={{ fontFamily: "var(--kit-display)", letterSpacing: "0.1em", color: "var(--kit-faint)" }}
+            >
+              {r.label}
+            </div>
+            <div className="text-[14px] font-semibold leading-snug" style={{ color: "var(--kit-ink2)" }}>
+              {r.node}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function PanelChips({ items, clay }: { items: string[]; clay?: boolean }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((item, i) => (
+        <span
+          key={`${item}-${i}`}
+          className="rounded-full px-2.5 py-1 text-[12px] font-semibold"
+          style={
+            clay
+              ? { color: "var(--kit-clay)", background: "var(--kit-clay-soft)", border: "1px solid #E9CABF" }
+              : { color: "var(--kit-acc-deep)", background: "var(--kit-acc-soft)", border: "1px solid var(--kit-acc-line)" }
+          }
+        >
+          {item}
+        </span>
+      ))}
+    </div>
   );
 }
 
