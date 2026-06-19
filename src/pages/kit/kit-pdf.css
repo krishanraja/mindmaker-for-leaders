@@ -197,6 +197,258 @@
 .kit-pdf-list-clay li::before {
   background: var(--kit-clay, #b5563f);
 }
+.kit-pdf-list-amber li::before {
+  background: var(--kit-amber, #c98a17);
+}
+
+/* A full-width section (steps, chart, identity, self-correct). */
+.kit-pdf-section {
+  margin-top: 26px;
+}
+.kit-pdf-h3 {
+  font-size: 11px;
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--kit-faint, #99a4a5);
+  margin: 16px 0 8px;
+}
+.kit-pdf-lede {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--kit-mut, #697578);
+  max-width: 64ch;
+}
+.kit-pdf-quote {
+  font-style: italic;
+  color: var(--kit-ink, #13282c);
+}
+
+/* ---- decomposed steps + self-correction loop ---- */
+.kit-pdf-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.kit-pdf-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border: 1px solid var(--kit-line, #e5e8e2);
+  border-radius: 12px;
+  background: var(--kit-line2, #eef1eb);
+}
+.kit-pdf-step-n {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--kit-acc-deep, #1e7860);
+}
+.kit-pdf-step-body {
+  flex: 1;
+  min-width: 0;
+}
+.kit-pdf-step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kit-pdf-step-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--kit-ink, #13282c);
+}
+.kit-pdf-step-note {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--kit-ink2, #2b4248);
+}
+.kit-pdf-step-note-lg {
+  font-size: 13.5px;
+  color: var(--kit-ink, #13282c);
+}
+
+/* ---- autonomy tag pills (green / amber / red) ---- */
+.kit-pdf-tag {
+  flex: none;
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.kit-pdf-tag-owns {
+  color: #1e7860;
+  background: #e6f4ee;
+  border: 1px solid #bce2d2;
+}
+.kit-pdf-tag-assists {
+  color: #8a5d05;
+  background: #fbf0d8;
+  border: 1px solid #ecd49a;
+}
+.kit-pdf-tag-you {
+  color: #9a3a26;
+  background: #f6e3dd;
+  border: 1px solid #e3bcb0;
+}
+
+/* ---- the org chart grid ---- */
+.kit-pdf-chart-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.kit-pdf-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.kit-pdf-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--kit-mut, #697578);
+}
+.kit-pdf-dot-band {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  display: inline-block;
+}
+.kit-pdf-dot-green {
+  background: #2a9e7c;
+}
+.kit-pdf-dot-amber {
+  background: #c98a17;
+}
+.kit-pdf-dot-red {
+  background: #b5563f;
+}
+.kit-pdf-chart {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+.kit-pdf-node {
+  border-radius: 12px;
+  padding: 13px 15px;
+  border: 1px solid var(--kit-line, #e5e8e2);
+  border-left-width: 4px;
+  background: #fff;
+}
+.kit-pdf-node-green {
+  border-left-color: #2a9e7c;
+  background: #f3fbf7;
+}
+.kit-pdf-node-amber {
+  border-left-color: #c98a17;
+  background: #fdfaf2;
+}
+.kit-pdf-node-red {
+  border-left-color: #b5563f;
+  background: #fcf5f3;
+}
+.kit-pdf-node-start {
+  box-shadow: 0 0 0 2px var(--kit-acc-line, #bce2d2);
+}
+.kit-pdf-node-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.kit-pdf-node-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--kit-ink, #13282c);
+}
+.kit-pdf-node-flag {
+  flex: none;
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--kit-acc-deep, #1e7860);
+  background: var(--kit-acc-soft, #e6f4ee);
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+.kit-pdf-node-role {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--kit-ink2, #2b4248);
+}
+.kit-pdf-node-desc {
+  margin: 3px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--kit-mut, #697578);
+}
+.kit-pdf-node-human {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--kit-faint, #99a4a5);
+}
+
+/* ---- ranked first agents ---- */
+.kit-pdf-ranked {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.kit-pdf-ranked-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.kit-pdf-rank {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--kit-acc, #2a9e7c);
+}
+.kit-pdf-ranked-box {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--kit-ink, #13282c);
+}
 
 /* The day-by-day path. */
 .kit-pdf-plan {
@@ -270,8 +522,22 @@
   }
   .kit-pdf-hero,
   .kit-pdf-list li::before,
-  .kit-pdf-class {
+  .kit-pdf-class,
+  .kit-pdf-tag,
+  .kit-pdf-step,
+  .kit-pdf-step-n,
+  .kit-pdf-rank,
+  .kit-pdf-node,
+  .kit-pdf-node-flag,
+  .kit-pdf-dot-band {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  /* Keep a step/node from splitting across a page break. */
+  .kit-pdf-step,
+  .kit-pdf-node,
+  .kit-pdf-ranked-item,
+  .kit-pdf-day {
+    break-inside: avoid;
   }
 }
