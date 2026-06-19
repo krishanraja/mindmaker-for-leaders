@@ -63,6 +63,14 @@ import {
   PAIN_REFLECT,
   PREF_LABEL,
 } from "../../../supabase/functions/_shared/kit-presets/vibe-coding/templates.ts";
+// Memory & Identity's privacy guardrail (never-store) earns the same warm
+// reflect-back as Vibe Coding's pains. Single source in that preset so the copy
+// never drifts from the hard rule the kit installs. Keys are the never-store
+// option ids; merged into the reflect lookup below alongside PAIN_REFLECT (no id
+// collisions across the two presets).
+import { NEVER_STORE_REFLECT } from "../../../supabase/functions/_shared/kit-presets/memory-identity/templates.ts";
+
+const REFLECT_LINES: Record<string, string> = { ...PAIN_REFLECT, ...NEVER_STORE_REFLECT };
 
 const MIN_TEXT_LENGTH = 10;
 const ADVANCE_BEAT_MS = 350;
@@ -798,8 +806,8 @@ function StepCard({
   // pains step). Single source with the preset so the copy never drifts. Shows
   // on mobile and desktop; the living panel carries the guardrail chips too.
   const selectedMulti = answer?.optionIds ?? [];
-  const lastReflectId = [...selectedMulti].reverse().find((id) => id in PAIN_REFLECT);
-  const reflectLine = lastReflectId ? PAIN_REFLECT[lastReflectId] : "";
+  const lastReflectId = [...selectedMulti].reverse().find((id) => id in REFLECT_LINES);
+  const reflectLine = lastReflectId ? REFLECT_LINES[lastReflectId] : "";
   // The last step's primary label: preview kits build their chart here; the
   // no-preview Vibe Coding flow advances to the homework screen first.
   const lastLabel = hasPreview ? "Build my chart" : "Continue";
