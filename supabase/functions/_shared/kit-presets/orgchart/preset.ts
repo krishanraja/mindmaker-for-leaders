@@ -250,7 +250,7 @@ export const orgchartPreset: KitPreset = {
   version: "1.0.0",
   title: "Agentic Org Chart",
   classTitle: "Agentic Org Chart Lightning Lesson",
-  tagline: "A branded chart of your work with the agents to add, and where to start.",
+  tagline: "A branded chart of your work, marked green / amber / red for autonomy, with the handoffs and a ranked place to start.",
   mavenUrl: "https://maven.com/mindmaker",
   codePrefixes: ["ORGCHART", "ORG", "CHART"],
   passDays: 30,
@@ -381,10 +381,17 @@ export const orgchartPreset: KitPreset = {
       type: "chips",
       eyebrow: "Today",
       prompt: "How far along is the business with AI?",
+      helper: "Honest beats aspirational here. There is no right answer; the chart adapts either way.",
       showIf: { answeredQuestionId: "involves" },
       pathwayCopy: {
-        self: { prompt: "How far along are you with AI?" },
-        biz: { prompt: "How far along is the business with AI?" },
+        self: {
+          prompt: "How far along are you with AI?",
+          helper: "Wherever you are is fine. Honest beats aspirational; the chart adapts either way.",
+        },
+        biz: {
+          prompt: "How far along is the business with AI?",
+          helper: "Honest beats aspirational here. There is no right answer; the chart adapts either way.",
+        },
       },
       options: MATURITY,
       factMappings: [
@@ -398,12 +405,18 @@ export const orgchartPreset: KitPreset = {
       type: "chips_multi",
       eyebrow: "Guardrails",
       prompt: "What should an agent never do without a human?",
-      helper: "This decides what is agent-led, assisted, or kept with you.",
+      helper: "Your call, and we hold it. This draws the lines: green (AI runs it), amber (AI assists, you approve the handoff), red (you only).",
       chartFeed: "tags",
       showIf: { answeredQuestionId: "maturity" },
       pathwayCopy: {
-        self: { prompt: "What would you never hand off blind?" },
-        biz: { prompt: "What should an agent never do without a human?" },
+        self: {
+          prompt: "What would you never hand off blind?",
+          helper: "Whatever you name here stays yours. It draws your lines: green (AI runs it), amber (AI assists, you approve the handoff), red (you only).",
+        },
+        biz: {
+          prompt: "What should an agent never do without a human?",
+          helper: "Your call, and we hold it. This draws the lines: green (AI runs it), amber (AI assists, you approve the handoff), red (you only).",
+        },
       },
       options: GUARDRAILS,
     },
@@ -420,7 +433,7 @@ export const orgchartPreset: KitPreset = {
       strategy: "llm_chart",
       part: "Chart",
       description:
-        "Your work as a chart: every box tagged agent-led, assisted, or you-only, with the agent to add and the human role beside it.",
+        "Your work as a chart: every box marked green (AI runs it), amber (AI assists, you approve the handoff), or red (you only), with the agent to add, the handoffs drawn, and the human role beside it.",
       buildPrompt: (ctx) => chartComposePrompt(chartPromptInput(ctx)),
       // Validate the model's chart against the intake and apply the honesty
       // floor (label-lock, one start box, guardrails -> minimum oversight) so a
@@ -445,7 +458,7 @@ export const orgchartPreset: KitPreset = {
       contentType: "markdown",
       strategy: "llm_polish",
       part: "Chart",
-      description: "The first agent to stand up, why this box, and what the first build looks like this week.",
+      description: "Your ranked place to begin: the first agent to stand up, why this box ranks first, where the handoff sits, and what the first build looks like this week.",
       buildPrompt: (ctx) => whereYouStartPrompt(chartPromptInput(ctx)),
       render: (ctx) => {
         const i = chartPromptInput(ctx);
@@ -453,15 +466,15 @@ export const orgchartPreset: KitPreset = {
         return [
           "# Where you start",
           "",
-          `**Stand up your first agent on ${start}.**`,
+          `**Stand up your first agent on ${start}. It ranks number one.**`,
           "",
-          `It is painful, repeatable, and low-risk: the right place to learn to ship one agent. The grind there (${i.grind || "the repetitive part"}) is exactly what an agent should take first.`,
+          `It is painful, repeatable, and low-risk, so it is the safest place to learn to ship one agent. The grind there (${i.grind || "the repetitive part"}) is exactly what an agent should take first.`,
           "",
           i.guardrails.length > 0
-            ? `Keep a hand on the wheel: anything that touches ${i.guardrails.join(", ")} gets drafted and shown to you for approval before it goes out. The agent does the work; you make the call.`
-            : "Nothing here leaves the building unsupervised, so the first agent can run the loop end to end while you watch it for a week.",
+            ? `Keep your hand on the wheel at the handoff: anything that touches ${i.guardrails.join(", ")} is amber, so the agent drafts it and you approve the handoff before it leaves. The agent does the work; you make the call.`
+            : "Nothing here is fenced off, so this first box can be green: the agent runs the loop end to end and you just watch it for a week.",
           "",
-          "Everything else on your chart waits its turn. One agent shipped beats three half-built.",
+          "Everything else on your chart is ranked behind this one and waits its turn. One agent shipped beats three half-built.",
         ].join("\n");
       },
     },
@@ -481,9 +494,9 @@ export const orgchartPreset: KitPreset = {
         const lines = ["# Roles to add", ""];
         const ordered = [i.timeSink, ...i.boxLabels.filter((b) => b !== i.timeSink)].filter(Boolean);
         for (const box of ordered) {
-          lines.push(`- **${box}**: you grow into running this, not doing it. The agent takes the grind; you own the judgement and the exceptions.`);
+          lines.push(`- **${box}**: you grow into running this, not doing it. The agent takes the grind; you own the judgement, the exceptions, and the handoff where you approve what leaves.`);
         }
-        lines.push("", "Add these one at a time, starting with the box you build first.");
+        lines.push("", "Add these one at a time, in this ranked order, starting with the box you build first.");
         return lines.join("\n");
       },
     },
@@ -508,7 +521,7 @@ export const orgchartPreset: KitPreset = {
       contentType: "json",
       strategy: "deterministic",
       part: "Operate",
-      description: "Your chart at a glance: boxes, where you start, and what's agent-led.",
+      description: "Your chart at a glance: boxes, the ranked place you start, and the green / amber / red split with its handoffs.",
       render: (ctx) => {
         const chart = fallbackChartOf(ctx.intake);
         const guardrails = chartPromptInput(ctx).guardrails;
@@ -536,9 +549,9 @@ export const orgchartPreset: KitPreset = {
       html: (ctx) =>
         emailShell(
           [
-            '<p style="margin:0 0 16px;">Your chart is built from your own answers, not a template. Every box is tagged agent-led, assisted, or you-only, with the agent to add and the human role beside it.</p>',
-            '<p style="margin:0 0 16px;">One job this week: stand up the first agent on your start box. Painful, repeatable, low-risk, that is the one to learn on.</p>',
-            '<p style="margin:0 0 16px;">The pack has the chart, where to start, the roles to add, and your first 90 days.</p>',
+            '<p style="margin:0 0 16px;">Your chart is built from your own answers, not a template. Every box is marked green (AI runs it), amber (AI assists, you approve the handoff), or red (you only), with the agent to add, the handoffs drawn, and the human role beside it.</p>',
+            '<p style="margin:0 0 16px;">One job this week: stand up the first agent on your start box, the box that ranks number one. Painful, repeatable, low-risk, that is the one to learn on.</p>',
+            '<p style="margin:0 0 16px;">The pack has the chart, your ranked place to start, the roles to add, and your first 90 days.</p>',
           ].join("\n"),
           ctx,
           "Open your chart",
@@ -549,7 +562,7 @@ export const orgchartPreset: KitPreset = {
       html: (ctx) =>
         emailShell(
           [
-            '<p style="margin:0 0 16px;">Your chart named one box to start with: the first agent worth standing up.</p>',
+            '<p style="margin:0 0 16px;">Your chart ranked one box to start with: the first agent worth standing up.</p>',
             '<p style="margin:0 0 16px;">Open the chart, read the where-you-start brief, and do the first build this week. Scrappy counts.</p>',
             '<p style="margin:0 0 16px;">Stuck? Reply with one line and I will point you at the fix.</p>',
           ].join("\n"),

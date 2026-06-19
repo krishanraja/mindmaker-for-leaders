@@ -13,6 +13,38 @@
 import type { IntakeOption } from "../types.ts";
 
 /* ------------------------------------------------------------------ */
+/* The three-way autonomy vocabulary + guardrail reflect-back           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The founder's three-way model in plain words, one canonical phrasing per tag,
+ * so every surface in this preset speaks the same green / amber / red line:
+ *   green  (led)      -> AI runs it (full autonomy, no human in the loop)
+ *   amber  (assisted) -> AI assists, you approve the handoff (supervised seam)
+ *   red    (excluded) -> you only (never AI; the honesty floor forces it here)
+ *
+ * A warm, single-line reflect-back for each guardrail the student flags, for
+ * the humanity moment in the intake (mirrors the Vibe Coding PAIN_REFLECT
+ * pattern). It acknowledges what they will never hand to an agent and tells
+ * them plainly how the chart honours it (red, or amber at the handoff). Keyed
+ * by the guardrail option ids in preset.ts. No em dashes.
+ */
+export const GUARDRAIL_REFLECT: Record<string, string> = {
+  email:
+    "Understood. Anything that emails a real customer is drafted by the agent and held for your yes at the handoff, never sent on its own.",
+  spend:
+    "Good line to hold. Spending money stays a human call; the agent can prepare it, but the approval is yours.",
+  post:
+    "We will respect that. Posting publicly is drafted for you to approve before it goes out, not posted blind.",
+  data:
+    "Noted, and right to flag. Touching customer data keeps a human at the handoff; the agent never moves it alone.",
+  "final-call":
+    "That is yours to keep. The final call stays with you (red on the chart); the agent does the legwork up to the decision, never past it.",
+  none:
+    "Clear. With nothing fenced off, the agent can run more of the loop, and you can still tighten any line later.",
+};
+
+/* ------------------------------------------------------------------ */
 /* The honest chart shape (matches OrgChartView props exactly)         */
 /* ------------------------------------------------------------------ */
 
@@ -119,14 +151,17 @@ export function buildFallbackChart(input: {
       isStart,
     };
     if (tag === "led") {
+      // green: AI runs it.
       box.agentRole = `${label} agent`;
-      box.agentDesc = "runs the repeatable parts, you approve";
+      box.agentDesc = "runs the loop end to end, you just check the output";
       box.humanRole = pathway === "self" ? "you, running it" : "owner of the outcome";
     } else if (tag === "assisted") {
+      // amber: AI assists, you approve the handoff.
       box.agentRole = `${label} agent`;
-      box.agentDesc = "drafts it, you sign off before it leaves";
-      box.humanRole = pathway === "self" ? "you, reviewing" : "reviewer and approver";
+      box.agentDesc = "drafts it, you approve the handoff before it leaves";
+      box.humanRole = pathway === "self" ? "you, approving the handoff" : "approver at the handoff";
     } else {
+      // red: you only.
       box.humanRole = pathway === "self" ? "you, fully" : "stays with the team";
     }
     return box;
@@ -198,7 +233,7 @@ export function normaliseChart(
       // description would now overclaim; make the description honest to the tag.
       box.agentDesc =
         tag === "assisted" && llmTag === "led"
-          ? "drafts it, you sign off before it leaves"
+          ? "drafts it, you approve the handoff before it leaves"
           : agentDesc || box.agentDesc;
     }
     if (humanRole) box.humanRole = humanRole;
@@ -233,6 +268,19 @@ export interface PackMapJson {
   businessName: string;
   boxes: number;
   startBox: string;
+  /** green: AI runs it. */
+  green: number;
+  /** amber: AI assists, you approve the handoff. */
+  amber: number;
+  /** red: you only. */
+  red: number;
+  /**
+   * The handoffs: the count of seams where work passes between you and an
+   * agent (every amber box is one, where the agent hands its draft to you to
+   * approve). This is where trust breaks, so the chart names it explicitly.
+   */
+  handoffs: number;
+  /** Back-compat aliases for the older field names. */
   agentLed: number;
   assisted: number;
   youOnly: number;
@@ -255,6 +303,11 @@ export function buildPackMap(chart: ChartJson, guardrailLabels: string[]): strin
     businessName: chart.businessName,
     boxes: chart.boxes.length,
     startBox: start?.label ?? (chart.boxes[0]?.label ?? ""),
+    green: counts.led,
+    amber: counts.assisted,
+    red: counts.excluded,
+    // Each amber (assisted) box is a human-and-agent handoff at its approval seam.
+    handoffs: counts.assisted,
     agentLed: counts.led,
     assisted: counts.assisted,
     youOnly: counts.excluded,

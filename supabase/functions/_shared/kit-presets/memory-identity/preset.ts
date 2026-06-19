@@ -7,13 +7,22 @@
  * student's own AI still does the mining and drafting) but feeds it a coherent
  * RECOGNITION cascade so the output is uniquely theirs:
  *
+ * This kit is about the PERSON. Its move is to NARROW the AI's field of view:
+ * not "be my everything", but "in this kind of session you are one role". The
+ * firstJob step is that narrowed role; the tasks step is its field-of-view
+ * boundary. VOICE is central (the AI sounds like you), so the cascade captures
+ * it in the person's own words, and the deeper unified voice profile
+ * (VoiceStyleProfileSheet / ctrl_voice_profile) is offered after the build via
+ * the shared reveal wizard's voice step. The cascade:
+ *
  *   pathwayFork (self / business)
  *     -> profile         (nameField + role chip, per pathway)
  *     -> boxes  (multi)  which role/domain to build an operator for      [chartFeed: boxes]
- *     -> firstJob (one)  the first job to stand up, drawn from the boxes  [chartFeed: startBox]
- *     -> tasks  (multi)  the tasks that job covers (adaptive matrix)
+ *     -> firstJob (one)  the narrowed role to stand up, from the boxes    [chartFeed: startBox]
+ *     -> tasks  (multi)  the field of view that role covers (matrix)
  *     -> tool   (one)    the AI tool the operator lives in
- *     -> neverStore (multi) what it must never store (honesty guardrail)  [chartFeed: tags]
+ *     -> voice  (text)   how the person writes, in their own words
+ *     -> neverStore (multi) what it must never store (privacy guardrail)  [chartFeed: tags]
  *
  * The live preview is the generic KitPicksBoard (previewKind: "picks"): a title
  * node from nameField, the picked domains as cards, the first job flagged. The
@@ -63,6 +72,7 @@ import {
   SELF_ROLES,
   TASK_FALLBACK,
   TASK_MATRIX,
+  VOICE_EXAMPLES,
 } from "./templates.ts";
 
 const FENCE = "```";
@@ -150,6 +160,15 @@ function roleOf(intake: IntakeAnswers): string {
   return role === "Something else" ? "" : role;
 }
 
+/**
+ * How they write, in their own words (the voice step). The fact that makes the
+ * AI sound like them; it grounds my-voice.md and the tone line in the job file.
+ * Empty when skipped (they can fill the deeper voice profile after the build).
+ */
+function voiceOf(intake: IntakeAnswers): string {
+  return textOf(intake, "voice");
+}
+
 /** The single structured contract every prompt and renderer reads. */
 function jobInput(ctx: ArtifactBuildContext): JobInput {
   const intake = ctx.intake;
@@ -160,6 +179,7 @@ function jobInput(ctx: ArtifactBuildContext): JobInput {
     domains: domainsOf(intake),
     job: firstJobOf(intake),
     tasks: tasksOf(intake),
+    voice: voiceOf(intake),
     neverStore: neverStoreOf(intake),
     tool: ctx.tool,
   };
@@ -205,7 +225,7 @@ function emailShell(body: string, ctx: KitEmailContext, buttonLabel: string): st
 
 export const memoryIdentityPreset: KitPreset = {
   slug: "memory-identity",
-  version: "2.0.0",
+  version: "2.1.0",
   title: "The Prompt Pack",
   classTitle: "Memory, Identity and Self-Healing",
   tagline:
@@ -289,25 +309,29 @@ export const memoryIdentityPreset: KitPreset = {
       options: [...SELF_DOMAINS, ...BIZ_DOMAINS],
     },
 
-    // 2. FIRST JOB (one) - the first operator to stand up. Drawn from the boxes.
+    // 2. FIRST JOB (one) - the narrowed role. The AI's field of view in this
+    // kind of session: not "be my everything", but "here, you are X".
     {
       id: "firstJob",
       type: "chips",
-      eyebrow: "Start here",
-      prompt: "Which one do you want your AI to run first?",
-      helper: "Pick the one you do most. This becomes your first operator.",
+      eyebrow: "The one role",
+      prompt: "When your AI sits down with you, what is its one job?",
+      helper:
+        "Not your everything. The one part of your work you want it to run, so it gets sharp instead of vague.",
       chartFeed: "startBox",
       showIf: { answeredQuestionId: "boxes" },
       adaptiveOptions: { fromQuestionId: "boxes" },
     },
 
-    // 3. TASKS (multi) - what that job covers. Adaptive matrix keyed off the job.
+    // 3. TASKS (multi) - the field-of-view boundary. What this role covers, and
+    // by implication what it leaves alone. The scope the operator learns.
     {
       id: "tasks",
       type: "chips_multi",
-      eyebrow: "The scope",
-      prompt: "What does that job actually cover?",
-      helper: "Tap the tasks it owns. This is the scope your operator learns.",
+      eyebrow: "Its field of view",
+      prompt: "Inside that role, what does it actually cover?",
+      helper:
+        "Tap the tasks it owns. This is where its attention sits, and where it stops. Narrow is the point.",
       showIf: { answeredQuestionId: "firstJob" },
       adaptiveOptions: {
         matrixKey: "tasks",
@@ -341,15 +365,40 @@ export const memoryIdentityPreset: KitPreset = {
       ],
     },
 
-    // 5. NEVER-STORE (multi) - the honesty guardrail. Feeds the tags slot.
+    // 5. VOICE (free text) - central to this kit: the AI sounds like you. We
+    // capture it here in your own words so my-voice.md and the job file's tone
+    // are grounded, not guessed. The deeper voice profile (recognition picks or
+    // a paste-extract) is offered after the build via the shared voice step;
+    // this intake line is the first, plain pass at it.
+    {
+      id: "voice",
+      type: "voice_text",
+      eyebrow: "Sound like you",
+      prompt: "How would you describe the way you write?",
+      helper:
+        "A line or two in your own words. This is what makes it sound like you, not like generic AI. You can paste a real paragraph you wrote after the build to sharpen it.",
+      showIf: { answeredQuestionId: "tool" },
+      examples: VOICE_EXAMPLES,
+      factMappings: [
+        {
+          fact_key: "kit_memory_voice",
+          fact_category: "preference",
+          fact_label: "How they write (voice)",
+        },
+      ],
+    },
+
+    // 6. NEVER-STORE (multi) - the privacy guardrail. Feeds the tags slot. Each
+    // pick earns a warm reflect-back in the intake (NEVER_STORE_REFLECT) so
+    // handing over something private feels acknowledged and walled off.
     {
       id: "neverStore",
       type: "chips_multi",
-      eyebrow: "Keep it honest",
+      eyebrow: "The privacy line",
       prompt: "What should this operator never store?",
-      helper: "These become a hard rule baked into your files. Tap all that apply.",
+      helper: "Whatever you tap becomes a hard rule baked into your files. Tap all that apply.",
       chartFeed: "tags",
-      showIf: { answeredQuestionId: "tool" },
+      showIf: { answeredQuestionId: "voice" },
       options: NEVER_STORE,
       factMappings: [
         {
@@ -378,14 +427,14 @@ export const memoryIdentityPreset: KitPreset = {
         const file = jobFilename(input);
         const scope =
           input.tasks.length > 0
-            ? `Its scope is the tasks you picked: ${input.tasks.join(", ")}.`
-            : "Its scope is the handful of tasks this job owns; the prompt will pin them with you.";
+            ? `Its field of view is the tasks you picked: ${input.tasks.join(", ")}. Inside that, it goes deep; outside it, it leaves alone.`
+            : "Its field of view is the handful of tasks this role owns; the prompt will pin them with you.";
         return [
           "# Your job file",
           "",
-          "One giant memory file becomes a junk drawer, broad enough to be useless. Start narrow. Pick a job you do a lot, turn your history into an operator for it, and let the file name itself after the job.",
+          "One giant memory file becomes a junk drawer, broad enough to be useless. The move is to narrow the AI's field of view: in this kind of session it is not your everything, it is one role. Turn your history into an operator for that role, and let the file name itself after the job.",
           "",
-          `For you, that job is **${job}**, and the file should land as \`${file}\` (not memory.md). ${scope}`,
+          `For you, that role is **${job}**, and the file should land as \`${file}\` (not memory.md). ${scope}`,
           "",
           "## Paste this into your AI tool",
           "",
@@ -482,6 +531,9 @@ export const memoryIdentityPreset: KitPreset = {
           "- Anything you would hate to see in an export.",
           ...yourLine,
           "",
+          "## One fact, one home",
+          "Each fact about you lives in exactly one file: who you are in about-me.md, how you sound in my-voice.md, where you publish in my-channels.md. The job file points at those; it does not copy them. One home means nothing to keep in sync and nothing to drift.",
+          "",
           "## Done when",
           "A file answers a you-shaped question like it has read you, not like it met you today.",
           "",
@@ -539,7 +591,12 @@ export const memoryIdentityPreset: KitPreset = {
           lines.push(`My role is ${input.role.trim()}, so write the skill for that context.`);
         }
         if (input.tasks.length > 0) {
-          lines.push(`The job covers these tasks; treat them as the scope: ${input.tasks.join(", ")}.`);
+          lines.push(`The job covers these tasks; treat them as the scope, and stay inside it: ${input.tasks.join(", ")}.`);
+        }
+        if (input.voice.trim()) {
+          lines.push(
+            `Write in my voice, not generic AI. This is how I described it: "${input.voice.trim().replace(/\s+/g, " ")}". My voice does not change when the job does.`,
+          );
         }
         lines.push(
           `I live in ${toolLabel}, and this skill should draw on my own history and standards, not a generic version of the role.`,
@@ -683,6 +740,7 @@ export const memoryIdentityPreset: KitPreset = {
             role: input.role || undefined,
             domains: input.domains,
             tasks: input.tasks,
+            voice: input.voice.trim() || undefined,
             jobFile: jobFilename(input),
             tool: KIT_TOOL_LABELS[ctx.tool],
             neverStore: input.neverStore,
@@ -705,6 +763,7 @@ export const memoryIdentityPreset: KitPreset = {
       domains: domainsOf(intake),
       job: firstJobOf(intake),
       tasks: tasksOf(intake),
+      voice: voiceOf(intake),
       neverStore: neverStoreOf(intake),
       tool,
     };
@@ -767,11 +826,11 @@ export const memoryIdentityPreset: KitPreset = {
         "## On your machine",
         "Keep them one click away. As you build more files, drag the ones you need into a new session. To write a post in your voice, drop in my-voice.md (and my-channels.md if it matters), then brief your AI as usual. You now have an agent that produces in your voice, to your standard.",
         "",
-        "## In Claude skills",
-        "Use the make-it-a-skill prompt in your pack and let Claude build the skill for you. It holds the line between the role and who you are.",
+        "## As an installed skill",
+        "If your tool supports skills, use the make-it-a-skill prompt in your pack and let it build the skill for you. It holds the line between the role and who you are.",
         "",
-        "## In Gemini Gems or ChatGPT Projects",
-        "Load the files as custom instructions.",
+        "## As custom instructions or a project",
+        "If your tool has a memory, project, or custom-instructions feature (Gems, Projects, and the like), load the files there so every session starts loaded.",
         "",
         "## How to make the habit stick",
         "- Tonight: build the job file and run it on one real task.",

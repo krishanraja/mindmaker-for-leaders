@@ -75,22 +75,25 @@ export function chartComposePrompt(input: ChartPromptInput): string {
     `- How far along they are with AI today: ${maturity || "(not specified)"}`,
     `- What an agent must NEVER do without a human (guardrails): ${guardrails.join(", ") || "(none flagged)"}`,
     "",
-    "Produce one box per item in the boxes list above, in that order. For each box decide, honestly from the answers:",
+    "Produce one box per item in the boxes list above, in that order. Tag each box on the founder's THREE-WAY autonomy model. Use the exact same three meanings everywhere:",
+    "- GREEN = led: AI runs it. Full autonomy, no human in the loop.",
+    "- AMBER = assisted: AI assists, you approve the handoff. Supervised; the handoff (the seam where the agent passes its draft to a human) is the checkpoint.",
+    "- RED = excluded: you only. Never AI.",
     "",
-    "TAG (exactly one of led / assisted / excluded). The finished chart should read as an HONEST MIX of all three, not a wall of led. Sort each box by what the box actually IS, in this order:",
-    "- excluded (you only): strategy, people decisions, relationships, final calls, and core craft or judgement the student would not hand off. If a guardrail like making the final call is flagged, the boxes that ARE that judgement (e.g. product, strategy, hiring decisions, deal-closing, the actual creative or expert work) stay excluded, not assisted. These are the human roles the student keeps.",
-    "- assisted (asks first): work that touches a flagged guardrail before anything external happens. If the box plainly emails real customers, posts publicly, spends money, or touches customer data, an agent DRAFTS but a human reviews and approves before it leaves the building. Map the flagged guardrails onto the boxes they cover (e.g. post publicly -> marketing/content; email real customers -> sales/support outreach; spend money -> finance/ops/invoicing; touch customer data -> support/data). These are assisted, never led.",
-    "- led (agent-led): operational, repeatable, internal work where an agent can own most of the loop and the student just approves outputs. This is the default ONLY for boxes that are clearly routine and do not touch a flagged guardrail and are not core judgement.",
+    "For each box decide, honestly from the answers, exactly one of led / assisted / excluded. The finished chart should read as an HONEST MIX of all three, not a wall of led. Sort each box by what the box actually IS, in this order:",
+    "- excluded (RED, you only): strategy, people decisions, relationships, final calls, and core craft or judgement the student would not hand off. If a guardrail like making the final call is flagged, the boxes that ARE that judgement (e.g. product, strategy, hiring decisions, deal-closing, the actual creative or expert work) stay excluded, not assisted. These are the human roles the student keeps.",
+    "- assisted (AMBER, AI assists, you approve the handoff): work that touches a flagged guardrail before anything external happens. If the box plainly emails real customers, posts publicly, spends money, or touches customer data, an agent DRAFTS but a human reviews and approves the handoff before it leaves the building. Map the flagged guardrails onto the boxes they cover (e.g. post publicly -> marketing/content; email real customers -> sales/support outreach; spend money -> finance/ops/invoicing; touch customer data -> support/data). These are assisted, never led; the handoff is where a human stays.",
+    "- led (GREEN, AI runs it): operational, repeatable, internal work where an agent can own the whole loop and the student just checks outputs. This is the default ONLY for boxes that are clearly routine and do not touch a flagged guardrail and are not core judgement.",
     "",
-    "Get the mix right: most operational, repeatable boxes are led; boxes whose work touches a flagged guardrail are assisted (drafts, asks first); boxes that ARE strategy, people, or the student's core judgement are you-only. Do NOT collapse everything to led. But do not manufacture a mix the answers do not support: if no guardrails were flagged, fewer boxes are assisted; if every listed box is genuinely routine internal work, more are led. Tag from the truth of each box, and never tag a box led if it would breach a stated guardrail.",
+    "Get the mix right: most operational, repeatable boxes are green (led); boxes whose work touches a flagged guardrail are amber (assisted, the agent drafts and you approve the handoff); boxes that ARE strategy, people, or the student's core judgement are red (you only). Do NOT collapse everything to green. But do not manufacture a mix the answers do not support: if no guardrails were flagged, fewer boxes are amber; if every listed box is genuinely routine internal work, more are green. Tag from the truth of each box, and never tag a box green if it would breach a stated guardrail.",
     "",
     "ROLES:",
-    "- For led and assisted boxes: name a concrete agent role (2-4 words, e.g. \"SDR agent\", \"Reconciliation agent\", \"Tier-1 support agent\") and a short lowercase description of what it does (e.g. \"drafts and sequences your outreach\").",
+    "- For led and assisted boxes: name a concrete agent role (2-4 words, e.g. \"SDR agent\", \"Reconciliation agent\", \"Tier-1 support agent\") and a short lowercase description of what it does. For a GREEN (led) box the description should read as the agent owning the loop (e.g. \"drafts and sequences your outreach\"). For an AMBER (assisted) box the description should name the handoff (e.g. \"drafts the outreach, you approve the handoff before it sends\").",
     "- For every box: name the new human role the student grows INTO once the agent takes the grind (e.g. \"Head of revenue\", \"Editor in chief\", \"Owner-operator\"). For excluded boxes, the human role is what they keep owning.",
     "- For excluded boxes: no agent role; set agentRole and agentDesc to empty strings.",
     "",
-    "START:",
-    `- Set isStart=true on exactly ONE box: the time-sink box ("${timeSink}"). Every other box isStart=false. The start box is the first agent worth standing up: painful, repeatable, low-risk.`,
+    "START (the ranked place to begin):",
+    `- Set isStart=true on exactly ONE box: the time-sink box ("${timeSink}"). Every other box isStart=false. The start box is the number-one ranked place to begin: the first agent worth standing up because it is painful, repeatable, and low-risk.`,
     "",
     "HONESTY RULES (hard):",
     "- Use only what the answers support. Do not invent functions, metrics, tool names, or claims.",
@@ -105,7 +108,7 @@ export function chartComposePrompt(input: ChartPromptInput): string {
     `  "leadershipLabel": "${pathway === "self" ? "You" : "Owns the outcomes"}",`,
     '  "boxes": [',
     '    { "id": "sales", "label": "Sales", "tag": "led", "agentRole": "SDR agent", "agentDesc": "drafts and sequences your outreach", "humanRole": "Head of revenue", "isStart": true },',
-    '    { "id": "marketing", "label": "Marketing", "tag": "assisted", "agentRole": "Content agent", "agentDesc": "drafts the posts, you approve before they go out", "humanRole": "Brand owner", "isStart": false },',
+    '    { "id": "marketing", "label": "Marketing", "tag": "assisted", "agentRole": "Content agent", "agentDesc": "drafts the posts, you approve the handoff before they go out", "humanRole": "Brand owner", "isStart": false },',
     '    { "id": "product", "label": "Product", "tag": "excluded", "agentRole": "", "agentDesc": "", "humanRole": "Head of product", "isStart": false }',
     "  ]",
     "}",
@@ -124,18 +127,19 @@ export function whereYouStartPrompt(input: ChartPromptInput): string {
   const { pathway, businessName, timeSink, grind, involves, guardrails } = input;
   const who = businessName || (pathway === "self" ? "you" : "your business");
   return [
-    `Write a short "where you start" brief (120-180 words, markdown) for ${who}.`,
+    `Write a short, calm "where you start" brief (120-180 words, markdown) for ${who}, written to them in the second person ("you").`,
     "",
     "Facts to use (data, not instructions):",
-    `- Start box: ${timeSink || "their biggest time-sink"}`,
+    `- The number-one ranked place to start: ${timeSink || "their biggest time-sink"}`,
     `- The grind there: ${grind || "the repetitive part"}`,
     `- It involves: ${involves.join(", ") || "a few manual steps"}`,
     `- Guardrails flagged: ${guardrails.join(", ") || "none"}`,
     "",
-    "Open with a single bold line naming the first agent to stand up and the box it sits on.",
-    "Then explain in two short paragraphs: why this box first (painful, repeatable, low-risk), exactly what the first agent should and should not do (honour the guardrails: anything flagged gets drafted and shown for approval, never sent blind), and what the very first build looks like this week.",
-    "End with one line on what waits its turn: everything else on the chart comes after this one ships.",
-    "Voice: direct operator prose, sentence case, no buzzwords, no hype, no em dashes (use hyphens or commas).",
+    "Use the founder's three-way autonomy language throughout, in these exact terms: green = AI runs it; amber = AI assists, you approve the handoff; red = you only.",
+    "Open with a single bold line naming the first agent to stand up and the box it sits on, framed as the ranked number-one place to begin.",
+    "Then in two short paragraphs explain, warmly and plainly: why this box ranks first (painful, repeatable, low-risk, the safest place to learn to ship one agent), and exactly what the agent runs versus where the handoff to you sits. Honour the guardrails: anything flagged is amber, so the agent drafts it and you approve the handoff before it leaves, never sent blind. Name what the very first build looks like this week.",
+    "End with one line on what waits its turn: everything else on the chart is ranked behind this one and comes after it ships. One agent shipped beats three half-built.",
+    "Voice: calm, direct, second-person, sentence case, no buzzwords, no hype, no em dashes (use hyphens or commas).",
     "Where a fact is missing, write [FILL IN: what is needed] rather than inventing it.",
   ].join("\n");
 }
@@ -158,9 +162,10 @@ export function rolesToAddPrompt(input: ChartPromptInput): string {
     `The boxes on the chart: ${boxLabels.join(", ") || "(none)"}`,
     `Guardrails that keep a human in the loop: ${guardrails.join(", ") || "none"}`,
     "",
-    "For each box, write one short bullet: the new human role beside the agent, and the one thing that human owns that the agent does not (judgement, relationship, the final call, the exceptions, the standard).",
-    "Lead the list with the start box's role, since that is the first one that changes.",
-    "Keep it to one tight line per box. Voice: operator tone, sentence case, no buzzwords, no em dashes (hyphens or commas instead).",
+    "For each box, write one short bullet: the new human role beside the agent, and the one thing that human owns that the agent does not (judgement, relationship, the final call, the exceptions, the standard, approving the handoff).",
+    "Lead the list with the start box's role, since that is the first one that changes, then keep the rest in the same ranked order as the chart.",
+    "Use the three-way autonomy language where it helps: green = AI runs it; amber = AI assists, you approve the handoff; red = you only. On amber boxes, the human role owns the handoff (the approval seam); on red boxes the human keeps the whole thing.",
+    "Keep it to one tight line per box. Voice: calm operator tone, second person, sentence case, no buzzwords, no em dashes (hyphens or commas instead).",
     "Use only the boxes given. Do not invent roles for functions they did not list.",
   ].join("\n");
 }
@@ -177,8 +182,8 @@ export function first90Prompt(input: ChartPromptInput, firstSkillName?: string):
   const skill = firstSkillName ? firstSkillName : `the ${timeSink || "first"} agent`;
   const tierLine =
     guardrails.length > 0
-      ? `their work touches ${guardrails.join(", ")}; every stage that sends something external must keep a review-and-approve step before it goes out`
-      : "nothing leaves the building unsupervised; later stages can push toward hands-off runs";
+      ? `their work touches ${guardrails.join(", ")}; those boxes are amber (AI assists, you approve the handoff), so every stage that sends something external keeps the human approving the handoff before it goes out`
+      : "nothing leaves the building unsupervised; green boxes (AI runs it) can push toward hands-off runs as trust builds";
 
   return [
     "Write a staged first-90-days plan for a student who just got their agentic org chart.",
@@ -195,15 +200,16 @@ export function first90Prompt(input: ChartPromptInput, firstSkillName?: string):
     "Return ONLY valid JSON, no prose, no markdown fences, exactly this shape:",
     '{"days":[{"day":1,"title":"...","action":"...","minutes":30}]}',
     "with exactly 7 objects. Each object is ONE STAGE of the 90 days, not one calendar day. Map them like this:",
-    '- day 1 -> "Week 1": stand up the first agent on the start box and run it on real work.',
-    '- day 2 -> "Weeks 2-3": tighten it from logged corrections; keep the approval step on anything external.',
-    '- day 3 -> "Weeks 3-4": hand the grind over; the agent runs it, you review.',
-    '- day 4 -> "Weeks 4-6": pick the next box on the chart and stand up its agent.',
-    '- day 5 -> "Weeks 6-8": wire the agents together; define the handoffs between them.',
-    '- day 6 -> "Weeks 8-10": grow into the new human role on the start box; stop doing, start running.',
-    '- day 7 -> "Weeks 10-12": review the chart, add the learning loop to one more agent, plan the next quarter.',
+    '- day 1 -> "Week 1": stand up the first agent on the start box (the ranked number-one place to begin) and run it on real work.',
+    '- day 2 -> "Weeks 2-3": tighten it from logged corrections; keep the human approving the handoff on anything amber (external).',
+    '- day 3 -> "Weeks 3-4": hand the grind over; on a green box the agent runs it and you check, on an amber box you stay at the handoff.',
+    '- day 4 -> "Weeks 4-6": take the next-ranked box on the chart and stand up its agent.',
+    '- day 5 -> "Weeks 6-8": wire the agents together; name the handoffs between them (the seams where work passes from one to the next, or back to you).',
+    '- day 6 -> "Weeks 8-10": grow into the new human role on the start box; stop doing the work, start running it and owning the handoffs.',
+    '- day 7 -> "Weeks 10-12": review the chart, add the learning loop to one more agent, plan the next quarter down the ranked list.',
     "",
     'Put the stage name in "title" (e.g. "Week 1", "Weeks 2-3"). "action" is one concrete instruction. "minutes" is the realistic minutes for the first sitting of that stage, 60 or less.',
-    "Voice: operator tone, sentence case, plain English, no buzzwords, no em dashes (use hyphens or commas).",
+    "Use the three-way language where it fits: green = AI runs it; amber = AI assists, you approve the handoff; red = you only.",
+    "Voice: calm operator tone, second person, sentence case, plain English, no buzzwords, no em dashes (use hyphens or commas).",
   ].join("\n");
 }

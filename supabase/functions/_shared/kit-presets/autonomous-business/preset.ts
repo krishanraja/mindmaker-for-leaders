@@ -5,6 +5,22 @@
  * intake, artifacts, miner prompts, deterministic scoring, and email copy.
  * The engine renders purely from this contract.
  *
+ * The kit is about a PROCESS. Its one job is to take a single recurring
+ * workflow off the person's plate by day 7, decomposed into steps, with the
+ * autonomy line drawn (what the AI may run, what always asks first) and a build
+ * path to get it running. The intake aligns to that purpose: it walks from the
+ * areas that repeat, to the one that eats the most time, to the specific
+ * workflow there, to its steps, then weighs the impact and draws the guardrails.
+ *
+ * Humanity first (spec 2.0): the copy is calm, plain and second-person. The
+ * maturity step is framed so the honest answer is the safe one, and the
+ * guardrails step acknowledges the choice warmly (in its helper and in the
+ * rendered GUARDRAILS.md) rather than silently storing it.
+ *
+ * Platform-agnostic content, tool-specific instructions (spec 2.3): every
+ * artifact's content works on any AI platform; only install and paste lines name
+ * the person's chosen tool, and fall back to "your AI tool" when none is picked.
+ *
  * INTAKE (the forked recognition cascade, no open-ended voice blob):
  *   pathway (fork: self / business)
  *     -> profile (nameField + what-it-does chip)
@@ -13,12 +29,12 @@
  *                        adaptiveOptions.fromQuestionId: area)
  *     -> workflow(one,   adaptiveOptions.matrixKey "workflow" keyed on the area
  *                        - the specific recurring workflow there)
- *     -> involves(multi  - what that workflow involves)
+ *     -> involves(multi  - what that workflow involves; the decomposition)
  *     -> hours   (one    - how many hours a week it eats)
  *     -> revenue (one    - how close it is to money; feeds the leverage maths)
- *     -> spectrum(one    - AI maturity stage)
+ *     -> spectrum(one    - AI maturity stage; sets the autonomy ceiling)
  *     -> tool    (one    - the AI tool they actually use)
- *     -> leaves  (multi, chartFeed:tags          - what leaves the building / guardrails)
+ *     -> leaves  (multi, chartFeed:tags          - what stays under a human hand / guardrails)
  *
  * previewKind: "picks" renders the generic KitPicksBoard (a title node + the
  * picked areas as cards, the time-sink flagged) as the live preview; this kit
@@ -181,12 +197,12 @@ export const autonomousBusinessPreset: KitPreset = {
       id: "pathway",
       type: "chips",
       pathwayFork: true,
-      eyebrow: "Let's build your pack",
+      eyebrow: "First",
       prompt: "Who are we building this for?",
-      helper: "This changes what we ask, and the pack you walk away with.",
+      helper: "It just changes the examples we use. Nothing else.",
       options: [
-        { id: "self", label: "I'm building for myself", pathway: "self" },
-        { id: "biz", label: "I'm scoping for my business", pathway: "biz" },
+        { id: "self", label: "Just me", pathway: "self" },
+        { id: "biz", label: "My business", pathway: "biz" },
       ],
       factMappings: [
         { fact_key: "kit_autonomy_pathway", fact_category: "identity", fact_label: "Autonomy pathway" },
@@ -197,14 +213,14 @@ export const autonomousBusinessPreset: KitPreset = {
     {
       id: "profile",
       type: "chips",
-      eyebrow: "Your business",
+      eyebrow: "A little about you",
       prompt: "Tell us about your business.",
-      helper: "This is the line at the top of your pack.",
+      helper: "This is the first thing your AI will know about your work.",
       showIf: { answeredQuestionId: "pathway" },
-      nameField: { label: "Name on the pack", placeholder: "e.g. Northstar Media" },
+      nameField: { label: "Name on the pack", placeholder: "First name or business name is fine" },
       pathwayCopy: {
-        self: { prompt: "Tell us about you.", helper: "This is the line at the top of your pack." },
-        biz: { prompt: "Tell us about your business.", helper: "This is the line at the top of your pack." },
+        self: { prompt: "Tell us about you.", helper: "This is the first thing your AI will know about your work." },
+        biz: { prompt: "Tell us about your business.", helper: "This is the first thing your AI will know about your work." },
       },
       pathwayOptions: { biz: BIZ_SECTORS, self: SOLO_ROLES },
       options: [...BIZ_SECTORS, ...SOLO_ROLES],
@@ -217,18 +233,18 @@ export const autonomousBusinessPreset: KitPreset = {
     {
       id: "area",
       type: "chips_multi",
-      eyebrow: "The shape",
+      eyebrow: "Where it repeats",
       prompt: "Which areas of the business run on repeat?",
       chartFeed: "boxes",
       showIf: { answeredQuestionId: "pathway" },
       pathwayCopy: {
         self: {
           prompt: "Which hats do you wear every week?",
-          helper: "Tap all that apply. These are where your repeating work lives.",
+          helper: "Pick whatever fits. These are where your repeating work lives.",
         },
         biz: {
           prompt: "Which areas of the business run on repeat?",
-          helper: "Tap all that apply. These are where your repeating work lives.",
+          helper: "Pick whatever fits. These are where your repeating work lives.",
         },
       },
       pathwayOptions: { biz: BIZ_AREAS, self: SELF_HATS },
@@ -239,7 +255,7 @@ export const autonomousBusinessPreset: KitPreset = {
     {
       id: "timeSink",
       type: "chips",
-      eyebrow: "Where it hurts",
+      eyebrow: "The one to start with",
       prompt: "Which one eats the most time?",
       chartFeed: "startBox",
       showIf: { answeredQuestionId: "area" },
@@ -247,11 +263,11 @@ export const autonomousBusinessPreset: KitPreset = {
       pathwayCopy: {
         self: {
           prompt: "Which hat eats the most time?",
-          helper: "This is your first build: the one worth handing over first.",
+          helper: "This becomes your first build, the one worth handing over first.",
         },
         biz: {
           prompt: "Which area eats the most time?",
-          helper: "This is your first build: the one worth handing over first.",
+          helper: "This becomes your first build, the one worth handing over first.",
         },
       },
     },
@@ -260,9 +276,9 @@ export const autonomousBusinessPreset: KitPreset = {
     {
       id: "workflow",
       type: "chips",
-      eyebrow: "The grind",
-      prompt: "What's the recurring workflow there?",
-      helper: "Pick the closest one. This is the workflow we build first.",
+      eyebrow: "The recurring job",
+      prompt: "What's the recurring job there?",
+      helper: "Pick the closest one. This is the one workflow we take off your plate first.",
       showIf: { answeredQuestionId: "timeSink" },
       adaptiveOptions: {
         matrixKey: "workflow",
@@ -275,9 +291,9 @@ export const autonomousBusinessPreset: KitPreset = {
     {
       id: "involves",
       type: "chips_multi",
-      eyebrow: "The grind",
+      eyebrow: "Its steps",
       prompt: "What does that actually involve?",
-      helper: "Tap the steps. This shapes the skill we build.",
+      helper: "Pick the steps. This is how we break the workflow down for the build.",
       showIf: { answeredQuestionId: "workflow" },
       options: INVOLVES,
     },
@@ -286,8 +302,9 @@ export const autonomousBusinessPreset: KitPreset = {
     {
       id: "hours",
       type: "chips",
-      eyebrow: "The cost",
+      eyebrow: "What it costs you",
       prompt: "How many hours a week does it eat?",
+      helper: "A rough number is fine. It just helps us rank the impact.",
       showIf: { answeredQuestionId: "involves" },
       options: [
         { id: "under-2", label: "Under 2" },
@@ -301,8 +318,9 @@ export const autonomousBusinessPreset: KitPreset = {
     {
       id: "revenue",
       type: "chips",
-      eyebrow: "The value",
+      eyebrow: "How it matters",
       prompt: "How close is it to money?",
+      helper: "There is no wrong answer here. It helps us weigh which build pays back fastest.",
       showIf: { answeredQuestionId: "hours" },
       options: [
         { id: "direct", label: "It directly makes money" },
@@ -315,9 +333,9 @@ export const autonomousBusinessPreset: KitPreset = {
     {
       id: "spectrum",
       type: "chips",
-      eyebrow: "Today",
+      eyebrow: "Where you're at",
       prompt: "Where are you today with AI?",
-      helper: "Honest answer beats aspirational answer. The pack adapts either way.",
+      helper: "Honest beats aspirational. The pack adapts to wherever you are, and every answer here is fine.",
       showIf: { answeredQuestionId: "revenue" },
       pathwayCopy: {
         self: { prompt: "Where are you today with AI?" },
@@ -339,8 +357,8 @@ export const autonomousBusinessPreset: KitPreset = {
       id: "tool",
       type: "chips",
       eyebrow: "Your tool",
-      prompt: "Which AI tool do you actually use?",
-      helper: "Not the one you mean to try. The one you opened this week.",
+      prompt: "Which AI do you actually use?",
+      helper: "The one you opened this week, not the one you mean to try. We tailor the install steps to it; the pack works with any of them.",
       showIf: { answeredQuestionId: "spectrum" },
       options: [
         { id: "chatgpt", label: "ChatGPT", tool: "chatgpt" },
@@ -355,19 +373,33 @@ export const autonomousBusinessPreset: KitPreset = {
     },
 
     // 9. LEAVES (multi) - what leaves the building. The guardrails. Feeds tags.
+    // The warm reflect-back for this vulnerable choice lives in this step's
+    // helper and in the rendered GUARDRAILS.md ("everything you picked stays
+    // under your hand"). The shared KitIntake clay reflect-back is keyed only to
+    // the Vibe Coding pains map, so the acknowledgement is carried here in copy
+    // the preset owns rather than the shared renderer.
     {
       id: "leaves",
       type: "chips_multi",
-      eyebrow: "Guardrails",
-      prompt: "What leaves the building?",
-      helper: "Tick everything this work touches. Anything ticked always asks before acting.",
+      eyebrow: "Your guardrails",
+      prompt: "What should never go out without you?",
+      helper: "Pick anything this work touches. Whatever you pick, the build will always check with you first. Pick none and it can run end to end.",
       chartFeed: "tags",
       showIf: { answeredQuestionId: "tool" },
       pathwayCopy: {
-        self: { prompt: "What would you never hand off blind?" },
-        biz: { prompt: "What leaves the building?" },
+        self: {
+          prompt: "What would you never hand off blind?",
+          helper: "Pick anything this work touches. Whatever you pick stays under your hand, the build asks first before it acts. Pick none and it can run end to end.",
+        },
+        biz: {
+          prompt: "What should never leave the building without you?",
+          helper: "Pick anything this work touches. Whatever you pick stays under your hand, the build asks first before it acts. Pick none and it can run end to end.",
+        },
       },
       options: LEAVES,
+      factMappings: [
+        { fact_key: "kit_autonomy_guardrails", fact_category: "preference", fact_label: "What stays under a human hand" },
+      ],
     },
   ],
 
@@ -380,7 +412,7 @@ export const autonomousBusinessPreset: KitPreset = {
       strategy: "deterministic",
       part: "Audit",
       description:
-        "Read the verdict, then build the flagged workflow first. The arithmetic is shown so you can re-run it on anything.",
+        "Read the verdict, then build the one flagged workflow first. The arithmetic is shown so you can re-run it on anything.",
       render: (ctx) => {
         const scores = scoresFor(ctx);
         const workflow = workflowOf(ctx.intake);
@@ -453,7 +485,7 @@ export const autonomousBusinessPreset: KitPreset = {
       strategy: "skill_pipeline",
       part: "Build",
       description:
-        "Unzip into your skills folder and run test prompt 1 tonight. The learning loop inside makes it sharper every run.",
+        "Unzip into your skills folder and run test prompt 1 tonight. The learning loop inside makes it sharper every run, so it does not have to be perfect today.",
       buildSeed: (ctx) => {
         const stageId = answerOption(ctx.intake, "spectrum") || "prompting";
         const stageLabel = STAGE_LABELS[stageId] ?? "Prompting";
@@ -621,7 +653,7 @@ export const autonomousBusinessPreset: KitPreset = {
             : "";
 
         const parts: string[] = [
-          "Write a 7 day plan for a student of the Autonomous Business Lightning Lesson. They just downloaded a personalised pack containing their first AI skill.",
+          "Write a 7 day plan for a student of the Autonomous Business Lightning Lesson. They just downloaded a personalised pack containing their first AI skill. The one promise of this plan is that by day 7 one recurring workflow is off their plate. Keep the tone calm and plain; never make them feel behind.",
           "",
           "Student:",
           `- Stage: ${stageLabel} (${stageDesc})`,

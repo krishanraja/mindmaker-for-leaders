@@ -63,6 +63,20 @@ import {
   PAIN_REFLECT,
   PREF_LABEL,
 } from "../../../supabase/functions/_shared/kit-presets/vibe-coding/templates.ts";
+// Each kit's vulnerable step gets a warm reflect-back (the humanity moment):
+// Vibe Coding's pains, the Org Chart guardrails, and Memory & Identity's
+// never-store privacy line. Each map is single-sourced in its own preset so the
+// copy never drifts from what the kit installs. The option ids are disjoint
+// across presets, so the maps merge cleanly into one generic reflect lookup.
+import { GUARDRAIL_REFLECT } from "../../../supabase/functions/_shared/kit-presets/orgchart/templates.ts";
+import { NEVER_STORE_REFLECT } from "../../../supabase/functions/_shared/kit-presets/memory-identity/templates.ts";
+
+/** The reflect-back lines across kits, keyed by option id. */
+const REFLECT_LINES: Record<string, string> = {
+  ...PAIN_REFLECT,
+  ...GUARDRAIL_REFLECT,
+  ...NEVER_STORE_REFLECT,
+};
 
 const MIN_TEXT_LENGTH = 10;
 const ADVANCE_BEAT_MS = 350;
@@ -793,13 +807,14 @@ function StepCard({
   const showChartHint = hasPreview && feedsPreview;
   const previewWord = previewKind === "picks" ? "board" : "chart";
 
-  // The pains reflect-back (the humanity moment). Keyed off the most-recently
-  // selected option that has a reflect line in PAIN_REFLECT (the Vibe Coding
-  // pains step). Single source with the preset so the copy never drifts. Shows
-  // on mobile and desktop; the living panel carries the guardrail chips too.
+  // The reflect-back (the humanity moment). Keyed off the most-recently
+  // selected option that has a reflect line: the Vibe Coding pains step
+  // (PAIN_REFLECT) or the Org Chart guardrails step (GUARDRAIL_REFLECT), merged
+  // into REFLECT_LINES. Single source with the presets so the copy never
+  // drifts. Shows on mobile and desktop.
   const selectedMulti = answer?.optionIds ?? [];
-  const lastReflectId = [...selectedMulti].reverse().find((id) => id in PAIN_REFLECT);
-  const reflectLine = lastReflectId ? PAIN_REFLECT[lastReflectId] : "";
+  const lastReflectId = [...selectedMulti].reverse().find((id) => id in REFLECT_LINES);
+  const reflectLine = lastReflectId ? REFLECT_LINES[lastReflectId] : "";
   // The last step's primary label: preview kits build their chart here; the
   // no-preview Vibe Coding flow advances to the homework screen first.
   const lastLabel = hasPreview ? "Build my chart" : "Continue";

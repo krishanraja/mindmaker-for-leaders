@@ -213,6 +213,32 @@ export const NEVER_STORE: IntakeOption[] = [
   { id: "nothing", label: "Nothing is off-limits" },
 ];
 
+/**
+ * A warm, one-line reflect-back for the never-store guardrail, surfaced in the
+ * intake the moment the student taps a privacy line (mirrors Vibe Coding's
+ * pains-to-guardrails reflect-back). It acknowledges the line and walls it off,
+ * so handing the operator something private feels safe, not just logged.
+ */
+export const NEVER_STORE_REFLECT: Record<string, string> = {
+  secrets: "Good line. We bake it in as a hard rule, so keys and passwords stay out of every file.",
+  "others-pii": "That is the right instinct. Other people's data never goes in, baked in as a standing rule.",
+  "client-confidential": "Sensible. Client-confidential detail is walled off, never written to a file.",
+  financials: "Understood. Sensitive numbers stay out, baked into your files as a hard rule.",
+  personal: "Fair. Your own personal and health data stays out, kept as a standing rule.",
+  nothing: "All yours to decide. We will not add a privacy rule you did not ask for.",
+};
+
+/**
+ * Example prompts shown under the voice intake step (tap to prefill). They model
+ * the kind of short, honest, in-your-own-words answer that grounds my-voice.md,
+ * so the student recognises rather than performs.
+ */
+export const VOICE_EXAMPLES: string[] = [
+  "Plain and direct. Short sentences, no buzzwords, a bit dry.",
+  "Warm and encouraging, but I get to the point fast.",
+  "I write like I talk: casual, a few asides, never corporate.",
+];
+
 /* ================================================================== */
 /* Identity-file scaffolds (now read the structured JobInput)          */
 /* ================================================================== */
@@ -255,10 +281,14 @@ export function renderAboutMe(input: JobInput): string {
 }
 
 export function renderVoice(input: JobInput): string {
+  const said = input.voice.trim().replace(/\s+/g, " ");
+  const soundLine = said
+    ? `- ${said}\n- [FILL IN from the draft: sharpen this into 3 or 4 lines, with the words you actually reach for]`
+    : "- [FILL IN from the draft: 3 or 4 lines]";
   return [
     "# my-voice.md",
     "",
-    "How I sound. Drop this into any writing task on its own and the output comes back in my voice.",
+    "How I sound. This is the single home for my voice; drop it into any writing task on its own and the output comes back sounding like me.",
     "",
     ...fillHeader(input.tool, "your actual tone and phrasing, from things you wrote"),
     FENCE,
@@ -266,7 +296,7 @@ export function renderVoice(input: JobInput): string {
     FENCE,
     "",
     "## How I sound",
-    "- [FILL IN from the draft: 3 or 4 lines]",
+    soundLine,
     "",
     "## Always (with a real example each)",
     "- [FILL IN]",
