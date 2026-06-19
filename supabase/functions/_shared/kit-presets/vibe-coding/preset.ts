@@ -3,20 +3,22 @@
  *
  * Everything class-specific for the Vibe Coding Lightning Lesson follow-up.
  *
- * Intake is a forked pick-cascade (no open-ended voice question): the student
- * forks self vs business, names a profile, recognises their repetitive AREAS
- * from a curated list (multi), picks the one to BUILD FIRST (one), picks the
- * specific WORKFLOW from a curated matrix (one), then the steps it INVOLVES
- * (multi), then tool / win / stakes / experience. The copy is deliberately
- * gentle: a casual mid-level student should not feel they need Cursor or Lovable
- * or any developer setup. A live picks preview (previewKind 'picks') assembles a
- * board of what they could build as they tap.
+ * The kit is about a SOLUTION. Its job is to make any AI tool work the person's
+ * way on one real build. The intake is a short forked pick-cascade plus one
+ * free-text field: fork self/business, name + role, PREFERENCES (how they like
+ * the AI to work with them), PAST PAINS (turned into guardrails), the ONE BUILD
+ * they want to ship (the single free text), tool, then level. A live picks
+ * preview (previewKind 'picks') assembles the knowledge bank as they answer.
  *
- * The take-home pack is trimmed to six heroes: the leverage audit, the five-part
- * brief, the first skill (the ZIP), the acceptance pack, the seven-day plan and
- * the personal map. Every compose prompt reads the STRUCTURED cascade answers
- * (the chosen workflow label, the steps it involves), never a free-text blob,
- * and stays honesty-gated by a deterministic fallback.
+ * The take-home pack: the working-style contract (how the kit works with you),
+ * the build brief (the spec), the first skill (the ZIP), the acceptance pack,
+ * the seven-day plan and the personal map. Every compose prompt reads the
+ * STRUCTURED answers (their preferences, their pains-as-guardrails, their build
+ * description), and stays honesty-gated by a deterministic fallback.
+ *
+ * Platform-agnostic content, tool-specific instructions (spec 2.3): every
+ * artifact's content works on any AI platform; only install or paste lines name
+ * the person's chosen tool, and fall back to "your AI" when they pick none.
  *
  * Plain TypeScript only; bundled into both the Deno edge runtime and the Vite
  * client. No Deno or Node globals.
@@ -32,34 +34,23 @@ import type {
 import { KIT_TOOL_LABELS } from "../types.ts";
 import {
   EXPERIENCE_LABELS,
-  STAKES_TIER_LABELS,
-  STAKES_TIER_RULES,
-  areasFromIntake,
-  buildFirstFromIntake,
+  buildFromIntake,
   experienceFromIntake,
-  involvesFromIntake,
-  offeringFromIntake,
+  guardrailsFromIntake,
+  nameFromIntake,
+  painLabelsFromIntake,
+  preferenceLabelsFromIntake,
   roleFromIntake,
-  scoreVibeCoding,
   shortBuildName,
   stageFromExperience,
-  stakesTierFromIntake,
-  stakesTouchesFromIntake,
-  winFromIntake,
-  workflowFromIntake,
 } from "./scoring.ts";
-import type { VibeScore } from "./scoring.ts";
 import {
-  AGENT_PICKS_STUB,
-  AREA_OPTIONS_BIZ,
-  AREA_OPTIONS_SELF,
-  INVOLVES_OPTIONS,
+  PAIN_OPTIONS,
+  PREFERENCE_OPTIONS,
   VOICE_RULES,
-  WORKFLOW_FALLBACK,
-  WORKFLOW_MATRIX,
   acceptancePackFallback,
-  fivePartBriefTemplate,
-  leverageAuditFallback,
+  buildBriefTemplate,
+  howYouWorkFallback,
 } from "./templates.ts";
 import { MERIDIAN_WORKED_EXAMPLE } from "./examples.ts";
 import { contextPullPrompt } from "./prompts.ts";
@@ -68,45 +59,34 @@ import { contextPullPrompt } from "./prompts.ts";
 /* Shared derivations                                                   */
 /* ------------------------------------------------------------------ */
 
-function resolveScore(ctx: ArtifactBuildContext): VibeScore {
-  const s = ctx.scores as VibeScore | undefined;
-  if (s && s.frequency && s.judgment && s.quadrant && s.recommendation) return s;
-  return scoreVibeCoding(ctx.intake);
-}
-
 interface Derived {
+  name: string;
   role: string;
-  offering: string;
-  /** The chosen build-first area (the start box). */
-  area: string;
-  /** The specific workflow label picked from the curated matrix. */
-  workflow: string;
-  /** What the workflow involves (multi). */
-  involves: string[];
+  /** How they like the AI to work with them, as short behaviour labels. */
+  prefLabels: string[];
+  /** Their past pains, as their human labels. */
+  painLabels: string[];
+  /** Their pains turned into the guardrails the kit installs. */
+  guardLines: string[];
+  /** The one thing they want to build, in their own words. */
+  build: string;
+  /** A short, human name for the build. */
   buildName: string;
   toolLabel: string;
-  win: string;
-  tier: ReturnType<typeof stakesTierFromIntake>;
-  tierLabel: string;
-  tierRule: string;
   experience: ReturnType<typeof experienceFromIntake>;
 }
 
 function derive(ctx: ArtifactBuildContext): Derived {
-  const tier = stakesTierFromIntake(ctx.intake);
-  const workflow = workflowFromIntake(ctx.intake);
+  const build = buildFromIntake(ctx.intake);
   return {
+    name: nameFromIntake(ctx.intake),
     role: roleFromIntake(ctx.intake),
-    offering: offeringFromIntake(ctx.intake),
-    area: buildFirstFromIntake(ctx.intake),
-    workflow,
-    involves: involvesFromIntake(ctx.intake),
-    buildName: shortBuildName(workflow),
+    prefLabels: preferenceLabelsFromIntake(ctx.intake),
+    painLabels: painLabelsFromIntake(ctx.intake),
+    guardLines: guardrailsFromIntake(ctx.intake),
+    build,
+    buildName: shortBuildName(build),
     toolLabel: KIT_TOOL_LABELS[ctx.tool],
-    win: winFromIntake(ctx.intake),
-    tier,
-    tierLabel: STAKES_TIER_LABELS[tier],
-    tierRule: STAKES_TIER_RULES[tier],
     experience: experienceFromIntake(ctx.intake),
   };
 }
@@ -114,13 +94,12 @@ function derive(ctx: ArtifactBuildContext): Derived {
 function profileBlock(ctx: ArtifactBuildContext): string {
   const d = derive(ctx);
   return [
-    `Who they are: ${d.role}${d.offering ? ` (they are calling their build "${d.offering}")` : ""}`,
-    `The area they are starting in: ${d.area || "not specified"}`,
-    `The specific workflow they picked: ${d.workflow || "not specified"}`,
-    `What that workflow involves: ${d.involves.length > 0 ? d.involves.join(", ") : "not specified"}`,
+    `Who they are: ${d.name ? `${d.name}, ` : ""}${d.role}`,
+    `How they like the AI to work with them: ${d.prefLabels.length > 0 ? d.prefLabels.join("; ") : "not specified"}`,
+    `What has burned them before: ${d.painLabels.length > 0 ? d.painLabels.join("; ") : "not specified"}`,
+    `Guardrails the kit installs (from those pains): ${d.guardLines.length > 0 ? d.guardLines.join("; ") : "the standard ask-first guardrail"}`,
+    `The one thing they want to build: ${d.build || "not specified"}`,
     `Tool they will build in: ${d.toolLabel}`,
-    `Shipped means: ${d.win}`,
-    `Stakes tier: ${d.tierLabel} (${d.tierRule})`,
     `Experience: ${EXPERIENCE_LABELS[d.experience]}`,
   ].join("\n");
 }
@@ -137,23 +116,23 @@ function contextBlock(ctx: ArtifactBuildContext): string {
 }
 
 const PROMPT_PREAMBLE =
-  "You are writing one artifact of the Vibe Coding Field Kit for a student who just finished the Vibe Coding Lightning Lesson. They are not a developer; they may be a student or an operator building their very first small tool. Be encouraging and plain. Never assume they have Cursor, Lovable or any developer setup; the tool is whatever they already have open.";
+  "You are writing one artifact of the Vibe Coding Field Kit for someone who just finished the Vibe Coding Lightning Lesson. They are not a developer; they may be a student or an operator building their very first small tool. Be encouraging and plain. The kit's job is to make any AI work the way THEY work on the one build they named. Never assume they have Cursor, Lovable or any developer setup; the tool is whatever they already have open. The content must work on any AI platform; only name their tool in install or paste instructions.";
 
 /* ------------------------------------------------------------------ */
-/* Intake: the forked pick-cascade (no open-ended voice question)       */
+/* Intake: the forked cascade, re-centered on the solution              */
 /* ------------------------------------------------------------------ */
 
 const intake: KitPreset["intake"] = [
-  // 0. THE FORK - self vs business. Pathway only.
+  // 1. THE FORK - self vs business. Pathway only.
   {
     id: "pathway",
     type: "chips",
     pathwayFork: true,
-    eyebrow: "Let's find your first build",
+    eyebrow: "First",
     prompt: "Who are you building for?",
-    helper: "This changes what we ask, and what you walk away with.",
+    helper: "It changes the examples we use. Nothing else.",
     options: [
-      { id: "self", label: "Myself", pathway: "self" },
+      { id: "self", label: "Just me", pathway: "self" },
       { id: "biz", label: "My work or business", pathway: "biz" },
     ],
     factMappings: [
@@ -161,18 +140,18 @@ const intake: KitPreset["intake"] = [
     ],
   },
 
-  // 0b. PROFILE - the name on the kit + who they are (nameField + role chips).
+  // 2. PROFILE - name field + who they are (role chips per pathway).
   {
     id: "profile",
     type: "chips",
-    eyebrow: "About you",
-    prompt: "Tell us a little about you.",
-    helper: "No wrong answer. This just tunes what we suggest.",
+    eyebrow: "A little about you",
+    prompt: "What should we call you?",
+    helper: "This is the first thing your AI will know about you.",
     showIf: { answeredQuestionId: "pathway" },
-    nameField: { label: "What should we call this build of yours?", placeholder: "e.g. my study helper" },
+    nameField: { label: "Your name", placeholder: "First name is fine" },
     pathwayCopy: {
-      self: { prompt: "Tell us a little about you.", helper: "No wrong answer. This just tunes what we suggest." },
-      biz: { prompt: "Tell us a little about your work.", helper: "No wrong answer. This just tunes what we suggest." },
+      self: { prompt: "What should we call you?", helper: "This is the first thing your AI will know about you." },
+      biz: { prompt: "What should we call you?", helper: "This is the first thing your AI will know about you." },
     },
     pathwayOptions: {
       self: [
@@ -205,74 +184,68 @@ const intake: KitPreset["intake"] = [
     ],
   },
 
-  // 1. AREAS (multi, chartFeed:boxes) - the repetitive areas, recognised from a list.
+  // 3. PREFERENCES (NEW, multi) - how they like the AI to work with them.
   {
-    id: "areas",
+    id: "preferences",
     type: "chips_multi",
-    eyebrow: "Where the time goes",
-    prompt: "Where does your time go on repeat?",
-    chartFeed: "boxes",
-    showIf: { answeredQuestionId: "pathway" },
-    pathwayCopy: {
-      self: {
-        prompt: "Where does your time go on repeat?",
-        helper: "Tap the areas where you do the same kind of thing again and again.",
+    eyebrow: "How you like to work",
+    prompt: "How should it treat you by default?",
+    helper: "There is no right answer. Pick whatever sounds like you.",
+    showIf: { answeredQuestionId: "profile" },
+    options: PREFERENCE_OPTIONS,
+    factMappings: [
+      {
+        fact_key: "ai_working_preferences",
+        fact_category: "preference",
+        fact_label: "How they like AI to work with them",
       },
-      biz: {
-        prompt: "Where does your time go on repeat?",
-        helper: "Tap the areas where the same work comes around again and again.",
-      },
-    },
-    pathwayOptions: { self: AREA_OPTIONS_SELF, biz: AREA_OPTIONS_BIZ },
-    options: [...AREA_OPTIONS_SELF, ...AREA_OPTIONS_BIZ],
+    ],
   },
 
-  // 2. BUILD FIRST (one, chartFeed:startBox) - drawn from the picked areas.
+  // 4. PAINS (NEW, multi) - what has gone wrong before, turned into guardrails.
   {
-    id: "buildFirst",
-    type: "chips",
-    eyebrow: "Start here",
-    prompt: "Which one would you build first?",
-    helper: "Pick the one that would save you the most, or just annoys you the most.",
-    chartFeed: "startBox",
-    showIf: { answeredQuestionId: "areas" },
-    adaptiveOptions: { fromQuestionId: "areas" },
-  },
-
-  // 3. WORKFLOW (one) - the specific repetitive thing, recognised from a curated matrix.
-  {
-    id: "workflow",
-    type: "chips",
-    eyebrow: "The repetitive thing",
-    prompt: "Which of these is the repetitive thing?",
-    helper: "Tap the closest one. This is what your tool will take off your plate.",
-    showIf: { answeredQuestionId: "buildFirst" },
-    adaptiveOptions: {
-      matrixKey: "workflow",
-      matrixFromQuestionId: "buildFirst",
-      fallback: WORKFLOW_FALLBACK,
-    },
-  },
-
-  // 4. INVOLVES (multi) - what the workflow actually involves. Shapes the build.
-  {
-    id: "involves",
+    id: "pains",
     type: "chips_multi",
-    eyebrow: "The steps",
-    prompt: "What does that actually involve?",
-    helper: "Tap the steps. This shapes the tool we help you build.",
-    showIf: { answeredQuestionId: "workflow" },
-    options: INVOLVES_OPTIONS,
+    eyebrow: "What has burned you",
+    prompt: "What's gone wrong before?",
+    helper: "Be honest. We turn each of these into a guardrail so it does not happen again.",
+    showIf: { answeredQuestionId: "preferences" },
+    options: PAIN_OPTIONS,
+    factMappings: [
+      {
+        fact_key: "past_ai_pains",
+        fact_category: "preference",
+        fact_label: "Past pains with AI",
+      },
+    ],
   },
 
-  // 5. TOOL - where will you build. Softened, "not sure yet" is first-class.
+  // 5. BUILD (NEW, the one free text) - the one thing they want to build.
+  {
+    id: "build",
+    type: "voice_text",
+    eyebrow: "The one build",
+    prompt: "What's the one thing you want to build?",
+    helper: "One real thing you would actually use. We will brief it so any AI can build it with you.",
+    showIf: { answeredQuestionId: "pains" },
+    examples: [
+      "A tool that turns my messy notes into a weekly plan",
+      "Something that drafts my follow-up messages",
+      "A helper that pulls my research into one brief",
+    ],
+    factMappings: [
+      { fact_key: "vibe_one_build", fact_category: "objective", fact_label: "The one build" },
+    ],
+  },
+
+  // 6. TOOL - platform-agnostic; tailors install wording only.
   {
     id: "tool",
     type: "chips",
     eyebrow: "Your tool",
-    prompt: "Which AI do you already use?",
-    helper: "Whatever you have open is fine. No special software needed.",
-    showIf: { answeredQuestionId: "involves" },
+    prompt: "Which AI are you building with?",
+    helper: "We tailor the install steps. The kit itself works with any of them.",
+    showIf: { answeredQuestionId: "build" },
     options: [
       { id: "chatgpt", label: "ChatGPT", tool: "chatgpt" },
       { id: "claude", label: "Claude", tool: "claude" },
@@ -286,98 +259,69 @@ const intake: KitPreset["intake"] = [
     ],
   },
 
-  // 6. WIN - what counts as shipped.
+  // 7. LEVEL - where they are at (the old experience question; id kept).
   {
-    id: "win",
-    type: "chips",
-    eyebrow: "Done looks like",
-    prompt: "What would count as a win, a week from now?",
-    showIf: { answeredQuestionId: "tool" },
-    options: [
-      { id: "use-myself", label: "A working tool I use myself" },
-      { id: "someone-touched", label: "Something a friend or teammate actually used" },
-      { id: "show-it", label: "Something I can show and walk through" },
-      { id: "you-pick", label: "You pick for me" },
-    ],
-    factMappings: [
-      { fact_key: "first_ship_definition", fact_category: "objective", fact_label: "First ship definition" },
-    ],
-  },
-
-  // 7. STAKES (chartFeed:tags) - who uses it and what it touches.
-  {
-    id: "stakes",
-    type: "chips",
-    eyebrow: "Who it touches",
-    prompt: "Who will use it, and what does it touch?",
-    chartFeed: "tags",
-    showIf: { answeredQuestionId: "win" },
-    options: [
-      { id: "just-me", label: "Just me, nothing sensitive" },
-      { id: "team-internal", label: "My team or friends, internal stuff" },
-      { id: "customers", label: "Customers or their data" },
-    ],
-  },
-
-  // 8. EXPERIENCE - built anything with AI before.
-  {
-    id: "experience",
+    id: "level",
     type: "chips",
     eyebrow: "Where you're at",
-    prompt: "Built anything with AI before?",
-    helper: "Totally fine if not. This just sets the pace.",
-    showIf: { answeredQuestionId: "stakes" },
+    prompt: "Where are you at?",
+    helper: "Totally fine wherever. This just sets the pace.",
+    showIf: { answeredQuestionId: "tool" },
     options: [
-      { id: "never", label: "Never" },
-      { id: "few-prompts", label: "A few prompts" },
+      { id: "never", label: "Never built with AI" },
+      { id: "few-prompts", label: "A few prompts in" },
       { id: "shipped", label: "Shipped something" },
     ],
   },
 ];
 
 /* ------------------------------------------------------------------ */
-/* Artifacts: the six kept heroes                                       */
+/* Artifacts                                                            */
 /* ------------------------------------------------------------------ */
 
 const artifacts: KitPreset["artifacts"] = [
   /* ----- Spot + Spec ----- */
   {
-    id: "leverage-audit",
-    title: "Leverage audit",
+    id: "how-you-work",
+    title: "How your kit works with you",
     order: 1,
     contentType: "markdown",
     strategy: "llm_polish",
     part: "Spot + Spec",
-    description: "Read it once, accept or swap the recommended first build, then start there.",
+    description: "Read it once, then paste it alongside your build so any AI works your way.",
     buildPrompt: (ctx) => {
       const d = derive(ctx);
-      const score = resolveScore(ctx);
       return `${PROMPT_PREAMBLE}
 
 Student:
 ${profileBlock(ctx)}
 
-Deterministic scoring already placed their chosen workflow on the frequency x judgment 2x2: frequency ${score.frequency}, judgment ${score.judgment}, quadrant "${score.quadrant}".
+Write their working-style contract as a single markdown card titled "# How I like to work". It tells any AI how to work with this person and is the differentiator of the whole kit. It must:
+1. Open with one warm line in their second person ("you") that says this file makes any AI work their way.
+2. A "## Default behaviour" section: turn each of their preferences (${d.prefLabels.join("; ") || "small, checkable steps"}) into one plain instruction line the AI can follow. Do not invent preferences they did not pick.
+3. A "## Guardrails (from what has burned me before)" section: one line per guardrail (${d.guardLines.join("; ") || "ask before touching anything I did not point you at"}). Frame each as a calm rule, not a warning.
+4. A "## You have done this correctly when" section: 3 short self-check lines an AI can run on itself, drawn from the behaviour and guardrails above.
 
-Write their leverage audit as a single markdown card titled "# Your leverage audit". It must:
-1. Show their chosen workflow ("${d.workflow || "the one they picked"}") and one line on where it sits on the 2x2 and why. Use the scoring above; do not contradict it.
-2. Infer 3 to 5 more candidates from the other areas they picked (${areasFromIntake(ctx.intake).join(", ") || "their areas"}) and the context below. One line each, with the candidate's 2x2 position in brackets.
-3. Rank everything, best first build at the top: high frequency, low judgment, smallest scope wins.
-4. Recommend exactly ONE first build. Scope it down until it feels almost too small: one input, one output, one run. Say what version one does and what it deliberately does not.
-
-It is a card, not a worksheet: under 250 words, no questions back to the student, no tables, headings no deeper than ##.
+It is a card, not a worksheet: under 250 words, no questions back to the student, no tables, headings no deeper than ##. End with one line telling them to paste it alongside their build brief, or save it where ${d.toolLabel} keeps its instructions.
 
 ${VOICE_RULES}${contextBlock(ctx)}
 
 Return only the markdown.`;
     },
-    render: (ctx) => leverageAuditFallback(resolveScore(ctx), workflowFromIntake(ctx.intake)),
+    render: (ctx) => {
+      const d = derive(ctx);
+      return howYouWorkFallback({
+        prefLabels: d.prefLabels,
+        guardLines: d.guardLines,
+        toolLabel: d.toolLabel,
+      });
+    },
   },
 
   /* ----- Brief + Build ----- */
   {
-    id: "five-part-brief",
-    title: "Five-part brief",
+    id: "build-brief",
+    title: "Your build brief",
     order: 2,
     contentType: "markdown",
     strategy: "llm_polish",
@@ -385,18 +329,12 @@ Return only the markdown.`;
     description: "Fill the [FILL IN] gaps, then paste the whole brief into your first build session.",
     buildPrompt: (ctx) => {
       const d = derive(ctx);
-      const involvesLine =
-        d.involves.length > 0
-          ? `What it involves today: ${d.involves.join(", ")}.`
-          : "They did not detail the steps.";
       return `${PROMPT_PREAMBLE}
 
 Student:
 ${profileBlock(ctx)}
 
-${involvesLine}
-
-Write their five-part build brief in markdown using exactly this skeleton, headings verbatim:
+Write their build brief in markdown using exactly this skeleton, headings verbatim:
 
 # Build brief: ${d.buildName}
 
@@ -407,13 +345,14 @@ Write their five-part build brief in markdown using exactly this skeleton, headi
 ## 5. Acceptance
 
 Rules for filling it:
+- The build they described, in their words, is: "${d.build || "(they did not describe it)"}". Brief THIS build; do not invent a different one.
 - Pre-fill every line you can defend from the profile and context. Do not invent systems, names or numbers they have not given you.
 - Where only the student can know the answer, write a gap as [FILL IN: what goes here] followed by one line starting "Guidance:" that teaches what good looks like for that slot.
 - Goal is one sentence: who feels the difference, what changes, by when.
-- Context names where the information lives today and the manual steps as they happen. Use what they told you it involves: ${d.involves.join(", ") || "(not given)"}.
+- Context names where the information lives today and the manual steps as they happen. Weave in how they like to work: ${d.prefLabels.join("; ") || "small, checkable steps"}.
 - Format describes what the output literally looks like: sections, order, what goes where.
-- Constraints include the tool (${d.toolLabel}), the stakes tier rule (${d.tierLabel}: ${d.tierRule}), read-only against sources unless they said otherwise, and what it must never touch, send or change.
-- Acceptance is three checks anyone could run; tie one to their definition of shipped (${d.win}). If a check cannot fail, it is not a check.
+- Constraints include the tool (${d.toolLabel}), read-only against sources unless they said otherwise, the guardrails from their past pains (${d.guardLines.join("; ") || "ask before touching anything they did not point you at"}), and what it must never touch, send or change.
+- Acceptance is three checks anyone could run. If a check cannot fail, it is not a check.
 - The whole brief fits on one page. Open with one line telling them to fill the gaps, then paste it as the first message of their build session. Reassure them a normal AI chat is enough; no developer tool required.
 
 After the brief, append this divider and worked example exactly as given, character for character, changing nothing:
@@ -430,16 +369,14 @@ Return only the markdown.`;
     },
     render: (ctx) => {
       const d = derive(ctx);
-      const brief = fivePartBriefTemplate({
+      const brief = buildBriefTemplate({
         buildName: d.buildName,
-        workflow: d.workflow,
-        involves: d.involves,
+        build: d.build,
         role: d.role,
-        offering: d.offering,
+        name: d.name,
+        prefLabels: d.prefLabels,
+        guardLines: d.guardLines,
         toolLabel: d.toolLabel,
-        tierLabel: d.tierLabel,
-        tierRule: d.tierRule,
-        win: d.win,
       });
       return `${brief}\n\n---\n\n## Worked example\n\n${MERIDIAN_WORKED_EXAMPLE}`;
     },
@@ -454,18 +391,24 @@ Return only the markdown.`;
     description: "Download, install in your tool, run test prompt 1 tonight.",
     buildSeed: (ctx) => {
       const d = derive(ctx);
-      const workflow = d.workflow || "a recurring thing I do over and over";
-      const involvesLine =
-        d.involves.length > 0
-          ? `Here is what it involves: ${d.involves.map((s) => s.toLowerCase()).join("; ")}.`
-          : "";
-      const transcript = `I am a ${d.role.toLowerCase()}.${d.offering ? ` I am calling this build "${d.offering}".` : ""}
+      const build = d.build || "one real thing I would actually use";
+      const prefLine =
+        d.prefLabels.length > 0
+          ? `Here is how I like you to work with me: ${d.prefLabels.map((s) => s.toLowerCase()).join("; ")}.`
+          : "Work with me in small, checkable steps and keep me in the loop.";
+      const guardLine =
+        d.guardLines.length > 0
+          ? `Things have gone wrong before, so these guardrails are not optional: ${d.guardLines.map((s) => s.toLowerCase()).join("; ")}.`
+          : "Ask before touching anything I did not point you at.";
+      const transcript = `I am ${d.name ? `${d.name}, ` : ""}a ${d.role.toLowerCase()}.
 
-The repetitive thing I want a tool to take off my plate, in the area of ${d.area.toLowerCase() || "my work"}: ${workflow.toLowerCase()}. ${involvesLine}
+The one thing I want to build: ${build.toLowerCase()}.
 
-One week from now, shipped means ${d.win}. I will build it in ${d.toolLabel}.
+${prefLine}
 
-Who it touches: stakes tier ${d.tierLabel}. ${d.tierRule}
+${guardLine}
+
+I will build it in ${d.toolLabel}.
 
 My experience with AI builds: ${EXPERIENCE_LABELS[d.experience]}. Pitch the skill's instructions at that level, and assume I have no developer tools, just a normal AI chat.
 
@@ -473,7 +416,8 @@ Requirements for the generated skill (must follow exactly):
 - The skill body MUST include a section titled "Learning loop" that instructs the agent to do two things without being asked:
   1. On every run, append one dated log line to BUILD_LOG.md: what ran, what felt off, one rule to add.
   2. At the start of every session, read LESSONS.md and treat its rules as binding instructions.
-- Keep the skill scoped to the single workflow above. Do not generalise it into a do-everything assistant.`;
+- The skill MUST honour the working preferences and guardrails above as standing instructions.
+- Keep the skill scoped to the single build above. Do not generalise it into a do-everything assistant.`;
       return { transcript, nameHint: d.buildName };
     },
   },
@@ -489,15 +433,15 @@ Requirements for the generated skill (must follow exactly):
     description: "Run the checklist before you call it shipped; paste the verifier after any \"done\".",
     buildPrompt: (ctx) => {
       const d = derive(ctx);
-      const draft = acceptancePackFallback({ workflow: d.workflow, win: d.win });
+      const draft = acceptancePackFallback({ buildName: d.buildName, build: d.build });
       return `${PROMPT_PREAMBLE}
 
 Student:
 ${profileBlock(ctx)}
 
 Below is the deterministic draft of their acceptance pack: a runnable shipped checklist plus the false green verifier, a prompt that makes their AI prove outputs against real results (the text it wrote, the file it made, the thing it produced), never its own claims. Improve it:
-- Rewrite the checklist so each item is specific to their build and chosen workflow ("${d.workflow || "their workflow"}"): the real place the output lands, the real thing to check against. Keep it to 5 to 7 checkboxes, each one able to fail.
-- Keep the false green verifier's four-step structure intact, but make step 3's re-run instruction specific to their workflow.
+- Rewrite the checklist so each item is specific to their build ("${d.build || "their build"}"): the real place the output lands, the real thing to check against. Keep it to 5 to 7 checkboxes, each one able to fail.
+- Keep the false green verifier's four-step structure intact, but make step 3's re-run instruction specific to their build.
 - Keep both section headings exactly as they are. Keep the verifier inside its fenced text block.
 
 ${draft}
@@ -508,7 +452,7 @@ Return only the markdown.`;
     },
     render: (ctx) => {
       const d = derive(ctx);
-      return acceptancePackFallback({ workflow: d.workflow, win: d.win });
+      return acceptancePackFallback({ buildName: d.buildName, build: d.build });
     },
   },
   {
@@ -535,22 +479,23 @@ Rules:
 - Exactly 7 entries, day 1 through day 7.
 - "minutes" is an integer, 30 or less, honest for the action described.
 - Day 1 is always: install ${skill} in ${d.toolLabel} and run test prompt 1.
-- Day 7 is always: ship it scrappy. Their definition of shipped is "${d.win}"; scrappy counts.
+- Day 7 is always: ship it scrappy. A working version of "${d.build || "their build"}" they use once counts.
 - Days 2 to 6 walk from brief to build to verify, calibrated to their experience (${EXPERIENCE_LABELS[d.experience]}). Never built means smaller steps and more checking; shipped before means compress the early days and spend more on verify.
-- "title" is 6 words or fewer. "action" is one or two sentences, imperative, and names the exact kit artifact to use that day (five-part brief, acceptance pack, leverage audit).
+- "title" is 6 words or fewer. "action" is one or two sentences, imperative, and names the exact kit artifact to use that day (build brief, acceptance pack, how I like to work).
 - Plain language, sentence case, no buzzwords, no em dashes.`;
     },
     render: (ctx) => {
       const d = derive(ctx);
       const skill = ctx.firstSkillName || "your first skill";
+      const build = d.build || "your build";
       const days = [
         { day: 1, title: "Install and run", action: `Install ${skill} in ${d.toolLabel} and run test prompt 1.`, minutes: 15 },
-        { day: 2, title: "Read the audit", action: "Read your leverage audit and lock in the one build it recommends. Do not widen the scope.", minutes: 15 },
-        { day: 3, title: "Write the brief", action: "Fill every [FILL IN] gap in your five-part brief.", minutes: 25 },
+        { day: 2, title: "Set how it works", action: "Paste your how I like to work file so any AI works your way. Keep it open.", minutes: 15 },
+        { day: 3, title: "Write the brief", action: "Fill every [FILL IN] gap in your build brief.", minutes: 25 },
         { day: 4, title: "Sharpen the brief", action: "Read the brief back as a stranger. Tighten the goal and the acceptance checks until each one could fail.", minutes: 20 },
         { day: 5, title: "Build version one", action: "Open a fresh session, paste your brief, and build the happy path only. Nothing extra.", minutes: 30 },
         { day: 6, title: "Verify it honestly", action: "Run the acceptance pack checklist, then paste the false green verifier after your tool says done.", minutes: 25 },
-        { day: 7, title: "Ship it scrappy", action: `Put it in front of its first user: you. Shipped means ${d.win}. Then log it in CTRL.`, minutes: 30 },
+        { day: 7, title: "Ship it scrappy", action: `Put ${build} in front of its first user: you. Used once counts. Then log it in CTRL.`, minutes: 30 },
       ];
       return JSON.stringify({ days }, null, 2);
     },
@@ -570,9 +515,9 @@ Rules:
           stage: stageFromExperience(d.experience),
           firstBuild: d.buildName,
           tool: d.toolLabel,
-          tier: d.tierLabel,
-          touches: stakesTouchesFromIntake(ctx.intake),
-          path: "Day 1 install your skill and run it; days 2 to 6 read the audit, write the brief, build and verify; day 7 ship it scrappy.",
+          worksWithYou: d.prefLabels,
+          guardrails: d.guardLines,
+          path: "Day 1 install your skill and run it; days 2 to 6 set how it works, write the brief, build and verify; day 7 ship it scrappy.",
         },
         null,
         2,
@@ -612,7 +557,7 @@ const emails: KitPreset["emails"] = {
         heading: "Your Vibe Coding Field Kit",
         kitUrl: ctx.kitUrl,
         buttonLabel: "Open your kit",
-        bodyHtml: `<p style="margin:0 0 16px 0;">Your kit lives at the button below. Inside: six things that take the repetitive workflow you picked from idea to shipped in seven days.</p>
+        bodyHtml: `<p style="margin:0 0 16px 0;">Your kit lives at the button below. Inside: your build briefed so any AI can ship it with you, set up to work the way you work, and a seven-day path to get it shipped.</p>
 <p style="margin:0 0 16px 0;">Do day 1 tonight: install your skill and run test prompt 1. Ten minutes, and the kit stops being a bookmark. A normal AI chat is all you need.</p>`,
       }),
   },
@@ -620,15 +565,15 @@ const emails: KitPreset["emails"] = {
     subject: () => "Day 3. Did your skill run yet?",
     html: (ctx: KitEmailContext) => {
       const skillName = ctx.skillName || "your first skill";
-      const toolLabel = ctx.toolLabel || "your tool";
+      const toolLabel = ctx.toolLabel || "your AI";
       const testPrompt =
         ctx.testPrompt || "test prompt 1 from the test prompts file in your skill ZIP";
       return emailShell({
         heading: "Day 3. Did your skill run yet?",
         kitUrl: ctx.kitUrl,
         buttonLabel: "Open the 7-day plan",
-        bodyHtml: `<p style="margin:0 0 16px 0;">You picked your first build in the kit. If your skill has not run yet, it is a file, not a tool.</p>
-<p style="margin:0 0 16px 0;">Two minutes, right now: open ${toolLabel}, load the skill, and run this:</p>
+        bodyHtml: `<p style="margin:0 0 16px 0;">You named the one thing you want to build. If your skill has not run yet, it is a file, not a tool.</p>
+<p style="margin:0 0 16px 0;">Two minutes, right now: open ${toolLabel}, load ${skillName}, and run this:</p>
 <p style="margin:0 0 16px 0;padding:12px 16px;background-color:#e7e5e4;border-radius:6px;font-family:Consolas,Menlo,monospace;font-size:14px;">${testPrompt}</p>
 <p style="margin:0 0 16px 0;">If it breaks, reply and tell me what happened. I read every reply.</p>`,
       });
@@ -654,25 +599,20 @@ const emails: KitPreset["emails"] = {
 
 export const vibeCodingPreset: KitPreset = {
   slug: "vibe-coding",
-  version: "2.0.0",
+  version: "3.0.0",
   title: "Vibe Coding Field Kit",
   classTitle: "Vibe Coding Lightning Lesson",
-  tagline: "One workflow, one week, one shipped build.",
+  tagline: "Make any AI work your way on one real build.",
   mavenUrl: "https://maven.com/mindmaker",
   codePrefixes: ["VIBE"],
   passDays: 30,
   skillQuota: 3,
   previewKind: "picks",
-  optionMatrices: { workflow: WORKFLOW_MATRIX },
-  agentRoles: Object.fromEntries(
-    Object.entries(AGENT_PICKS_STUB).map(([k, v]) => [k, { agentRole: v.pick, agentDesc: v.desc }]),
-  ),
   intake,
   artifacts,
   contextPullPrompt: (tool: KitTool, ctx?: Partial<ArtifactBuildContext>): string => {
-    const workflow = ctx?.intake ? workflowFromIntake(ctx.intake as IntakeAnswers) : "";
-    return contextPullPrompt(tool, workflow || undefined);
+    const build = ctx?.intake ? buildFromIntake(ctx.intake as IntakeAnswers) : "";
+    return contextPullPrompt(tool, build || undefined);
   },
-  score: (intakeAnswers: IntakeAnswers) => scoreVibeCoding(intakeAnswers),
   emails,
 };

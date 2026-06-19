@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   ArrowRight,
-  BookOpen,
-  CheckCircle2,
-  Download,
   Loader2,
   Mail,
   QrCode,
@@ -17,19 +14,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { KitPortalLayout } from "@/components/kit/KitPortalLayout";
-import { ArtifactProgressList } from "@/components/kit/ArtifactProgressList";
-import { HomeworkCard } from "@/components/kit/HomeworkCard";
-import { PersonalMapCard } from "@/components/kit/PersonalMapCard";
-import { SendPackCard } from "@/components/kit/SendPackCard";
-import { SevenDayPlan } from "@/components/kit/SevenDayPlan";
-import { ShipSection } from "@/components/kit/ShipSection";
-import { ArtifactCard } from "@/components/kit/ArtifactCard";
-import { OrgChartView } from "@/components/kit/OrgChartView";
 import { CapsuleCard } from "@/components/kit/CapsuleCard";
 import { EdgeProCard } from "@/components/kit/EdgeProCard";
 import { RegenerateSheet } from "@/components/kit/RegenerateSheet";
-import { KitVoiceProfileCard } from "@/components/kit/KitVoiceProfileCard";
-import { SkillInstallGuide } from "@/components/edge/SkillInstallGuide";
+import { KitBuildTrace } from "@/components/kit/KitBuildTrace";
+import { KitRevealWizard } from "@/components/kit/KitRevealWizard";
+import { filesFromArtifacts } from "@/components/kit/KitWhatsInside";
+import { KIT_SCOPE_VARS } from "@/components/kit/kitPrimitives";
 import { useAuth } from "@/hooks/useAuth";
 import { useKitRedemption } from "@/hooks/useKitRedemption";
 import { useKitBuild, fetchKitBuild, fetchLatestKitBuild } from "@/hooks/useKitBuild";
@@ -39,7 +30,6 @@ import {
   KIT_BUILD_KEY,
   formatPassDate,
   invokeKit,
-  isPackSent,
   isTerminalBuildStatus,
   parseKitMap,
   parseKitPlan,
@@ -48,8 +38,7 @@ import {
   skillMetaFromArtifact,
 } from "@/lib/kit";
 import type { KitArtifactRow, KitJourneyEventRow } from "@/lib/kit";
-import { toolFromIntake } from "@/content/kits";
-import type { ArtifactSpec } from "@/content/kits";
+import { KIT_TOOL_LABELS, toolFromIntake } from "@/content/kits";
 
 // Kit tables are newer than the committed generated types; row interfaces in
 // lib/kit.ts enforce the shapes (same pattern as useGoals / useDecisionEngine).
@@ -97,12 +86,15 @@ export default function KitHome() {
   } = useKitArtifacts(redemption?.id ?? null);
 
   const [journey, setJourney] = useState<JourneyState>({ checkedDays: {}, shippedAt: null });
-  const [emailCaptured, setEmailCaptured] = useState(false);
-  const [showSendPack, setShowSendPack] = useState<boolean | null>(null);
   const [edgeProForced, setEdgeProForced] = useState(false);
   const [edgeProDismissed, setEdgeProDismissed] = useState(false);
   const [regenOpen, setRegenOpen] = useState(false);
   const [regenPrefill, setRegenPrefill] = useState<string[] | null>(null);
+  // The build trace plays once per build before the reveal (spec 2.6). It is
+  // still "running" until KitBuildTrace fires onComplete, even when the build is
+  // already terminal, so a fast build still shows the work resolving.
+  const [traceDone, setTraceDone] = useState(false);
+  const onTraceComplete = useCallback(() => setTraceDone(true), []);
 
   const prevBuildStatus = useRef<string | null>(null);
   const hint = useMemo(readKitHint, []);
@@ -213,14 +205,6 @@ export default function KitHome() {
     };
   }, [redemption]);
 
-  // Email-captured state and whether the capture card shows at all this visit.
-  useEffect(() => {
-    if (!redemption) return;
-    const alreadyCaptured = isPackSent() || !!redemption.delivery_email;
-    if (alreadyCaptured) setEmailCaptured(true);
-    setShowSendPack((prev) => (prev === null ? !alreadyCaptured : prev));
-  }, [redemption]);
-
   /* ------------------------------------------------------------ */
   /* Actions                                                        */
   /* ------------------------------------------------------------ */
@@ -231,8 +215,21 @@ export default function KitHome() {
       // Best-effort cache.
     }
     prevBuildStatus.current = null;
+    setTraceDone(false);
     setBuildId(id);
   }, []);
+
+  // "Download PDF" opens the print-styled hero route in a new tab so the user
+  // keeps their place in the wizard; the route self-resolves the current
+  // redemption + build + artifacts.
+  const openPdf = useCallback(() => {
+    if (!redemption) return;
+    emitKitEvent("kit_artifact_downloaded", {
+      class_slug: redemption.class_slug,
+      redemption_id: redemption.id,
+    });
+    window.open(`/kit/pdf/${redemption.id}`, "_blank", "noopener");
+  }, [redemption]);
 
   const toggleDay = useCallback(
     async (day: number, next: boolean) => {
@@ -374,6 +371,7 @@ export default function KitHome() {
   const composing = build.status === "queued" || build.status === "running";
   const failedEntirely = build.status === "failed";
   const tool = toolFromIntake(preset, build.intake ?? {});
+  const toolName = tool === "none" ? "your AI" : KIT_TOOL_LABELS[tool];
 
   const firstSkillArtifact = byArtifactId["first-skill"];
   const skillMeta = skillMetaFromArtifact(firstSkillArtifact);
@@ -381,210 +379,184 @@ export default function KitHome() {
   const kitMap = mapArtifact ? parseKitMap(mapArtifact.body) : null;
   const orgChartArtifact = byArtifactId["agentic-org-chart"];
   const orgChart = orgChartArtifact ? parseOrgChart(orgChartArtifact.body) : null;
-  const expectsSkill = preset.artifacts.some((spec) => spec.id === "first-skill");
   const planArtifact = byArtifactId["seven-day-plan"];
   const planDays = planArtifact ? parseKitPlan(planArtifact.body) : null;
   const testPrompt = skillMeta?.test_prompts?.[0] ?? null;
 
   const showEdgePro = (edgeProForced || isExpired) && !edgeProDismissed;
 
+  // The trace plays once even when the build is already terminal: while it is
+  // still running we show the trace screen, then hand to the reveal.
+  const traceRunning = !composing && !failedEntirely && !traceDone;
+
+  // The hero title + subtitle: vibe leads with the built skill; the other kits
+  // lead with their own title. Generic + guarded so no kit crashes.
+  const heroTitle = skillMeta?.name ?? preset.title;
+  const heroSubtitle = skillMeta?.description ?? preset.tagline;
+  const passFooter = isExpired
+    ? `Your pass ended ${formatPassDate(redemption.expires_at)}.`
+    : `Pass active until ${formatPassDate(redemption.expires_at)}.`;
+
+  // The two-button file list (Part 3): the hero PDF (download) plus the training
+  // files (download/copy). Built from the REAL artifacts so it is correct for
+  // every kit; the text never renders inline as a wall.
+  const files = filesFromArtifacts(artifacts, {
+    pdfName:
+      preset.slug === "vibe-coding"
+        ? "your-vibe-coding-kit.pdf"
+        : `${preset.slug}-kit.pdf`,
+    onDownloadPdf: openPdf,
+    onDownloadArtifact: downloadArtifact,
+    onCopyArtifact: copy,
+  });
+
   return (
     <KitPortalLayout classTitle={preset.title} passEndsAt={redemption.expires_at}>
-      <AnimatePresence mode="wait">
-        {composing ? (
-          <motion.div
-            key="composing"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="space-y-6"
-          >
-            <ArtifactProgressList preset={preset} build={build} />
-            <HomeworkCard preset={preset} intake={build.intake ?? {}} />
-          </motion.div>
-        ) : failedEntirely ? (
-          <motion.div
-            key="failed"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-          >
-            <BuildSafetyNet
-              redemptionId={redemption.id}
-              classSlug={redemption.class_slug}
-              onRetry={() => void quickRegenerate()}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="ready"
-            initial={{ opacity: 0, y: 16, scale: 0.985 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: "spring", stiffness: 180, damping: 22 }}
-            className="space-y-6"
-          >
-            {/* 0. The reveal */}
+      <div className="kit-portal" style={KIT_SCOPE_VARS}>
+        <AnimatePresence mode="wait">
+          {composing ? (
             <motion.div
-              data-testid="kit-reveal"
-              initial={{ opacity: 0, y: 12 }}
+              key="composing"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="space-y-4 text-center"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="grid grid-cols-1 items-start gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:gap-8"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.15 }}
-                className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent/10"
-              >
-                <CheckCircle2 className="h-8 w-8 text-accent" />
-              </motion.div>
-              <p className="kit-eyebrow">Built from what you said in class</p>
-              <h1 className="kit-headline text-3xl sm:text-[2.35rem]">
-                {skillMeta?.name ?? preset.title}
-              </h1>
-              <p className="mx-auto max-w-md text-muted-foreground">
-                {skillMeta?.description ?? preset.tagline}
-              </p>
-              {firstSkillArtifact?.zip_base64 && (
-                <Button
-                  size="xl"
-                  className="w-full"
-                  onClick={() => {
-                    void downloadArtifact(firstSkillArtifact).then((ok) => {
-                      if (!ok) toast.error("The download did not start. Try again.");
-                    });
+              {/* Desktop: the trace goes cinematic in the right pane while the
+                  left holds a quiet "assembling" summary. On mobile, single
+                  column (the trace alone). */}
+              <div className="min-w-0">
+                <KitBuildTrace build={build} onComplete={onTraceComplete} />
+              </div>
+              <aside className="order-first hidden md:order-last md:block">
+                <div
+                  className="rounded-2xl border p-5"
+                  style={{
+                    background: "linear-gradient(180deg,#FBFDFB,#F4F7F3)",
+                    borderColor: "var(--kit-line)",
+                    boxShadow: "0 1px 2px rgba(16,28,30,.05)",
                   }}
                 >
-                  <Download className="mr-2 h-5 w-5" />
-                  Download your skill (ZIP)
-                </Button>
-              )}
-              {!firstSkillArtifact && expectsSkill && (
-                <p className="text-sm text-muted-foreground">
-                  Your first skill needs another pass.{" "}
-                  <button
-                    type="button"
-                    onClick={() => openTune("first-skill")}
-                    className="font-medium text-accent underline-offset-4 hover:underline"
+                  <div
+                    className="mb-2 text-[15px] font-extrabold"
+                    style={{ color: "var(--kit-ink)" }}
                   >
-                    Tune and rebuild it
-                  </button>
-                  .
-                </p>
-              )}
+                    Assembling your kit
+                  </div>
+                  <p className="text-[13.5px] leading-relaxed" style={{ color: "var(--kit-mut)" }}>
+                    Your kit is coming together from what you told us. The files land here the moment
+                    it is ready, each one ready to copy straight into {toolName}.
+                  </p>
+                </div>
+              </aside>
             </motion.div>
-
-            {skillMeta && (
-              <SkillInstallGuide skillName={skillMeta.name} preferredTool={tool} />
-            )}
-
-            <KitVoiceProfileCard
-              pitch={
-                preset?.slug === "orgchart"
-                  ? "The agents you stand up from your chart will write in your voice, not generic AI."
-                  : preset?.slug === "memory-identity"
-                    ? "Your CTRL memory and the skills you build will speak in your voice."
-                    : preset?.slug === "vibe-coding"
-                      ? "The skills you ship from CTRL will read in your voice."
-                      : preset?.slug === "autonomous-business"
-                        ? "The automations you build in CTRL will sound like you, not a robot."
-                        : undefined
-              }
-            />
-
-            {/* 0. The hero: the agentic org chart */}
-            {orgChart && <OrgChartView chart={orgChart} />}
-
-            {/* 1. The capstone map */}
-            {kitMap && <PersonalMapCard map={kitMap} />}
-
-            {/* 2. Email capture at the moment of value */}
-            {showSendPack && (
-              <SendPackCard
+          ) : failedEntirely ? (
+            <motion.div
+              key="failed"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+            >
+              <BuildSafetyNet
+                redemptionId={redemption.id}
+                classSlug={redemption.class_slug}
+                onRetry={() => void quickRegenerate()}
+              />
+            </motion.div>
+          ) : traceRunning ? (
+            // The build is terminal but we still play the trace once, so the
+            // person sees the work resolve before the reveal (spec 2.6).
+            <motion.div
+              key="trace"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="grid grid-cols-1 items-start gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:gap-8"
+            >
+              <div className="min-w-0">
+                <KitBuildTrace build={build} onComplete={onTraceComplete} />
+              </div>
+              <aside className="order-first hidden md:order-last md:block">
+                <div
+                  className="rounded-2xl border p-5"
+                  style={{
+                    background: "linear-gradient(180deg,#FBFDFB,#F4F7F3)",
+                    borderColor: "var(--kit-line)",
+                    boxShadow: "0 1px 2px rgba(16,28,30,.05)",
+                  }}
+                >
+                  <div className="mb-2 text-[15px] font-extrabold" style={{ color: "var(--kit-ink)" }}>
+                    Assembling your kit
+                  </div>
+                  <p className="text-[13.5px] leading-relaxed" style={{ color: "var(--kit-mut)" }}>
+                    Almost there. Your files are about to land.
+                  </p>
+                </div>
+              </aside>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="ready"
+              initial={{ opacity: 0, y: 16, scale: 0.985 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 180, damping: 22 }}
+            >
+              <KitRevealWizard
+                preset={preset}
                 redemption={redemption}
                 tool={tool}
-                onSent={() => setEmailCaptured(true)}
-              />
-            )}
-
-            {/* 3. The seven-day plan */}
-            {planDays && (
-              <SevenDayPlan
-                days={planDays}
-                checkedDays={journey.checkedDays}
-                onToggle={(day, next) => void toggleDay(day, next)}
+                toolName={toolName}
+                heroTitle={heroTitle}
+                heroSubtitle={heroSubtitle}
+                orgChart={orgChart}
+                kitMap={kitMap}
+                planDays={planDays}
                 testPrompt={testPrompt}
+                files={files}
+                buildsRemaining={buildsRemaining}
+                journey={journey}
+                onOpenPdf={openPdf}
+                onToggleDay={(day, next) => void toggleDay(day, next)}
+                onLogShip={logShip}
+                onNewSkillStarted={startBuild}
+                onQuotaExhausted={() => {
+                  setEdgeProForced(true);
+                  setEdgeProDismissed(false);
+                }}
+                onEmailSent={() => {
+                  /* The keep-it screen shows its own confirmation; nothing to
+                     gate post-build now that the bridge card is retired. */
+                }}
+                onTune={() => openTune()}
+                passFooter={passFooter}
+                edgeProSlot={
+                  showEdgePro ? (
+                    <EdgeProCard onDismiss={() => setEdgeProDismissed(true)} />
+                  ) : undefined
+                }
               />
-            )}
 
-            {/* 4. The standing shipped affordance */}
-            <ShipSection
-              redemption={redemption}
-              shippedAt={journey.shippedAt}
-              buildsRemaining={buildsRemaining}
-              onLogShip={logShip}
-              onNewSkillStarted={startBuild}
-              onQuotaExhausted={() => {
-                setEdgeProForced(true);
-                setEdgeProDismissed(false);
-              }}
-            />
-
-            {showEdgePro && <EdgeProCard onDismiss={() => setEdgeProDismissed(true)} />}
-
-            {/* 5. The full kit, grouped the way the class taught it */}
-            <ArtifactGroups
-              preset={preset}
-              build={build}
-              byArtifactId={byArtifactId}
-              artifacts={artifacts}
-              tool={tool}
-              onCopy={copy}
-              onDownload={downloadArtifact}
-              onTune={openTune}
-            />
-
-            {/* 6. Context capsule */}
-            <CapsuleCard redemption={redemption} onRegenerate={() => void quickRegenerate()} />
-
-            {/* 7. The bridge to CTRL */}
-            {emailCaptured && <BridgeCard />}
-
-            {/* Class reading, when the preset ships any */}
-            {(preset.reading?.length ?? 0) > 0 && (
-              <div className="space-y-2 rounded-2xl border border-border bg-card p-5">
-                <h3 className="flex items-center gap-2 text-sm font-semibold">
-                  <BookOpen className="h-4 w-4 text-accent" />
-                  Class reading
-                </h3>
-                <ul className="space-y-1">
-                  {preset.reading?.map((page) => (
-                    <li key={page.id}>
-                      <Link
-                        to={`/kit/reading/${page.id}`}
-                        className="text-sm text-foreground/80 underline-offset-4 transition-colors hover:text-foreground hover:underline"
-                      >
-                        {page.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* 8. Pass footer */}
-            <p className="pt-2 text-center text-xs text-muted-foreground">
-              {isExpired
-                ? `Your pass ended ${formatPassDate(redemption.expires_at)}.`
-                : `Pass active until ${formatPassDate(redemption.expires_at)}.`}{" "}
-              Your kit stays viewable and downloadable forever.
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {/* The context capsule "sharpen" stays available as a QUIET escape
+                  hatch (spec: Tune is not a primary action), tucked below the
+                  wizard, not competing as a card up top. */}
+              <details className="mt-6 rounded-2xl border" style={{ borderColor: "var(--kit-line)" }}>
+                <summary
+                  className="cursor-pointer list-none px-5 py-3.5 text-[13px] font-semibold"
+                  style={{ color: "var(--kit-mut)" }}
+                >
+                  Sharpen your kit with what your AI knows about you
+                </summary>
+                <div className="px-2 pb-2">
+                  <CapsuleCard redemption={redemption} onRegenerate={() => void quickRegenerate()} />
+                </div>
+              </details>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <RegenerateSheet
         open={regenOpen}
@@ -599,122 +571,6 @@ export default function KitHome() {
         }}
       />
     </KitPortalLayout>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Pieces local to this page                                           */
-/* ------------------------------------------------------------------ */
-
-/**
- * Artifact cards grouped under their preset `part` headings, in manifest
- * order. Static artifacts render client-side from the preset; extra skills
- * built on the pass get their own group at the end.
- */
-function ArtifactGroups({
-  preset,
-  build,
-  byArtifactId,
-  artifacts,
-  tool,
-  onCopy,
-  onDownload,
-  onTune,
-}: {
-  preset: NonNullable<ReturnType<typeof useKitRedemption>["preset"]>;
-  build: NonNullable<ReturnType<typeof useKitBuild>["build"]>;
-  byArtifactId: Record<string, KitArtifactRow>;
-  artifacts: KitArtifactRow[];
-  tool: ReturnType<typeof toolFromIntake>;
-  onCopy: (artifact: KitArtifactRow) => Promise<boolean>;
-  onDownload: (artifact: KitArtifactRow) => Promise<boolean>;
-  onTune: (artifactId: string) => void;
-}) {
-  const groups = useMemo(() => {
-    const specs = preset.artifacts
-      .filter((spec) => !FEATURED_ARTIFACT_IDS.has(spec.id))
-      .sort((a, b) => a.order - b.order);
-    const ordered: { part: string; specs: ArtifactSpec[] }[] = [];
-    for (const spec of specs) {
-      const part = spec.part ?? "Your kit";
-      const existing = ordered.find((g) => g.part === part);
-      if (existing) existing.specs.push(spec);
-      else ordered.push({ part, specs: [spec] });
-    }
-    return ordered;
-  }, [preset]);
-
-  const presetIds = useMemo(
-    () => new Set(preset.artifacts.map((spec) => spec.id)),
-    [preset],
-  );
-  const extraSkills = artifacts.filter(
-    (artifact) => !presetIds.has(artifact.artifact_id) && artifact.content_type === "zip",
-  );
-
-  const staticCtx = useMemo(
-    () => ({ intake: build.intake ?? {}, tool, memoryContext: "" }),
-    [build, tool],
-  );
-
-  return (
-    <div className="space-y-6">
-      {groups.map((group) => (
-        <section key={group.part} className="space-y-3">
-          <h3 className="kit-label text-[11px] text-[color:var(--kit-mut)]">
-            {group.part}
-          </h3>
-          {group.specs.map((spec) => {
-            let staticBody: string | null = null;
-            if (spec.strategy === "static" && spec.render) {
-              try {
-                staticBody = spec.render(staticCtx);
-              } catch {
-                staticBody = null;
-              }
-            }
-            return (
-              <ArtifactCard
-                key={spec.id}
-                spec={spec}
-                artifact={byArtifactId[spec.id]}
-                buildStatus={build.artifact_statuses?.[spec.id]}
-                staticBody={staticBody}
-                onCopy={onCopy}
-                onDownload={onDownload}
-                onTune={onTune}
-              />
-            );
-          })}
-        </section>
-      ))}
-
-      {extraSkills.length > 0 && (
-        <section className="space-y-3">
-          <h3 className="kit-label text-[11px] text-[color:var(--kit-mut)]">
-            Built on your pass
-          </h3>
-          {extraSkills.map((artifact) => (
-            <ArtifactCard
-              key={artifact.id}
-              spec={{
-                id: artifact.artifact_id,
-                title: skillMetaFromArtifact(artifact)?.name ?? artifact.title,
-                description:
-                  skillMetaFromArtifact(artifact)?.description ??
-                  "A net-new skill built on your pass.",
-                contentType: "zip",
-                strategy: "skill_pipeline",
-              }}
-              artifact={artifact}
-              buildStatus={undefined}
-              onCopy={onCopy}
-              onDownload={onDownload}
-            />
-          ))}
-        </section>
-      )}
-    </div>
   );
 }
 
@@ -798,56 +654,3 @@ function BuildSafetyNet({
   );
 }
 
-/** After the email lands: show how much CTRL already knows and bridge over. */
-function BridgeCard() {
-  const navigate = useNavigate();
-  const { userId } = useAuth();
-  const [count, setCount] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!userId) return;
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const { count: rows } = await db
-          .from("user_memory")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .eq("is_current", true);
-        if (!cancelled) setCount(rows ?? 0);
-      } catch {
-        if (!cancelled) setCount(0);
-      }
-    };
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  if (!count) return null;
-
-  return (
-    <div className="space-y-3 rounded-2xl border border-border bg-card p-5">
-      <h3 className="text-sm font-semibold">
-        CTRL already knows {count} thing{count === 1 ? "" : "s"} about you
-      </h3>
-      <p className="text-sm text-muted-foreground">
-        Your Memory Web, voice profile, and skill builder are waiting in CTRL, free. The daily
-        briefing and Edge artifacts come with Edge Pro.
-      </p>
-      <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/dashboard")}>
-        Open CTRL (free)
-        <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-full text-muted-foreground"
-        onClick={() => navigate("/context")}
-      >
-        Build a skill from your kit
-      </Button>
-    </div>
-  );
-}

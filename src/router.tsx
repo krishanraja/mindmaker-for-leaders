@@ -39,6 +39,7 @@ const KitRedeem = lazyWithRetry(() => import('@/pages/kit/KitRedeem'))
 const KitHome = lazyWithRetry(() => import('@/pages/kit/KitHome'))
 const KitIntake = lazyWithRetry(() => import('@/pages/kit/KitIntake'))
 const KitReading = lazyWithRetry(() => import('@/pages/kit/KitReading'))
+const KitPdf = lazyWithRetry(() => import('@/pages/kit/KitPdf'))
 const BriefingPage = lazyWithRetry(() => import('@/pages/BriefingPage'))
 const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
 const Goals = lazyWithRetry(() => import('@/pages/Goals'))
@@ -115,6 +116,16 @@ export const router = createBrowserRouter([
   {
     path: '/kit/reading/:pageId',
     element: <LazyWrapper><KitReading /></LazyWrapper>,
+  },
+  {
+    // The hero PDF (print-styled). Unlinked; opened by the reveal's "Download
+    // PDF". Self-resolves the current redemption when no id is given.
+    path: '/kit/pdf',
+    element: <LazyWrapper><KitPdf /></LazyWrapper>,
+  },
+  {
+    path: '/kit/pdf/:redemptionId',
+    element: <LazyWrapper><KitPdf /></LazyWrapper>,
   },
 
   // Authenticated routes (share a persistent chrome: GlobalFAB + SettingsSheet)
