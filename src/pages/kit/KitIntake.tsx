@@ -63,15 +63,20 @@ import {
   PAIN_REFLECT,
   PREF_LABEL,
 } from "../../../supabase/functions/_shared/kit-presets/vibe-coding/templates.ts";
-// The Org Chart guardrails step gets its own warm reflect-back (the humanity
-// moment acknowledging what the student will never hand to an agent). Single
-// source with the orgchart preset so the copy never drifts. The guardrail ids
-// are disjoint from the pain ids, so the two maps merge cleanly into one
-// generic reflect lookup.
+// Each kit's vulnerable step gets a warm reflect-back (the humanity moment):
+// Vibe Coding's pains, the Org Chart guardrails, and Memory & Identity's
+// never-store privacy line. Each map is single-sourced in its own preset so the
+// copy never drifts from what the kit installs. The option ids are disjoint
+// across presets, so the maps merge cleanly into one generic reflect lookup.
 import { GUARDRAIL_REFLECT } from "../../../supabase/functions/_shared/kit-presets/orgchart/templates.ts";
+import { NEVER_STORE_REFLECT } from "../../../supabase/functions/_shared/kit-presets/memory-identity/templates.ts";
 
-/** The reflect-back lines across kits, keyed by option id (pains + guardrails). */
-const REFLECT_LINES: Record<string, string> = { ...PAIN_REFLECT, ...GUARDRAIL_REFLECT };
+/** The reflect-back lines across kits, keyed by option id. */
+const REFLECT_LINES: Record<string, string> = {
+  ...PAIN_REFLECT,
+  ...GUARDRAIL_REFLECT,
+  ...NEVER_STORE_REFLECT,
+};
 
 const MIN_TEXT_LENGTH = 10;
 const ADVANCE_BEAT_MS = 350;

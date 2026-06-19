@@ -36,8 +36,20 @@ export interface JobInput {
   job: string;
   /** The tasks that job actually covers (adaptive matrix off the job). */
   tasks: string[];
+  /**
+   * How they write, in their own words (the voice intake step). This is the
+   * fact that makes the AI sound like them; it grounds my-voice.md and the tone
+   * line in the job file. May be empty (they can fill the deeper voice profile
+   * after the build instead).
+   */
+  voice: string;
   /** What the operator must never store (the honesty guardrail, tags). */
   neverStore: string[];
+}
+
+/** A clean, single-line read of what they typed about their voice, or empty. */
+function voiceLine(input: JobInput): string {
+  return input.voice.trim().replace(/\s+/g, " ");
 }
 
 /** A safe role label for prose: the picked role, else a neutral stand-in. */
@@ -96,13 +108,14 @@ export function jobFileBuildPrompt(input: JobInput): string {
   const role = roleLabel(input);
   const tasks = input.tasks.map((t) => t.trim()).filter(Boolean);
   const never = input.neverStore.map((n) => n.trim()).filter(Boolean);
+  const said = voiceLine(input);
 
   const lines: string[] = [
     "# Turn my history into a working operator for one job.",
     "",
-    `Step 1. The job to run for me is: ${job}${
+    `Step 1. Narrow your field of view. In this kind of session you are not my everything; you are one thing: ${job}${
       input.role.trim() ? ` (my role: ${role})` : ""
-    }. This is one operator, not my whole job. If it is still too broad to be one operator, tell me how you would split it and let me pick.`,
+    }. This is one operator with one job, not my whole work. If it is still too broad to be one operator, tell me how you would split it and let me pick.`,
   ];
 
   if (tasks.length > 0) {
@@ -131,10 +144,22 @@ export function jobFileBuildPrompt(input: JobInput): string {
     "If an answer is vague, do not bounce it back. Offer a sharper version from what you already know and let me confirm.",
   );
 
+  if (said) {
+    lines.push(
+      "",
+      `Step 5. Match my voice. This is how I described how I write: "${said}". Hold to it in everything this operator produces for me. My voice does not change when the job does, so carry this same tone into every file you write for me.`,
+    );
+  } else {
+    lines.push(
+      "",
+      "Step 5. Match my voice. From the writing of mine you can see, sound like me, not like generic AI. If you cannot see enough, ask me to paste two short things I wrote and read the tone from those.",
+    );
+  }
+
   if (never.length > 0) {
     lines.push(
       "",
-      `Step 5. Hard rule for this file: never write down or store ${never.join(
+      `Step 6. Hard rule for this file: never write down or store ${never.join(
         ", ",
       )}. If any of that shows up while you are drafting, leave it out and tell me you did.`,
     );
@@ -142,9 +167,9 @@ export function jobFileBuildPrompt(input: JobInput): string {
 
   lines.push(
     "",
-    `Step 6. Write the file and name it after the job, like ${jobFilename(
+    `Step ${never.length > 0 ? 7 : 6}. Write the file and name it after the job, like ${jobFilename(
       input,
-    )}, not memory.md. Under a page. Mark anything you guessed with (assumed). This file is the role you play for me, not who I am.`,
+    )}, not memory.md. Under a page, in my voice. Mark anything you guessed with (assumed). This file is the role you play for me, not who I am.`,
   );
 
   return lines.join("\n");
@@ -191,21 +216,38 @@ export function aboutMeBuildPrompt(input: JobInput): string {
   ].join("\n");
 }
 
-/** STEP 02. my-voice.md build prompt. Pulled from things the student wrote. */
+/**
+ * STEP 02. my-voice.md build prompt. Pulled from things the student wrote, and
+ * grounded in what they already told us about their voice at intake (the voice
+ * step). When they gave us a voice line, the prompt hands it over as the
+ * starting read so their AI confirms and sharpens it rather than guessing cold.
+ */
 export function voiceBuildPrompt(input: JobInput): string {
-  return [
+  const said = voiceLine(input);
+  const lines: string[] = [
     "# Build my voice file from things I actually wrote.",
     "",
+  ];
+  if (said) {
+    lines.push(
+      `Here is how I already described my own voice: "${said}". Treat that as the starting read, then check it against the writing below and sharpen it.`,
+      "",
+    );
+  }
+  lines.push(
     `Step 1. Find 3 things I wrote recently. ${TOOL_SEARCH_LINES[input.tool]} If you cannot, ask me to paste 3 short ones. Read the writing itself.`,
     "",
     "Step 2. You do the work, I just react. Show me your read and let me confirm or nudge it, one quick thing at a time:",
-    "  1. Here is how you sound to me: [2 lines]. Sound right?",
+    said
+      ? "  1. Lining up what you told me with how you actually write, here is how you sound: [2 lines]. Sound right?"
+      : "  1. Here is how you sound to me: [2 lines]. Sound right?",
     "  2. These are the words you reach for most: [short list]. Any you dislike?",
     "  3. Anything you never want to see in your writing?",
     "Keep it to yes, no, or small fixes. Do not ask me to analyse my own writing.",
     "",
     'Step 3. Write my-voice.md: how I sound in 3 or 4 lines, then "Always" (3 habits, each with a real example) and "Never" (3 things to avoid). Pull the examples yourself. Do not make me find them.',
-  ].join("\n");
+  );
+  return lines.join("\n");
 }
 
 /** STEP 02. my-channels.md build prompt. Where the student publishes and why. */
