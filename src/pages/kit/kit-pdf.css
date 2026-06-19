@@ -1,0 +1,277 @@
+/* ============================================================
+   Hero PDF (spec decision 1): a print-styled, branded, personalized
+   document. Screen view shows it on the kit's dark plate with a
+   "Save as PDF" control; print view drops the chrome and renders a
+   clean A4 page with the dark hero panel preserved (print-color
+   exact so the brand survives "Save as PDF").
+   Palette mirrors --kit-* (kit-portal.css) and the mock's hero card.
+   ============================================================ */
+
+.kit-pdf-screen {
+  min-height: 100vh;
+  background: #11201f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px 60px;
+  font-family: 'Inter', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--kit-ink, #13282c);
+}
+
+.kit-pdf-empty {
+  margin-top: 28vh;
+  max-width: 38ch;
+  text-align: center;
+  color: #cfe9df;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* The print control bar (screen only). */
+.kit-pdf-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.kit-pdf-print {
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.005em;
+  background: linear-gradient(180deg, #2a9e7c, #1e7860);
+  box-shadow: 0 12px 26px -14px rgba(10, 158, 132, 0.85);
+}
+.kit-pdf-hint {
+  font-size: 12px;
+  color: #9fc4ba;
+}
+
+/* The A4 page. */
+.kit-pdf-page {
+  width: 100%;
+  max-width: 794px; /* ~ A4 width at 96dpi */
+  background: #fff;
+  border-radius: 14px;
+  padding: 46px 52px 40px;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.6);
+  color: var(--kit-ink, #13282c);
+}
+
+.kit-pdf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--kit-line, #e5e8e2);
+}
+.kit-pdf-wordmark {
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 17px;
+  color: var(--kit-ink, #13282c);
+}
+.kit-pdf-dot {
+  color: var(--kit-acc, #2a9e7c);
+}
+.kit-pdf-class {
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--kit-acc-deep, #1e7860);
+  background: var(--kit-acc-soft, #e6f4ee);
+  border: 1px solid var(--kit-acc-line, #bce2d2);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+/* The dark hero panel (the screenshot-worthy moment). */
+.kit-pdf-hero {
+  position: relative;
+  margin-top: 22px;
+  border-radius: 14px;
+  padding: 30px 28px 32px;
+  background: linear-gradient(160deg, #16302e, #0c1f1d);
+  color: #eafaf4;
+  overflow: hidden;
+}
+.kit-pdf-hero::after {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  right: -60px;
+  top: -70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(42, 158, 124, 0.45), transparent 70%);
+}
+.kit-pdf-eyebrow {
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 10px;
+  color: #7fe6c8;
+  margin: 0;
+}
+.kit-pdf-title {
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 10px 0 0;
+}
+.kit-pdf-sub {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #a7c8bf;
+  max-width: 52ch;
+}
+
+/* The personalized body grid. */
+.kit-pdf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 28px;
+  margin-top: 26px;
+}
+.kit-pdf-block-wide {
+  grid-column: 1 / -1;
+}
+.kit-pdf-h2 {
+  font-size: 12px;
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--kit-faint, #99a4a5);
+  margin: 0 0 10px;
+}
+.kit-pdf-body {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--kit-ink2, #2b4248);
+  margin: 0;
+}
+.kit-pdf-build {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--kit-ink, #13282c);
+}
+.kit-pdf-note {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--kit-mut, #697578);
+}
+.kit-pdf-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.kit-pdf-list li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--kit-ink2, #2b4248);
+}
+.kit-pdf-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--kit-acc, #2a9e7c);
+}
+.kit-pdf-list-clay li::before {
+  background: var(--kit-clay, #b5563f);
+}
+
+/* The day-by-day path. */
+.kit-pdf-plan {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--kit-line, #e5e8e2);
+}
+.kit-pdf-days {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.kit-pdf-day {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+}
+.kit-pdf-day-n {
+  flex: none;
+  width: 56px;
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  color: var(--kit-acc-deep, #1e7860);
+}
+.kit-pdf-day-t {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--kit-ink2, #2b4248);
+}
+
+.kit-pdf-foot {
+  margin-top: 30px;
+  padding-top: 18px;
+  border-top: 1px solid var(--kit-line, #e5e8e2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--kit-faint, #99a4a5);
+}
+.kit-pdf-foot-meta {
+  font-family: var(--kit-display, 'Gobold'), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ---- print: drop the chrome, keep the brand colours ---- */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  .kit-pdf-screen {
+    background: #fff;
+    padding: 0;
+    min-height: 0;
+  }
+  .kit-pdf-bar {
+    display: none;
+  }
+  .kit-pdf-page {
+    max-width: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+  .kit-pdf-hero,
+  .kit-pdf-list li::before,
+  .kit-pdf-class {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

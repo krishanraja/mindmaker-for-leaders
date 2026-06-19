@@ -18,6 +18,14 @@ import { VoiceInput } from "@/components/ui/voice-input";
 import { KitPortalLayout } from "@/components/kit/KitPortalLayout";
 import { OrgChartView } from "@/components/kit/OrgChartView";
 import { KitPicksBoard } from "@/components/kit/KitPicksBoard";
+import {
+  KIT_SCOPE_VARS,
+  KitCard,
+  KitEyebrow,
+  KitHeadline,
+  KitPrimaryButton,
+  KitSub,
+} from "@/components/kit/kitPrimitives";
 import { useKitRedemption } from "@/hooks/useKitRedemption";
 import { fetchLatestKitBuild } from "@/hooks/useKitBuild";
 import {
@@ -360,35 +368,6 @@ function LinearIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
 /* ================================================================== */
 /* FORKED intake (the Agentic Org Chart cascade, per the locked mock)  */
 /* ================================================================== */
-
-/**
- * The mock's brand palette, scoped inline so the cascade + OrgChartView render
- * exactly per spec whether or not the global kit-portal stylesheet has landed.
- * The class `kit-portal` is also set so any global `--kit-*` / Gobold rules
- * apply consistently. Values are a literal port of prototypes/kit-orgchart.html.
- */
-const KIT_SCOPE_VARS: CSSProperties & Record<`--${string}`, string> = {
-  "--kit-bg": "#F3F5F1",
-  "--kit-card": "#FFFFFF",
-  "--kit-ink": "#13282C",
-  "--kit-ink2": "#2B4248",
-  "--kit-mut": "#697578",
-  "--kit-faint": "#99A4A5",
-  "--kit-line": "#E5E8E2",
-  "--kit-line2": "#EEF1EB",
-  "--kit-rail": "#D5DAD2",
-  "--kit-acc": "#2A9E7C",
-  "--kit-acc-deep": "#1E7860",
-  "--kit-acc-soft": "#E6F4EE",
-  "--kit-acc-line": "#BCE2D2",
-  "--kit-ind": "#3E6E94",
-  "--kit-ind-soft": "#E9F0F5",
-  "--kit-ind-line": "#D2E0EA",
-  "--kit-slate": "#5A6A6D",
-  "--kit-slate-soft": "#EDF1EF",
-  "--kit-slate-line": "#DBE3E0",
-  "--kit-display": "'Gobold', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif",
-};
 
 type ForkPhase = "fork" | "steps" | "homework" | "reveal";
 
@@ -1216,59 +1195,6 @@ function PanelChips({ items, clay }: { items: string[]; clay?: boolean }) {
 /* ================================================================== */
 /* Brand primitives (mock-faithful, scoped to .kit-portal vars)        */
 /* ================================================================== */
-
-function KitCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="rounded-2xl border p-5 sm:p-7"
-      style={{
-        background: "var(--kit-card)",
-        borderColor: "var(--kit-line)",
-        boxShadow: "0 1px 2px rgba(16,28,30,.05), 0 18px 40px -24px rgba(16,28,30,.20)",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function KitEyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="kit-label mb-3 text-[12px] font-bold uppercase"
-      style={{
-        fontFamily: "var(--kit-display)",
-        letterSpacing: "0.1em",
-        color: "var(--kit-acc-deep)",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function KitHeadline({ children }: { children: React.ReactNode }) {
-  // Inter, lowercase, slightly smaller so headlines do not wrap.
-  return (
-    <h1
-      className="m-0 text-[clamp(20px,2.4vw,25px)] font-extrabold leading-[1.14] lowercase"
-      style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", color: "var(--kit-ink)" }}
-    >
-      {children}
-    </h1>
-  );
-}
-
-function KitSub({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <p
-      className={cn("mt-2 max-w-[42ch] text-[14.5px]", className)}
-      style={{ color: "var(--kit-mut)" }}
-    >
-      {children}
-    </p>
-  );
-}
 
 function KitTextInput({
   value,
