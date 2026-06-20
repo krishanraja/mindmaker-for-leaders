@@ -49,11 +49,11 @@
 import type {
   ArtifactBuildContext,
   IntakeAnswers,
-  KitEmailContext,
   KitPreset,
   KitTool,
 } from "../types.ts";
 import { KIT_TOOL_LABELS } from "../types.ts";
+import { kitEmailShell } from "../email-shell.ts";
 import type { LeverageScore } from "./scoring.ts";
 import {
   areaLabelsOf,
@@ -143,7 +143,7 @@ function scaffoldInput(ctx: ArtifactBuildContext): ScaffoldInput {
 }
 
 /* ------------------------------------------------------------------ */
-/* Email shell                                                         */
+/* Email helpers                                                       */
 /* ------------------------------------------------------------------ */
 
 function escapeHtml(value: string): string {
@@ -152,23 +152,6 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-function emailShell(body: string, ctx: KitEmailContext, buttonLabel: string): string {
-  return [
-    "<!DOCTYPE html>",
-    '<html lang="en">',
-    '<body style="margin:0;padding:0;background-color:#f5f5f4;">',
-    '<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1c1917;font-size:16px;line-height:1.6;">',
-    body,
-    '<p style="margin:28px 0;">',
-    `<a href="${escapeHtml(ctx.kitUrl)}" style="display:inline-block;background-color:#1c1917;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:600;">${buttonLabel}</a>`,
-    "</p>",
-    '<p style="margin:24px 0 0;">Krish</p>',
-    "</div>",
-    "</body>",
-    "</html>",
-  ].join("\n");
 }
 
 /* ------------------------------------------------------------------ */
@@ -752,46 +735,49 @@ export const autonomousBusinessPreset: KitPreset = {
     pack: {
       subject: () => "Your Autonomous Business Pack",
       html: (ctx) =>
-        emailShell(
-          [
+        kitEmailShell({
+          heading: "Your Autonomous Business Pack",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open your pack",
+          bodyHtml: [
             '<p style="margin:0 0 16px;">Your pack is built. It is made from your answers, not a template, so it only works if you use it.</p>',
             '<p style="margin:0 0 16px;">One job tonight: install the skill and run test prompt 1. Ten minutes, start to finish.</p>',
             '<p style="margin:0 0 16px;">Everything else in the pack, the audit, the scaffold, the 7 day plan, lands better once the skill has run on real work.</p>',
           ].join("\n"),
-          ctx,
-          "Open your pack",
-        ),
+        }),
     },
     day3: {
       subject: () => "Day 3. Has it run yet?",
       html: (ctx) => {
         const skillName = escapeHtml(ctx.skillName ?? "your first skill");
         const testPrompt = escapeHtml(ctx.testPrompt ?? "test prompt 1 from your pack page");
-        return emailShell(
-          [
+        return kitEmailShell({
+          heading: "Day 3. Has it run yet?",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open the install steps",
+          bodyHtml: [
             `<p style="margin:0 0 16px;">Your skill ${skillName} has been idle for 3 days, if you have not run it yet.</p>`,
             '<p style="margin:0 0 16px;">The install is 10 minutes. Open the pack, follow the install steps, then run this:</p>',
-            `<p style="margin:0 0 16px;padding:12px 16px;background-color:#e7e5e4;border-radius:6px;font-family:Consolas,Menlo,monospace;font-size:14px;">${testPrompt}</p>`,
+            `<p style="margin:0 0 16px;padding:12px 16px;background-color:#eef2ec;border-radius:6px;font-family:Consolas,Menlo,monospace;font-size:14px;">${testPrompt}</p>`,
             '<p style="margin:0 0 16px;">If it broke, reply and tell me what happened. I read every reply.</p>',
           ].join("\n"),
-          ctx,
-          "Open the install steps",
-        );
+        });
       },
     },
     day7: {
       subject: () => "One process off your plate. This week.",
       html: (ctx) =>
-        emailShell(
-          [
+        kitEmailShell({
+          heading: "One process off your plate. This week.",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open the plan",
+          bodyHtml: [
             '<p style="margin:0 0 16px;">The plan said by today one workflow runs without you.</p>',
             '<p style="margin:0 0 16px;">Scrappy counts. A skill that does 70 percent of the job is a win in week one; the learning loop closes the rest.</p>',
             '<p style="margin:0 0 16px;">Open the plan, finish the last step, hit I Shipped It.</p>',
             '<p style="margin:0 0 16px;">Blocked? Reply with one line and I will point you at the fix.</p>',
           ].join("\n"),
-          ctx,
-          "Open the plan",
-        ),
+        }),
     },
   },
 

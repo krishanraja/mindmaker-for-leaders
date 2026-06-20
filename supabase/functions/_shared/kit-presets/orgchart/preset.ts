@@ -28,9 +28,9 @@ import type {
   ArtifactBuildContext,
   IntakeAnswers,
   IntakeOption,
-  KitEmailContext,
   KitPreset,
 } from "../types.ts";
+import { kitEmailShell } from "../email-shell.ts";
 import {
   chartComposePrompt,
   first90Prompt,
@@ -210,35 +210,6 @@ function fallbackChartOf(intake: IntakeAnswers): ChartJson {
     startLabel: startLabelOf(intake),
     guardrailIds: guardrailIdsOf(intake),
   });
-}
-
-/* ------------------------------------------------------------------ */
-/* Email shell                                                         */
-/* ------------------------------------------------------------------ */
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function emailShell(body: string, ctx: KitEmailContext, buttonLabel: string): string {
-  return [
-    "<!DOCTYPE html>",
-    '<html lang="en">',
-    '<body style="margin:0;padding:0;background-color:#f3f5f1;">',
-    '<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#13282c;font-size:16px;line-height:1.6;">',
-    body,
-    '<p style="margin:28px 0;">',
-    `<a href="${escapeHtml(ctx.kitUrl)}" style="display:inline-block;background-color:#1e7860;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;">${buttonLabel}</a>`,
-    "</p>",
-    '<p style="margin:24px 0 0;">Krish</p>',
-    "</div>",
-    "</body>",
-    "</html>",
-  ].join("\n");
 }
 
 /* ------------------------------------------------------------------ */
@@ -547,41 +518,44 @@ export const orgchartPreset: KitPreset = {
     pack: {
       subject: () => "Your agentic org chart",
       html: (ctx) =>
-        emailShell(
-          [
+        kitEmailShell({
+          heading: "Your agentic org chart",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open your chart",
+          bodyHtml: [
             '<p style="margin:0 0 16px;">Your chart is built from your own answers, not a template. Every box is marked green (AI runs it), amber (AI assists, you approve the handoff), or red (you only), with the agent to add, the handoffs drawn, and the human role beside it.</p>',
             '<p style="margin:0 0 16px;">One job this week: stand up the first agent on your start box, the box that ranks number one. Painful, repeatable, low-risk, that is the one to learn on.</p>',
             '<p style="margin:0 0 16px;">The pack has the chart, your ranked place to start, the roles to add, and your first 90 days.</p>',
           ].join("\n"),
-          ctx,
-          "Open your chart",
-        ),
+        }),
     },
     day3: {
       subject: () => "Day 3. Have you started the first box?",
       html: (ctx) =>
-        emailShell(
-          [
+        kitEmailShell({
+          heading: "Day 3. Have you started the first box?",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open the chart",
+          bodyHtml: [
             '<p style="margin:0 0 16px;">Your chart ranked one box to start with: the first agent worth standing up.</p>',
             '<p style="margin:0 0 16px;">Open the chart, read the where-you-start brief, and do the first build this week. Scrappy counts.</p>',
             '<p style="margin:0 0 16px;">Stuck? Reply with one line and I will point you at the fix.</p>',
           ].join("\n"),
-          ctx,
-          "Open the chart",
-        ),
+        }),
     },
     day7: {
       subject: () => "One box, one agent. This week.",
       html: (ctx) =>
-        emailShell(
-          [
+        kitEmailShell({
+          heading: "One box, one agent. This week.",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open the plan",
+          bodyHtml: [
             '<p style="margin:0 0 16px;">The plan said by today one agent runs your start box.</p>',
             '<p style="margin:0 0 16px;">An agent that does 70 percent of the grind is a week-one win. Ship it, then move to the next box on the chart.</p>',
             '<p style="margin:0 0 16px;">Open your first 90 days and finish the first stage.</p>',
           ].join("\n"),
-          ctx,
-          "Open the plan",
-        ),
+        }),
     },
   },
 

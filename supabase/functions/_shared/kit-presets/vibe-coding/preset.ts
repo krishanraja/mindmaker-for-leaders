@@ -32,6 +32,7 @@ import type {
   KitTool,
 } from "../types.ts";
 import { KIT_TOOL_LABELS } from "../types.ts";
+import { kitEmailShell } from "../email-shell.ts";
 import {
   EXPERIENCE_LABELS,
   buildFromIntake,
@@ -530,30 +531,11 @@ Rules:
 /* Emails                                                               */
 /* ------------------------------------------------------------------ */
 
-function emailShell(opts: {
-  heading: string;
-  bodyHtml: string;
-  buttonLabel: string;
-  kitUrl: string;
-}): string {
-  return `<!DOCTYPE html>
-<html>
-<body style="margin:0;padding:0;background-color:#f5f5f4;">
-<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1c1917;font-size:16px;line-height:1.6;">
-<p style="font-weight:600;font-size:18px;margin:0 0 16px 0;">${opts.heading}</p>
-${opts.bodyHtml}
-<p style="margin:28px 0;"><a href="${opts.kitUrl}" style="background-color:#1c1917;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:6px;font-weight:600;display:inline-block;">${opts.buttonLabel}</a></p>
-<p style="margin:24px 0 0 0;">Krish</p>
-</div>
-</body>
-</html>`;
-}
-
 const emails: KitPreset["emails"] = {
   pack: {
     subject: () => "Your Vibe Coding Field Kit",
     html: (ctx: KitEmailContext) =>
-      emailShell({
+      kitEmailShell({
         heading: "Your Vibe Coding Field Kit",
         kitUrl: ctx.kitUrl,
         buttonLabel: "Open your kit",
@@ -568,7 +550,7 @@ const emails: KitPreset["emails"] = {
       const toolLabel = ctx.toolLabel || "your AI";
       const testPrompt =
         ctx.testPrompt || "test prompt 1 from the test prompts file in your skill ZIP";
-      return emailShell({
+      return kitEmailShell({
         heading: "Day 3. Did your skill run yet?",
         kitUrl: ctx.kitUrl,
         buttonLabel: "Open the 7-day plan",
@@ -582,7 +564,7 @@ const emails: KitPreset["emails"] = {
   day7: {
     subject: () => "Ship it scrappy. Today.",
     html: (ctx: KitEmailContext) =>
-      emailShell({
+      kitEmailShell({
         heading: "Ship it scrappy. Today.",
         kitUrl: ctx.kitUrl,
         buttonLabel: "Finish day 7 and log it",
