@@ -9,6 +9,7 @@ import type { UserContext } from "../_shared/user-context.ts";
 import { decompose } from "./decompose.ts";
 import { verifyClaim } from "./verify.ts";
 import { advise, type AdversarialInput } from "./advise.ts";
+import { reframeToAiNative } from "./reframe.ts";
 import { crossExamine } from "./crossexamine.ts";
 import { type EvidenceLite } from "../_shared/reaction-extraction.ts";
 import { tierForEvidence } from "./reliability.ts";
@@ -43,8 +44,37 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
   const started = Date.now();
 
   try {
+    // --- Stage 0: AI-native reframe ----------------------------------------
+    // CTRL only pressure-tests the AI-native version of a decision. If the
+    // submitted statement is already AI-native it passes through unchanged; if
+    // it is general business it is reframed into its AI-native version, and the
+    // rest of the pipeline reasons on the reframed statement. The reframe is
+    // surfaced honestly: we persist BOTH the original (decision_cases.statement,
+    // already stored at insert) and the reframed statement + a note. Nothing is
+    // silently swapped.
+    const reframe = await reframeToAiNative(statement);
+    const effectiveStatement = reframe.effectiveStatement;
+    if (reframe.reframed) {
+      await admin
+        .from("decision_cases")
+        .update({
+          reframed: true,
+          reframed_statement: reframe.effectiveStatement,
+          reframe_note: reframe.reframeNote,
+          lifecycle_stage: reframe.lifecycleStage,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", caseId);
+      log.info("decision reframed to AI-native", { userId, lifecycle: reframe.lifecycleStage });
+    } else if (reframe.lifecycleStage) {
+      await admin
+        .from("decision_cases")
+        .update({ lifecycle_stage: reframe.lifecycleStage, updated_at: new Date().toISOString() })
+        .eq("id", caseId);
+    }
+
     // --- Stage 1: decompose -------------------------------------------------
-    const decomposed = await decompose(statement, ctx);
+    const decomposed = await decompose(effectiveStatement, ctx);
 
     await admin
       .from("decision_cases")
@@ -139,7 +169,7 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
     if (isPro) {
       await admin.from("decision_cases").update({ stage: "cross_examining", updated_at: new Date().toISOString() }).eq("id", caseId);
       try {
-        const xex = await crossExamine(statement, ctx, verifiedForJudging);
+        const xex = await crossExamine(effectiveStatement, ctx, verifiedForJudging);
         adversarial = {
           refutation: xex.adversarial?.refutation ?? null,
           panelRisks: xex.panel.map((p) => `${p.model}: ${p.key_risk}`).filter((s) => s.length > 6),
@@ -164,7 +194,7 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
 
     // --- Stage 4: advise ----------------------------------------------------
     const tensionDescriptions = decomposed.profile_tensions.map((t) => t.description);
-    const adviseResult = await advise(statement, ctx, verifiedForJudging, tensionDescriptions, adversarial);
+    const adviseResult = await advise(effectiveStatement, ctx, verifiedForJudging, tensionDescriptions, adversarial);
 
     const breakpointIndex =
       adviseResult.breakpoint_claim_index >= 0 ? adviseResult.breakpoint_claim_index : adversarialBreakpointIndex;

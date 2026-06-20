@@ -25,6 +25,16 @@ export interface DecisionCase {
   confidence: number | null;
   error_detail: string | null;
   last_verified_at: string | null;
+  // AI-native reframe (additive; see supabase/functions/decision-engine/reframe.ts).
+  // When the submitted statement was general business, the engine reframed it into
+  // its AI-native version and reasoned on the reframed statement. `statement` is
+  // always the leader's original; these carry the reframe honestly so the UI can
+  // show it rather than silently swapping. Optional so older rows / drifted types
+  // do not break.
+  reframed?: boolean | null;
+  reframed_statement?: string | null;
+  reframe_note?: string | null;
+  lifecycle_stage?: 'build' | 'orchestrate' | 'productize' | 'gtm' | 'substrate' | null;
 }
 
 // The stored, honesty-gated hero magnitude. Populated by the decision-engine
