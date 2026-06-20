@@ -23,6 +23,7 @@ import type { TrainingMaterial } from "../_shared/training-schema.ts";
 import { buildImportanceLens, planQueries, type LensItem, type PlannedQuery } from "../_shared/briefing-lens.ts";
 import { dedupeAndScore, type CandidateHeadline, type ScoredHeadline } from "../_shared/briefing-scoring.ts";
 import { curateSegments, segmentCountFromBudget, type CuratedSegment } from "../_shared/briefing-curation.ts";
+import { type NewsCategoryId, relativeTimeAgo, classifyCategory } from "../_shared/news-ai-native.ts";
 import { getUserContext, toLensSource, resolveLeaderIds, type UserContext } from "../_shared/user-context.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
@@ -56,6 +57,12 @@ interface BriefingSegment {
   lens_item_id?: string;
   relevance_score?: number;
   matched_profile_fact?: string;
+  // AI-native news deck fields (additive; v1 rows stay schema-compatible).
+  // `category` is one of the nine locked ids and drives the deck card motif;
+  // `time_ago` is the relative-time string the deck renders verbatim. `source`
+  // already exists above. See _shared/news-ai-native.ts + src/types/newsCategory.ts.
+  category?: NewsCategoryId;
+  time_ago?: string;
   // Honest, gated magnitude extracted at generation time. Null/absent when no
   // figure passes the honesty gate, in which case the hero leads with words.
   magnitude?: SegmentMagnitude | null;
@@ -934,6 +941,17 @@ Total: 500-600 words. 3-4 minutes spoken. Every sentence earns its place.`,
       // the segment so the hero reads it instead of re-regexing the headline.
       if (seg && typeof seg === "object") {
         seg.magnitude = extractSegmentMagnitude(seg as BriefingSegment);
+        // AI-native deck fields on the v1 path: tag the category deterministically
+        // from the segment text (this path has no LLM-assigned category) and stamp
+        // the relative time so the deck card renders fully. The v2 path overrides
+        // these with the curate-step values; here they are the only source.
+        const s = seg as BriefingSegment;
+        if (!s.category) {
+          s.category = classifyCategory(`${s.headline ?? ""} ${s.analysis ?? ""}`);
+        }
+        if (!s.time_ago) {
+          s.time_ago = relativeTimeAgo(null);
+        }
       }
     }
   }
@@ -1381,15 +1399,22 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   const usedFallback = scored.length === 0;
 
   // 2.5 EARLY INSERT so the frontend sees headlines while curation runs.
-  const preliminarySegments: BriefingSegment[] = (scored.length > 0 ? scored.slice(0, 8) : []).map(s => ({
-    headline: normalizeHeadline(s.title.replace(/^\[.*?\]\s*/, "")),
-    analysis: "",
-    framework_tag: "signal",
-    source: s.source,
-    relevance_reason: "",
-    lens_item_id: s.matched_lens_item_id,
-    relevance_score: Number(s.relevance_score.toFixed(4)),
-  }));
+  const preliminarySegments: BriefingSegment[] = (scored.length > 0 ? scored.slice(0, 8) : []).map(s => {
+    const headline = normalizeHeadline(s.title.replace(/^\[.*?\]\s*/, ""));
+    return {
+      headline,
+      analysis: "",
+      framework_tag: "signal",
+      source: s.source,
+      relevance_reason: "",
+      lens_item_id: s.matched_lens_item_id,
+      relevance_score: Number(s.relevance_score.toFixed(4)),
+      // Deterministic category so the early-insert deck card has a coherent
+      // motif during the streaming window before curation overwrites segments.
+      category: classifyCategory(`${headline} ${s.snippet ?? ""}`),
+      time_ago: relativeTimeAgo(null),
+    };
+  });
 
   const { data: earlyBriefing, error: earlyInsertError } = await supabase
     .from("briefings")
@@ -1495,6 +1520,12 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
       lens_item_id: c.lens_item_id,
       relevance_score: Number(c.relevance_score.toFixed(4)),
       matched_profile_fact: c.matched_profile_fact,
+      // AI-native deck fields: the category drives the card motif; time_ago is
+      // the relative-time string the deck renders. Candidates carry no per-story
+      // published date, so time_ago is honestly "Today" (the day CTRL curated
+      // it into the deck), never a fabricated age.
+      category: c.category,
+      time_ago: relativeTimeAgo(null),
     };
     // Gated, honest magnitude (sourced or modelled `est.`) or null -> words lead.
     seg.magnitude = extractSegmentMagnitude(seg);
@@ -1986,6 +2017,10 @@ serve(async (req) => {
         framework_tag: rawTag,
         source: h.source,
         relevance_reason: '',
+        // Deterministic AI-native category + relative time so the deck card
+        // motif and meta render on the v1 path too.
+        category: classifyCategory(cleanTitle),
+        time_ago: relativeTimeAgo(null),
       };
     });
 
