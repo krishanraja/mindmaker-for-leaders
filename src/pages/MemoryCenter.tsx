@@ -132,16 +132,30 @@ export default function MemoryCenter() {
                   </p>
                 )}
               </div>
-              {/* Desktop right-rail bond reader (the mock's signature panel). */}
-              {!isMobile && (
-                <div className="hidden md:flex w-[300px] flex-shrink-0 rounded-2xl border border-border/60 bg-card/40 p-4 overflow-y-auto scrollbar-hide">
-                  <BondReader
-                    bond={selectedBond}
-                    variant="rail"
-                    onConfirm={handleConfirmBond}
-                  />
-                </div>
-              )}
+              {/* Desktop right-rail bond reader (the mock's signature panel).
+                  Collapsed until a node is selected so the brain canvas claims
+                  the full width by default (no portrait letterboxing); it
+                  slides in only on selection. */}
+              <AnimatePresence initial={false}>
+                {!isMobile && selectedBond && (
+                  <motion.div
+                    key="bond-rail"
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: 300, opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="hidden md:flex flex-shrink-0 overflow-hidden"
+                  >
+                    <div className="flex w-[300px] flex-shrink-0 rounded-2xl border border-border/60 bg-card/40 p-4 overflow-y-auto scrollbar-hide">
+                      <BondReader
+                        bond={selectedBond}
+                        variant="rail"
+                        onConfirm={handleConfirmBond}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </TabsContent>
 

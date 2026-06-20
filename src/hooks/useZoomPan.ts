@@ -18,6 +18,12 @@ interface ZoomPanResult {
   isZoomed: boolean;
   resetZoom: () => void;
   wasGesture: () => boolean;
+  /** Step the zoom up one notch, centred on the container (for a +/- control). */
+  zoomIn: () => void;
+  /** Step the zoom down one notch, centred on the container. */
+  zoomOut: () => void;
+  /** True when the user is zoomed in OR out from the initial fit (a control can offer "fit"). */
+  canFit: boolean;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -113,6 +119,17 @@ export function useZoomPan({
     setTimeout(() => setIsResetting(false), 300);
   }, [dims.w, dims.h, flushState]);
 
+  // Step the zoom one notch up/down, anchored on the container centre, so the
+  // visible +/- buttons feel like the wheel/pinch. Uses applyZoom so the same
+  // clamping (incl. zoom-OUT below 1 when minScale < 1) and centring apply.
+  const zoomIn = useCallback(() => {
+    applyZoom(scaleRef.current * 1.3, dims.w / 2, dims.h / 2);
+  }, [applyZoom, dims.w, dims.h]);
+
+  const zoomOut = useCallback(() => {
+    applyZoom(scaleRef.current / 1.3, dims.w / 2, dims.h / 2);
+  }, [applyZoom, dims.w, dims.h]);
+
   const wasGesture = useCallback(() => {
     return pointerMovedRef.current > 5 || Date.now() - gestureEndTimeRef.current < 100;
   }, []);
@@ -153,7 +170,7 @@ export function useZoomPan({
         const rect = el.getBoundingClientRect();
         const mid = getTouchMidpoint(e.touches[0], e.touches[1]);
         pinchMidRef.current = { x: mid.x - rect.left, y: mid.y - rect.top };
-      } else if (e.touches.length === 1 && scaleRef.current > 1) {
+      } else if (e.touches.length === 1 && scaleRef.current > initialScaleRef.current + 0.02) {
         // Single finger pan when zoomed
         isPanningRef.current = true;
         pointerMovedRef.current = 0;
@@ -167,7 +184,7 @@ export function useZoomPan({
       // Double-tap detection
       if (e.touches.length === 1) {
         const now = Date.now();
-        if (now - lastTapTimeRef.current < 300 && scaleRef.current > 1) {
+        if (now - lastTapTimeRef.current < 300 && scaleRef.current > initialScaleRef.current + 0.02) {
           resetZoom();
           lastTapTimeRef.current = 0;
         } else {
@@ -225,7 +242,7 @@ export function useZoomPan({
 
     // Mouse drag for desktop pan
     const handleMouseDown = (e: MouseEvent) => {
-      if (scaleRef.current <= 1) return;
+      if (scaleRef.current <= initialScaleRef.current + 0.02) return;
       isPanningRef.current = true;
       pointerMovedRef.current = 0;
       panStartRef.current = {
@@ -303,5 +320,8 @@ export function useZoomPan({
     isZoomed: scale > initialScaleRef.current + 0.02,
     resetZoom,
     wasGesture,
+    zoomIn,
+    zoomOut,
+    canFit: Math.abs(scale - initialScaleRef.current) > 0.02,
   };
 }
