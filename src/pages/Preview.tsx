@@ -132,8 +132,10 @@ const COCKPIT_BETS: CockpitData['bets'] = [
   { id: 'b3', question: 'Build the data moat now, or wait?', state: 'quiet', freshness: 'no fresh signal' },
   { id: 'b4', question: 'Replatform onto the new agent framework?', state: 'quiet', freshness: 'no fresh signal' },
 ];
-// The redesigned Home is greeting + the "worth a look" DECK + 3 value actions.
-// The harness exercises the DECK's content range (mixed, near-empty, empty).
+// The redesigned Home is greeting + the "worth a look" DECK + the value actions,
+// composed as a fit-to-viewport flex column (no page scroll; CockpitView owns
+// the frame). The harness exercises the DECK's content range (mixed, near-empty,
+// empty) inside a phone-height box so the fit reads true.
 const COCKPIT_DECK: DeckCard[] = [
   { id: 'd1', kind: 'signal', eyebrow: 'From your world', headline: 'A call you are weighing just moved.', say: 'On a call you are weighing: Buy the agent stack, or build our own?', betId: 'b1' },
   { id: 'd2', kind: 'news', eyebrow: 'Worth a look', category: 'AI COSTS', headline: 'Running AI got about 40% cheaper this month.', say: 'Renting an agent now costs less than building one - good news if you are weighing build vs buy.', magnitude: { value: '40%', kind: 'sourced' } },
@@ -385,7 +387,8 @@ export default function PreviewPage() {
           {COCKPIT_FIXTURES.map((f) => (
             <div key={f.label}>
               <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
-              <div className="rounded-2xl border border-border bg-background p-3">
+              {/* phone-height box: CockpitHome is a fit-to-viewport flex column */}
+              <div className="h-[760px] rounded-2xl border border-border bg-background p-3">
                 <CockpitHome data={f.data} onPlayBriefing={noop} onGoDecide={noop} onBuildSkill={noop} onOpenBet={noop} animated={false} />
               </div>
             </div>

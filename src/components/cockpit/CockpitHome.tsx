@@ -82,45 +82,59 @@ export function CockpitHome({
   onReactDeck,
   animated = true,
 }: CockpitHomeProps) {
+  // First-timer language: an empty deck means a brand-new leader, so the
+  // greeting subline welcomes plainly instead of assuming a daily habit.
+  const isColdStart = data.deck.length === 0;
+
   return (
     <motion.div
       initial={animated ? { opacity: 0, y: 6 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18 }}
-      className="space-y-5"
+      // Fit-to-viewport: a flex column that fills the frame with no page scroll.
+      // The deck is the ONE primary read; the value actions sit calm beneath it
+      // and share the leftover space.
+      className="flex h-full min-h-0 flex-col gap-3.5"
     >
-      {/* greeting - plain and warm, the "I'm back" beat */}
-      <div className="px-0.5">
+      {/* greeting - plain and warm; welcomes a first-timer, greets the regular */}
+      <div className="shrink-0 px-0.5">
         <h1 className="text-[21px] font-bold leading-tight tracking-[-0.02em] text-foreground">{greeting()}</h1>
-        <p className="mt-1 text-[13.5px] text-muted-foreground">A few things worth a look today.</p>
+        <p className="mt-1 text-[13.5px] text-muted-foreground">
+          {isColdStart
+            ? 'Welcome to CTRL. This is home for your AI-native business.'
+            : "Here is what's worth a look in your AI-native world today."}
+        </p>
       </div>
 
-      {/* THE DECK - the new hero: a swipeable mix of news + your own signals */}
-      <CockpitDeck
-        cards={data.deck}
-        onReact={onReactDeck}
-        onOpen={(c) => c.betId && onOpenBet(c.betId)}
-        animated={animated}
-      />
+      {/* THE DECK - the one primary read: a swipeable mix of AI news + your signals */}
+      <div className="shrink-0">
+        <CockpitDeck
+          cards={data.deck}
+          onReact={onReactDeck}
+          onOpen={(c) => c.betId && onOpenBet(c.betId)}
+          animated={animated}
+        />
+      </div>
 
-      {/* THE THREE VALUE ACTIONS - what they actually came to do */}
-      <div>
-        <div className="mb-[9px] px-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-          What do you want to do?
+      {/* THE VALUE ACTIONS - calm and few, secondary to the read above. They take
+          the leftover space so the whole home fits the viewport with no scroll. */}
+      <div className="flex min-h-0 flex-1 flex-col justify-end">
+        <div className="mb-2 px-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+          Or pick up where you build
         </div>
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           <ActionCard
             primary
             icon={Play}
             title="Play my briefing"
-            desc="Your world, read out loud. Today in about 4 minutes."
+            desc="The AI world, read to you. Today in about 4 minutes."
             meta="4 min · in your ear"
             onClick={onPlayBriefing}
           />
           <ActionCard
             icon={Scale}
-            title="Run a decision"
-            desc="Tell CTRL what you are weighing. It shows you where it holds and where it breaks."
+            title="Weigh a decision"
+            desc="Bring something you are weighing. CTRL frames the AI-native call and shows where it holds and where it breaks."
             onClick={onGoDecide}
           />
           <ActionCard

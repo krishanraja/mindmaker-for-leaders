@@ -100,13 +100,13 @@ export default function Dashboard() {
   }
 
   const onboardingBanner = showOnboardingPrompt ? (
-    <div className="bg-accent/10 border-b border-accent/20 px-4 py-2.5">
+    <div className="shrink-0 bg-accent/10 border-b border-accent/20 px-4 py-2.5">
       <div className="max-w-4xl mx-auto flex items-center gap-3">
         <Hand className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />
         <p className="text-xs text-foreground flex-1 min-w-0">
           <span className="font-medium">Welcome.</span>{" "}
           <span className="text-muted-foreground">
-            Set up your context in about 2 minutes - or explore first.
+            New here? Take about 2 minutes to introduce yourself, or look around first.
           </span>
         </p>
         <Button
@@ -114,7 +114,7 @@ export default function Dashboard() {
           onClick={() => setOnboardingOpen(true)}
           className="h-7 px-3 text-xs"
         >
-          Set up
+          Show me
         </Button>
         <button
           type="button"
@@ -161,14 +161,18 @@ export default function Dashboard() {
     )
   }
 
-  // Memory view (default). Banner wraps the inner dashboard so it sits
-  // above whatever layout chrome the inner component renders.
+  // Memory view (default). On the mobile cockpit the banner is handed INTO the
+  // frame so it sits inside the single viewport (header + banner + home + nav)
+  // and the home still fits with no page scroll for a brand-new leader. The
+  // other surfaces own their own scroll, so the banner wraps them as before.
+  if (isMobile && COCKPIT_ENABLED) {
+    return <CockpitView banner={onboardingBanner} />
+  }
+
   return (
     <>
       {onboardingBanner}
-      {isMobile
-        ? (COCKPIT_ENABLED ? <CockpitView /> : <MobileMemoryDashboard />)
-        : <DesktopMemoryDashboard />}
+      {isMobile ? <MobileMemoryDashboard /> : <DesktopMemoryDashboard />}
     </>
   )
 }
