@@ -724,7 +724,7 @@ export const autonomousBusinessPreset: KitPreset = {
         return JSON.stringify(
           {
             pathway: pathwayOf(ctx.intake),
-            stage: stageId,
+            stage: STAGE_LABELS[stageId] ?? stageId,
             area: timeSinkOf(ctx.intake),
             firstBuild: firstBuildName(ctx.intake),
             tool: KIT_TOOL_LABELS[ctx.tool],
