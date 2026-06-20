@@ -1,71 +1,29 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
-import { X, Heart, ArrowRight, GitFork, Newspaper } from 'lucide-react';
+import { X, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DeckCard } from '@/types/cockpit';
-import { HeroSparkline } from './HeroSparkline';
+import { NewsHeadlineCard } from './NewsHeadlineCard';
 
 /**
- * CockpitDeck - the Home "worth a look" deck (locked 2026-06-17, design-log).
+ * CockpitDeck - the Home "worth a look" deck (locked 2026-06-17, design-log;
+ * branded-motif rebuild 2026-06-20 per docs/MAIN-APP-POLISH-SPEC.md s2 +
+ * prototypes/news-headline-cards.html).
  *
  * A small stack of cards the leader swipes through: a MIX of broad AI news
- * (from the briefing pipeline) and their own signals (a decision moved). Plain
+ * (from the briefing pipeline) and their own signals (a decision moved). Each
+ * card now renders as a branded headline card (NewsHeadlineCard): a category
+ * motif hero band, then a clean topline (chip + magnitude), the editorial
+ * headline, a one-line "why it matters to you", and a source + time row. Plain
  * language; swipe (or tap the buttons) to skip / see more like it - the signal
- * trains the feed. Replaces the cryptic single hero. Honest by construction:
- * a card only carries a number when its source has one.
+ * trains the feed (useCockpit.recordDeckReaction). Honest by construction: a
+ * card only carries a number when its source has one.
  */
 interface CockpitDeckProps {
   cards: DeckCard[];
   onReact?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
   onOpen?: (card: DeckCard) => void;
   animated?: boolean;
-}
-
-function CardFace({ card, onOpen }: { card: DeckCard; onOpen?: (c: DeckCard) => void }) {
-  const isNews = card.kind === 'news';
-  return (
-    <button
-      type="button"
-      onClick={() => onOpen?.(card)}
-      className="flex h-full w-full flex-col rounded-[18px] border border-accent/25 bg-[linear-gradient(180deg,#101720,#0a0e12)] p-4 text-left shadow-[0_22px_44px_-20px_#000]"
-    >
-      {/* eyebrow: kind + optional category tag */}
-      <div className="mb-3 flex items-center gap-[7px] text-[9px] font-semibold uppercase tracking-[0.06em] text-accent/80">
-        <span>&#9679; {card.eyebrow}</span>
-        {card.category && (
-          <span className="rounded-[5px] border border-border px-[6px] py-px text-[8px] tracking-[0.1em] text-muted-foreground">
-            {card.category}
-          </span>
-        )}
-      </div>
-
-      {/* the small in-style visual: a sparkline for news, a glyph for own-signals */}
-      {isNews ? (
-        <HeroSparkline className="mb-3 block h-[46px] w-full" tone="signal" series={null} />
-      ) : (
-        <div className="mb-3 flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-accent/30 bg-accent/[0.08] text-accent">
-            <GitFork className="h-[18px] w-[18px] rotate-180" />
-          </span>
-          {card.magnitude && (
-            <span className="text-[22px] font-bold tracking-[-0.02em] text-foreground">{card.magnitude.value}</span>
-          )}
-        </div>
-      )}
-
-      <h2 className="m-0 text-balance text-[19px] font-bold leading-[1.18] tracking-[-0.02em] text-foreground">
-        {card.headline}
-      </h2>
-      {card.say && (
-        <p className="mt-[7px] line-clamp-2 text-[13px] leading-[1.42] text-muted-foreground">{card.say}</p>
-      )}
-
-      <span className="mt-auto pt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent/90">
-        {isNews ? <Newspaper className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
-        {isNews ? 'why this matters to you' : 'open the read'}
-      </span>
-    </button>
-  );
 }
 
 export function CockpitDeck({ cards, onReact, onOpen, animated = true }: CockpitDeckProps) {
@@ -86,7 +44,9 @@ export function CockpitDeck({ cards, onReact, onOpen, animated = true }: Cockpit
     return (
       <div className="rounded-[18px] border border-border bg-card/50 p-6 text-center">
         <p className="text-balance text-sm leading-relaxed text-foreground">
-          {cards.length === 0 ? 'Your deck fills as CTRL watches your world and the market.' : "That's everything worth a look today."}
+          {cards.length === 0
+            ? 'Nothing in your deck yet. As CTRL reads the market and your world, the things worth your attention land here.'
+            : "That's everything worth a look today."}
         </p>
         <p className="mt-1.5 text-[11.5px] text-muted-foreground">Nothing is on fire.</p>
       </div>
@@ -95,13 +55,14 @@ export function CockpitDeck({ cards, onReact, onOpen, animated = true }: Cockpit
 
   return (
     <div>
-      <div className="relative h-[248px]">
+      {/* the focused headline card, with the deck peeking behind it */}
+      <div className="relative h-[340px]">
         {/* the stack peeking behind, so it reads as a deck of a few */}
         {index + 2 < cards.length && (
-          <div className="absolute inset-x-5 top-6 h-[218px] rounded-[18px] border border-border bg-[#0b0f14] opacity-45" />
+          <div className="absolute inset-x-5 top-6 h-[316px] rounded-[18px] border border-border bg-[#0b0f14] opacity-45" />
         )}
         {index + 1 < cards.length && (
-          <div className="absolute inset-x-2.5 top-3 h-[224px] rounded-[18px] border border-border bg-[#0b0f14] opacity-70" />
+          <div className="absolute inset-x-2.5 top-3 h-[324px] rounded-[18px] border border-border bg-[#0b0f14] opacity-70" />
         )}
         <AnimatePresence initial={false} mode="popLayout">
           <motion.div
@@ -115,9 +76,9 @@ export function CockpitDeck({ cards, onReact, onOpen, animated = true }: Cockpit
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, x: 0, transition: { duration: 0.12 } }}
             transition={{ duration: 0.18 }}
-            className="absolute inset-x-0 top-0 h-[230px] cursor-grab active:cursor-grabbing"
+            className="absolute inset-x-0 top-0 cursor-grab active:cursor-grabbing"
           >
-            <CardFace card={card} onOpen={onOpen} />
+            <NewsHeadlineCard card={card} variant="feed" focused onOpen={onOpen} />
           </motion.div>
         </AnimatePresence>
       </div>

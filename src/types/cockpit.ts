@@ -50,15 +50,24 @@ export interface CockpitBlocker {
 // single hero. The pinned-decision deep-dive lives in the Decisions tab.
 export type DeckCardKind = 'news' | 'signal';
 
+// One of the nine locked AI-native news categories (src/types/newsCategory.ts).
+// When present + valid it drives the headline card's branded motif directly;
+// when absent the card classifies its own category from the text (the keyword
+// fallback in resolveNewsCategory). NOTE: not populated server-side yet - see
+// TODO(news-pipeline) in newsCategory.ts.
+import type { NewsCategoryId } from './newsCategory';
+
 export interface DeckCard {
   id: string;
   kind: DeckCardKind; // news = from the world (briefing); signal = from your world
   eyebrow: string; // "Worth a look" | "From your world"
-  category?: string | null; // a short tag, e.g. "AI COSTS" (news only)
+  category?: NewsCategoryId | string | null; // one of the 9 category ids (news); free-text tolerated for older rows
   headline: string; // the plain, simple read
   say?: string | null; // one plain line of why-it-matters-to-you
   // a soft (modelled) or sourced figure, only when the source honestly has one
   magnitude?: { value: string; kind: 'sourced' | 'modelled' } | null;
+  source?: string | null; // the publication, for the meta row (news only)
+  timeAgo?: string | null; // relative time, e.g. "2h ago" (news only)
   // routing: a signal card may deep-link to the decision it refers to
   betId?: string | null;
 }

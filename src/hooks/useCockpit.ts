@@ -12,6 +12,9 @@ interface BriefingSeg {
   headline?: string;
   analysis?: string;
   framework_tag?: string | null;
+  category?: string | null; // server-assigned news category (not populated yet)
+  source?: string | null; // the publication, when the segment carries one
+  time_ago?: string | null; // relative time, when the segment carries one
   magnitude?: { value?: string; kind?: 'sourced' | 'modelled' } | null;
 }
 
@@ -225,9 +228,16 @@ export function useCockpit(): { data: CockpitData; loading: boolean } {
         id: `news-${i}`,
         kind: 'news' as const,
         eyebrow: 'Worth a look',
-        category: s.framework_tag ?? null,
+        // Prefer a server-assigned category; the NewsHeadlineCard falls back to
+        // the keyword classifier when this is absent/unmapped.
+        // TODO(news-pipeline): the briefing pipeline does not assign one of the
+        // nine category ids yet (a separate PR) - until then this is null and
+        // the card self-classifies from the headline text.
+        category: s.category ?? null,
         headline: s.headline!.trim(),
         say: firstSentence(s.analysis),
+        source: s.source ?? null,
+        timeAgo: s.time_ago ?? null,
         magnitude: s.magnitude?.value
           ? { value: s.magnitude.value, kind: s.magnitude.kind === 'modelled' ? 'modelled' : 'sourced' }
           : null,

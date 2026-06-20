@@ -47,3 +47,7 @@ scripts/_kitlive/
 .prerender
 
 deno.lock
+
+_verify_prod/
+_verify/
+.claude/

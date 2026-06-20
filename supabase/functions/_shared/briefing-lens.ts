@@ -431,9 +431,13 @@ export async function planQueries(
           {
             role: "system",
             content:
-              `You are a news-search query planner. Given a lens (items that matter to a specific leader today) produce 4-6 distinct web-search queries. Each query must target exactly one lens item. Every query must cite the target lens item's id. Prefer specific named entities over generic topics. Bias queries toward must_include categories; never target drop categories.
+              `You are a news-search query planner for an AI-NATIVE leadership product. The product is ONLY about building, orchestrating, productizing, and getting to market the AI-native version of a business. It is NEVER a general business advisor.
 
-Industry scoping is critical: the leader works in "${industry ?? "an unspecified industry"}". Every query MUST stay within that industry's adjacent domains (see industry_bias.include). Queries MUST NOT drift into industry_bias.exclude domains unless a lens item explicitly names that domain. E.g., a technology leader should not receive biomedical, clinical, or pharmaceutical queries unless a lens item explicitly names biotech. When uncertain, stay inside industry_bias.include.
+Given a lens (items that matter to a specific leader today) produce 4-6 distinct web-search queries. Each query must target exactly one lens item. Every query must cite the target lens item's id. Prefer specific named entities over generic topics. Bias queries toward must_include categories; never target drop categories.
+
+AI-NATIVE LOCK (the rule above all others): every query MUST hunt for AI-deployment news, not general business news. Steer each query toward how the leader can BUILD/RUN/SELL the AI-native version of their business, across these nine angles: (1) model & capability shifts, (2) AI economics (token/compute/inference cost moves), (3) AI tools, platforms & vendors, (4) orchestration & agent reliability, (5) AI-native product & go-to-market, (6) AI governance/safety/compliance, (7) AI security & agent risk, (8) AI-native org/talent, (9) proof & adoption of AI in the sector. Tie the AI angle to the leader's sector/role and the lens item. Never write a query that would only surface general business news (a funding round, an exec hire, a price change) with no AI angle; reframe it to the AI-native version (e.g. a hiring lens item becomes "AI agents taking over part of the [role] function in [sector]").
+
+Industry scoping still applies: the leader works in "${industry ?? "an unspecified industry"}". Keep the AI angle inside that industry's adjacent domains (see industry_bias.include) and out of industry_bias.exclude domains unless a lens item explicitly names that domain. When uncertain, stay inside industry_bias.include but keep the query AI-native.
 
 Return JSON: {"queries":[{"query":"...","intent":"...","target_lens_item_id":"..."}]}`,
           },
@@ -498,22 +502,36 @@ function queryForLensItem(
     bias.include.length > 0 && !mentionsIndustryDomain(base, bias)
       ? ` (${bias.include.slice(0, 2).join(" OR ")})`
       : "";
+  // AI-native lock: the deterministic fallback queries must also hunt AI-
+  // deployment news, never general business news. We append an AI-native
+  // qualifier unless the lens item text already names AI, so even the no-LLM
+  // path stays on the AI-native rail (docs/MAIN-APP-POLISH-SPEC.md s0/s2).
+  const aiScope = mentionsAi(base)
+    ? ""
+    : ` (AI OR agents OR "AI-native" OR automation)`;
   switch (item.type) {
     case "watchlist":
       return briefingType === "competitive_intel"
-        ? `"${base}" strategy OR product OR hiring latest`
-        : `"${base}" news latest`;
+        ? `"${base}" AI strategy OR AI product OR agents latest`
+        : `"${base}" AI news latest`;
     case "decision":
-      return `${base} industry news 2026${scope}`;
+      return `${base} AI-native approach news 2026${scope}`;
     case "mission":
-      return `${base} latest developments${scope}`;
+      return `${base} AI latest developments${scope}${aiScope}`;
     case "objective":
-      return `${base} trends 2026${scope}`;
+      return `${base} AI trends 2026${scope}${aiScope}`;
     case "blocker":
-      return `${base} solutions OR tools${scope}`;
+      return `${base} AI tools OR agents${scope}`;
     case "pattern":
-      return `${base}${scope}`;
+      return `${base}${scope}${aiScope}`;
   }
+}
+
+/** True when the text already names AI, so we don't double-qualify a query. */
+function mentionsAi(text: string): boolean {
+  return /\b(ai|a\.i\.|artificial intelligence|llm|gpt|agent|agentic|machine learning|automat|copilot|model)\b/i.test(
+    text,
+  );
 }
 
 /**
