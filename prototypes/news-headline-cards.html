@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CTRL news deck - redesign mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Gobold (wordmark / uppercase labels), loaded from the repo's public/fonts. */
+  @font-face { font-family:'Gobold'; src:url('../public/fonts/Gobold-Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
+
+  /* ---- the real CTRL dark instrument palette (from src/index.css, hex form) ---- */
+  :root{
+    --bg:#08090c;            /* background near-black blue-tinged */
+    --card:#101319;          /* card */
+    --card-2:#0c1016;        /* slightly deeper card for the hero band base */
+    --popover:#0e1014;
+    --secondary:#14171d;
+    --fg:#E6EAF2;            /* light ink */
+    --muted-fg:#8b94a3;
+    --muted-bg:#1c2027;
+    --border:#22262e;        /* line */
+    --acc:#00D9B6;           /* emerald accent */
+    --acc-ink:#aef6ea;       /* bright accent ink (numbers) */
+    --acc-soft:rgba(0,217,182,.10);
+    --acc-line:rgba(0,217,182,.28);
+    --display:'Gobold', 'Space Grotesk', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    --grotesk:'Space Grotesk', ui-sans-serif, sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    font-family:'Inter', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    color:var(--fg); letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #0d141a 0%, var(--bg) 55%);
+    min-height:100vh;
+  }
+
+  /* === shared app chrome === */
+  .brand{ display:inline-flex; align-items:center; gap:9px; }
+  .brand img.icon{ height:19px; width:auto; }
+  .brand img.word{ height:13px; width:auto; }
+
+  .eyebrow{ font-family:var(--display); text-transform:uppercase; letter-spacing:.12em; font-weight:700;
+    font-size:10.5px; color:var(--acc); }
+
+  /* ============================================================
+     SVG MOTIF FAMILY
+     One authored, abstract emerald-on-dark instrument visual per
+     category. Same stroke language, same glow treatment, calm
+     ambient motion. Rendered as the hero band of a headline card.
+     ============================================================ */
+  .motif{ display:block; width:100%; height:100%; }
+  .motif .stroke{ fill:none; stroke:var(--acc); stroke-linecap:round; stroke-linejoin:round; }
+  .motif .faint{ stroke:#2b3340; }
+  .motif .dim{ stroke:rgba(0,217,182,.4); }
+  .motif .glow-dot{ fill:var(--acc); }
+
+  /* ambient animation primitives (slow, tasteful, never busy) */
+  @keyframes drift { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-3px) } }
+  @keyframes breathe { 0%,100%{ opacity:.45 } 50%{ opacity:1 } }
+  @keyframes breatheBig { 0%,100%{ opacity:.25; transform:scale(.96) } 50%{ opacity:.7; transform:scale(1.04) } }
+  @keyframes dashdraw { to{ stroke-dashoffset:0 } }
+  @keyframes spinslow { to{ transform:rotate(360deg) } }
+  @keyframes sweep { 0%{ transform:translateX(-10%) } 100%{ transform:translateX(110%) } }
+  @keyframes flick { 0%,92%,100%{ opacity:1 } 96%{ opacity:.35 } }
+
+  .m-breathe{ animation:breathe 4.2s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-breatheBig{ animation:breatheBig 5s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-drift{ animation:drift 6s ease-in-out infinite; transform-box:fill-box; }
+  .m-spin{ animation:spinslow 26s linear infinite; transform-box:fill-box; transform-origin:center; }
+  .m-draw{ stroke-dasharray:var(--len,400); stroke-dashoffset:var(--len,400); animation:dashdraw 2.6s ease-out forwards; }
+  .m-flick{ animation:flick 5s ease-in-out infinite; }
+
+  .motif-band{ position:relative; overflow:hidden; background:
+      radial-gradient(120% 130% at 80% -10%, rgba(0,217,182,.10), transparent 60%),
+      linear-gradient(180deg,#0d1218 0%, #0a0e13 100%); }
+  /* the ambient light sweep that crosses every band, very subtle */
+  .motif-band::after{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(105deg, transparent 38%, rgba(0,217,182,.06) 50%, transparent 62%);
+    width:60%; animation:sweep 9s ease-in-out infinite; mix-blend-mode:screen; }
+
+  /* ============================================================
+     THE HEADLINE CARD
+     ============================================================ */
+  .card{
+    background:linear-gradient(180deg,#101620 0%, #0a0e12 100%);
+    border:1px solid var(--border); border-radius:18px; overflow:hidden;
+    box-shadow:0 22px 46px -26px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.02);
+    display:flex; flex-direction:column;
+    transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{ border-color:var(--acc-line); transform:translateY(-2px);
+    box-shadow:0 30px 60px -28px rgba(0,0,0,.95), 0 0 0 1px var(--acc-line); }
+
+  /* The motif band is now a PURE art zone: the chip and magnitude live in
+     the body (in their own clean rows), so they can never collide with the art. */
+  .card .hero{ height:120px; position:relative; flex:none; }
+  /* fade the band into the card body so the art settles into the card */
+  .card .hero::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:40px;
+    background:linear-gradient(transparent, #0d121a); pointer-events:none; z-index:1; }
+
+  .card .body{ padding:15px 17px 16px; display:flex; flex-direction:column; flex:1; min-height:0; gap:0; }
+
+  /* topline: category chip on the left, magnitude stat on the right.
+     Sits ABOVE the headline, fully clear of the motif band. */
+  .card .topline{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-bottom:11px; min-height:18px; }
+  .card .topline .chip{ font-family:var(--display); text-transform:uppercase; letter-spacing:.07em;
+    font-size:9px; font-weight:700; color:var(--acc); background:var(--acc-soft);
+    border:1px solid var(--acc-line); padding:4px 9px; border-radius:999px; white-space:nowrap; }
+  .card .topline .mag{ display:flex; align-items:baseline; gap:6px; text-align:right; }
+  .card .topline .mag b{ font-family:var(--grotesk); font-weight:700; font-size:21px; line-height:1;
+    letter-spacing:-.02em; color:var(--acc-ink); text-shadow:0 0 16px rgba(0,217,182,.45);
+    font-variant-numeric:tabular-nums; }
+  .card .topline .mag span{ font-size:8.5px; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--muted-fg); max-width:8ch; line-height:1.15; text-align:left; }
+
+  .card h2{ font-size:17px; line-height:1.22; font-weight:800; letter-spacing:-.02em; color:var(--fg); text-wrap:balance; }
+  .card .say{ margin-top:9px; font-size:12.5px; line-height:1.45; color:var(--muted-fg);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card .meta{ margin-top:auto; padding-top:14px; display:flex; align-items:center; gap:8px;
+    font-size:11px; color:var(--muted-fg); }
+  .card .meta .src{ color:#aab2c0; font-weight:600; }
+  .card .meta .dotsep{ color:#3a4150; }
+  .card .meta .own{ margin-left:auto; display:inline-flex; align-items:center; gap:5px; color:var(--acc);
+    font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  .card .meta .own .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+
+  /* ============================================================
+     PHONE FRAME (focused vertical feed)
+     ============================================================ */
+  .stage{ display:grid; place-items:start center; padding:26px 14px 60px; }
+
+  .phone{
+    width:100%; max-width:412px; height:min(860px, calc(100vh - 52px));
+    border-radius:36px; position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#0a0d12,#070809);
+    box-shadow:0 50px 110px -36px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.04);
+    display:flex; flex-direction:column;
+  }
+  .ptop{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 12px; flex:none; }
+  .ptop .live{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9px; font-weight:700;
+    color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:5px 9px; border-radius:999px; }
+  .pgreet{ padding:2px 20px 12px; flex:none; }
+  .pgreet h1{ font-size:21px; font-weight:800; letter-spacing:-.02em; }
+  .pgreet p{ font-size:13px; color:var(--muted-fg); margin-top:3px; }
+
+  /* the focused vertical feed: one card commands the view, the next peeks */
+  .feed{ flex:1; min-height:0; position:relative; overflow:hidden; padding:0 20px; }
+  /* generous bottom clearance so the focused card and its peek are always
+     fully clear of the dots + control bar below; never tucked under them */
+  .feed-track{ display:flex; flex-direction:column; gap:16px; padding-bottom:40px;
+    transition:transform .42s cubic-bezier(.22,1,.36,1); }
+  /* a soft scrim at the foot of the feed so the peeking card eases out
+     above the controls instead of being hard-cut against them */
+  .feed::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:34px; z-index:3;
+    pointer-events:none; background:linear-gradient(transparent, #080a0d); }
+  .feed .card{ flex:none; }
+  .feed .card.focus{ box-shadow:0 30px 60px -26px rgba(0,0,0,.95), 0 0 0 1px var(--acc-line); border-color:var(--acc-line); }
+  .feed .card:not(.focus){ opacity:.62; }
+  .feed .card .hero{ height:118px; }
+
+  /* phone bottom: skip / like + dots, mirrors the live deck controls.
+     A hairline divider + extra top padding keeps it visually separated
+     from the feed above it. */
+  .pctrl{ flex:none; padding:14px 20px calc(16px + env(safe-area-inset-bottom,0px)); display:flex; align-items:center; gap:14px;
+    border-top:1px solid rgba(255,255,255,.04); background:linear-gradient(180deg, transparent, rgba(0,0,0,.18)); }
+  .pbtn{ width:46px; height:46px; flex:none; border-radius:999px; display:grid; place-items:center; cursor:pointer;
+    border:1px solid var(--border); background:#0c1116; color:var(--muted-fg); transition:all .15s ease; }
+  .pbtn:hover{ color:var(--fg); }
+  .pbtn.like{ border-color:var(--acc-line); background:var(--acc-soft); color:var(--acc); }
+  .pbtn.like:hover{ background:rgba(0,217,182,.16); }
+  .pctrl .cap{ flex:1; text-align:center; font-size:10.5px; color:var(--muted-fg); line-height:1.3; }
+  .pdots{ display:flex; justify-content:center; gap:6px; padding:0 0 6px; flex:none; }
+  .pdots i{ width:5px; height:5px; border-radius:999px; background:var(--muted-bg); transition:all .3s ease; }
+  .pdots i.on{ width:16px; background:var(--acc); }
+
+  /* ============================================================
+     DESKTOP FEED (centered, multi-column)
+     ============================================================ */
+  .desk{ display:none; }
+
+  /* intermediate breakpoint: a calm 2-up grid so nothing cramps between
+     the phone (<760px) and the full desktop deck (>=1100px). */
+  @media (min-width:760px) and (max-width:1099px){
+    .stage{ display:none; }
+    .desk{ display:block; max-width:760px; margin:0 auto; padding:30px 28px 64px; }
+    .desk .dtop{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+    .desk .dtop .live{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9.5px; font-weight:700;
+      color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:6px 11px; border-radius:999px; }
+    .desk .dhead{ margin-bottom:22px; }
+    .desk .dhead h1{ font-size:26px; font-weight:800; letter-spacing:-.025em; }
+    .desk .dhead p{ font-size:14px; color:var(--muted-fg); margin-top:6px; }
+    .grid{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:22px; }
+    .grid .card.lead{ grid-column:span 2; }
+    .grid .card.lead .hero{ height:200px; }
+    .grid .card.lead h2{ font-size:23px; line-height:1.16; }
+    .grid .card.lead .say{ font-size:14px; -webkit-line-clamp:3; max-width:62ch; }
+    .grid .card .hero{ height:148px; }
+  }
+
+  @media (min-width:1100px){
+    .stage{ display:none; }
+    .desk{ display:block; max-width:1240px; margin:0 auto; padding:32px 32px 64px; }
+    .desk .dtop{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .desk .dtop .live{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9.5px; font-weight:700;
+      color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:6px 11px; border-radius:999px; }
+    .desk .dhead{ margin-bottom:24px; }
+    .desk .dhead h1{ font-size:27px; font-weight:800; letter-spacing:-.025em; }
+    .desk .dhead p{ font-size:14px; color:var(--muted-fg); margin-top:6px; }
+    /* lead story spans wide, the rest tile in a calm 3-up grid */
+    .grid{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:22px; align-items:start; }
+
+    /* The lead is composed top-to-bottom: a bounded hero band fills the
+       upper half, then the topline + headline + say sit directly beneath
+       it with normal spacing. It spans 2 columns but only ONE row, so
+       there is no L-shaped dead space; its natural height leads the grid. */
+    .grid .card.lead{ grid-column:span 2; }
+    .grid .card.lead .hero{ height:280px; }
+    .grid .card.lead .body{ padding:22px 26px 24px; }
+    .grid .card.lead .topline{ margin-bottom:14px; }
+    .grid .card.lead .topline .chip{ font-size:10px; padding:5px 11px; }
+    .grid .card.lead .topline .mag b{ font-size:26px; }
+    .grid .card.lead .topline .mag span{ font-size:9px; }
+    .grid .card.lead h2{ font-size:27px; line-height:1.15; }
+    .grid .card.lead .say{ font-size:14.5px; line-height:1.5; -webkit-line-clamp:3; max-width:60ch; margin-top:11px; }
+    .grid .card.lead .meta{ padding-top:18px; font-size:12px; }
+
+    .grid .card .hero{ height:140px; }
+  }
+
+  /* ============================================================
+     MOTIF GRID (the verify view: all 9 motifs as a family)
+     toggled on with ?motifs in the URL
+     ============================================================ */
+  .motifgrid{ display:none; }
+  body.show-motifs .stage,
+  body.show-motifs .desk{ display:none; }
+  body.show-motifs .motifgrid{ display:block; max-width:1100px; margin:0 auto; padding:34px 28px 60px; }
+  .motifgrid .mhead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .motifgrid .mhead h1{ font-size:22px; font-weight:800; letter-spacing:-.02em; }
+  .motifgrid .msub{ font-size:13px; color:var(--muted-fg); margin-bottom:24px; max-width:60ch; }
+  .mg{ display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; }
+  .mtile{ border:1px solid var(--border); border-radius:16px; overflow:hidden; background:var(--card); }
+  .mtile .motif-band{ height:150px; }
+  .mtile .lab{ padding:11px 14px 13px; }
+  .mtile .lab .n{ font-family:var(--display); text-transform:uppercase; letter-spacing:.07em; font-size:9px; color:var(--acc); }
+  .mtile .lab .t{ font-size:13.5px; font-weight:700; color:var(--fg); margin-top:4px; letter-spacing:-.01em; }
+  .mtile .lab .d{ font-size:11px; color:var(--muted-fg); margin-top:3px; line-height:1.35; }
+
+  .hint{ position:fixed; bottom:10px; left:0; right:0; text-align:center; color:#54606e; font-size:11px; pointer-events:none; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PHONE (mobile feed) ============================ -->
+<div class="stage">
+  <div class="phone">
+    <div class="ptop">
+      <span class="brand">
+        <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" />
+        <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" />
+      </span>
+      <span class="live">&#9679; Live feed</span>
+    </div>
+    <div class="pgreet">
+      <h1>Worth a look today</h1>
+      <p>Nine fronts of the AI shift, read for your business.</p>
+    </div>
+    <div class="feed">
+      <div class="feed-track" id="ftrack"><!-- cards injected --></div>
+    </div>
+    <div class="pdots" id="pdots"></div>
+    <div class="pctrl">
+      <button class="pbtn" id="skip" aria-label="Skip">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <span class="cap">swipe to skip &middot; tap the heart to see more like it</span>
+      <button class="pbtn like" id="like" aria-label="More like this">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-10-9.2C.3 8.4 1.9 4.8 5.2 4.8c2 0 3.3 1.2 3.8 2.6.5-1.4 1.8-2.6 3.8-2.6 3.3 0 4.9 3.6 3.2 7C19.5 16.4 12 21 12 21z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ DESKTOP (centered feed) ============================ -->
+<div class="desk">
+  <div class="dtop">
+    <span class="brand">
+      <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" style="height:22px" />
+      <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" style="height:15px" />
+    </span>
+    <span class="live">&#9679; Live feed &middot; updated 8m ago</span>
+  </div>
+  <div class="dhead">
+    <h1>Worth a look today</h1>
+    <p>What changed in the world that affects how you build, run, and sell your AI-native business.</p>
+  </div>
+  <div class="grid" id="dgrid"><!-- cards injected --></div>
+</div>
+
+<!-- ============================ MOTIF GRID (verify view) ============================ -->
+<div class="motifgrid">
+  <div class="mhead"><h1>The category motif family</h1>
+    <span class="brand"><img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" /><img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" /></span>
+  </div>
+  <p class="msub">Nine abstract emerald-on-dark instrument visuals, one per news category. One stroke language, one glow treatment, calm ambient motion. Each reads instantly as its story.</p>
+  <div class="mg" id="mg"><!-- tiles injected --></div>
+</div>
+
+<div class="hint">mock &middot; add <b>?motifs</b> to the URL to see all nine motifs as a family. no app wiring.</div>
+
+<script>
+/* ===================================================================
+   THE NINE MOTIFS
+   Each returns an SVG string drawn on a 320x150 viewBox. Authored art,
+   same family: emerald strokes on faint grid bones, soft glow, slow
+   ambient motion. NOT icons-in-a-circle.
+   =================================================================== */
+
+// shared <defs>: glow filter + emerald gradient, injected once per SVG
+function defs(id){ return `
+  <defs>
+    <radialGradient id="g${id}" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#00D9B6" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#00D9B6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ln${id}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0a8e7a"/><stop offset="100%" stop-color="#00D9B6"/>
+    </linearGradient>
+    <filter id="bl${id}" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.2"/>
+    </filter>
+  </defs>`;
+}
+function svg(id, inner){
+  return `<svg class="motif" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${defs(id)}${inner}</svg>`;
+}
+
+const MOTIFS = {
+  // 1. Model & capability shifts -> a glowing neural core / capability dial
+  model(){ return svg('mo', `
+    <circle cx="160" cy="75" r="62" fill="url(#gmo)" class="m-breatheBig"/>
+    <g class="m-spin">
+      <circle cx="160" cy="75" r="48" class="stroke faint" stroke-width="1"/>
+      <circle cx="160" cy="75" r="48" class="stroke" stroke-width="2" stroke-dasharray="44 256" stroke-linecap="round"/>
+    </g>
+    <g class="m-spin" style="animation-duration:38s;animation-direction:reverse">
+      <circle cx="160" cy="75" r="34" class="stroke dim" stroke-width="1.5" stroke-dasharray="30 184"/>
+    </g>
+    <!-- neural core: spokes to nodes -->
+    <g class="m-breathe">
+      <path class="stroke dim" stroke-width="1" d="M160 75 L122 50 M160 75 L198 50 M160 75 L160 33 M160 75 L210 88 M160 75 L116 96"/>
+      <circle cx="122" cy="50" r="3" class="glow-dot"/><circle cx="198" cy="50" r="3" class="glow-dot"/>
+      <circle cx="160" cy="33" r="3" class="glow-dot"/><circle cx="210" cy="88" r="3" class="glow-dot"/>
+      <circle cx="116" cy="96" r="3" class="glow-dot"/>
+    </g>
+    <circle cx="160" cy="75" r="9" fill="#00D9B6" filter="url(#blmo)"/>
+    <circle cx="160" cy="75" r="6" fill="#aef6ea"/>
+  `); },
+
+  // 2. AI economics -> a falling cost curve over a meter
+  economics(){ return svg('ec', `
+    <g class="faint" stroke-width="1">
+      <line x1="44" y1="118" x2="288" y2="118" class="stroke faint"/>
+      <line x1="44" y1="30" x2="44" y2="118" class="stroke faint"/>
+      <line x1="44" y1="58" x2="288" y2="58" class="stroke faint" opacity=".4"/>
+      <line x1="44" y1="88" x2="288" y2="88" class="stroke faint" opacity=".4"/>
+    </g>
+    <!-- area under the falling curve -->
+    <path d="M44 46 C 110 50, 150 92, 210 104 S 270 116, 288 116 L288 118 L44 118 Z"
+      fill="url(#gec)" opacity=".5"/>
+    <path class="stroke m-draw" style="--len:300" stroke-width="2.6"
+      d="M44 46 C 110 50, 150 92, 210 104 S 270 116, 288 116"/>
+    <!-- the live read dot at today's low -->
+    <circle cx="288" cy="116" r="9" fill="#00D9B6" opacity=".25" class="m-breatheBig"/>
+    <circle cx="288" cy="116" r="4" class="glow-dot"/>
+    <!-- a falling token tick -->
+    <g class="m-drift" style="animation-duration:5s">
+      <line x1="150" y1="40" x2="150" y2="62" class="stroke dim" stroke-width="2"/>
+      <path class="stroke dim" stroke-width="2" d="M144 56 L150 64 L156 56"/>
+    </g>
+  `); },
+
+  // 3. Tools, platforms & vendors -> a connector lattice / stack
+  tools(){ return svg('to', `
+    <g class="m-drift">
+      <!-- three stacked planes (the stack) -->
+      <path class="stroke dim" stroke-width="1.4" d="M110 44 L210 44 L246 64 L146 64 Z"/>
+      <path class="stroke" stroke-width="1.8" d="M104 74 L204 74 L240 94 L140 94 Z"/>
+      <path class="stroke dim" stroke-width="1.4" d="M98 104 L198 104 L234 124 L134 124 Z"/>
+    </g>
+    <!-- vertical connectors threading the stack (the lattice) -->
+    <g class="m-breathe" stroke-width="1.4">
+      <line x1="146" y1="54" x2="140" y2="114" class="stroke"/>
+      <line x1="178" y1="54" x2="172" y2="114" class="stroke"/>
+      <line x1="210" y1="54" x2="204" y2="114" class="stroke"/>
+    </g>
+    <g>
+      <circle cx="146" cy="54" r="3" class="glow-dot"/><circle cx="178" cy="54" r="3" class="glow-dot"/>
+      <circle cx="210" cy="54" r="3" class="glow-dot"/>
+      <circle cx="140" cy="114" r="3" class="glow-dot"/><circle cx="172" cy="114" r="3" class="glow-dot"/>
+      <circle cx="204" cy="114" r="3" class="glow-dot"/>
+    </g>
+  `); },
+
+  // 4. Orchestration & agent reliability -> an agent mesh / node graph
+  orchestration(){ return svg('or', `
+    <circle cx="160" cy="75" r="56" fill="url(#gor)" opacity=".5" class="m-breatheBig"/>
+    <!-- edges -->
+    <g class="stroke dim" stroke-width="1.2" class="m-breathe">
+      <line x1="160" y1="40" x2="104" y2="66"/><line x1="160" y1="40" x2="216" y2="66"/>
+      <line x1="104" y1="66" x2="132" y2="112"/><line x1="216" y1="66" x2="188" y2="112"/>
+      <line x1="132" y1="112" x2="188" y2="112"/>
+      <line x1="160" y1="40" x2="160" y2="78"/><line x1="104" y1="66" x2="160" y2="78"/>
+      <line x1="216" y1="66" x2="160" y2="78"/><line x1="132" y1="112" x2="160" y2="78"/>
+      <line x1="188" y1="112" x2="160" y2="78"/>
+    </g>
+    <!-- orchestrator hub -->
+    <circle cx="160" cy="78" r="10" fill="#00D9B6" filter="url(#blor)"/>
+    <circle cx="160" cy="78" r="6.5" fill="#aef6ea"/>
+    <!-- worker nodes, one quietly flickering (the reliability beat) -->
+    <circle cx="160" cy="40" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="104" cy="66" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-flick"/>
+    <circle cx="216" cy="66" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="132" cy="112" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="188" cy="112" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-flick" style="animation-delay:2.4s"/>
+  `); },
+
+  // 5. AI-native product & go-to-market -> a packaged launch motif
+  product(){ return svg('pr', `
+    <circle cx="160" cy="82" r="50" fill="url(#gpr)" opacity=".5" class="m-breatheBig"/>
+    <g class="m-drift" style="animation-duration:5.5s">
+      <!-- the package: an isometric box -->
+      <path class="stroke" stroke-width="2" d="M160 50 L196 68 L196 106 L160 124 L124 106 L124 68 Z"/>
+      <path class="stroke dim" stroke-width="1.4" d="M124 68 L160 86 L196 68 M160 86 L160 124"/>
+      <!-- the emerald seal / launch glyph on the face -->
+      <path class="stroke" stroke-width="2" d="M152 96 l5 5 l11 -12" />
+    </g>
+    <!-- launch arc rising out of the box -->
+    <path class="stroke dim m-draw" style="--len:120" stroke-width="2" d="M196 68 C 224 52, 246 40, 262 30"/>
+    <path class="stroke" stroke-width="2" d="M256 30 L262 28 L262 36" />
+    <circle cx="262" cy="30" r="3.5" class="glow-dot"/>
+  `); },
+
+  // 6. Governance, safety & compliance -> a shield / seal
+  governance(){ return svg('go', `
+    <circle cx="160" cy="78" r="52" fill="url(#ggo)" opacity=".5" class="m-breatheBig"/>
+    <g class="m-drift" style="animation-duration:6s">
+      <path class="stroke" stroke-width="2.2" d="M160 32 L206 48 V82 C206 108, 184 122, 160 130 C136 122, 114 108, 114 82 V48 Z"/>
+      <path class="stroke dim" stroke-width="1.2" d="M160 44 L194 56 V82 C194 102, 178 113, 160 120 C142 113, 126 102, 126 82 V56 Z"/>
+      <!-- the seal check -->
+      <path class="stroke m-draw" style="--len:60" stroke-width="2.6" d="M146 80 l9 10 l20 -24"/>
+    </g>
+    <!-- orbiting compliance ticks (rules satisfied) -->
+    <g class="m-spin" style="animation-duration:30s">
+      <circle cx="160" cy="22" r="2.4" class="glow-dot"/>
+      <circle cx="220" cy="100" r="2.4" class="glow-dot" opacity=".7"/>
+      <circle cx="100" cy="100" r="2.4" class="glow-dot" opacity=".7"/>
+    </g>
+  `); },
+
+  // 7. Security & agent risk -> a lock with a hairline fracture
+  security(){ return svg('se', `
+    <circle cx="160" cy="80" r="48" fill="url(#gse)" opacity=".45" class="m-breatheBig"/>
+    <!-- shackle -->
+    <path class="stroke" stroke-width="2.4" d="M138 70 V58 a22 22 0 0 1 44 0 V70"/>
+    <!-- lock body -->
+    <rect x="126" y="70" width="68" height="52" rx="9" class="stroke" stroke-width="2.2" fill="#0a0e13"/>
+    <!-- keyhole -->
+    <circle cx="160" cy="92" r="5" class="stroke" stroke-width="2"/>
+    <line x1="160" y1="96" x2="160" y2="108" class="stroke" stroke-width="2.4"/>
+    <!-- the fracture: a jagged emerald crack splitting the body, faintly pulsing -->
+    <path class="stroke m-breathe" stroke="#00D9B6" stroke-width="1.8"
+      d="M150 70 l6 14 l-8 8 l10 10 l-5 12" opacity=".85"/>
+    <g class="m-flick">
+      <circle cx="156" cy="84" r="1.8" fill="#aef6ea"/>
+      <circle cx="148" cy="92" r="1.6" fill="#aef6ea"/>
+      <circle cx="158" cy="102" r="1.6" fill="#aef6ea"/>
+    </g>
+  `); },
+
+  // 8. Org, talent & ways of working -> an org-node / people graph
+  org(){ return svg('og', `
+    <circle cx="160" cy="50" r="40" fill="url(#gog)" opacity=".45" class="m-breatheBig"/>
+    <!-- org tree edges -->
+    <g class="stroke dim" stroke-width="1.4" class="m-breathe">
+      <path d="M160 56 V74 M160 74 H110 M160 74 H210 M110 74 V90 M210 74 V90"/>
+      <path d="M110 96 V108 M110 108 H86 M110 108 H134"/>
+      <path d="M210 96 V108 M210 108 H186 M210 108 H234"/>
+    </g>
+    <!-- person nodes: a ring = a head, a stroke = shoulders -->
+    ${[[160,46],[110,92],[210,92],[86,114],[134,114],[186,114],[234,114]].map((p,i)=>`
+      <g transform="translate(${p[0]} ${p[1]})" ${i===0?'':'class="m-drift" style="animation-delay:'+(i*0.4)+'s;animation-duration:6s"'}>
+        <circle cx="0" cy="-4" r="${i===0?5.5:4.4}" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+        <path class="stroke" stroke-width="2" d="M${i===0?-7:-6} ${i===0?7:6} a${i===0?7:6} ${i===0?6:5} 0 0 1 ${i===0?14:12} 0"/>
+      </g>`).join('')}
+    <circle cx="160" cy="42" r="2" fill="#aef6ea"/>
+  `); },
+
+  // 9. Proof & adoption -> a rising signal / proof chart with verified ticks
+  proof(){ return svg('pf', `
+    <g class="faint">
+      <line x1="40" y1="118" x2="290" y2="118" class="stroke faint" stroke-width="1"/>
+      <line x1="40" y1="34" x2="40" y2="118" class="stroke faint" stroke-width="1"/>
+    </g>
+    <!-- adoption bars climbing -->
+    <g class="m-breathe">
+      ${[[70,96],[108,84],[146,90],[184,66],[222,54],[260,38]].map((b,i)=>`
+        <rect x="${b[0]-9}" y="${b[1]}" width="18" height="${118-b[1]}" rx="3"
+          fill="${i>=4?'url(#lnpf)':'#16323a'}" opacity="${0.55+i*0.07}"/>`).join('')}
+    </g>
+    <!-- the proof line rising over the bars -->
+    <path class="stroke m-draw" style="--len:280" stroke-width="2.4"
+      d="M70 92 L108 82 L146 86 L184 62 L222 50 L266 32"/>
+    <!-- verified tick at the head -->
+    <circle cx="266" cy="32" r="11" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-breathe"/>
+    <path class="stroke" stroke-width="2.2" d="M261 32 l4 4 l7 -8"/>
+  `); },
+};
+
+/* ===================================================================
+   CATEGORY DEFINITIONS + a believable AI-native headline per category
+   =================================================================== */
+const CATS = {
+  model:        { tag:'Model & capability', motif:MOTIFS.model,         desc:'A glowing neural core inside a capability dial.' },
+  economics:    { tag:'AI economics',        motif:MOTIFS.economics,     desc:'A falling cost curve reading down to today’s low.' },
+  tools:        { tag:'Tools & vendors',     motif:MOTIFS.tools,         desc:'A connector lattice threading a three-plane stack.' },
+  orchestration:{ tag:'Orchestration',       motif:MOTIFS.orchestration, desc:'An agent mesh around a bright orchestrator hub.' },
+  product:      { tag:'Product & GTM',       motif:MOTIFS.product,       desc:'A sealed package on a rising launch arc.' },
+  governance:   { tag:'Governance',          motif:MOTIFS.governance,    desc:'A shield drawing its compliance seal.' },
+  security:     { tag:'Security & risk',     motif:MOTIFS.security,      desc:'A lock split by a live emerald fracture.' },
+  org:          { tag:'Org & talent',        motif:MOTIFS.org,           desc:'An org tree of person-nodes, gently drifting.' },
+  proof:        { tag:'Proof & adoption',    motif:MOTIFS.proof,         desc:'Adoption bars under a rising, verified proof line.' },
+};
+
+// the deck: ~9 realistic AI-native headlines spanning the categories
+const DECK = [
+  { cat:'model', own:false, headline:'Anthropic ships a 2M-token Opus tier with native tool memory',
+    say:'The context wall you designed around just moved. Workflows you split to fit can run as one pass now.',
+    src:'The Verge', time:'2h ago' },
+  { cat:'economics', own:false, headline:'Frontier inference drops 41% as the new flash models land',
+    say:'Agents you shelved as too costly to run at scale just crossed back under the line.', mag:'-41%', magLabel:'cost to run',
+    src:'The Information', time:'5h ago' },
+  { cat:'orchestration', own:true, headline:'Your support agent’s hand-off accuracy slipped below your guardrail',
+    say:'Two of last week’s escalations routed to the wrong queue. Worth a look before it compounds.', mag:'92%', magLabel:'route accuracy',
+    src:'From your world', time:'40m ago' },
+  { cat:'tools', own:false, headline:'LangChain and the MCP registry merge their agent connector specs',
+    say:'One less lock-in fork to bet against. The stack you are building on just got more portable.',
+    src:'TechCrunch', time:'8h ago' },
+  { cat:'governance', own:false, headline:'The EU AI Act’s high-risk deployment rules take force in March',
+    say:'If an agent touches a hiring or credit decision in your flow, you now owe an audit trail.',
+    src:'Reuters', time:'1d ago' },
+  { cat:'product', own:false, headline:'Notion repackages its whole suite as usage-priced AI seats',
+    say:'A clean template for charging for the AI capability itself, not the software around it.',
+    src:'Axios', time:'11h ago' },
+  { cat:'security', own:false, headline:'Researchers turn a calendar invite into a live prompt-injection exploit',
+    say:'If your agent reads inbound text and can act, this is your threat model now. Quick gut-check warranted.',
+    src:'Wired', time:'6h ago' },
+  { cat:'org', own:true, headline:'Your team logged 31 hours against tasks an agent now handles end-to-end',
+    say:'The Memory & Identity kit flagged three roles where the human job is shifting to review, not do.', mag:'31h', magLabel:'reclaimable / wk',
+    src:'From your world', time:'today', },
+  { cat:'proof', own:false, headline:'Klarna says its AI agent now closes two-thirds of support tickets unaided',
+    say:'A real deployment in your sector clearing the hype bar. Useful proof to point your board at.', mag:'67%', magLabel:'tickets, no human',
+    src:'Bloomberg', time:'3h ago' },
+];
+
+/* ===================================================================
+   RENDER
+   =================================================================== */
+const HEART = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-10-9.2C.3 8.4 1.9 4.8 5.2 4.8c2 0 3.3 1.2 3.8 2.6.5-1.4 1.8-2.6 3.8-2.6 3.3 0 4.9 3.6 3.2 7C19.5 16.4 12 21 12 21z"/></svg>';
+
+function cardHTML(item, opts){
+  const c = CATS[item.cat];
+  const lead = opts && opts.lead ? ' lead' : '';
+  const focus = opts && opts.focus ? ' focus' : '';
+  const mag = item.mag ? `<div class="mag"><b>${item.mag}</b><span>${item.magLabel||''}</span></div>` : '';
+  const metaRight = item.own
+    ? `<span class="own"><span class="pip"></span>From your world</span>`
+    : '';
+  const metaLeft = item.own
+    ? `<span class="src">CTRL signal</span>`
+    : `<span class="src">${item.src}</span><span class="dotsep">&middot;</span><span>${item.time}</span>`;
+  return `
+  <article class="card${lead}${focus}">
+    <div class="hero motif-band">
+      ${c.motif()}
+    </div>
+    <div class="body">
+      <div class="topline">
+        <span class="chip">${c.tag}</span>
+        ${mag}
+      </div>
+      <h2>${item.headline}</h2>
+      <p class="say">${item.say}</p>
+      <div class="meta">${metaLeft}${metaRight}</div>
+    </div>
+  </article>`;
+}
+
+// ---- phone feed: vertical, one in focus, the next peeking ----
+const ftrack = document.getElementById('ftrack');
+const pdots = document.getElementById('pdots');
+let focusIdx = 0;
+function renderPhone(){
+  ftrack.innerHTML = DECK.map((it,i)=>cardHTML(it,{focus:i===focusIdx})).join('');
+  pdots.innerHTML = DECK.map((_,i)=>`<i class="${i===focusIdx?'on':''}"></i>`).join('');
+  // shift the track so the focused card sits near the top of the feed window
+  requestAnimationFrame(()=>{
+    const cards = [...ftrack.children];
+    if(!cards[focusIdx]) return;
+    const top = cards[focusIdx].offsetTop;
+    ftrack.style.transform = `translateY(${-Math.max(0, top - 4)}px)`;
+  });
+}
+function advance(){ focusIdx = Math.min(DECK.length-1, focusIdx+1); renderPhone(); }
+document.getElementById('skip').onclick = advance;
+document.getElementById('like').onclick = advance;
+renderPhone();
+
+// ---- desktop grid: lead story spans 2x2, the rest tile 3-up ----
+const dgrid = document.getElementById('dgrid');
+dgrid.innerHTML = DECK.map((it,i)=>cardHTML(it,{lead:i===0})).join('');
+
+// ---- motif grid (verify view) ----
+const mg = document.getElementById('mg');
+const order = ['model','economics','tools','orchestration','product','governance','security','org','proof'];
+const NAMES = {
+  model:'1. Model & capability shifts', economics:'2. AI economics', tools:'3. Tools, platforms & vendors',
+  orchestration:'4. Orchestration & agent reliability', product:'5. AI-native product & go-to-market',
+  governance:'6. Governance, safety & compliance', security:'7. Security & agent risk',
+  org:'8. Org, talent & ways of working', proof:'9. Proof & adoption',
+};
+mg.innerHTML = order.map(k=>{
+  const c = CATS[k];
+  return `<div class="mtile"><div class="motif-band">${c.motif()}</div>
+    <div class="lab"><div class="n">${c.tag}</div><div class="t">${NAMES[k]}</div><div class="d">${c.desc}</div></div></div>`;
+}).join('');
+
+// URL toggle for the motif-family verify view
+if(location.search.includes('motifs')) document.body.classList.add('show-motifs');
+</script>
+</body>
+</html>
