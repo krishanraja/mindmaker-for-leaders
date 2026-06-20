@@ -28,7 +28,7 @@
 import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { X, Minimize2 } from 'lucide-react';
+import { X, Plus, Minus, Maximize2 } from 'lucide-react';
 import type { MemoryWebFact, Temperature } from '@/types/memory';
 import { useZoomPan } from '@/hooks/useZoomPan';
 import {
@@ -96,19 +96,63 @@ interface WorldCentre {
   anchor: 'start' | 'middle' | 'end';
 }
 
-/** Fixed compass placement inside a 760x520 viewBox (matches brain-2.html). */
-function worldCentres(): Record<World, WorldCentre> {
+/**
+ * Aspect-aware compass placement. The four worlds are positioned as FRACTIONS
+ * of the live container box (w x h) so the brain always spreads to FILL whatever
+ * shape it is given - a tall portrait column on mobile, a wide letterbox on
+ * desktop - instead of being marooned in a fixed 760x520 landscape island.
+ *
+ * The fractions preserve the original brain-2.html compass *relationships*
+ * (YOU up top, COMPANY lower-left, AI to the right, DECISIONS at the convergence
+ * centre) while keeping a small inset so the rim worlds + their labels never
+ * clip the canvas edge.
+ */
+function worldCentres(w: number, h: number): Record<World, WorldCentre> {
+  // insets so the rim worlds + their labels stay on-canvas at any aspect
+  const padX = Math.max(38, w * 0.1);
+  const padY = Math.max(40, h * 0.1);
+  const innerW = w - padX * 2;
+  const innerH = h - padY * 2;
+  const fx = (f: number) => padX + innerW * f;
+  const fy = (f: number) => padY + innerH * f;
+  const labelGap = Math.min(54, innerH * 0.11);
   return {
-    you:       { world: 'you',       x: 300, y: 92,  lx: 300, ly: 36,  anchor: 'middle' },
-    company:   { world: 'company',   x: 225, y: 392, lx: 120, ly: 500, anchor: 'start' },
-    ai:        { world: 'ai',        x: 618, y: 226, lx: 700, ly: 120, anchor: 'end' },
-    decisions: { world: 'decisions', x: 416, y: 266, lx: 410, ly: 200, anchor: 'middle' },
+    you: {
+      world: 'you',
+      x: fx(0.42), y: fy(0.1),
+      lx: fx(0.42), ly: Math.max(14, fy(0.1) - labelGap),
+      anchor: 'middle',
+    },
+    company: {
+      world: 'company',
+      x: fx(0.28), y: fy(0.84),
+      lx: Math.max(8, padX * 0.35), ly: Math.min(h - 8, fy(1) + labelGap * 0.5),
+      anchor: 'start',
+    },
+    ai: {
+      world: 'ai',
+      x: fx(0.84), y: fy(0.42),
+      lx: Math.min(w - 8, fx(1) + padX * 0.35), ly: fy(0.18),
+      anchor: 'end',
+    },
+    decisions: {
+      world: 'decisions',
+      x: fx(0.56), y: fy(0.5),
+      lx: fx(0.56), ly: fy(0.5) - labelGap,
+      anchor: 'middle',
+    },
   };
 }
 
 function layoutNodes(
   facts: MemoryWebFact[],
   centres: Record<World, WorldCentre>,
+  /**
+   * Layout scale, derived from the live box, so the orbit rings + node sizes
+   * grow/shrink with the container instead of staying pinned to the old
+   * 760x520 numbers. 1 == the original brain-2.html sizing.
+   */
+  s = 1,
 ): NodePosition[] {
   if (facts.length === 0) return [];
 
@@ -125,10 +169,10 @@ function layoutNodes(
     group.forEach((fact, i) => {
       const rng = seededRandom(hashString(fact.id));
       const strength = factStrength(fact);
-      // strong facts hug the world centre; weak ones drift to the rim
-      const ring = (i === 0 ? 0 : 26 + (1 - strength) * 64 + i * 9);
+      // strong facts hug the world centre; weak ones drift to the rim (scaled)
+      const ring = (i === 0 ? 0 : 26 + (1 - strength) * 64 + i * 9) * s;
       const angle = (i * 137.508 * Math.PI) / 180 + rng() * 0.6;
-      const radius = strength > 0.7 ? 12 : strength > 0.45 ? 9 : 7;
+      const radius = (strength > 0.7 ? 12 : strength > 0.45 ? 9 : 7) * s;
       out.push({
         x: c.x + Math.cos(angle) * ring,
         y: c.y + Math.sin(angle) * ring,
@@ -239,18 +283,31 @@ export function MemoryWebVisualization({
     return () => ro.disconnect();
   }, []);
 
-  // We draw in a fixed 760x520 viewBox and let the SVG scale to fit; this keeps
-  // the four-world compass stable at any container size (mobile + desktop).
-  const VB_W = 760;
-  const VB_H = 520;
-  const centres = useMemo(() => worldCentres(), []);
+  // The viewBox now tracks the live container box (1 viewBox unit == 1 px), so
+  // the drawing FILLS its frame at any aspect instead of being letterboxed
+  // inside a fixed 760x520 landscape island. The four worlds are placed as
+  // fractions of this box, so they always spread to fill whatever shape the
+  // container is (tall portrait on mobile, wide on desktop, with or without
+  // the right rail). Guard against a zero box before the ResizeObserver fires.
+  const VB_W = Math.max(1, dims.w);
+  const VB_H = Math.max(1, dims.h);
+  const centres = useMemo(() => worldCentres(VB_W, VB_H), [VB_W, VB_H]);
+
+  // layout scale: grow rings + node sizes with the box. The reference box is
+  // the old 760x520; we clamp so a phone stays legible and a wide desktop does
+  // not balloon the nodes. Uses the smaller axis so portrait + landscape match.
+  const layoutScale = useMemo(() => {
+    const ref = Math.hypot(760, 520);
+    const live = Math.hypot(VB_W, VB_H);
+    return Math.max(0.7, Math.min(1.6, live / ref));
+  }, [VB_W, VB_H]);
 
   const factIds = useMemo(() => facts.map((f) => f.id).join(','), [facts]);
 
   const nodes = useMemo(
-    () => layoutNodes(facts, centres),
+    () => layoutNodes(facts, centres, layoutScale),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [factIds, centres],
+    [factIds, centres, layoutScale],
   );
 
   // which worlds are actually populated (for labels + legend honesty)
@@ -310,11 +367,35 @@ export function MemoryWebVisualization({
     [facts.length, dims.w, dims.h],
   );
 
-  const { svgTransform, isZoomed, resetZoom, wasGesture } = useZoomPan({
+  // initialScale 1 == fit-the-frame (the viewBox already equals the box), and
+  // minScale 0.5 lets the leader zoom OUT to recover from any state and see the
+  // whole brain. pinch / wheel / drag-when-zoomed all stay wired in the hook.
+  const { svgTransform, isZoomed, resetZoom, wasGesture, zoomIn, zoomOut, canFit } = useZoomPan({
     containerRef,
     dims,
     initialScale: 1,
+    minScale: 0.5,
+    maxScale: 3,
   });
+
+  // One-time "pinch or scroll to explore" hint, auto-dismissed on first gesture
+  // or after a few seconds. Respects prefers-reduced-motion (no pulsing).
+  const [showHint, setShowHint] = useState(false);
+  const prefersReducedMotion = useMemo(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+    [],
+  );
+  useEffect(() => {
+    if (facts.length === 0) return;
+    setShowHint(true);
+    const t = setTimeout(() => setShowHint(false), 5200);
+    return () => clearTimeout(t);
+  }, [facts.length]);
+  useEffect(() => {
+    if (canFit) setShowHint(false);
+  }, [canFit]);
 
   // Build the bond object for a node (what the reader shows)
   const bondForIndex = useCallback((index: number): MemoryBond | null => {
@@ -364,11 +445,9 @@ export function MemoryWebVisualization({
   const selectedNode = selectedIndex !== null ? nodes[selectedIndex] : null;
   const useInternalTooltip = !onBondSelect && !suppressTooltip;
 
-  // Scale viewBox coords -> screen for the tooltip
-  const toScreen = useCallback((x: number, y: number) => ({
-    x: (x / VB_W) * dims.w,
-    y: (y / VB_H) * dims.h,
-  }), [dims.w, dims.h]);
+  // viewBox now equals the px box (1 unit == 1 px), so a viewBox coord IS its
+  // unzoomed screen coord. Kept as a helper so the tooltip math reads clearly.
+  const toScreen = useCallback((x: number, y: number) => ({ x, y }), []);
 
   const tooltipPos = useMemo(() => {
     if (!selectedNode) return { x: 0, y: 0 };
@@ -434,7 +513,7 @@ export function MemoryWebVisualization({
                 key={`well-${w}`}
                 cx={centres[w].x}
                 cy={centres[w].y}
-                r={w === 'company' ? 150 : 120}
+                r={(w === 'company' ? 150 : 120) * layoutScale}
                 fill="url(#web-twell)"
               />
             ) : null,
@@ -444,7 +523,7 @@ export function MemoryWebVisualization({
           <circle
             cx={centres.decisions.x}
             cy={centres.decisions.y}
-            r={92}
+            r={92 * layoutScale}
             fill="url(#web-halo)"
             filter="url(#web-soft)"
           />
@@ -556,7 +635,7 @@ export function MemoryWebVisualization({
               <circle
                 cx={centres.decisions.x}
                 cy={centres.decisions.y}
-                r={20}
+                r={20 * layoutScale}
                 fill="none"
                 stroke="#f0a13c"
                 strokeWidth={2}
@@ -599,14 +678,25 @@ export function MemoryWebVisualization({
                     style={{ transformOrigin: `${node.x}px ${node.y}px` }}
                   />
                 )}
-                {/* outer pulse */}
+                {/* outer pulse. The explicit numeric `initial.r` stops Framer
+                    from committing an `r=undefined` on the first animation frame
+                    (the console-spam bug); under prefers-reduced-motion we hold
+                    a static radius and skip the pulse entirely. */}
                 <motion.circle
                   cx={node.x}
                   cy={node.y}
-                  r={node.radius * 1.9}
                   fill={`rgba(${meta.rgb},0.10)`}
-                  animate={{ r: [node.radius * 1.7, node.radius * 2.3, node.radius * 1.7], opacity: [0.1, 0.2, 0.1] }}
-                  transition={{ repeat: Infinity, duration: pulse, ease: 'easeInOut' }}
+                  initial={{ r: node.radius * 1.7, opacity: 0.1 }}
+                  animate={
+                    prefersReducedMotion
+                      ? { r: node.radius * 1.9, opacity: 0.14 }
+                      : { r: [node.radius * 1.7, node.radius * 2.3, node.radius * 1.7], opacity: [0.1, 0.2, 0.1] }
+                  }
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0 }
+                      : { repeat: Infinity, duration: pulse, ease: 'easeInOut' }
+                  }
                 />
 
                 {/* core - decisions render as a violet hexagon; facts as discs/tiles */}
@@ -796,20 +886,59 @@ export function MemoryWebVisualization({
         </div>
       )}
 
-      {/* reset zoom */}
-      <AnimatePresence>
-        {isZoomed && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.2 }}
-            onClick={resetZoom}
-            className="absolute bottom-3 right-3 z-20 flex items-center gap-1 rounded-full bg-card/80 backdrop-blur-sm border border-border px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors pointer-events-auto"
+      {/* Zoom controls: a small +/- / fit-to-screen cluster so zoom is
+          discoverable (the gestures were always wired but invisible). Fit
+          recovers the default fill at any time; zoom-out goes below 1. */}
+      {facts.length > 0 && (
+        <div className="absolute bottom-3 right-3 z-20 flex flex-col items-center gap-1 pointer-events-auto">
+          <button
+            type="button"
+            aria-label="Zoom in"
+            onClick={zoomIn}
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-card/85 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Minimize2 className="w-3 h-3" />
-            Reset
-          </motion.button>
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Zoom out"
+            onClick={zoomOut}
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-card/85 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </button>
+          <AnimatePresence>
+            {canFit && (
+              <motion.button
+                type="button"
+                aria-label="Fit to screen"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.18 }}
+                onClick={resetZoom}
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-card/85 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* One-time, subtle "pinch or scroll to explore" hint. */}
+      <AnimatePresence>
+        {showHint && !isZoomed && (
+          <motion.div
+            key="zoom-hint"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.3 }}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 rounded-full bg-card/80 backdrop-blur-sm border border-border px-3 py-1 text-[10px] text-muted-foreground pointer-events-none"
+          >
+            Pinch or scroll to explore
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
