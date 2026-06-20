@@ -45,12 +45,12 @@ import type {
   ArtifactBuildContext,
   IntakeAnswers,
   IntakeOption,
-  KitEmailContext,
   KitPathway,
   KitPreset,
   KitTool,
 } from "../types.ts";
 import { KIT_TOOL_LABELS } from "../types.ts";
+import { kitEmailShell } from "../email-shell.ts";
 import {
   beforeAfterTest,
   jobFileBuildPrompt,
@@ -202,22 +202,6 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function emailShell(body: string, ctx: KitEmailContext, buttonLabel: string): string {
-  return [
-    "<!DOCTYPE html>",
-    '<html lang="en">',
-    '<body style="margin:0;padding:0;background-color:#f5f5f4;">',
-    '<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1c1917;font-size:16px;line-height:1.6;">',
-    body,
-    '<p style="margin:28px 0;">',
-    `<a href="${escapeHtml(ctx.kitUrl)}" style="display:inline-block;background-color:#1c1917;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:600;">${buttonLabel}</a>`,
-    "</p>",
-    '<p style="margin:24px 0 0;">Krish</p>',
-    "</div>",
-    "</body>",
-    "</html>",
-  ].join("\n");
-}
 
 /* ------------------------------------------------------------------ */
 /* The preset                                                          */
@@ -774,43 +758,46 @@ export const memoryIdentityPreset: KitPreset = {
     pack: {
       subject: () => "Your Prompt Pack is ready",
       html: (ctx) =>
-        emailShell(
-          [
+        kitEmailShell({
+          heading: "Your Prompt Pack is ready",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open your pack",
+          bodyHtml: [
             '<p style="margin:0 0 16px;">Your pack is built. It is made from one job you already do, not a template, so it only works if you use it.</p>',
             '<p style="margin:0 0 16px;">One job tonight: paste the job-file prompt into your AI, let it draft the file from your history, and run it on one real task. Ten minutes, start to finish.</p>',
             '<p style="margin:0 0 16px;">The identity files and the self-correction loop land better once the job file has run on real work.</p>',
           ].join("\n"),
-          ctx,
-          "Open your pack",
-        ),
+        }),
     },
     day3: {
       subject: () => "Day 3. Has the job file run yet?",
       html: (ctx) => {
         const skillName = escapeHtml(ctx.skillName ?? "your job file");
-        return emailShell(
-          [
+        return kitEmailShell({
+          heading: "Day 3. Has the job file run yet?",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open the job-file prompt",
+          bodyHtml: [
             `<p style="margin:0 0 16px;">If you have not run it yet, ${skillName} has been idle for 3 days.</p>`,
             '<p style="margin:0 0 16px;">It is one paste. Open the pack, copy the job-file prompt into your AI, answer the few yes/no questions it asks, then run the before/after test.</p>',
             '<p style="margin:0 0 16px;">The gap between cold and loaded is the tax you are still paying. Reply if it broke; I read every one.</p>',
           ].join("\n"),
-          ctx,
-          "Open the job-file prompt",
-        );
+        });
       },
     },
     day7: {
       subject: () => "One job that knows its role. This week.",
       html: (ctx) =>
-        emailShell(
-          [
+        kitEmailShell({
+          heading: "One job that knows its role. This week.",
+          kitUrl: ctx.kitUrl,
+          buttonLabel: "Open the plan",
+          bodyHtml: [
             '<p style="margin:0 0 16px;">The plan said by today your AI runs one job loaded, by your standard, without the warm-up.</p>',
             '<p style="margin:0 0 16px;">If it is close, finish it: add the self-correction footer, make it a skill, and run the Friday hygiene pass. The same mistake does not get to happen twice.</p>',
             '<p style="margin:0 0 16px;">Open the pack, finish the last step, hit I Shipped It.</p>',
           ].join("\n"),
-          ctx,
-          "Open the plan",
-        ),
+        }),
     },
   },
 
