@@ -65,10 +65,14 @@ function kindLabel(kind: string | null): string | null {
   return KIND_LABEL[kind] ?? kind.charAt(0).toUpperCase() + kind.slice(1);
 }
 
+// AI-native only (docs/MAIN-APP-POLISH-SPEC.md section 0): every example is about
+// building, orchestrating, productizing, or selling AI. General-business prompts
+// ("move upmarket", "hire a VP of Sales") are gone; if a leader types one anyway,
+// the engine's reframe stage pulls it to its AI-native version.
 const DECISION_EXAMPLES = [
-  'We should move upmarket to enterprise next quarter because ACVs are higher and SMB churn is unsustainable.',
-  'We should switch our primary AI vendor to cut inference costs.',
-  'We should hire a VP of Sales now rather than promote from within.',
+  'We should stand up an agent to handle tier-1 support before hiring more reps.',
+  'We should switch our highest-volume agent to a cheaper model now that quality has closed the gap.',
+  'We should productize our internal AI research workflow as a paid feature.',
 ];
 
 function ConfidenceMeter({ value }: { value: number }) {
@@ -209,6 +213,15 @@ export function DecisionResult({ engine, onReset }: { engine: ReturnType<typeof 
                 )}
               </div>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed text-pretty">{decisionCase.statement}</p>
+              {decisionCase.reframed && decisionCase.reframed_statement && (
+                <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-primary/80">We reframed this to the AI-native version</p>
+                  <p className="text-sm text-foreground mt-1 leading-relaxed text-pretty">{decisionCase.reframed_statement}</p>
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                    {decisionCase.reframe_note || 'CTRL pressure-tests the AI-native version of a decision, never general business advice.'}
+                  </p>
+                </div>
+              )}
             </div>
             <Button variant="ghost" size="sm" onClick={onReset} className="shrink-0"><RotateCcw className="h-4 w-4" /></Button>
           </div>
