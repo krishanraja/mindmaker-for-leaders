@@ -53,9 +53,9 @@ export default function TryPage() {
       <div className="mx-auto w-full max-w-xl px-5 py-14 sm:py-20">
         <div className="text-center">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-accent">Live demo</span>
-          <h1 className="mt-3 text-balance text-3xl font-bold tracking-tight sm:text-4xl">Watch CTRL pressure-test a decision.</h1>
+          <h1 className="mt-3 text-balance text-3xl font-bold tracking-tight sm:text-4xl">Watch CTRL test a real decision.</h1>
           <p className="mx-auto mt-3 max-w-md text-balance text-muted-foreground">
-            It decomposes the bet, checks each consideration against the evidence, and tells you where only you can decide. No spin.
+            It tests your decision against real evidence and shows you where it holds and where it breaks, then tells you where only you can decide. No spin.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default function TryPage() {
         {/* CTA appears once the demo resolves */}
         {shown >= CLAIMS.length && (
           <div className="mt-10 rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.07] to-transparent p-7 text-center">
-            <h2 className="text-xl font-bold tracking-tight">Now pressure-test yours.</h2>
+            <h2 className="text-xl font-bold tracking-tight">Now try one of yours.</h2>
             <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
               CTRL clarifies; it never recommends from a thin signal. The call stays yours - now with the evidence laid bare.
             </p>

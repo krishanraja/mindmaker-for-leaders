@@ -86,9 +86,9 @@ export function AutomatorSuggestions({
           Pick something you do over and over.
         </h1>
         <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">
-          CTRL will learn how you do it, then write you an agent that does it for
-          you. Start with one of these - they come from what CTRL knows about
-          your work.
+          We will learn how you do it, then write you an agent that does it for
+          you. Start with one of these. They come from what you have already told
+          us about your work.
         </p>
       </div>
 
@@ -96,7 +96,7 @@ export function AutomatorSuggestions({
       {hasMined && (
         <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/[0.08] px-2.5 py-1 text-[10.5px] font-semibold text-accent">
           <Brain className="h-3 w-3" />
-          Pulled from your brain
+          From what you have told us
         </span>
       )}
 
@@ -278,8 +278,8 @@ export function AutomatorSuggestions({
       )}
 
       <p className="px-2 text-center text-[11px] leading-relaxed text-muted-foreground/70">
-        Suggested from what CTRL knows about your work and role. The more it
-        learns about you, the sharper these get.
+        These come from what you have shared about your work and role. The more
+        you tell us, the sharper they get.
       </p>
     </div>
   );

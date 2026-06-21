@@ -260,7 +260,7 @@ export default function MemoryCenter() {
       >
         <div className="max-w-4xl w-full mx-auto flex-1 min-h-0 flex flex-col">
           <p className="text-xs text-muted-foreground mb-3 flex-shrink-0">
-            Everything your AI knows about you
+            This is the memory that helps your AI understand your business. The more it holds, the more any AI you use knows your context and sounds like you.
           </p>
           {stats && (
             <div className="flex flex-wrap gap-2 mb-4 flex-shrink-0">
