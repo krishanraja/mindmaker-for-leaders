@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Copy, Check, Brain, Zap, ArrowRight, Loader2 } from 'lucide-react';
-import { AppHeader } from '@/components/memory-web/AppHeader';
-import { BottomNav } from '@/components/memory-web/BottomNav';
 import { DesktopShell } from '@/components/layout/DesktopShell';
+import { MobileFrame } from '@/components/layout/MobileFrame';
 import { Button } from '@/components/ui/button';
 import { useDevice } from '@/hooks/useDevice';
 import { useUserMemory } from '@/hooks/useUserMemory';
@@ -184,22 +183,18 @@ export default function EnrichPage() {
   // Mobile: full-screen with AppHeader + BottomNav.
   if (isMobile) {
     return (
-      <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-        <AppHeader />
-        <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 scrollbar-hide">
-          <div className="mx-auto w-full max-w-2xl py-4 space-y-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-accent" />
-                <h1 className="text-xl font-bold text-foreground">Deepen your profile</h1>
-              </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">{ENRICH_INTRO}</p>
+      <MobileFrame scroll hideScrollbar maxWidth="max-w-2xl" padding="px-4 pb-24">
+        <div className="py-4 space-y-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-accent" />
+              <h1 className="text-xl font-bold text-foreground">Deepen your profile</h1>
             </div>
-            {body}
+            <p className="text-sm leading-relaxed text-muted-foreground">{ENRICH_INTRO}</p>
           </div>
-        </main>
-        <BottomNav />
-      </div>
+          {body}
+        </div>
+      </MobileFrame>
     );
   }
 
