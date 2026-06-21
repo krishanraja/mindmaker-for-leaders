@@ -229,7 +229,7 @@ export default function MemoryCenter() {
     return (
       <DesktopShell
         eyebrow="Memory"
-        title="Memory Browser"
+        title="Let's keep your story straight"
         actions={
           <>
             <Button
@@ -309,7 +309,7 @@ export default function MemoryCenter() {
 
       <div className="flex-shrink-0 px-5 pt-1 pb-0.5">
         <p className="text-[11px] text-muted-foreground/80 leading-tight">
-          Browse and edit every fact CTRL knows about you.
+          Let's keep your story straight, so every AI you use knows you.
         </p>
       </div>
 

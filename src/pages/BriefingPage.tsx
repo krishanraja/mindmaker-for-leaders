@@ -234,7 +234,7 @@ function BriefingPage() {
         <div className="flex-shrink-0 flex items-center justify-between px-4 pt-3 pb-2">
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-foreground truncate">
-              Briefing
+              Your daily read
             </h1>
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
               <span
@@ -588,7 +588,7 @@ function BriefingPage() {
   return (
     <>
       <DesktopShell
-        eyebrow="Briefing"
+        eyebrow="Your daily read"
         title={
           <span className="flex items-center gap-2">
             <span

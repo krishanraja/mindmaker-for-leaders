@@ -167,7 +167,7 @@ export default function GoalsPage() {
   // Desktop: unified shell (rail + top bar), cohesive with the rest of CTRL.
   if (!isMobile) {
     return (
-      <DesktopShell eyebrow="Workspace" title="Goals">
+      <DesktopShell eyebrow="Workspace" title="What you're aiming for">
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
           <div className="mx-auto w-full max-w-3xl">
             <p className="text-sm text-muted-foreground mb-6">{GOALS_SUBTITLE}</p>
@@ -187,7 +187,7 @@ export default function GoalsPage() {
           <header className="space-y-1">
             <div className="flex items-center gap-2">
               <Target className="h-5 w-5 text-accent" />
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">Goals</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">What you're aiming for</h1>
             </div>
             <p className="text-sm text-muted-foreground">{GOALS_SUBTITLE}</p>
           </header>
