@@ -6,7 +6,7 @@ import { DecisionCard } from '@/components/track-record/DecisionCard';
 import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone';
 import { MemoryItemCard } from '@/components/memory/MemoryItemCard';
 import { ContestPanel } from '@/components/contest/ContestPanel';
-import { CockpitHome } from '@/components/cockpit/CockpitHome';
+import { HomeFeed } from '@/components/cockpit/HomeFeed';
 import { StoneRead } from '@/components/decision-map/StoneRead';
 import { BriefingHero } from '@/components/briefing/BriefingHero';
 import { AutomatorSuggestions } from '@/components/automator/AutomatorSuggestions';
@@ -142,11 +142,11 @@ const COCKPIT_DECK: DeckCard[] = [
   { id: 'd3', kind: 'news', eyebrow: 'Worth a look', category: 'MODELS', headline: 'A new open model matched the paid frontier on coding.', say: 'You could cut your model bill without losing quality on the work you actually do.', magnitude: { value: '~10x', kind: 'modelled' } },
   { id: 'd4', kind: 'signal', eyebrow: 'From your world', headline: 'Your brain learned 3 new things this week.', say: 'Fresh context from your decisions and notes is now in the loop.' },
 ];
-const COCKPIT_BASE: Omit<CockpitData, 'deck'> = { hero: { kind: 'quiet', headline: '' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1 };
+const COCKPIT_BASE: Omit<CockpitData, 'deck'> = { hero: { kind: 'quiet', headline: '' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1, homeState: 'warm', ownSignalCount: 2 };
 const COCKPIT_FIXTURES: { label: string; data: CockpitData }[] = [
-  { label: 'full deck - mixed news + your own signals + the 3 actions', data: { ...COCKPIT_BASE, deck: COCKPIT_DECK } },
-  { label: 'deck - one card left (near caught-up)', data: { ...COCKPIT_BASE, deck: [COCKPIT_DECK[1]] } },
-  { label: 'empty deck - calm caught-up state + the 3 actions', data: { ...COCKPIT_BASE, deck: [] } },
+  { label: 'warm - mixed news + your own signals + the 3 doors', data: { ...COCKPIT_BASE, deck: COCKPIT_DECK } },
+  { label: 'rich - dense triage (own signals woven)', data: { ...COCKPIT_BASE, homeState: 'rich', deck: COCKPIT_DECK } },
+  { label: 'cold - one card left (near caught-up)', data: { ...COCKPIT_BASE, homeState: 'cold', ownSignalCount: 0, deck: [COCKPIT_DECK[1]] } },
 ];
 
 const BRIEFING_FIXTURES: { label: string; read: BriefingRead }[] = [
@@ -383,25 +383,40 @@ export default function PreviewPage() {
           </div>
         </Section>
 
-        <Section title="Cockpit (mobile home) - CockpitHome">
+        <Section title="Home 2028 (mobile swipe feed) - HomeFeed">
           {COCKPIT_FIXTURES.map((f) => (
             <div key={f.label}>
               <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
-              {/* phone-height box: CockpitHome is a fit-to-viewport flex column */}
+              {/* phone-height box: HomeFeed is a fit-to-viewport flex column */}
               <div className="h-[760px] rounded-2xl border border-border bg-background p-3">
-                <CockpitHome
+                <HomeFeed
+                  variant="mobile"
                   data={f.data}
+                  loading={false}
                   greeting="Good morning, Krish."
-                  framing="The one thing I'd put in front of you today:"
                   onPlayBriefing={noop}
                   onGoDecide={noop}
                   onBuildSkill={noop}
-                  onOpenBet={noop}
-                  animated={false}
+                  onOpenCard={noop}
                 />
               </div>
             </div>
           ))}
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">loading - in-shell branded skeleton</p>
+            <div className="h-[760px] rounded-2xl border border-border bg-background p-3">
+              <HomeFeed
+                variant="mobile"
+                data={COCKPIT_FIXTURES[0].data}
+                loading
+                greeting="Good morning, Krish."
+                onPlayBriefing={noop}
+                onGoDecide={noop}
+                onBuildSkill={noop}
+                onOpenCard={noop}
+              />
+            </div>
+          </div>
         </Section>
 
         <Section title="Stone Read (number-or-words hero) - StoneRead">

@@ -5,6 +5,7 @@ import { Hand, X } from "lucide-react"
 import { MobileMemoryDashboard } from "@/components/memory-web/MobileMemoryDashboard"
 import { DesktopMemoryDashboard } from "@/components/memory-web/DesktopMemoryDashboard"
 import { CockpitView } from "@/components/cockpit/CockpitView"
+import { DesktopHomeView } from "@/components/cockpit/DesktopHomeView"
 import { OnboardingInterview } from "@/components/onboarding/OnboardingInterview"
 import { BottomNav } from "@/components/memory-web/BottomNav"
 import { DesktopShell } from "@/components/layout/DesktopShell"
@@ -165,8 +166,15 @@ export default function Dashboard() {
   // frame so it sits inside the single viewport (header + banner + home + nav)
   // and the home still fits with no page scroll for a brand-new leader. The
   // other surfaces own their own scroll, so the banner wraps them as before.
-  if (isMobile && COCKPIT_ENABLED) {
-    return <CockpitView banner={onboardingBanner} />
+  if (COCKPIT_ENABLED) {
+    // The unified 2028 Home: ONE information model (browsable headlines + the
+    // three doors), rendered device-native (mobile swipe feed / desktop rail).
+    // The legacy Memory dashboard stays reachable at /memory and ?view=edge.
+    return isMobile ? (
+      <CockpitView banner={onboardingBanner} />
+    ) : (
+      <DesktopHomeView banner={onboardingBanner} />
+    )
   }
 
   return (
