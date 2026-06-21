@@ -114,6 +114,21 @@
   /* the mock emerald, available to the number utilities below */
   --ctrl-accent: #00d9b6;
   --ctrl-accent-ink-bright: #aef6ea;
+
+  /* ============================================================
+     MOTIF / DEEP-SURFACE TOKENS
+     The CategoryMotif band art and a few deep instrument surfaces used
+     hardcoded hex off the founder-approved prototype. These tokens carry
+     the EXACT same resolved hex (no colour shift) so the art renders
+     identically while the source moves onto the theme. The motif ink
+     tracks --accent; these carry the deep blue-black instrument surfaces
+     and the one darker emerald gradient stop the prototype used.
+     ============================================================ */
+  --ctrl-surface-deep-1: #0d1218; /* motif band gradient top */
+  --ctrl-surface-deep-2: #0a0e13; /* motif band gradient bottom / node fills */
+  --ctrl-motif-faint: #2b3340;    /* faint structural strokes in the motif */
+  --ctrl-motif-bar: #16323a;      /* unhighlighted proof-chart bars */
+  --ctrl-accent-deep: #0a8e7a;    /* darker stop of the emerald lattice gradient */
 }
 
 @layer utilities {
