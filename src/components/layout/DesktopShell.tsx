@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   Home,
@@ -18,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { BrandLockup } from '@/components/landing/BrandLockup';
 import { CommandPaletteTrigger } from './CommandPalette';
+import { PageTransition } from './PageTransition';
 
 const navItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home', shortcut: 'H' },
@@ -45,6 +47,7 @@ function DesktopRail() {
   const location = useLocation();
   const [, setSearchParams] = useSearchParams();
   const { signOut, user } = useAuth();
+  const prefersReducedMotion = useReducedMotion();
 
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'You';
   const initials = firstName.slice(0, 2).toUpperCase();
@@ -85,13 +88,32 @@ function DesktopRail() {
                 }
               }}
               className={cn(
-                'group w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium',
+                'group relative w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium',
                 'transition-colors duration-100',
                 isActive
                   ? 'bg-accent/15 text-accent'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
               )}
             >
+              {/* Active glow indicator: the same emerald affordance the mobile
+                  BottomNav active item carries, so desktop and mobile read as
+                  one system. A left-edge accent bar with a soft accent glow. */}
+              {isActive && (
+                <motion.span
+                  layoutId="desktop-nav-indicator"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-accent"
+                  style={{
+                    boxShadow:
+                      '0 0 8px hsl(var(--accent) / 0.55), 0 0 14px hsl(var(--accent) / 0.35)',
+                  }}
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0 }
+                      : { type: 'spring', stiffness: 400, damping: 30 }
+                  }
+                  aria-hidden="true"
+                />
+              )}
               <Icon className={cn('h-4 w-4', isActive ? 'text-accent' : '')} />
               <span className="flex-1 text-left">{item.label}</span>
               <kbd
@@ -252,7 +274,7 @@ export function DesktopShell({
               !bleed && 'px-8 py-6',
             )}
           >
-            {children}
+            <PageTransition>{children}</PageTransition>
           </main>
           {rightRail && (
             <aside
