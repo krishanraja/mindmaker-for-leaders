@@ -76,7 +76,7 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 1. [root `CLAUDE.md`](../CLAUDE.md) - workflow + live architecture
 2. [ARCHITECTURE.md](./ARCHITECTURE.md), [FEATURES.md](./FEATURES.md), [COMMON_ISSUES.md](./COMMON_ISSUES.md)
-3. [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - tokens + patterns (globally dark)
+3. Design tokens: the live dark `ctrl-ds` tokens are in the code (`src/styles/tokens.css`, `index.css`) + the cross-app contract in [SPINE.md](./SPINE.md) (the old light [DESIGN_SYSTEM.md](./_archive/DESIGN_SYSTEM.md) is archived)
 4. [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) to set up a new instance
 
 ---

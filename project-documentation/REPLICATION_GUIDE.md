@@ -56,7 +56,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: "hsl(var(--primary))",
-        // ... (see DESIGN_SYSTEM.md for full list)
+        // ... (see the live dark tokens in src/styles/tokens.css + index.css; the cross-app contract is in SPINE.md)
       }
     }
   },
@@ -64,7 +64,7 @@ export default {
 } satisfies Config
 ```
 
-**src/index.css**: (see DESIGN_SYSTEM.md for full CSS variables)
+**src/index.css** + **src/styles/tokens.css**: the live dark `ctrl-ds` CSS variables (globally dark, emerald `#00D9B6`). The old light token doc is archived at `_archive/DESIGN_SYSTEM.md`; do not use its values.
 
 ---
 

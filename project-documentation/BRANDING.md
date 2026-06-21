@@ -215,7 +215,7 @@ ctrl.themindmaker.ai
 
 ## Visual Brand Elements
 
-> Corrected to the live dark system. The app is globally dark; there are no white backgrounds. Canonical: `DESIGN_SYSTEM.md` + the code (`src/styles/tokens.css`, `index.css`).
+> Corrected to the live dark system. The app is globally dark; there are no white backgrounds. Canonical: the live tokens in the code (`src/styles/tokens.css`, `index.css`) + `SPINE.md` (the old light `DESIGN_SYSTEM.md` is archived in `_archive/`).
 
 ### Logo Usage
 - The `BrandLockup` (Mindmaker icon + `ctrl-logo` wordmark) in headers and sidebars (mobile + desktop). This replaced the generated emerald `ctrl.` text and the old green Mindmaker logo.
