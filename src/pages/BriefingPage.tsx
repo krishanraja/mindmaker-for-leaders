@@ -566,7 +566,7 @@ function BriefingPage() {
                 <button
                   key={b.id}
                   onClick={() => handlePlayBriefing(b)}
-                  className="w-full flex items-center gap-3 px-2.5 py-2 rounded-md hover:bg-secondary/60 transition-colors text-left group"
+                  className="w-full flex items-center gap-3 px-2.5 py-2 rounded-md hover:bg-secondary/50 transition-colors text-left group"
                 >
                   <Clock className="w-3.5 h-3.5 text-muted-foreground/60 group-hover:text-accent flex-shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -609,14 +609,14 @@ function BriefingPage() {
             <>
               <button
                 onClick={() => setCustomSheetOpen(true)}
-                className="hidden md:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                className="hidden md:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-secondary/50 transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Custom briefing
               </button>
               <button
                 onClick={() => setInterestsSheetOpen(true)}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-secondary/50 transition-colors"
               >
                 <Settings2 className="h-3.5 w-3.5" />
                 Adjust

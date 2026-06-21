@@ -79,7 +79,7 @@ function SelectorButton({
       onClick={onClick}
       className={cn(
         'group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors',
-        active ? 'bg-accent/15 border border-accent/30' : 'border border-transparent hover:bg-secondary/60',
+        active ? 'bg-accent/15 border border-accent/30' : 'border border-transparent hover:bg-secondary/50',
       )}
     >
       {icon && <span className="flex-shrink-0">{icon}</span>}
@@ -332,7 +332,7 @@ export default function Compliance() {
 
       <div className="flex-shrink-0 px-4 pb-2">
         <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center shadow-lg shadow-accent/20">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg shadow-accent/20">
             <Shield className="h-4 w-4 text-white" />
           </div>
           <div>

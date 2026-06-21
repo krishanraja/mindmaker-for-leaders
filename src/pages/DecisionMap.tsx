@@ -101,7 +101,7 @@ function MapBody({ caseId, onChange }: { caseId: string; onChange: () => void })
   return (
     <div>
       {/* THE PINNED DECISION - the one thing everything hangs off */}
-      <div className="relative overflow-hidden rounded-[18px] border border-accent/25 bg-[radial-gradient(130%_100%_at_50%_0%,#10241e_0%,#0b0f13_60%)] p-4 shadow-[0_0_50px_-24px_#00d9b6]">
+      <div className="relative overflow-hidden rounded-2xl border border-accent/25 bg-[radial-gradient(130%_100%_at_50%_0%,#10241e_0%,#0b0f13_60%)] p-4 shadow-[0_0_50px_-24px_hsl(var(--accent))]">
         <div className="mb-3 flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-accent/80">
             <Star className="h-3 w-3 fill-current" /> Pinned decision
@@ -109,7 +109,7 @@ function MapBody({ caseId, onChange }: { caseId: string; onChange: () => void })
           <button
             type="button"
             onClick={onChange}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border bg-[#0c1116] px-2.5 py-1.5 text-[11px] font-semibold text-accent transition-colors hover:bg-secondary/40"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border bg-[#0c1116] px-2.5 py-1.5 text-[11px] font-semibold text-accent transition-colors hover:bg-secondary/50"
           >
             <RefreshCw className="h-3.5 w-3.5" /> Change
           </button>
@@ -275,7 +275,7 @@ function CasePicker({ onPick }: { onPick: (id: string) => void }) {
           key={c.id}
           type="button"
           onClick={() => onPick(c.id)}
-          className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-secondary/40"
+          className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-secondary/50"
         >
           <span className="min-w-0 flex-1 text-sm font-medium text-foreground">{c.statement}</span>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />

@@ -27,7 +27,7 @@ const MOTIF_CSS = `
   --motif-accent: hsl(var(--accent));
   --motif-ink: var(--ctrl-accent-ink-bright, #aef6ea); }
 .ctrl-motif .stroke{ fill:none; stroke:var(--motif-accent); stroke-linecap:round; stroke-linejoin:round; }
-.ctrl-motif .faint{ stroke:#2b3340; }
+.ctrl-motif .faint{ stroke:var(--ctrl-motif-faint, #2b3340); }
 .ctrl-motif .dim{ stroke:color-mix(in srgb, var(--motif-accent) 40%, transparent); }
 .ctrl-motif .glow-dot{ fill:var(--motif-accent); }
 
@@ -48,7 +48,7 @@ const MOTIF_CSS = `
 
 .ctrl-motif-band{ position:relative; overflow:hidden; background:
     radial-gradient(120% 130% at 80% -10%, color-mix(in srgb, hsl(var(--accent)) 10%, transparent), transparent 60%),
-    linear-gradient(180deg,#0d1218 0%, #0a0e13 100%); }
+    linear-gradient(180deg,var(--ctrl-surface-deep-1,#0d1218) 0%, var(--ctrl-surface-deep-2,#0a0e13) 100%); }
 .ctrl-motif-band::after{ content:""; position:absolute; inset:0; pointer-events:none;
   background:linear-gradient(105deg, transparent 38%, color-mix(in srgb, hsl(var(--accent)) 6%, transparent) 50%, transparent 62%);
   width:60%; animation:ctrlMotifSweep 9s ease-in-out infinite; mix-blend-mode:screen; }
@@ -92,7 +92,7 @@ function Defs({ uid }: { uid: string }) {
         <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0" />
       </radialGradient>
       <linearGradient id={`ln${uid}`} x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#0a8e7a" />
+        <stop offset="0%" stopColor="var(--ctrl-accent-deep, #0a8e7a)" />
         <stop offset="100%" stopColor="hsl(var(--accent))" />
       </linearGradient>
       <filter id={`bl${uid}`} x="-40%" y="-40%" width="180%" height="180%">
@@ -193,11 +193,11 @@ const MOTIF_ART: Record<NewsCategoryId, MotifInner> = {
       </g>
       <circle cx="160" cy="78" r="10" fill="hsl(var(--accent))" filter={`url(#bl${uid})`} />
       <circle cx="160" cy="78" r="6.5" fill="var(--ctrl-accent-ink-bright,#aef6ea)" />
-      <circle cx="160" cy="40" r="6" fill="#0a0e13" stroke="hsl(var(--accent))" strokeWidth="2" />
-      <circle cx="104" cy="66" r="6" fill="#0a0e13" stroke="hsl(var(--accent))" strokeWidth="2" className="m-flick" />
-      <circle cx="216" cy="66" r="6" fill="#0a0e13" stroke="hsl(var(--accent))" strokeWidth="2" />
-      <circle cx="132" cy="112" r="6" fill="#0a0e13" stroke="hsl(var(--accent))" strokeWidth="2" />
-      <circle cx="188" cy="112" r="6" fill="#0a0e13" stroke="hsl(var(--accent))" strokeWidth="2" className="m-flick" style={{ animationDelay: '2.4s' }} />
+      <circle cx="160" cy="40" r="6" fill="var(--ctrl-surface-deep-2, #0a0e13)" stroke="hsl(var(--accent))" strokeWidth="2" />
+      <circle cx="104" cy="66" r="6" fill="var(--ctrl-surface-deep-2, #0a0e13)" stroke="hsl(var(--accent))" strokeWidth="2" className="m-flick" />
+      <circle cx="216" cy="66" r="6" fill="var(--ctrl-surface-deep-2, #0a0e13)" stroke="hsl(var(--accent))" strokeWidth="2" />
+      <circle cx="132" cy="112" r="6" fill="var(--ctrl-surface-deep-2, #0a0e13)" stroke="hsl(var(--accent))" strokeWidth="2" />
+      <circle cx="188" cy="112" r="6" fill="var(--ctrl-surface-deep-2, #0a0e13)" stroke="hsl(var(--accent))" strokeWidth="2" className="m-flick" style={{ animationDelay: '2.4s' }} />
     </>
   ),
 
@@ -238,7 +238,7 @@ const MOTIF_ART: Record<NewsCategoryId, MotifInner> = {
     <>
       <circle cx="160" cy="80" r="48" fill={`url(#g${uid})`} opacity=".45" className="m-breatheBig" />
       <path className="stroke" strokeWidth="2.4" d="M138 70 V58 a22 22 0 0 1 44 0 V70" />
-      <rect x="126" y="70" width="68" height="52" rx="9" className="stroke" strokeWidth="2.2" fill="#0a0e13" />
+      <rect x="126" y="70" width="68" height="52" rx="9" className="stroke" strokeWidth="2.2" fill="var(--ctrl-surface-deep-2, #0a0e13)" />
       <circle cx="160" cy="92" r="5" className="stroke" strokeWidth="2" />
       <line x1="160" y1="96" x2="160" y2="108" className="stroke" strokeWidth="2.4" />
       <path className="stroke m-breathe" stroke="hsl(var(--accent))" strokeWidth="1.8" d="M150 70 l6 14 l-8 8 l10 10 l-5 12" opacity=".85" />
@@ -270,7 +270,7 @@ const MOTIF_ART: Record<NewsCategoryId, MotifInner> = {
             className={i === 0 ? undefined : 'm-drift'}
             style={i === 0 ? undefined : { animationDelay: `${i * 0.4}s`, animationDuration: '6s' }}
           >
-            <circle cx="0" cy="-4" r={i === 0 ? 5.5 : 4.4} fill="#0a0e13" stroke="hsl(var(--accent))" strokeWidth="2" />
+            <circle cx="0" cy="-4" r={i === 0 ? 5.5 : 4.4} fill="var(--ctrl-surface-deep-2, #0a0e13)" stroke="hsl(var(--accent))" strokeWidth="2" />
             <path className="stroke" strokeWidth="2" d={`M${i === 0 ? -7 : -6} ${i === 0 ? 7 : 6} a${i === 0 ? 7 : 6} ${i === 0 ? 6 : 5} 0 0 1 ${i === 0 ? 14 : 12} 0`} />
           </g>
         ))}
@@ -299,13 +299,13 @@ const MOTIF_ART: Record<NewsCategoryId, MotifInner> = {
               width="18"
               height={118 - b[1]}
               rx="3"
-              fill={i >= 4 ? `url(#ln${uid})` : '#16323a'}
+              fill={i >= 4 ? `url(#ln${uid})` : 'var(--ctrl-motif-bar, #16323a)'}
               opacity={0.55 + i * 0.07}
             />
           ))}
         </g>
         <path className="stroke m-draw" style={{ ['--len' as string]: '280' }} strokeWidth="2.4" d="M70 92 L108 82 L146 86 L184 62 L222 50 L266 32" />
-        <circle cx="266" cy="32" r="11" fill="#0a0e13" stroke="hsl(var(--accent))" strokeWidth="2" className="m-breathe" />
+        <circle cx="266" cy="32" r="11" fill="var(--ctrl-surface-deep-2, #0a0e13)" stroke="hsl(var(--accent))" strokeWidth="2" className="m-breathe" />
         <path className="stroke" strokeWidth="2.2" d="M261 32 l4 4 l7 -8" />
       </>
     );

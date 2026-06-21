@@ -40,12 +40,12 @@ function Door({ icon: Icon, label, sub, wide, onClick }: DoorProps) {
       <button
         type="button"
         onClick={onClick}
-        className="flex flex-1 items-center gap-3 rounded-[14px] border border-border bg-[linear-gradient(180deg,#0f141c,#0b0f15)] px-4 py-3.5 text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground"
+        className="flex flex-1 items-center gap-3 rounded-2xl border border-border bg-card/60 px-4 py-3.5 text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground"
       >
         <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.7} />
         <span className="flex flex-col items-start gap-px">
           <span className="text-[12.5px] font-semibold leading-none">{label}</span>
-          <span className="text-[10px] leading-none text-[#566070]">{sub}</span>
+          <span className="text-[10px] leading-none text-muted-foreground/70">{sub}</span>
         </span>
       </button>
     );
@@ -58,7 +58,7 @@ function Door({ icon: Icon, label, sub, wide, onClick }: DoorProps) {
     >
       <Icon className="h-[19px] w-[19px]" strokeWidth={1.7} />
       <span className="text-[10px] font-semibold leading-none tracking-[0.01em]">{label}</span>
-      <span className="text-[8.5px] font-medium leading-none tracking-[0.02em] text-[#566070]">{sub}</span>
+      <span className="text-[8.5px] font-medium leading-none tracking-[0.02em] text-muted-foreground/70">{sub}</span>
     </button>
   );
 }

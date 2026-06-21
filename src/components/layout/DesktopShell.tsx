@@ -58,7 +58,7 @@ function DesktopRail() {
       <button
         type="button"
         onClick={() => navigate('/dashboard')}
-        className="h-14 px-4 flex items-center gap-2.5 border-b border-border/60 hover:bg-secondary/40 transition-colors text-left"
+        className="h-14 px-4 flex items-center gap-2.5 border-b border-border/60 hover:bg-secondary/50 transition-colors text-left"
       >
         <BrandLockup />
       </button>
@@ -92,7 +92,7 @@ function DesktopRail() {
                 'transition-colors duration-100',
                 isActive
                   ? 'bg-accent/15 text-accent'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50',
               )}
             >
               {/* Active glow indicator: the same emerald affordance the mobile
@@ -144,7 +144,7 @@ function DesktopRail() {
                 'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-accent/15 text-accent'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50',
               )}
             >
               <Icon className="h-4 w-4" />
