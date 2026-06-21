@@ -2,9 +2,9 @@
 
 Step-by-step instructions to replicate CTRL from scratch.
 
-**Last Updated:** 2026-06-09
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
 
-> Current scope: 80 edge functions, 59 hooks, 110 migrations, pgvector + pgcrypto + pg_cron. This guide gets you to a runnable instance; full feature parity requires shipping each phase in order (see HISTORY.md), now including Phase 8 (Agent Skill Builder + desktop redesign), Phase 9 (Decision Engine + Briefing streaming), and Phase 10 (DesktopShell unified across every authed surface + Goals + Enrich loop).
+> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts are dated 2026-06-09 (a lower bound: ~80 edge functions, ~59 hooks, ~110 migrations, pgvector + pgcrypto + pg_cron); trust `CLAUDE.md` and the code for current totals. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222) that post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
 
 ---
 
