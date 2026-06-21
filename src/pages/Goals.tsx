@@ -2,9 +2,8 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Plus, Check, Pause, Play, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AppHeader } from '@/components/memory-web/AppHeader';
-import { BottomNav } from '@/components/memory-web/BottomNav';
 import { DesktopShell } from '@/components/layout/DesktopShell';
+import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useDevice } from '@/hooks/useDevice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -178,24 +177,20 @@ export default function GoalsPage() {
     );
   }
 
-  // Mobile: full-screen with AppHeader + BottomNav.
+  // Mobile: the shared MobileFrame (persistent header + nav, content cross-fade).
   return (
-    <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-      <AppHeader />
-      <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 scrollbar-hide">
-        <div className="mx-auto w-full max-w-3xl py-4 space-y-6">
-          <header className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-accent" />
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">What you're aiming for</h1>
-            </div>
-            <p className="text-sm text-muted-foreground">{GOALS_SUBTITLE}</p>
-          </header>
-          {body}
-        </div>
-      </main>
-      <BottomNav />
-    </div>
+    <MobileFrame scroll hideScrollbar maxWidth="max-w-3xl" padding="px-4 pb-24">
+      <div className="py-4 space-y-6">
+        <header className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-accent" />
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">What you're aiming for</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">{GOALS_SUBTITLE}</p>
+        </header>
+        {body}
+      </div>
+    </MobileFrame>
   );
 }
 
