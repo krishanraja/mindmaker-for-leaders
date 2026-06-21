@@ -1,71 +1,95 @@
 # CTRL System Spec (one holistic instrument, not separate parts)
 
-Status: DRAFT, founder-locked on the spine and the home model. This is the canonical rule for making CTRL feel like ONE coherent system. It sits above the surface specs (`MAIN-APP-POLISH-SPEC.md`, `KIT-REDESIGN-SPEC.md`): those say what each surface does; this says how they all cohere into one thing.
+Status: founder-locked. The canonical rule for making CTRL feel like ONE coherent system. It sits above the surface specs (`MAIN-APP-POLISH-SPEC.md`, `KIT-REDESIGN-SPEC.md`): those say what each surface does; this says how they all cohere into one thing.
 
-Why this exists: the app was built surface by surface (often by separate agents in separate PRs), so the parts do not share a layout contract, a single design rhythm, one story, or a continuous feel. The literal symptom is the home news deck overlapping the other home components. The fix is a unifying system, proven on the home first, then propagated.
-
-Founder-locked (2026-06-21):
-- **The spine: CTRL is your AI-native chief of staff.** A trusted operator that greets you, surfaces the one thing that needs you, and handles the rest. Warm, advisory, human voice.
-- **The home is one adaptive "one thing"**: the single most important item right now, full-frame, chosen for you, with "and N more" and a few quiet doors. Ruthless focus; nothing competes, so nothing can overlap.
-- **Holistic at all four levels** (compositional, visual, conceptual, interaction). All four matter.
+Why this exists: the app was built surface by surface, so the parts did not share a layout contract, a single design rhythm, one story, or a continuous feel. The first symptom was the home news deck overlapping its siblings. A live authed walk (2026-06-21) then exposed deeper issues: real-data overflow behind the nav, the same content duplicated across tabs, tabs that ask too much, a brain that does not centre, and surfaces that look identical at session 1 and session 100. This spec is the unifying rule that fixes those.
 
 ---
 
-## 1. The spine: the AI-native chief of staff
+## 0. Founder-locked decisions
 
-Every surface speaks and behaves as one trusted operator helping you build the AI-native version of your business.
-- **Home** = "the one thing I'd put in front of you today" + "I'm also tracking N more."
-- **Tabs are the chief of staff's capabilities**, not a feature menu: weigh a decision, your memory, your briefing, your build. Named in plain, first-person-helpful language.
-- **Voice everywhere**: warm, advisory, specific ("the agents you shelved are worth another look now"), never a dashboard barking metrics, never arrogant. Carries the approachable-language work already shipped.
-- It stays AI-native (the North Star from `MAIN-APP-POLISH-SPEC.md`): the chief of staff only ever helps you make the business more AI-native, and reframes general-business inputs into that lens.
+Spine (2026-06-21): **CTRL is your AI-native chief of staff.** A trusted operator that greets you, surfaces what matters, helps with the rest. Warm, advisory, first-person voice. AI-native always (it only ever helps you build the AI-native version of your business; it reframes general inputs into that lens).
 
-The other two metaphors are demoted to accents: the **instrument** aesthetic is the visual skin (dark, precise, calm); the **brief** is one capability (the daily read), not the whole app.
+Home model (REVISED 2026-06-21, supersedes the earlier "one thing" hero): **Home is the industry headlines (a browsable "worth a look" set you can move through) plus the three action buttons beneath (Briefing, Weigh, Build).** Not a single committed hero. The headlines are browsable; the three buttons have a fixed, reserved place above the nav.
+
+Session-adaptivity (2026-06-21): **promoted, but inside a familiar, stable shell.** Tabs never change identity or move things around. What grows with use is each tab's content and depth, from a cold-start invitation to a power-user instrument. Home is home, Brain is brain, Decisions move decisions forward, You tracks over time, at session 1 and at session 100.
 
 ---
 
-## 2. The home: one adaptive thing
+## 1. The stable tab identities (each tab has ONE job, always)
 
-- **One hero.** The single highest-priority item right now, full-frame, in the chief-of-staff voice. It is drawn from ONE unified ranked stream that already interleaves the news headlines (AI-native, categorized) and your own signals (decision alerts, agent metrics) and the decisions worth weighing. The top of that stream is the hero. (This is an evolution of the existing `CockpitDeck` ranking, not a new engine.)
-- **"and N more"** opens the rest of that same stream (the deck), in-place. No separate "news section" stacked under a "your stuff section". One stream, one hero, one tap to the rest.
-- **A minimal action footer**: briefing, weigh, build, as quiet doors (the chief of staff's main capabilities), never large competing cards.
-- **The overlap is fixed by composition**: the home composes within the shared frame (section 3) as header zone + one hero zone + footer rail. With one hero and a thin footer there is nothing to collide. The current overlap is two independently-laid-out blocks (the deck and the actions) fighting; this replaces them with one composed surface.
+| Tab | One job (never shifts) | The one primary ask |
+|---|---|---|
+| **Home** | What is worth a look now: the industry headlines + the three doors | Browse the headlines; or take one of the three actions |
+| **Decisions** | Move a decision forward (pressure-test it) | Weigh one decision |
+| **Brain** | Your context/memory, so every AI knows you | Add to or verify your memory (centred canvas) |
+| **You** | Your judgment, tracked over time | See how your calls are aging |
 
----
-
-## 3. The unifying system (the four levels)
-
-### 3.1 Compositional: one frame every surface composes within
-- A single app frame: a slim shared header, ONE bounded content zone, and the shared nav (bottom nav on mobile, sidebar on desktop). Every surface fills the one content zone; nothing is positioned outside the grid.
-- No-scroll, one ask per screen (already the law). Depth opens IN-PLACE (a sheet or an expand), never by stacking another block that can overlap. Cards never absolutely-position over siblings.
-- This is the contract the home deck and home actions lacked. Encode it once (a `SurfaceFrame` / layout primitive) and have every surface use it, so two parts can never again be laid out independently.
-
-### 3.2 Visual: one design rhythm
-- One spacing scale, one elevation/border/radius system, one card grammar, one motion language, all from the dark `ctrl-ds` instrument tokens. Consolidate any surface that drifted (its own paddings, shadows, radii) onto the shared tokens.
-- The test: screenshot any two surfaces side by side and you cannot tell they were built at different times.
-
-### 3.3 Conceptual: one story
-- The chief-of-staff spine (section 1) is the story. Every label, empty state, and transition reinforces "one operator helping you go AI-native," not "a toolbox of features."
-
-### 3.4 Interaction: one continuous feel
-- Shared chrome persists across surfaces (the header and nav do not rebuild between tabs).
-- Continuous transitions: moving between tabs is one consistent motion (a calm cross-fade/slide), not a hard cut, so it reads as one app moving its focus.
-- One navigation grammar: tabs switch the content zone; depth always opens in-place; back is always the same gesture.
+Structure is stable; only depth grows. A leader who learns where something lives never has to relearn it.
 
 ---
 
-## 4. Build plan (proving ground, then propagate)
+## 2. The six principles (the laws these surfaces must obey)
 
-1. **This spec** - lock it.
-2. **The home, rebuilt as the chief-of-staff one-thing surface**, composing within the shared frame (fixes the overlap, establishes the model). Mock-driven: a standalone prototype the founder reacts to, then the React build, verified live.
-3. **Extract the shared primitives**: the `SurfaceFrame` layout contract + the consolidated design tokens + the transition grammar, from the home work.
-4. **Propagate** to the other surfaces (decision, briefing, brain, compliance, settings, the kit): adopt the frame, the tokens, the chief-of-staff voice, and the shared transitions. Most were just polished, so this is alignment, not a rebuild.
-5. Verify coherence: the side-by-side test (3.2) and a walk across tabs (3.4) feel like one instrument.
-
-Each step: lock, mock where it is a design surface, build, verify visually (real renders), ship via PR, then the next.
+1. **One canonical home per thing (no duplication across tabs).** Each surface shows a DIFFERENT FACET of a thing, never the same card twice. A decision is a headline on Home, a thing-to-move-forward on Decisions, a call-aging-over-time on You. (Live bug: the DeepSeek decision-alert appeared as both the Home hero and the Decisions top alert.)
+2. **The frame holds the real content's MAX, not the demo's.** No-scroll means the slot is sized so the tallest real headline + body still leaves the peek and the rail their reserved space above the nav. Every element has a reserved, bounded place; nothing floats into another's space; nothing clips behind the nav. (Live bug: the home hero had no height ceiling and pushed the rail behind the bottom nav.)
+3. **One ask per screen is a hard ceiling.** One primary action per surface; everything else is progressive depth you opt into. (Live bug: Decisions stacked an alert + a 50-word explainer + a Record button + a textarea + a floating mic; You stacked zero-scoreboards + a watching list with 3-way actions per card.)
+4. **The cold-start IS the default state, and must feel earned-into, not empty.** A newcomer must see a promise and an invitation, never a guilt-list ("30 memories to verify") or a scoreboard of zeros ("0 Banked, 0/2"). The quiet state is designed first, and feels intentional.
+5. **Focal content sits in the optical centre.** A canvas/visualisation centres its content in the viewport, balanced. (Live bug: the brain graph clusters top-left with dead space.)
+6. **Interaction matches the mental model.** If the content is a stream the leader wants to triage, let them move through it (the headlines are browsable). If it is one committed thing, commit. Do not strand a stream behind a single static card.
 
 ---
 
-## 5. Open decisions for the founder
-1. **Is the chief of staff named/personified, or an unnamed voice?** A name (a persona) makes it warmer and more memorable but is a brand commitment; an unnamed "your chief of staff" voice is safer. Recommendation: unnamed warm voice first; a name is a later brand call.
-2. **How literal is "the one thing"?** Pure single hero (everything else behind "and N more"), or hero plus a 2-card peek. The locked model is pure single hero; confirm you do not want a peek.
-3. **Transition intensity**: a calm cross-fade (subtle, fast) vs a spatial slide (more "rooms in a building"). Recommendation: calm cross-fade, it is the least gimmicky and reads as one instrument.
+## 3. The session journey (what the ICP actually wants, by state)
+
+The ICP is a time-poor senior operator (CEO/COO/founder) using CTRL as a chief of staff. Define each tab by the NEED at each state (the UI comes later, per-tab, mock-driven).
+
+- **Cold-start (session ~1, knows nothing about them):** orientation + one quick win. Near-empty, warm, a single inviting action that teaches by doing. No empty dashboards, no explainer walls, no "30 to verify", no zero-scoreboards.
+  - Home: industry headlines (generic AI-native, no personal data yet) + the three doors + a light "here is how I will work for you."
+  - Decisions: "weigh your first call", one clean invitation.
+  - Brain: "let's start your memory", almost empty, inviting.
+  - You: an empty You is a PROMISE ("your judgment record starts the first time you bank a call"), not zeros.
+- **Warming (session ~10, knows some):** surface what changed and what needs them; deepen context with near-zero friction; no re-reading explainers.
+  - Home: headlines tuned to their interests, their own signals woven in.
+  - Decisions: fast capture + their 1-2 live pressure-tests.
+  - Brain: a small but real graph + a gentle "verify these 3 while you're here" (a nudge, never a backlog of 30).
+  - You: first banked calls starting to show a pattern.
+- **Rich (session ~100, knows them well):** speed, density, the payoff of accumulated data. Glance, triage, trust.
+  - Home: fast triage of what is worth attention (browsable headlines earn their keep here).
+  - Decisions: instant capture + a rich active board.
+  - Brain: a dense, centred, navigable graph.
+  - You: a real track record that proves judgment, the reward for 99 sessions.
+
+The throughline: each tab keeps one job, one ask, one home for each thing, and a state that grows from invitation to instrument.
+
+---
+
+## 4. The four coherence levels (carried, still hold)
+
+- **Compositional:** one frame every surface composes within (`MobileFrame` mobile, `DesktopShell` desktop). Bounded, no-scroll, reserved places, depth opens in-place, never overlapping siblings.
+- **Visual:** one rhythm, all from the dark `ctrl-ds` tokens (one spacing/radius/elevation/hover scale).
+- **Conceptual:** the chief-of-staff voice everywhere; one story, not a toolbox.
+- **Interaction:** persistent chrome, continuous transitions, one nav grammar; browsable where the content is a stream.
+
+---
+
+## 5. Build plan + the verification rule
+
+Tab by tab, mock-driven, one at a time (do not batch): lock the tab's rule -> mock -> founder reacts -> build -> verify. Order: **Home first** (the live bug), then Decisions, Brain, You.
+
+VERIFICATION RULE (the process fix from this round): every surface is verified on the **REAL authed surface with real data** (a local Playwright login as a test user), NOT a synthetic harness/component render. The live-walk issues all hid behind harness renders that used short, fake content. Do not claim a surface done until it is seen working on the real page with real data, on a real mobile viewport.
+
+---
+
+## 6. The design language (the 2028 radical-focus refactor)
+
+The bar: what the CEO of Apple or Google ships in 2028. Stunning, world-class, calm. The job is to make CTRL experientially 10x better through RADICAL FOCUS, never overwhelm.
+
+- **Radical focus, not density.** Every screen has ONE focus and one primary action. Generous, calm negative space. The UI recedes so the content leads (deference). If a screen makes the leader anxious, it has failed. Kill stacked asks, walls of words, scoreboards of zeros.
+- **State is the experience.** The app always answers, beautifully: what do you need to do next, what have you done, what have you not done yet. Loading, empty, in-progress, and done are FIRST-CLASS designed moments, never afterthoughts. No raw spinners: loading is purposeful, branded, anticipatory (it tells you what is coming and feels like progress). Empty is an invitation. Done has a moment of closure.
+- **Device-native, not one UI scaled.** Mobile is a focused, gestural, thumb-first instrument (large targets, swipe to move through, bottom-anchored actions, one thing per thumb-reach). Desktop is a calm, spacious, keyboard-fluent command surface (room to breathe, hover/keyboard affordances, multi-zone where it earns it). Design each for its body, not the other's.
+- **Motion with meaning.** Physics-based, deferential, fast. Transitions show where things came from and go (continuity), never decoration for its own sake. Respect reduced-motion.
+- **The dark instrument, elevated.** The `ctrl-ds` dark palette and emerald, but more craft: real depth, soft light, precise type, tactile surfaces. Premium, quiet, confident, never loud or arrogant.
+- **Craft in the details.** Type rhythm, optical alignment, consistent grid, micro-interactions on every touch, haptic-feeling feedback. The difference between good and world-class lives here.
+
+This language applies to every surface and every state, within the stable tab identities (section 1) and the session journey (section 3).
