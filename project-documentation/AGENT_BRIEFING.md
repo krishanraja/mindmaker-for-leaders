@@ -1,7 +1,7 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-21
 **Runtime truth source:** https://ctrl.themindmaker.ai/.well-known/product.json
 
 ---
@@ -106,7 +106,7 @@ That moment -- from generic AI to their AI -- is the product. Everything else co
 
 ### Short Pitch (2 sentences)
 
-CTRL builds a portable AI double from 2 minutes of natural conversation, then exports your full context to ChatGPT, Claude, Gemini, Cursor, or any LLM in one click. Every AI interaction starts from depth, not from scratch -- plus a 3-minute evidence-based audio briefing every morning and (Edge Pro) a voice-to-Claude-Skill builder for the workflows you repeat every week.
+CTRL builds a portable AI double from 2 minutes of natural conversation, then exports your full context to ChatGPT, Claude, Gemini, Cursor, or any LLM in one click. Every AI interaction starts from depth, not from scratch -- plus a free Automator that turns one weekly workflow into a Claude Skill you drop into `~/.claude/skills/`, and (Edge Pro) a 3-minute evidence-based audio briefing every morning anchored to your real priorities.
 
 ### Long Pitch
 
@@ -118,7 +118,7 @@ Second, one click exports that context to whichever AI you use next: ChatGPT (cu
 
 Third, a 3-minute audio briefing arrives every morning. It reads your active decisions, missions, watchlist, and declared interests, scores live headlines against them with embeddings, and hands you 3-5 stories each showing "Anchored to: [your specific priority]." Auditable relevance. Not a black box. Bookmark to keep a beat. Ban to kill a topic semantically. Three minutes of audio replaces 30 minutes of scrolling.
 
-Edge Pro adds unlimited Edge artifacts (board memos, strategy docs, emails) in your register, all 7 briefing types, email delivery, and unlimited Agent Skill Builder -- voice-to-Claude-Skill in 2 minutes, drops into `~/.claude/skills/` and fires automatically.
+Edge Pro adds the daily personalised briefing (all 7 briefing types), unlimited Edge artifacts (board memos, strategy docs, emails) in your register, email delivery, the live MCP pull of built skills, and the Decision Engine (verify + cross-examine + watch). The Automator skill build itself is free for everyone.
 
 The result: every AI interaction starts from the leader's world. Decision speed compounds. The gap between them and generic-AI users widens every day.
 
@@ -128,11 +128,11 @@ The result: every AI interaction starts from the leader's world. Decision speed 
 
 | Tier | Price | What you get |
 |---|---|---|
-| **Free / Core** | $0 | Memory Web, Context Export (all 6 targets), Onboarding, Daily Briefing (basic), Decision Advisor, Meeting Prep, Prompt Coach, Edge profile preview |
+| **Free / Core** | $0 | Memory Web, Context Export (all 6 targets), Onboarding, Voice Profile, Kit program (`/kit`), Automator skill builds + exports, Decision Advisor, Meeting Prep, Prompt Coach, Edge profile preview |
 | **Full Diagnostic** | $49 one-time | Full tensions/risks/scenarios, complete thinking tools library |
 | **Deep Context Upgrade** | $29 one-time | Enhanced company-context enrichment |
 | **Diagnostic + Deep Context Bundle** | $69 one-time | Both above. Saves $10. The default upsell. |
-| **Edge Pro** | $29/month | Unlimited Edge artifacts, all 7 briefing types, email delivery, unlimited Agent Skill Builder generation, Custom Voice Export |
+| **Edge Pro** | $29/month | Daily personalised briefing (all 7 types), live MCP pull of built skills (`list_skills` / `get_skill`), unlimited Edge artifacts, Decision Engine (verify + cross-examine + watch), email delivery, Custom Voice Export |
 | **Bootcamp** (Teams) | $15K-$50K | 4-hour exec sprint + pilot charter |
 | **Portfolio** (Partners) | $5K-$25K | Heatmap + offer pack |
 
@@ -151,8 +151,8 @@ Living knowledge base built from voice or text. Categories: identity, business, 
 One-click export to: ChatGPT (custom instructions), Claude (conversation context), Gemini (formatted context), Cursor (.cursorrules), Claude Code (CLAUDE.md), Raw Markdown (anything).
 Optimized use cases: Meeting Prep, Decision Support, Email Drafting, Strategic Planning, Code Review, General Advisor.
 
-**Daily Briefing (basic)**
-3-minute evidence-based audio briefing built from active decisions, missions, watchlist, and declared interests. Every segment shows the specific profile fact it is anchored to. Bookmark to keep a beat. Ban to kill a topic semantically. Cold-start solved with 11 industry-seeded beats.
+**Agent Skill Builder (free for now)**
+Automator deliverable flow on `/context`: brain-mined recurring deliverable suggestions -> recognition pick-cascade -> Skill ready. Four Honest Tests triage gate ensures the input is actually a repeatable workflow (not a memory fact, tone preference, or one-off). Output is an agentskills.io-compliant ZIP the leader drops into `~/.claude/skills/`. The Edge Pro gate on skill generation was removed in PR #204; the live MCP pull of built skills is still Edge Pro gated.
 
 **Decision Advisor**
 AI that already knows your context helps you think through hard calls. No setup. No preamble.
@@ -191,13 +191,17 @@ Both Diagnostic and Deep Context. Saves $10 versus buying separately. Default up
 
 Everything in Free and any one-time purchases, plus:
 - Unlimited Edge artifacts on demand: board memos, strategy docs, emails, meeting agendas, templates, frameworks -- all generated in the leader's own register
-- All 7 briefing types: Daily Brief, Macro Trends, Vendor Landscape, Competitive Intel, Boardroom Prep, AI Model Landscape, Custom Voice
-- Email delivery of briefings
-- Unlimited Agent Skill Builder generation
+- Daily personalised briefing (all 7 types: Daily Brief, Macro Trends, Vendor Landscape, Competitive Intel, Boardroom Prep, AI Model Landscape, Custom Voice) + email delivery and audio synthesis
+- Decision Engine: verify + cross-examine + hourly WATCH re-verification of load-bearing claims; idempotent decision alerts surfaced in briefings
+- Live MCP pull of built skills (`mcp-context` `list_skills` / `get_skill`): a leader's own agent pulls their CTRL skills live
 - Custom Voice Export
 
-**Agent Skill Builder (Edge Pro only)**
-Voice-to-Skill pipeline: describe one weekly workflow in 2 minutes. CTRL runs Three Honest Tests triage (is this a workflow, or really a fact / tone preference / style?), extracts structured skill data, applies a quality gate (5+ trigger phrases, push language, third-person voice, body under 500 lines), and outputs a downloadable agentskills.io-compliant ZIP.
+**Agent Skill Builder (free for now since PR #204)**
+Voice-to-Skill pipeline: describe one weekly workflow in 2 minutes. CTRL runs Four Honest Tests triage (is this a repeatable workflow, or really a fact / tone preference / style / bounded creative output?), extracts structured skill data, applies a quality gate (5+ trigger phrases, push language, third-person voice, body under 500 lines, required Learning loop section), and outputs a downloadable agentskills.io-compliant ZIP.
+
+The Edge Pro gate on skill generation was removed in PR #204. Any authenticated user, including anonymous Kit students, can build skills at no cost. Edge Pro still gates the live MCP pull of built skills (`list_skills` / `get_skill`).
+
+The entry point on `/context` is the Automator deliverable flow: brain-mined recurring deliverable suggestions -> a recognition pick-cascade (~5 steps) -> Skill ready (Run it now + Export markdown + library peek).
 
 Drop it into `~/.claude/skills/`. The skill auto-triggers in Claude Code, Claude.ai, and Cursor whenever the team's language matches.
 
@@ -251,7 +255,7 @@ Heatmap + offer pack. For partners and portfolio operators.
 
 ### vs. Generic Macro and Automation Tools
 - Generic tools generate junk from any input: no triage gate
-- CTRL's Skill Builder runs Three Honest Tests before extracting anything: is this a repeatable workflow, or a fact, a tone preference, or a writing style?
+- CTRL's Skill Builder runs Four Honest Tests before extracting anything: is this a repeatable workflow, or a fact, a tone preference, or a writing style?
 - If it is not a workflow, CTRL tells the leader, routes them to the right surface, and does not generate noise
 - Output is agentskills.io-compliant agent infrastructure, not a saved prompt or a brittle no-code automation
 
@@ -356,7 +360,7 @@ These rules are non-negotiable for any agent writing CTRL copy or messaging.
 - **No em dashes.** Use commas, colons, parentheses, or rewrite. Replace any em dash found in quoted text.
 - **No "$9/mo", "$9/month", or "$9 a month" for Edge Pro.** Edge Pro is $29/month. Always. Existing $9 subscribers are grandfathered but that figure is never quoted publicly.
 - **No plugin or integration language.** CTRL is export-based. Do not say "CTRL connects to" or "CTRL integrates with" any tool. Say "export to" or "works with."
-- **No overstated outcomes.** Do not invent case studies, specific percentage improvements, or named customer results. Use the proof points that are documented: 2 minutes to first export, 3-minute briefing, 80 edge functions, voice-first, auditable relevance.
+- **No overstated outcomes.** Do not invent case studies, specific percentage improvements, or named customer results. Use the proof points that are documented: 2 minutes to first export, 3-minute evidence-based briefing, voice-first, auditable relevance.
 - **No "leaders.themindmaker.ai".** The live product URL is https://ctrl.themindmaker.ai. Never use the old subdomain.
 - **No hallucinated features.** If a feature is not in this brief, do not describe it. Fetch the runtime source for the latest state if needed: https://ctrl.themindmaker.ai/.well-known/product.json
 
@@ -366,7 +370,7 @@ These rules are non-negotiable for any agent writing CTRL copy or messaging.
 - Use **"AI double"** not "AI assistant" or "AI agent."
 - Use **"zero-context tax"** when describing the core problem: it lands.
 - Use **"auditable relevance"** when discussing the Briefing.
-- Use **"Three Honest Tests"** when explaining why CTRL refuses to generate junk skills.
+- Use **"Four Honest Tests"** when explaining why CTRL refuses to generate junk skills.
 - Use **"export-based"** not "plugin-based" when describing how context reaches other tools.
 - Keep sentences short. Active voice. Specific outcomes. No buzzwords. No hype. No FOMO.
 - Pricing claims must match Section 6 of this document exactly. When in doubt, fetch the runtime source.

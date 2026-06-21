@@ -2,7 +2,7 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-06-17
+**Last Updated:** 2026-06-21
 
 > **Brand + redesign (2026-06-16, PR #186 merge 1c01db5)**: CTRL is now **globally forced dark** (`index.html` ships `class="dark"`), on the `ctrl-ds` instrument palette with emerald `#00D9B6` as primary (`--primary 171 100% 43%`), and the emerald `ctrl.` wordmark replacing the old green Mindmaker logo everywhere. It is NOT light-mode, NOT warm off-white, NOT white cards, NOT the green logo. Any older assertion in this doc to that effect has been corrected inline. See the **Redesign** section below. The redesign rebuilt the mobile cockpit, decision spine, StoneRead, the brain four-world rope canvas, capture, and onboarding, all prod-verified with screenshots.
 >
@@ -15,6 +15,10 @@ Complete system architecture and data flow documentation.
 > **Verified counts (as of 2026-06-09; not re-counted since the redesign)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop). Edge-function / hook / migration counts after the redesign, brain engine, and kit program are **verified counts pending re-count**.
 >
 > **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) = 85, +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`) = 62, +4 migrations = 114, +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
+>
+> **Phase 17 additions (2026-06-19, PRs #206-212)**: Kit Redesign. Sequential one-action-per-screen wizard across all 4 kits. New `/kit/pdf` route (`src/pages/kit/KitPdf.tsx`, `src/lib/kitPdf.ts`) for the branded hero PDF output. New components: `KitBuildTrace`, `KitRevealWizard`, `KitWhatsInside`, `src/components/kit/kitPrimitives.tsx`. Old `KitHome` reveal-scroll + `HomeworkCard` retired. **Verified edge function count (2026-06-21): 93 functions** (the `_shared/` module directory is not counted as a function).
+>
+> **Phase 19 additions (2026-06-19/21, PRs #214-221)**: Main App Polish / AI-Native Enforcement. AI-native decision reframe (PR #216), news deck category motifs (PR #215), no-scroll / one-ask enforcement across briefing / decision / goals / memory / context / settings / profile surfaces (PRs #218-221).
 
 ---
 
@@ -409,6 +413,7 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/kit/me` | KitHome | No | Kit + journey home (anonymous, upgrades on email capture) |
 | `/kit/me/intake` | KitIntake | No | 6-question intake (voice or taps) |
 | `/kit/reading/:pageId` | KitReading | No | Full-screen reader for a single artifact |
+| `/kit/pdf` | KitPdf | No | Print-styled branded hero PDF for a completed kit (one per kit type); `src/lib/kitPdf.ts` + `src/pages/kit/KitPdf.tsx` (Phase 17) |
 
 The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
 
@@ -936,7 +941,7 @@ kit_nudges                              -- day-3 / day-7 send-dedupe ledger
 
 **Location**: `supabase/functions/`
 
-**Total**: 85 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry. PR #204 added one function (`extract-voice-profile`: paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text) and redeployed `generate-skill-export` (prompt tightened) and `mcp-context` (gained `list_skills` + `get_skill`) to prod (`bkyuxvschuwngtcdhsyg`); no DB migrations were needed.
+**Total**: 93 edge functions in `supabase/functions/` plus a `_shared/` module directory (verified re-count 2026-06-21). The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry. PR #204 added one function (`extract-voice-profile`: paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text) and redeployed `generate-skill-export` (prompt tightened) and `mcp-context` (gained `list_skills` + `get_skill`) to prod (`bkyuxvschuwngtcdhsyg`); no DB migrations were needed.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)

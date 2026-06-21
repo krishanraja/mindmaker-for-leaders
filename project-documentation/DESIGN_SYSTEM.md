@@ -1,51 +1,54 @@
 # Design System
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-06-21
 
 ---
 
 ## Color System
 
-### Primary Palette
+> **IMPORTANT (2026-06-16, PR #186):** CTRL is **globally forced dark**. `index.html` ships `class="dark"` on the root element. There is NO light mode. The old light-mode palette below has been removed; it is no longer the design system. The current system is the `ctrl-ds` instrument palette.
 
-**Light Mode (Primary)**
+### ctrl-ds Instrument Palette (current, globally forced dark)
+
 ```css
---background: 40 20% 97%;        /* #faf9f7 - Warm off-white */
---foreground: 213 50% 11%;       /* #0e1a2b - Deep navy/ink */
---card: 0 0% 100%;               /* Pure white for cards */
---card-foreground: 213 50% 11%;  /* Ink */
---border: 220 10% 90%;           /* #e3e5e8 - Light grey */
---muted: 220 10% 90%;            /* Light grey */
---muted-foreground: 220 10% 50%; /* #737a85 - Mid grey */
---primary: 213 50% 11%;          /* Ink */
---primary-foreground: 40 20% 97%; /* Off-white */
---accent: 158 45% 55%;           /* #4db38a - Mint green */
---accent-foreground: 213 50% 11%; /* Ink */
+/* Accent / Primary: emerald */
+--primary: 171 100% 43%;          /* #00D9B6 - Emerald */
+--primary-foreground: 171 100% 10%; /* Deep emerald text */
+
+/* Surface */
+--background: 220 20% 6%;         /* Deep dark instrument surface */
+--foreground: 210 20% 95%;        /* Near-white text */
+--card: 220 16% 10%;              /* Slightly raised card surface */
+--card-foreground: 210 20% 95%;
+--border: 220 16% 18%;            /* Subtle instrument border */
+--muted: 220 16% 14%;             /* Muted surface */
+--muted-foreground: 220 10% 55%; /* Mid-tone text */
+
+/* Interactive */
+--ring: 171 100% 43%;             /* Emerald focus ring */
 ```
 
-### Legacy Reference
+### Token Reference
 ```
-Ink:  #0e1a2b (HSL: 210 58% 11%)  - Main structure, typography
-Mint: #7ef4c2 (HSL: 158 82% 73%) - Highlights, sparingly
+Emerald primary:  #00D9B6  (HSL: 171 100% 43%)  - Accent, CTAs, active states
+Dark surface:     ~#0d1117  - Page background (globally forced dark)
+Card surface:     ~#141921  - Elevated card backgrounds
+Border:           ~#1e2730  - Subtle borders
 ```
 
-### Neutrals
-```
-Off-White:   #F7F7F5 (HSL: 60 9% 96%)  - Background
-Light Grey:  #E5E5E3 (HSL: 60 5% 90%)  - Borders
-Mid Grey:    #9AA0A6 (HSL: 210 7% 62%) - Secondary text
-Graphite:    #333639 (HSL: 200 5% 21%) - Strong text
-```
+### Honest Residual (not yet purged as of 2026-06-21)
+- `index.html` OG / `theme-color` meta tags still carry residual green
+- `--mint` token alias in `tokens.css` still exists
+- `EdgeOnboarding` and `SampleResultsDialog` still carry residual green styling
 
 ### Semantic Mappings
 ```css
---background: var(--off-white)
---foreground: var(--ink)
---muted: var(--light-grey)
---muted-foreground: var(--mid-grey)
---primary: var(--ink)
---accent: var(--mint)
---ring: var(--mint)
+--background: dark instrument surface
+--foreground: near-white
+--muted: slightly raised dark surface
+--muted-foreground: mid-tone muted text
+--primary: emerald #00D9B6
+--ring: emerald #00D9B6
 ```
 
 ### Shadows (Apple-like subtle)
@@ -162,17 +165,17 @@ touch-target:       min-h-[44px] (mobile buttons)
 
 ### Buttons
 
-**Primary Button (Ink)**
+**Primary Button (Emerald)**
 ```tsx
 <Button className="bg-primary text-primary-foreground hover:bg-primary/90 
                    border-0 rounded-2xl px-10 sm:px-12 h-14 sm:h-16
                    shadow-md hover:shadow-lg text-lg sm:text-xl font-semibold">
 ```
 
-**Secondary Button (Mint)**
+**Secondary Button (dark surface)**
 ```tsx
-<Button className="bg-mint text-ink hover:bg-mint/90 shadow-lg hover:shadow-xl 
-                   hover:scale-105 transition-all">
+<Button className="bg-muted text-foreground hover:bg-muted/80 shadow-lg
+                   hover:scale-105 transition-all rounded-2xl">
 ```
 
 **Outline Button**
@@ -194,24 +197,24 @@ touch-target:       min-h-[44px] (mobile buttons)
 
 **Base Card Style**
 ```css
-background: white (--card)
-border: 1px solid border/40 (subtle)
+background: dark ctrl-ds card surface (--card, NOT white)
+border: 1px solid border/40 (subtle dark border)
 border-radius: 24px (rounded-3xl)
-shadow: shadow-lg (subtle, Apple-like)
-padding: p-8 sm:p-12 md:p-16 lg:p-20 (generous)
+shadow: subtle on-dark elevation (border + soft shadow)
+padding: p-8 minimum (generous)
 ```
 
-**Premium Card** (featured content)
+**Elevated Card** (featured content)
 ```tsx
-<div className="premium-card">
-  // bg-white, border-2, shadow-lg, p-6
+<div className="bg-card border border-border/40 rounded-3xl shadow-lg p-6">
+  {/* dark instrument surface, NOT white */}
 </div>
 ```
 
 **Minimal Card** (standard content)
 ```tsx
-<div className="minimal-card">
-  // bg-card, border, p-6
+<div className="bg-card/80 border border-border/30 rounded-2xl p-4">
+  {/* dark surface */}
 </div>
 ```
 

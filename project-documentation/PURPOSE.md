@@ -1,6 +1,6 @@
 # Purpose
 
-**Last Updated:** 2026-06-17
+**Last Updated:** 2026-06-21
 
 ---
 
@@ -17,7 +17,7 @@ It **is**:
 - A portable context system that exports to ChatGPT, Claude, Gemini, Cursor, Claude Code, and any LLM
 - A daily evidence-based audio Briefing (3 minutes) that anchors every story to something specific in your profile
 - An "Edge" leadership amplifier that turns your strengths into systems and covers your weaknesses with on-demand artifacts (board memos, strategy docs, emails, meeting agendas)
-- An Agent Skill Builder that turns one weekly workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/` and forgets - it auto-triggers whenever the team's language matches. With a Three Honest Tests triage gate that refuses to generate junk skills from inputs that are really Memory Web facts, Custom Instructions, or Saved Styles.
+- An Agent Skill Builder (free for now; the Edge Pro gate was removed in PR #204) that turns one weekly workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/` and forgets - it auto-triggers whenever the team's language matches. With a Four Honest Tests triage gate that refuses to generate junk skills from inputs that are really Memory Web facts, Custom Instructions, Saved Styles, or bounded creative outputs (voice-lock).
 - Built-in thinking tools - Decision Advisor, Meeting Prep, Prompt Coach - that already know your world
 - Self-contained - no integrations with Slack, email, calendar, or any other tool. Your context comes from what you choose to share, nothing else.
 - A pattern detection system that surfaces strengths to amplify and blind spots to close

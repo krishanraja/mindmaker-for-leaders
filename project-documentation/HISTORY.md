@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last Updated:** 2026-06-17
+**Last Updated:** 2026-06-21
 
 ---
 
@@ -242,6 +242,9 @@ Evolution of CTRL (originally Mindmaker) and major product pivots.
 | 6.2 | Jun 2026 | Phase 14 - Kit Program: Agentic Org Chart kit (#190/#191), parity retrofit of all 3 existing kits to fork + pick-cascade + live picks-board (#192), PR #193 (merge 090dda2, 2026-06-17): cascade-bug fix (forked-kit intake silently dropped the back half of every kit's cascade since launch) + honesty floor on the composed org chart. |
 | 6.3 | Jun 2026 | Phase 15 - Home / Decision Map / Automator UX redesign (PRs #197-200, 2026-06-17). Founder review of live prod rebuilt three surfaces against the ctrl-ds design floor: mobile Home is now a time-aware greeting + the swipeable "worth a look" deck + 3 value actions (bets moved to Decisions) (#197, merge 7b5f0ef); the Decision Map is one pinned decision with considerations on a rail (#198, merge 33fb818); the Automator turns a recurring deliverable into a reusable skill via an all-recognition pick-cascade (#199, merge 24f7d15); brand lockup + persisted deck-training follow-ups (#200, merge 387af84). |
 | 6.4 | Jun 2026 | Phase 16 - Skill Builder intake + harness upgrade (PR #204, 2026-06-17). Skill Builder is now FREE for now (Edge Pro gate on `generate-skill-export` removed; freemium-ladder WIP stripped). `generate-skill-export` prompt tightened: boundedness check + FOUR Honest Tests (Test 4 = voice-lock), self-identified VOICE_PROFILE injected, fabricated voice samples forbidden, structured 8-dimension `voice-profile.md`, required `## Learning loop` section (quality gate now 16/16). New `extract-voice-profile` edge fn (paste writing -> 8 voice dimensions; anonymous-safe, no raw-text storage). Unified `ctrl_voice_profile` fact captured by `VoiceStyleProfileSheet`, surfaced via `_shared/memory-context-builder.ts` (voice-save enum bug fixed 'confirmed' -> 'verified'). Voice-aware Automator tone step + desktop two-pane `AutomatorScaffold`. Layered output: library + MCP (`mcp-context` `list_skills` / `get_skill`) + download. Warm-start peer suggestions grounded in role + company. 3 edge fns deployed to prod; no DB migrations. |
+| 6.5 | Jun 2026 | Phase 17 - Kit Redesign (PRs #206-212, 2026-06-19, prod-verified). All 4 kits rebuilt under the law: strictly sequential, one action per screen, no-scroll on mobile, desktop-primary two-pane, humanity-first reflect-backs, outputs via two buttons only (Download / Copy), platform-agnostic (never hardcodes Claude). New flow: redeem -> adaptive intake cascade -> homework step (paste-your-AI context, folds into `kit-compose` via `memoryContext`) -> KitBuildTrace (driven by real `artifact_statuses`, no faked latency) -> KitRevealWizard (reveal -> what's-inside -> voice -> keep-it -> plan -> ship) -> hero PDF (`/kit/pdf`, `src/lib/kitPdf.ts`). `KitWhatsInside` = two buttons only. `src/components/kit/kitPrimitives.tsx` = shared brand primitives. Old `KitHome` reveal-scroll + `HomeworkCard` retired. All 4 kits live-verified on prod. |
+| 6.6 | Jun 2026 | Phase 18 - Kit Email Branding (PR #213, 2026-06-19). `send-kit-pack` + `send-kit-nudges` now render Mindmaker-branded templates: Mindmaker icon + Inter + app-aligned hero consistent with the `ctrl-ds` palette. |
+| 6.7 | Jun 2026 | Phase 19 - Main App Polish / AI-Native Enforcement (PRs #214-221, 2026-06-19/21, prod-verified). AI-native north star locked: every decision, headline, nudge, and suggestion is about making the business more AI-native; general-business inputs are reframed, never refused (PR #216). News deck cards gained one branded category motif image per news category (PR #215). No-scroll / one-ask law enforced across briefing, decision, goals, memory, context, settings, and profile surfaces (PRs #218-221). All surfaces conform: one action per screen on mobile, no window scroll on desktop. |
 
 ---
 
@@ -720,6 +723,117 @@ Edge functions `generate-skill-export`, `extract-voice-profile`, and `mcp-contex
 ### Outcome
 
 The Skill Builder is open, the harness will not invent a leader's voice, voice lives in one fact across the builder / kits / harness, and a built skill reaches the leader's agent three ways. PR #204, prod-deployed 2026-06-17.
+
+---
+
+## Phase 17: Kit Redesign - Sequential One-Action-Per-Screen Wizard (PRs #206-212, 2026-06-19)
+
+### Context
+
+The Phase 14 parity retrofit gave all four kits consistent mechanics. Phase 17 replaced the visual and interaction model entirely. The old `KitHome` reveal was a long scroll of ~10 competing actions (Send My Pack, Set My Voice, I Shipped It, Copy x N, Tune, Paste Homework, the 7-day plan, artifact groups, the dashboard bridge) - a dumping ground, not a product. Outputs were generic enough to need a Tune button, and the homework prompt flashed past during the loading spinner so it could never actually be done. Phase 17 locked a new law and built to it: **strictly sequential, one action per screen.**
+
+### The Law
+
+- **Strictly sequential.** One action per screen. The student is never offered two things at once.
+- **No-scroll on mobile.** Each step fits the viewport.
+- **Desktop is the primary surface.** A native two-pane with a live "your kit is taking shape" panel.
+- **Humanity-first reflect-backs** on the vulnerable steps (Vibe Coding asks for past pains; Memory & Identity asks who you are).
+- **Outputs are two buttons only** (Download / Copy), never walls of text.
+- **Platform-agnostic output.** Copy names the user's chosen tool, never hardcodes Claude.
+
+### What Shipped
+
+**Redesigned flow (all four kits):**
+1. **Redeem** - code entry, anonymous session.
+2. **Adaptive intake cascade** - one question per screen. Each step is a pick or a short text, never a form.
+3. **Homework step** - paste what your AI already knows about you. Folds into the initial `kit-compose` via `memoryContext` so the output is grounded in the leader's actual world from the first pass.
+4. **Honest build trace** (`KitBuildTrace`) - driven by real `kit_builds.artifact_statuses`, no faked latency. The student sees each artifact land.
+5. **Reveal wizard** (`KitRevealWizard`) - six sequential steps: reveal -> what's-inside -> voice -> keep-it -> plan -> ship. Each is one action.
+6. **Hero PDF** (`/kit/pdf`, `src/lib/kitPdf.ts` + `src/pages/kit/KitPdf.tsx`) - one branded personalized hero PDF per kit, print-styled route.
+
+**`KitWhatsInside`** - the output gate. Two buttons only: Download and Copy. Never a wall of text to read inline.
+
+**`src/components/kit/kitPrimitives.tsx`** - shared brand primitives used across all four kit components so the design system is enforced at the component level.
+
+**Retired:** `KitHome` reveal-scroll + `HomeworkCard`. These were the old dumping-ground components; they are now dead code.
+
+**PRs shipped:**
+- **PR #206** (design lock): locked the spec, shared primitives, routing skeleton.
+- **PR #207** (Vibe Coding Field Kit): first kit rebuilt end-to-end against the new law; live-verified e2e on prod.
+- **PR #208** (Autonomous Business Pack): second kit rebuilt.
+- **PR #209** (Agentic Org Chart): third kit rebuilt.
+- **PR #210** (Memory & Identity): fourth kit rebuilt.
+- **PR #211** (bundles #208/#209/#210 + the 3 hero PDFs): Autonomous + Org Chart + Memory kits merged together with their PDF outputs.
+- **PR #212** (stage-label fix): corrected a stage label regression surfaced during live verification.
+
+`kit-compose` was redeployed so presets and frontend align. All 4 kits were live-verified on prod (seeded throwaway codes, walked the full flow, zero-residue cleanup).
+
+### Honest Open Follow-Ups
+
+- Multi-select (`chips_multi`) `factMappings` do NOT persist to `user_memory`. They are used in compose to ground the output, but they are not saved as Memory Web facts.
+- Autonomous Business's on-screen reflect-back comes via preset helper copy, not the shared `KitIntake` clay panel used by the other kits.
+
+### Outcome
+
+The kit flow is now strictly sequential, one action per screen, platform-agnostic, and never asks the student to do two things at once. The homework step means every kit output is grounded in the student's actual AI context from the first compose. The hero PDF gives the student something to put on their desk. All 4 kits live-verified on prod 2026-06-19.
+
+---
+
+## Phase 18: Kit Email Branding (PR #213, 2026-06-19)
+
+### Context
+
+Kit emails (`send-kit-pack` + `send-kit-nudges`) were previously plain-text or lightly formatted. They landed in a student's inbox looking like system notifications, not like something from the product they'd just used. Phase 18 brought the kit emails into the Mindmaker brand.
+
+### What Shipped
+
+- **Mindmaker-branded kit emails**: the Mindmaker icon + Inter typeface + an app-aligned hero section, visually consistent with the `ctrl-ds` palette.
+- **`send-kit-pack`** and **`send-kit-nudges`** both updated to render the new branded templates.
+- Email templates live on the `feat/kit-email-branding` branch, merged to main as PR #213.
+
+### Outcome
+
+Kit emails now look like they come from the same product the student used in class. Brand consistency across in-app and email surfaces.
+
+---
+
+## Phase 19: Main App Polish - AI-Native Enforcement (PRs #214-221, 2026-06-19/21)
+
+### Context
+
+A post-Phase-16 audit of the live main app found the product drifting from its north star. The decision engine's own seed examples included "move upmarket to enterprise" and "hire a VP of Sales" - pure general business advice. Headlines in the cockpit deck were unstyled. Multiple surfaces still had scroll or multi-ask UX patterns that violated the one-ask law. Phase 19 closed all three gaps.
+
+### North Star (locked)
+
+**CTRL is about building, orchestrating, productizing, and getting to market the AI-native version of your business.** It is NOT a general business advisor. The law: every decision, every headline, every nudge, every suggestion is about making the business more AI-native. When a user brings something general (pricing, hiring, a market move), we do not answer it as-is and we do not refuse it - we **reframe** it into the AI-native version of that decision and pull the user there.
+
+Examples:
+- "Should I hire a VP of Sales?" - "Before you hire, should an agent own part of the sales motion first, and what would the human role become?"
+- "Should we raise prices?" - "Should the AI-native version of your offer change what you sell and how you price the AI capability itself?"
+- "Should we move upmarket?" - "What would the AI-native version of your product need to be to win upmarket?"
+
+Honesty floor (carried from the kit work): the engine never fabricates evidence, always shows where a call holds and where it breaks, and confidence tracks the evidence.
+
+### What Shipped
+
+**AI-native decision reframe (PR #216):**
+The decision engine seed suggestions and the Decision Map starter decisions were rewritten to be AI-native. Any general-business input that enters the Decision Engine is reframed into its AI-native form before analysis proceeds. The seed examples now surface AI-native moves (should an AI agent run this workflow? what is the AI-native version of this role? should this be productised as an AI capability?) rather than generic strategic advice.
+
+**News deck motifs (PR #215):**
+The cockpit deck's news cards gained branded category motifs - one fixed app-style image per news category, reused consistently. This replaced the unstyled text-only cards and gave each category a visual signal the leader can read at a glance.
+
+**No-scroll / one-ask enforcement (PRs #218-221):**
+Multiple surfaces that still had scroll violations or multi-action screens were brought up to the one-ask law. Each PR targeted a specific surface group:
+- PR #218: briefing surface no-scroll audit.
+- PR #219: decision and goals surface no-scroll audit.
+- PR #220: memory and context surface no-scroll audit.
+- PR #221: settings and profile surface no-scroll audit.
+
+All surfaces now conform: one action per screen on mobile, no window scroll on desktop, no multi-ask moments.
+
+### Outcome
+
+The main app now enforces the AI-native north star at the data layer (seeds, suggestions, starter decisions) and at the surface layer (every headline, nudge, and deck card is about the AI-native version of the business). News deck cards have branded category motifs. Every major surface conforms to the one-ask / no-scroll law. PRs #214-221 merged to main and prod-verified 2026-06-19/21.
 
 ---
 

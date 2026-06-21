@@ -4,8 +4,8 @@
 
 This folder is the canonical source of truth for the CTRL portable AI context platform. Everything else at the repo root has been removed in the 2026-04-26 docs refresh - if it's not in this folder or in the root `README.md` / `CLAUDE.md` / `CHANGELOG.md`, it was historical noise.
 
-**Last Updated:** 2026-06-17
-**Current Version:** Post-redesign (forced-dark instrument cockpit) plus the Skill Builder intake + harness upgrade (PR #204, 2026-06-17): the Skill Builder is now free for now (Edge Pro gate removed), `generate-skill-export`'s prompt is tightened around a no-fabricated-samples voice profile + a required learning-loop section (quality gate 16/16), a unified `ctrl_voice_profile` is captured (new `extract-voice-profile` edge fn), the Automator is voice-aware with a desktop two-pane, and skill output is layered across library + live MCP pull (`mcp-context` `list_skills` / `get_skill`) + download. This sits on top of the Home / Decision-Map / Automator UX redesign (PRs #197-200, prod-verified 2026-06-17): a swipeable cockpit Home deck behind `VITE_COCKPIT_ENABLED`, a single-pinned-decision Decision Map, and the Automator deliverable flow at `/context`. Below that: the dark `ctrl-ds` palette, globally forced dark, and the emerald `ctrl.` wordmark / new brand lockup that shipped live in PR #186 (merge 1c01db5, 2026-06-16, prod-verified), the Brain engine (PRs #153-164, "limits" phases #187-189), and the Kit Program (PRs #190-193). This succeeds the v5.4 DesktopShell unification + Goals + Enrich loop, the v5.3 Decision Engine, and the v5.2 Skill Builder.
+**Last Updated:** 2026-06-21
+**Current Version:** Main App Polish / AI-Native Enforcement (PRs #214-221, prod-verified 2026-06-19/21) + Kit Email Branding (PR #213) + Kit Redesign sequential one-action-per-screen wizard (PRs #206-212, prod-verified 2026-06-19: `/kit/pdf` hero PDF, `KitRevealWizard`, `KitBuildTrace`, `KitWhatsInside` two-buttons-only, `kitPrimitives`). This sits on top of the Skill Builder intake + harness upgrade (PR #204, 2026-06-17): free-for-now builder, no-fabricated-samples voice profile + required learning-loop, unified `ctrl_voice_profile` / `extract-voice-profile`, voice-aware Automator + desktop two-pane, layered library + MCP + download output. Below that: the Home / Decision-Map / Automator UX redesign (PRs #197-200, prod-verified 2026-06-17), the dark `ctrl-ds` palette globally forced dark + emerald `ctrl.` wordmark / brand lockup (PR #186, merge 1c01db5, 2026-06-16, prod-verified), the Brain engine (PRs #153-164, "limits" phases #187-189), and the 4-Kit Program (PRs #190-193 + #206-212). Succeeds the v5.4 DesktopShell unification + Goals + Enrich loop, the v5.3 Decision Engine, and the v5.2 Skill Builder.
 
 ---
 
@@ -34,7 +34,7 @@ This folder is the canonical source of truth for the CTRL portable AI context pl
 - [BRANDING.md](./BRANDING.md) - Brand voice, tone, and messaging guidelines
 
 ### Operational Knowledge
-- [HISTORY.md](./HISTORY.md) - Phases 1-16. Includes the April 2026 audit hardening track record, the Brain engine, the Kit Program, the forced-dark redesign (Phase 12, PR #186), and the Skill Builder intake + harness upgrade (Phase 16, PR #204).
+- [HISTORY.md](./HISTORY.md) - Phases 1-19. Includes the April 2026 audit hardening track record, the Brain engine, the Kit Program (Phases 11+14), the forced-dark redesign (Phase 12, PR #186), the Skill Builder intake + harness upgrade (Phase 16, PR #204), the Kit Redesign sequential wizard (Phase 17, PRs #206-212), Kit Email Branding (Phase 18, PR #213), and Main App Polish / AI-Native Enforcement (Phase 19, PRs #214-221).
 - [COMMON_ISSUES.md](./COMMON_ISSUES.md) - Recurring bugs, architectural pain points, audit-aftermath notes
 - [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 58 architectural and product decisions with rationale and outcomes
 - [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - Step-by-step rebuild instructions
@@ -58,7 +58,7 @@ Each strategic doc ends with a **"Sales & Marketing Anchors"** section - pull fr
 1. [PURPOSE.md](./PURPOSE.md) - what you're building and why
 2. [ARCHITECTURE.md](./ARCHITECTURE.md) - system design, data flow, edge functions
 3. [FEATURES.md](./FEATURES.md) - what each feature does + sales anchors
-4. [HISTORY.md](./HISTORY.md) - Phases 1-16, including the Phase 7 audit details, the Brain engine, the Kit Program, the Phase 12 forced-dark redesign, and the Phase 16 Skill Builder intake + harness upgrade
+4. [HISTORY.md](./HISTORY.md) - Phases 1-19, including the Phase 7 audit details, the Brain engine, the Kit Program, the Phase 12 forced-dark redesign, the Phase 16 Skill Builder intake + harness upgrade, the Phase 17 Kit Redesign sequential wizard, Phase 18 Kit Email Branding, and Phase 19 Main App Polish / AI-Native Enforcement
 5. [DECISIONS_LOG.md](./DECISIONS_LOG.md) - 58 decisions with trade-offs
 6. [COMMON_ISSUES.md](./COMMON_ISSUES.md) - known issues and resolutions
 7. [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - to set up a new instance
@@ -101,19 +101,19 @@ All AI-generated insights are anchored in cognitive frameworks embedded in the `
 - **Mobile-first**: No-scroll experience on key authed surfaces, with a parallel desktop shell that is no longer stretched mobile markup
 - **Forced dark, instrument cockpit**: Globally forced dark (`index.html` carries `class="dark"`), the `ctrl-ds` instrument palette, emerald `#00D9B6` primary (`--primary 171 100% 43%`), and the emerald `ctrl.` wordmark in place of the old green Mindmaker logo. Shipped live in PR #186 (merge 1c01db5, 2026-06-16, prod-verified with screenshots). This is NOT light mode, NOT warm off-white, NOT white cards, NOT the green logo. Honest residual green still lives in `index.html` OG / theme-color meta, the `tokens.css` `--mint` alias, and the EdgeOnboarding / SampleResultsDialog surfaces.
 
-### Repo Counts (as of 2026-06-09 - pending re-count 2026-06-17)
+### Repo Counts (edge functions re-counted 2026-06-21; others as of 2026-06-09 pending re-count)
 
-These were verified on 2026-06-09 and predate the Brain engine (PRs #153-164, #187-189), the Kit Program (PRs #190-193), and the forced-dark redesign (PR #186); migrations `20260615*_brain_*` and `20260616120000_memory_edges` landed after. Treat the figures below as a lower bound until re-counted.
+Edge functions were re-counted 2026-06-21: 93 functions confirmed. Other counts are lower bounds from 2026-06-09 and predate Phases 12-19.
 
 | Item | Count |
 |---|---|
-| Supabase edge functions | 80 |
-| React custom hooks | 59 |
-| PostgreSQL migrations applied | 110 |
-| Top-level page components | 29 |
+| Supabase edge functions | 93 (re-counted 2026-06-21) |
+| React custom hooks | 59+ (lower bound, as of 2026-06-09; added since: `useKitRedemption`, `useKitBuild`, `useKitArtifacts`) |
+| PostgreSQL migrations applied | 110+ (lower bound, as of 2026-06-09; added since: `20260615*_brain_*`, `20260616120000_memory_edges`) |
+| Top-level page components | 29+ (added: `KitPdf.tsx`, `DecisionMap.tsx`) |
 | E2E specs (Playwright) | 7 |
 | Unit/shared specs (Vitest) | 6 |
-| Active routes | 15 (+ 5 legacy redirects) |
+| Active routes | 16+ (+ 5 legacy redirects); `/kit/pdf` added Phase 17 |
 | Audit-week tracks shipped | 6 |
 
 ### Tech Stack
@@ -153,14 +153,14 @@ These were verified on 2026-06-09 and predate the Brain engine (PRs #153-164, #1
 - **Redesigned surfaces** (PR #186, merge 1c01db5, 2026-06-16, prod-verified): forced-dark `ctrl-ds` instrument palette + emerald `ctrl.` wordmark, with a rebuilt mobile cockpit, decision spine, StoneRead reader, brain four-world rope canvas, capture flow, and onboarding.
 - **Home / Decision-Map / Automator UX redesign** (PRs #197-200, prod-verified 2026-06-17): the latest layer on top of PR #186. Home (behind `VITE_COCKPIT_ENABLED`, PR #197 merge 7b5f0ef) dropped the cryptic "strongest signal" hero and the wall of AI-bets (bets moved to the Decisions case-picker) for a plain time-aware greeting, the swipeable "worth a look" deck (broad AI news from the briefing pipeline mixed with the leader's own `decision_alerts`; heart = more-like-this, skip = dismiss), and 3 value actions (Play my briefing, Run a decision, Build a skill). The Decision Map (PR #198 merge 33fb818) became one pinned decision with a descriptive "where it stands" status (never a recommendation) + a "Change" affordance, considerations on a connector rail, evidence one tap deeper, and a quiet "Flag it" replacing the long-press "something wrong?" scroll-popup. The Automator (PR #199 merge 24f7d15) is the new `/context` flow (see Skill Builder above). Follow-ups (PR #200 merge 387af84) added desktop brand-lockup placements and made the deck like/dislike persist and train the feed (stored in the feedback table, no new migration). Honest residuals: old `SkillCaptureSheet` / `SkillPreviewSheet` are dead code; "Run it now" downloads the skill (no in-app runner yet); the deck's news half needs a briefing to exist (else a calm caught-up state).
 
-### Pricing (Current)
+### Pricing (Current - authoritative source: `docs/PRICING.md`)
 | SKU | Price | What |
 |---|---|---|
-| Free / Core | $0 | Memory Web, Context Export, basic Briefing, Decision Advisor, Meeting Prep, Prompt Coach |
+| Free / Core | $0 | Memory Web, Context Export, Voice Profile, Kit program, Automator skill builds + exports, Guided First Experience, basic Decision Advisor + Meeting Prep + Prompt Coach |
 | Full Diagnostic | $49 one-time | Full tensions/risks/scenarios + thinking tools |
 | Deep Context Upgrade | $29 one-time | Enhanced company-context enrichment |
 | Diagnostic + Deep Context Bundle | $69 one-time | Both above (saves $10) |
-| Edge Pro | $29/month | Unlimited Edge artifacts + all 7 briefing types + email delivery |
+| Edge Pro | $29/month | Daily personalised briefing (all 7 types), Edge artifacts (board memos, strategy docs, emails, meeting agendas), email delivery, live MCP skills pull, Decision Engine (verify + cross-examine + watch) |
 | Mindmaker Bootcamp | $15K-$50K | 4-hour exec sprint |
 | Mindmaker Portfolio | $5K-$25K | Portfolio assessment |
 
@@ -173,7 +173,7 @@ These were verified on 2026-06-09 and predate the Brain engine (PRs #153-164, #1
 - **Context Export** - Formatted output for AI tools
 - **Skill Builder / Agent Skill Builder** - The voice-to-Agent-Skill pipeline. The output is an "Agent Skill" or just "Skill". Never call it a "macro", "automation script", or "workflow template" in customer-facing copy.
 - **Agent Skill** - A downloadable, agentskills.io-compliant skill bundle (`SKILL.md` + references + test prompts + install guide) the leader drops into `~/.claude/skills/`. Triggers automatically when the leader's language matches.
-- **Three Honest Tests** - The triage gate inside `generate-skill-export`. Inputs that fail it get routed to the right surface (Memory Web fact, Custom Instruction, Saved Style) instead of producing a junk skill.
+- **Four Honest Tests** - The triage gate inside `generate-skill-export` (four tests since PR #204: Test 4 = voice-lock / consistent creative output). Inputs that fail get routed to the right surface (Memory Web fact, Custom Instruction, Saved Style, or voice-lock preference) instead of producing a junk skill.
 - **Pain-anchored entry point** - Any UI surface (Edge `AutomatePainCard`, Memory blocker zap, Briefing `decision_trigger` zap) that hands the leader's already-declared pain to the Skill Builder via a `SkillSeed` so generation is grounded in their actual language.
 - **10X Skills** - Strengths identified for amplification. Not to be confused with Agent Skills.
 - **Blind Spots** - Gaps or risks surfaced by pattern detection
@@ -196,18 +196,19 @@ These were verified on 2026-06-09 and predate the Brain engine (PRs #153-164, #1
 
 | Field | Value |
 |-------|-------|
-| Documentation last updated | 2026-06-17 |
-| Current product version | Skill Builder intake + harness upgrade (PR #204, prod-deployed 2026-06-17: free-for-now builder, no-fabricated-samples voice profile + required learning-loop, unified `ctrl_voice_profile` / `extract-voice-profile`, voice-aware Automator + desktop two-pane, layered library + MCP + download output) on top of the Home / Decision-Map / Automator UX redesign (PRs #197-200), the post-redesign forced-dark instrument cockpit (PR #186, merge 1c01db5, 2026-06-16), the Brain-engine + Kit-Program base, succeeding the v5.4 DesktopShell unification + Goals + Enrich loop |
-| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder/Automator + Decision Engine + Brain engine + Kit Program) with a swipeable cockpit Home deck (`VITE_COCKPIT_ENABLED`), a single-pinned-decision Decision Map, and a desktop-native shell on every authenticated surface |
-| Design system version | Forced dark, `ctrl-ds` instrument palette (emerald #00D9B6 primary, emerald `ctrl.` wordmark), Apple-like, with desktop-native sidebar + sticky top bar + right rail + Command Palette + viewport-pinned zero-scroll |
+| Documentation last updated | 2026-06-21 |
+| Current product version | Main App Polish / AI-Native Enforcement (PRs #214-221, prod-verified 2026-06-19/21) + Kit Email Branding (PR #213) + Kit Redesign sequential wizard (PRs #206-212, prod-verified 2026-06-19) on top of the Skill Builder intake + harness upgrade (PR #204, prod-deployed 2026-06-17: free-for-now, Four Honest Tests, unified voice profile, layered output) + Home/Decision-Map/Automator UX redesign (PRs #197-200) + forced-dark instrument cockpit (PR #186, 2026-06-16) |
+| Architecture version | Unified dashboard (Memory Web + Edge + Daily Briefing v2 + Skill Builder/Automator + Decision Engine + Brain engine + Kit Program) with a swipeable cockpit Home deck (`VITE_COCKPIT_ENABLED`), a single-pinned-decision Decision Map, desktop-native shell on every authenticated surface, and AI-native enforcement across all surfaces |
+| Design system version | Forced dark, `ctrl-ds` instrument palette (emerald #00D9B6 primary, emerald `ctrl.` wordmark and Mindmaker icon `BrandLockup`), Apple-like, with desktop-native sidebar + sticky top bar + right rail + Command Palette + viewport-pinned zero-scroll |
 | AI primary model | Vertex AI (Gemini 2.0 Flash) |
 | AI fallback model | OpenAI GPT-4o |
 | Embedding model | OpenAI text-embedding-3-small (1536-dim, pgvector) |
-| Edge functions | 80 (as of 2026-06-09, pending re-count 2026-06-17) |
-| Database migrations | 110 + (later: `20260615*_brain_*`, `20260616120000_memory_edges`; pending re-count 2026-06-17) |
+| Edge functions | 93 (re-counted 2026-06-21) |
+| Database migrations | 110+ (lower bound as of 2026-06-09; added since: `20260615*_brain_*`, `20260616120000_memory_edges`) |
 | Database extensions | pgvector, pgcrypto, pg_cron |
-| Active routes | 15 (+ 5 legacy redirects); plus `/kit` (pending re-count 2026-06-17) |
-| Custom hooks | 59 (as of 2026-06-09, pending re-count 2026-06-17) |
-| E2E specs / Vitest specs | 7 / 6 (as of 2026-06-09, pending re-count 2026-06-17) |
+| Active routes | 16+ (+ 5 legacy redirects); `/kit/pdf` added Phase 17 |
+| Custom hooks | 59+ (lower bound as of 2026-06-09; added since: `useKitRedemption`, `useKitBuild`, `useKitArtifacts`) |
+| E2E specs / Vitest specs | 7 / 6 |
 | Node.js requirement | >=22 <24 |
 | Audit-week tracks shipped | 6 (revenue path, data path, UX, reliability, observability, cleanup) |
+| Phases documented | 1-19 |

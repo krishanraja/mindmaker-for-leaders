@@ -2,7 +2,7 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last Updated:** 2026-06-09
+**Last Updated:** 2026-06-21
 
 ---
 
@@ -134,7 +134,7 @@ Edge Pro ($29/month) unlocks unlimited artifact generation, email delivery, all 
 Voice-to-Skill pipeline that converts one weekly workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/`.
 
 - **Pain-anchored entry points everywhere**: tap a blocker in Edge view, tap the zap on a Memory Web blocker card, or tap the zap on a Briefing decision-trigger segment. The pain becomes the seed.
-- **Three Honest Tests triage gate**: if the input is really a Memory Web fact, a Custom Instruction, or a Saved Style, CTRL routes it to the right surface instead of generating a junk skill. This is the difference between "another macro tool" and "a triage system that respects your time."
+- **Four Honest Tests triage gate**: if the input is really a Memory Web fact, a Custom Instruction, or a Saved Style, CTRL routes it to the right surface instead of generating a junk skill. This is the difference between "another macro tool" and "a triage system that respects your time."
 - **Quality gate**: 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections - validated before you download.
 - **Installs in three places**: Claude Code, Claude.ai, and Cursor (with copy-paste install instructions inside the preview sheet).
 
@@ -255,7 +255,7 @@ You've built your Memory Web. You've exported to Claude. Now skip the blank page
 Every leader has 3-5 workflows they do every week. The Monday board update. The Friday hiring sync. The RFP triage. The investor update. Every time, blank page, full context, full instructions. CTRL takes one of them at a time and turns it into a Claude Skill in 2 minutes of voice. Drop the ZIP into `~/.claude/skills/`. The skill auto-fires the moment your team's language matches. You stop repeating yourself. Your leverage compounds.
 
 ### The "Triage You Can Trust" Angle
-Most "AI workflow" tools generate something whether your input was a real workflow or not. CTRL is the opposite. The Skill Builder runs Three Honest Tests before extracting anything: is this a repeatable workflow, or just a fact, a tone preference, or a writing style? If it's not a workflow, CTRL tells you, routes you to the right surface, and doesn't generate junk. Respect for your time, baked in.
+Most "AI workflow" tools generate something whether your input was a real workflow or not. CTRL is the opposite. The Skill Builder runs Four Honest Tests before extracting anything: is this a repeatable workflow, or just a fact, a tone preference, or a writing style? If it's not a workflow, CTRL tells you, routes you to the right surface, and doesn't generate junk. Respect for your time, baked in.
 
 ---
 
@@ -295,7 +295,7 @@ No. Your Memory Web is yours. It's encrypted at rest, never used as training dat
 Auditable. Every segment shows the specific profile fact and the cosine relevance score that earned it the slot. If you disagree, Ban it - it dies semantically (related topics die too) and the kill persists forever. There is no black box.
 
 **"What's the difference between Skill Builder and a macro / automation tool / GPT?"**
-Three things. (1) **Triage first**: the Three Honest Tests gate refuses to generate a skill when your input is really a fact, a tone preference, or a style. Most tools generate junk; CTRL refuses. (2) **agentskills.io-compliant**: the output is a ZIP that drops straight into `~/.claude/skills/` and auto-triggers in Claude Code, Claude.ai, and Cursor - it is real agent infrastructure, not a saved prompt. (3) **Pain-anchored entry points**: you don't need to remember to use the Skill Builder. Every blocker on Edge, every Memory Web blocker card, every Briefing decision-trigger segment has a one-tap zap that hands the pain straight into the pipeline.
+Three things. (1) **Triage first**: the Four Honest Tests gate refuses to generate a skill when your input is really a fact, a tone preference, or a style. Most tools generate junk; CTRL refuses. (2) **agentskills.io-compliant**: the output is a ZIP that drops straight into `~/.claude/skills/` and auto-triggers in Claude Code, Claude.ai, and Cursor - it is real agent infrastructure, not a saved prompt. (3) **Pain-anchored entry points**: you don't need to remember to use the Skill Builder. Every blocker on Edge, every Memory Web blocker card, every Briefing decision-trigger segment has a one-tap zap that hands the pain straight into the pipeline.
 
 **"Will Skill Builder replace my Claude Custom Instructions?"**
 No, and that's the point. The triage gate decides what your input actually is. If it's a workflow → Skill. If it's a tone/voice/style preference → it routes you to Custom Instructions. If it's a fact about you → it routes you to Memory Web. CTRL stays in its lane and points you at the right tool for the other lanes.
@@ -324,7 +324,7 @@ Download the ZIP from the preview sheet. The bundle includes a `03-install-guide
 - "AI double" not "AI assistant" or "AI agent"
 - "Thinking tools" not "prompt library"
 - "Agent Skill" or "Skill" not "macro", "automation script", or "workflow template"
-- "Three Honest Tests" - use this phrase to explain why CTRL refuses to generate junk skills
+- "Four Honest Tests" - use this phrase to explain why CTRL refuses to generate junk skills
 - "Pain-anchored" - use when explaining the entry points on Edge / Memory / Briefing
 - "Zero-context tax" - use this phrase, it lands
 - "Auditable relevance" - use when discussing the Briefing

@@ -2,7 +2,7 @@
 
 Complete feature inventory across all three CTRL tools.
 
-**Last Updated:** 2026-06-17
+**Last Updated:** 2026-06-21
 
 > **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
 
@@ -14,7 +14,7 @@ Complete feature inventory across all three CTRL tools.
 
 > **Updated 2026-06-17.** The brand redesign (PR #186), Brain engine (PRs #153-164, #187-189), and 4-kit program (PRs #190-#193) all shipped after these counts were last taken. Treat the edge-function / hook / migration totals below as **verified counts pending re-count**.
 
-- **80 Supabase edge functions** (Deno runtime; count as of 2026-06-09, re-count pending), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules; latest added: `extract-voice-profile` (PR #204)
+- **93 Supabase edge functions** (Deno runtime; verified re-count 2026-06-21), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), the Kit Engine (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`), the `track-event` attribution proxy, and voice tooling; latest added: `extract-voice-profile` (PR #204)
 - **59 React hooks** under `src/hooks/` (count as of 2026-06-09; added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
 - **110 PostgreSQL migrations** applied to remote (count as of 2026-06-09; added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening; later additions include `20260615*_brain_*` and `20260616120000_memory_edges`)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
@@ -1540,6 +1540,70 @@ Settings sheet (`src/components/settings/`) tabs in current order:
 
 ---
 
+## Kit Redesign: Sequential One-Action-Per-Screen Wizard (PRs #206-212, shipped LIVE 2026-06-19)
+
+The complete redesign of all four kits from a long-scroll dumping ground into a sequential, one-action-per-screen wizard. All 4 kits live-verified on prod.
+
+**The law (locked before a line of code was written):**
+- Strictly sequential. One action per screen. Never two things at once.
+- No-scroll on mobile. Each step fits the viewport.
+- Desktop is the primary surface - a native two-pane with a live "your kit is taking shape" panel.
+- Humanity-first reflect-backs on the vulnerable steps (Vibe Coding asks for past pains; Memory & Identity asks who you are).
+- Outputs are two buttons only (Download / Copy), never walls of text.
+- Platform-agnostic: copy names the user's chosen tool, never hardcodes Claude.
+
+**The new flow (all four kits):**
+1. **Redeem** - code entry, anonymous session.
+2. **Adaptive intake cascade** - one question per screen; each step is a pick or short text.
+3. **Homework step** - paste what your AI already knows about you. Folds into `kit-compose` via `memoryContext` so the output is grounded in the student's world from the first pass.
+4. **Honest build trace** (`KitBuildTrace`) - driven by real `kit_builds.artifact_statuses`, no faked latency.
+5. **Reveal wizard** (`KitRevealWizard`) - six sequential steps: reveal -> what's-inside -> voice -> keep-it -> plan -> ship.
+6. **Hero PDF** - one branded personalized PDF per kit, print-styled route (`/kit/pdf`, `src/lib/kitPdf.ts` + `src/pages/kit/KitPdf.tsx`).
+
+**Key components:**
+- `KitWhatsInside`: two buttons only (Download / Copy). Never a wall of text.
+- `src/components/kit/kitPrimitives.tsx`: shared brand primitives enforcing design consistency across all four kits.
+- Retired: `KitHome` reveal-scroll + `HomeworkCard` (dead code).
+
+**PRs:** #206 (design lock) -> #207 (Vibe, live-verified e2e on prod) -> #211 (Autonomous + Org Chart + Memory + 3 hero PDFs) -> #212 (stage-label fix). `kit-compose` redeployed so presets and frontend align.
+
+**Honest open follow-ups (do not hide):**
+- Multi-select (`chips_multi`) `factMappings` do NOT persist to `user_memory` - used in compose only, not saved as Memory Web facts.
+- Autonomous Business's on-screen reflect-back comes via preset helper copy, not the shared `KitIntake` clay panel.
+
+**Sales Anchor - Kit Redesign**: "One question per screen. No scroll. A homework step that makes the AI already know your world before the kit starts composing. Walk out with a PDF you actually open."
+
+---
+
+## Main App Polish: AI-Native Enforcement (PRs #214-221, shipped LIVE 2026-06-19/21)
+
+Phase 19 locked the AI-native north star and enforced it across the entire main app.
+
+**The North Star:**
+CTRL is about building, orchestrating, productizing, and getting to market the AI-native version of your business. Every decision, every headline, every nudge, every suggestion must be about making the business more AI-native. When a user brings something general (pricing, hiring, a market move), CTRL does not answer it as-is and does not refuse it - it **reframes** it into the AI-native version of that decision and pulls the user there.
+
+Examples:
+- "Should I hire a VP of Sales?" - "Before you hire, should an agent own part of the sales motion first?"
+- "Should we raise prices?" - "Should the AI-native version of your offer change how you price the AI capability itself?"
+
+**What shipped:**
+
+**AI-native decision reframe (PR #216):** Decision Engine seed suggestions and Decision Map starter decisions were rewritten to be AI-native. Any general-business input is reframed into its AI-native form before analysis proceeds.
+
+**News deck motifs (PR #215):** Cockpit deck news cards gained one branded category motif image per news category, reused consistently. Replaces unstyled text-only cards with a visual signal readable at a glance.
+
+**No-scroll / one-ask enforcement (PRs #218-221):** All major surfaces brought to conformance with the one-ask / no-scroll law:
+- PR #218: briefing surface.
+- PR #219: decision and goals surfaces.
+- PR #220: memory and context surfaces.
+- PR #221: settings and profile surfaces.
+
+All surfaces now conform: one action per screen on mobile, no window scroll on desktop, no multi-ask moments.
+
+**Sales Anchor - AI-Native Enforcement**: "CTRL never answers a hiring question with 'hire faster'. It asks what the agent would own first. Every nudge, every headline, every decision prompt is about the AI-native version of your business."
+
+---
+
 ## Sales-anchor index (for AI agents)
 
 A condensed list of one-liners pullable for outbound. Each tied to a real shipped feature:
@@ -1559,4 +1623,4 @@ A condensed list of one-liners pullable for outbound. Each tied to a real shippe
 - **Auditable AI**: "Every Briefing segment shows the profile fact that earned it the slot. No black box."
 - **Hardened production**: "6 audit weeks shipped. Stripe sig + idempotency. End-to-end deletion. Structured logging. E2E tests."
 - **Desktop polish (v5.2)**: "Cmd+K opens a global launcher. Sticky top bar, right rail for context, sidebar with keyboard hints. Built like a desktop product, not stretched mobile."
-- **Triage you can trust**: "Skill Builder won't generate a junk skill. The Three Honest Tests gate routes Memory Facts, Custom Instructions, and Saved Styles to the right surface instead."
+- **Triage you can trust**: "Skill Builder won't generate a junk skill. The Four Honest Tests gate routes Memory Facts, Custom Instructions, Saved Styles, and voice-lock inputs to the right surface instead."
