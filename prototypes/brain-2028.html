@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CTRL Brain 2028</title>
+<style>
+  /* ============================================================
+     CTRL DARK INSTRUMENT PALETTE (ctrl-ds tokens, src/index.css)
+     ============================================================ */
+  :root {
+    --background: 225 20% 4%;          /* #08090c */
+    --foreground: 220 32% 93%;         /* #E6EAF2 */
+    --card: 220 22% 8%;                /* #101319 */
+    --popover: 220 18% 7%;             /* #0e1014 */
+    --primary: 171 100% 43%;           /* emerald #00D9B6 */
+    --secondary: 220 18% 10%;          /* #14171d */
+    --muted: 218 16% 13%;              /* #1c2027 */
+    --muted-foreground: 217 12% 59%;   /* #8b94a3 */
+    --border: 220 15% 16%;             /* #22262e */
+    --radius: 0.75rem;
+
+    /* four-world node colours */
+    --node-priority: 38 92% 58%;       /* amber */
+    --node-decisions: 268 70% 66%;     /* purple */
+    --node-company: 24 90% 58%;        /* orange */
+    --node-you: 171 100% 43%;          /* emerald (the centre / you) */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: #050608;
+    color: hsl(var(--foreground));
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 28px 16px 60px;
+    gap: 22px;
+    background:
+      radial-gradient(900px 600px at 50% -10%, hsl(171 100% 43% / 0.05), transparent 60%),
+      #050608;
+  }
+
+  /* ---------- toggle controls ---------- */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    background: hsl(var(--popover) / 0.7);
+    border: 1px solid hsl(var(--border));
+    border-radius: 14px;
+    backdrop-filter: blur(14px);
+  }
+  .ctl-group { display: flex; align-items: center; gap: 8px; }
+  .ctl-label {
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: hsl(var(--muted-foreground)); font-weight: 600;
+  }
+  .seg { display: inline-flex; background: hsl(var(--secondary)); border-radius: 10px; padding: 3px; gap: 2px; }
+  .seg button {
+    appearance: none; border: 0; cursor: pointer;
+    background: transparent; color: hsl(var(--muted-foreground));
+    font-size: 12px; font-weight: 600; letter-spacing: 0.01em;
+    padding: 6px 12px; border-radius: 8px; transition: all .2s ease;
+  }
+  .seg button:hover { color: hsl(var(--foreground)); }
+  .seg button.active {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    box-shadow: 0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 2px 8px hsl(0 0% 0% / 0.4);
+  }
+  .seg button.active.accent { color: hsl(var(--primary)); }
+
+  /* ---------- device viewport frame ---------- */
+  .stage { display: flex; justify-content: center; align-items: center; }
+  .device {
+    position: relative;
+    background: hsl(var(--background));
+    overflow: hidden;
+    box-shadow: 0 40px 120px -30px hsl(0 0% 0% / 0.9), 0 0 0 1px hsl(var(--border));
+    transition: width .45s cubic-bezier(.4,0,.2,1), height .45s cubic-bezier(.4,0,.2,1);
+  }
+  .device.mobile  { width: 412px; height: 915px; border-radius: 38px; }
+  .device.desktop { width: 1366px; height: 900px; border-radius: 18px; }
+
+  @media (max-width: 1420px) {
+    .device.desktop { transform: scale(0.92); transform-origin: top center; }
+  }
+
+  /* ============================================================
+     APP SHELL inside the device
+     ============================================================ */
+  .app {
+    position: absolute; inset: 0;
+    display: grid;
+    background:
+      radial-gradient(1200px 700px at 50% 42%, hsl(220 30% 10% / 0.55), transparent 70%),
+      hsl(var(--background));
+  }
+  /* mobile: single column, the main col fills height */
+  .device.mobile .app { grid-template-columns: 100%; grid-template-rows: 100%; }
+  /* desktop: sidebar | main */
+  .device.desktop .app {
+    grid-template-columns: 248px 1fr;
+    grid-template-rows: 100%;
+  }
+  /* the main column always fills the app row and lays out header + canvas */
+  .main-col {
+    display: flex; flex-direction: column;
+    min-width: 0; min-height: 0; height: 100%;
+  }
+
+  /* ---------- desktop sidebar ---------- */
+  .sidebar { display: none; }
+  .device.desktop .sidebar {
+    display: flex; flex-direction: column;
+    border-right: 1px solid hsl(var(--border));
+    background: hsl(var(--popover) / 0.5);
+    padding: 20px 14px;
+    gap: 4px;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; padding: 6px 10px 18px; }
+  .brand-mark {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: linear-gradient(135deg, hsl(171 100% 50%), hsl(171 100% 36%));
+    display: grid; place-items: center; color: #04140f; font-weight: 800; font-size: 13px;
+    box-shadow: 0 4px 14px hsl(171 100% 43% / 0.4);
+  }
+  .brand-word { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+  .brand-word b { color: hsl(var(--primary)); }
+  .nav-section { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: hsl(var(--muted-foreground)); padding: 14px 10px 6px; opacity: .8; }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 11px; border-radius: 10px;
+    color: hsl(var(--muted-foreground)); font-size: 13.5px; font-weight: 500;
+    cursor: pointer; position: relative;
+  }
+  .nav-item svg { width: 17px; height: 17px; opacity: .9; }
+  .nav-item.active {
+    color: hsl(var(--foreground));
+    background: hsl(var(--secondary));
+  }
+  .nav-item.active::before {
+    content: ""; position: absolute; left: -14px; top: 18%; bottom: 18%;
+    width: 3px; border-radius: 0 3px 3px 0; background: hsl(var(--primary));
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.7);
+  }
+  .nav-item.active svg { color: hsl(var(--primary)); opacity: 1; }
+
+  /* ---------- header (the CALM chrome) ---------- */
+  .head { padding: 18px 22px 0; }
+  .device.mobile .head { padding: 22px 18px 0; }
+  .head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .head-eyebrow { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: hsl(var(--muted-foreground)); font-weight: 600; }
+  .head-title { font-size: 20px; font-weight: 650; letter-spacing: -0.015em; margin-top: 3px; color: hsl(var(--foreground)); }
+  .device.desktop .head-title { font-size: 22px; }
+  .head-sub { font-size: 13px; color: hsl(var(--muted-foreground)); margin-top: 5px; max-width: 460px; line-height: 1.45; }
+
+  .mobile-brand { display: flex; align-items: center; gap: 8px; }
+  .device.desktop .mobile-brand { display: none; }
+
+  .add-btn {
+    appearance: none; border: 0; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+    background: hsl(var(--primary)); color: #04140f;
+    font-weight: 650; font-size: 13px;
+    padding: 9px 15px; border-radius: 11px;
+    box-shadow: 0 6px 20px hsl(171 100% 43% / 0.32);
+    transition: transform .15s ease, box-shadow .2s ease;
+  }
+  .add-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 28px hsl(171 100% 43% / 0.42); }
+  .add-btn svg { width: 15px; height: 15px; }
+
+  /* quiet secondary meta line: stats live here, small and calm */
+  .meta-line {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 14px; flex-wrap: wrap;
+  }
+  .stat {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; color: hsl(var(--muted-foreground));
+  }
+  .stat .dot { width: 5px; height: 5px; border-radius: 50%; background: hsl(var(--muted-foreground) / 0.6); }
+  .stat .dot.live { background: hsl(var(--primary)); box-shadow: 0 0 8px hsl(var(--primary)); }
+  .meta-sep { width: 1px; height: 11px; background: hsl(var(--border)); }
+
+  /* the GENTLE verify nudge (never a backlog) */
+  .verify-nudge {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-left: auto;
+    padding: 6px 11px;
+    border: 1px solid hsl(var(--primary) / 0.25);
+    background: hsl(var(--primary) / 0.07);
+    border-radius: 999px;
+    font-size: 11.5px; color: hsl(var(--foreground));
+    cursor: pointer; transition: background .2s ease;
+  }
+  .verify-nudge:hover { background: hsl(var(--primary) / 0.12); }
+  .verify-nudge .pip { width: 6px; height: 6px; border-radius: 50%; background: hsl(var(--primary)); box-shadow: 0 0 8px hsl(var(--primary)); }
+  .verify-nudge b { color: hsl(var(--primary)); font-weight: 650; }
+
+  /* tiny, quiet facet sub-tabs (collapsed, secondary) */
+  .facets { display: flex; gap: 4px; margin-top: 14px; }
+  .facet {
+    font-size: 11.5px; font-weight: 550; color: hsl(var(--muted-foreground));
+    padding: 5px 11px; border-radius: 8px; cursor: pointer; transition: all .18s ease;
+  }
+  .facet:hover { color: hsl(var(--foreground)); background: hsl(var(--secondary) / 0.6); }
+  .facet.active { color: hsl(var(--foreground)); background: hsl(var(--secondary)); }
+
+  /* ---------- the CANVAS (the calm centred focus) ---------- */
+  .canvas-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    margin: 16px 16px 18px;
+    border-radius: 18px;
+    border: 1px solid hsl(var(--border));
+    background:
+      radial-gradient(60% 55% at 50% 50%, hsl(220 28% 11% / 0.7), transparent 75%),
+      hsl(var(--popover) / 0.4);
+    overflow: hidden;
+    min-height: 0; /* allow grid child to shrink */
+  }
+  .device.desktop .canvas-wrap { margin: 18px 26px 26px; }
+  /* subtle inner vignette so depth reads */
+  .canvas-wrap::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    box-shadow: inset 0 0 120px 20px hsl(225 25% 3% / 0.8);
+    border-radius: 18px;
+  }
+  svg.graph { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .canvas-hint {
+    position: absolute; top: 14px; left: 0; right: 0;
+    text-align: center; font-size: 11px; letter-spacing: 0.04em;
+    color: hsl(var(--muted-foreground) / 0.8); pointer-events: none;
+    z-index: 3;
+  }
+
+  /* legend + zoom, quiet, pinned in canvas corners */
+  .legend {
+    position: absolute; left: 16px; bottom: 14px; z-index: 3;
+    display: flex; flex-direction: column; gap: 6px; pointer-events: none;
+  }
+  .legend-row { display: flex; align-items: center; gap: 7px; font-size: 10.5px; color: hsl(var(--muted-foreground)); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .legend-line { width: 16px; height: 0; border-top: 2px solid hsl(var(--muted-foreground) / 0.6); }
+  .legend-line.weak { border-top-style: dashed; opacity: .6; }
+
+  .zoom {
+    position: absolute; right: 14px; bottom: 14px; z-index: 3;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .zoom button {
+    width: 30px; height: 30px; border-radius: 9px; cursor: pointer;
+    background: hsl(var(--card) / 0.85); border: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground)); font-size: 16px; line-height: 1;
+    display: grid; place-items: center; backdrop-filter: blur(8px);
+  }
+  .zoom button:hover { color: hsl(var(--foreground)); border-color: hsl(var(--primary) / 0.4); }
+
+  /* ---------- COLD invitation overlay ---------- */
+  .cold-invite {
+    position: absolute; inset: 0; z-index: 4;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 16px; padding: 32px;
+  }
+  .cold-orb {
+    width: 132px; height: 132px; border-radius: 50%;
+    position: relative; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 45%, hsl(171 100% 43% / 0.16), transparent 70%);
+  }
+  .cold-orb::before {
+    content: ""; position: absolute; inset: 0; border-radius: 50%;
+    border: 1.5px dashed hsl(var(--primary) / 0.4);
+    animation: spin 26s linear infinite;
+  }
+  .cold-orb::after {
+    content: ""; position: absolute; inset: 26px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, hsl(171 100% 50% / 0.5), hsl(171 100% 38% / 0.15));
+    box-shadow: 0 0 40px hsl(171 100% 43% / 0.5), inset 0 0 20px hsl(171 100% 60% / 0.3);
+    animation: breathe 3.4s ease-in-out infinite;
+  }
+  .cold-orb svg { width: 38px; height: 38px; color: hsl(var(--primary)); z-index: 1; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes breathe { 0%,100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.08); opacity: 1; } }
+  .cold-title { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; }
+  .device.desktop .cold-title { font-size: 23px; }
+  .cold-body { font-size: 13.5px; color: hsl(var(--muted-foreground)); max-width: 340px; line-height: 1.5; }
+  .cold-cta {
+    margin-top: 4px; appearance: none; border: 0; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: hsl(var(--primary)); color: #04140f; font-weight: 650; font-size: 14px;
+    padding: 12px 22px; border-radius: 13px;
+    box-shadow: 0 10px 30px hsl(171 100% 43% / 0.4);
+    transition: transform .15s ease;
+  }
+  .cold-cta:hover { transform: translateY(-2px); }
+  .cold-cta svg { width: 16px; height: 16px; }
+
+  /* ---------- LOADING skeleton (canvas materializing) ---------- */
+  .loading { position: absolute; inset: 0; z-index: 5; display: none; }
+  .skeleton-node {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, hsl(220 18% 22% / 0.9), hsl(220 18% 12% / 0.6));
+    border: 1px solid hsl(var(--border));
+    animation: pulseNode 1.8s ease-in-out infinite;
+  }
+  @keyframes pulseNode {
+    0%,100% { opacity: .35; transform: scale(0.92); }
+    50% { opacity: .85; transform: scale(1); }
+  }
+  .skeleton-line {
+    position: absolute; height: 1.5px; transform-origin: left center;
+    background: linear-gradient(90deg, transparent, hsl(var(--muted-foreground) / 0.35), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .loading-caption {
+    position: absolute; left: 0; right: 0; bottom: 42px; text-align: center;
+    font-size: 12px; color: hsl(var(--muted-foreground));
+    letter-spacing: 0.02em;
+  }
+  .loading-caption .gleam {
+    background: linear-gradient(90deg, hsl(var(--muted-foreground)), hsl(var(--foreground)), hsl(var(--muted-foreground)));
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: shimmer 2.4s linear infinite;
+  }
+
+  /* ---------- mobile bottom nav ---------- */
+  .bottomnav { display: none; }
+  .device.mobile .bottomnav {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+    border-top: 1px solid hsl(var(--border));
+    background: hsl(var(--popover) / 0.92); backdrop-filter: blur(14px);
+    padding: 9px 8px 20px;
+  }
+  /* reserve room for the pinned nav so the canvas never goes under it */
+  .device.mobile .main-col { padding-bottom: 74px; }
+  .bn-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: hsl(var(--muted-foreground)); font-size: 10.5px; font-weight: 550; position: relative; }
+  .bn-item svg { width: 21px; height: 21px; }
+  .bn-item.active { color: hsl(var(--primary)); }
+  .bn-item.active::before {
+    content: ""; position: absolute; top: -9px; width: 22px; height: 2.5px; border-radius: 3px;
+    background: hsl(var(--primary)); box-shadow: 0 0 10px hsl(var(--primary));
+  }
+
+  /* mobile add FAB */
+  .fab {
+    position: absolute; right: 18px; bottom: 92px; z-index: 6;
+    width: 56px; height: 56px; border-radius: 18px; border: 0; cursor: pointer;
+    background: hsl(var(--primary)); color: #04140f;
+    display: none; place-items: center;
+    box-shadow: 0 12px 32px hsl(171 100% 43% / 0.45);
+  }
+  .device.mobile.show-fab .fab { display: grid; }
+  .fab svg { width: 24px; height: 24px; }
+
+  /* node tooltip card on hover/select */
+  .node-card {
+    position: absolute; z-index: 7; display: none;
+    background: hsl(var(--popover) / 0.96); border: 1px solid hsl(var(--border));
+    border-radius: 12px; padding: 11px 13px; min-width: 180px; max-width: 230px;
+    box-shadow: 0 18px 50px hsl(0 0% 0% / 0.7); backdrop-filter: blur(10px);
+    pointer-events: none;
+  }
+  .node-card .nc-world { font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+  .node-card .nc-label { font-size: 13.5px; font-weight: 600; margin-top: 3px; color: hsl(var(--foreground)); }
+  .node-card .nc-meta { font-size: 11px; color: hsl(var(--muted-foreground)); margin-top: 5px; display: flex; align-items: center; gap: 6px; }
+  .node-card .nc-verified { color: hsl(var(--primary)); display: inline-flex; align-items: center; gap: 4px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+  <div class="controls">
+    <div class="ctl-group">
+      <span class="ctl-label">Device</span>
+      <div class="seg" id="seg-device">
+        <button data-device="mobile" class="active">Mobile</button>
+        <button data-device="desktop">Desktop</button>
+      </div>
+    </div>
+    <div class="ctl-group">
+      <span class="ctl-label">State</span>
+      <div class="seg" id="seg-state">
+        <button data-state="loading">Loading</button>
+        <button data-state="cold">Cold</button>
+        <button data-state="warm" class="active accent">Warm</button>
+        <button data-state="rich">Rich</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="device mobile show-fab" id="device">
+      <div class="app">
+
+        <!-- DESKTOP SIDEBAR -->
+        <aside class="sidebar">
+          <div class="brand">
+            <div class="brand-mark">c</div>
+            <div class="brand-word">ctrl<b>.</b></div>
+          </div>
+          <div class="nav-section">Workspace</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 7l7-4 7 4M3 10h4M17 10h4M5 14a2 2 0 104 0M15 14a2 2 0 104 0"/></svg>Decisions</div>
+          <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3a3 3 0 00-3 3 3 3 0 00-1 5 3 3 0 002 5 3 3 0 006 0V6a3 3 0 00-3-3z"/><path d="M15 6a3 3 0 013 3 3 3 0 011 5 3 3 0 00-2 4"/></svg>Brain</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>You</div>
+          <div class="nav-section">Account</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 00-1.7-1L16.5 2h-4l-.4 2.6a7 7 0 00-1.7 1l-2.3-1-2 3.4L5.1 11a7 7 0 000 2l-2 1.5 2 3.4 2.3-1a7 7 0 001.7 1l.4 2.6h4l.4-2.6a7 7 0 001.7-1l2.3 1 2-3.4-2-1.5a7 7 0 00.1-1z"/></svg>Settings</div>
+        </aside>
+
+        <!-- MAIN COLUMN -->
+        <div class="main-col">
+
+          <!-- HEADER (calm chrome) -->
+          <header class="head">
+            <div class="head-row">
+              <div>
+                <div class="mobile-brand">
+                  <div class="brand-mark" style="width:22px;height:22px;font-size:11px;border-radius:6px;">c</div>
+                  <div class="brand-word" style="font-size:15px;">ctrl<b>.</b></div>
+                </div>
+                <div class="head-eyebrow" style="margin-top:14px;">Brain</div>
+                <div class="head-title">Let's keep your story straight</div>
+                <div class="head-sub" id="head-sub">Your context, so every AI you use already knows you. The more it holds, the more it sounds like you.</div>
+              </div>
+              <button class="add-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+                Add
+              </button>
+            </div>
+
+            <!-- quiet meta: stats live small + the gentle nudge -->
+            <div class="meta-line" id="meta-line">
+              <span class="stat"><span class="dot live"></span><span id="stat-facts">24 things I know</span></span>
+              <span class="meta-sep"></span>
+              <span class="stat"><span class="dot"></span><span id="stat-verified">21 confirmed by you</span></span>
+
+              <div class="verify-nudge" id="verify-nudge">
+                <span class="pip"></span>
+                <span>Verify <b>3</b> while you're here</span>
+              </div>
+            </div>
+
+            <!-- tiny secondary facets -->
+            <div class="facets">
+              <div class="facet active">Graph</div>
+              <div class="facet">All facts</div>
+              <div class="facet">Library</div>
+              <div class="facet">Privacy</div>
+            </div>
+          </header>
+
+          <!-- CANVAS -->
+          <div class="canvas-wrap" id="canvas-wrap">
+            <div class="canvas-hint" id="canvas-hint">Tap a node to read its bond</div>
+
+            <svg class="graph" id="graph" preserveAspectRatio="xMidYMid meet"></svg>
+
+            <!-- loading skeleton -->
+            <div class="loading" id="loading">
+              <div class="loading-caption"><span class="gleam">Assembling your memory&hellip;</span></div>
+            </div>
+
+            <!-- cold invitation -->
+            <div class="cold-invite hidden" id="cold-invite">
+              <div class="cold-orb">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3a3 3 0 00-3 3 3 3 0 00-1 5 3 3 0 002 5 3 3 0 006 0V6a3 3 0 00-3-3z"/><path d="M15 6a3 3 0 013 3 3 3 0 011 5 3 3 0 00-2 4"/></svg>
+              </div>
+              <div>
+                <div class="cold-title">Let's start your memory</div>
+                <div class="cold-body">Add the first thing your AI should know about you. Each one makes every AI you use sound a little more like you.</div>
+              </div>
+              <button class="cold-cta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+                Add your first memory
+              </button>
+            </div>
+
+            <div class="legend" id="legend">
+              <div class="legend-row"><span class="legend-dot" style="background:hsl(var(--node-priority))"></span>Priorities</div>
+              <div class="legend-row"><span class="legend-dot" style="background:hsl(var(--node-decisions))"></span>Decisions</div>
+              <div class="legend-row"><span class="legend-dot" style="background:hsl(var(--node-company))"></span>Company</div>
+              <div class="legend-row" style="margin-top:3px;"><span class="legend-line"></span>confirmed</div>
+              <div class="legend-row"><span class="legend-line weak"></span>worth a check</div>
+            </div>
+
+            <div class="zoom" id="zoom">
+              <button id="zoom-in">+</button>
+              <button id="zoom-out">&minus;</button>
+            </div>
+
+            <div class="node-card" id="node-card"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- mobile FAB + bottom nav -->
+      <button class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></button>
+      <nav class="bottomnav">
+        <div class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</div>
+        <div class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 7l7-4 7 4M3 10h4M17 10h4"/></svg>Decisions</div>
+        <div class="bn-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3a3 3 0 00-3 3 3 3 0 00-1 5 3 3 0 002 5 3 3 0 006 0V6a3 3 0 00-3-3z"/><path d="M15 6a3 3 0 013 3 3 3 0 011 5 3 3 0 00-2 4"/></svg>Brain</div>
+        <div class="bn-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>You</div>
+      </nav>
+    </div>
+  </div>
+
+<script>
+/* ============================================================
+   CENTERING GUARANTEE
+   ------------------------------------------------------------
+   Nodes are authored in an abstract MODEL space. At render time
+   we measure the actual cluster bounding box, then build a
+   viewBox that is a PADDED, ASPECT-CORRECTED box centred on the
+   cluster CENTROID. preserveAspectRatio="xMidYMid meet" then
+   keeps that box optically centred in whatever pixel size the
+   canvas happens to be (mobile portrait or desktop landscape).
+   Because the viewBox is recomputed from the live canvas aspect
+   ratio every render, there are NEVER dead quadrants: the cluster
+   sits balanced in the optical middle at every device + state.
+   ============================================================ */
+
+const WORLDS = {
+  you:       { color: 'var(--node-you)',       label: 'You' },
+  priority:  { color: 'var(--node-priority)',  label: 'Priorities' },
+  decisions: { color: 'var(--node-decisions)', label: 'Decisions' },
+  company:   { color: 'var(--node-company)',   label: 'Company' },
+};
+
+/* model coords roughly centred on origin; the auto-fit handles the rest */
+const WARM_NODES = [
+  { id:'you', world:'you', x:0, y:0, r:15, label:'You', meta:'The centre of your memory', verified:true, hub:true },
+  { id:'c1', world:'company', x:0, y:-138, r:10, label:'B2B SaaS, 11 people', verified:true },
+  { id:'p1', world:'priority', x:-132, y:-58, r:10, label:'Ship v2 by Q3', verified:true },
+  { id:'p2', world:'priority', x:132, y:-58, r:9, label:'Hire a Head of AI', verified:true },
+  { id:'d1', world:'decisions', x:-104, y:118, r:11, label:'Move off Lovable', verified:true },
+  { id:'d2', world:'decisions', x:104, y:118, r:9, label:'Raise a seed round', verified:false },
+];
+const WARM_EDGES = [
+  ['you','c1',true],['you','p1',true],['you','p2',true],['you','d1',true],['you','d2',false],
+  ['p1','d1',true],['c1','p2',false],
+];
+
+/* RICH: a dense, navigable cluster, still balanced around the hub */
+const RICH_NODES = (() => {
+  const out = [{ id:'you', world:'you', x:0, y:0, r:16, label:'You', meta:'The centre of your memory', verified:true, hub:true }];
+  const rings = [
+    { world:'priority',  n:6, rad:95,  jitter:18 },
+    { world:'decisions', n:7, rad:150, jitter:24 },
+    { world:'company',   n:6, rad:210, jitter:30 },
+    { world:'priority',  n:5, rad:255, jitter:26 },
+  ];
+  const labels = {
+    priority:['Ship v2','Hire Head of AI','Cut burn 20%','Win 3 logos','Voice-lock copy','Close design debt','Launch MCP','Q3 board prep'],
+    decisions:['Move off Lovable','Raise a seed','Sunset legacy API','Pick Vertex AI','Go private beta','Drop two SKUs','Re-price Pro','Open-source SDK'],
+    company:['B2B SaaS','11 people','EU + US','PLG motion','$1.2M ARR','Sept renewal','Series A path','Two co-founders'],
+  };
+  const idx = { priority:0, decisions:0, company:0 };
+  let k = 0;
+  rings.forEach((ring, ri) => {
+    for (let i=0;i<ring.n;i++) {
+      const ang = (i / ring.n) * Math.PI*2 + ri*0.5;
+      const rad = ring.rad + (Math.sin(i*2.7+ri)*ring.jitter);
+      const x = Math.cos(ang)*rad;
+      const y = Math.sin(ang)*rad*0.82; /* slightly flatten so it reads as a field */
+      const w = ring.world;
+      const lab = labels[w][idx[w] % labels[w].length]; idx[w]++;
+      out.push({ id:'n'+(k++), world:w, x, y, r: 6+Math.random()*4, label:lab, verified: Math.random()>0.22 });
+    }
+  });
+  return out;
+})();
+const RICH_EDGES = (() => {
+  const e = [];
+  for (let i=1;i<RICH_NODES.length;i++){
+    e.push(['you', RICH_NODES[i].id, RICH_NODES[i].verified]);
+    if (i>2 && Math.random()>0.55) e.push([RICH_NODES[i-1].id, RICH_NODES[i].id, Math.random()>0.5]);
+  }
+  return e;
+})();
+
+const SVGNS = 'http://www.w3.org/2000/svg';
+let scaleK = 1;
+let currentState = 'warm';
+
+function nodesFor(state){ return state==='rich' ? RICH_NODES : WARM_NODES; }
+function edgesFor(state){ return state==='rich' ? RICH_EDGES : WARM_EDGES; }
+
+function el(name, attrs){
+  const n = document.createElementNS(SVGNS, name);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+}
+
+function renderGraph(){
+  const svg = document.getElementById('graph');
+  const wrap = document.getElementById('canvas-wrap');
+  svg.innerHTML = '';
+  if (currentState === 'cold' || currentState === 'loading') return;
+
+  const nodes = nodesFor(currentState);
+  const edges = edgesFor(currentState);
+
+  // --- 1. choose the OPTICAL ANCHOR ---
+  // For a radial "you at the centre" graph the focal point is the YOU hub,
+  // not the geometric midpoint (the node spread is rarely symmetric). We
+  // centre the viewBox on the hub, then size the box from the hub's MAX
+  // reach in every direction so the cluster stays fully framed AND balanced.
+  const hub = nodes.find(n => n.hub) || null;
+  const cx = hub ? hub.x : nodes.reduce((s,n)=>s+n.x,0)/nodes.length;
+  const cy = hub ? hub.y : nodes.reduce((s,n)=>s+n.y,0)/nodes.length;
+  // half-extents = furthest node distance from the anchor on each axis
+  let halfX = 0, halfY = 0;
+  nodes.forEach(n => {
+    halfX = Math.max(halfX, Math.abs(n.x - cx) + n.r);
+    halfY = Math.max(halfY, Math.abs(n.y - cy) + n.r);
+  });
+  let bw = halfX * 2, bh = halfY * 2;
+
+  // --- 2. aspect-correct + pad, so the box matches the canvas shape ---
+  const rect = wrap.getBoundingClientRect();
+  const aspect = rect.width / rect.height;          // live pixel aspect
+  const pad = 1.32 / scaleK;                          // breathing room (+ zoom)
+  bw *= pad; bh *= pad;
+  // grow the smaller dimension so box aspect == canvas aspect (meet keeps it centred)
+  if (bw / bh < aspect) bw = bh * aspect; else bh = bw / aspect;
+
+  const vbX = cx - bw/2, vbY = cy - bh/2;            // box CENTRED on centroid
+  svg.setAttribute('viewBox', `${vbX} ${vbY} ${bw} ${bh}`);
+
+  // defs: glow filter
+  const defs = el('defs', {});
+  defs.innerHTML = `
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="hubGrad" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="hsl(171 100% 62%)"/>
+      <stop offset="100%" stop-color="hsl(171 100% 38%)"/>
+    </radialGradient>`;
+  svg.appendChild(defs);
+
+  const byId = Object.fromEntries(nodes.map(n=>[n.id,n]));
+
+  // --- edges ---
+  const gEdges = el('g', {});
+  edges.forEach(([a,b,strong]) => {
+    const A=byId[a], B=byId[b]; if(!A||!B) return;
+    const col = strong ? 'hsl(171 100% 50%)' : 'hsl(217 12% 59%)';
+    const mx=(A.x+B.x)/2, my=(A.y+B.y)/2 - 14; // gentle arc
+    const path = el('path', {
+      d:`M ${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}`,
+      fill:'none', stroke:col,
+      'stroke-width': strong ? 1.7 : 1.1,
+      'stroke-opacity': strong ? 0.55 : 0.3,
+      'stroke-dasharray': strong ? '0' : '4 5',
+      'stroke-linecap':'round'
+    });
+    gEdges.appendChild(path);
+  });
+  svg.appendChild(gEdges);
+
+  // --- nodes ---
+  const gNodes = el('g', {});
+  nodes.forEach(n => {
+    const wc = `hsl(var(--node-${n.world}))`;
+    const g = el('g', { style:'cursor:pointer' });
+    g.dataset.id = n.id;
+
+    if (n.hub) {
+      g.appendChild(el('circle', { cx:n.x, cy:n.y, r:n.r+10, fill:'hsl(171 100% 43% / 0.10)' }));
+      g.appendChild(el('circle', { cx:n.x, cy:n.y, r:n.r, fill:'url(#hubGrad)', filter:'url(#glow)',
+        stroke:'hsl(171 100% 70%)', 'stroke-width':1 }));
+      const t = el('text', { x:n.x, y:n.y+0.5, 'text-anchor':'middle', 'dominant-baseline':'central',
+        fill:'#03130e', 'font-size':9, 'font-weight':800, 'font-family':'system-ui' });
+      t.textContent = 'YOU';
+      g.appendChild(t);
+    } else {
+      // soft halo
+      g.appendChild(el('circle', { cx:n.x, cy:n.y, r:n.r+6,
+        fill:`hsl(var(--node-${n.world}) / 0.12)` }));
+      const c = el('circle', { cx:n.x, cy:n.y, r:n.r, fill:wc, filter:'url(#glow)',
+        'fill-opacity': n.verified ? 0.95 : 0.55,
+        stroke: n.verified ? 'hsl(0 0% 100% / 0.25)' : 'hsl(217 12% 59% / 0.6)',
+        'stroke-width': n.verified ? 1 : 1, 'stroke-dasharray': n.verified ? '0' : '2.5 2.5' });
+      g.appendChild(c);
+    }
+    // hover/select interactions
+    g.addEventListener('mouseenter', (e)=> showCard(n, g));
+    g.addEventListener('mouseleave', ()=> hideCard());
+    g.addEventListener('click', (e)=> { showCard(n, g); });
+    gNodes.appendChild(g);
+  });
+  svg.appendChild(gNodes);
+}
+
+function showCard(n, g){
+  if (n.hub && !n.meta) return;
+  const card = document.getElementById('node-card');
+  const wrap = document.getElementById('canvas-wrap');
+  const wc = `hsl(var(--node-${n.world}))`;
+  card.innerHTML = `
+    <div class="nc-world" style="color:${wc}">${WORLDS[n.world].label}</div>
+    <div class="nc-label">${n.label}</div>
+    <div class="nc-meta">${ n.verified
+      ? '<span class="nc-verified">&#10003; confirmed by you</span>'
+      : 'worth a quick check' }</div>`;
+  // position near node using the rendered screen coords
+  const bb = g.getBoundingClientRect();
+  const wb = wrap.getBoundingClientRect();
+  let left = bb.left - wb.left + bb.width/2 - 100;
+  let top = bb.top - wb.top - 14 - 86;
+  left = Math.max(10, Math.min(left, wb.width - 240));
+  if (top < 10) top = bb.top - wb.top + bb.height + 12;
+  card.style.left = left+'px';
+  card.style.top = top+'px';
+  card.style.display = 'block';
+}
+function hideCard(){ document.getElementById('node-card').style.display='none'; }
+
+/* ---------- loading skeleton (canvas materializing) ---------- */
+function buildSkeleton(){
+  const loading = document.getElementById('loading');
+  // clear previous skeleton nodes/lines but keep caption
+  [...loading.querySelectorAll('.skeleton-node,.skeleton-line')].forEach(e=>e.remove());
+  const wrap = document.getElementById('canvas-wrap');
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  const cxp = w/2, cyp = h/2;
+  // central hub skeleton
+  const mk = (x,y,d,delay)=>{
+    const node = document.createElement('div');
+    node.className='skeleton-node';
+    node.style.left=(x-d/2)+'px'; node.style.top=(y-d/2)+'px';
+    node.style.width=d+'px'; node.style.height=d+'px';
+    node.style.animationDelay=delay+'s';
+    loading.appendChild(node);
+    return {x,y};
+  };
+  const hub = mk(cxp,cyp,34,0);
+  const ring = 6, R = Math.min(w,h)*0.30;
+  for(let i=0;i<ring;i++){
+    const a = (i/ring)*Math.PI*2;
+    const x = cxp + Math.cos(a)*R, y = cyp + Math.sin(a)*R*0.8;
+    // line from hub
+    const len = Math.hypot(x-cxp,y-cyp);
+    const ang = Math.atan2(y-cyp, x-cxp)*180/Math.PI;
+    const line = document.createElement('div');
+    line.className='skeleton-line';
+    line.style.left=cxp+'px'; line.style.top=cyp+'px';
+    line.style.width=len+'px';
+    line.style.transform=`rotate(${ang}deg)`;
+    line.style.animationDelay=(i*0.12)+'s';
+    loading.appendChild(line);
+    mk(x,y,16+ (i%2)*6, 0.15+i*0.1);
+  }
+}
+
+/* ---------- state switching ---------- */
+function applyState(state){
+  currentState = state;
+  scaleK = 1;
+  const device = document.getElementById('device');
+  const loading = document.getElementById('loading');
+  const cold = document.getElementById('cold-invite');
+  const graph = document.getElementById('graph');
+  const hint = document.getElementById('canvas-hint');
+  const legend = document.getElementById('legend');
+  const zoom = document.getElementById('zoom');
+  const meta = document.getElementById('meta-line');
+  const nudge = document.getElementById('verify-nudge');
+  const sub = document.getElementById('head-sub');
+  const statFacts = document.getElementById('stat-facts');
+  const statVer = document.getElementById('stat-verified');
+  hideCard();
+
+  // reset
+  loading.style.display='none';
+  cold.classList.add('hidden');
+  graph.style.display='block';
+  legend.style.display='flex';
+  zoom.style.display='flex';
+  hint.style.display='block';
+  meta.style.display='flex';
+  device.classList.add('show-fab');
+
+  if (state==='loading'){
+    loading.style.display='block';
+    graph.style.display='none';
+    cold.classList.add('hidden');
+    legend.style.display='none'; zoom.style.display='none'; hint.style.display='none';
+    meta.style.display='none';
+    device.classList.remove('show-fab');
+    buildSkeleton();
+    return;
+  }
+  if (state==='cold'){
+    cold.classList.remove('hidden');
+    graph.style.display='none';
+    legend.style.display='none'; zoom.style.display='none'; hint.style.display='none';
+    nudge.style.display='none';
+    statFacts.textContent = 'Nothing yet';
+    statVer.parentElement.style.display='none';
+    sub.textContent = "This is your memory. Add what your AI should know about you, and every AI you use starts to sound like you.";
+    device.classList.remove('show-fab'); // cold uses the big inline CTA
+    return;
+  }
+
+  // warm / rich
+  nudge.style.display='inline-flex';
+  statVer.parentElement.style.display='inline-flex';
+  if (state==='warm'){
+    statFacts.textContent='24 things I know';
+    statVer.textContent='21 confirmed by you';
+    nudge.querySelector('b').textContent='3';
+    sub.textContent='Your context, so every AI you use already knows you. The more it holds, the more it sounds like you.';
+  } else {
+    statFacts.textContent='148 things I know';
+    statVer.textContent='139 confirmed by you';
+    nudge.querySelector('b').textContent='4';
+    sub.textContent='A rich picture of you and your company. Every AI you connect inherits all of it.';
+  }
+  renderGraph();
+}
+
+/* ---------- wiring ---------- */
+document.getElementById('seg-device').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  [...e.currentTarget.children].forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const device = document.getElementById('device');
+  device.classList.remove('mobile','desktop');
+  device.classList.add(b.dataset.device);
+  // re-fit on next frame, then again after the width/height transition settles
+  requestAnimationFrame(()=> requestAnimationFrame(()=> applyState(currentState)));
+  setTimeout(()=> { if(currentState!=='loading') renderGraph(); else buildSkeleton(); }, 520);
+});
+// re-fit whenever the device frame finishes its size transition
+document.getElementById('device').addEventListener('transitionend', (e)=>{
+  if (e.propertyName==='width' || e.propertyName==='height') {
+    if (currentState==='loading') buildSkeleton(); else renderGraph();
+  }
+});
+document.getElementById('seg-state').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  [...e.currentTarget.children].forEach(x=>{x.classList.remove('active','accent');});
+  b.classList.add('active');
+  if(b.dataset.state==='warm'||b.dataset.state==='rich') b.classList.add('accent');
+  applyState(b.dataset.state);
+});
+document.getElementById('zoom-in').addEventListener('click', ()=>{ scaleK=Math.min(2.2,scaleK*1.25); renderGraph(); });
+document.getElementById('zoom-out').addEventListener('click', ()=>{ scaleK=Math.max(0.5,scaleK/1.25); renderGraph(); });
+document.getElementById('verify-nudge').addEventListener('click', ()=>{});
+
+window.addEventListener('resize', ()=>{ if(currentState==='loading') buildSkeleton(); else renderGraph(); });
+
+// initial
+applyState('warm');
+</script>
+</body>
+</html>

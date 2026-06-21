@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CTRL Decisions - 2028 radical-focus mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  @font-face { font-family:'Gobold'; src:url('../public/fonts/Gobold-Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
+
+  /* ---- the real CTRL dark instrument palette (src/index.css, hex form) ---- */
+  :root{
+    --bg:#08090c;
+    --card:#101319;
+    --card-2:#0c1016;
+    --popover:#0e1014;
+    --secondary:#14171d;
+    --fg:#E6EAF2;
+    --muted-fg:#8b94a3;
+    --muted-bg:#1c2027;
+    --border:#22262e;
+    --acc:#00D9B6;
+    --acc-ink:#aef6ea;
+    --acc-deep:#0a8e7a;
+    --acc-soft:rgba(0,217,182,.10);
+    --acc-line:rgba(0,217,182,.28);
+    --warn:#e0a13a;            /* one warm amber for "where it breaks" */
+    --warn-soft:rgba(224,161,58,.10);
+    --warn-line:rgba(224,161,58,.30);
+    --display:'Gobold','Space Grotesk',ui-sans-serif,-apple-system,'Segoe UI',sans-serif;
+    --grotesk:'Space Grotesk',ui-sans-serif,sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    font-family:'Inter',ui-sans-serif,-apple-system,'Segoe UI',sans-serif;
+    color:var(--fg); letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    background:radial-gradient(120% 80% at 50% -10%, #0d141a 0%, var(--bg) 55%);
+    min-height:100vh;
+  }
+
+  .brand{ display:inline-flex; align-items:center; gap:9px; }
+  .brand img.icon{ height:19px; width:auto; }
+  .brand img.word{ height:13px; width:auto; }
+
+  /* ============================================================
+     SHARED MOTION + MOTIF LANGUAGE (same family as home + news)
+     ============================================================ */
+  .motif{ display:block; width:100%; height:100%; }
+  .motif .stroke{ fill:none; stroke:var(--acc); stroke-linecap:round; stroke-linejoin:round; }
+  .motif .faint{ stroke:#2b3340; }
+  .motif .dim{ stroke:rgba(0,217,182,.4); }
+  .motif .glow-dot{ fill:var(--acc); }
+  @keyframes drift{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-3px) } }
+  @keyframes breathe{ 0%,100%{ opacity:.45 } 50%{ opacity:1 } }
+  @keyframes breatheBig{ 0%,100%{ opacity:.25; transform:scale(.96) } 50%{ opacity:.7; transform:scale(1.04) } }
+  @keyframes dashdraw{ to{ stroke-dashoffset:0 } }
+  @keyframes spinslow{ to{ transform:rotate(360deg) } }
+  @keyframes sweep{ 0%{ transform:translateX(-10%) } 100%{ transform:translateX(110%) } }
+  .m-breathe{ animation:breathe 4.2s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-breatheBig{ animation:breatheBig 5s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-drift{ animation:drift 6s ease-in-out infinite; transform-box:fill-box; }
+  .m-spin{ animation:spinslow 26s linear infinite; transform-box:fill-box; transform-origin:center; }
+  .motif-band{ position:relative; overflow:hidden; background:
+      radial-gradient(120% 130% at 80% -10%, rgba(0,217,182,.10), transparent 60%),
+      linear-gradient(180deg,#0d1218 0%, #0a0e13 100%); }
+  .motif-band::after{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(105deg, transparent 38%, rgba(0,217,182,.06) 50%, transparent 62%);
+    width:60%; animation:sweep 9s ease-in-out infinite; mix-blend-mode:screen; }
+
+  /* ============================================================
+     THE PHONE FRAME (one composed surface: header / one focus zone / nav)
+     Grid rows so the focus zone takes all remaining height and the nav pins.
+     Nothing is laid out independently, so nothing collides; no page scroll.
+     ============================================================ */
+  .stage{ display:grid; place-items:start center; padding:18px 14px 22px; }
+  .phone{
+    width:100%; max-width:412px; height:min(871px, calc(100vh - 44px));
+    border-radius:36px; position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#0a0d12,#070809);
+    box-shadow:0 50px 110px -36px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.04);
+    display:grid; grid-template-rows:auto 1fr auto; min-height:0;
+  }
+  .ptop{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 14px; }
+  .ptop .stat{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9px; font-weight:700;
+    color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:5px 9px; border-radius:999px;
+    display:inline-flex; align-items:center; gap:6px; }
+  .ptop .stat .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+
+  /* the ONE focus zone: every state renders inside here, full height, no overflow spill */
+  .focus{ position:relative; min-height:0; min-width:0; padding:6px 20px 8px; display:flex; flex-direction:column; }
+
+  /* bottom nav */
+  .pnav{ display:flex; align-items:center; justify-content:space-around;
+    padding:8px 12px calc(12px + env(safe-area-inset-bottom,0px)); border-top:1px solid rgba(255,255,255,.05);
+    background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.34)); }
+  .navit{ display:flex; flex-direction:column; align-items:center; gap:4px; color:#4d5663; cursor:pointer;
+    background:none; border:none; font-family:inherit; padding:4px 12px; }
+  .navit svg{ width:21px; height:21px; }
+  .navit span{ font-size:9.5px; font-weight:600; letter-spacing:.01em; }
+  .navit.on{ color:var(--acc); }
+
+  /* ============================================================
+     SHARED STATE PIECES
+     ============================================================ */
+  /* the tab's quiet identity line at the top of the focus zone */
+  .ftitle{ flex:none; padding:2px 0 0; }
+  .ftitle .eyebrow{ font-family:var(--display); text-transform:uppercase; letter-spacing:.13em; font-size:9.5px; font-weight:700; color:var(--acc); }
+  .ftitle h1{ font-size:22px; font-weight:800; letter-spacing:-.02em; margin-top:7px; line-height:1.12; }
+  .ftitle .sub{ font-size:13px; color:var(--muted-fg); margin-top:6px; line-height:1.42; }
+
+  /* === THE ONE PRIMARY INPUT (cold + warm capture share it) ===
+     A single calm field. Voice is one embedded mic glyph (secondary
+     affordance), NOT a second button and NOT a floating FAB. */
+  .ask{ flex:none; position:relative; margin-top:16px;
+    background:linear-gradient(180deg,#0f141c 0%, #0b0f15 100%);
+    border:1px solid var(--border); border-radius:20px;
+    box-shadow:0 24px 48px -28px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.02);
+    transition:border-color .2s ease, box-shadow .2s ease; }
+  .ask.focused{ border-color:var(--acc-line); box-shadow:0 24px 54px -26px rgba(0,217,182,.18), 0 0 0 1px var(--acc-line); }
+  .ask .field{ width:100%; min-height:118px; padding:18px 18px 14px; font-family:inherit; font-size:16px; line-height:1.45;
+    color:var(--fg); background:none; border:none; resize:none; outline:none; }
+  .ask .field::placeholder{ color:#5a6473; }
+  .ask .ghost{ padding:18px 18px 0; font-size:16px; line-height:1.45; color:#566070; pointer-events:none; }
+  .ask .ghost .lead{ color:#6b7585; }
+  /* input footer: the one mic affordance (left) + the one primary CTA (right) */
+  .ask .afoot{ display:flex; align-items:center; gap:10px; padding:0 14px 14px; }
+  .mic{ flex:none; width:42px; height:42px; border-radius:14px; display:grid; place-items:center; cursor:pointer;
+    background:rgba(255,255,255,.03); border:1px solid var(--border); color:var(--muted-fg);
+    transition:color .15s ease, border-color .15s ease, background .15s ease; }
+  .mic:hover{ color:var(--acc); border-color:var(--acc-line); }
+  .mic svg{ width:19px; height:19px; }
+  .ask .hintline{ flex:1; min-width:0; font-size:11px; color:#5a6473; line-height:1.3; }
+  .cta{ flex:none; display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-family:inherit;
+    font-size:14px; font-weight:700; letter-spacing:.005em; color:#04130f;
+    background:linear-gradient(180deg,#1fe7c6,#00d9b6); border:none; border-radius:14px; padding:13px 18px;
+    box-shadow:0 12px 28px -10px rgba(0,217,182,.55), inset 0 1px 0 rgba(255,255,255,.3); }
+  .cta svg{ width:16px; height:16px; }
+  .cta.ghosted{ color:#43505e; background:#11161d; border:1px solid var(--border); box-shadow:none; cursor:default; }
+
+  /* listening state: the SAME field becomes a calm waveform in place (no new FAB) */
+  .listen{ display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:30px 18px; min-height:118px; }
+  .ask.listening .field, .ask.listening .ghost, .ask.listening .hintline, .ask.listening .cta{ display:none; }
+  .ask.listening .afoot{ justify-content:center; padding-bottom:16px; }
+  .ask.listening .listen{ display:flex; }
+  .ask.listening{ border-color:var(--acc-line); }
+  .wave{ display:flex; align-items:center; gap:4px; height:40px; }
+  .wave i{ width:4px; border-radius:999px; background:linear-gradient(180deg,var(--acc-ink),var(--acc)); box-shadow:0 0 10px rgba(0,217,182,.5);
+    animation:wv 1s ease-in-out infinite; }
+  @keyframes wv{ 0%,100%{ height:8px } 50%{ height:34px } }
+  .listen .lcap{ font-size:13px; color:var(--acc-ink); font-weight:600; letter-spacing:.01em; }
+  .mic.rec{ color:#04130f; background:linear-gradient(180deg,#1fe7c6,#00d9b6); border-color:transparent; }
+
+  /* === WARM: the live pressure-tests as calm cards (above the fast capture) === */
+  .live{ flex:1; min-height:0; display:flex; flex-direction:column; margin-top:16px; }
+  .live .lhead{ flex:none; display:flex; align-items:baseline; justify-content:space-between; padding:0 2px 11px; }
+  .live .lhead .lab{ font-family:var(--display); text-transform:uppercase; letter-spacing:.1em; font-size:9.5px; font-weight:700; color:var(--muted-fg); }
+  .live .lhead .cnt{ font-size:11px; color:#566070; }
+  .lcards{ flex:1; min-height:0; display:flex; flex-direction:column; gap:11px; overflow-y:auto; scrollbar-width:none; padding-bottom:2px; }
+  .lcards::-webkit-scrollbar{ display:none; }
+  .dcard{ flex:none; cursor:pointer; position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#0f141c 0%, #0a0e13 100%); border:1px solid var(--border); border-radius:18px;
+    padding:15px 16px 14px; transition:border-color .15s ease, transform .15s ease; }
+  .dcard:hover{ border-color:var(--acc-line); transform:translateY(-1px); }
+  .dcard .dtop{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .dcard .pill{ font-family:var(--display); text-transform:uppercase; letter-spacing:.06em; font-size:8px; font-weight:700;
+    padding:3px 8px; border-radius:999px; white-space:nowrap; }
+  .pill.ready{ color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); }
+  .pill.work{ color:var(--muted-fg); background:rgba(255,255,255,.04); border:1px solid var(--border); display:inline-flex; align-items:center; gap:5px; }
+  .pill.work .sp{ width:8px; height:8px; border:1.6px solid var(--muted-fg); border-top-color:var(--acc); border-radius:999px; animation:spinslow 0.8s linear infinite; }
+  .dcard .dtime{ margin-left:auto; font-size:10px; color:#566070; }
+  .dcard h3{ font-size:15px; line-height:1.3; font-weight:700; letter-spacing:-.01em; color:var(--fg); }
+  .dcard .dread{ display:flex; align-items:center; gap:10px; margin-top:13px; }
+  .dcard .bar{ flex:1; height:5px; border-radius:999px; background:rgba(255,255,255,.06); overflow:hidden; }
+  .dcard .bar i{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--acc-deep),var(--acc)); box-shadow:0 0 12px rgba(0,217,182,.5); }
+  .dcard .pct{ font-family:var(--grotesk); font-weight:700; font-size:15px; color:var(--acc-ink); text-shadow:0 0 14px rgba(0,217,182,.45); font-variant-numeric:tabular-nums; }
+  .dcard .dpend{ margin-top:11px; font-size:11.5px; color:var(--muted-fg); line-height:1.4; }
+  /* warm fast-capture: collapses the big input to one slim bar */
+  .warmcap{ flex:none; margin-top:13px; }
+  .warmbar{ display:flex; align-items:center; gap:11px; width:100%; cursor:text; text-align:left; font-family:inherit;
+    background:linear-gradient(180deg,#0f141c,#0b0f15); border:1px solid var(--border); border-radius:16px; padding:13px 14px; transition:border-color .15s ease; }
+  .warmbar:hover{ border-color:var(--acc-line); }
+  .warmbar .wlab{ flex:1; min-width:0; font-size:13.5px; color:#6b7585; }
+  .warmbar .wmic{ flex:none; color:var(--muted-fg); display:grid; place-items:center; }
+  .warmbar .wmic svg{ width:18px; height:18px; }
+  .warmbar .wgo{ flex:none; width:34px; height:34px; border-radius:11px; display:grid; place-items:center;
+    background:var(--acc-soft); border:1px solid var(--acc-line); color:var(--acc); }
+  .warmbar .wgo svg{ width:15px; height:15px; }
+
+  /* ============================================================
+     RUNNING: the stunning "pressure-testing" thinking state.
+     A central pulsing instrument + a live, self-advancing pipeline of
+     the real work (decompose -> read sources -> cross-examine -> weigh).
+     Branded, calm, anticipatory. Not a spinner.
+     ============================================================ */
+  .run{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  .run .restate{ flex:none; display:flex; align-items:center; gap:9px; padding:11px 13px; margin-top:14px;
+    background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:13px; }
+  .run .restate .q{ font-size:12px; line-height:1.35; color:#aab2c0; }
+  .run .restate .q b{ color:var(--fg); font-weight:700; }
+  /* the orb + status + pipeline center as ONE group in the remaining height */
+  .run .runbody{ flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .run .stagewrap{ flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+  /* the central instrument: concentric rings + breathing core */
+  .orb{ position:relative; width:132px; height:132px; }
+  .orb svg{ position:absolute; inset:0; }
+  .orb .r1{ animation:spinslow 14s linear infinite; transform-origin:center; }
+  .orb .r2{ animation:spinslow 22s linear infinite reverse; transform-origin:center; }
+  .orb .core{ animation:corepulse 2.4s ease-in-out infinite; transform-origin:center; }
+  @keyframes corepulse{ 0%,100%{ opacity:.85; transform:scale(.94) } 50%{ opacity:1; transform:scale(1.06) } }
+  .orb .halo{ animation:breatheBig 3.4s ease-in-out infinite; transform-origin:center; }
+  .run .nowdoing{ flex:none; text-align:center; margin-top:14px; }
+  .run .nowdoing .lab{ font-size:17px; font-weight:800; letter-spacing:-.01em; color:var(--fg); }
+  .run .nowdoing .det{ font-size:12.5px; color:var(--muted-fg); margin-top:6px; line-height:1.4; max-width:30ch; margin-left:auto; margin-right:auto; }
+  /* the live pipeline: four steps that light up in sequence */
+  .pipe{ flex:none; display:flex; flex-direction:column; gap:2px; margin-top:18px; padding:4px 2px 2px; width:100%; max-width:360px; }
+  .pstep{ display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:12px; transition:background .3s ease; position:relative; }
+  .pstep.active{ background:var(--acc-soft); }
+  .pstep .dot{ flex:none; width:24px; height:24px; border-radius:999px; display:grid; place-items:center;
+    border:1.5px solid var(--border); color:#48515f; }
+  .pstep .dot svg{ width:13px; height:13px; }
+  .pstep.done .dot{ border-color:var(--acc-line); background:var(--acc-soft); color:var(--acc); }
+  .pstep.active .dot{ border-color:var(--acc); color:var(--acc); box-shadow:0 0 0 4px var(--acc-soft); }
+  .pstep.active .dot .spin{ animation:spinslow .9s linear infinite; transform-origin:center; }
+  .pstep .pt{ flex:1; min-width:0; font-size:13px; font-weight:600; color:#5a6473; transition:color .3s ease; }
+  .pstep.done .pt, .pstep.active .pt{ color:var(--fg); }
+  .pstep .psub{ font-size:11px; color:#566070; font-weight:500; }
+  .pstep.active .psub{ color:var(--acc); }
+  /* the line connecting the step dots */
+  .pstep:not(:last-child) .dot::after{ content:""; position:absolute; top:24px; left:50%; transform:translateX(-50%);
+    width:1.5px; height:13px; background:var(--border); }
+  .pstep.done .dot::after{ background:var(--acc-line); }
+
+  /* ============================================================
+     RESULT: the call + where it holds and where it breaks. One screen.
+     ============================================================ */
+  .res{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  .res .rscroll{ flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; display:flex; flex-direction:column; gap:12px; padding:14px 0 4px; }
+  .res .rscroll::-webkit-scrollbar{ display:none; }
+  /* the reframe note (quiet, above the call) */
+  .reframe{ flex:none; display:flex; gap:9px; padding:10px 12px; background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:12px; }
+  .reframe .ri{ flex:none; color:var(--acc); margin-top:1px; }
+  .reframe .ri svg{ width:14px; height:14px; }
+  .reframe .rt{ font-size:11.5px; line-height:1.4; color:var(--muted-fg); }
+  .reframe .rt b{ color:#c2cad6; font-weight:600; }
+  /* THE CALL: the hero answer + a single trust read */
+  .call{ flex:none; position:relative; overflow:hidden; border-radius:20px;
+    background:linear-gradient(180deg,#101822 0%, #0a0f15 100%); border:1px solid var(--acc-line);
+    box-shadow:0 30px 60px -34px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.025); padding:18px 18px 17px; }
+  .call::before{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(90% 70% at 88% -10%, rgba(0,217,182,.14), transparent 60%); }
+  .call .ctop{ display:flex; align-items:center; gap:8px; margin-bottom:11px; position:relative; }
+  .call .verdict{ font-family:var(--display); text-transform:uppercase; letter-spacing:.07em; font-size:9px; font-weight:700;
+    color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:4px 9px; border-radius:999px; }
+  .call .trust{ margin-left:auto; display:flex; align-items:baseline; gap:5px; }
+  .call .trust b{ font-family:var(--grotesk); font-weight:700; font-size:21px; line-height:1; color:var(--acc-ink);
+    text-shadow:0 0 16px rgba(0,217,182,.45); font-variant-numeric:tabular-nums; }
+  .call .trust span{ font-size:8.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted-fg); }
+  .call h2{ position:relative; font-size:18.5px; line-height:1.28; font-weight:800; letter-spacing:-.015em; color:var(--fg); text-wrap:balance; }
+  .call .trustbar{ position:relative; margin-top:13px; height:6px; border-radius:999px; background:rgba(255,255,255,.07); overflow:hidden; }
+  .call .trustbar i{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--acc-deep),var(--acc)); box-shadow:0 0 14px rgba(0,217,182,.55); }
+
+  /* the two-column truth: where it HOLDS / where it BREAKS */
+  .truth{ flex:none; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tcol{ border-radius:16px; padding:13px 13px 12px; border:1px solid var(--border); background:linear-gradient(180deg,#0e131a,#0a0e13); }
+  .tcol .th{ display:flex; align-items:center; gap:7px; margin-bottom:9px; }
+  .tcol .th .ti{ width:18px; height:18px; border-radius:7px; display:grid; place-items:center; }
+  .tcol .th .ti svg{ width:11px; height:11px; }
+  .tcol .th .tl{ font-family:var(--display); text-transform:uppercase; letter-spacing:.05em; font-size:8.5px; font-weight:700; }
+  .tcol.holds{ border-color:var(--acc-line); }
+  .tcol.holds .ti{ background:var(--acc-soft); color:var(--acc); }
+  .tcol.holds .tl{ color:var(--acc); }
+  .tcol.breaks .ti{ background:var(--warn-soft); color:var(--warn); }
+  .tcol.breaks .tl{ color:var(--warn); }
+  .tcol ul{ list-style:none; display:flex; flex-direction:column; gap:8px; }
+  .tcol li{ font-size:11.5px; line-height:1.36; color:#c2cad6; padding-left:13px; position:relative; }
+  .tcol li::before{ content:""; position:absolute; left:0; top:6px; width:5px; height:5px; border-radius:999px; }
+  .tcol.holds li::before{ background:var(--acc); box-shadow:0 0 7px var(--acc); }
+  .tcol.breaks li::before{ background:var(--warn); box-shadow:0 0 7px rgba(224,161,58,.6); }
+
+  /* the watch line + the advisory next */
+  .watch{ flex:none; display:flex; gap:9px; align-items:flex-start; padding:11px 13px; border-radius:13px;
+    background:var(--acc-soft); border:1px solid var(--acc-line); }
+  .watch .wi{ flex:none; color:var(--acc); margin-top:1px; }
+  .watch .wi svg{ width:15px; height:15px; }
+  .watch .wt{ font-size:11.5px; line-height:1.4; color:#cfe9e2; }
+  .watch .wt b{ color:var(--fg); font-weight:700; }
+  /* result footer actions (pinned under the scroll) */
+  .ractions{ flex:none; display:flex; gap:10px; padding-top:12px; }
+  .ractions .rbtn{ flex:1; display:inline-flex; align-items:center; justify-content:center; gap:7px; cursor:pointer; font-family:inherit;
+    font-size:13px; font-weight:700; border-radius:14px; padding:13px 12px; }
+  .ractions .rbtn svg{ width:15px; height:15px; }
+  .rbtn.ghost{ color:#cdd6e2; background:#11161d; border:1px solid var(--border); }
+  .rbtn.ghost:hover{ border-color:var(--acc-line); color:var(--fg); }
+  .rbtn.prime{ color:#04130f; background:linear-gradient(180deg,#1fe7c6,#00d9b6); border:none;
+    box-shadow:0 12px 26px -12px rgba(0,217,182,.5), inset 0 1px 0 rgba(255,255,255,.3); }
+
+  /* ============================================================
+     LOADING: branded in-shell skeleton (not a raw spinner).
+     The frame is already drawn; the focus zone shimmers in.
+     ============================================================ */
+  .sk{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  @keyframes shim{ 0%{ background-position:-200% 0 } 100%{ background-position:200% 0 } }
+  .shimmer{ background:linear-gradient(90deg, rgba(255,255,255,.03) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.03) 75%);
+    background-size:200% 100%; animation:shim 1.5s linear infinite; border-radius:8px; }
+  .sk .skbrand{ flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; margin:auto 0; }
+  .sk .skorb{ width:70px; height:70px; border-radius:999px; position:relative; }
+  .sk .skorb::before{ content:""; position:absolute; inset:0; border-radius:999px; border:2px solid var(--acc-soft);
+    border-top-color:var(--acc); animation:spinslow 1s linear infinite; }
+  .sk .skorb::after{ content:""; position:absolute; inset:18px; border-radius:999px; background:var(--acc-soft); animation:corepulse 2s ease-in-out infinite; }
+  .sk .sktext{ font-size:12.5px; color:var(--muted-fg); letter-spacing:.01em; }
+  /* the skeleton scaffold of the cold ask, shimmering under the orb */
+  .sk .skscaffold{ flex:none; margin-top:20px; display:flex; flex-direction:column; gap:11px; padding:0 2px; opacity:.55; }
+  .sk .skline{ height:12px; border-radius:6px; }
+  .sk .skbox{ height:108px; border-radius:20px; border:1px solid var(--border); }
+
+  /* ============================================================
+     STATE SWITCHING (each state lives in .focus, only one shows)
+     ============================================================ */
+  .state{ display:none; flex:1; min-height:0; flex-direction:column; }
+  .focus[data-state="loading"] .s-loading,
+  .focus[data-state="cold"]    .s-cold,
+  .focus[data-state="warm"]    .s-warm,
+  .focus[data-state="running"] .s-running,
+  .focus[data-state="result"]  .s-result{ display:flex; }
+  /* mobile cold: center the invite + the one input as a calm group */
+  .s-cold{ justify-content:center; padding-bottom:18px; }
+
+  /* ============================================================
+     DESKTOP (>=1100px): calm two-zone command surface, room to breathe.
+     Left = the capture (the one ask, large). Right = your decisions list.
+     Running + result take over the right zone.
+     ============================================================ */
+  .desk{ display:none; }
+  @media (min-width:1100px){
+    .stage{ display:none; }
+    body{ display:grid; place-items:center; }
+    .desk{
+      display:grid; width:min(1320px, calc(100vw - 64px)); height:min(832px, calc(100vh - 56px));
+      grid-template-columns:300px 1fr; grid-template-rows:auto 1fr; gap:0;
+      background:linear-gradient(180deg,#0b0e13,#08090c); border:1px solid var(--border); border-radius:26px;
+      overflow:hidden; box-shadow:0 60px 120px -50px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .dhead{ grid-column:1 / 3; display:flex; align-items:center; justify-content:space-between;
+      padding:22px 32px 18px; border-bottom:1px solid rgba(255,255,255,.05); }
+    .dhead .stat{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9.5px; font-weight:700;
+      color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:6px 11px; border-radius:999px;
+      display:inline-flex; align-items:center; gap:7px; }
+    .dhead .stat .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+
+    /* left command column: greeting + nav */
+    .dside{ grid-row:2 / 3; border-right:1px solid rgba(255,255,255,.05); padding:30px 28px;
+      display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(255,255,255,.012), transparent); }
+    .dside .eyebrow{ font-family:var(--display); text-transform:uppercase; letter-spacing:.13em; font-size:10px; font-weight:700; color:var(--acc); }
+    .dside h1{ font-size:27px; font-weight:800; letter-spacing:-.025em; line-height:1.1; margin-top:12px; }
+    .dside .frame{ font-size:14px; color:var(--muted-fg); margin-top:11px; line-height:1.5; max-width:28ch; }
+    .dside .dnav{ margin-top:auto; display:flex; flex-direction:column; gap:3px; padding-top:24px; }
+    .dnav .navit{ flex-direction:row; gap:12px; justify-content:flex-start; width:100%; padding:11px 12px; border-radius:11px; color:#4d5663; }
+    .dnav .navit span{ font-size:13.5px; }
+    .dnav .navit.on{ background:var(--acc-soft); color:var(--acc); }
+    .dnav .navit:hover{ background:rgba(255,255,255,.03); }
+
+    /* right working zone */
+    .dwork{ grid-row:2 / 3; min-height:0; padding:30px 36px; display:flex; flex-direction:column; }
+    .dstate{ display:none; flex:1; min-height:0; flex-direction:column; }
+    .dwork[data-state="loading"] .d-loading,
+    .dwork[data-state="cold"]    .d-cold,
+    .dwork[data-state="warm"]    .d-warm,
+    .dwork[data-state="running"] .d-running,
+    .dwork[data-state="result"]  .d-result{ display:flex; }
+
+    /* desktop cold: the one ask, generous, vertically centered */
+    .d-cold{ justify-content:center; }
+    .dwork .askwrap{ max-width:620px; }
+    .dwork .dask-title{ font-size:23px; font-weight:800; letter-spacing:-.02em; }
+    .dwork .dask-sub{ font-size:14px; color:var(--muted-fg); margin-top:9px; line-height:1.5; max-width:48ch; }
+    .dwork .ask{ margin-top:20px; }
+    .dwork .ask .field{ min-height:150px; font-size:18px; }
+    .dwork .ask .ghost{ font-size:18px; }
+
+    /* desktop warm: slim capture on top, the list below, room to breathe */
+    .d-warm{ gap:0; }
+    .dwarm-cap{ flex:none; }
+    .dwarm-cap .warmbar{ padding:15px 16px; }
+    .dwarm-cap .warmbar .wlab{ font-size:14.5px; }
+    .dwarm-list{ flex:1; min-height:0; margin-top:22px; display:flex; flex-direction:column; }
+    .dwarm-list .lhead{ display:flex; align-items:baseline; justify-content:space-between; padding:0 2px 13px; }
+    .dwarm-list .lhead .lab{ font-family:var(--display); text-transform:uppercase; letter-spacing:.1em; font-size:10px; font-weight:700; color:var(--muted-fg); }
+    .dwarm-list .lhead .cnt{ font-size:12px; color:#566070; }
+    .dwarm-grid{ flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:14px; align-content:start; overflow-y:auto; scrollbar-width:none; }
+    .dwarm-grid::-webkit-scrollbar{ display:none; }
+    .dwarm-grid .dcard{ padding:18px 18px 16px; }
+    .dwarm-grid .dcard h3{ font-size:16px; }
+
+    /* desktop running + result use the wider zone */
+    .d-running .orb{ width:160px; height:160px; }
+    .d-running .nowdoing .lab{ font-size:20px; }
+    .d-running .pipe{ max-width:520px; margin-left:auto; margin-right:auto; width:100%; }
+    .d-result .rgrid{ flex:1; min-height:0; display:grid; grid-template-columns:1.15fr .85fr; gap:16px; }
+    .d-result .rleft{ display:flex; flex-direction:column; gap:13px; min-height:0; }
+    .d-result .rright{ display:flex; flex-direction:column; gap:13px; min-height:0; }
+    .d-result .call h2{ font-size:23px; }
+    .d-result .call .trust b{ font-size:26px; }
+    .d-result .tcol li{ font-size:12.5px; }
+  }
+
+  /* ============================================================
+     CONTROL BAR (mock only): toggle device + state
+     ============================================================ */
+  .ctl{ position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:50;
+    display:flex; align-items:center; gap:6px; padding:7px 9px; border-radius:14px;
+    background:rgba(12,16,22,.9); border:1px solid var(--border); backdrop-filter:blur(12px);
+    box-shadow:0 18px 40px -16px rgba(0,0,0,.8); }
+  .ctl .grp{ display:flex; gap:3px; }
+  .ctl .lab{ font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:#566070; font-weight:700; padding:0 6px 0 4px; }
+  .ctl button{ font-family:inherit; font-size:11px; font-weight:600; color:var(--muted-fg); cursor:pointer;
+    background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:9px; padding:6px 10px; transition:all .14s ease; }
+  .ctl button:hover{ color:var(--fg); border-color:var(--acc-line); }
+  .ctl button.on{ color:#04130f; background:var(--acc); border-color:transparent; }
+  .ctl .div{ width:1px; height:22px; background:var(--border); margin:0 4px; }
+  @media (max-width:430px){ .ctl{ flex-wrap:wrap; max-width:calc(100vw - 20px); justify-content:center; } }
+</style>
+</head>
+<body>
+
+<!-- ============================ PHONE (mobile) ============================ -->
+<div class="stage">
+  <div class="phone">
+    <div class="ptop">
+      <span class="brand">
+        <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" />
+        <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" />
+      </span>
+      <span class="stat"><span class="pip"></span>On watch</span>
+    </div>
+
+    <div class="focus" id="mfocus" data-state="cold">
+
+      <!-- LOADING -->
+      <div class="state s-loading sk">
+        <div class="skbrand">
+          <div class="skorb"></div>
+          <div class="sktext">Opening your decisions</div>
+        </div>
+        <div class="skscaffold">
+          <div class="skline shimmer" style="width:62%"></div>
+          <div class="skline shimmer" style="width:86%;height:9px"></div>
+          <div class="skbox shimmer"></div>
+        </div>
+      </div>
+
+      <!-- COLD: one invite, one calm input, example as ghost text -->
+      <div class="state s-cold">
+        <div class="ftitle">
+          <div class="eyebrow">Decisions</div>
+          <h1>Weigh your first decision.</h1>
+          <p class="sub">Tell me the call you're weighing. I'll break it into what it rests on, check each part against real sources, and show you where it holds and where it breaks.</p>
+        </div>
+        <div class="ask" id="mask">
+          <div class="ghost" id="mghost"><span class="lead">For example,</span> "We should let an agent own first-draft proposals before we hire another salesperson."</div>
+          <textarea class="field" id="mfield" placeholder="" style="display:none"></textarea>
+          <div class="listen">
+            <div class="wave" id="mwave"></div>
+            <div class="lcap">Listening. Say the decision out loud.</div>
+          </div>
+          <div class="afoot">
+            <button class="mic" id="mmic" onclick="toggleListen('m')" aria-label="Say it out loud">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            </button>
+            <span class="hintline">Type it, or tap to talk it out.</span>
+            <button class="cta" onclick="go('running')">Weigh it
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WARM: live pressure-tests as calm cards + a fast capture bar -->
+      <div class="state s-warm">
+        <div class="ftitle">
+          <div class="eyebrow">Decisions</div>
+          <h1>Your decisions in play.</h1>
+        </div>
+        <div class="live">
+          <div class="lhead"><span class="lab">In pressure-test</span><span class="cnt">2 open</span></div>
+          <div class="lcards">
+            <article class="dcard" onclick="go('result')">
+              <div class="dtop">
+                <span class="pill ready">Ready</span>
+                <span class="dtime">weighed 2h ago</span>
+              </div>
+              <h3>Let an agent own first-draft proposals before the next sales hire.</h3>
+              <div class="dread">
+                <div class="bar"><i style="width:74%"></i></div>
+                <span class="pct">74%</span>
+              </div>
+            </article>
+            <article class="dcard">
+              <div class="dtop">
+                <span class="pill work"><span class="sp"></span>Pressure-testing</span>
+                <span class="dtime">started 1m ago</span>
+              </div>
+              <h3>Move the research agent to run unattended overnight.</h3>
+              <p class="dpend">Reading sources on 3 of 4 claims. I'll surface the call shortly.</p>
+            </article>
+          </div>
+          <div class="warmcap">
+            <button class="warmbar" onclick="go('running')">
+              <span class="wmic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+              </span>
+              <span class="wlab">Weigh another decision...</span>
+              <span class="wgo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RUNNING: the stunning pressure-testing thinking state -->
+      <div class="state s-running run">
+        <div class="restate">
+          <span class="q"><b>Weighing:</b> let an agent own first-draft proposals before the next sales hire.</span>
+        </div>
+        <div class="runbody">
+          <div class="stagewrap">
+            <div class="orb" id="morb"></div>
+          </div>
+          <div class="nowdoing">
+            <div class="lab" id="mrunlab">Reading real sources</div>
+            <div class="det" id="mrundet">Checking each claim against the record, not guessing.</div>
+          </div>
+          <div class="pipe" id="mpipe"></div>
+        </div>
+      </div>
+
+      <!-- RESULT: the call + where it holds / where it breaks -->
+      <div class="state s-result res">
+        <div class="rscroll">
+          <div class="reframe">
+            <span class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></span>
+            <span class="rt"><b>I read this as an AI-native call:</b> not "hire vs. don't", but what the first draft should cost once an agent can do it.</span>
+          </div>
+          <div class="call">
+            <div class="ctop">
+              <span class="verdict">The call</span>
+              <span class="trust"><b>74%</b><span>holds up</span></span>
+            </div>
+            <h2>Let the agent draft. Hold the hire one quarter and re-read the numbers.</h2>
+            <div class="trustbar"><i style="width:74%"></i></div>
+          </div>
+          <div class="truth">
+            <div class="tcol holds">
+              <div class="th"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span><span class="tl">Where it holds</span></div>
+              <ul>
+                <li>Drafting is repeatable, current models match a house style.</li>
+                <li>Two named teams report the same shift with no quality drop.</li>
+              </ul>
+            </div>
+            <div class="tcol breaks">
+              <div class="th"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 17h.01"/><path d="M10.3 4l-7 12a2 2 0 0 0 1.7 3h14a2 2 0 0 0 1.7-3l-7-12a2 2 0 0 0-3.4 0z"/></svg></span><span class="tl">Where it breaks</span></div>
+              <ul>
+                <li>It rests on clean CRM data, yours has gaps you'd feel.</li>
+                <li>The relationship work is the real job, not the draft.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="watch">
+            <span class="wi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/></svg></span>
+            <span class="wt"><b>I'll keep watching.</b> If a load-bearing claim shifts, I'll re-check and flag it. Last read 3h ago.</span>
+          </div>
+        </div>
+        <div class="ractions">
+          <button class="rbtn ghost" onclick="go('warm')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            Your decisions
+          </button>
+          <button class="rbtn prime">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+            Bank this call
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pnav">
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="navit on">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg>
+        <span>Decisions</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7 7L5.5 5.5M18.5 18.5L17 17M17 7l1.5-1.5M5.5 18.5L7 17"/></svg>
+        <span>Brain</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c0-3.2 2.9-5.5 6.5-5.5s6.5 2.3 6.5 5.5"/></svg>
+        <span>You</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ DESKTOP ============================ -->
+<div class="desk">
+  <div class="dhead">
+    <span class="brand">
+      <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" style="height:22px" />
+      <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" style="height:15px" />
+    </span>
+    <span class="stat"><span class="pip"></span>On watch &middot; re-checking your open calls</span>
+  </div>
+
+  <div class="dside">
+    <div class="eyebrow">Decisions</div>
+    <h1 id="dsideh1">Weigh a decision.</h1>
+    <p class="frame" id="dsidep">One job here: move a call forward. Tell me what you're weighing and I'll pressure-test it against real sources.</p>
+    <div class="dnav">
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="navit on">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg>
+        <span>Decisions</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7 7L5.5 5.5M18.5 18.5L17 17M17 7l1.5-1.5M5.5 18.5L7 17"/></svg>
+        <span>Brain</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c0-3.2 2.9-5.5 6.5-5.5s6.5 2.3 6.5 5.5"/></svg>
+        <span>You</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="dwork" id="dwork" data-state="cold">
+
+    <!-- LOADING -->
+    <div class="dstate d-loading sk">
+      <div class="skbrand">
+        <div class="skorb"></div>
+        <div class="sktext">Opening your decisions</div>
+      </div>
+    </div>
+
+    <!-- COLD: the one ask, generous -->
+    <div class="dstate d-cold">
+      <div class="askwrap">
+        <div class="dask-title">Weigh your first decision.</div>
+        <p class="dask-sub">Tell me the call you're weighing. I'll break it into what it rests on, check each part against real sources, and show you where it holds and where it breaks.</p>
+        <div class="ask" id="dask">
+          <div class="ghost" id="dghost"><span class="lead">For example,</span> "We should let an agent own first-draft proposals before we hire another salesperson."</div>
+          <div class="listen">
+            <div class="wave" id="dwave"></div>
+            <div class="lcap">Listening. Say the decision out loud.</div>
+          </div>
+          <div class="afoot">
+            <button class="mic" id="dmic" onclick="toggleListen('d')" aria-label="Say it out loud">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            </button>
+            <span class="hintline">Type it, or tap to talk it out. One clean thought is enough.</span>
+            <button class="cta" onclick="go('running')">Weigh it
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WARM: fast capture on top + a two-up board with room to breathe -->
+    <div class="dstate d-warm">
+      <div class="dwarm-cap">
+        <button class="warmbar" onclick="go('running')">
+          <span class="wmic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </span>
+          <span class="wlab">Weigh another decision...</span>
+          <span class="wgo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+      </div>
+      <div class="dwarm-list">
+        <div class="lhead"><span class="lab">In pressure-test</span><span class="cnt">2 open</span></div>
+        <div class="dwarm-grid">
+          <article class="dcard" onclick="go('result')">
+            <div class="dtop"><span class="pill ready">Ready</span><span class="dtime">weighed 2h ago</span></div>
+            <h3>Let an agent own first-draft proposals before the next sales hire.</h3>
+            <div class="dread"><div class="bar"><i style="width:74%"></i></div><span class="pct">74%</span></div>
+          </article>
+          <article class="dcard">
+            <div class="dtop"><span class="pill work"><span class="sp"></span>Pressure-testing</span><span class="dtime">started 1m ago</span></div>
+            <h3>Move the research agent to run unattended overnight.</h3>
+            <p class="dpend">Reading sources on 3 of 4 claims. I'll surface the call shortly.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <!-- RUNNING -->
+    <div class="dstate d-running run">
+      <div class="restate" style="max-width:640px;margin-left:auto;margin-right:auto;width:100%">
+        <span class="q"><b>Weighing:</b> let an agent own first-draft proposals before the next sales hire.</span>
+      </div>
+      <div class="runbody">
+        <div class="stagewrap">
+          <div class="orb" id="dorb"></div>
+        </div>
+        <div class="nowdoing">
+          <div class="lab" id="drunlab">Reading real sources</div>
+          <div class="det" id="drundet">Checking each claim against the record, not guessing.</div>
+        </div>
+        <div class="pipe" id="dpipe"></div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="dstate d-result res">
+      <div class="rgrid">
+        <div class="rleft">
+          <div class="reframe">
+            <span class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></span>
+            <span class="rt"><b>I read this as an AI-native call:</b> not "hire vs. don't", but what the first draft should cost once an agent can do it.</span>
+          </div>
+          <div class="call">
+            <div class="ctop">
+              <span class="verdict">The call</span>
+              <span class="trust"><b>74%</b><span>holds up</span></span>
+            </div>
+            <h2>Let the agent draft. Hold the hire one quarter and re-read the numbers.</h2>
+            <div class="trustbar"><i style="width:74%"></i></div>
+          </div>
+          <div class="watch">
+            <span class="wi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/></svg></span>
+            <span class="wt"><b>I'll keep watching.</b> If a load-bearing claim shifts, I'll re-check and flag it. Last read 3h ago.</span>
+          </div>
+        </div>
+        <div class="rright">
+          <div class="tcol holds">
+            <div class="th"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span><span class="tl">Where it holds</span></div>
+            <ul>
+              <li>Drafting is repeatable, current models match a house style.</li>
+              <li>Two named teams report the same shift with no quality drop.</li>
+            </ul>
+          </div>
+          <div class="tcol breaks">
+            <div class="th"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 17h.01"/><path d="M10.3 4l-7 12a2 2 0 0 0 1.7 3h14a2 2 0 0 0 1.7-3l-7-12a2 2 0 0 0-3.4 0z"/></svg></span><span class="tl">Where it breaks</span></div>
+            <ul>
+              <li>It rests on clean CRM data, yours has gaps you'd feel.</li>
+              <li>The relationship work is the real job, not the draft.</li>
+            </ul>
+          </div>
+          <div class="ractions" style="margin-top:auto">
+            <button class="rbtn ghost" onclick="go('warm')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              Your decisions
+            </button>
+            <button class="rbtn prime">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+              Bank this call
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ CONTROL BAR (mock only) ============================ -->
+<div class="ctl">
+  <span class="lab">Device</span>
+  <div class="grp" id="devgrp">
+    <button data-dev="mobile" class="on">Mobile</button>
+    <button data-dev="desktop">Desktop</button>
+  </div>
+  <div class="div"></div>
+  <span class="lab">State</span>
+  <div class="grp" id="stgrp">
+    <button data-st="loading">Loading</button>
+    <button data-st="cold" class="on">Cold</button>
+    <button data-st="warm">Warm</button>
+    <button data-st="running">Running</button>
+    <button data-st="result">Result</button>
+  </div>
+</div>
+
+<script>
+/* ===== device + state toggles (mock controls) ===== */
+let DEV = 'mobile', ST = 'cold';
+function applyState(){
+  document.getElementById('mfocus').dataset.state = ST;
+  document.getElementById('dwork').dataset.state = ST;
+  // desktop side copy adapts to state (still one job)
+  const h1 = document.getElementById('dsideh1'), p = document.getElementById('dsidep');
+  if(ST==='warm'){ h1.textContent='Your decisions.'; p.textContent="The calls you've put in front of me. Open one to re-read it, or weigh another from the top."; }
+  else if(ST==='running'){ h1.textContent='Pressure-testing.'; p.textContent="I'm breaking your call into what it rests on and checking each part against real sources."; }
+  else if(ST==='result'){ h1.textContent='The call.'; p.textContent="Here's where it holds and where it breaks. Bank it and I'll keep watching the load-bearing claims."; }
+  else { h1.textContent='Weigh a decision.'; p.textContent="One job here: move a call forward. Tell me what you're weighing and I'll pressure-test it against real sources."; }
+  if(ST==='running') startRun(); else stopRun();
+}
+function setDev(d){ DEV=d;
+  document.querySelector('.stage').style.display = d==='mobile' ? '' : 'none';
+  document.querySelector('.desk').style.display = d==='desktop' ? 'grid' : 'none';
+  [...document.querySelectorAll('#devgrp button')].forEach(b=>b.classList.toggle('on', b.dataset.dev===d));
+}
+function setSt(s){ ST=s; applyState();
+  [...document.querySelectorAll('#stgrp button')].forEach(b=>b.classList.toggle('on', b.dataset.st===s));
+}
+document.getElementById('devgrp').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) setDev(b.dataset.dev); });
+document.getElementById('stgrp').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) setSt(b.dataset.st); });
+function go(s){ setSt(s); }
+
+/* media-query default: if the viewport is desktop-wide, show desktop */
+function syncDevToViewport(){ setDev(window.matchMedia('(min-width:1100px)').matches ? 'desktop' : 'mobile'); }
+syncDevToViewport();
+
+/* ===== voice affordance: the SAME input flips to a calm listening state ===== */
+function buildWave(el){ if(el.childElementCount) return;
+  const heights=[14,22,30,18,26,12,28,20,16,24,30,15,22];
+  heights.forEach((h,i)=>{ const b=document.createElement('i'); b.style.height=h+'px';
+    b.style.animationDelay=(i*0.07)+'s'; b.style.animationDuration=(0.85+ (i%4)*0.12)+'s'; el.appendChild(b); });
+}
+function toggleListen(scope){
+  const ask = document.getElementById(scope==='d'?'dask':'mask');
+  const mic = document.getElementById(scope==='d'?'dmic':'mmic');
+  const wave = document.getElementById(scope==='d'?'dwave':'mwave');
+  buildWave(wave);
+  const on = ask.classList.toggle('listening');
+  mic.classList.toggle('rec', on);
+}
+
+/* ===== the running state: orb + a self-advancing pipeline ===== */
+const ORB = `
+  <svg viewBox="0 0 132 132" fill="none" aria-hidden="true">
+    <defs>
+      <radialGradient id="orbg" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#00D9B6" stop-opacity=".5"/>
+        <stop offset="100%" stop-color="#00D9B6" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="orbl" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0a8e7a"/><stop offset="100%" stop-color="#00D9B6"/>
+      </linearGradient>
+    </defs>
+    <circle class="halo" cx="66" cy="66" r="58" fill="url(#orbg)"/>
+    <circle cx="66" cy="66" r="52" stroke="#22262e" stroke-width="1" fill="none"/>
+    <circle class="r1" cx="66" cy="66" r="52" stroke="url(#orbl)" stroke-width="2.4" fill="none"
+      stroke-dasharray="70 256" stroke-linecap="round"/>
+    <circle class="r2" cx="66" cy="66" r="40" stroke="rgba(0,217,182,.4)" stroke-width="1.6" fill="none"
+      stroke-dasharray="40 210" stroke-linecap="round"/>
+    <g class="core">
+      <circle cx="66" cy="66" r="17" fill="#0a0e13" stroke="#00D9B6" stroke-width="1.5"/>
+      <path d="M58 60v12M74 60v12M58 64l9 4 7-4M58 72a4 4 0 0 0 8 0M74 64l3 9a2.4 2.4 0 0 1-5 0z"
+        stroke="#aef6ea" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+    <circle cx="66" cy="14" r="3" fill="#aef6ea"/>
+  </svg>`;
+
+const STEPS = [
+  { t:'Decompose', sub:'into what it rests on', lab:'Breaking the decision down',
+    det:'Splitting your call into the claims it actually depends on.' },
+  { t:'Read sources', sub:'real, not guessed', lab:'Reading real sources',
+    det:'Checking each claim against the record, not guessing.' },
+  { t:'Cross-examine', sub:'argue both sides', lab:'Arguing both sides',
+    det:'Pressure-testing where the claim is strong and where it cracks.' },
+  { t:'Weigh', sub:'the honest call', lab:'Weighing the call',
+    det:"Turning the evidence into where it holds and where it breaks." },
+];
+
+let runTimer=null, runIdx=0;
+function pipeHTML(){
+  return STEPS.map((s,i)=>`
+    <div class="pstep" data-i="${i}">
+      <span class="dot">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"/></svg>
+      </span>
+      <span class="pt">${s.t}</span>
+      <span class="psub">${s.sub}</span>
+    </div>`).join('');
+}
+function renderRunStep(scope){
+  const pipe = document.getElementById(scope==='d'?'dpipe':'mpipe');
+  const lab = document.getElementById(scope==='d'?'drunlab':'mrunlab');
+  const det = document.getElementById(scope==='d'?'drundet':'mrundet');
+  [...pipe.querySelectorAll('.pstep')].forEach((el,i)=>{
+    el.classList.toggle('done', i<runIdx);
+    el.classList.toggle('active', i===runIdx);
+    const dot = el.querySelector('.dot');
+    if(i<runIdx){ dot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`; }
+    else if(i===runIdx){ dot.innerHTML = `<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9" /></svg>`; }
+    else { dot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"/></svg>`; }
+  });
+  const s = STEPS[Math.min(runIdx, STEPS.length-1)];
+  lab.textContent = s.lab; det.textContent = s.det;
+}
+function startRun(){
+  document.getElementById('morb').innerHTML = ORB;
+  document.getElementById('dorb').innerHTML = ORB;
+  document.getElementById('mpipe').innerHTML = pipeHTML();
+  document.getElementById('dpipe').innerHTML = pipeHTML();
+  runIdx = 0; renderRunStep('m'); renderRunStep('d');
+  if(runTimer) clearInterval(runTimer);
+  runTimer = setInterval(()=>{
+    runIdx++;
+    if(runIdx >= STEPS.length){ clearInterval(runTimer); runTimer=null;
+      [...document.querySelectorAll('.pstep')].forEach(el=>{ el.classList.remove('active'); el.classList.add('done'); });
+      setTimeout(()=>{ if(ST==='running') go('result'); }, 900);
+      return;
+    }
+    renderRunStep('m'); renderRunStep('d');
+  }, 1500);
+}
+function stopRun(){ if(runTimer){ clearInterval(runTimer); runTimer=null; } }
+
+/* boot */
+applyState();
+</script>
+</body>
+</html>

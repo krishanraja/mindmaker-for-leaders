@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CTRL · You (Track Record) · 2028 mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     CTRL · YOU (Track Record) · the 2028 radical-focus refactor
+     ------------------------------------------------------------
+     ONE job: your judgment, tracked over time.
+     The tab grows from an inviting PROMISE (cold) to a first honest
+     pattern (warm) to a real, earned track record (rich).
+     We KILL the three zero-scoreboard tiles entirely. Cold leads with
+     ONE inviting centrepiece, never 0/0/0. Loading is an in-shell,
+     branded skeleton, never a raw spinner.
+     Real ctrl-ds dark instrument tokens (src/index.css), emerald #00D9B6.
+     No em dashes anywhere.
+     ============================================================ */
+  :root{
+    --bg:#08090c;            /* background near-black blue-tinged */
+    --card:#101319;          /* card */
+    --card-2:#0c1016;        /* slightly deeper card */
+    --popover:#0e1014;
+    --secondary:#14171d;
+    --fg:#E6EAF2;            /* light ink */
+    --muted-fg:#8b94a3;
+    --muted-bg:#1c2027;
+    --border:#22262e;        /* line */
+    --acc:#00D9B6;           /* emerald accent */
+    --acc-ink:#aef6ea;       /* bright accent ink (numbers) */
+    --acc-deep:#0a8e7a;      /* darker emerald stop */
+    --amber:#e0a93b;         /* the one honest "did not hold" tone */
+    --acc-soft:rgba(0,217,182,.10);
+    --acc-line:rgba(0,217,182,.28);
+    --display:'Space Grotesk', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    --grotesk:'Space Grotesk', ui-sans-serif, sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    font-family:'Inter', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    color:var(--fg); letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    background:radial-gradient(120% 80% at 50% -10%, #0d141a 0%, var(--bg) 55%);
+    min-height:100vh;
+  }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+
+  /* ---- shared brand chrome ---- */
+  .brand{ display:inline-flex; align-items:center; gap:9px; }
+  .brand img.icon{ height:19px; width:auto; }
+  .brand img.word{ height:13px; width:auto; }
+
+  /* ============================================================
+     SHARED MOTIF LANGUAGE (same family as the news deck + home)
+     ============================================================ */
+  .motif{ display:block; width:100%; height:100%; }
+  .motif .stroke{ fill:none; stroke:var(--acc); stroke-linecap:round; stroke-linejoin:round; }
+  .motif .faint{ stroke:#2b3340; }
+  .motif .dim{ stroke:rgba(0,217,182,.4); }
+  .motif .glow-dot{ fill:var(--acc); }
+
+  @keyframes drift { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-3px) } }
+  @keyframes breathe { 0%,100%{ opacity:.45 } 50%{ opacity:1 } }
+  @keyframes breatheBig { 0%,100%{ opacity:.25; transform:scale(.96) } 50%{ opacity:.7; transform:scale(1.04) } }
+  @keyframes dashdraw { to{ stroke-dashoffset:0 } }
+  @keyframes spinslow { to{ transform:rotate(360deg) } }
+  @keyframes sweep { 0%{ transform:translateX(-10%) } 100%{ transform:translateX(110%) } }
+  @keyframes risein { from{ opacity:0; transform:translateY(10px) } to{ opacity:1; transform:none } }
+  @keyframes shimmer { 0%{ background-position:-200% 0 } 100%{ background-position:200% 0 } }
+  @keyframes countpulse { 0%,100%{ text-shadow:0 0 26px rgba(0,217,182,.4) } 50%{ text-shadow:0 0 40px rgba(0,217,182,.7) } }
+
+  .m-breathe{ animation:breathe 4.2s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-breatheBig{ animation:breatheBig 5s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-drift{ animation:drift 6s ease-in-out infinite; transform-box:fill-box; }
+  .m-spin{ animation:spinslow 30s linear infinite; transform-box:fill-box; transform-origin:center; }
+  .m-draw{ stroke-dasharray:var(--len,400); stroke-dashoffset:var(--len,400); animation:dashdraw 2.6s ease-out forwards; }
+
+  .motif-band{ position:relative; overflow:hidden; background:
+      radial-gradient(120% 130% at 80% -10%, rgba(0,217,182,.10), transparent 60%),
+      linear-gradient(180deg,#0d1218 0%, #0a0e13 100%); }
+  .motif-band::after{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(105deg, transparent 38%, rgba(0,217,182,.06) 50%, transparent 62%);
+    width:60%; animation:sweep 9s ease-in-out infinite; mix-blend-mode:screen; }
+
+  /* ============================================================
+     THE CONTROLS (mock only, not part of the design)
+     ============================================================ */
+  .controls{ position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:50;
+    display:flex; gap:8px; align-items:center; background:rgba(12,16,22,.86); backdrop-filter:blur(10px);
+    border:1px solid var(--border); border-radius:999px; padding:6px 8px; box-shadow:0 12px 40px -16px rgba(0,0,0,.8); }
+  .controls .grp{ display:flex; gap:3px; align-items:center; }
+  .controls .lab{ font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:#5b6573; padding:0 6px 0 4px; font-weight:700; }
+  .controls button{ font-family:inherit; font-size:11px; font-weight:600; color:var(--muted-fg);
+    background:none; border:none; border-radius:999px; padding:6px 11px; cursor:pointer; transition:all .14s ease; }
+  .controls button:hover{ color:var(--fg); }
+  .controls button.on{ color:var(--bg); background:var(--acc); }
+  .controls .sep{ width:1px; height:18px; background:var(--border); }
+
+  /* ============================================================
+     THE STAGE + FRAMES
+     mobile phone 412 x 915 ; desktop 1366 x 900
+     ============================================================ */
+  .stage{ min-height:100vh; display:grid; place-items:center; padding:64px 16px 28px; }
+
+  /* ---------- MOBILE PHONE ---------- */
+  .phone{
+    width:412px; height:892px; flex:none;
+    border-radius:40px; position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#0a0d12,#070809);
+    box-shadow:0 50px 120px -40px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.04);
+    display:grid; grid-template-rows:auto auto 1fr auto; min-height:0;
+  }
+  .ptop{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 4px; }
+  .ptop .gear{ width:34px; height:34px; border-radius:999px; border:1px solid var(--border);
+    display:grid; place-items:center; color:var(--muted-fg); background:rgba(255,255,255,.02); }
+  .ptop .gear svg{ width:16px; height:16px; }
+
+  /* the page head: tab title + one-line frame (chief-of-staff voice) */
+  .phead{ padding:8px 20px 4px; }
+  .phead .eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:var(--display);
+    text-transform:uppercase; letter-spacing:.14em; font-size:10px; font-weight:700; color:var(--acc); }
+  .phead .eyebrow .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+  .phead h1{ font-size:25px; font-weight:800; letter-spacing:-.025em; margin-top:7px; }
+  .phead .frame{ font-size:13px; color:var(--muted-fg); margin-top:5px; line-height:1.45; max-width:34ch; }
+
+  /* the ONE focus zone: fills remaining height, holds exactly one state */
+  .pbody{ position:relative; min-height:0; min-width:0; padding:14px 18px 10px; display:flex; flex-direction:column; }
+
+  /* bottom nav */
+  .pnav{ display:flex; align-items:center; justify-content:space-around;
+    padding:9px 12px calc(14px + env(safe-area-inset-bottom,0px)); border-top:1px solid rgba(255,255,255,.05);
+    background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.34)); }
+  .navit{ display:flex; flex-direction:column; align-items:center; gap:4px; color:#4d5663; cursor:pointer;
+    background:none; border:none; font-family:inherit; padding:4px 12px; }
+  .navit svg{ width:21px; height:21px; }
+  .navit span{ font-size:9.5px; font-weight:600; letter-spacing:.01em; }
+  .navit.on{ color:var(--acc); }
+
+  /* ---------- DESKTOP ---------- */
+  .desk{ display:none; }
+
+  /* ============================================================
+     SHARED STATE PRIMITIVES (used by both frames)
+     ============================================================ */
+
+  /* ----- COLD: the inviting promise. ONE centrepiece, no tiles. ----- */
+  .promise{ flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:0; }
+  .promise .glyph{ width:148px; height:148px; position:relative; margin-bottom:6px;
+    animation:risein .7s cubic-bezier(.22,1,.36,1) both; }
+  .promise .glyph .halo{ position:absolute; inset:-18% ; border-radius:50%;
+    background:radial-gradient(circle at 50% 45%, rgba(0,217,182,.22), transparent 62%); animation:breatheBig 5.5s ease-in-out infinite; }
+  .promise h2{ font-size:24px; font-weight:800; letter-spacing:-.025em; line-height:1.16; max-width:19ch;
+    margin-top:4px; animation:risein .7s .06s cubic-bezier(.22,1,.36,1) both; }
+  .promise h2 b{ color:var(--acc); font-weight:800; }
+  .promise .lede{ font-size:14px; line-height:1.55; color:var(--muted-fg); max-width:30ch; margin-top:14px;
+    animation:risein .7s .12s cubic-bezier(.22,1,.36,1) both; }
+  /* the three "what gets tracked" promise rows: future value, NOT zeros */
+  .promise .rows{ margin-top:24px; width:100%; max-width:340px; display:flex; flex-direction:column; gap:9px;
+    animation:risein .7s .18s cubic-bezier(.22,1,.36,1) both; }
+  .prow{ display:flex; align-items:center; gap:13px; text-align:left;
+    background:linear-gradient(180deg,#0f141c,#0b0f15); border:1px solid var(--border); border-radius:15px; padding:12px 14px; }
+  .prow .pic{ width:34px; height:34px; flex:none; border-radius:10px; display:grid; place-items:center;
+    color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); }
+  .prow .pic svg{ width:18px; height:18px; }
+  .prow .ptxt{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .prow .pt{ display:block; font-size:13px; font-weight:700; color:var(--fg); line-height:1.2; }
+  .prow .ps{ display:block; font-size:11.5px; color:var(--muted-fg); line-height:1.3; }
+
+  /* the single primary door (cold + warm share it) */
+  .cta{ width:100%; max-width:340px; margin-top:24px; display:inline-flex; align-items:center; justify-content:center; gap:9px;
+    background:var(--acc); color:#04241f; font-weight:800; font-size:14.5px; letter-spacing:-.01em;
+    border:none; border-radius:15px; padding:15px 18px; cursor:pointer; font-family:inherit;
+    box-shadow:0 14px 30px -12px rgba(0,217,182,.55), inset 0 1px 0 rgba(255,255,255,.25);
+    transition:transform .14s ease, box-shadow .14s ease; animation:risein .7s .24s cubic-bezier(.22,1,.36,1) both; }
+  .cta:hover{ transform:translateY(-1px); box-shadow:0 18px 38px -12px rgba(0,217,182,.7); }
+  .cta svg{ width:18px; height:18px; }
+  .cta-note{ margin-top:12px; font-size:11.5px; color:#5b6573; animation:risein .7s .3s both; }
+
+  /* ----- WARM: the first pattern. one calm calibration read + one aging call ----- */
+  .warm{ flex:1; min-height:0; display:flex; flex-direction:column; gap:13px; }
+
+  /* the calibration read card (the centre of warm + rich) */
+  .calib{ background:linear-gradient(180deg,#101620 0%, #0a0e12 100%);
+    border:1px solid var(--acc-line); border-radius:22px; padding:20px 20px 18px; position:relative; overflow:hidden;
+    box-shadow:0 30px 64px -34px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.025);
+    animation:risein .6s cubic-bezier(.22,1,.36,1) both; }
+  .calib::before{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(120% 90% at 88% -20%, rgba(0,217,182,.12), transparent 55%); }
+  .calib .clab{ position:relative; font-family:var(--display); text-transform:uppercase; letter-spacing:.12em;
+    font-size:10px; font-weight:700; color:var(--muted-fg); display:flex; align-items:center; justify-content:space-between; }
+  .calib .clab .fresh{ color:#5b6573; letter-spacing:.04em; text-transform:none; font-family:inherit; font-size:11px; font-weight:500; }
+  .calib .read{ position:relative; display:flex; align-items:baseline; gap:13px; margin-top:14px; }
+  .calib .read .big{ font-family:var(--grotesk); font-weight:700; font-size:62px; line-height:.86; letter-spacing:-.035em;
+    color:var(--acc-ink); text-shadow:0 0 30px rgba(0,217,182,.5); font-variant-numeric:tabular-nums; }
+  .calib .read .big.warm-pulse{ animation:countpulse 4s ease-in-out infinite; }
+  .calib .read .of{ display:flex; flex-direction:column; gap:3px; padding-bottom:5px; }
+  .calib .read .of .n{ font-size:13px; font-weight:700; color:var(--fg); }
+  .calib .read .of .t{ font-size:11.5px; color:var(--muted-fg); max-width:18ch; line-height:1.3; }
+  .calib .sub{ position:relative; margin-top:14px; font-size:13px; line-height:1.5; color:#c2cad6; }
+  .calib .sub b{ color:var(--acc); font-weight:700; }
+
+  /* the honest trend strip (rich) */
+  .trend{ position:relative; margin-top:16px; display:flex; align-items:center; gap:14px; }
+  .spark{ flex:1; height:54px; }
+  .trend .delta{ flex:none; text-align:right; }
+  .trend .delta .arrow{ display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:700; color:var(--acc); }
+  .trend .delta .span{ font-size:11px; color:var(--muted-fg); margin-top:3px; white-space:nowrap; }
+
+  /* section label */
+  .slab{ font-family:var(--display); text-transform:uppercase; letter-spacing:.12em; font-size:10px; font-weight:700;
+    color:var(--muted-fg); display:flex; align-items:center; gap:8px; }
+  .slab .ct{ color:var(--acc); }
+
+  /* an aged decision row (warm shows 1, rich shows a scroll of them) */
+  .calls{ display:flex; flex-direction:column; gap:9px; min-height:0; }
+  .acall{ display:flex; gap:13px; align-items:stretch;
+    background:linear-gradient(180deg,#0f141c 0%, #0a0e13 100%); border:1px solid var(--border); border-radius:16px;
+    overflow:hidden; animation:risein .5s cubic-bezier(.22,1,.36,1) both; }
+  .acall .rail{ width:4px; flex:none; }
+  .acall.held .rail{ background:linear-gradient(180deg,var(--acc),var(--acc-deep)); }
+  .acall.broke .rail{ background:linear-gradient(180deg,var(--amber),#7a5a18); }
+  .acall.watch .rail{ background:linear-gradient(180deg,#3a4350,#222933); }
+  .acall .ac{ flex:1; min-width:0; padding:13px 15px 13px 12px; }
+  .acall .atop{ display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+  .acall .badge{ font-family:var(--display); text-transform:uppercase; letter-spacing:.06em; font-size:8.5px; font-weight:700;
+    padding:3px 8px; border-radius:999px; white-space:nowrap; display:inline-flex; align-items:center; gap:5px; }
+  .acall.held .badge{ color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); }
+  .acall.broke .badge{ color:var(--amber); background:rgba(224,169,59,.1); border:1px solid rgba(224,169,59,.3); }
+  .acall.watch .badge{ color:#9aa3b1; background:rgba(255,255,255,.04); border:1px solid var(--border); }
+  .acall .age{ margin-left:auto; font-size:10.5px; color:#5b6573; }
+  .acall h3{ font-size:13.5px; line-height:1.3; font-weight:700; letter-spacing:-.01em; color:var(--fg); }
+  .acall .gut{ margin-top:7px; font-size:11.5px; line-height:1.4; color:var(--muted-fg); }
+  .acall .gut b{ color:#c2cad6; font-weight:600; }
+  .acall .gut .match{ color:var(--acc); font-weight:700; }
+  .acall .gut .miss{ color:var(--amber); font-weight:700; }
+
+  /* warm closer line */
+  .warm-closer{ text-align:center; font-size:12px; color:#5b6573; padding:6px 0 2px; margin-top:auto; }
+
+  /* ----- LOADING: in-shell branded skeleton ----- */
+  .sk{ flex:1; min-height:0; display:flex; flex-direction:column; gap:13px; }
+  .sk-hero{ height:170px; border-radius:22px; border:1px solid var(--border); position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#101620,#0a0e12); }
+  .sk-hero .scan{ position:absolute; inset:0; background:linear-gradient(105deg, transparent 35%, rgba(0,217,182,.08) 50%, transparent 65%);
+    width:55%; animation:sweep 1.7s ease-in-out infinite; }
+  .sk-hero .lines{ position:absolute; left:20px; right:20px; bottom:18px; display:flex; flex-direction:column; gap:10px; }
+  .sk-line{ height:12px; border-radius:7px; background:linear-gradient(90deg,#161b23 25%,#1f2630 50%,#161b23 75%);
+    background-size:200% 100%; animation:shimmer 1.5s infinite; }
+  .sk-pill{ position:absolute; top:18px; left:20px; height:13px; width:120px; border-radius:999px;
+    background:linear-gradient(90deg,#161b23 25%,#1f2630 50%,#161b23 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+  .sk-num{ position:absolute; top:46px; left:20px; height:46px; width:120px; border-radius:12px;
+    background:linear-gradient(90deg,#13202b 25%,#1c3340 50%,#13202b 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+  .sk-row{ height:66px; border-radius:16px; border:1px solid var(--border); position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#0f141c,#0a0e13); display:flex; align-items:center; gap:13px; padding:0 15px; }
+  .sk-row .dot{ width:4px; height:100%; background:linear-gradient(180deg,#1c2430,#11161e); flex:none; margin-left:-15px; }
+  .sk-row .col{ flex:1; display:flex; flex-direction:column; gap:8px; }
+  .sk-w70{ width:70%; } .sk-w45{ width:45%; } .sk-w90{ width:90%; } .sk-w55{ width:55%; }
+  .sk-cap{ text-align:center; font-size:11.5px; color:#4d5663; padding-top:4px; margin-top:auto;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; align-self:center; }
+  .sk-cap .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 10px var(--acc); animation:breathe 1.3s ease-in-out infinite; }
+
+  /* rich scroller */
+  .rich-scroll{ flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:9px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:4px; }
+  .rich-scroll::-webkit-scrollbar{ display:none; }
+
+  /* state visibility */
+  [data-show]{ display:none; }
+
+  /* ============================================================
+     DESKTOP (>=1100px): a calm, spacious track-record view.
+     Two zones: left command rail (nav + frame), right the one
+     focus surface with room to breathe.
+     ============================================================ */
+  @media (min-width:1100px){
+    .stage{ display:none; }
+    .desk{ display:grid; }
+    body{ display:grid; place-items:center; }
+    .desk{
+      width:1366px; height:836px; flex:none;
+      grid-template-columns:248px 1fr; grid-template-rows:auto 1fr; gap:0;
+      background:linear-gradient(180deg,#0b0e13,#08090c); border:1px solid var(--border); border-radius:26px;
+      overflow:hidden; box-shadow:0 60px 120px -50px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .dside{ grid-row:1 / 3; border-right:1px solid rgba(255,255,255,.05); padding:24px 18px;
+      display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(255,255,255,.012), transparent); }
+    .dside .brand{ padding:6px 10px 22px; }
+    .dside .dnav{ display:flex; flex-direction:column; gap:3px; }
+    .dnav .navlab{ font-family:var(--display); text-transform:uppercase; letter-spacing:.12em; font-size:9px;
+      font-weight:700; color:#4d5663; padding:6px 12px 8px; }
+    .dnav .navit{ flex-direction:row; gap:12px; justify-content:flex-start; width:100%; padding:10px 12px; border-radius:11px; }
+    .dnav .navit span{ font-size:13.5px; }
+    .dnav .navit.on{ background:var(--acc-soft); }
+    .dnav .navit:hover:not(.on){ background:rgba(255,255,255,.03); color:var(--muted-fg); }
+    .dside .duser{ margin-top:auto; display:flex; align-items:center; gap:10px; padding:10px; border-top:1px solid rgba(255,255,255,.05); }
+    .dside .duser .av{ width:30px; height:30px; border-radius:999px; background:linear-gradient(135deg,var(--acc-deep),var(--acc));
+      display:grid; place-items:center; color:#04241f; font-weight:800; font-size:12px; flex:none; }
+    .dside .duser .un{ font-size:12px; font-weight:600; color:#c2cad6; line-height:1.2; }
+    .dside .duser .ue{ font-size:10.5px; color:#5b6573; }
+
+    /* top bar */
+    .dtop{ grid-column:2 / 3; grid-row:1 / 2; display:flex; align-items:flex-end; justify-content:space-between;
+      padding:26px 40px 20px; border-bottom:1px solid rgba(255,255,255,.05); }
+    .dtop .th .eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:var(--display);
+      text-transform:uppercase; letter-spacing:.14em; font-size:10px; font-weight:700; color:var(--acc); }
+    .dtop .th .eyebrow .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+    .dtop .th h1{ font-size:27px; font-weight:800; letter-spacing:-.03em; margin-top:8px; }
+    .dtop .th .frame{ font-size:13.5px; color:var(--muted-fg); margin-top:6px; }
+    .dtop .share{ display:inline-flex; align-items:center; gap:8px; font-family:inherit; font-size:13px; font-weight:600;
+      color:var(--muted-fg); background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:11px;
+      padding:10px 15px; cursor:pointer; transition:all .14s ease; }
+    .dtop .share:hover{ color:var(--fg); border-color:var(--acc-line); }
+    .dtop .share svg{ width:15px; height:15px; }
+
+    /* the focus surface */
+    .dfocus{ grid-column:2 / 3; grid-row:2 / 3; min-height:0; padding:26px 40px 30px; display:flex; flex-direction:column; }
+
+    /* desktop COLD: a wide invitation, centred, room to breathe */
+    .dfocus .promise{ max-width:640px; margin:0 auto; }
+    .dfocus .promise .glyph{ width:172px; height:172px; }
+    .dfocus .promise h2{ font-size:32px; max-width:22ch; }
+    .dfocus .promise .lede{ font-size:15.5px; max-width:46ch; }
+    .dfocus .promise .rows{ max-width:560px; flex-direction:row; }
+    .dfocus .promise .prow{ flex:1; flex-direction:column; align-items:flex-start; gap:9px; }
+    .dfocus .promise .cta{ max-width:300px; }
+
+    /* desktop WARM / RICH: a two-column reading surface, calibration left, calls right */
+    .dgrid{ flex:1; min-height:0; display:grid; grid-template-columns:1.05fr 1fr; gap:24px; }
+    .dgrid .left{ display:flex; flex-direction:column; gap:18px; min-height:0; }
+    .dgrid .right{ display:flex; flex-direction:column; gap:14px; min-height:0; }
+    .dgrid .right .rich-scroll{ gap:11px; }
+    .dgrid .calib{ padding:28px 30px 26px; }
+    .dgrid .calib .read .big{ font-size:84px; }
+    .dgrid .calib .sub{ font-size:14.5px; max-width:42ch; }
+    .dgrid .calib .clab{ font-size:11px; }
+    .dgrid .spark{ height:72px; }
+    .dgrid .acall h3{ font-size:14.5px; }
+    .dgrid .acall .gut{ font-size:12.5px; }
+    .dgrid .slab{ font-size:11px; }
+
+    /* desktop loading */
+    .dfocus .sk{ display:grid; grid-template-columns:1.05fr 1fr; gap:24px; }
+    .dfocus .sk .sk-hero{ height:auto; min-height:260px; }
+    .dfocus .sk .sk-right{ display:flex; flex-direction:column; gap:11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================ CONTROLS (mock only) ============================ -->
+<div class="controls">
+  <div class="grp">
+    <span class="lab">Device</span>
+    <button id="dev-mobile" class="on" onclick="setDevice('mobile')">Mobile</button>
+    <button id="dev-desktop" onclick="setDevice('desktop')">Desktop</button>
+  </div>
+  <span class="sep"></span>
+  <div class="grp">
+    <span class="lab">State</span>
+    <button onclick="setState('loading')" id="st-loading">Loading</button>
+    <button class="on" onclick="setState('cold')" id="st-cold">Cold</button>
+    <button onclick="setState('warm')" id="st-warm">Warm</button>
+    <button onclick="setState('rich')" id="st-rich">Rich</button>
+  </div>
+</div>
+
+<!-- ============================ MOBILE ============================ -->
+<div class="stage">
+  <div class="phone">
+    <div class="ptop">
+      <span class="brand">
+        <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" />
+        <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" />
+      </span>
+      <button class="gear" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div id="mhead"><!-- head injected --></div>
+    <div class="pbody" id="mbody"><!-- state injected --></div>
+    <div class="pnav">
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg><span>Home</span></button>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg><span>Decisions</span></button>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7 7L5.5 5.5M18.5 18.5L17 17M17 7l1.5-1.5M5.5 18.5L7 17"/></svg><span>Brain</span></button>
+      <button class="navit on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c0-3.2 2.9-5.5 6.5-5.5s6.5 2.3 6.5 5.5"/></svg><span>You</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ DESKTOP ============================ -->
+<div class="desk">
+  <div class="dside">
+    <span class="brand">
+      <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" style="height:22px" />
+      <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" style="height:14px" />
+    </span>
+    <div class="dnav">
+      <span class="navlab">Workspace</span>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg><span>Home</span></button>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg><span>Decisions</span></button>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7 7L5.5 5.5M18.5 18.5L17 17M17 7l1.5-1.5M5.5 18.5L7 17"/></svg><span>Brain</span></button>
+      <button class="navit on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 5-7 4 5"/></svg><span>Track Record</span></button>
+    </div>
+    <div class="duser">
+      <span class="av">K</span>
+      <span><span class="un">Krish Raja</span><br/><span class="ue">krish@themindmaker.ai</span></span>
+    </div>
+  </div>
+
+  <div class="dtop">
+    <div class="th">
+      <span class="eyebrow"><span class="pip"></span> Track Record</span>
+      <h1 id="dtitle">How your decisions are aging</h1>
+      <p class="frame" id="dframe">Every call you bank, judged on your read, not the result.</p>
+    </div>
+    <button class="share" id="dshare">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg>
+      Share
+    </button>
+  </div>
+
+  <div class="dfocus" id="dbody"><!-- state injected --></div>
+</div>
+
+<script>
+/* ===================================================================
+   MOTIFS used by the You tab (reuse the shared family)
+   =================================================================== */
+function defs(id){ return `
+  <defs>
+    <radialGradient id="g${id}" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#00D9B6" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#00D9B6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ln${id}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0a8e7a"/><stop offset="100%" stop-color="#00D9B6"/>
+    </linearGradient>
+    <filter id="bl${id}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.2"/></filter>
+  </defs>`;
+}
+function svgWrap(id, inner, vb){
+  return `<svg class="motif" viewBox="${vb||'0 0 320 150'}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${defs(id)}${inner}</svg>`;
+}
+
+/* the track-record proof glyph: bars rising + a drawn calibration line + a sealed check.
+   This is the cold-state centrepiece: it visually IS "judgment proven over time." */
+function proofGlyph(){
+  return svgWrap('pf', `
+    <circle cx="160" cy="80" r="74" fill="url(#gpf)" class="m-breatheBig"/>
+    <g class="faint">
+      <line x1="46" y1="128" x2="288" y2="128" class="stroke faint" stroke-width="1"/>
+    </g>
+    <g class="m-breathe">
+      ${[[72,104],[110,92],[148,98],[186,72],[224,58],[262,40]].map((b,i)=>`
+        <rect x="${b[0]-10}" y="${b[1]}" width="20" height="${128-b[1]}" rx="3"
+          fill="${i>=4?'url(#lnpf)':'#16323a'}" opacity="${0.5+i*0.08}"/>`).join('')}
+    </g>
+    <path class="stroke m-draw" style="--len:300" stroke-width="2.8" d="M72 100 L110 90 L148 94 L186 68 L224 54 L268 34"/>
+    <circle cx="268" cy="34" r="13" fill="#0a0e13" stroke="#00D9B6" stroke-width="2.4" class="m-breathe"/>
+    <path class="stroke" stroke-width="2.6" d="M262 34 l5 5 l8 -9"/>
+    <circle cx="72" cy="100" r="3" class="glow-dot"/>
+  `, '0 0 320 160');
+}
+
+/* a calibration sparkline: rising read-rate over windows, drawn line + area + end dot. */
+function sparkline(){
+  const pts = [[8,40],[40,44],[72,36],[104,38],[136,28],[168,30],[200,18],[232,14]];
+  const d = pts.map((p,i)=> (i? 'L':'M')+p[0]+' '+p[1]).join(' ');
+  const area = `M8 54 ${pts.map(p=>'L'+p[0]+' '+p[1]).join(' ')} L232 54 Z`;
+  return `<svg class="motif" viewBox="0 0 240 58" preserveAspectRatio="none" aria-hidden="true">
+    ${defs('sp')}
+    <line x1="8" y1="54" x2="232" y2="54" stroke="#22262e" stroke-width="1"/>
+    <path d="${area}" fill="url(#gsp)" opacity=".45"/>
+    <path d="${d}" fill="none" stroke="url(#lnsp)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" class="m-draw" style="--len:320"/>
+    <circle cx="232" cy="14" r="8" fill="#00D9B6" opacity=".2" class="m-breatheBig"/>
+    <circle cx="232" cy="14" r="3.6" fill="#aef6ea"/>
+  </svg>`;
+}
+
+/* ===================================================================
+   STATE CONTENT BUILDERS
+   =================================================================== */
+
+function loadingHTML(desktop){
+  if(desktop){
+    return `
+    <div class="sk">
+      <div class="sk-hero">
+        <div class="sk-pill"></div><div class="sk-num"></div>
+        <div class="scan"></div>
+        <div class="lines"><div class="sk-line sk-w70"></div><div class="sk-line sk-w90"></div></div>
+      </div>
+      <div class="sk-right">
+        ${[0,1,2,3].map(()=>`<div class="sk-row"><span class="dot"></span><div class="col"><div class="sk-line sk-w70"></div><div class="sk-line sk-w45"></div></div></div>`).join('')}
+        <div class="sk-cap"><span class="pip"></span> Pulling your banked calls and how they aged</div>
+      </div>
+    </div>`;
+  }
+  return `
+    <div class="sk">
+      <div class="sk-hero">
+        <div class="sk-pill"></div><div class="sk-num"></div>
+        <div class="scan"></div>
+        <div class="lines"><div class="sk-line sk-w70"></div><div class="sk-line sk-w90"></div></div>
+      </div>
+      ${[0,1,2].map(()=>`<div class="sk-row"><span class="dot"></span><div class="col"><div class="sk-line sk-w70"></div><div class="sk-line sk-w45"></div></div></div>`).join('')}
+      <div class="sk-cap"><span class="pip"></span> Pulling your banked calls and how they aged</div>
+    </div>`;
+}
+
+function coldHTML(){
+  return `
+    <div class="promise">
+      <div class="glyph"><span class="halo"></span>${proofGlyph()}</div>
+      <h2>Your judgment record <b>starts with your first banked call.</b></h2>
+      <p class="lede">Pressure-test a decision, bank it, and I'll track how it ages. Over time this becomes proof of how you actually call it.</p>
+      <div class="rows">
+        <div class="prow">
+          <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6z"/></svg></span>
+          <span class="ptxt"><span class="pt">Where your gut met the evidence</span><span class="ps">The call you made, against what the data said.</span></span>
+        </div>
+        <div class="prow">
+          <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 5-7 4 5"/></svg></span>
+          <span class="ptxt"><span class="pt">How each call aged</span><span class="ps">Held up, did not hold, or still playing out.</span></span>
+        </div>
+        <div class="prow">
+          <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <span class="ptxt"><span class="pt">Your hit-rate over time</span><span class="ps">Whether you are getting sharper, honestly scored.</span></span>
+        </div>
+      </div>
+      <button class="cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6z"/></svg>
+        Weigh your first decision
+      </button>
+      <p class="cta-note">Takes a minute. Nothing here until you bank one.</p>
+    </div>`;
+}
+
+function warmHTML(){
+  return `
+    <div class="warm">
+      <div class="calib">
+        <div class="clab"><span>The first pattern</span><span class="fresh">last call 2d ago</span></div>
+        <div class="read">
+          <span class="big warm-pulse">3<span style="font-size:.42em; color:var(--muted-fg); font-weight:600;">/4</span></span>
+          <span class="of">
+            <span class="n">calls read right</span>
+            <span class="t">You called these the way the evidence landed.</span>
+          </span>
+        </div>
+        <p class="sub">Early days, but it is honest. <b>One more banked call</b> and I can start showing whether you are sharpening.</p>
+      </div>
+
+      <div class="slab"><span>Aging now</span></div>
+      <div class="calls">
+        <article class="acall held" style="animation-delay:60ms">
+          <span class="rail"></span>
+          <div class="ac">
+            <div class="atop">
+              <span class="badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg> Held up</span>
+              <span class="age">decided 9d ago</span>
+            </div>
+            <h3>Let an agent own first-draft proposals before hiring another rep.</h3>
+            <p class="gut"><b>Your read:</b> the agent could carry it. <span class="match">It did.</span> Volume up, no new hire.</p>
+          </div>
+        </article>
+        <article class="acall watch" style="animation-delay:130ms">
+          <span class="rail"></span>
+          <div class="ac">
+            <div class="atop">
+              <span class="badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg> Still playing out</span>
+              <span class="age">decided 2d ago</span>
+            </div>
+            <h3>Run the research agent unattended overnight.</h3>
+            <p class="gut"><b>Your read:</b> the guardrails hold. <b>Watching how it lands.</b></p>
+          </div>
+        </article>
+      </div>
+      <p class="warm-closer">Sharpens as more calls play out.</p>
+    </div>`;
+}
+
+function richHTML(desktop){
+  const calls = [
+    { cls:'held', badge:'Held up', age:'aged 14 weeks', icon:'check',
+      h:'Ship the assistant on our own data before buying the vendor seat.',
+      gut:'<b>Your read:</b> in-house would clear their bar. <span class="match">It did, at a third of the cost.</span>' },
+    { cls:'broke', badge:'Did not hold', age:'aged 9 weeks', icon:'x',
+      h:'Hold the price through the new-model launch.',
+      gut:'<b>Your read:</b> demand would absorb it. <span class="miss">It did not.</span> Inference dropped 41% and undercut you.' },
+    { cls:'held', badge:'Held up', age:'aged 7 weeks', icon:'check',
+      h:'Put a human approval gate on any agent that touches a credit decision.',
+      gut:'<b>Your read:</b> the audit risk was real. <span class="match">The EU rule landed exactly there.</span>' },
+    { cls:'held', badge:'Held up', age:'aged 5 weeks', icon:'check',
+      h:'Route escalations through the support agent first.',
+      gut:'<b>Your read:</b> it could clear two thirds unaided. <span class="match">It cleared 71%.</span>' },
+    { cls:'watch', badge:'Still playing out', age:'decided 6d ago', icon:'clock',
+      h:'Let the research agent run unattended overnight.',
+      gut:'<b>Your read:</b> the guardrails hold. <b>Watching how it lands.</b>' },
+    { cls:'broke', badge:'Did not hold', age:'aged 18 weeks', icon:'x',
+      h:'Wait on orchestration tooling until the standards settle.',
+      gut:'<b>Your read:</b> too early to commit. <span class="miss">Waiting cost a quarter of compounding.</span>' },
+  ];
+  const icon = (k)=> k==='check'
+    ? `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>`
+    : k==='x' ? `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`
+    : `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2"/></svg>`;
+  // mobile shows a tighter, fully-readable set; desktop has room for the full scroll.
+  const shown = desktop ? calls : calls.slice(0, 4);
+  const rows = shown.map((c,i)=>`
+    <article class="acall ${c.cls}" style="animation-delay:${i*55}ms">
+      <span class="rail"></span>
+      <div class="ac">
+        <div class="atop">
+          <span class="badge">${icon(c.icon)} ${c.badge}</span>
+          <span class="age">${c.age}</span>
+        </div>
+        <h3>${c.h}</h3>
+        <p class="gut">${c.gut}</p>
+      </div>
+    </article>`).join('');
+
+  const calibCard = `
+    <div class="calib">
+      <div class="clab"><span>Calibration over 41 banked calls</span><span class="fresh">updated today</span></div>
+      <div class="read">
+        <span class="big">78<span style="font-size:.4em; color:var(--acc); font-weight:700;">%</span></span>
+        <span class="of">
+          <span class="n">read the way it landed</span>
+          <span class="t">32 of 41 calls aged the way you called them.</span>
+        </span>
+      </div>
+      <div class="trend">
+        <div class="spark">${sparkline()}</div>
+        <div class="delta">
+          <span class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6 4 4 6-8"/><path d="M16 7h4v4"/></svg> Sharper</span>
+          <span class="span">61% then to 84% now</span>
+        </div>
+      </div>
+      <p class="sub">Where your gut beat the data: you held the <b>credit-gate call</b> three weeks before the rule that proved it.</p>
+    </div>`;
+
+  if(desktop){
+    return `
+      <div class="dgrid">
+        <div class="left">${calibCard}</div>
+        <div class="right">
+          <div class="slab">How your calls aged <span class="ct">&middot; 41</span></div>
+          <div class="rich-scroll">${rows}</div>
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="warm">
+      ${calibCard}
+      <div class="slab">How your calls aged <span class="ct">&middot; 41</span></div>
+      <div class="rich-scroll">${rows}</div>
+    </div>`;
+}
+
+/* ===================================================================
+   FRAME / VOICE per state (chief-of-staff voice; one job: judgment over time)
+   =================================================================== */
+const VOICE = {
+  loading: { title:'How your decisions are aging', frame:'Reading your record.' },
+  cold:    { title:'How your decisions will age', frame:"This fills in the first time you bank a call." },
+  warm:    { title:'How your decisions are aging', frame:'The first pattern is starting to show.' },
+  rich:    { title:'How your decisions are aging', frame:'Every call you bank, judged on your read, not the result.' },
+};
+
+let STATE = 'cold';
+let DEVICE = 'mobile';
+
+function buildFor(desktop){
+  if(STATE==='loading') return loadingHTML(desktop);
+  if(STATE==='cold') return coldHTML();
+  if(STATE==='warm') return warmHTML();
+  return richHTML(desktop);
+}
+
+function mobileHeadHTML(){
+  const v = VOICE[STATE];
+  return `
+    <div class="phead">
+      <span class="eyebrow"><span class="pip"></span> Track Record</span>
+      <h1>${v.title}</h1>
+      <p class="frame">${v.frame}</p>
+    </div>`;
+}
+
+function render(){
+  document.getElementById('mhead').innerHTML = mobileHeadHTML();
+  document.getElementById('mbody').innerHTML = buildFor(false);
+
+  document.getElementById('dtitle').textContent = VOICE[STATE].title;
+  document.getElementById('dframe').textContent = VOICE[STATE].frame;
+  document.getElementById('dshare').style.visibility = (STATE==='rich') ? 'visible' : 'hidden';
+  document.getElementById('dbody').innerHTML = buildFor(true);
+
+  ['loading','cold','warm','rich'].forEach(s=>{
+    document.getElementById('st-'+s).classList.toggle('on', s===STATE);
+  });
+}
+
+function setState(s){ STATE = s; render(); }
+function setDevice(d){
+  DEVICE = d;
+  document.getElementById('dev-mobile').classList.toggle('on', d==='mobile');
+  document.getElementById('dev-desktop').classList.toggle('on', d==='desktop');
+  document.body.classList.toggle('force-desktop', d==='desktop');
+  document.body.classList.toggle('force-mobile', d==='mobile');
+}
+
+render();
+setDevice('mobile');
+</script>
+
+<style>
+  /* deterministic device forcing for the mock controls + screenshots */
+  body.force-desktop .stage{ display:none !important; }
+  body.force-desktop .desk{ display:grid !important; }
+  body.force-mobile .desk{ display:none !important; }
+  body.force-mobile .stage{ display:grid !important; }
+</style>
+</body>
+</html>
