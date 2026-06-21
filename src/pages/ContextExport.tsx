@@ -60,8 +60,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMemoryExport } from '@/hooks/useMemoryExport';
 import { useExportRecommendations } from '@/hooks/useExportRecommendations';
 import { DesktopShell } from '@/components/layout/DesktopShell';
-import { BottomNav } from '@/components/memory-web/BottomNav';
-import { AppHeader } from '@/components/memory-web/AppHeader';
+import { MobileFrame } from '@/components/layout/MobileFrame';
 import { Coachmark } from '@/components/onboarding/Coachmark';
 import { supabase } from '@/integrations/supabase/client';
 import { PLATFORM_GUIDES } from '@/lib/platform-guides';
@@ -957,82 +956,78 @@ export default function ContextExport() {
   // Skill-builder takeover: the redesigned Automator owns the full column.
   if (skillFocus) {
     return (
-      <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-        <AppHeader />
-        <main className="flex-1 min-h-0 px-4 pb-20 pt-1">
-          {automatorTakeover}
-        </main>
-        <BottomNav />
-      </div>
+      <MobileFrame padding="px-4 pb-20 pt-1">
+        {automatorTakeover}
+      </MobileFrame>
     );
   }
 
   return (
-    <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-      <AppHeader />
-
-      <div className="flex-shrink-0 px-4 pb-1">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-accent" />
-            <h1 className="text-base font-semibold text-foreground">Export to AI</h1>
+    <MobileFrame
+      scroll
+      padding="px-4 pb-20"
+      banner={
+        <>
+          <div className="flex-shrink-0 px-4 pb-1">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-accent" />
+                <h1 className="text-base font-semibold text-foreground">Export to AI</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3].map((s) => {
+                  const isSkipped = isCustomMode && s === 2;
+                  const isClickable = !isSkipped && s < step;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => isClickable ? goToStep(s as WizardStep) : undefined}
+                      disabled={!isClickable && s !== step}
+                      className={cn(
+                        'h-2 rounded-full transition-all duration-300',
+                        s === step
+                          ? 'w-8 bg-accent'
+                          : isSkipped
+                          ? 'w-2 bg-border/50 cursor-not-allowed'
+                          : isClickable
+                          ? 'w-2 bg-accent/40 cursor-pointer hover:bg-accent/60'
+                          : 'w-2 bg-border',
+                      )}
+                      aria-label={`Step ${s}${isSkipped ? ' (skipped)' : ''}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {[1, 2, 3].map((s) => {
-              const isSkipped = isCustomMode && s === 2;
-              const isClickable = !isSkipped && s < step;
-              return (
-                <button
-                  key={s}
-                  onClick={() => isClickable ? goToStep(s as WizardStep) : undefined}
-                  disabled={!isClickable && s !== step}
-                  className={cn(
-                    'h-2 rounded-full transition-all duration-300',
-                    s === step
-                      ? 'w-8 bg-accent'
-                      : isSkipped
-                      ? 'w-2 bg-border/50 cursor-not-allowed'
-                      : isClickable
-                      ? 'w-2 bg-accent/40 cursor-pointer hover:bg-accent/60'
-                      : 'w-2 bg-border',
-                  )}
-                  aria-label={`Step ${s}${isSkipped ? ' (skipped)' : ''}`}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </div>
 
-      {step === 1 && (
-        <div className="flex-shrink-0 px-4 pb-2">
-          <button
-            type="button"
-            onClick={() => navigate('/enrich')}
-            className="flex w-full items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-foreground/5"
-          >
-            <Brain className="h-4 w-4 shrink-0 text-accent" />
-            <span className="min-w-0 flex-1 text-xs text-muted-foreground">
-              Got an answer from an AI?{' '}
-              <span className="font-medium text-foreground">Paste it back to deepen your profile.</span>
-            </span>
-            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-          </button>
-        </div>
-      )}
-
-      <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-20">
-        <Coachmark
-          id="export"
-          icon={ArrowRight}
-          title="I'll speak every AI's language"
-          body="Pick a tool (ChatGPT, Claude, Cursor, and more) and I'll shape your full context for it. Paste it in once, and the AI knows you - no more re-explaining yourself."
-          className="mb-3 mt-1"
-        />
-        {wizardContent}
-      </main>
-
-      <BottomNav />
-    </div>
+          {step === 1 && (
+            <div className="flex-shrink-0 px-4 pb-2">
+              <button
+                type="button"
+                onClick={() => navigate('/enrich')}
+                className="flex w-full items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-foreground/5"
+              >
+                <Brain className="h-4 w-4 shrink-0 text-accent" />
+                <span className="min-w-0 flex-1 text-xs text-muted-foreground">
+                  Got an answer from an AI?{' '}
+                  <span className="font-medium text-foreground">Paste it back to deepen your profile.</span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </button>
+            </div>
+          )}
+        </>
+      }
+    >
+      <Coachmark
+        id="export"
+        icon={ArrowRight}
+        title="I'll speak every AI's language"
+        body="Pick a tool (ChatGPT, Claude, Cursor, and more) and I'll shape your full context for it. Paste it in once, and the AI knows you - no more re-explaining yourself."
+        className="mb-3 mt-1"
+      />
+      {wizardContent}
+    </MobileFrame>
   );
 }

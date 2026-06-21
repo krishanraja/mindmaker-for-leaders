@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { AppHeader } from '@/components/memory-web/AppHeader';
-import { BottomNav } from '@/components/memory-web/BottomNav';
+import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
 import { CockpitHome } from './CockpitHome';
@@ -38,34 +37,28 @@ export function CockpitView({ banner }: CockpitViewProps) {
     '';
 
   return (
-    // ONE composed frame: a grid of header / content / nav. The content row is
-    // bounded + non-scrolling; CockpitHome fills it as a flex column.
-    <div className="grid h-screen-safe grid-rows-[auto_1fr_auto] overflow-hidden bg-background">
-      <div className="min-h-0">
-        <AppHeader />
-        {banner}
+    // The shared mobile shell (MobileFrame) owns the header + bottom nav; the
+    // content row is bounded + non-scrolling and CockpitHome fills it as a flex
+    // column. This is the pattern MobileFrame was extracted from.
+    <MobileFrame banner={banner} padding="px-4">
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col py-3">
+        {loading ? (
+          <div className="flex flex-1 items-center justify-center text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+        ) : (
+          <CockpitHome
+            data={data}
+            greeting={cockpitGreeting(firstName)}
+            framing={COCKPIT_FRAMING}
+            onPlayBriefing={() => navigate('/briefing')}
+            onGoDecide={() => navigate('/decision')}
+            onBuildSkill={() => navigate('/context')}
+            onOpenBet={(id) => navigate(`/decision-map?case=${id}`)}
+            onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
+          />
+        )}
       </div>
-      <main className="min-h-0 overflow-hidden px-4">
-        <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col py-3">
-          {loading ? (
-            <div className="flex flex-1 items-center justify-center text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
-          ) : (
-            <CockpitHome
-              data={data}
-              greeting={cockpitGreeting(firstName)}
-              framing={COCKPIT_FRAMING}
-              onPlayBriefing={() => navigate('/briefing')}
-              onGoDecide={() => navigate('/decision')}
-              onBuildSkill={() => navigate('/context')}
-              onOpenBet={(id) => navigate(`/decision-map?case=${id}`)}
-              onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
-            />
-          )}
-        </div>
-      </main>
-      <BottomNav />
-    </div>
+    </MobileFrame>
   );
 }

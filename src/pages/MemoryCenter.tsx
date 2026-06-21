@@ -21,8 +21,7 @@ import { useMemoryEdges } from '@/hooks/useMemoryEdges';
 import { useMarkdownImport } from '@/hooks/useMarkdownImport';
 import { useVerificationFlow } from '@/hooks/useVerificationFlow';
 import { DesktopShell } from '@/components/layout/DesktopShell';
-import { BottomNav } from '@/components/memory-web/BottomNav';
-import { AppHeader } from '@/components/memory-web/AppHeader';
+import { MobileFrame } from '@/components/layout/MobileFrame';
 import { MemoryWebVisualization, type MemoryBond } from '@/components/memory-web/MemoryWebVisualization';
 import { BondReader } from '@/components/memory-web/BondReader';
 import { showThermometer } from '@/lib/memorySignals';
@@ -301,53 +300,51 @@ export default function MemoryCenter() {
   }
 
   return (
-    <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-      <AppHeader
-        onAdd={() => setIsAddOpen(true)}
-        onExport={() => navigate('/context')}
-      />
+    <MobileFrame
+      onAdd={() => setIsAddOpen(true)}
+      onExport={() => navigate('/context')}
+      padding="px-4 pt-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]"
+      banner={
+        <>
+          <div className="flex-shrink-0 px-5 pt-1 pb-0.5">
+            <p className="text-[11px] text-muted-foreground/80 leading-tight">
+              Let's keep your story straight, so every AI you use knows you.
+            </p>
+          </div>
 
-      <div className="flex-shrink-0 px-5 pt-1 pb-0.5">
-        <p className="text-[11px] text-muted-foreground/80 leading-tight">
-          Let's keep your story straight, so every AI you use knows you.
-        </p>
-      </div>
-
-      {stats && (
-        <div className="flex-shrink-0 px-5 pb-1.5">
-          <p className="text-[11px] text-muted-foreground leading-tight">
-            <span className="text-accent font-medium">{stats.total_facts} facts</span>
-            {' · '}
-            <motion.button
-              onClick={openFlow}
-              whileTap={{ scale: 0.95 }}
-              animate={stats.verified_rate === 0 ? { opacity: [1, 0.7, 1] } : undefined}
-              transition={stats.verified_rate === 0 ? { repeat: Infinity, duration: 2 } : undefined}
-              className="text-emerald-500 font-medium hover:underline"
-            >
-              {stats.verified_rate}% verified
-            </motion.button>
-            {showThermometer(facts, stats) && (
-              <>
-                {(stats.temperature_distribution?.hot || 0) > 0 && (
+          {stats && (
+            <div className="flex-shrink-0 px-5 pb-1.5">
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                <span className="text-accent font-medium">{stats.total_facts} facts</span>
+                {' · '}
+                <motion.button
+                  onClick={openFlow}
+                  whileTap={{ scale: 0.95 }}
+                  animate={stats.verified_rate === 0 ? { opacity: [1, 0.7, 1] } : undefined}
+                  transition={stats.verified_rate === 0 ? { repeat: Infinity, duration: 2 } : undefined}
+                  className="text-emerald-500 font-medium hover:underline"
+                >
+                  {stats.verified_rate}% verified
+                </motion.button>
+                {showThermometer(facts, stats) && (
                   <>
+                    {(stats.temperature_distribution?.hot || 0) > 0 && (
+                      <>
+                        {' · '}
+                        <span className="text-orange-500 font-medium">{stats.temperature_distribution.hot} hot</span>
+                      </>
+                    )}
                     {' · '}
-                    <span className="text-orange-500 font-medium">{stats.temperature_distribution.hot} hot</span>
+                    <span className="text-amber-500 font-medium">{stats.temperature_distribution?.warm || 0} warm</span>
                   </>
                 )}
-                {' · '}
-                <span className="text-amber-500 font-medium">{stats.temperature_distribution?.warm || 0} warm</span>
-              </>
-            )}
-          </p>
-        </div>
-      )}
-
-      <main className="flex-1 min-h-0 overflow-hidden px-4 pt-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] flex flex-col">
-        {content}
-      </main>
-
-      <BottomNav />
-    </div>
+              </p>
+            </div>
+          )}
+        </>
+      }
+    >
+      {content}
+    </MobileFrame>
   );
 }

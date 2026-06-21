@@ -2,9 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Compass, Flag, Loader2, Map as MapIcon, RefreshCw, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { AppHeader } from '@/components/memory-web/AppHeader';
-import { BottomNav } from '@/components/memory-web/BottomNav';
 import { DesktopShell } from '@/components/layout/DesktopShell';
+import { MobileFrame } from '@/components/layout/MobileFrame';
 import { cn } from '@/lib/utils';
 import { useDevice } from '@/hooks/useDevice';
 import { useDecisionEngine } from '@/hooks/useDecisionEngine';
@@ -317,14 +316,10 @@ export default function DecisionMapPage() {
   }
 
   return (
-    <div className="h-screen-safe flex flex-col overflow-hidden bg-background">
-      <AppHeader />
-      <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 scrollbar-hide">
-        <div className="mx-auto w-full max-w-3xl space-y-5 py-4">
-          {inner}
-        </div>
-      </main>
-      <BottomNav />
-    </div>
+    <MobileFrame scroll hideScrollbar maxWidth="max-w-3xl" padding="px-4 pb-24">
+      <div className="space-y-5 py-4">
+        {inner}
+      </div>
+    </MobileFrame>
   );
 }

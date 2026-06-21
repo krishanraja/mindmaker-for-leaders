@@ -4,8 +4,7 @@ import { cn } from '@/lib/utils';
 import { useDevice } from '@/hooks/useDevice';
 import { useComplianceStatus } from '@/hooks/useComplianceStatus';
 import { DesktopShell } from '@/components/layout/DesktopShell';
-import { BottomNav } from '@/components/memory-web/BottomNav';
-import { AppHeader } from '@/components/memory-web/AppHeader';
+import { MobileFrame } from '@/components/layout/MobileFrame';
 import {
   complianceFrameworks,
   complianceDisclaimer,
@@ -327,28 +326,25 @@ export default function Compliance() {
   }
 
   return (
-    <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-      <AppHeader />
-
-      <div className="flex-shrink-0 px-4 pb-2">
-        <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg shadow-accent/20">
-            <Shield className="h-4 w-4 text-white" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-foreground leading-tight">How I keep you safe</h1>
-            <p className="text-[10px] text-muted-foreground leading-tight">
-              Honest, plain-language. Tap anything to see the detail.
-            </p>
+    <MobileFrame
+      padding="px-4 pb-2"
+      banner={
+        <div className="flex-shrink-0 px-4 pb-2">
+          <div className="flex items-center gap-2.5 mb-1">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg shadow-accent/20">
+              <Shield className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <h1 className="text-base font-bold text-foreground leading-tight">How I keep you safe</h1>
+              <p className="text-[10px] text-muted-foreground leading-tight">
+                Honest, plain-language. Tap anything to see the detail.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-
-      <main className="flex-1 min-h-0 flex flex-col px-4 pb-2">
-        <ComplianceView />
-      </main>
-
-      <BottomNav />
-    </div>
+      }
+    >
+      <ComplianceView />
+    </MobileFrame>
   );
 }

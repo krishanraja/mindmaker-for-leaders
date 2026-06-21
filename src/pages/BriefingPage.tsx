@@ -27,9 +27,8 @@ import {
   deriveBriefingRead,
 } from "@/components/briefing";
 import { InterestsSheet } from "@/components/briefing/InterestsSheet";
-import { BottomNav } from "@/components/memory-web/BottomNav";
-import { AppHeader } from "@/components/memory-web/AppHeader";
 import { DesktopShell } from "@/components/layout/DesktopShell";
+import { MobileFrame } from "@/components/layout/MobileFrame";
 import { useDevice } from "@/hooks/useDevice";
 import {
   useTodaysBriefing,
@@ -226,45 +225,70 @@ function BriefingPage() {
   /* ─── Mobile layout: one no-scroll viewport, one ask per state ─────── */
   if (isMobile) {
     return (
-      <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-        <AppHeader />
-
-        {/* One calm header: what this is + its status + a single way to adjust
-            it. Everything else lives behind "Adjust" so the page stays one step. */}
-        <div className="flex-shrink-0 flex items-center justify-between px-4 pt-3 pb-2">
-          <div className="min-w-0">
-            <h1 className="text-lg font-semibold text-foreground truncate">
-              Your daily read
-            </h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <span
-                className={cn(
-                  "inline-block w-1.5 h-1.5 rounded-full",
-                  isGenerating
-                    ? "bg-amber-500 animate-pulse"
-                    : defaultBriefing
-                    ? "bg-emerald-500"
-                    : "bg-muted-foreground/40",
-                )}
-              />
-              {liveStatus}
-            </p>
+      <MobileFrame
+        padding="px-4 pb-20"
+        banner={
+          /* One calm header: what this is + its status + a single way to adjust
+             it. Everything else lives behind "Adjust" so the page stays one step. */
+          <div className="flex-shrink-0 flex items-center justify-between px-4 pt-3 pb-2">
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold text-foreground truncate">
+                Your daily read
+              </h1>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "inline-block w-1.5 h-1.5 rounded-full",
+                    isGenerating
+                      ? "bg-amber-500 animate-pulse"
+                      : defaultBriefing
+                      ? "bg-emerald-500"
+                      : "bg-muted-foreground/40",
+                  )}
+                />
+                {liveStatus}
+              </p>
+            </div>
+            {hasDeclaredOrInferred && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setInterestsSheetOpen(true)}
+                className="gap-1.5 text-xs h-8"
+              >
+                <Settings2 className="w-3.5 h-3.5" />
+                Adjust
+              </Button>
+            )}
           </div>
-          {hasDeclaredOrInferred && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setInterestsSheetOpen(true)}
-              className="gap-1.5 text-xs h-8"
-            >
-              <Settings2 className="w-3.5 h-3.5" />
-              Adjust
-            </Button>
-          )}
-        </div>
-
+        }
+        extras={
+          <>
+            <MiniPlayer />
+            <BriefingSheet />
+            <CustomBriefingSheet
+              isOpen={customSheetOpen}
+              onClose={() => {
+                setCustomSheetOpen(false);
+                setPresetCustomPrompt(null);
+              }}
+              onGenerate={handleCustomGenerate}
+              isGenerating={generating}
+              initialContext={presetCustomPrompt ?? undefined}
+            />
+            <InterestsSheet
+              open={interestsSheetOpen}
+              onOpenChange={setInterestsSheetOpen}
+              onSaved={() => {
+                void refetchInterests();
+                void refetchSuggestions();
+              }}
+            />
+          </>
+        }
+      >
         {/* The single ask for this state, fit to the viewport, no page scroll. */}
-        <main className="flex-1 min-h-0 overflow-hidden px-4 pb-20">
+        <div className="flex h-full min-h-0 flex-col">
           {coldState === "loading" ? (
             <div className="flex h-full items-center justify-center">
               <div className="w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
@@ -472,30 +496,8 @@ function BriefingPage() {
               </div>
             </div>
           ) : null}
-        </main>
-
-        <MiniPlayer />
-        <BottomNav />
-        <BriefingSheet />
-        <CustomBriefingSheet
-          isOpen={customSheetOpen}
-          onClose={() => {
-            setCustomSheetOpen(false);
-            setPresetCustomPrompt(null);
-          }}
-          onGenerate={handleCustomGenerate}
-          isGenerating={generating}
-          initialContext={presetCustomPrompt ?? undefined}
-        />
-        <InterestsSheet
-          open={interestsSheetOpen}
-          onOpenChange={setInterestsSheetOpen}
-          onSaved={() => {
-            void refetchInterests();
-            void refetchSuggestions();
-          }}
-        />
-      </div>
+        </div>
+      </MobileFrame>
     );
   }
 

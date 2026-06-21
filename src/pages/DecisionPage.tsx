@@ -1,7 +1,6 @@
 import { useLocation } from 'react-router-dom';
-import { AppHeader } from '@/components/memory-web/AppHeader';
-import { BottomNav } from '@/components/memory-web/BottomNav';
 import { DesktopShell } from '@/components/layout/DesktopShell';
+import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useDevice } from '@/hooks/useDevice';
 import { PressureTestPanel } from '@/components/operator/decision/PressureTestPanel';
 
@@ -38,14 +37,10 @@ export default function DecisionPage() {
   }
 
   return (
-    <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-      <AppHeader />
-      <main className="flex-1 min-h-0 flex flex-col px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
-        <div className="mx-auto w-full max-w-3xl flex-1 min-h-0 flex flex-col">
-          <PressureTestPanel initialStatement={prefill} />
-        </div>
-      </main>
-      <BottomNav />
-    </div>
+    <MobileFrame padding="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
+      <div className="mx-auto w-full max-w-3xl flex-1 min-h-0 flex flex-col">
+        <PressureTestPanel initialStatement={prefill} />
+      </div>
+    </MobileFrame>
   );
 }
