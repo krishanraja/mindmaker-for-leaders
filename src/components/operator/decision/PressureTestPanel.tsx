@@ -38,21 +38,39 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   const hasActive = Boolean(engine.decisionCase) && (engine.isRunning || engine.isComplete || engine.decisionCase?.stage === 'error');
   const needsCall = engine.isComplete && engine.claims.some((c) => c.is_load_bearing) && !callDone;
 
+  // The active surface: upgrade gate, the critical-call step, the result
+  // instrument, or the one clear ask (capture). The result is a fit-to-viewport
+  // instrument, so the layouts below hand it a bounded `h-full min-h-0` context
+  // rather than a growing card.
+  const active = engine.upgradeRequired ? (
+    <UpgradeCard message={engine.upgradeMessage} onUpgrade={handleUpgrade} processing={isProcessing} />
+  ) : hasActive ? (
+    needsCall ? (
+      <CriticalCallStep engine={engine} onDone={handleCallDone} />
+    ) : (
+      <DecisionResult engine={engine} onReset={newBlank} />
+    )
+  ) : null;
+
+  const captureCard = (autoFocus?: boolean) => (
+    <Card><CardContent className="p-5 sm:p-6"><CaptureView value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} autoFocus={autoFocus} /></CardContent></Card>
+  );
+
+  // Only the running/result instrument owns the full height. Capture, the
+  // critical call, and the upgrade gate are centred cards on the start state.
+  const showInstrument = hasActive && !needsCall && !engine.upgradeRequired;
+
   // ---- MOBILE: one thing at a time -----------------------------------------
   if (isMobile) {
     return (
-      <div className="space-y-4">
-        {!hasActive && <AlertBanner alerts={inbox.alerts} onReRun={reRun} onDismiss={(a) => inbox.acknowledge(a.id)} />}
-        {engine.upgradeRequired ? (
-          <UpgradeCard message={engine.upgradeMessage} onUpgrade={handleUpgrade} processing={isProcessing} />
-        ) : hasActive ? (
-          needsCall ? (
-            <CriticalCallStep engine={engine} onDone={handleCallDone} />
-          ) : (
-            <DecisionResult engine={engine} onReset={newBlank} />
-          )
+      <div className="flex flex-col h-full min-h-0">
+        {showInstrument ? (
+          <div className="flex-1 min-h-0">{active}</div>
         ) : (
-          <Card><CardContent className="p-5"><CaptureView value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} /></CardContent></Card>
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide space-y-4">
+            {!hasActive && <AlertBanner alerts={inbox.alerts} onReRun={reRun} onDismiss={(a) => inbox.acknowledge(a.id)} />}
+            {active ?? captureCard()}
+          </div>
         )}
       </div>
     );
@@ -60,21 +78,17 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
 
   // ---- DESKTOP: command-centre (rail + active pane) ------------------------
   return (
-    <div className="space-y-4">
-      <AlertBanner alerts={inbox.alerts} onReRun={reRun} onDismiss={(a) => inbox.acknowledge(a.id)} />
-      <div className="grid grid-cols-[280px_1fr] gap-5 items-start">
-        <div className="sticky top-4"><RecentRail cases={inbox.cases} activeId={engine.decisionCase?.id ?? null} onSelect={engine.load} onNew={newBlank} /></div>
-        <div>
-          {engine.upgradeRequired ? (
-            <UpgradeCard message={engine.upgradeMessage} onUpgrade={handleUpgrade} processing={isProcessing} />
-          ) : hasActive ? (
-            needsCall ? (
-              <CriticalCallStep engine={engine} onDone={handleCallDone} />
-            ) : (
-              <DecisionResult engine={engine} onReset={newBlank} />
-            )
+    <div className="flex flex-col h-full min-h-0">
+      <div className="pb-3 shrink-0"><AlertBanner alerts={inbox.alerts} onReRun={reRun} onDismiss={(a) => inbox.acknowledge(a.id)} /></div>
+      <div className="grid grid-cols-[280px_1fr] gap-5 flex-1 min-h-0">
+        <div className="min-h-0 overflow-y-auto scrollbar-hide"><RecentRail cases={inbox.cases} activeId={engine.decisionCase?.id ?? null} onSelect={engine.load} onNew={newBlank} /></div>
+        <div className="min-h-0">
+          {showInstrument ? (
+            active
           ) : (
-            <Card><CardContent className="p-6 max-w-2xl"><CaptureView value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} autoFocus /></CardContent></Card>
+            <div className="h-full min-h-0 overflow-y-auto scrollbar-hide">
+              <div className="max-w-2xl">{active ?? captureCard(true)}</div>
+            </div>
           )}
         </div>
       </div>
