@@ -1,6 +1,8 @@
 # Branding
 
-**Last Updated:** 2026-04-26
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+
+> RECONCILIATION BANNER. The voice mechanics here (short sentences, active voice, second person, no hype, no FOMO, no emojis, no em dashes) are still correct and useful. But two things in this doc are OFF and corrected below: (1) the positioning is now **building the AI-native version of your business**, not "decision speed / clarity for leaders / portable AI double"; lead with the AI-native frame and the reframe rule. (2) The visual brand is globally DARK (the ctrl-ds instrument palette, emerald `#00D9B6`, the BrandLockup), NOT light / "white backgrounds / generous white space / Mint sparingly on white". The "Visual Brand Elements" section below is corrected to the dark system; the canonical visual reference is `project-documentation/DESIGN_SYSTEM.md` and the code. TODO(founder): lock the AI-native messaging pillars and word-choices (the decision-speed pillars below are placeholders).
 
 ---
 
@@ -33,20 +35,22 @@
 
 ## Messaging Pillars
 
-### 1. Decision Speed
-"Leaders are paid to decide. CTRL makes every decision faster."
+> Reconciliation note: these pillars were written for the decision-speed positioning. Pillars 1 to 4 below are reframed to AI-native; pillars 5 to 7 (operator credibility, self-contained privacy, auditable relevance) still hold. TODO(founder): lock the exact pillar copy.
 
-### 2. Portable AI Context
-"Your context follows you across every AI tool. Build it once. Use it everywhere."
+### 1. The AI-native version of your business
+"CTRL helps you build, orchestrate, productize, and take to market the AI-native version of your business."
 
-### 3. Two Minutes to Value
-"Answer three voice questions. Get a portable AI double. No setup. No prompt engineering."
+### 2. Reframe, never refuse
+"Bring CTRL a general-business call and it reframes it into the AI-native version: 'should I hire?' becomes 'should an agent own part of that motion first?'"
 
-### 4. The Compound Advantage
-"Every conversation makes your AI context richer. The gap between you and leaders using AI generically widens every day."
+### 3. Draw the autonomy line
+"Map your org to what an agent runs, what it assists on with your approval, and what stays human, with a ranked place to start."
+
+### 4. Start with a kit
+"After the lesson, walk a guided kit: ship a build, take a workflow off your plate, map your agentic org, or make the AI know you."
 
 ### 5. Operator Credibility
-"Krish built $0→$12M ARR at Captify, $9M→$61M data revenue at Nine. CTRL is the tool he wished existed."
+"Krish built $0 to $12M ARR at Captify, $9M to $61M data revenue at Nine. CTRL is the tool he wished existed."
 
 ### 6. Self-Contained Privacy
 "No plugins. No integrations. No enterprise security reviews. CTRL is self-contained - you talk to it, and your data stays yours."
@@ -81,9 +85,9 @@
 
 ### Describing the Product
 ```
-CTRL: Clarity for Leaders
+CTRL: build the AI-native version of your business
 
-[One-sentence outcome tied to decision speed]
+[One-sentence outcome tied to an AI-native move]
 
 How It Works:
 1. [Step 1 - voice input]
@@ -211,22 +215,21 @@ ctrl.themindmaker.ai
 
 ## Visual Brand Elements
 
+> Corrected to the live dark system. The app is globally dark; there are no white backgrounds. Canonical: the live tokens in the code (`src/styles/tokens.css`, `index.css`) + `SPINE.md` (the old light `DESIGN_SYSTEM.md` is archived in `_archive/`).
+
 ### Logo Usage
-- CTRL icon (standalone)
-- Full wordmark (with text)
-- Use on Ink or white backgrounds
-- Minimum size: 120px width
+- The `BrandLockup` (Mindmaker icon + `ctrl-logo` wordmark) in headers and sidebars (mobile + desktop). This replaced the generated emerald `ctrl.` text and the old green Mindmaker logo.
+- Use on the dark instrument surface (the ctrl-ds background), never on white.
 
 ### Color Application
-- **Mint:** Sparingly, for highlights and CTAs
-- **Ink:** Primary for text and structure
-- **White space:** Generous. Never cramped. Speed feels clean.
+- **Globally dark** - the ctrl-ds instrument palette is the canvas. `index.html` carries `class="dark"`.
+- **Emerald `#00D9B6`** (`--primary 171 100% 43%`) - the primary accent for highlights and CTAs.
+- **Restraint** - the dark surface does the work; emerald is the single hero accent, used deliberately.
 
 ### Photography
-- Real people, not stock photos
-- Leaders in motion - deciding, speaking, leading
-- Business context, not generic offices
-- Krish headshot for founder/trust sections
+- Largely abstract / instrument motifs over photography (see the nine AI-native news category SVG motifs, dark palette, emerald, no stock photos).
+- Where people appear: real, not stock; leaders in a real business context.
+- Krish headshot for founder/trust sections.
 
 ---
 

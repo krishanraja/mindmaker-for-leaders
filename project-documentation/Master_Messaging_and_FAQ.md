@@ -1,7 +1,9 @@
 # CTRL & Mindmaker Master Messaging & FAQ
-*Core Source of Truth for Product Marketing, Sales, Content, and Outbound*
+*Product marketing, sales, content, and outbound reference*
 
-**Last Updated:** 2026-06-09
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+
+> RECONCILIATION BANNER. The Mindmaker founder narrative, the enterprise-buyer pain, the Builder Economy theme, and the Sprint description are all still accurate and largely ON-positioning (the "AI-native competitors move faster by default" and "everyone will build" themes align with the current CTRL positioning). The one correction: the CTRL product description in PART 3 below was written as "a portable AI memory web / context layer". CTRL's positioning is now **building the AI-native version of your business** (the memory web is the substrate, not the headline). The pricing table (PART 5) is accurate: Edge Pro $29/month, Automator builds free for now; the one-time diagnostic SKUs are flagged TODO(founder) under the repositioning. Canonical: `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`.
 
 ---
 
@@ -49,7 +51,7 @@ The big consultancies (McKinsey, BCG, Deloitte) are selling 6-figure decks built
 ## PART 3: THE CTRL APP (THE PORTABLE CONTEXT LAYER)
 
 **What is CTRL?**
-A portable AI memory web. A private, fundamental brain that sits underneath tools like Cursor, Claude, or ChatGPT. It organizes, verifies, and retains your specific context permanently. Plus a daily 3-minute audio briefing built from your real priorities, where every segment is anchored to a specific profile fact. Plus an Agent Skill Builder that converts one weekly leader workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/` and forgets - it auto-triggers whenever the team's language matches.
+The tool for building, orchestrating, productizing, and getting to market the AI-native version of your business. It reframes every general-business call into its AI-native version and pulls you there. Underneath it runs a private memory web (the substrate that makes any AI tool know your business), a news deck of AI-native categories, a decision engine that reframes and pressure-tests, four guided lesson kits, and an Automator that turns a weekly workflow into an installable agent skill.
 
 **The "Aha" Moment (The Origin Story):**
 The moment people tried to export their memories from ChatGPT to Claude and realized they were hallucinated, inaccurate, or trapped. AI models will constantly change. Vendor lock-in is a massive risk. Your context and memories are too precious to rent. You need a layer of controlled trust over a technology that hallucinates.

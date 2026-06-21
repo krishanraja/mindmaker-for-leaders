@@ -2,7 +2,9 @@
 
 Complete system architecture and data flow documentation.
 
-**Last Updated:** 2026-06-17
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+
+> **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. General-business inputs are reframed into the AI-native lens. The canonical product/build specs are `docs/MAIN-APP-POLISH-SPEC.md` (the main app) and `docs/KIT-REDESIGN-SPEC.md` (the lesson kits); trust those + the root `README.md` + `CLAUDE.md` over this doc where they disagree. This file is technically current on the dark redesign, the brain engine, the routes, and the kit engine plumbing; the LATEST layer it predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing pipeline, the brain-canvas squash fix, and the no-scroll/one-ask sweep). For those, see the two specs and `CLAUDE.md`. The counts below are dated 2026-06-09 and are a lower bound pending re-count.
 
 > **Brand + redesign (2026-06-16, PR #186 merge 1c01db5)**: CTRL is now **globally forced dark** (`index.html` ships `class="dark"`), on the `ctrl-ds` instrument palette with emerald `#00D9B6` as primary (`--primary 171 100% 43%`), and the emerald `ctrl.` wordmark replacing the old green Mindmaker logo everywhere. It is NOT light-mode, NOT warm off-white, NOT white cards, NOT the green logo. Any older assertion in this doc to that effect has been corrected inline. See the **Redesign** section below. The redesign rebuilt the mobile cockpit, decision spine, StoneRead, the brain four-world rope canvas, capture, and onboarding, all prod-verified with screenshots.
 >

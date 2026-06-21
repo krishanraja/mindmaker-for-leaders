@@ -1,10 +1,12 @@
 # Features
 
-Complete feature inventory across all three CTRL tools.
+Complete feature inventory.
 
-**Last Updated:** 2026-06-17
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
 
-> **For sales/marketing AI agents**: every major feature in this doc has a "Sales Anchor" callout. Pull those into outbound copy. Every feature is shipped, deployed, and observable in production unless explicitly marked `[planned]`.
+> **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. The feature mechanics below are accurate; read them through that lens. Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`. The LATEST layer this doc predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing, the brain-canvas fix, the no-scroll/one-ask sweep). For those, trust the two specs and `CLAUDE.md`.
+
+> **For sales/marketing AI agents**: pull feature mechanics from here, but the binding promise and hooks come from `AGENT_BRIEFING.md` (AI-native), not the older sales-anchor callouts below. Some sales anchors still carry the retired "decision speed / portable double" framing; prefer the AI-native frame.
 
 > **Current brand (2026-06-16, PR #186):** CTRL is **globally forced dark** on the `ctrl-ds` instrument palette, emerald `#00D9B6` accent, and the emerald `ctrl.` wordmark replacing the old green Mindmaker logo. It is NOT light-mode, NOT warm off-white, NOT white cards, NOT the green logo. Any older "white card / off-white / green logo" phrasing in this doc is stale and corrected inline. See **Redesign** and **Brain Engine** below.
 

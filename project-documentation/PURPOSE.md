@@ -1,52 +1,48 @@
 # Purpose
 
-**Last Updated:** 2026-06-17
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+
+> Reconciliation note: this doc was written for the prior "decision-speed / portable AI double / zero-context tax" positioning. The current LOCKED positioning is **building the AI-native version of your business** (see `docs/MAIN-APP-POLISH-SPEC.md` section 0, and the root `README.md`). The product mechanics described below (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the kits) are real and in the code; the FRAMING has moved to AI-native. The "What CTRL Is" and "Core Problem" sections have been reframed. Some downstream audience/measurement sections still carry the old decision-speed language; read them through the AI-native lens and treat any undecided AI-native specifics as `TODO(founder)`.
 
 ---
 
 ## What CTRL Is
 
-CTRL is a portable AI context platform for leaders. It builds a **digital double** - a living, exportable map of who you are, what you lead, and how you think - in two minutes flat. Then it hands that context to every AI tool you use, plus delivers a daily 3-minute audio briefing tuned to your real priorities.
+CTRL is the tool for leaders building, orchestrating, productizing, and getting to market **the AI-native version of their business.** It is not a general business advisor and not a generic clarity engine. Every decision, headline, and nudge pulls toward one question: how do you make your business more AI-native, here? When a leader brings a general-business call, CTRL reframes it into the AI-native version of that decision and works it from there.
 
-The result: every AI conversation starts sharp. Not from zero. From you.
-
-CTRL is the decision-speed layer between leaders and AI - a clarity engine that helps a leader see one step clearer today. It now wears a forced-dark instrument cockpit (the `ctrl-ds` palette with the emerald `ctrl.` wordmark), shipped live and prod-verified in the 2026-06-16 redesign.
+It wears a globally dark, instrument-grade cockpit (the `ctrl-ds` palette, emerald `#00D9B6`, the `BrandLockup`). This is not light mode and not warm off-white.
 
 It **is**:
-- A voice-first platform that builds a Memory Web from natural conversation
-- A portable context system that exports to ChatGPT, Claude, Gemini, Cursor, Claude Code, and any LLM
-- A daily evidence-based audio Briefing (3 minutes) that anchors every story to something specific in your profile
-- An "Edge" leadership amplifier that turns your strengths into systems and covers your weaknesses with on-demand artifacts (board memos, strategy docs, emails, meeting agendas)
-- An Agent Skill Builder that turns one weekly workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/` and forgets - it auto-triggers whenever the team's language matches. With a Three Honest Tests triage gate that refuses to generate junk skills from inputs that are really Memory Web facts, Custom Instructions, or Saved Styles.
-- Built-in thinking tools - Decision Advisor, Meeting Prep, Prompt Coach - that already know your world
+- A pair of guided lesson kits and a daily instrument that move a leader through the AI-native lifecycle: build (with AI), orchestrate (the agentic org + the autonomy line), productize (the AI-native version of the offer), go-to-market (how the AI offer reaches customers), on the Memory & Identity substrate.
+- The four lesson kits (`/kit`): Vibe Coding (a solution), Autonomous Business (a process), Agentic Org Chart (the company), Memory & Identity (the person).
+- A news deck of AI-native categories, filtered and tagged so only what changes how you build/run an AI-native business reaches you.
+- A decision engine that reframes any call to its AI-native version, then grounds it in evidence and shows where it holds and where it breaks.
+- A Brain / Memory Web: the leader's context as a four-world rope canvas, the substrate that makes any AI know the business.
+- A Context Export + Automator: context portable into any LLM, plus a builder that turns one weekly workflow into an installable agent skill.
 - Self-contained - no integrations with Slack, email, calendar, or any other tool. Your context comes from what you choose to share, nothing else.
-- A pattern detection system that surfaces strengths to amplify and blind spots to close
-- Infrastructure for faster decisions, not another AI tool
 
 It is **not**:
-- An AI implementation platform
-- A tool selection advisor
+- A general business advisor (it reframes general calls into their AI-native version; it does not answer them as general advice)
+- An AI implementation platform or a tool-selection advisor
 - A ChatGPT wrapper or quiz product
 - Generic leadership coaching with AI branding
-- A prompt tricks collection or hype session
+- A prompt-tricks collection or hype session
 - A tool that reads your email, calendar, or Slack
 - Locked to any single AI provider
 
 ## Core Problem Statement
 
-**Leaders are drowning in AI noise. Their decision speed is suffering.**
+**Most businesses are using AI without becoming AI-native.**
 
-Every leader uses AI now. But every AI conversation starts from zero. The AI never knows who you are, what your company does, what decisions are on your desk, or what keeps you up at night. So the output stays generic. The leader edits, re-prompts, re-explains, and the clock keeps ticking.
+Leaders bolt AI onto the side of a business that still runs the old way. They buy a chat tool, put AI on a board deck, and ask their team to "use AI more", while the actual shape of the business (which workflows a human owns, how the org is wired, what the product is, how it goes to market) never changes. Meanwhile AI-native competitors are rebuilding those same things around agents and moving faster by default.
 
-The cost isn't just frustration. It's velocity.
+The gap is not a context-setup gap. It is a transformation gap: knowing the AI-native version of each decision, and having an instrument that pulls every call toward it instead of leaving it general.
 
-Every minute a leader spends setting up AI context is a minute not spent deciding. Every generic response that gets discarded is a decision delayed. Across a week, a quarter, a year, this compounds into a strategic gap between leaders who move fast with AI and leaders who are still wrestling with it.
-
-**The deeper problem - the zero-context tax:**
-- Leaders re-explain themselves to AI tools 5-10 times per day
-- Context gets lost between platforms, between sessions, between tools
-- The AI advice that reaches the decision table is shallow because the AI never had depth
-- Competitors who have solved the context problem are already deciding faster
+**The drift problem CTRL exists to fight:**
+- General-business questions ("should I hire", "should I raise prices", "should I move upmarket") get answered as general business, with no AI-native angle.
+- Leaders cannot see which parts of a workflow are safe to hand to an agent, where the human checkpoint belongs, and what the human role becomes.
+- The org chart, the product, and the go-to-market motion are never re-imagined for an AI-native world.
+- Competitors who are building the AI-native version pull ahead.
 
 **The second tax - the noise tax:**
 - Newsletters, feeds, and digests serve everyone the same content and hope it's relevant
@@ -67,20 +63,19 @@ Every minute a leader spends setting up AI context is a minute not spent decidin
 
 ## How CTRL Solves This
 
-1. **Talk naturally** - Voice or text, two minutes, no prompt engineering
-2. **Memory Web builds** - AI extracts structured facts: identity, business context, goals, challenges, decision patterns, preferences
-3. **Export anywhere** - One click to ChatGPT, Claude, Gemini, Cursor, Claude Code, raw markdown
-4. **Decide faster** - Decision Advisor, Meeting Prep, and Edge already know your context
-5. **Hear your world every morning** - 3-minute audio Briefing where every segment shows "Anchored to: <your priority>"
-6. **Automate the repetitive ones** - Talk through one weekly workflow. CTRL hands you a Claude Skill ZIP that auto-triggers whenever your team's language matches. The Three Honest Tests gate refuses to generate junk skills from non-workflow inputs.
-7. **Compound over time** - The Memory Web deepens. Every AI interaction gets sharper. Every weekly ritual becomes permanent agent infrastructure. Decision speed accelerates.
+1. **Start with a guided kit** - after a Mindmaker lightning lesson, the leader walks one of four build-it-with-you kits: ship a real build (Vibe Coding), take a workflow off their plate (Autonomous Business), map the agentic org with the autonomy line (Agentic Org Chart), or make the AI know them (Memory & Identity).
+2. **Reframe every call to its AI-native version** - the decision engine never answers a general question as general; it reframes it ("before you hire, should an agent own part of that motion first?"), then grounds it in evidence and shows where it holds and where it breaks.
+3. **See only AI-native news** - the news deck filters out anything not about deploying/building/selling AI and tags every story to one of nine AI-native categories.
+4. **Build the substrate** - the Brain / Memory Web holds the leader's context so any AI tool knows the business; export it anywhere (ChatGPT, Claude, Gemini, Cursor, Claude Code, raw markdown).
+5. **Turn a workflow into an agent** - the Automator turns one weekly workflow into an installable, agentskills.io-compliant skill (free for now).
+6. **Compound over time** - each kit and each decision moves the business further along the AI-native lifecycle (build, orchestrate, productize, go-to-market).
 
-The critical insight: CTRL doesn't replace any AI tool. It makes every AI tool a leader already uses dramatically faster to value.
+The critical insight: CTRL does not replace any AI tool. It is where a leader decides what the AI-native version of their business should be, and pulls every call toward it.
 
 ## Three Audiences, One System
 
 ### 1. Leaders (Individual Executives) - primary ICP
-**Job to be Done**: Eliminate the zero-context tax. Make every AI tool personalized. Decide faster.
+**Job to be Done**: Build the AI-native version of their business. See the AI-native version of each decision instead of answering it as general business; know which workflows an agent should own and where the human checkpoint belongs.
 
 **Context**:
 - C-suite executives, VPs, senior managers, founders
@@ -127,17 +122,16 @@ The critical insight: CTRL doesn't replace any AI tool. It makes every AI tool a
 
 ## Sales & Marketing Anchors
 
-Use these when generating outbound, ad copy, or social posts:
+> Reconciliation note: the old anchors here were all decision-speed / portable-double hooks and are off-positioning. The AI-native anchors below are settled in spirit; TODO(founder): lock the exact public hook lines and tagline before they ship in campaigns.
 
-- **One-line hook**: "Build a portable AI double in 2 minutes. Every AI tool you use instantly knows your world."
-- **Pain hook**: "Every AI conversation starts from zero. Re-explaining yourself to ChatGPT, Claude, and Gemini is the zero-context tax."
-- **Auditable AI hook**: "Your news feed thinks it knows you. CTRL proves it - every Briefing segment shows the exact priority it was anchored to."
-- **Privacy hook**: "No integrations. No plugins. No enterprise security review. You talk to it; that's the whole connection."
-- **Time anchor**: "2 minutes to first export. 3 minutes a day for your Briefing. Replaces 30+ minutes of AI context setup and 30+ minutes of scrolling."
-- **Compounding hook**: "Every conversation makes your AI double sharper. The gap between you and leaders using AI generically widens daily."
-- **Repetition-tax hook**: "Every leader runs 3-5 workflows every week. The Skill Builder turns one of them into a Claude Skill in two minutes. Drop it into `~/.claude/skills/` and forget it."
-- **Triage hook**: "Three Honest Tests. CTRL refuses to generate a skill when your input is really a fact, a tone preference, or a writing style. The respect for your time is the product."
-- **Pricing anchors**: Free for the core (Memory Web, Context Export, basic Briefing). $49 for the full Diagnostic. $29/month for Edge Pro (premium briefings + on-demand artifacts + unlimited Agent Skill Builder + Custom Voice Export).
+Use these (AI-native) when generating outbound, ad copy, or social posts:
+
+- **One-line hook**: "Build the AI-native version of your business, one decision at a time."
+- **Reframe hook**: "Stop asking the general-business question. CTRL reframes 'should I hire a VP of Sales?' into 'should an agent own part of that motion first?' and works that."
+- **Autonomy-line hook**: "Map your org to the autonomy line: what an agent runs, what it assists on with your approval, what stays human, and where to start."
+- **Privacy hook**: "No integrations. No plugins. No enterprise security review. You talk to it; that is the whole connection."
+- **Kit hook**: "After the lesson, walk a kit: ship a build, take a workflow off your plate, map your agentic org, or make the AI know you."
+- **Pricing anchor (settled)**: Free to start (the kit side-door + Memory Web + the Automator build, free for now). Edge Pro is $29/month (briefings + Edge artifacts + live MCP pull of your built skills + decision engine). TODO(founder): confirm whether the $49 one-time diagnostic SKUs survive the repositioning before quoting them.
 
 ## Measurement of Success
 
