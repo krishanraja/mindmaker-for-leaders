@@ -116,10 +116,10 @@ export default function Settings() {
   }
 
   return (
-    <DesktopShell eyebrow="Account" title="Settings">
+    <DesktopShell eyebrow="Account" title="Make CTRL yours">
       <div className="max-w-3xl w-full mx-auto flex-1 min-h-0 flex flex-col">
         <p className="flex-shrink-0 text-sm text-muted-foreground mb-3">
-          Make CTRL yours. Pick a tab to change one thing at a time.
+          Set me up the way you work. Pick a tab to change one thing at a time.
         </p>
         <SettingsTabs />
       </div>

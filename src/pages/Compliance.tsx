@@ -315,10 +315,10 @@ export default function Compliance() {
 
   if (!isMobile) {
     return (
-      <DesktopShell eyebrow="Trust" title="Compliance">
+      <DesktopShell eyebrow="Trust" title="How I keep you safe">
         <div className="flex-1 min-h-0 flex flex-col">
           <p className="flex-shrink-0 text-sm text-muted-foreground mb-4 max-w-2xl">
-            A calm, honest look at how we keep your data safe. Pick anything below to see the detail.
+            A calm, honest look at how I keep your data safe. Pick anything below to see the detail.
           </p>
           <ComplianceView />
         </div>
@@ -336,7 +336,7 @@ export default function Compliance() {
             <Shield className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-foreground leading-tight">How you are protected</h1>
+            <h1 className="text-base font-bold text-foreground leading-tight">How I keep you safe</h1>
             <p className="text-[10px] text-muted-foreground leading-tight">
               Honest, plain-language. Tap anything to see the detail.
             </p>

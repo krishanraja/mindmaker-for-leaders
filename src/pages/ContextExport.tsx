@@ -341,7 +341,7 @@ export default function ContextExport() {
       <div>
         <h2 className="text-lg font-semibold text-foreground">What do you need?</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Build a skill from something you repeat, or grab a one-click context preset
+          Let me learn what you do over and over, or grab a one-click context preset
         </p>
       </div>
 
@@ -935,7 +935,7 @@ export default function ContextExport() {
                 className="mb-6"
               >
                 <p className="text-sm text-muted-foreground">
-                  Make any AI tool understand you - in one click.
+                  I'll make you portable - any AI tool, ready in one click.
                 </p>
               </motion.div>
               <Coachmark
@@ -1025,8 +1025,8 @@ export default function ContextExport() {
         <Coachmark
           id="export"
           icon={ArrowRight}
-          title="One context, every AI"
-          body="Pick a tool (ChatGPT, Claude, Cursor, and more) and CTRL formats your full context for it. Paste it in once, and the AI knows you - no more re-explaining yourself."
+          title="I'll speak every AI's language"
+          body="Pick a tool (ChatGPT, Claude, Cursor, and more) and I'll shape your full context for it. Paste it in once, and the AI knows you - no more re-explaining yourself."
           className="mb-3 mt-1"
         />
         {wizardContent}

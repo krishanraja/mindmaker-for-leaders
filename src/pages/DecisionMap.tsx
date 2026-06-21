@@ -305,7 +305,7 @@ export default function DecisionMapPage() {
 
   if (!isMobile) {
     return (
-      <DesktopShell eyebrow="Workspace" title="Decision Map">
+      <DesktopShell eyebrow="Workspace" title="How your decision holds up">
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
           <div className="mx-auto w-full max-w-3xl">
             <p className="mb-6 text-sm text-muted-foreground">{SUBTITLE}</p>
