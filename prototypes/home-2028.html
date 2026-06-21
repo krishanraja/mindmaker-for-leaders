@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CTRL Home 2028 - flagship design mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Gobold (wordmark / uppercase labels), loaded from the repo public/fonts. */
+  @font-face { font-family:'Gobold'; src:url('../public/fonts/Gobold-Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
+
+  /* ============================================================
+     THE REAL CTRL DARK INSTRUMENT PALETTE (from src/index.css, hex form)
+     Exact same tokens the app re-skins onto. Nothing off-palette.
+     ============================================================ */
+  :root{
+    --bg:#08090c;            /* background near-black blue-tinged */
+    --card:#101319;          /* card */
+    --card-2:#0c1016;        /* slightly deeper card */
+    --popover:#0e1014;
+    --secondary:#14171d;
+    --fg:#E6EAF2;            /* light ink */
+    --muted-fg:#8b94a3;
+    --muted-bg:#1c2027;
+    --border:#22262e;        /* line */
+    --acc:#00D9B6;           /* emerald accent */
+    --acc-ink:#aef6ea;       /* bright accent ink (numbers) */
+    --acc-deep:#0a8e7a;
+    --acc-soft:rgba(0,217,182,.10);
+    --acc-line:rgba(0,217,182,.28);
+    --display:'Gobold', 'Space Grotesk', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    --grotesk:'Space Grotesk', ui-sans-serif, sans-serif;
+    /* tuned elevation system for the elevated dark instrument */
+    --el-1:0 1px 0 rgba(255,255,255,.03) inset, 0 1px 2px rgba(0,0,0,.4);
+    --el-2:0 18px 40px -24px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.025);
+    --el-hero:0 34px 70px -30px rgba(0,0,0,.95), 0 0 0 1px var(--acc-line), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    font-family:'Inter', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    color:var(--fg); letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    background:#05060a;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:30px 18px 90px;
+  }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+
+  /* ============================================================
+     CONTROL DOCK (mock controls - device + state)
+     ============================================================ */
+  .dock{
+    position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px; align-items:center; z-index:200;
+    background:rgba(14,16,20,.86); backdrop-filter:blur(16px);
+    border:1px solid var(--border); border-radius:999px; padding:7px 9px;
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.9);
+  }
+  .dock .grp{ display:flex; gap:4px; padding:2px; background:#0a0d12; border-radius:999px; border:1px solid #181c24; }
+  .dock .seg{ font-size:11.5px; font-weight:600; color:var(--muted-fg); padding:7px 13px; border-radius:999px; cursor:pointer;
+    border:none; background:transparent; transition:all .16s ease; letter-spacing:.01em; font-family:inherit; }
+  .dock .seg:hover{ color:var(--fg); }
+  .dock .seg.on{ color:#04140f; background:var(--acc); box-shadow:0 0 16px rgba(0,217,182,.4); }
+  .dock .sep{ width:1px; height:22px; background:var(--border); margin:0 2px; }
+  .dock .lbl{ font-family:var(--display); text-transform:uppercase; letter-spacing:.1em; font-size:8.5px; color:#566070; padding:0 4px 0 6px; }
+
+  .mocknote{ position:fixed; top:12px; left:0; right:0; text-align:center; color:#3f4856; font-size:11px; pointer-events:none; z-index:1; }
+  .mocknote b{ color:#5b6573; }
+
+  /* ============================================================
+     DEVICE FRAMES
+     ============================================================ */
+  .frame{ display:none; }
+  .frame.show{ display:block; }
+
+  /* ---- PHONE 412 x 915 ---- */
+  .phone{
+    width:412px; height:915px; border-radius:42px; position:relative; overflow:hidden;
+    background:radial-gradient(130% 90% at 50% -8%, #0d141a 0%, var(--bg) 52%);
+    box-shadow:0 60px 120px -40px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.045), 0 0 0 9px #0a0c10;
+    display:flex; flex-direction:column;
+  }
+
+  /* ---- DESKTOP 1366 x 900 ---- */
+  .desktop{
+    width:1366px; height:900px; border-radius:18px; position:relative; overflow:hidden;
+    background:radial-gradient(120% 70% at 50% -10%, #0d141a 0%, var(--bg) 50%);
+    box-shadow:0 60px 120px -40px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.04);
+    display:grid; grid-template-columns:236px 1fr;
+  }
+  @media (max-width:1420px){ .desktop{ transform:scale(.92); transform-origin:top center; } }
+  @media (max-width:1280px){ .desktop{ transform:scale(.82); } }
+
+  /* ============================================================
+     SHARED CHROME (brand lockup, eyebrow)
+     ============================================================ */
+  .brand{ display:inline-flex; align-items:center; gap:9px; }
+  .brand img.icon{ height:20px; width:auto; }
+  .brand img.word{ height:13px; width:auto; }
+  .eyebrow{ font-family:var(--display); text-transform:uppercase; letter-spacing:.12em; font-weight:700;
+    font-size:9.5px; color:var(--muted-fg); }
+  .live-pill{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9px; font-weight:700;
+    color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:5px 10px; border-radius:999px;
+    display:inline-flex; align-items:center; gap:6px; }
+  .live-pill .pulse{ width:5px; height:5px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc);
+    animation:pip 2.6s ease-in-out infinite; }
+  @keyframes pip{ 0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.5; transform:scale(.7) } }
+  .cog{ width:34px; height:34px; border-radius:999px; border:1px solid var(--border); background:#0d1117;
+    display:grid; place-items:center; color:var(--muted-fg); cursor:pointer; transition:all .15s; }
+  .cog:hover{ color:var(--fg); border-color:#2c323d; }
+
+  /* ============================================================
+     THE HEADLINE CARD (one shared component; mobile + desktop)
+     ============================================================ */
+  .motif{ display:block; width:100%; height:100%; }
+  .motif .stroke{ fill:none; stroke:var(--acc); stroke-linecap:round; stroke-linejoin:round; }
+  .motif .faint{ stroke:#2b3340; }
+  .motif .dim{ stroke:rgba(0,217,182,.4); }
+  .motif .glow-dot{ fill:var(--acc); }
+  @keyframes drift { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-3px) } }
+  @keyframes breathe { 0%,100%{ opacity:.45 } 50%{ opacity:1 } }
+  @keyframes breatheBig { 0%,100%{ opacity:.25; transform:scale(.96) } 50%{ opacity:.7; transform:scale(1.04) } }
+  @keyframes dashdraw { to{ stroke-dashoffset:0 } }
+  @keyframes spinslow { to{ transform:rotate(360deg) } }
+  @keyframes sweep { 0%{ transform:translateX(-10%) } 100%{ transform:translateX(110%) } }
+  @keyframes flick { 0%,92%,100%{ opacity:1 } 96%{ opacity:.35 } }
+  .m-breathe{ animation:breathe 4.2s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-breatheBig{ animation:breatheBig 5s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-drift{ animation:drift 6s ease-in-out infinite; transform-box:fill-box; }
+  .m-spin{ animation:spinslow 26s linear infinite; transform-box:fill-box; transform-origin:center; }
+  .m-draw{ stroke-dasharray:var(--len,400); stroke-dashoffset:var(--len,400); animation:dashdraw 2.6s ease-out forwards; }
+  .m-flick{ animation:flick 5s ease-in-out infinite; }
+
+  .motif-band{ position:relative; overflow:hidden; background:
+      radial-gradient(120% 130% at 80% -10%, rgba(0,217,182,.10), transparent 60%),
+      linear-gradient(180deg,#0d1218 0%, #0a0e13 100%); }
+  .motif-band::after{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(105deg, transparent 38%, rgba(0,217,182,.06) 50%, transparent 62%);
+    width:60%; animation:sweep 9s ease-in-out infinite; mix-blend-mode:screen; }
+
+  .card{
+    background:linear-gradient(180deg,#101620 0%, #0a0e12 100%);
+    border:1px solid var(--border); border-radius:18px; overflow:hidden;
+    box-shadow:var(--el-2);
+    display:flex; flex-direction:column;
+    transition:border-color .18s ease, transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s ease;
+  }
+  .card:hover{ border-color:var(--acc-line); transform:translateY(-2px); box-shadow:var(--el-hero); }
+  .card .hero{ height:120px; position:relative; flex:none; }
+  .card .hero::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:40px;
+    background:linear-gradient(transparent, #0d121a); pointer-events:none; z-index:1; }
+  .card .body{ padding:15px 17px 16px; display:flex; flex-direction:column; flex:1; min-height:0; }
+  .card .topline{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px; min-height:18px; }
+  .card .topline .chip{ font-family:var(--display); text-transform:uppercase; letter-spacing:.07em;
+    font-size:9px; font-weight:700; color:var(--acc); background:var(--acc-soft);
+    border:1px solid var(--acc-line); padding:4px 9px; border-radius:999px; white-space:nowrap; }
+  .card .topline .mag{ display:flex; align-items:baseline; gap:6px; text-align:right; }
+  .card .topline .mag b{ font-family:var(--grotesk); font-weight:700; font-size:21px; line-height:1;
+    letter-spacing:-.02em; color:var(--acc-ink); text-shadow:0 0 16px rgba(0,217,182,.45); font-variant-numeric:tabular-nums; }
+  .card .topline .mag span{ font-size:8.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted-fg); max-width:8ch; line-height:1.15; text-align:left; }
+  .card h2{ font-size:17px; line-height:1.22; font-weight:800; letter-spacing:-.02em; color:var(--fg); text-wrap:balance; }
+  .card .say{ margin-top:9px; font-size:12.5px; line-height:1.45; color:var(--muted-fg);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card .say b{ color:var(--acc); font-weight:700; }
+  .card .meta{ margin-top:auto; padding-top:14px; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted-fg); }
+  .card .meta .src{ color:#aab2c0; font-weight:600; }
+  .card .meta .dotsep{ color:#3a4150; }
+  .card .meta .own{ margin-left:auto; display:inline-flex; align-items:center; gap:5px; color:var(--acc);
+    font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  .card .meta .own .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+
+  /* ============================================================
+     PHONE LAYOUT  (header / greet / swipe-feed / doors / nav)
+     A bounded no-scroll grid. The feed flexes; the doors + nav are
+     pinned with reserved space and never clip.
+     ============================================================ */
+  .phone .grid{ display:grid; grid-template-rows:auto auto 1fr auto auto; height:100%; }
+
+  .ptop{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 10px; flex:none; }
+  .pgreet{ padding:4px 20px 12px; flex:none; }
+  .pgreet h1{ font-size:23px; font-weight:800; letter-spacing:-.025em; line-height:1.08; }
+  .pgreet h1 .name{ color:var(--fg); }
+  .pgreet p{ font-size:13px; color:var(--muted-fg); margin-top:5px; line-height:1.4; max-width:34ch; }
+  .pgreet p b{ color:#aeb6c2; font-weight:600; }
+
+  /* the swipeable feed: one card commands the view, the next peeks */
+  .feed{ position:relative; overflow:hidden; padding:0 20px; min-height:0; }
+  .feed-track{ display:flex; flex-direction:column; gap:14px; padding-bottom:26px;
+    transition:transform .46s cubic-bezier(.22,1,.36,1); will-change:transform; }
+  .feed::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:30px; z-index:3; pointer-events:none;
+    background:linear-gradient(transparent, var(--bg)); }
+  .feed .card{ flex:none; }
+  .feed .card.focus{ box-shadow:var(--el-hero); border-color:var(--acc-line); }
+  .feed .card:not(.focus){ opacity:.5; transform:scale(.985); }
+  .feed .card .hero{ height:112px; }
+
+  .pdots{ display:flex; justify-content:center; gap:6px; padding:8px 0 6px; flex:none; }
+  .pdots i{ width:5px; height:5px; border-radius:999px; background:var(--muted-bg); transition:all .3s ease; }
+  .pdots i.on{ width:18px; background:var(--acc); box-shadow:0 0 8px rgba(0,217,182,.5); }
+
+  /* THE DOORS - fixed reserved rail above the nav, never clipped */
+  .doors{ flex:none; display:flex; gap:9px; padding:6px 18px 12px; }
+  .door{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;
+    padding:13px 6px 12px; border-radius:16px; border:1px solid var(--border);
+    background:linear-gradient(180deg,#0f141b,#0b0e13); color:var(--muted-fg);
+    transition:all .18s cubic-bezier(.22,1,.36,1); box-shadow:var(--el-1); }
+  .door:hover{ color:var(--fg); border-color:var(--acc-line); transform:translateY(-2px);
+    box-shadow:0 14px 28px -16px rgba(0,217,182,.35), var(--el-1); }
+  .door:active{ transform:translateY(0) scale(.98); }
+  .door .ic{ width:34px; height:34px; border-radius:11px; display:grid; place-items:center;
+    background:var(--acc-soft); border:1px solid var(--acc-line); color:var(--acc); }
+  .door .ic svg{ width:18px; height:18px; }
+  .door b{ font-size:12.5px; font-weight:700; color:var(--fg); letter-spacing:-.01em; }
+  .door .sub{ font-size:9px; color:#5b6573; font-weight:500; letter-spacing:.01em; }
+
+  /* BOTTOM NAV - persistent chrome */
+  .pnav{ flex:none; display:flex; padding:8px 14px calc(14px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid rgba(255,255,255,.05); background:linear-gradient(180deg, transparent, rgba(0,0,0,.25)); }
+  .navit{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--muted-fg); cursor:pointer; padding:4px 0;
+    position:relative; transition:color .15s; }
+  .navit svg{ width:21px; height:21px; }
+  .navit span{ font-size:9.5px; font-weight:600; letter-spacing:.01em; }
+  .navit.on{ color:var(--acc); }
+  .navit.on::before{ content:""; position:absolute; top:-9px; width:22px; height:3px; border-radius:999px; background:var(--acc); box-shadow:0 0 10px var(--acc); }
+
+  /* ============================================================
+     PHONE COLD STATE  (generic AI-native headlines, warm orientation)
+     not empty: the same shell, populated with a generic deck + an
+     orientation banner that INVITES.
+     ============================================================ */
+  .orient{ margin:0 20px 6px; padding:12px 14px; border-radius:14px;
+    background:linear-gradient(120deg, rgba(0,217,182,.08), rgba(0,217,182,.02));
+    border:1px solid var(--acc-line); display:flex; gap:11px; align-items:flex-start; flex:none; }
+  .orient .wave{ width:30px; height:30px; flex:none; border-radius:9px; display:grid; place-items:center;
+    background:var(--acc-soft); border:1px solid var(--acc-line); color:var(--acc); font-size:16px; }
+  .orient .ot{ font-size:12px; line-height:1.4; color:#c2cad6; }
+  .orient .ot b{ color:var(--fg); font-weight:700; }
+
+  /* ============================================================
+     PHONE LOADING SKELETON (in-shell, branded, anticipatory)
+     chrome + nav + doors are REAL; only the feed shows skeleton cards.
+     ============================================================ */
+  @keyframes shimmer { 0%{ background-position:-160% 0 } 100%{ background-position:160% 0 } }
+  .sk{ background:linear-gradient(90deg, #12161d 25%, #1b212b 50%, #12161d 75%); background-size:220% 100%;
+    animation:shimmer 1.5s ease-in-out infinite; border-radius:7px; }
+  .skcard{ border:1px solid var(--border); border-radius:18px; overflow:hidden; background:linear-gradient(180deg,#0e131b,#0a0e12); flex:none; }
+  .skcard .skhero{ height:112px; position:relative; overflow:hidden;
+    background:radial-gradient(120% 130% at 80% -10%, rgba(0,217,182,.06), transparent 60%), linear-gradient(180deg,#0d1218,#0a0e13); }
+  .skcard .skhero::after{ content:""; position:absolute; inset:0;
+    background:linear-gradient(105deg, transparent 40%, rgba(0,217,182,.10) 50%, transparent 60%);
+    width:55%; animation:sweep 1.6s ease-in-out infinite; }
+  .skcard .skbody{ padding:15px 17px 16px; display:flex; flex-direction:column; gap:11px; }
+  .skcard .skrow{ display:flex; justify-content:space-between; }
+  .loadcap{ text-align:center; font-size:11px; color:var(--muted-fg); padding:8px 0 2px; flex:none;
+    display:flex; align-items:center; justify-content:center; gap:8px; }
+  .loadcap .dotpulse{ display:inline-flex; gap:3px; }
+  .loadcap .dotpulse i{ width:4px; height:4px; border-radius:999px; background:var(--acc); animation:dp 1.2s ease-in-out infinite; }
+  .loadcap .dotpulse i:nth-child(2){ animation-delay:.18s } .loadcap .dotpulse i:nth-child(3){ animation-delay:.36s }
+  @keyframes dp{ 0%,100%{ opacity:.3; transform:translateY(0) } 50%{ opacity:1; transform:translateY(-2px) } }
+
+  /* doors disabled look while loading */
+  .doors.loading .door{ opacity:.45; pointer-events:none; }
+
+  /* ============================================================
+     DESKTOP LAYOUT  (sidebar + spacious command surface)
+     ============================================================ */
+  .dside{ border-right:1px solid var(--border); background:linear-gradient(180deg,#0a0d12,#08090c);
+    display:flex; flex-direction:column; padding:22px 16px; }
+  .dside .blk{ padding:0 6px 22px; }
+  .dnav{ display:flex; flex-direction:column; gap:3px; margin-top:8px; }
+  .dlabel{ font-family:var(--display); text-transform:uppercase; letter-spacing:.12em; font-size:8.5px; color:#4d5663; padding:14px 12px 7px; }
+  .dnavit{ display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:11px; color:var(--muted-fg);
+    cursor:pointer; font-size:13.5px; font-weight:500; transition:all .15s; position:relative; }
+  .dnavit svg{ width:18px; height:18px; flex:none; }
+  .dnavit:hover{ color:var(--fg); background:rgba(255,255,255,.025); }
+  .dnavit.on{ color:var(--acc); background:var(--acc-soft); }
+  .dnavit.on::before{ content:""; position:absolute; left:0; top:7px; bottom:7px; width:3px; border-radius:999px; background:var(--acc); box-shadow:0 0 10px var(--acc); }
+  .dside .acct{ margin-top:auto; display:flex; align-items:center; gap:10px; padding:11px 8px; border-top:1px solid var(--border); }
+  .dside .acct .av{ width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,var(--acc-deep),var(--acc)); color:#04140f;
+    display:grid; place-items:center; font-weight:800; font-size:13px; }
+  .dside .acct .who{ font-size:12px; font-weight:600; } .dside .acct .who span{ display:block; font-size:10px; color:var(--muted-fg); font-weight:400; }
+
+  .dmain{ display:flex; flex-direction:column; min-width:0; padding:26px 34px 26px; overflow:hidden; }
+  .dbar{ display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex:none; margin-bottom:20px; }
+  .dbar .greet h1{ font-size:27px; font-weight:800; letter-spacing:-.03em; line-height:1.05; }
+  .dbar .greet p{ font-size:13.5px; color:var(--muted-fg); margin-top:7px; max-width:54ch; line-height:1.45; }
+  .dbar .greet p b{ color:#aeb6c2; font-weight:600; }
+  .dbar .right{ display:flex; align-items:center; gap:12px; flex:none; }
+
+  /* the headline RAIL: a navigable horizontal row with room to breathe */
+  .raillab{ display:flex; align-items:center; justify-content:space-between; flex:none; margin-bottom:13px; }
+  .raillab .l{ font-family:var(--display); text-transform:uppercase; letter-spacing:.12em; font-size:10px; font-weight:700; color:var(--muted-fg); }
+  .railnav{ display:flex; gap:8px; }
+  .railbtn{ width:32px; height:32px; border-radius:10px; border:1px solid var(--border); background:#0d1117; color:var(--muted-fg);
+    display:grid; place-items:center; cursor:pointer; transition:all .15s; }
+  .railbtn:hover{ color:var(--fg); border-color:var(--acc-line); }
+  .railwrap{ position:relative; flex:none; }
+  .rail{ display:flex; gap:18px; overflow:hidden; scroll-behavior:smooth; padding-bottom:4px; }
+  .rail .card{ flex:none; width:330px; }
+  .rail .card.lead{ width:494px; }
+  .rail .card.lead .hero{ height:200px; }
+  .rail .card.lead h2{ font-size:22px; line-height:1.16; }
+  .rail .card.lead .say{ font-size:13.5px; -webkit-line-clamp:3; }
+  .rail .card .hero{ height:138px; }
+  .railwrap::after{ content:""; position:absolute; top:0; bottom:8px; right:0; width:60px; pointer-events:none;
+    background:linear-gradient(90deg, transparent, var(--bg)); }
+
+  /* DESKTOP DOORS - clear, spacious, fixed reserved row */
+  .ddoors{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; flex:none; margin-top:auto; padding-top:24px; }
+  .ddoor{ display:flex; align-items:center; gap:14px; padding:17px 18px; border-radius:16px; border:1px solid var(--border);
+    background:linear-gradient(180deg,#0f141b,#0b0e13); color:var(--fg); cursor:pointer; box-shadow:var(--el-1);
+    transition:all .18s cubic-bezier(.22,1,.36,1); }
+  .ddoor:hover{ border-color:var(--acc-line); transform:translateY(-2px); box-shadow:0 16px 34px -18px rgba(0,217,182,.32), var(--el-1); }
+  .ddoor .ic{ width:42px; height:42px; flex:none; border-radius:12px; display:grid; place-items:center;
+    background:var(--acc-soft); border:1px solid var(--acc-line); color:var(--acc); }
+  .ddoor .ic svg{ width:21px; height:21px; }
+  .ddoor .stk b{ font-size:14.5px; font-weight:700; letter-spacing:-.01em; display:block; }
+  .ddoor .stk span{ font-size:11.5px; color:var(--muted-fg); }
+  .ddoor .kbd{ margin-left:auto; font-family:var(--grotesk); font-size:10px; color:#566070; border:1px solid var(--border);
+    border-radius:6px; padding:3px 6px; align-self:flex-start; }
+
+  /* desktop orient banner (cold) */
+  .dorient{ display:flex; gap:13px; align-items:center; padding:14px 18px; border-radius:14px; flex:none; margin-bottom:18px;
+    background:linear-gradient(120deg, rgba(0,217,182,.08), rgba(0,217,182,.02)); border:1px solid var(--acc-line); }
+  .dorient .wave{ width:34px; height:34px; flex:none; border-radius:10px; display:grid; place-items:center;
+    background:var(--acc-soft); border:1px solid var(--acc-line); color:var(--acc); font-size:18px; }
+  .dorient .ot{ font-size:13px; color:#c2cad6; line-height:1.45; } .dorient .ot b{ color:var(--fg); font-weight:700; }
+  .dorient .show{ margin-left:auto; flex:none; font-size:12px; font-weight:700; color:#04140f; background:var(--acc);
+    border:none; padding:9px 16px; border-radius:10px; cursor:pointer; font-family:inherit; }
+
+  /* desktop loading rail skeleton */
+  .dskrail{ display:flex; gap:18px; flex:none; }
+  .dskrail .skcard{ flex:none; } .dskrail .skcard:first-child{ width:494px; } .dskrail .skcard:first-child .skhero{ height:200px; }
+  .dskrail .skcard{ width:330px; } .dskrail .skcard .skhero{ height:138px; }
+  .ddoors.loading .ddoor{ opacity:.45; pointer-events:none; }
+
+  /* RICH state density helpers */
+  .richstrip{ display:flex; gap:9px; flex-wrap:wrap; flex:none; }
+  .pchip{ font-size:11px; font-weight:600; color:#aeb6c2; background:#0e131a; border:1px solid var(--border);
+    border-radius:999px; padding:6px 12px; display:inline-flex; align-items:center; gap:7px; }
+  .pchip .pip{ width:6px; height:6px; border-radius:999px; }
+  .pchip .pip.own{ background:var(--acc); box-shadow:0 0 7px var(--acc); }
+  .pchip .pip.world{ background:#5b6573; }
+  .pchip b{ color:var(--fg); font-weight:700; }
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="mocknote">CTRL Home 2028 &middot; flagship design mock &middot; <b>no app wiring</b> &middot; swipe / drag the mobile feed</div>
+
+<!-- ================= PHONE FRAME ================= -->
+<div class="frame show" id="frame-mobile">
+  <div class="phone">
+    <div class="grid">
+
+      <!-- header (always present) -->
+      <div class="ptop">
+        <span class="brand">
+          <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" />
+          <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" />
+        </span>
+        <span class="live-pill" id="m-live"><span class="pulse"></span>Live feed</span>
+      </div>
+
+      <!-- greet -->
+      <div class="pgreet" id="m-greet"></div>
+
+      <!-- cold orientation banner (cold only) -->
+      <div class="orient hidden" id="m-orient">
+        <div class="wave">&#128075;</div>
+        <div class="ot"><b>I'm your chief of staff.</b> Each day I read the AI shift and your world, and surface what is worth a look. Swipe through, and tap the heart to teach me what matters.</div>
+      </div>
+
+      <!-- THE FEED (cards or skeleton) -->
+      <div class="feed" id="m-feed">
+        <div class="feed-track" id="m-track"></div>
+      </div>
+
+      <!-- loading caption (loading only) -->
+      <div class="loadcap hidden" id="m-loadcap">
+        <span class="dotpulse"><i></i><i></i><i></i></span> Reading the market and your world
+      </div>
+
+      <!-- dots (not loading) -->
+      <div class="pdots" id="m-dots"></div>
+
+      <!-- THE DOORS (reserved place, always above nav) -->
+      <div class="doors" id="m-doors"></div>
+
+      <!-- bottom nav -->
+      <nav class="pnav">
+        <div class="navit on">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg><span>Home</span>
+        </div>
+        <div class="navit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M5 7h14M7 7l-3 6a3 3 0 006 0L7 7zm10 0l-3 6a3 3 0 006 0l-3-6z"/></svg><span>Decisions</span>
+        </div>
+        <div class="navit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3a3 3 0 00-3 3 3 3 0 00-2 5 3 3 0 001 5 3 3 0 005 2V3zM15 3a3 3 0 013 3 3 3 0 012 5 3 3 0 01-1 5 3 3 0 01-5 2V3z"/></svg><span>Brain</span>
+        </div>
+        <div class="navit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0114 0"/></svg><span>You</span>
+        </div>
+      </nav>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= DESKTOP FRAME ================= -->
+<div class="frame" id="frame-desktop">
+  <div class="desktop">
+    <!-- sidebar -->
+    <aside class="dside">
+      <div class="blk"><span class="brand">
+        <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" style="height:23px" />
+        <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" style="height:15px" />
+      </span></div>
+      <div class="dnav">
+        <div class="dnavit on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg> Home</div>
+        <div class="dnavit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v18M5 7h14M7 7l-3 6a3 3 0 006 0L7 7zm10 0l-3 6a3 3 0 006 0l-3-6z"/></svg> Decisions</div>
+        <div class="dnavit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3a3 3 0 00-3 3 3 3 0 00-2 5 3 3 0 001 5 3 3 0 005 2V3zM15 3a3 3 0 013 3 3 3 0 012 5 3 3 0 01-1 5 3 3 0 01-5 2V3z"/></svg> Brain</div>
+        <div class="dnavit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0114 0"/></svg> You</div>
+        <div class="dlabel">Account</div>
+        <div class="dnavit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 00-1.7-1l-.3-2.6H9.4l-.3 2.6a7 7 0 00-1.7 1l-2.3-1-2 3.4L5 11a7 7 0 000 2l-2 1.5 2 3.4 2.3-1a7 7 0 001.7 1l.3 2.6h5.2l.3-2.6a7 7 0 001.7-1l2.3 1 2-3.4-2-1.5a7 7 0 00.1-1z"/></svg> Settings</div>
+      </div>
+      <div class="acct">
+        <div class="av">JR</div>
+        <div class="who">Jordan Rivera<span>Founder, Northwind</span></div>
+      </div>
+    </aside>
+
+    <!-- main command surface -->
+    <main class="dmain">
+      <div class="dbar">
+        <div class="greet" id="d-greet"></div>
+        <div class="right">
+          <span class="live-pill" id="d-live"><span class="pulse"></span>Live feed &middot; 8m ago</span>
+          <div class="cog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+        </div>
+      </div>
+
+      <!-- cold orient banner -->
+      <div class="dorient hidden" id="d-orient">
+        <div class="wave">&#128075;</div>
+        <div class="ot"><b>I'm your chief of staff.</b> Each day I read the AI shift and your world, and surface what is worth a look. Tell me one thing about your business and I'll start tuning this to you.</div>
+        <button class="show">Show me how</button>
+      </div>
+
+      <!-- rail label + nav -->
+      <div class="raillab">
+        <span class="l" id="d-raillab">Worth a look today</span>
+        <div class="railnav" id="d-railnav">
+          <button class="railbtn" id="d-prev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="railbtn" id="d-next"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+      </div>
+
+      <!-- rich-only signal strip -->
+      <div class="richstrip hidden" id="d-richstrip" style="margin-bottom:16px"></div>
+
+      <!-- the rail (cards or skeleton) -->
+      <div class="railwrap"><div class="rail" id="d-rail"></div></div>
+
+      <!-- THE DOORS -->
+      <div class="ddoors" id="d-doors"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ================= CONTROL DOCK ================= -->
+<div class="dock">
+  <span class="lbl">Device</span>
+  <div class="grp">
+    <button class="seg on" data-dev="mobile">Mobile</button>
+    <button class="seg" data-dev="desktop">Desktop</button>
+  </div>
+  <div class="sep"></div>
+  <span class="lbl">State</span>
+  <div class="grp">
+    <button class="seg" data-state="loading">Loading</button>
+    <button class="seg on" data-state="cold">Cold</button>
+    <button class="seg" data-state="warm">Warm</button>
+    <button class="seg" data-state="rich">Rich</button>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   THE NINE MOTIFS  (verbatim from prototypes/news-headline-cards.html)
+   =================================================================== */
+function defs(id){ return `
+  <defs>
+    <radialGradient id="g${id}" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#00D9B6" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#00D9B6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ln${id}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0a8e7a"/><stop offset="100%" stop-color="#00D9B6"/>
+    </linearGradient>
+    <filter id="bl${id}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.2"/></filter>
+  </defs>`; }
+function svg(id, inner){ return `<svg class="motif" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${defs(id)}${inner}</svg>`; }
+
+const MOTIFS = {
+  model(){ return svg('mo', `
+    <circle cx="160" cy="75" r="62" fill="url(#gmo)" class="m-breatheBig"/>
+    <g class="m-spin"><circle cx="160" cy="75" r="48" class="stroke faint" stroke-width="1"/>
+      <circle cx="160" cy="75" r="48" class="stroke" stroke-width="2" stroke-dasharray="44 256" stroke-linecap="round"/></g>
+    <g class="m-spin" style="animation-duration:38s;animation-direction:reverse">
+      <circle cx="160" cy="75" r="34" class="stroke dim" stroke-width="1.5" stroke-dasharray="30 184"/></g>
+    <g class="m-breathe"><path class="stroke dim" stroke-width="1" d="M160 75 L122 50 M160 75 L198 50 M160 75 L160 33 M160 75 L210 88 M160 75 L116 96"/>
+      <circle cx="122" cy="50" r="3" class="glow-dot"/><circle cx="198" cy="50" r="3" class="glow-dot"/>
+      <circle cx="160" cy="33" r="3" class="glow-dot"/><circle cx="210" cy="88" r="3" class="glow-dot"/><circle cx="116" cy="96" r="3" class="glow-dot"/></g>
+    <circle cx="160" cy="75" r="9" fill="#00D9B6" filter="url(#blmo)"/><circle cx="160" cy="75" r="6" fill="#aef6ea"/>`); },
+  economics(){ return svg('ec', `
+    <g class="faint" stroke-width="1"><line x1="44" y1="118" x2="288" y2="118" class="stroke faint"/>
+      <line x1="44" y1="30" x2="44" y2="118" class="stroke faint"/>
+      <line x1="44" y1="58" x2="288" y2="58" class="stroke faint" opacity=".4"/>
+      <line x1="44" y1="88" x2="288" y2="88" class="stroke faint" opacity=".4"/></g>
+    <path d="M44 46 C 110 50, 150 92, 210 104 S 270 116, 288 116 L288 118 L44 118 Z" fill="url(#gec)" opacity=".5"/>
+    <path class="stroke m-draw" style="--len:300" stroke-width="2.6" d="M44 46 C 110 50, 150 92, 210 104 S 270 116, 288 116"/>
+    <circle cx="288" cy="116" r="9" fill="#00D9B6" opacity=".25" class="m-breatheBig"/><circle cx="288" cy="116" r="4" class="glow-dot"/>
+    <g class="m-drift" style="animation-duration:5s"><line x1="150" y1="40" x2="150" y2="62" class="stroke dim" stroke-width="2"/>
+      <path class="stroke dim" stroke-width="2" d="M144 56 L150 64 L156 56"/></g>`); },
+  tools(){ return svg('to', `
+    <g class="m-drift"><path class="stroke dim" stroke-width="1.4" d="M110 44 L210 44 L246 64 L146 64 Z"/>
+      <path class="stroke" stroke-width="1.8" d="M104 74 L204 74 L240 94 L140 94 Z"/>
+      <path class="stroke dim" stroke-width="1.4" d="M98 104 L198 104 L234 124 L134 124 Z"/></g>
+    <g class="m-breathe" stroke-width="1.4"><line x1="146" y1="54" x2="140" y2="114" class="stroke"/>
+      <line x1="178" y1="54" x2="172" y2="114" class="stroke"/><line x1="210" y1="54" x2="204" y2="114" class="stroke"/></g>
+    <g><circle cx="146" cy="54" r="3" class="glow-dot"/><circle cx="178" cy="54" r="3" class="glow-dot"/><circle cx="210" cy="54" r="3" class="glow-dot"/>
+      <circle cx="140" cy="114" r="3" class="glow-dot"/><circle cx="172" cy="114" r="3" class="glow-dot"/><circle cx="204" cy="114" r="3" class="glow-dot"/></g>`); },
+  orchestration(){ return svg('or', `
+    <circle cx="160" cy="75" r="56" fill="url(#gor)" opacity=".5" class="m-breatheBig"/>
+    <g class="stroke dim m-breathe" stroke-width="1.2"><line x1="160" y1="40" x2="104" y2="66"/><line x1="160" y1="40" x2="216" y2="66"/>
+      <line x1="104" y1="66" x2="132" y2="112"/><line x1="216" y1="66" x2="188" y2="112"/><line x1="132" y1="112" x2="188" y2="112"/>
+      <line x1="160" y1="40" x2="160" y2="78"/><line x1="104" y1="66" x2="160" y2="78"/><line x1="216" y1="66" x2="160" y2="78"/>
+      <line x1="132" y1="112" x2="160" y2="78"/><line x1="188" y1="112" x2="160" y2="78"/></g>
+    <circle cx="160" cy="78" r="10" fill="#00D9B6" filter="url(#blor)"/><circle cx="160" cy="78" r="6.5" fill="#aef6ea"/>
+    <circle cx="160" cy="40" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="104" cy="66" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-flick"/>
+    <circle cx="216" cy="66" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="132" cy="112" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="188" cy="112" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-flick" style="animation-delay:2.4s"/>`); },
+  product(){ return svg('pr', `
+    <circle cx="160" cy="82" r="50" fill="url(#gpr)" opacity=".5" class="m-breatheBig"/>
+    <g class="m-drift" style="animation-duration:5.5s"><path class="stroke" stroke-width="2" d="M160 50 L196 68 L196 106 L160 124 L124 106 L124 68 Z"/>
+      <path class="stroke dim" stroke-width="1.4" d="M124 68 L160 86 L196 68 M160 86 L160 124"/>
+      <path class="stroke" stroke-width="2" d="M152 96 l5 5 l11 -12"/></g>
+    <path class="stroke dim m-draw" style="--len:120" stroke-width="2" d="M196 68 C 224 52, 246 40, 262 30"/>
+    <path class="stroke" stroke-width="2" d="M256 30 L262 28 L262 36"/><circle cx="262" cy="30" r="3.5" class="glow-dot"/>`); },
+  governance(){ return svg('go', `
+    <circle cx="160" cy="78" r="52" fill="url(#ggo)" opacity=".5" class="m-breatheBig"/>
+    <g class="m-drift" style="animation-duration:6s"><path class="stroke" stroke-width="2.2" d="M160 32 L206 48 V82 C206 108, 184 122, 160 130 C136 122, 114 108, 114 82 V48 Z"/>
+      <path class="stroke dim" stroke-width="1.2" d="M160 44 L194 56 V82 C194 102, 178 113, 160 120 C142 113, 126 102, 126 82 V56 Z"/>
+      <path class="stroke m-draw" style="--len:60" stroke-width="2.6" d="M146 80 l9 10 l20 -24"/></g>
+    <g class="m-spin" style="animation-duration:30s"><circle cx="160" cy="22" r="2.4" class="glow-dot"/>
+      <circle cx="220" cy="100" r="2.4" class="glow-dot" opacity=".7"/><circle cx="100" cy="100" r="2.4" class="glow-dot" opacity=".7"/></g>`); },
+  security(){ return svg('se', `
+    <circle cx="160" cy="80" r="48" fill="url(#gse)" opacity=".45" class="m-breatheBig"/>
+    <path class="stroke" stroke-width="2.4" d="M138 70 V58 a22 22 0 0 1 44 0 V70"/>
+    <rect x="126" y="70" width="68" height="52" rx="9" class="stroke" stroke-width="2.2" fill="#0a0e13"/>
+    <circle cx="160" cy="92" r="5" class="stroke" stroke-width="2"/><line x1="160" y1="96" x2="160" y2="108" class="stroke" stroke-width="2.4"/>
+    <path class="stroke m-breathe" stroke="#00D9B6" stroke-width="1.8" d="M150 70 l6 14 l-8 8 l10 10 l-5 12" opacity=".85"/>
+    <g class="m-flick"><circle cx="156" cy="84" r="1.8" fill="#aef6ea"/><circle cx="148" cy="92" r="1.6" fill="#aef6ea"/><circle cx="158" cy="102" r="1.6" fill="#aef6ea"/></g>`); },
+  org(){ return svg('og', `
+    <circle cx="160" cy="50" r="40" fill="url(#gog)" opacity=".45" class="m-breatheBig"/>
+    <g class="stroke dim m-breathe" stroke-width="1.4"><path d="M160 56 V74 M160 74 H110 M160 74 H210 M110 74 V90 M210 74 V90"/>
+      <path d="M110 96 V108 M110 108 H86 M110 108 H134"/><path d="M210 96 V108 M210 108 H186 M210 108 H234"/></g>
+    ${[[160,46],[110,92],[210,92],[86,114],[134,114],[186,114],[234,114]].map((p,i)=>`
+      <g transform="translate(${p[0]} ${p[1]})" ${i===0?'':'class="m-drift" style="animation-delay:'+(i*0.4)+'s;animation-duration:6s"'}>
+        <circle cx="0" cy="-4" r="${i===0?5.5:4.4}" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+        <path class="stroke" stroke-width="2" d="M${i===0?-7:-6} ${i===0?7:6} a${i===0?7:6} ${i===0?6:5} 0 0 1 ${i===0?14:12} 0"/></g>`).join('')}
+    <circle cx="160" cy="42" r="2" fill="#aef6ea"/>`); },
+  proof(){ return svg('pf', `
+    <g class="faint"><line x1="40" y1="118" x2="290" y2="118" class="stroke faint" stroke-width="1"/>
+      <line x1="40" y1="34" x2="40" y2="118" class="stroke faint" stroke-width="1"/></g>
+    <g class="m-breathe">${[[70,96],[108,84],[146,90],[184,66],[222,54],[260,38]].map((b,i)=>`
+      <rect x="${b[0]-9}" y="${b[1]}" width="18" height="${118-b[1]}" rx="3" fill="${i>=4?'url(#lnpf)':'#16323a'}" opacity="${0.55+i*0.07}"/>`).join('')}</g>
+    <path class="stroke m-draw" style="--len:280" stroke-width="2.4" d="M70 92 L108 82 L146 86 L184 62 L222 50 L266 32"/>
+    <circle cx="266" cy="32" r="11" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-breathe"/>
+    <path class="stroke" stroke-width="2.2" d="M261 32 l4 4 l7 -8"/>`); },
+};
+const CATS = {
+  model:{tag:'Model & capability',motif:MOTIFS.model}, economics:{tag:'AI economics',motif:MOTIFS.economics},
+  tools:{tag:'Tools & vendors',motif:MOTIFS.tools}, orchestration:{tag:'Orchestration',motif:MOTIFS.orchestration},
+  product:{tag:'Product & GTM',motif:MOTIFS.product}, governance:{tag:'Governance',motif:MOTIFS.governance},
+  security:{tag:'Security & risk',motif:MOTIFS.security}, org:{tag:'Org & talent',motif:MOTIFS.org}, proof:{tag:'Proof & adoption',motif:MOTIFS.proof},
+};
+
+/* ===================================================================
+   THE DECKS - one per session state. Same model, growing depth.
+   COLD: generic AI-native industry headlines, no personal signal.
+   WARM: tuned to interests + own-world signals woven in.
+   RICH: dense triage; more own signals, leaner.
+   =================================================================== */
+const DECK_COLD = [
+  { cat:'model', headline:'Anthropic ships a 2M-token Opus tier with native tool memory',
+    say:'The context wall teams design around just moved. Work you split to fit can run as one pass now.', src:'The Verge', time:'2h ago' },
+  { cat:'economics', headline:'Frontier inference drops 41% as the new flash models land', mag:'-41%', magLabel:'cost to run',
+    say:'Agents that were too costly to run at scale just crossed back under the line.', src:'The Information', time:'5h ago' },
+  { cat:'proof', headline:'Klarna says its AI agent now closes two-thirds of support tickets unaided', mag:'67%', magLabel:'tickets, no human',
+    say:'A real deployment clearing the hype bar. Useful proof to point a board at.', src:'Bloomberg', time:'3h ago' },
+  { cat:'governance', headline:'The EU AI Act high-risk deployment rules take force in March',
+    say:'If an agent touches a hiring or credit decision, you now owe an audit trail.', src:'Reuters', time:'1d ago' },
+  { cat:'tools', headline:'LangChain and the MCP registry merge their agent connector specs',
+    say:'One less lock-in fork to bet against. The agent stack just got more portable.', src:'TechCrunch', time:'8h ago' },
+  { cat:'security', headline:'Researchers turn a calendar invite into a live prompt-injection exploit',
+    say:'If an agent reads inbound text and can act, this is the threat model now.', src:'Wired', time:'6h ago' },
+];
+const DECK_WARM = [
+  { cat:'orchestration', own:true, headline:'Your support agent hand-off accuracy slipped below your guardrail', mag:'92%', magLabel:'route accuracy',
+    say:'Two of last week escalations routed to the wrong queue. <b>Worth a look before it compounds.</b>', src:'From your world', time:'40m ago' },
+  { cat:'economics', headline:'Frontier inference drops 41% as the new flash models land', mag:'-41%', magLabel:'cost to run',
+    say:'You shelved the onboarding agent on cost. <b>That maths just flipped.</b>', src:'The Information', time:'5h ago' },
+  { cat:'org', own:true, headline:'Your team logged 31 hours against tasks an agent now handles end-to-end', mag:'31h', magLabel:'reclaimable / wk',
+    say:'Three roles where the human job is shifting to review, not do.', src:'From your world', time:'today' },
+  { cat:'product', headline:'Notion repackages its whole suite as usage-priced AI seats',
+    say:'A clean template for charging for the AI capability itself, in your pricing model.', src:'Axios', time:'11h ago' },
+  { cat:'proof', headline:'A SaaS firm in your sector ships an agent that drafts every renewal', mag:'2.4x', magLabel:'renewals / rep',
+    say:'Close enough to your motion to be a real signal, not just noise.', src:'SaaStr', time:'7h ago' },
+  { cat:'governance', headline:'The EU AI Act high-risk rules take force in March',
+    say:'Your support agent touches refunds. <b>That likely lands in scope.</b>', src:'Reuters', time:'1d ago' },
+];
+const DECK_RICH = [
+  { cat:'orchestration', own:true, headline:'Hand-off accuracy fell to 88% overnight; one route is misfiring', mag:'88%', magLabel:'route accuracy',
+    say:'<b>Down 4 pts since Tuesday.</b> The refund queue is catching tickets it should not.', src:'From your world', time:'18m ago' },
+  { cat:'proof', own:true, headline:'Your renewal-draft agent crossed 2x reps for the third week running', mag:'2.1x', magLabel:'renewals / rep',
+    say:'Holding above target. Board-ready proof if you want it.', src:'From your world', time:'1h ago' },
+  { cat:'economics', headline:'Inference down another 18%; your shelved agents clear the line', mag:'-18%', magLabel:'this month',
+    say:'Two backlog ideas just became cheap enough to ship.', src:'The Information', time:'3h ago' },
+  { cat:'security', own:true, headline:'An inbound email tried a prompt-injection on your support agent', mag:'1', magLabel:'blocked',
+    say:'Caught and blocked. Worth a 2-minute look at the guardrail.', src:'From your world', time:'2h ago' },
+  { cat:'model', headline:'Opus 2M-token tier is live; your long-context split is now optional',
+    say:'The workaround you built can collapse to one pass.', src:'The Verge', time:'4h ago' },
+  { cat:'governance', headline:'EU AI Act enforcement guidance published; refund flows named',
+    say:'Direct hit on your support agent scope.', src:'Reuters', time:'6h ago' },
+  { cat:'org', own:true, headline:'Your team reclaimed 44 hours this week from agent hand-offs', mag:'44h', magLabel:'reclaimed / wk',
+    say:'Up from 31h. The shift to review-not-do is accelerating.', src:'From your world', time:'today' },
+];
+
+/* ===================================================================
+   DOORS - the three actions, always present, fixed reserved place.
+   =================================================================== */
+const DOOR_BRIEF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16M4 10h16M4 15h10"/><circle cx="19" cy="16" r="3"/></svg>';
+const DOOR_WEIGH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v16M6 8h12M8 8l-3 6a3 3 0 006 0L8 8zm8 0l-3 6a3 3 0 006 0l-3-6z"/></svg>';
+const DOOR_BUILD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 5 5.6.6-4 4 1 5.4L12 19l-5 3 1-5.4-4-4 5.6-.6z"/></svg>';
+const DOORS = [
+  { ic:DOOR_BRIEF, name:'Briefing', sub:"today's read", kbd:'B' },
+  { ic:DOOR_WEIGH, name:'Weigh', sub:'a decision', kbd:'W' },
+  { ic:DOOR_BUILD, name:'Build', sub:'a skill', kbd:'S' },
+];
+
+/* ===================================================================
+   COPY per state
+   =================================================================== */
+const GREET = {
+  cold: { kicker:'Good evening', h:'Welcome to CTRL.', p:'I read the AI shift and your world; what is worth a look lands here. <b>Swipe through, and teach me what matters.</b>' },
+  warm: { kicker:'Good evening, Jordan', h:'Here is your read.', p:'Tuned to what you track, with your own signals woven in. <b>Two need a look.</b>' },
+  rich: { kicker:'Good evening, Jordan', h:'Six fronts moved.', p:'<b>Two are from your world.</b> Triage from the top; the rest is quiet.' },
+};
+
+/* ===================================================================
+   CARD RENDER (shared mobile + desktop)
+   =================================================================== */
+function cardHTML(item, opts){
+  opts = opts || {};
+  const c = CATS[item.cat];
+  const lead = opts.lead ? ' lead' : '';
+  const focus = opts.focus ? ' focus' : '';
+  const mag = item.mag ? `<div class="mag"><b>${item.mag}</b><span>${item.magLabel||''}</span></div>` : '';
+  const metaRight = item.own ? `<span class="own"><span class="pip"></span>From your world</span>` : '';
+  const metaLeft = item.own
+    ? `<span class="src">CTRL signal</span>`
+    : `<span class="src">${item.src}</span><span class="dotsep">&middot;</span><span>${item.time}</span>`;
+  return `
+  <article class="card${lead}${focus}">
+    <div class="hero motif-band">${c.motif()}</div>
+    <div class="body">
+      <div class="topline"><span class="chip">${c.tag}</span>${mag}</div>
+      <h2>${item.headline}</h2>
+      <p class="say">${item.say}</p>
+      <div class="meta">${metaLeft}${metaRight}</div>
+    </div>
+  </article>`;
+}
+function skCardHTML(){
+  return `<div class="skcard"><div class="skhero"></div>
+    <div class="skbody">
+      <div class="skrow"><div class="sk" style="width:42%;height:11px"></div><div class="sk" style="width:18%;height:11px"></div></div>
+      <div class="sk" style="width:94%;height:15px"></div>
+      <div class="sk" style="width:72%;height:15px"></div>
+      <div class="sk" style="width:88%;height:10px"></div>
+      <div class="skrow" style="margin-top:4px"><div class="sk" style="width:34%;height:9px"></div></div>
+    </div></div>`;
+}
+
+/* ===================================================================
+   STATE MACHINE
+   =================================================================== */
+let DEVICE='mobile', STATE='cold';
+const deckFor = s => s==='warm' ? DECK_WARM : s==='rich' ? DECK_RICH : DECK_COLD;
+
+/* ---- mobile swipe state ---- */
+let mIdx=0;
+const mTrack=document.getElementById('m-track');
+const mDots=document.getElementById('m-dots');
+const mFeed=document.getElementById('m-feed');
+
+function renderMobile(){
+  const greet=GREET[STATE]||GREET.cold;
+  document.getElementById('m-greet').innerHTML =
+    `<div class="eyebrow" style="margin-bottom:6px">${greet.kicker}</div><h1>${greet.h}</h1><p>${greet.p}</p>`;
+  document.getElementById('m-orient').classList.toggle('hidden', STATE!=='cold');
+
+  // doors
+  const dEl=document.getElementById('m-doors');
+  dEl.classList.toggle('loading', STATE==='loading');
+  dEl.innerHTML = DOORS.map(d=>`<button class="door"><span class="ic">${d.ic}</span><b>${d.name}</b><span class="sub">${d.sub}</span></button>`).join('');
+
+  if(STATE==='loading'){
+    document.getElementById('m-loadcap').classList.remove('hidden');
+    mDots.classList.add('hidden');
+    document.getElementById('m-live').innerHTML='<span class="pulse"></span>Tuning';
+    mTrack.style.transform='translateY(0)';
+    mTrack.innerHTML = skCardHTML()+skCardHTML();
+    return;
+  }
+  document.getElementById('m-loadcap').classList.add('hidden');
+  mDots.classList.remove('hidden');
+  document.getElementById('m-live').innerHTML='<span class="pulse"></span>Live feed';
+
+  const deck=deckFor(STATE);
+  mIdx=Math.min(mIdx, deck.length-1);
+  mTrack.innerHTML = deck.map((it,i)=>cardHTML(it,{focus:i===mIdx})).join('');
+  mDots.innerHTML = deck.map((_,i)=>`<i class="${i===mIdx?'on':''}"></i>`).join('');
+  positionMobile();
+}
+function positionMobile(){
+  requestAnimationFrame(()=>{
+    const cards=[...mTrack.children];
+    if(!cards[mIdx]) return;
+    const top=cards[mIdx].offsetTop;
+    mTrack.style.transform=`translateY(${-Math.max(0, top - 2)}px)`;
+  });
+}
+function mGo(n){
+  const deck=deckFor(STATE);
+  mIdx=Math.max(0, Math.min(deck.length-1, n));
+  [...mTrack.children].forEach((el,i)=>el.classList.toggle('focus', i===mIdx));
+  [...mDots.children].forEach((el,i)=>el.classList.toggle('on', i===mIdx));
+  positionMobile();
+}
+
+/* swipe + drag on the feed */
+(function(){
+  let sy=0, dragging=false;
+  const start=y=>{ if(STATE==='loading') return; sy=y; dragging=true; };
+  const end=y=>{ if(!dragging) return; dragging=false; const dy=y-sy;
+    if(dy<-32) mGo(mIdx+1); else if(dy>32) mGo(mIdx-1); };
+  mFeed.addEventListener('touchstart',e=>start(e.touches[0].clientY),{passive:true});
+  mFeed.addEventListener('touchend',e=>end(e.changedTouches[0].clientY),{passive:true});
+  let down=false;
+  mFeed.addEventListener('mousedown',e=>{ down=true; start(e.clientY); });
+  window.addEventListener('mouseup',e=>{ if(down){ down=false; end(e.clientY); } });
+  mFeed.addEventListener('wheel',e=>{ if(STATE==='loading') return; e.preventDefault();
+    if(e.deltaY>14) mGo(mIdx+1); else if(e.deltaY<-14) mGo(mIdx-1); },{passive:false});
+  // tap a peeking card to focus it
+  mFeed.addEventListener('click',e=>{ const card=e.target.closest('.card'); if(!card) return;
+    const i=[...mTrack.children].indexOf(card); if(i>=0) mGo(i); });
+})();
+
+/* ---- desktop ---- */
+const dRail=document.getElementById('d-rail');
+function renderDesktop(){
+  const greet=GREET[STATE]||GREET.cold;
+  document.getElementById('d-greet').innerHTML =
+    `<div class="eyebrow" style="margin-bottom:7px">${greet.kicker}</div><h1>${greet.h}</h1><p>${greet.p}</p>`;
+  document.getElementById('d-orient').classList.toggle('hidden', STATE!=='cold');
+  document.getElementById('d-railnav').classList.toggle('hidden', STATE==='loading');
+
+  // doors
+  const dd=document.getElementById('d-doors');
+  dd.classList.toggle('loading', STATE==='loading');
+  dd.innerHTML = DOORS.map(d=>`<button class="ddoor"><span class="ic">${d.ic}</span><span class="stk"><b>${d.name}</b><span>${d.sub}</span></span><span class="kbd">${d.kbd}</span></button>`).join('');
+
+  // rich signal strip
+  const strip=document.getElementById('d-richstrip');
+  strip.classList.toggle('hidden', STATE!=='rich');
+  if(STATE==='rich'){
+    strip.innerHTML = `
+      <span class="pchip"><span class="pip own"></span>From your world <b>&middot; 2 moved</b></span>
+      <span class="pchip"><span class="pip world"></span>The world <b>&middot; 4 moved</b></span>
+      <span class="pchip"><span class="pip own"></span>Renewal agent <b>2.1x</b></span>
+      <span class="pchip"><span class="pip own"></span>Route accuracy <b>88%</b></span>`;
+  }
+
+  if(STATE==='loading'){
+    document.getElementById('d-raillab').textContent='Reading the market and your world';
+    document.getElementById('d-live').innerHTML='<span class="pulse"></span>Tuning';
+    dRail.classList.add('hidden');
+    let host=document.getElementById('d-skrail');
+    if(!host){ host=document.createElement('div'); host.id='d-skrail'; host.className='dskrail'; dRail.parentNode.appendChild(host); }
+    host.classList.remove('hidden');
+    host.innerHTML = skCardHTML()+skCardHTML()+skCardHTML();
+    return;
+  }
+  document.getElementById('d-live').innerHTML='<span class="pulse"></span>Live feed &middot; 8m ago';
+  const sk=document.getElementById('d-skrail'); if(sk) sk.classList.add('hidden');
+  dRail.classList.remove('hidden');
+  document.getElementById('d-raillab').textContent = STATE==='rich' ? 'What moved' : 'Worth a look today';
+
+  const deck=deckFor(STATE);
+  dRail.innerHTML = deck.map((it,i)=>cardHTML(it,{lead:i===0})).join('');
+  dRail.scrollLeft=0;
+}
+document.getElementById('d-next').onclick=()=>{ dRail.scrollLeft += 360; };
+document.getElementById('d-prev').onclick=()=>{ dRail.scrollLeft -= 360; };
+
+/* ---- top-level render ---- */
+function render(){
+  document.getElementById('frame-mobile').classList.toggle('show', DEVICE==='mobile');
+  document.getElementById('frame-desktop').classList.toggle('show', DEVICE==='desktop');
+  if(DEVICE==='mobile') renderMobile(); else renderDesktop();
+}
+
+/* ---- dock wiring ---- */
+document.querySelectorAll('.dock [data-dev]').forEach(b=>b.onclick=()=>{
+  DEVICE=b.dataset.dev; document.querySelectorAll('.dock [data-dev]').forEach(x=>x.classList.toggle('on',x===b));
+  mIdx=0; render();
+});
+document.querySelectorAll('.dock [data-state]').forEach(b=>b.onclick=()=>{
+  STATE=b.dataset.state; document.querySelectorAll('.dock [data-state]').forEach(x=>x.classList.toggle('on',x===b));
+  mIdx=0; render();
+});
+
+render();
+
+/* allow ?device= and ?state= for headless screenshots */
+(function(){
+  const q=new URLSearchParams(location.search);
+  const dv=q.get('device'), st=q.get('state');
+  if(dv){ const b=document.querySelector(`.dock [data-dev="${dv}"]`); if(b) b.click(); }
+  if(st){ const b=document.querySelector(`.dock [data-state="${st}"]`); if(b) b.click(); }
+})();
+</script>
+</body>
+</html>
