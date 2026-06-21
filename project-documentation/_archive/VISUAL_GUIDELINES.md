@@ -1,6 +1,8 @@
 # Visual Guidelines
 
-**Last Updated:** 2026-04-26
+> Superseded 2026-06-21; kept for history. This describes the OLD light product (white cards, off-white backgrounds, Apple-like refinement). CTRL is now globally DARK on the `ctrl-ds` instrument palette (emerald `#00D9B6`, the `BrandLockup`), no-scroll one-ask on every surface. For the current visual standard see the root `README.md`, `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, and the code. Do not use the guidance below.
+
+**Last Updated:** 2026-04-26 (archived 2026-06-21)
 
 ---
 

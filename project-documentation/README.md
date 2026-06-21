@@ -47,7 +47,7 @@ The product has two halves:
 2. [ARCHITECTURE.md](./ARCHITECTURE.md) - system architecture, data flow, edge functions
 3. [FEATURES.md](./FEATURES.md) - feature inventory
 4. [COMMON_ISSUES.md](./COMMON_ISSUES.md) - recurring bugs and pain points
-5. [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - design tokens, components, patterns (globally dark)
+5. Design tokens: the live dark `ctrl-ds` tokens are in the code (`src/styles/tokens.css`, `index.css`) and the cross-app contract is in [SPINE.md](./SPINE.md). (The old light [DESIGN_SYSTEM.md](./_archive/DESIGN_SYSTEM.md) is archived.)
 6. [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - rebuild instructions
 7. [DECISIONS_LOG.md](./DECISIONS_LOG.md) - architectural + product decisions
 8. [MASTER_INSTRUCTIONS.md](./MASTER_INSTRUCTIONS.md) - engineering principles + AI behavior
