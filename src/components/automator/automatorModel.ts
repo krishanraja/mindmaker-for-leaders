@@ -521,7 +521,7 @@ export function cascadeFor(candidate: DeliverableCandidate): CascadeStep[] {
         {
           id: "context",
           label: "Context in my head",
-          description: "Things you know that you turn into the output.",
+          description: "What you already know about the situation, shaped into the finished work.",
           transcriptFragment: "What goes in: context I already hold, which I turn into the output.",
         },
       ],

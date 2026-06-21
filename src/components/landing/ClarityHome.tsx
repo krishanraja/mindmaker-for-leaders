@@ -47,7 +47,7 @@ export function ClarityHome() {
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
             Most leaders run a business they can&rsquo;t quite see through, with no time for a two-year transformation.
-            CTRL pressure-tests your real decisions against live evidence and gives your own AI agents your live context -
+            CTRL tests your real decisions against live evidence, showing where each one holds and where it breaks, and gives your own AI agents your live context -
             so you decide with the full picture, and your fleet acts on who you are <em>right now</em>.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

@@ -80,10 +80,10 @@ export function BusinessContextStep({
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-[#00D9B6] mb-2">
-          Tell us about your work
+          What do you do, and where?
         </h2>
         <p className="text-gray-400">
-          This helps us benchmark you and personalize recommendations
+          A few basics so the AI can speak to your role and your business from the start.
         </p>
       </div>
 

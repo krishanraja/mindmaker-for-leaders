@@ -110,8 +110,8 @@ export function AutomatorScaffold({
       )}
 
       <p className="text-[11px] leading-relaxed text-muted-foreground/70">
-        CTRL grounds this in your Memory Web and writes a Claude skill that runs whenever you say
-        the trigger.
+        We build this from what your AI already knows about you, and write a skill that runs
+        whenever you say the trigger.
       </p>
     </div>
   );
@@ -136,9 +136,9 @@ function resolveValue(
 /** Pre-flow panel: a calm three-beat explanation of what is about to happen. */
 function HowItWorks() {
   const beats = [
-    { icon: Brain, title: "Pick a deliverable", body: "One you already do over and over. CTRL mines yours from your Memory Web." },
-    { icon: Check, title: "Answer a few recognitions", body: "Pick the option that sounds like you. Never a blank box, never a long form." },
-    { icon: Sparkles, title: "Get your agent", body: "A Claude skill written in your voice that runs whenever you say the trigger." },
+    { icon: Brain, title: "Pick something you do often", body: "Something you do every week. We will find it in what you have already told us." },
+    { icon: Check, title: "Answer a few quick prompts", body: "Just pick the option that sounds like you. Never a blank box, never a long form." },
+    { icon: Sparkles, title: "Get your agent", body: "An AI skill written in your voice that runs whenever you say the trigger." },
   ];
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card/50 p-5">
