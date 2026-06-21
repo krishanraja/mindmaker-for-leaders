@@ -8,5 +8,6 @@ export { VoiceSteerBar } from "./VoiceSteerBar";
 export { InterestChipsRow } from "./InterestChipsRow";
 export { SuggestedInterestsCard } from "./SuggestedInterestsCard";
 export { BriefingHero } from "./BriefingHero";
+export { BriefingCategoryPicker, MIN_BRIEFING_CATEGORIES } from "./BriefingCategoryPicker";
 export { deriveBriefingRead } from "./briefingRead";
 export type { BriefingRead, ReadConsideration } from "./briefingRead";
