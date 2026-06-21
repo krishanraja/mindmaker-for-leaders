@@ -53,10 +53,16 @@ const MOTIF_CSS = `
   background:linear-gradient(105deg, transparent 38%, color-mix(in srgb, hsl(var(--accent)) 6%, transparent) 50%, transparent 62%);
   width:60%; animation:ctrlMotifSweep 9s ease-in-out infinite; mix-blend-mode:screen; }
 
+/* the calm row-in for the in-place "rest of what I'm tracking" stream reveal */
+@keyframes ctrlStreamRowIn{ to{ opacity:1; transform:none; } }
+.ctrl-streamrow-in{ opacity:0; transform:translateY(8px);
+  animation:ctrlStreamRowIn .42s cubic-bezier(.22,1,.36,1) forwards; }
+
 @media (prefers-reduced-motion: reduce){
   .ctrl-motif *{ animation:none !important; }
   .ctrl-motif .m-draw{ stroke-dashoffset:0 !important; }
   .ctrl-motif-band::after{ animation:none !important; opacity:0; }
+  .ctrl-streamrow-in{ animation:none !important; opacity:1 !important; transform:none !important; }
 }
 `;
 

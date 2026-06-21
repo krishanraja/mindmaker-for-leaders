@@ -389,7 +389,16 @@ export default function PreviewPage() {
               <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
               {/* phone-height box: CockpitHome is a fit-to-viewport flex column */}
               <div className="h-[760px] rounded-2xl border border-border bg-background p-3">
-                <CockpitHome data={f.data} onPlayBriefing={noop} onGoDecide={noop} onBuildSkill={noop} onOpenBet={noop} animated={false} />
+                <CockpitHome
+                  data={f.data}
+                  greeting="Good morning, Krish."
+                  framing="The one thing I'd put in front of you today:"
+                  onPlayBriefing={noop}
+                  onGoDecide={noop}
+                  onBuildSkill={noop}
+                  onOpenBet={noop}
+                  animated={false}
+                />
               </div>
             </div>
           ))}
