@@ -2,13 +2,17 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last Updated:** 2026-06-09
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+
+> RECONCILIATION BANNER (read before using any line below). CTRL's positioning is now **building the AI-native version of your business**, NOT "decision speed / a portable AI double / the zero-context tax". Most of the prose below (the one-liner, the email angles, the decision-speed framing, the "Apple-like / white space" visual claims) is OFF-POSITIONING and was written for the prior product. It is kept here for the feature mechanics, which are still accurate, but you must NOT ship its hooks as-is. Lead with the AI-native positioning and the reframe rule from `AGENT_BRIEFING.md` (the current canonical sales entry point) and `docs/MAIN-APP-POLISH-SPEC.md` section 0. Visual fact: CTRL is globally DARK (ctrl-ds palette, emerald `#00D9B6`, the BrandLockup), never light / "Apple-white". Pricing fact: Edge Pro is $29/month (grounded in `edge-pricing.ts`); the one-time diagnostic SKUs are flagged TODO(founder). TODO(founder): rewrite this brief's hooks, email angles, and one-liner to the AI-native positioning; until then prefer `AGENT_BRIEFING.md`.
 
 ---
 
 ## The One-Liner
 
-CTRL builds a portable AI double of you in 2 minutes. Every AI tool you use - ChatGPT, Claude, Gemini - instantly knows your context, your goals, and how you think. Plus a 3-minute daily audio briefing tuned to YOUR world. Plus a Skill Builder that turns one weekly workflow into a Claude Skill you drop into `~/.claude/skills/` and forget. You decide faster. Full stop.
+> Off-positioning (kept for reference). Do NOT use as-is. Use the AI-native one-liner in `AGENT_BRIEFING.md` section 1: "CTRL helps you build, orchestrate, productize, and take to market the AI-native version of your business."
+
+(Legacy) CTRL builds a portable AI double of you in 2 minutes. Every AI tool you use - ChatGPT, Claude, Gemini - instantly knows your context, your goals, and how you think. Plus a 3-minute daily audio briefing tuned to YOUR world. Plus a Skill Builder that turns one weekly workflow into a Claude Skill you drop into `~/.claude/skills/` and forget.
 
 ---
 
@@ -130,8 +134,8 @@ AI synthesizes the user's Memory Web and assessment data into an actionable lead
 
 Edge Pro ($29/month) unlocks unlimited artifact generation, email delivery, all 7 briefing types, **and unlimited Agent Skill Builder generation**.
 
-### Agent Skill Builder (Edge Pro)
-Voice-to-Skill pipeline that converts one weekly workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/`.
+### Agent Skill Builder / Automator (free for now)
+Voice-to-Skill pipeline that converts one weekly workflow into a downloadable, agentskills.io-compliant Claude Skill the leader drops into `~/.claude/skills/`. Note: building skills is FREE for now (the Edge Pro gate on `generate-skill-export` was removed); Edge Pro gates the daily briefing, the live MCP pull of your built skills, and Edge artifacts, not the build.
 
 - **Pain-anchored entry points everywhere**: tap a blocker in Edge view, tap the zap on a Memory Web blocker card, or tap the zap on a Briefing decision-trigger segment. The pain becomes the seed.
 - **Three Honest Tests triage gate**: if the input is really a Memory Web fact, a Custom Instruction, or a Saved Style, CTRL routes it to the right surface instead of generating a junk skill. This is the difference between "another macro tool" and "a triage system that respects your time."
@@ -208,7 +212,7 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 - **2 minutes to first export** (onboarding is 3 guided voice questions)
 - **3-minute daily audio briefing** with auditable anchoring on every segment
 - **Voice-first design** - leaders don't need to type or learn anything
-- **Apple-like executive-grade design** - built to put in front of CEOs
+- **Globally dark, instrument-grade design** - the ctrl-ds palette, emerald `#00D9B6`, no-scroll one-ask surfaces, built to put in front of CEOs (NOT light mode / "Apple-white")
 - **Self-contained** - no Slack/email/calendar access, no enterprise security review
 - **Encrypted at rest** (AES-256-GCM); user controls retention; data never trains any AI model
 - **Portable** - not locked to any AI provider or platform
@@ -319,7 +323,7 @@ Download the ZIP from the preview sheet. The bundle includes a `03-install-guide
 - Direct, not salesy
 - No hype, no FOMO, no buzzwords
 - Short sentences. Active voice. Specific outcomes.
-- "Decision speed" not "AI transformation"
+- Lead with "the AI-native version of your business" (the positioning). The old "decision speed" hook is retired.
 - "Memory Web" not "database" or "profile"
 - "AI double" not "AI assistant" or "AI agent"
 - "Thinking tools" not "prompt library"
