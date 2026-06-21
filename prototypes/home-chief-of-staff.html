@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CTRL home - chief of staff (one adaptive thing) mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Gobold (wordmark / uppercase labels), loaded from the repo's public/fonts. */
+  @font-face { font-family:'Gobold'; src:url('../public/fonts/Gobold-Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
+
+  /* ---- the real CTRL dark instrument palette (from src/index.css, hex form) ---- */
+  :root{
+    --bg:#08090c;            /* background near-black blue-tinged */
+    --card:#101319;          /* card */
+    --card-2:#0c1016;        /* slightly deeper card */
+    --popover:#0e1014;
+    --secondary:#14171d;
+    --fg:#E6EAF2;            /* light ink */
+    --muted-fg:#8b94a3;
+    --muted-bg:#1c2027;
+    --border:#22262e;        /* line */
+    --acc:#00D9B6;           /* emerald accent */
+    --acc-ink:#aef6ea;       /* bright accent ink (numbers) */
+    --acc-soft:rgba(0,217,182,.10);
+    --acc-line:rgba(0,217,182,.28);
+    --display:'Gobold', 'Space Grotesk', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    --grotesk:'Space Grotesk', ui-sans-serif, sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    font-family:'Inter', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif;
+    color:var(--fg); letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    background:radial-gradient(120% 80% at 50% -10%, #0d141a 0%, var(--bg) 55%);
+    min-height:100vh;
+  }
+
+  /* === shared app chrome === */
+  .brand{ display:inline-flex; align-items:center; gap:9px; }
+  .brand img.icon{ height:19px; width:auto; }
+  .brand img.word{ height:13px; width:auto; }
+
+  /* ============================================================
+     SVG MOTIF FAMILY (shared with the news deck: one stroke language,
+     one glow treatment, calm ambient motion). The hero card and the
+     "N more" stream items are the same card family.
+     ============================================================ */
+  .motif{ display:block; width:100%; height:100%; }
+  .motif .stroke{ fill:none; stroke:var(--acc); stroke-linecap:round; stroke-linejoin:round; }
+  .motif .faint{ stroke:#2b3340; }
+  .motif .dim{ stroke:rgba(0,217,182,.4); }
+  .motif .glow-dot{ fill:var(--acc); }
+
+  @keyframes drift { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-3px) } }
+  @keyframes breathe { 0%,100%{ opacity:.45 } 50%{ opacity:1 } }
+  @keyframes breatheBig { 0%,100%{ opacity:.25; transform:scale(.96) } 50%{ opacity:.7; transform:scale(1.04) } }
+  @keyframes dashdraw { to{ stroke-dashoffset:0 } }
+  @keyframes spinslow { to{ transform:rotate(360deg) } }
+  @keyframes sweep { 0%{ transform:translateX(-10%) } 100%{ transform:translateX(110%) } }
+  @keyframes flick { 0%,92%,100%{ opacity:1 } 96%{ opacity:.35 } }
+
+  .m-breathe{ animation:breathe 4.2s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-breatheBig{ animation:breatheBig 5s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .m-drift{ animation:drift 6s ease-in-out infinite; transform-box:fill-box; }
+  .m-spin{ animation:spinslow 26s linear infinite; transform-box:fill-box; transform-origin:center; }
+  .m-draw{ stroke-dasharray:var(--len,400); stroke-dashoffset:var(--len,400); animation:dashdraw 2.6s ease-out forwards; }
+  .m-flick{ animation:flick 5s ease-in-out infinite; }
+
+  .motif-band{ position:relative; overflow:hidden; background:
+      radial-gradient(120% 130% at 80% -10%, rgba(0,217,182,.10), transparent 60%),
+      linear-gradient(180deg,#0d1218 0%, #0a0e13 100%); }
+  .motif-band::after{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(105deg, transparent 38%, rgba(0,217,182,.06) 50%, transparent 62%);
+    width:60%; animation:sweep 9s ease-in-out infinite; mix-blend-mode:screen; }
+
+  /* ============================================================
+     THE APP FRAME
+     One composed surface: header zone + ONE hero zone (+ in-place
+     stream) + a thin action footer rail + the bottom nav. Nothing is
+     laid out independently, so nothing can collide. CSS grid rows give
+     the hero zone all remaining height and pin the footer + nav.
+     ============================================================ */
+  .stage{ display:grid; place-items:start center; padding:18px 14px 22px; }
+
+  .phone{
+    width:100%; max-width:412px; height:min(860px, calc(100vh - 52px));
+    border-radius:36px; position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#0a0d12,#070809);
+    box-shadow:0 50px 110px -36px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.04);
+    /* the one frame: header / content / footer rail / nav */
+    display:grid; grid-template-rows:auto 1fr auto auto; min-height:0;
+  }
+
+  /* --- header zone --- */
+  .ptop{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 10px; }
+  .ptop .stat{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9px; font-weight:700;
+    color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:5px 9px; border-radius:999px;
+    display:inline-flex; align-items:center; gap:6px; }
+  .ptop .stat .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+  .pgreet{ padding:2px 20px 0; }
+  .pgreet h1{ font-size:22px; font-weight:800; letter-spacing:-.02em; }
+  .pgreet .frame{ font-size:13px; color:var(--muted-fg); margin-top:4px; line-height:1.4; }
+
+  /* --- the ONE hero zone: fills all remaining height, holds the hero or
+         the opened stream. overflow hidden so it never spills onto siblings. --- */
+  .focus{ position:relative; min-height:0; min-width:0; padding:14px 20px 6px; display:flex; flex-direction:column; }
+
+  /* the hero card (same card family as the news deck, scaled to command the frame) */
+  .hero-card{
+    flex:1; min-height:0; display:flex; flex-direction:column;
+    background:linear-gradient(180deg,#101620 0%, #0a0e12 100%);
+    border:1px solid var(--acc-line); border-radius:22px; overflow:hidden;
+    box-shadow:0 30px 64px -30px rgba(0,0,0,.95), 0 0 0 1px var(--acc-line), inset 0 1px 0 rgba(255,255,255,.025);
+  }
+  .hero-card .band{ position:relative; flex:none; height:128px; }
+  .hero-card .band::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:46px;
+    background:linear-gradient(transparent, #0d121a); pointer-events:none; z-index:1; }
+  .hero-card .body{ flex:1; min-height:0; padding:16px 20px 17px; display:flex; flex-direction:column; overflow:hidden; }
+  .hero-card .topline{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; min-height:20px; }
+  .hero-card .chip{ font-family:var(--display); text-transform:uppercase; letter-spacing:.07em; font-size:9.5px; font-weight:700;
+    color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:5px 10px; border-radius:999px; white-space:nowrap; }
+  .hero-card .mag{ display:flex; align-items:baseline; gap:6px; text-align:right; }
+  .hero-card .mag b{ font-family:var(--grotesk); font-weight:700; font-size:24px; line-height:1; letter-spacing:-.02em;
+    color:var(--acc-ink); text-shadow:0 0 16px rgba(0,217,182,.45); font-variant-numeric:tabular-nums; }
+  .hero-card .mag span{ font-size:8.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted-fg); max-width:9ch; line-height:1.15; text-align:left; }
+  .hero-card h2{ font-size:21px; line-height:1.18; font-weight:800; letter-spacing:-.02em; color:var(--fg); text-wrap:balance; }
+  /* the chief-of-staff advisory line: why it matters / what I'd do.
+     copy kept short enough to read in full, so no clamp is needed and the
+     tail is never cut: it wraps freely on clean word boundaries. */
+  .hero-card .say{ margin-top:10px; font-size:13.5px; line-height:1.48; color:#c2cad6; min-height:0; }
+  .hero-card .say b{ color:var(--acc); font-weight:700; }
+  .hero-card .meta{ margin-top:auto; padding-top:12px; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted-fg); }
+  .hero-card .meta .src{ color:#aab2c0; font-weight:600; }
+  .hero-card .meta .dotsep{ color:#3a4150; }
+
+  /* the quiet peek of the NEXT item beneath the hero: a slim, dimmed teaser
+     row (small motif tile + one-line headline) with the "N more" count as the
+     affordance. Deliberately SECONDARY: smaller, lower-contrast, shorter than
+     the hero, so it signals "there is more" without competing with the one. */
+  .more-line{ flex:none; padding:9px 20px 2px; }
+  .more-btn{ width:100%; display:flex; align-items:center; gap:11px; cursor:pointer; background:none; border:none;
+    text-align:left; color:var(--muted-fg); font-family:inherit; padding:9px 0 2px;
+    border-top:1px solid rgba(255,255,255,.05); transition:opacity .15s ease; opacity:.78; }
+  .more-btn:hover{ opacity:1; }
+  /* the small dimmed motif tile, a fraction of the hero band and lower contrast */
+  .more-btn .peek-tile{ width:40px; height:40px; flex:none; border-radius:10px; overflow:hidden;
+    border:1px solid var(--border); opacity:.62; position:relative; }
+  .more-btn .peek-tile .motif{ transform:scale(1.08); }
+  /* the teaser text column: a faint "next" label + one truncated headline line */
+  .more-btn .peek-copy{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .more-btn .peek-lab{ font-family:var(--display); text-transform:uppercase; letter-spacing:.09em;
+    font-size:8px; font-weight:700; color:#5b6573; }
+  .more-btn .peek-head{ font-size:12px; line-height:1.25; font-weight:600; color:#9aa3b1;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  /* the "N more" count as the door that opens the full stream */
+  .more-btn .peek-more{ flex:none; display:inline-flex; align-items:center; gap:5px; font-size:11px;
+    font-weight:600; color:var(--muted-fg); white-space:nowrap; }
+  .more-btn .peek-more .n{ color:var(--acc); font-weight:800; }
+  .more-btn .chev{ transition:transform .35s cubic-bezier(.22,1,.36,1); display:inline-flex; }
+
+  /* --- the action footer rail: briefing . weigh . build as quiet doors --- */
+  .footrail{ display:flex; align-items:stretch; gap:0; padding:8px 14px 8px;
+    border-top:1px solid rgba(255,255,255,.05); background:linear-gradient(180deg, transparent, rgba(0,0,0,.16)); }
+  .door{ flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer;
+    background:none; border:none; color:var(--muted-fg); padding:8px 4px 6px; font-family:inherit;
+    transition:color .15s ease; }
+  .door:hover{ color:var(--fg); }
+  .door svg{ width:19px; height:19px; }
+  .door span{ font-size:10px; font-weight:600; letter-spacing:.01em; }
+  .door .sub{ font-size:8.5px; color:#566070; font-weight:500; letter-spacing:.02em; }
+
+  /* --- bottom nav (home / decisions / brain / you) --- */
+  .pnav{ display:flex; align-items:center; justify-content:space-around;
+    padding:8px 12px calc(12px + env(safe-area-inset-bottom,0px)); border-top:1px solid rgba(255,255,255,.05);
+    background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.34)); }
+  .navit{ display:flex; flex-direction:column; align-items:center; gap:4px; color:#4d5663; cursor:pointer;
+    background:none; border:none; font-family:inherit; padding:4px 12px; transition:color .15s ease; }
+  .navit svg{ width:21px; height:21px; }
+  .navit span{ font-size:9.5px; font-weight:600; letter-spacing:.01em; }
+  .navit.on{ color:var(--acc); }
+
+  /* ============================================================
+     THE "AND N MORE" STREAM (opens IN-PLACE inside the focus zone)
+     A calm reveal: the hero recedes to a thin context line and the rest
+     of the SAME ranked stream slides up as a scrollable column of the
+     same card family. It lives inside .focus, so it can never overlap
+     the footer rail or nav (which sit in their own grid rows).
+     ============================================================ */
+  .focus.open .hero-card,
+  .focus.open .more-line{ display:none; }
+
+  .stream{ display:none; flex:1; min-height:0; flex-direction:column; }
+  .focus.open .stream{ display:flex; }
+  .stream-head{ flex:none; display:flex; align-items:center; gap:10px; padding:2px 2px 12px; }
+  .stream-head .lab{ font-family:var(--display); text-transform:uppercase; letter-spacing:.1em; font-size:10px; font-weight:700; color:var(--muted-fg); }
+  .stream-head .back{ margin-left:auto; display:inline-flex; align-items:center; gap:6px; cursor:pointer; background:none; border:none;
+    color:var(--acc); font-family:inherit; font-size:11.5px; font-weight:700; padding:6px 4px; }
+  .stream-scroll{ flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:11px;
+    padding-bottom:8px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .stream-scroll::-webkit-scrollbar{ display:none; }
+
+  /* compact stream row: a small motif tile + headline + one advisory line.
+     The first item (the hero) shows as a quiet "now showing" recap chip. */
+  .srow{ display:flex; gap:13px; align-items:stretch; cursor:pointer;
+    background:linear-gradient(180deg,#0f141c 0%, #0a0e13 100%); border:1px solid var(--border); border-radius:16px;
+    overflow:hidden; padding:0; transition:border-color .15s ease, transform .15s ease; opacity:0; transform:translateY(8px);
+    animation:rowin .42s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes rowin{ to{ opacity:1; transform:none; } }
+  .srow:hover{ border-color:var(--acc-line); transform:translateY(-1px); }
+  .srow .tile{ width:74px; flex:none; position:relative; }
+  .srow .scopy{ flex:1; min-width:0; padding:12px 13px 12px 0; display:flex; flex-direction:column; }
+  .srow .stop{ display:flex; align-items:center; gap:7px; margin-bottom:6px; }
+  .srow .kind{ font-family:var(--display); text-transform:uppercase; letter-spacing:.06em; font-size:8px; font-weight:700;
+    padding:3px 7px; border-radius:999px; white-space:nowrap; }
+  .srow .kind.news{ color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); }
+  .srow .kind.own{ color:#aef6ea; background:rgba(0,217,182,.12); border:1px solid var(--acc-line); }
+  .srow .kind.decide{ color:#cdd6e2; background:rgba(255,255,255,.05); border:1px solid var(--border); }
+  .srow .stop .src{ font-size:9.5px; color:var(--muted-fg); }
+  .srow .stop .own-pip{ width:5px; height:5px; border-radius:999px; background:var(--acc); box-shadow:0 0 7px var(--acc); }
+  .srow h3{ font-size:14px; line-height:1.24; font-weight:700; letter-spacing:-.01em; color:var(--fg); text-wrap:balance; }
+  .srow .ssay{ margin-top:5px; font-size:11.5px; line-height:1.42; color:var(--muted-fg);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+  /* the recap chip for the hero at the top of the opened stream */
+  .recap{ flex:none; display:flex; align-items:center; gap:10px; padding:10px 12px; margin-bottom:11px;
+    background:var(--acc-soft); border:1px solid var(--acc-line); border-radius:13px; }
+  .recap .rp{ width:7px; height:7px; border-radius:999px; background:var(--acc); box-shadow:0 0 9px var(--acc); flex:none; }
+  .recap .rt{ font-size:11.5px; line-height:1.35; color:#cfe9e2; }
+  .recap .rt b{ color:var(--fg); font-weight:700; }
+
+  /* ============================================================
+     DESKTOP (>=1100px): the SAME one-thing, composed calm + centered.
+     Two zones: a left command column (greeting + nav as a sidebar feel)
+     and the one hero centered, with its own footer rail of doors. The
+     "N more" stream opens as a calm reveal in the same hero zone, never
+     stacked over it.
+     ============================================================ */
+  .desk{ display:none; }
+
+  @media (min-width:1100px){
+    .stage{ display:none; }
+    body{ display:grid; place-items:center; }
+    .desk{
+      display:grid; width:min(1320px, calc(100vw - 64px)); height:min(820px, calc(100vh - 56px));
+      grid-template-columns:300px 1fr; grid-template-rows:auto 1fr auto; gap:0;
+      background:linear-gradient(180deg,#0b0e13,#08090c); border:1px solid var(--border); border-radius:26px;
+      overflow:hidden; box-shadow:0 60px 120px -50px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.03);
+    }
+    /* row 1: shared header spans both columns */
+    .dhead{ grid-column:1 / 3; display:flex; align-items:center; justify-content:space-between;
+      padding:22px 32px 18px; border-bottom:1px solid rgba(255,255,255,.05); }
+    .dhead .stat{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9.5px; font-weight:700;
+      color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:6px 11px; border-radius:999px;
+      display:inline-flex; align-items:center; gap:7px; }
+    .dhead .stat .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+
+    /* row 2 col 1: the command column (greeting + nav, sidebar feel) */
+    .dside{ grid-row:2 / 4; border-right:1px solid rgba(255,255,255,.05); padding:30px 28px;
+      display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(255,255,255,.012), transparent); }
+    .dside .greet h1{ font-size:27px; font-weight:800; letter-spacing:-.025em; line-height:1.1; }
+    .dside .greet .frame{ font-size:14px; color:var(--muted-fg); margin-top:10px; line-height:1.5; max-width:30ch; }
+    .dside .dnav{ margin-top:auto; display:flex; flex-direction:column; gap:3px; padding-top:24px; }
+    .dnav .navit{ flex-direction:row; gap:12px; justify-content:flex-start; width:100%; padding:11px 12px; border-radius:11px; }
+    .dnav .navit span{ font-size:13.5px; }
+    .dnav .navit.on{ background:var(--acc-soft); }
+    .dnav .navit:hover{ background:rgba(255,255,255,.03); }
+
+    /* row 2 col 2: the one hero zone (centered, premium), with the stream
+       opening as a calm inner reveal that swaps in place (no stacking). */
+    .dfocus{ grid-row:2 / 3; grid-column:2 / 3; min-height:0; padding:28px 34px; display:flex; }
+    /* desktop: hero + its peek stack in one inner column; the stream swaps in
+       as a sibling on .open so it never stacks over the hero */
+    .dfocus-inner{ flex:1; min-height:0; display:flex; flex-direction:column; }
+    .dfocus .hero-card{ max-width:none; }
+    .dfocus .more-line{ padding:12px 2px 0; }
+    .dfocus .more-btn{ padding:12px 0 2px; }
+    .dfocus .more-btn .peek-tile{ width:46px; height:46px; border-radius:11px; }
+    .dfocus .more-btn .peek-head{ font-size:13px; }
+    .dfocus .more-btn .peek-more{ font-size:12px; }
+    .dfocus .hero-card .band{ height:42%; min-height:170px; }
+    .dfocus .hero-card .body{ padding:24px 30px 26px; }
+    .dfocus .hero-card h2{ font-size:30px; line-height:1.12; }
+    .dfocus .hero-card .say{ font-size:16px; line-height:1.55; max-width:54ch; margin-top:14px; }
+    .dfocus .hero-card .mag b{ font-size:30px; }
+    .dfocus .hero-card .chip{ font-size:10px; padding:6px 12px; }
+
+    /* desktop stream: a calm column reveal in the same zone */
+    .dfocus .stream-scroll{ gap:12px; }
+    .dfocus .srow .tile{ width:108px; }
+    .dfocus .srow h3{ font-size:15.5px; }
+    .dfocus .srow .ssay{ font-size:12.5px; }
+
+    /* row 3 col 2: the action footer rail under the hero */
+    .dfoot{ grid-row:3 / 4; grid-column:2 / 3; display:flex; gap:10px; padding:0 34px 26px; }
+    .dfoot .door{ flex:1; flex-direction:row; gap:11px; justify-content:flex-start; align-items:center;
+      border:1px solid var(--border); border-radius:14px; padding:13px 16px;
+      background:linear-gradient(180deg,#0f141c,#0b0f15); }
+    .dfoot .door:hover{ border-color:var(--acc-line); color:var(--fg); }
+    .dfoot .door svg{ width:18px; height:18px; flex:none; }
+    .dfoot .door .stack{ display:flex; flex-direction:column; align-items:flex-start; gap:1px; }
+    .dfoot .door span{ font-size:12.5px; }
+    .dfoot .door .sub{ font-size:10px; }
+
+    .dfocus.open .dfocus-inner{ display:none; }
+    .dfocus.open .stream{ display:flex; }
+  }
+
+  .hint{ position:fixed; bottom:10px; left:0; right:0; text-align:center; color:#54606e; font-size:11px; pointer-events:none; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PHONE (mobile, the one-thing) ============================ -->
+<div class="stage">
+  <div class="phone">
+    <!-- header zone -->
+    <div class="ptop">
+      <span class="brand">
+        <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" />
+        <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" />
+      </span>
+      <span class="stat"><span class="pip"></span>On watch</span>
+    </div>
+    <div class="pgreet">
+      <h1>Good morning, Krish.</h1>
+      <p class="frame">The one thing I'd put in front of you today:</p>
+    </div>
+
+    <!-- the ONE hero zone (holds the hero OR the opened stream, never both) -->
+    <div class="focus" id="mfocus">
+      <article class="hero-card" id="mhero"><!-- hero injected --></article>
+      <div class="more-line">
+        <button class="more-btn" id="mmore" onclick="openStream('m')"><!-- peek injected --></button>
+      </div>
+      <!-- the in-place stream reveal -->
+      <div class="stream" id="mstream"><!-- injected --></div>
+    </div>
+
+    <!-- action footer rail: quiet doors -->
+    <div class="footrail">
+      <button class="door">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/><circle cx="19.5" cy="19" r="2"/></svg>
+        <span>Briefing</span><span class="sub">today's read</span>
+      </button>
+      <button class="door">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg>
+        <span>Weigh</span><span class="sub">a decision</span>
+      </button>
+      <button class="door">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
+        <span>Build</span><span class="sub">a skill</span>
+      </button>
+    </div>
+
+    <!-- bottom nav -->
+    <div class="pnav">
+      <button class="navit on">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg>
+        <span>Decisions</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7 7L5.5 5.5M18.5 18.5L17 17M17 7l1.5-1.5M5.5 18.5L7 17"/></svg>
+        <span>Brain</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c0-3.2 2.9-5.5 6.5-5.5s6.5 2.3 6.5 5.5"/></svg>
+        <span>You</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ DESKTOP (the same one-thing, composed) ============================ -->
+<div class="desk">
+  <div class="dhead">
+    <span class="brand">
+      <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" style="height:22px" />
+      <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" style="height:15px" />
+    </span>
+    <span class="stat"><span class="pip"></span>On watch &middot; updated 8m ago</span>
+  </div>
+
+  <div class="dside">
+    <div class="greet">
+      <h1>Good morning, Krish.</h1>
+      <p class="frame">The one thing I'd put in front of you today is on the right. I'm holding the rest until it needs you.</p>
+    </div>
+    <div class="dnav">
+      <button class="navit on">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg>
+        <span>Decisions</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7 7L5.5 5.5M18.5 18.5L17 17M17 7l1.5-1.5M5.5 18.5L7 17"/></svg>
+        <span>Brain</span>
+      </button>
+      <button class="navit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c0-3.2 2.9-5.5 6.5-5.5s6.5 2.3 6.5 5.5"/></svg>
+        <span>You</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="dfocus" id="dfocus">
+    <div class="dfocus-inner">
+      <article class="hero-card" id="dhero"><!-- hero injected --></article>
+      <div class="more-line">
+        <button class="more-btn" id="dpeek" onclick="openStream('d')"><!-- peek injected --></button>
+      </div>
+    </div>
+    <div class="stream" id="dstream"><!-- injected --></div>
+  </div>
+
+  <div class="dfoot" id="dfoot">
+    <button class="door">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/><circle cx="19.5" cy="19" r="2"/></svg>
+      <span class="stack"><span>Briefing</span><span class="sub">today's read, narrated</span></span>
+    </button>
+    <button class="door">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg>
+      <span class="stack"><span>Weigh a decision</span><span class="sub">pressure-test a call</span></span>
+    </button>
+    <button class="door" id="dbuild">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
+      <span class="stack"><span>Build a skill</span><span class="sub">turn a pattern into one</span></span>
+    </button>
+  </div>
+</div>
+
+<div class="hint">mock &middot; tap the <b>peek of the next item</b> (or <b>"5 more"</b>) to open the rest of the stream in place. no app wiring.</div>
+
+<script>
+/* ===================================================================
+   THE NINE MOTIFS (shared visual language with the news deck)
+   =================================================================== */
+function defs(id){ return `
+  <defs>
+    <radialGradient id="g${id}" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#00D9B6" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#00D9B6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ln${id}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0a8e7a"/><stop offset="100%" stop-color="#00D9B6"/>
+    </linearGradient>
+    <filter id="bl${id}" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.2"/>
+    </filter>
+  </defs>`;
+}
+function svg(id, inner){
+  return `<svg class="motif" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${defs(id)}${inner}</svg>`;
+}
+
+const MOTIFS = {
+  model(){ return svg('mo', `
+    <circle cx="160" cy="75" r="62" fill="url(#gmo)" class="m-breatheBig"/>
+    <g class="m-spin">
+      <circle cx="160" cy="75" r="48" class="stroke faint" stroke-width="1"/>
+      <circle cx="160" cy="75" r="48" class="stroke" stroke-width="2" stroke-dasharray="44 256" stroke-linecap="round"/>
+    </g>
+    <g class="m-spin" style="animation-duration:38s;animation-direction:reverse">
+      <circle cx="160" cy="75" r="34" class="stroke dim" stroke-width="1.5" stroke-dasharray="30 184"/>
+    </g>
+    <g class="m-breathe">
+      <path class="stroke dim" stroke-width="1" d="M160 75 L122 50 M160 75 L198 50 M160 75 L160 33 M160 75 L210 88 M160 75 L116 96"/>
+      <circle cx="122" cy="50" r="3" class="glow-dot"/><circle cx="198" cy="50" r="3" class="glow-dot"/>
+      <circle cx="160" cy="33" r="3" class="glow-dot"/><circle cx="210" cy="88" r="3" class="glow-dot"/>
+      <circle cx="116" cy="96" r="3" class="glow-dot"/>
+    </g>
+    <circle cx="160" cy="75" r="9" fill="#00D9B6" filter="url(#blmo)"/>
+    <circle cx="160" cy="75" r="6" fill="#aef6ea"/>
+  `); },
+
+  economics(){ return svg('ec', `
+    <g class="faint" stroke-width="1">
+      <line x1="44" y1="118" x2="288" y2="118" class="stroke faint"/>
+      <line x1="44" y1="30" x2="44" y2="118" class="stroke faint"/>
+      <line x1="44" y1="58" x2="288" y2="58" class="stroke faint" opacity=".4"/>
+      <line x1="44" y1="88" x2="288" y2="88" class="stroke faint" opacity=".4"/>
+    </g>
+    <path d="M44 46 C 110 50, 150 92, 210 104 S 270 116, 288 116 L288 118 L44 118 Z" fill="url(#gec)" opacity=".5"/>
+    <path class="stroke m-draw" style="--len:300" stroke-width="2.6" d="M44 46 C 110 50, 150 92, 210 104 S 270 116, 288 116"/>
+    <circle cx="288" cy="116" r="9" fill="#00D9B6" opacity=".25" class="m-breatheBig"/>
+    <circle cx="288" cy="116" r="4" class="glow-dot"/>
+    <g class="m-drift" style="animation-duration:5s">
+      <line x1="150" y1="40" x2="150" y2="62" class="stroke dim" stroke-width="2"/>
+      <path class="stroke dim" stroke-width="2" d="M144 56 L150 64 L156 56"/>
+    </g>
+  `); },
+
+  tools(){ return svg('to', `
+    <g class="m-drift">
+      <path class="stroke dim" stroke-width="1.4" d="M110 44 L210 44 L246 64 L146 64 Z"/>
+      <path class="stroke" stroke-width="1.8" d="M104 74 L204 74 L240 94 L140 94 Z"/>
+      <path class="stroke dim" stroke-width="1.4" d="M98 104 L198 104 L234 124 L134 124 Z"/>
+    </g>
+    <g class="m-breathe" stroke-width="1.4">
+      <line x1="146" y1="54" x2="140" y2="114" class="stroke"/>
+      <line x1="178" y1="54" x2="172" y2="114" class="stroke"/>
+      <line x1="210" y1="54" x2="204" y2="114" class="stroke"/>
+    </g>
+    <g>
+      <circle cx="146" cy="54" r="3" class="glow-dot"/><circle cx="178" cy="54" r="3" class="glow-dot"/>
+      <circle cx="210" cy="54" r="3" class="glow-dot"/>
+      <circle cx="140" cy="114" r="3" class="glow-dot"/><circle cx="172" cy="114" r="3" class="glow-dot"/>
+      <circle cx="204" cy="114" r="3" class="glow-dot"/>
+    </g>
+  `); },
+
+  orchestration(){ return svg('or', `
+    <circle cx="160" cy="75" r="56" fill="url(#gor)" opacity=".5" class="m-breatheBig"/>
+    <g class="stroke dim m-breathe" stroke-width="1.2">
+      <line x1="160" y1="40" x2="104" y2="66"/><line x1="160" y1="40" x2="216" y2="66"/>
+      <line x1="104" y1="66" x2="132" y2="112"/><line x1="216" y1="66" x2="188" y2="112"/>
+      <line x1="132" y1="112" x2="188" y2="112"/>
+      <line x1="160" y1="40" x2="160" y2="78"/><line x1="104" y1="66" x2="160" y2="78"/>
+      <line x1="216" y1="66" x2="160" y2="78"/><line x1="132" y1="112" x2="160" y2="78"/>
+      <line x1="188" y1="112" x2="160" y2="78"/>
+    </g>
+    <circle cx="160" cy="78" r="10" fill="#00D9B6" filter="url(#blor)"/>
+    <circle cx="160" cy="78" r="6.5" fill="#aef6ea"/>
+    <circle cx="160" cy="40" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="104" cy="66" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-flick"/>
+    <circle cx="216" cy="66" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="132" cy="112" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+    <circle cx="188" cy="112" r="6" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-flick" style="animation-delay:2.4s"/>
+  `); },
+
+  product(){ return svg('pr', `
+    <circle cx="160" cy="82" r="50" fill="url(#gpr)" opacity=".5" class="m-breatheBig"/>
+    <g class="m-drift" style="animation-duration:5.5s">
+      <path class="stroke" stroke-width="2" d="M160 50 L196 68 L196 106 L160 124 L124 106 L124 68 Z"/>
+      <path class="stroke dim" stroke-width="1.4" d="M124 68 L160 86 L196 68 M160 86 L160 124"/>
+      <path class="stroke" stroke-width="2" d="M152 96 l5 5 l11 -12" />
+    </g>
+    <path class="stroke dim m-draw" style="--len:120" stroke-width="2" d="M196 68 C 224 52, 246 40, 262 30"/>
+    <path class="stroke" stroke-width="2" d="M256 30 L262 28 L262 36" />
+    <circle cx="262" cy="30" r="3.5" class="glow-dot"/>
+  `); },
+
+  governance(){ return svg('go', `
+    <circle cx="160" cy="78" r="52" fill="url(#ggo)" opacity=".5" class="m-breatheBig"/>
+    <g class="m-drift" style="animation-duration:6s">
+      <path class="stroke" stroke-width="2.2" d="M160 32 L206 48 V82 C206 108, 184 122, 160 130 C136 122, 114 108, 114 82 V48 Z"/>
+      <path class="stroke dim" stroke-width="1.2" d="M160 44 L194 56 V82 C194 102, 178 113, 160 120 C142 113, 126 102, 126 82 V56 Z"/>
+      <path class="stroke m-draw" style="--len:60" stroke-width="2.6" d="M146 80 l9 10 l20 -24"/>
+    </g>
+    <g class="m-spin" style="animation-duration:30s">
+      <circle cx="160" cy="22" r="2.4" class="glow-dot"/>
+      <circle cx="220" cy="100" r="2.4" class="glow-dot" opacity=".7"/>
+      <circle cx="100" cy="100" r="2.4" class="glow-dot" opacity=".7"/>
+    </g>
+  `); },
+
+  security(){ return svg('se', `
+    <circle cx="160" cy="80" r="48" fill="url(#gse)" opacity=".45" class="m-breatheBig"/>
+    <path class="stroke" stroke-width="2.4" d="M138 70 V58 a22 22 0 0 1 44 0 V70"/>
+    <rect x="126" y="70" width="68" height="52" rx="9" class="stroke" stroke-width="2.2" fill="#0a0e13"/>
+    <circle cx="160" cy="92" r="5" class="stroke" stroke-width="2"/>
+    <line x1="160" y1="96" x2="160" y2="108" class="stroke" stroke-width="2.4"/>
+    <path class="stroke m-breathe" stroke="#00D9B6" stroke-width="1.8" d="M150 70 l6 14 l-8 8 l10 10 l-5 12" opacity=".85"/>
+    <g class="m-flick">
+      <circle cx="156" cy="84" r="1.8" fill="#aef6ea"/>
+      <circle cx="148" cy="92" r="1.6" fill="#aef6ea"/>
+      <circle cx="158" cy="102" r="1.6" fill="#aef6ea"/>
+    </g>
+  `); },
+
+  org(){ return svg('og', `
+    <circle cx="160" cy="50" r="40" fill="url(#gog)" opacity=".45" class="m-breatheBig"/>
+    <g class="stroke dim m-breathe" stroke-width="1.4">
+      <path d="M160 56 V74 M160 74 H110 M160 74 H210 M110 74 V90 M210 74 V90"/>
+      <path d="M110 96 V108 M110 108 H86 M110 108 H134"/>
+      <path d="M210 96 V108 M210 108 H186 M210 108 H234"/>
+    </g>
+    ${[[160,46],[110,92],[210,92],[86,114],[134,114],[186,114],[234,114]].map((p,i)=>`
+      <g transform="translate(${p[0]} ${p[1]})" ${i===0?'':'class="m-drift" style="animation-delay:'+(i*0.4)+'s;animation-duration:6s"'}>
+        <circle cx="0" cy="-4" r="${i===0?5.5:4.4}" fill="#0a0e13" stroke="#00D9B6" stroke-width="2"/>
+        <path class="stroke" stroke-width="2" d="M${i===0?-7:-6} ${i===0?7:6} a${i===0?7:6} ${i===0?6:5} 0 0 1 ${i===0?14:12} 0"/>
+      </g>`).join('')}
+    <circle cx="160" cy="42" r="2" fill="#aef6ea"/>
+  `); },
+
+  proof(){ return svg('pf', `
+    <g class="faint">
+      <line x1="40" y1="118" x2="290" y2="118" class="stroke faint" stroke-width="1"/>
+      <line x1="40" y1="34" x2="40" y2="118" class="stroke faint" stroke-width="1"/>
+    </g>
+    <g class="m-breathe">
+      ${[[70,96],[108,84],[146,90],[184,66],[222,54],[260,38]].map((b,i)=>`
+        <rect x="${b[0]-9}" y="${b[1]}" width="18" height="${118-b[1]}" rx="3"
+          fill="${i>=4?'url(#lnpf)':'#16323a'}" opacity="${0.55+i*0.07}"/>`).join('')}
+    </g>
+    <path class="stroke m-draw" style="--len:280" stroke-width="2.4" d="M70 92 L108 82 L146 86 L184 62 L222 50 L266 32"/>
+    <circle cx="266" cy="32" r="11" fill="#0a0e13" stroke="#00D9B6" stroke-width="2" class="m-breathe"/>
+    <path class="stroke" stroke-width="2.2" d="M261 32 l4 4 l7 -8"/>
+  `); },
+};
+
+const CAT_TAG = {
+  model:'Model & capability', economics:'AI economics', tools:'Tools & vendors',
+  orchestration:'Orchestration', product:'Product & GTM', governance:'Governance',
+  security:'Security & risk', org:'Org & talent', proof:'Proof & adoption',
+};
+
+/* ===================================================================
+   THE ONE UNIFIED RANKED STREAM
+   Top item = the hero. The rest interleaves news headlines + your own
+   signals + a decision worth weighing. Same card family throughout.
+   =================================================================== */
+
+// the hero: the AI-economics inference-drop story, in the chief-of-staff voice
+const HERO = {
+  cat:'economics', kind:'news',
+  headline:'Inference just dropped 41% as the new flash models landed.',
+  // the advisory "why it matters / what I'd do" line
+  say:`The agents you shelved as too costly are worth another look. <b>Want me to re-cost the two that just crossed back under the line?</b>`,
+  mag:'-41%', magLabel:'cost to run', src:'The Information', time:'5h ago',
+};
+
+// the rest of the same ranked stream (what "and N more" opens)
+const STREAM = [
+  { cat:'orchestration', kind:'own', headline:'Your support agent’s routing accuracy slipped below your guardrail.',
+    say:'Two of last week’s escalations went to the wrong queue. I’d look before it compounds. I can pull the two and show you where it diverged.',
+    src:'From your world', time:'40m ago' },
+  { cat:'security', kind:'news', headline:'A calendar invite was turned into a live prompt-injection exploit.',
+    say:'If an agent of yours reads inbound text and can act, this is your threat model now. A quick gut-check is warranted.',
+    src:'Wired', time:'6h ago' },
+  { cat:'decide', kind:'decide', headline:'Should the research agent run unattended overnight?',
+    say:'You flagged this Tuesday and haven’t closed it. I’ve pressure-tested both sides; want me to walk you through where it holds and where it doesn’t?',
+    src:'Decision worth weighing', time:'open 3d' },
+  { cat:'proof', kind:'news', headline:'Klarna says its AI agent now closes two-thirds of support tickets unaided.',
+    say:'A real deployment in your sector clearing the hype bar. Useful proof to point your board at next week.',
+    mag:'67%', magLabel:'tickets, no human', src:'Bloomberg', time:'3h ago' },
+  { cat:'governance', kind:'news', headline:'The EU AI Act’s high-risk deployment rules take force in March.',
+    say:'If an agent touches a hiring or credit decision in your flow, you now owe an audit trail. Worth scoping before then.',
+    src:'Reuters', time:'1d ago' },
+];
+
+/* ===================================================================
+   RENDER
+   =================================================================== */
+function motifFor(cat){
+  // the decision card borrows the orchestration motif as its visual
+  const key = (cat === 'decide') ? 'orchestration' : cat;
+  return (MOTIFS[key] || MOTIFS.model)();
+}
+
+function heroHTML(h){
+  const mag = h.mag ? `<div class="mag"><b>${h.mag}</b><span>${h.magLabel||''}</span></div>` : '';
+  return `
+    <div class="band motif-band">${motifFor(h.cat)}</div>
+    <div class="body">
+      <div class="topline">
+        <span class="chip">${CAT_TAG[h.cat]||'Signal'}</span>
+        ${mag}
+      </div>
+      <h2>${h.headline}</h2>
+      <p class="say">${h.say}</p>
+      <div class="meta"><span class="src">${h.src}</span><span class="dotsep">&middot;</span><span>${h.time}</span></div>
+    </div>`;
+}
+
+const KIND_LABEL = { news:'Headline', own:'Your world', decide:'Decide' };
+function rowHTML(it, idx){
+  const kindCls = it.kind;
+  const ownPip = it.kind==='own' ? `<span class="own-pip"></span>` : '';
+  return `
+    <article class="srow" style="animation-delay:${idx*55}ms">
+      <div class="tile motif-band">${motifFor(it.cat)}</div>
+      <div class="scopy">
+        <div class="stop">
+          <span class="kind ${kindCls}">${KIND_LABEL[it.kind]}</span>
+          ${ownPip}<span class="src">${it.src} &middot; ${it.time}</span>
+        </div>
+        <h3>${it.headline}</h3>
+        <p class="ssay">${it.say.replace(/<\/?b>/g,'')}</p>
+      </div>
+    </article>`;
+}
+
+// the small secondary peek of the NEXT item (STREAM[0]): a dimmed motif tile
+// + a faint label + one truncated headline, then the "N more" count door.
+function peekHTML(next, count){
+  return `
+    <span class="peek-tile motif-band">${motifFor(next.cat)}</span>
+    <span class="peek-copy">
+      <span class="peek-lab">Next</span>
+      <span class="peek-head">${next.headline}</span>
+    </span>
+    <span class="peek-more"><span class="n">${count}</span> more
+      <span class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+    </span>`;
+}
+
+function streamHTML(){
+  const recap = `
+    <div class="recap">
+      <span class="rp"></span>
+      <span class="rt"><b>Now showing:</b> inference dropped 41%, re-cost the agents you shelved.</span>
+    </div>`;
+  const rows = STREAM.map((it,i)=>rowHTML(it,i)).join('');
+  return `
+    <div class="stream-head">
+      <span class="lab">The rest of what I'm tracking</span>
+      <button class="back" data-scope="" onclick="closeStream(event)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        Back to the one thing
+      </button>
+    </div>
+    <div class="stream-scroll">${recap}${rows}</div>`;
+}
+
+// inject hero + stream into both frames
+document.getElementById('mhero').innerHTML = heroHTML(HERO);
+document.getElementById('dhero').innerHTML = heroHTML(HERO);
+document.getElementById('mstream').innerHTML = streamHTML();
+document.getElementById('dstream').innerHTML = streamHTML();
+// the peek shows the NEXT item (top of the stream) + the remaining count
+document.getElementById('mmore').innerHTML = peekHTML(STREAM[0], STREAM.length);
+document.getElementById('dpeek').innerHTML = peekHTML(STREAM[0], STREAM.length);
+
+// the calm in-place reveal: the hero recedes, the stream slides up. No new
+// block is appended; the same .focus zone simply swaps its contents.
+function openStream(scope){
+  const el = document.getElementById(scope==='d' ? 'dfocus' : 'mfocus');
+  el.classList.add('open');
+}
+function closeStream(e){
+  const focus = e.target.closest('.focus, .dfocus');
+  if(focus) focus.classList.remove('open');
+}
+</script>
+</body>
+</html>
