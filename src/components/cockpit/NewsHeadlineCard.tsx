@@ -12,6 +12,7 @@
 // emerald "From your world" pip. Colours come from the app tokens (src/index.css),
 // not the prototype's inline hex.
 
+import { ExternalLink } from 'lucide-react';
 import { CategoryMotif } from './CategoryMotif';
 import type { DeckCard } from '@/types/cockpit';
 import { getNewsCategory, resolveNewsCategory } from '@/types/newsCategory';
@@ -144,6 +145,12 @@ export function NewsHeadlineCard({ card, variant = 'feed', focused, onOpen }: Ne
                   <span className="text-[#3a4150]">&middot;</span>
                   <span>{card.timeAgo}</span>
                 </>
+              )}
+              {card.url && (
+                <span className="ml-auto inline-flex items-center gap-1 text-[10.5px] font-semibold text-accent">
+                  Open
+                  <ExternalLink className="h-3 w-3" />
+                </span>
               )}
             </>
           )}

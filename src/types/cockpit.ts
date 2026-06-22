@@ -68,6 +68,8 @@ export interface DeckCard {
   magnitude?: { value: string; kind: 'sourced' | 'modelled' } | null;
   source?: string | null; // the publication, for the meta row (news only)
   timeAgo?: string | null; // relative time, e.g. "2h ago" (news only)
+  // a real, dated article link (live news cards). Tapping the card opens it.
+  url?: string | null;
   // routing: a signal card may deep-link to the decision it refers to
   betId?: string | null;
 }
