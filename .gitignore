@@ -51,3 +51,5 @@ deno.lock
 _verify_prod/
 _verify/
 .claude/
+# optional worktree-local vite dep-optimize cache (VITE_CACHE_DIR override)
+.vite-worktree-cache/

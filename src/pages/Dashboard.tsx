@@ -77,7 +77,11 @@ export default function Dashboard() {
     }
   }, [checkingDb, isFirstTime, hasExistingFacts, alreadyOnboarded])
 
-  if (checkingDb) {
+  // The onboarding-check gate. For the unified 2028 Home (cockpit), DON'T bail to
+  // a raw "Loading..." - render the Home shell with its in-shell branded skeleton
+  // (the route's loading is a first-class designed moment, never a spinner). Only
+  // the legacy/non-cockpit paths keep the simple text loader.
+  if (checkingDb && !COCKPIT_ENABLED) {
     return <div className="h-screen-safe flex items-center justify-center">Loading...</div>
   }
 
@@ -171,9 +175,9 @@ export default function Dashboard() {
     // three doors), rendered device-native (mobile swipe feed / desktop rail).
     // The legacy Memory dashboard stays reachable at /memory and ?view=edge.
     return isMobile ? (
-      <CockpitView banner={onboardingBanner} />
+      <CockpitView banner={onboardingBanner} forceLoading={checkingDb} />
     ) : (
-      <DesktopHomeView banner={onboardingBanner} />
+      <DesktopHomeView banner={onboardingBanner} forceLoading={checkingDb} />
     )
   }
 

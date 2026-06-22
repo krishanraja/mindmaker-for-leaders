@@ -18,7 +18,7 @@ import { cockpitGreeting } from './cockpitGreeting';
  * (no page scroll); HomeFeed bounds the rail with min-h-0 so the doors always
  * keep their place.
  */
-export function DesktopHomeView({ banner }: { banner?: ReactNode }) {
+export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; forceLoading?: boolean }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data, loading, recordDeckReaction } = useCockpit();
@@ -34,7 +34,7 @@ export function DesktopHomeView({ banner }: { banner?: ReactNode }) {
       <HomeFeed
         variant="desktop"
         data={data}
-        loading={loading}
+        loading={loading || !!forceLoading}
         greeting={cockpitGreeting(firstName)}
         onPlayBriefing={() => navigate('/briefing')}
         onGoDecide={() => navigate('/decision')}

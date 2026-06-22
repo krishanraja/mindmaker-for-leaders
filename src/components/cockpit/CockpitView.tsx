@@ -26,9 +26,12 @@ interface CockpitViewProps {
   /** Optional onboarding banner, rendered inside the frame so the whole home
       still fits one viewport with no page scroll for a brand-new leader. */
   banner?: ReactNode;
+  /** Hold the in-shell skeleton while an upstream gate (the onboarding check) is
+      still resolving, so the Home route never flashes a raw text loader. */
+  forceLoading?: boolean;
 }
 
-export function CockpitView({ banner }: CockpitViewProps) {
+export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data, loading, recordDeckReaction } = useCockpit();
@@ -39,12 +42,15 @@ export function CockpitView({ banner }: CockpitViewProps) {
     '';
 
   return (
+    // pb reserves the fixed BottomNav's height (h-16 + safe area) so the three
+    // doors keep their reserved place ABOVE the nav and never clip behind it
+    // (CTRL-SYSTEM-SPEC s2: nothing clips behind the nav).
     <MobileFrame banner={banner} padding="px-4">
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col py-3">
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col pt-3 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
         <HomeFeed
           variant="mobile"
           data={data}
-          loading={loading}
+          loading={loading || !!forceLoading}
           greeting={cockpitGreeting(firstName)}
           onPlayBriefing={() => navigate('/briefing')}
           onGoDecide={() => navigate('/decision')}
