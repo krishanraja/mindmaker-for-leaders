@@ -4,7 +4,7 @@ import { DesktopShell } from '@/components/layout/DesktopShell';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
 import { HomeFeed } from './HomeFeed';
-import { cockpitGreeting } from './cockpitGreeting';
+import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 
 /**
  * The desktop Home - the SAME unified 2028 information model as the mobile swipe
@@ -23,10 +23,9 @@ export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; 
   const { user } = useAuth();
   const { data, loading, recordDeckReaction } = useCockpit();
 
-  const firstName =
-    (user?.user_metadata?.full_name as string | undefined)?.split(' ')[0] ||
-    user?.email?.split('@')[0] ||
-    '';
+  // Real name when we have one; null when the only identifier is an email /
+  // handle / random id, so the greeting omits the ugly id gracefully.
+  const firstName = resolveDisplayName(user);
 
   return (
     <DesktopShell eyebrow="Home" title="Worth a look">
