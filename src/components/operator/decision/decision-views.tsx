@@ -36,16 +36,16 @@ import { DecisionCapture } from '@/components/operator/decision/DecisionCapture'
 // ----- shared atoms ---------------------------------------------------------
 
 const VERDICT_STYLE: Record<Verdict, { label: string; cls: string; Icon: typeof ShieldCheck }> = {
-  supported: { label: 'Holds up', cls: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30', Icon: ShieldCheck },
-  contested: { label: 'Contested', cls: 'text-amber-300 bg-amber-500/10 border-amber-500/30', Icon: AlertTriangle },
-  unverified: { label: 'Unverified', cls: 'text-muted-foreground bg-foreground/5 border-border', Icon: HelpCircle },
+  supported: { label: 'Checks out', cls: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30', Icon: ShieldCheck },
+  contested: { label: "Doesn't add up", cls: 'text-amber-300 bg-amber-500/10 border-amber-500/30', Icon: AlertTriangle },
+  unverified: { label: 'Not confirmed', cls: 'text-muted-foreground bg-foreground/5 border-border', Icon: HelpCircle },
   unverifiable: { label: 'Your call', cls: 'text-indigo-300 bg-indigo-500/10 border-indigo-500/30', Icon: CircleDashed },
   pending: { label: 'Checking', cls: 'text-muted-foreground bg-secondary border-border', Icon: Loader2 },
 };
 
 const STAGE_ORDER = ['decomposing', 'verifying', 'cross_examining', 'advising', 'complete'];
 const STAGE_LABEL: Record<string, string> = {
-  decomposing: 'Breaking it down', verifying: 'Checking the evidence', cross_examining: 'Cross-examining', advising: 'Weighing it up', complete: 'Done',
+  decomposing: 'Breaking it down', verifying: 'Checking the evidence', cross_examining: 'Arguing both sides', advising: 'Weighing it up', complete: 'Done',
 };
 
 const TENSION_GROUPS: Record<DecisionTension['kind'], string> = {
@@ -59,9 +59,9 @@ const TENSION_GROUPS: Record<DecisionTension['kind'], string> = {
 // this explicit (rather than implied by styling) is the point of the verify
 // layer: the user sees what actually backs - or undercuts - each claim.
 const STANCE_STYLE: Record<DecisionEvidence['stance'], { label: string; cls: string }> = {
-  supports: { label: 'Backs it', cls: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30' },
-  refutes: { label: 'Pushes back', cls: 'text-rose-300 bg-rose-500/10 border-rose-500/30' },
-  neutral: { label: 'Context', cls: 'text-muted-foreground bg-foreground/5 border-border' },
+  supports: { label: 'Agrees', cls: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30' },
+  refutes: { label: 'Disagrees', cls: 'text-rose-300 bg-rose-500/10 border-rose-500/30' },
+  neutral: { label: 'Background', cls: 'text-muted-foreground bg-foreground/5 border-border' },
 };
 const STANCE_ORDER: Record<DecisionEvidence['stance'], number> = { supports: 0, neutral: 1, refutes: 2 };
 
@@ -158,10 +158,10 @@ function ClaimSheet({ claim, evidence, onClose }: { claim: DecisionClaim | null;
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium mb-2">
-                {evidence.length > 0 ? 'What we found' : 'The sources'}
+                {evidence.length > 0 ? 'What I found' : 'Where this comes from'}
               </p>
               {evidence.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No outside sources backed this one yet. It may be something only you can answer.</p>
+                <p className="text-xs text-muted-foreground">No outside source settles this one yet. It may be something only you can answer.</p>
               ) : (
                 <ul className="space-y-2.5">
                   {[...evidence].sort((a, b) => STANCE_ORDER[a.stance] - STANCE_ORDER[b.stance]).map((e) => {
@@ -272,8 +272,8 @@ export function DecisionResult({ engine, onReset }: { engine: ReturnType<typeof 
   const tensionCount = tensions.length;
 
   const TABS: { id: ResultTab; label: string; count?: number }[] = [
-    { id: 'call', label: 'The call' },
-    { id: 'claims', label: 'What it rests on', count: claims.length },
+    { id: 'call', label: 'My answer' },
+    { id: 'claims', label: 'What this is based on', count: claims.length },
     ...(tensionCount > 0 ? [{ id: 'tensions' as ResultTab, label: 'Tensions', count: tensionCount }] : []),
   ];
 
@@ -297,7 +297,7 @@ export function DecisionResult({ engine, onReset }: { engine: ReturnType<typeof 
 
       {decisionCase.reframed && decisionCase.reframed_statement && (
         <div className="pt-3">
-          <ReframeBanner statement={decisionCase.reframed_statement} note={decisionCase.reframe_note} />
+          <ReframeBanner statement={decisionCase.reframed_statement} note={decisionCase.reframe_note ?? null} />
         </div>
       )}
 
@@ -383,7 +383,7 @@ function CallPane({ decisionCase, isComplete }: { decisionCase: NonNullable<Retu
         </div>
       )}
       <div>
-        <div className="flex items-center gap-2 mb-2"><Target className="h-4 w-4 text-primary" /><h4 className="font-semibold text-foreground">The call</h4></div>
+        <div className="flex items-center gap-2 mb-2"><Target className="h-4 w-4 text-primary" /><h4 className="font-semibold text-foreground">My answer</h4></div>
         <p className="text-sm text-foreground leading-relaxed text-pretty">{decisionCase.recommendation}</p>
       </div>
       {decisionCase.counter_case && (
@@ -539,7 +539,7 @@ export function DecisionCold({
           Weigh your first decision.
         </h1>
         <p className={cn('mt-2 leading-relaxed text-muted-foreground text-pretty', isDesktop ? 'max-w-[48ch] text-sm' : 'text-[13px]')}>
-          Tell me the call you're weighing. I'll break it into what it rests on, check each part against real sources, and show you where it holds and where it breaks.
+          Tell me the decision you're weighing. I'll break it into the points it rests on, check each one against real sources, and show you what's solid and what's shaky.
         </p>
         <div className="mt-4">
           <DecisionCapture value={value} onChange={onChange} onStart={onStart} starting={starting} autoFocus={isDesktop} isDesktop={isDesktop} />
