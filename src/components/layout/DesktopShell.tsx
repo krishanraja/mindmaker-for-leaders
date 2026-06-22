@@ -5,10 +5,10 @@ import {
   Home,
   Zap,
   Brain,
+  Scale,
   Radio,
   ArrowUpRight,
   Target,
-  TrendingUp,
   Map as MapIcon,
   Settings,
   Shield,
@@ -17,19 +17,30 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { resolveDisplayName } from '@/components/cockpit/cockpitGreeting';
 import { BrandLockup } from '@/components/landing/BrandLockup';
 import { CommandPaletteTrigger } from './CommandPalette';
 import { PageTransition } from './PageTransition';
 
-const navItems = [
+// PRIMARY nav: the SAME 4 stable tabs as the mobile BottomNav cockpit model
+// (Home / Decisions / Brain / You), in the same order and with the same icons,
+// so desktop and mobile read as one system (CTRL-SYSTEM-SPEC s1). Memory ->
+// Brain, Track Record -> You, the decision surfaces -> Decisions.
+const primaryNavItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home', shortcut: 'H' },
+  { path: '/decision', search: '', icon: Scale, label: 'Decisions', shortcut: 'D' },
+  { path: '/memory', search: '', icon: Brain, label: 'Brain', shortcut: 'B' },
+  { path: '/track-record', search: '', icon: User, label: 'You', shortcut: 'Y' },
+];
+
+// SECONDARY surfaces: still one click away, just demoted out of the primary 4 so
+// the spine stays the 4 tabs. No routes removed; everything stays reachable.
+const secondaryNavItems = [
   { path: '/dashboard', search: '?view=edge', icon: Zap, label: 'Edge', shortcut: 'E' },
-  { path: '/memory', search: '', icon: Brain, label: 'Memory', shortcut: 'M' },
+  { path: '/briefing', search: '', icon: Radio, label: 'Briefing', shortcut: 'R' },
   { path: '/context', search: '', icon: ArrowUpRight, label: 'Export', shortcut: 'X' },
-  { path: '/briefing', search: '', icon: Radio, label: 'Briefing', shortcut: 'B' },
   { path: '/goals', search: '', icon: Target, label: 'Goals', shortcut: 'G' },
-  { path: '/track-record', search: '', icon: TrendingUp, label: 'Track Record', shortcut: 'T' },
-  { path: '/decision-map', search: '', icon: MapIcon, label: 'Decision Map', shortcut: 'D' },
+  { path: '/decision-map', search: '', icon: MapIcon, label: 'Decision Map', shortcut: 'M' },
 ];
 
 const accountItems = [
@@ -49,7 +60,9 @@ function DesktopRail() {
   const { signOut, user } = useAuth();
   const prefersReducedMotion = useReducedMotion();
 
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'You';
+  // Clean display name (omits ugly email/handle/id). Footer falls back to "You".
+  const displayName = resolveDisplayName(user);
+  const firstName = displayName ?? 'You';
   const initials = firstName.slice(0, 2).toUpperCase();
 
   return (
@@ -63,19 +76,18 @@ function DesktopRail() {
         <BrandLockup />
       </button>
 
-      {/* Primary nav */}
+      {/* Nav. The PRIMARY group is the 4 stable tabs (matches mobile); the
+          secondary + account groups are demoted but always one click away. */}
       <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto scrollbar-hide">
-        <p className="px-3 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-          Workspace
-        </p>
-        {navItems.map((item) => {
+        {primaryNavItems.map((item) => {
           const Icon = item.icon;
           const fullPath = item.path + item.search;
-          const isActive =
-            (item.search
-              ? location.pathname + location.search === fullPath
-              : location.pathname === item.path && !location.search) ||
-            (item.path !== '/dashboard' && !item.search && location.pathname.startsWith(item.path));
+          // Exact match: a primary tab is active only on its own path (so
+          // Decisions /decision is NOT lit by the secondary Decision Map
+          // /decision-map). Home is active on /dashboard with no ?view.
+          const isActive = item.search
+            ? location.pathname + location.search === fullPath
+            : location.pathname === item.path && !location.search;
 
           return (
             <button
@@ -126,6 +138,39 @@ function DesktopRail() {
               >
                 G {item.shortcut}
               </kbd>
+            </button>
+          );
+        })}
+
+        {/* SECONDARY surfaces (demoted out of the primary 4, still reachable). */}
+        <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+          More
+        </p>
+        {secondaryNavItems.map((item) => {
+          const Icon = item.icon;
+          const fullPath = item.path + item.search;
+          const isActive = item.search
+            ? location.pathname + location.search === fullPath
+            : location.pathname === item.path && !location.search;
+          return (
+            <button
+              key={item.label}
+              onClick={() => {
+                if (location.pathname === item.path) {
+                  setSearchParams(item.search ? new URLSearchParams(item.search) : {});
+                } else {
+                  navigate({ pathname: item.path, search: item.search });
+                }
+              }}
+              className={cn(
+                'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                isActive
+                  ? 'bg-accent/15 text-accent'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50',
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{item.label}</span>
             </button>
           );
         })}

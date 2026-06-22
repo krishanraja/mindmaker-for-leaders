@@ -1,12 +1,11 @@
 // src/components/ui/InitializationLoader.tsx
+//
+// The very first thing the SPA renders while it boots (AppState 'LOADING',
+// before splash/router). This is the in-app handoff from the static
+// index.html boot splash, so it must stay branded and anticipatory, never a
+// raw spinner on black (CTRL-SYSTEM-SPEC s6).
+import { BrandedAppLoader } from '@/components/system/BrandedAppLoader'
+
 export function InitializationLoader() {
-  return (
-    <div className="fixed inset-0 bg-black flex items-center justify-center z-[150]">
-      <div className="flex flex-col items-center gap-4">
-        {/* Mindmaker logo spinner */}
-        <div className="w-12 h-12 border-4 border-[#00D9B6] border-t-transparent rounded-full animate-spin" />
-        <p className="text-gray-400 text-sm">Loading...</p>
-      </div>
-    </div>
-  )
+  return <BrandedAppLoader fullscreen caption="Bringing your workspace up" />
 }

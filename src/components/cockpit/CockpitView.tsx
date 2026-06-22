@@ -4,7 +4,7 @@ import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
 import { HomeFeed } from './HomeFeed';
-import { cockpitGreeting } from './cockpitGreeting';
+import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 
 /**
  * The mobile Home (behind VITE_COCKPIT_ENABLED) - the unified 2028 Home:
@@ -36,10 +36,10 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
   const { user } = useAuth();
   const { data, loading, recordDeckReaction } = useCockpit();
 
-  const firstName =
-    (user?.user_metadata?.full_name as string | undefined)?.split(' ')[0] ||
-    user?.email?.split('@')[0] ||
-    '';
+  // Real name when we have one; null when the only identifier is an email /
+  // handle / random id, so the greeting reads "Good morning." not
+  // "Good morning, ctrl-qa-1782077550632."
+  const firstName = resolveDisplayName(user);
 
   return (
     // pb reserves the fixed BottomNav's height (h-16 + safe area) so the three

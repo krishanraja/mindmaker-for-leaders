@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { RequireAuth } from '@/components/auth/RequireAuth'
 import { AuthedLayoutRoute } from '@/components/layout/AuthedLayoutRoute'
+import { BrandedAppLoader } from '@/components/system/BrandedAppLoader'
 
 /**
  * Wrap lazy imports so that stale-chunk 404s trigger a single page
@@ -51,13 +52,12 @@ const Try = lazyWithRetry(() => import('@/pages/Try'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
+// The lazy-route Suspense fallback. A route chunk loads before any in-app shell
+// has mounted, so this is the branded, anticipatory full-viewport loader (brand
+// lockup + settling chrome skeleton), never a raw spinner on black.
+// CTRL-SYSTEM-SPEC s6.
 function LoadingPage() {
-  return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#00D9B6]" />
-      <p className="text-sm text-white/40">Loading...</p>
-    </div>
-  )
+  return <BrandedAppLoader fullscreen caption="Bringing your workspace up" />
 }
 
 function LazyWrapper({ children }: { children: React.ReactNode }) {
