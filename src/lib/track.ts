@@ -21,7 +21,8 @@ export type KitLifecycleEvent =
   | "kit_capsule_pasted"
   | "kit_artifact_downloaded"
   | "kit_shipped"
-  | "kit_email_captured";
+  | "kit_email_captured"
+  | "kit_waitlist_joined";
 
 export interface KitEventDims {
   class_slug?: string;
