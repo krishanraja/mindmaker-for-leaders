@@ -180,11 +180,16 @@ export function freshnessScore(publishedIso: string | null, nowMs: number): numb
  * reached or buckets are exhausted. Within a bucket, higher score first.
  *
  * @param categoryOf maps a cluster to its category id (the caller classifies).
+ * @param maxPerCategory caps how many a single lane can contribute, so one
+ *   over-represented category (often the "model" default bucket) cannot fill
+ *   the deck. The deck spans lanes even if that means returning fewer than
+ *   `max` when other lanes are thin (variety beats a wall of one motif).
  */
 export function selectBalanced(
   clusters: Cluster[],
   categoryOf: (c: Cluster) => string,
   max: number,
+  maxPerCategory = 3,
 ): Cluster[] {
   const buckets = new Map<string, Cluster[]>();
   for (const c of clusters) {
@@ -201,14 +206,17 @@ export function selectBalanced(
   );
 
   const out: Cluster[] = [];
+  const taken = new Map<string, number>();
   let round = 0;
   let added = true;
   while (out.length < max && added) {
     added = false;
     for (const cat of cats) {
+      if ((taken.get(cat) ?? 0) >= maxPerCategory) continue;
       const arr = buckets.get(cat)!;
       if (round < arr.length) {
         out.push(arr[round]);
+        taken.set(cat, (taken.get(cat) ?? 0) + 1);
         added = true;
         if (out.length >= max) break;
       }
