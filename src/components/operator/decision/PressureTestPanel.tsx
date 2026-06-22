@@ -54,14 +54,24 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   const [banked, setBanked] = useState(false);
   useEffect(() => { setBanked(false); }, [engine.decisionCase?.id]);
 
+  // "Compose" forces the COLD one-ask even when the account already has decisions
+  // (the warm board's fast-capture / desktop "new" tap), so a returning leader can
+  // always weigh another. Cleared once a run starts or a case is opened.
+  const [composing, setComposing] = useState(false);
+
   const handleUpgrade = async () => { const url = await subscribe(); if (url) window.location.href = url; };
 
   const startNew = async () => {
+    setComposing(false);
     await engine.start(statement);
     inbox.refresh();
   };
-  const newBlank = () => { engine.reset(); setStatement(''); };
-  const openCase = (id: string) => { engine.reset(); engine.load(id); };
+  // From the result/error: clear everything back to the account's natural state
+  // (the warm board if cases exist, else cold).
+  const newBlank = () => { engine.reset(); setStatement(''); setComposing(false); };
+  // From the warm board's fast-capture: open the cold one-ask to weigh another.
+  const compose = () => { engine.reset(); setStatement(''); setComposing(true); };
+  const openCase = (id: string) => { setComposing(false); engine.reset(); engine.load(id); };
   const reRun = (a: OpenAlert) => {
     const c = inbox.cases.find((x) => x.id === a.decision_case_id);
     inbox.acknowledge(a.id);
@@ -105,8 +115,8 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
     surface = <DecisionResultView engine={engine} onBack={newBlank} onBank={bankCall} banked={banked} banking={banking} isDesktop={isDesktop} />;
   } else if (inbox.loading) {
     surface = <DecisionLoading />;
-  } else if (inbox.cases.length > 0) {
-    surface = <DecisionBoard cases={inbox.cases} onOpen={openCase} onNew={newBlank} isDesktop={isDesktop} />;
+  } else if (inbox.cases.length > 0 && !composing) {
+    surface = <DecisionBoard cases={inbox.cases} onOpen={openCase} onNew={compose} isDesktop={isDesktop} />;
   } else {
     surface = <DecisionCold value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} isDesktop={isDesktop} />;
   }
