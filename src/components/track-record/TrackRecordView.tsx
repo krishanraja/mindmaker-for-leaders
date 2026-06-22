@@ -14,7 +14,7 @@
 // two-zone reading surface (calibration left, calls right). No em dashes. Tokens only.
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Scale } from 'lucide-react';
+import { ArrowRight, Scale, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AgedCallRow } from './AgedCallRow';
 import { CalibrationSparkline, ProofGlyph } from './trackRecordMotifs';

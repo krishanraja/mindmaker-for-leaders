@@ -11,16 +11,16 @@ import { useDecisionCall, type UserCall } from '@/hooks/useDecisionCall';
 type Engine = ReturnType<typeof useDecisionEngine>;
 
 const TYPE_LABEL: Record<string, string> = {
-  factual: 'Factual claim',
-  market: 'Market claim',
-  causal: 'Causal claim',
-  assumption: 'Assumption',
-  forecast: 'Forecast',
+  factual: 'A fact to check',
+  market: 'About the market',
+  causal: 'Cause and effect',
+  assumption: 'An assumption',
+  forecast: 'A prediction',
 };
 
 const OPTIONS: { value: UserCall; label: string; icon: React.ReactNode }[] = [
-  { value: 'accept', label: 'It holds', icon: <Check className="h-4 w-4" /> },
-  { value: 'reject', label: 'It does not', icon: <X className="h-4 w-4" /> },
+  { value: 'accept', label: 'I agree', icon: <Check className="h-4 w-4" /> },
+  { value: 'reject', label: 'I disagree', icon: <X className="h-4 w-4" /> },
   { value: 'unsure', label: 'Not sure', icon: <HelpCircle className="h-4 w-4" /> },
 ];
 
@@ -100,9 +100,9 @@ export function CriticalCallStep({ engine, onDone }: { engine: Engine; onDone: (
               <span className="text-xs font-semibold uppercase tracking-wide">Make the call</span>
             </div>
             <h3 className="text-lg font-semibold text-foreground">
-              This is what the decision rides on. Before you see CTRL's read, make your own call.
+              This is what the decision rests on. Before you see what I think, make your own call.
             </h3>
-            <p className="text-sm text-muted-foreground">{TYPE_LABEL[primary.type] ?? 'Load-bearing claim'}</p>
+            <p className="text-sm text-muted-foreground">{TYPE_LABEL[primary.type] ?? 'The key point'}</p>
           </div>
 
           <div className="rounded-xl border border-border bg-secondary/30 p-4">
@@ -131,14 +131,14 @@ export function CriticalCallStep({ engine, onDone }: { engine: Engine; onDone: (
           <Textarea
             value={reasoning}
             onChange={(e) => setReasoning(e.target.value)}
-            placeholder="Why? (optional, but the reps add up)"
+            placeholder="Why? (optional)"
             className="min-h-[72px] resize-none text-sm"
             aria-label="Your reasoning"
           />
 
           {others.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground">Also riding on this decision</p>
+              <p className="text-xs font-medium text-muted-foreground">Also part of this decision</p>
               <ul className="space-y-1">
                 {others.map((c) => (
                   <li key={c.id} className="text-xs text-muted-foreground">
@@ -151,7 +151,7 @@ export function CriticalCallStep({ engine, onDone }: { engine: Engine; onDone: (
 
           <Button onClick={reveal} disabled={!call || saving} size="lg" className="w-full">
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Lock in my call and see CTRL's read
+            Lock in my answer and see what I think
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </CardContent>

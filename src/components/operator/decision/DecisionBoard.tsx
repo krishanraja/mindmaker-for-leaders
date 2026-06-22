@@ -39,7 +39,7 @@ function CaseCard({ c, onOpen, isDesktop }: { c: DecisionCaseSummary; onOpen: (i
         ) : (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-foreground/5 px-2 py-[3px] text-[8px] font-bold uppercase tracking-wide text-muted-foreground">
             <span className="h-2 w-2 rounded-full border-[1.6px] border-muted-foreground border-t-accent motion-safe:animate-spin" />
-            Pressure-testing
+            Checking
           </span>
         )}
         <span className="ml-auto text-[10px] text-muted-foreground/70">{ready ? `weighed ${when}` : `started ${when}`}</span>
@@ -53,7 +53,7 @@ function CaseCard({ c, onOpen, isDesktop }: { c: DecisionCaseSummary; onOpen: (i
           <span className="text-[15px] font-bold text-accent tabular-nums [text-shadow:0_0_14px_hsl(var(--accent)/0.45)]">{pct}%</span>
         </div>
       ) : !ready && !failed ? (
-        <p className="mt-2.5 text-[11.5px] leading-snug text-muted-foreground">Reading sources against the claims. I'll surface the call shortly.</p>
+        <p className="mt-2.5 text-[11.5px] leading-snug text-muted-foreground">Checking this against real sources. I'll have an answer shortly.</p>
       ) : null}
     </button>
   );
@@ -96,7 +96,7 @@ export function DecisionBoard({
         <div className="shrink-0"><FastCapture onNew={onNew} isDesktop /></div>
         <div className="mt-5 flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 items-baseline justify-between px-0.5 pb-3">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">In pressure-test</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Your decisions</span>
             <span className="text-xs text-muted-foreground/70">{cases.length} total{openCount > 0 ? `, ${openCount} open` : ''}</span>
           </div>
           <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-3.5 overflow-y-auto scrollbar-hide">
@@ -111,7 +111,7 @@ export function DecisionBoard({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-baseline justify-between px-0.5 pb-2.5">
-        <span className="text-[9.5px] font-bold uppercase tracking-widest text-muted-foreground">In pressure-test</span>
+        <span className="text-[9.5px] font-bold uppercase tracking-widest text-muted-foreground">Your decisions</span>
         <span className="text-[11px] text-muted-foreground/70">{cases.length} total{openCount > 0 ? `, ${openCount} open` : ''}</span>
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-hide pb-0.5">

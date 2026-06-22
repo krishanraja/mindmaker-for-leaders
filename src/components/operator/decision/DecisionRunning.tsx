@@ -32,10 +32,10 @@ interface PipelineStep {
 }
 
 const STEPS: PipelineStep[] = [
-  { t: 'Decompose', sub: 'into what it rests on', lab: 'Breaking the decision down', det: 'Splitting your call into the claims it actually depends on.' },
-  { t: 'Read sources', sub: 'real, not guessed', lab: 'Reading real sources', det: 'Checking each claim against the record, not guessing.' },
-  { t: 'Cross-examine', sub: 'argue both sides', lab: 'Arguing both sides', det: 'Pressure-testing where the claim is strong and where it cracks.' },
-  { t: 'Weigh', sub: 'the honest call', lab: 'Weighing the call', det: 'Turning the evidence into where it holds and where it breaks.' },
+  { t: 'Break it down', sub: 'what it rests on', lab: 'Breaking the decision down', det: 'Splitting your decision into the points it actually depends on.' },
+  { t: 'Read sources', sub: 'real, not guessed', lab: 'Reading real sources', det: 'Checking each point against the record, not guessing.' },
+  { t: 'Argue both sides', sub: 'for and against', lab: 'Arguing both sides', det: 'Testing where each point is strong and where it is weak.' },
+  { t: 'Weigh it up', sub: 'the honest answer', lab: 'Weighing it up', det: "Turning the evidence into what's solid and what's shaky." },
 ];
 
 // Real engine stage -> active pipeline index. `complete` lands on the last step

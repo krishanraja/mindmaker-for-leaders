@@ -56,9 +56,9 @@ export function ClaimSheet({ claim, evidence, onClose }: { claim: DecisionClaim 
               {claim.rationale && <p className="mt-2 text-xs leading-relaxed text-muted-foreground text-pretty">{claim.rationale}</p>}
             </div>
             <div>
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{evidence.length > 0 ? 'What I found' : 'The sources'}</p>
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{evidence.length > 0 ? 'What I found' : 'Where this comes from'}</p>
               {evidence.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No outside sources backed this one yet. It may be something only you can answer.</p>
+                <p className="text-xs text-muted-foreground">No outside source settles this one yet. It may be something only you can answer.</p>
               ) : (
                 <ul className="space-y-2.5">
                   {[...evidence].sort((a, b) => STANCE_ORDER[a.stance] - STANCE_ORDER[b.stance]).map((e) => {
@@ -117,7 +117,7 @@ export function DecisionResultView({
     <div className="flex shrink-0 gap-2.5 rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5">
       <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
       <p className="text-[11.5px] leading-snug text-muted-foreground text-pretty">
-        <span className="font-semibold text-foreground/90">I read this as an AI-native call: </span>
+        <span className="font-semibold text-foreground/90">How I looked at it: </span>
         {decisionCase.reframe_note}
       </p>
     </div>
@@ -127,11 +127,11 @@ export function DecisionResultView({
     <div className="relative shrink-0 overflow-hidden rounded-[20px] border border-accent/30 bg-gradient-to-b from-card to-background p-[18px] shadow-[0_30px_60px_-34px_rgba(0,0,0,0.95)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_88%_-10%,hsl(var(--accent)/0.14),transparent_60%)]" />
       <div className="relative mb-3 flex items-center gap-2">
-        <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-accent">The call</span>
+        <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-accent">My answer</span>
         {pct != null && (
           <span className="ml-auto flex items-baseline gap-1.5">
             <b className="text-[21px] font-bold leading-none text-accent tabular-nums [text-shadow:0_0_16px_hsl(var(--accent)/0.45)] sm:text-[26px]">{pct}%</b>
-            <span className="text-[8.5px] uppercase tracking-wide text-muted-foreground">holds up</span>
+            <span className="text-[8.5px] uppercase tracking-wide text-muted-foreground">sure</span>
           </span>
         )}
       </div>
@@ -149,10 +149,10 @@ export function DecisionResultView({
       <div className="rounded-2xl border border-accent/30 bg-gradient-to-b from-card to-background p-3.5">
         <div className="mb-2.5 flex items-center gap-1.5">
           <span className="grid h-[18px] w-[18px] place-items-center rounded-md bg-accent/10 text-accent"><Check className="h-3 w-3" strokeWidth={3} /></span>
-          <span className="text-[8.5px] font-bold uppercase tracking-wide text-accent">Where it holds</span>
+          <span className="text-[8.5px] font-bold uppercase tracking-wide text-accent">What checks out</span>
         </div>
         <ul className="space-y-2">
-          {holds.length === 0 && <li className="text-[11.5px] leading-snug text-muted-foreground">Nothing came back clean enough to lean on yet.</li>}
+          {holds.length === 0 && <li className="text-[11.5px] leading-snug text-muted-foreground">Nothing came back solid enough to lean on yet.</li>}
           {holds.map((h, i) => (
             <li key={i} className="relative pl-3.5 text-[11.5px] leading-snug text-foreground/85 text-pretty">
               <span className="absolute left-0 top-[7px] h-[5px] w-[5px] rounded-full bg-accent shadow-[0_0_7px_hsl(var(--accent))]" />{h}
@@ -163,10 +163,10 @@ export function DecisionResultView({
       <div className="rounded-2xl border border-border bg-gradient-to-b from-card to-background p-3.5">
         <div className="mb-2.5 flex items-center gap-1.5">
           <span className="grid h-[18px] w-[18px] place-items-center rounded-md bg-amber-500/10 text-amber-400"><AlertTriangle className="h-3 w-3" /></span>
-          <span className="text-[8.5px] font-bold uppercase tracking-wide text-amber-400">Where it breaks</span>
+          <span className="text-[8.5px] font-bold uppercase tracking-wide text-amber-400">What's shaky</span>
         </div>
         <ul className="space-y-2">
-          {breaks.length === 0 && <li className="text-[11.5px] leading-snug text-muted-foreground">No load-bearing claim came back broken.</li>}
+          {breaks.length === 0 && <li className="text-[11.5px] leading-snug text-muted-foreground">Nothing important came back shaky.</li>}
           {breaks.map((b, i) => (
             <li key={i} className="relative pl-3.5 text-[11.5px] leading-snug text-foreground/85 text-pretty">
               <span className="absolute left-0 top-[7px] h-[5px] w-[5px] rounded-full bg-amber-400 shadow-[0_0_7px_rgba(224,161,58,0.6)]" />{b}
@@ -181,7 +181,7 @@ export function DecisionResultView({
     <div className="flex shrink-0 items-start gap-2.5 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2.5">
       <Eye className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
       <p className="text-[11.5px] leading-snug text-foreground/90">
-        <span className="font-bold text-foreground">I'll keep watching.</span> If a load-bearing claim shifts, I'll re-check and flag it. Last read{' '}
+        <span className="font-bold text-foreground">I'll keep an eye on this.</span> If something important changes, I'll re-check it and let you know. Last checked{' '}
         {formatDistanceToNow(new Date(decisionCase.last_verified_at), { addSuffix: true })}.
       </p>
     </div>
@@ -193,7 +193,7 @@ export function DecisionResultView({
       onClick={() => setOpenClaimId(decisionCase.breakpoint_assumption_id ?? claims[0].id)}
       className="flex w-full shrink-0 items-center justify-between rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5 text-left transition-colors hover:border-accent/30"
     >
-      <span className="text-[11.5px] text-muted-foreground">See what it rests on, source by source ({claims.length} claim{claims.length === 1 ? '' : 's'})</span>
+      <span className="text-[11.5px] text-muted-foreground">See what this is based on, point by point ({claims.length} {claims.length === 1 ? 'point' : 'points'})</span>
       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
     </button>
   ) : null;
@@ -205,7 +205,7 @@ export function DecisionResultView({
       </button>
       <button type="button" onClick={onBank} disabled={banking || banked} className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] bg-gradient-to-b from-accent to-accent px-3 py-3 text-[13px] font-bold text-accent-foreground shadow-[0_12px_26px_-12px_hsl(var(--accent)/0.5)] disabled:opacity-80">
         {banking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-        {banked ? 'Banked' : 'Bank this call'}
+        {banked ? 'Saved' : 'Save this decision'}
       </button>
     </div>
   );
