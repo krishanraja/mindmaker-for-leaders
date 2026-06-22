@@ -3,6 +3,9 @@
 // reaches a user (no auth, no data round-trip). Not linked in nav; remove when the redesign is done.
 import { useState, type ReactNode } from 'react';
 import { DecisionCard } from '@/components/track-record/DecisionCard';
+import { TrackRecordView } from '@/components/track-record/TrackRecordView';
+import { TrackRecordSkeleton } from '@/components/track-record/TrackRecordSkeleton';
+import { buildTrackRecordModel } from '@/components/track-record/trackRecordModel';
 import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone';
 import { MemoryItemCard } from '@/components/memory/MemoryItemCard';
 import { ContestPanel } from '@/components/contest/ContestPanel';
@@ -49,6 +52,43 @@ const TRACK_FIXTURES: { label: string; row: TrackRecordRow }[] = [
     label: 'long statement + no breakpoint data',
     row: { decision_id: '5', statement: 'Should we continue investing in our internal infrastructure or migrate entirely to third-party managed services for better scaling and lower operational overhead?', status: 'active', decision_kind: 'investment', decided_at: new Date(Date.now() - 200 * 86400000).toISOString(), resolution: null, played_out: null, process_quality: null, breakpoint_call: null, breakpoint_verdict: null, importance_adjustments: 0 },
   },
+];
+
+// Whole-state fixtures for the You tab (TrackRecordView), driven through the REAL model
+// builder so the harness shows exactly what the live page derives. cold = no rows, warm =
+// a couple of scored calls (no trend yet), rich = many scored calls across time (a real
+// hit-rate + an honest up-trend). Day offsets are wide so the aging labels read naturally.
+const day = (n: number) => new Date(Date.now() - n * 86400000).toISOString();
+const trRow = (
+  id: string,
+  daysAgo: number,
+  played: TrackRecordRow['played_out'],
+  call: TrackRecordRow['breakpoint_call'],
+  verdict: TrackRecordRow['breakpoint_verdict'],
+  statement: string,
+): TrackRecordRow => ({
+  decision_id: id, statement, status: played ? 'decided' : 'active', decision_kind: 'binary', decided_at: day(daysAgo),
+  resolution: played ? 'proceed' : null, played_out: played, process_quality: 4, breakpoint_call: call, breakpoint_verdict: verdict, importance_adjustments: played === 'true' ? 3 : 0,
+});
+
+const WARM_ROWS: TrackRecordRow[] = [
+  trRow('w1', 9, 'true', 'accept', 'supported', 'Let an agent own first-draft proposals before hiring another rep.'),
+  trRow('w2', 2, null, 'accept', 'pending', 'Run the research agent unattended overnight.'),
+  trRow('w3', 5, 'true', 'reject', 'contested', 'Hold off on the new orchestration vendor until pricing settles.'),
+];
+
+// Rich: enough scored calls across a long window that the earlier half reads worse than the
+// recent half (a genuine, honest up-trend). Mix in a watching call and two that did not hold.
+const RICH_ROWS: TrackRecordRow[] = [
+  trRow('r1', 6, null, 'accept', 'pending', 'Let the research agent run unattended overnight.'),
+  trRow('r2', 35, 'true', 'accept', 'supported', 'Ship the assistant on our own data before buying the vendor seat.'),
+  trRow('r3', 49, 'true', 'reject', 'contested', 'Put a human approval gate on any agent that touches a credit decision.'),
+  trRow('r4', 63, 'false', 'accept', 'supported', 'Hold the price through the new-model launch.'),
+  trRow('r5', 77, 'true', 'accept', 'supported', 'Route escalations through the support agent first.'),
+  trRow('r6', 110, 'true', 'reject', 'contested', 'Wait on a full rebuild until the agent framework stabilises.'),
+  trRow('r7', 140, 'false', 'accept', 'contested', 'Wait on orchestration tooling until the standards settle.'),
+  trRow('r8', 170, 'true', 'accept', 'supported', 'Pilot the support agent on tier-2 tickets first.'),
+  trRow('r9', 200, 'false', 'reject', 'supported', 'Pause the data-migration until the new hire lands.'),
 ];
 
 function claim(p: Partial<DecisionClaim> & { id: string; text: string; verdict: DecisionClaim['verdict'] }): DecisionClaim {
@@ -448,6 +488,62 @@ export default function PreviewPage() {
               <DecisionCard row={f.row} onRecord={noop} busy={false} animated={false} />
             </div>
           ))}
+        </Section>
+
+        <Section title="Track Record - TrackRecordView (whole-state: cold / warm / rich / loading)">
+          {[
+            { label: 'cold - the promise (no banked calls, never zeros)', rows: [] as TrackRecordRow[] },
+            { label: 'warm - first pattern (mobile column)', rows: WARM_ROWS },
+            { label: 'rich - earned record (mobile column)', rows: RICH_ROWS },
+          ].map((f) => {
+            const model = buildTrackRecordModel(f.rows);
+            return (
+              <div key={`m-${f.label}`}>
+                <p className="mb-1 text-[10px] text-muted-foreground/70">mobile - {f.label}</p>
+                <div className="mx-auto w-[412px] max-w-full rounded-2xl border border-border bg-background p-4">
+                  <div className="flex min-h-[560px] flex-col">
+                    <TrackRecordView model={model} desktop={false} onWeigh={noop} animated={false} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div>
+            <p className="mb-1 text-[10px] text-muted-foreground/70">mobile - loading (in-shell skeleton)</p>
+            <div className="mx-auto w-[412px] max-w-full rounded-2xl border border-border bg-background p-4">
+              <div className="flex min-h-[560px] flex-col">
+                <TrackRecordSkeleton />
+              </div>
+            </div>
+          </div>
+          {/* Desktop blocks break out of the mobile-width harness column to a realistic
+              ~1080px main width (DesktopShell main at 1366), so the two-zone layout is
+              previewable honestly. data-tr-desktop marks them for the screenshot tool. */}
+          {[
+            { label: 'desktop - cold (the promise, room to breathe)', rows: [] as TrackRecordRow[], h: 'h-[520px]' },
+            { label: 'desktop - warm (calm single column)', rows: WARM_ROWS, h: 'h-[440px]' },
+            { label: 'desktop - rich (two-zone)', rows: RICH_ROWS, h: 'h-[460px]' },
+          ].map((f) => {
+            const model = buildTrackRecordModel(f.rows);
+            return (
+              <div key={`d-${f.label}`} data-tr-desktop className="relative left-1/2 w-[1080px] max-w-[92vw] -translate-x-1/2">
+                <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
+                <div className="rounded-2xl border border-border bg-background p-6">
+                  <div className={`flex ${f.h} flex-col`}>
+                    <TrackRecordView model={model} desktop onWeigh={noop} animated={false} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div data-tr-desktop className="relative left-1/2 w-[1080px] max-w-[92vw] -translate-x-1/2">
+            <p className="mb-1 text-[10px] text-muted-foreground/70">desktop - loading (in-shell skeleton)</p>
+            <div className="rounded-2xl border border-border bg-background p-6">
+              <div className="flex h-[420px] flex-col">
+                <TrackRecordSkeleton desktop />
+              </div>
+            </div>
+          </div>
         </Section>
 
         <Section title="Decision Map - ConsiderationStone">
