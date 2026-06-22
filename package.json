@@ -15,6 +15,8 @@
     "build:dev": "cross-env ROLLUP_DISABLE_NATIVE=1 vite build --mode development",
     "postinstall": "node scripts/patch-rollup.cjs",
     "lint": "eslint .",
+    "typecheck": "node scripts/typecheck-ci.mjs",
+    "typecheck:update": "node scripts/typecheck-ci.mjs --update",
     "validate:video": "node scripts/validate-video-backgrounds.js",
     "preview": "cross-env ROLLUP_DISABLE_NATIVE=1 vite preview",
     "test": "vitest",
