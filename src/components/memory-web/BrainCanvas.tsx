@@ -14,7 +14,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { Brain, Plus } from 'lucide-react';
-import type { MemoryWebFact } from '@/types/memory';
+import type { MemoryWebFact, UserPattern } from '@/types/memory';
 import type { MemoryEdge } from '@/hooks/useMemoryEdges';
 import { SkeletonCard, LoadingCaption } from '@/components/system/SkeletonCard';
 import { BrainGraph, type GraphBond } from './BrainGraph';
@@ -22,24 +22,29 @@ import { cn } from '@/lib/utils';
 
 interface BrainCanvasProps {
   facts: MemoryWebFact[];
+  patterns?: UserPattern[];
   edges?: MemoryEdge[];
   loading?: boolean;
   selectedFactId?: string | null;
   onBondSelect?: (bond: GraphBond | null) => void;
+  onPatternSelect?: (pattern: UserPattern | null) => void;
   onAdd: () => void;
   isMobile: boolean;
 }
 
 export function BrainCanvas({
   facts,
+  patterns = [],
   edges = [],
   loading = false,
   selectedFactId = null,
   onBondSelect,
+  onPatternSelect,
   onAdd,
   isMobile,
 }: BrainCanvasProps) {
-  const cold = !loading && facts.length === 0;
+  // cold = nothing to draw at all (no facts AND no observed patterns).
+  const cold = !loading && facts.length === 0 && patterns.length === 0;
 
   return (
     <div
@@ -67,9 +72,11 @@ export function BrainCanvas({
           </p>
           <BrainGraph
             facts={facts}
+            patterns={patterns}
             edges={edges}
             selectedFactId={selectedFactId}
             onBondSelect={onBondSelect}
+            onPatternSelect={onPatternSelect}
           />
         </>
       )}

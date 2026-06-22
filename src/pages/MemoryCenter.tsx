@@ -25,7 +25,7 @@ import { BrainCanvas } from '@/components/memory-web/BrainCanvas';
 import { BondReader } from '@/components/memory-web/BondReader';
 import type { MemoryBond } from '@/components/memory-web/MemoryWebVisualization';
 import type { GraphBond } from '@/components/memory-web/BrainGraph';
-import type { UserMemoryFact } from '@/types/memory';
+import type { UserMemoryFact, UserPattern } from '@/types/memory';
 
 // Cap the gentle verify nudge so it is never a backlog ("30 to verify").
 // CTRL-SYSTEM-SPEC s2.4 + the mock: a single quiet "Verify N", small N.
@@ -33,14 +33,19 @@ const VERIFY_NUDGE_CAP = 5;
 
 // Bridge the new GraphBond (from BrainGraph) onto the MemoryBond the existing
 // BondReader reads. Same honest fields; `spine` is not a concept in the centred
-// graph, so it is always false.
+// graph, so it is always false. The wider graph palette collapses back onto the
+// reader's coarse territory vocabulary (you / company / ai).
 function toMemoryBond(b: GraphBond): MemoryBond {
+  const world =
+    b.world === 'company' || b.world === 'challenge'
+      ? 'company'
+      : b.world === 'signal'
+        ? 'ai'
+        : 'you'; // identity / style / goal / strength all read as "you"
   return {
     id: b.id,
     fact: b.fact,
-    // GraphWorld 'priority' maps back to the reader's 'you' territory copy; the
-    // other worlds line up with the reader's vocabulary.
-    world: b.world === 'priority' ? 'you' : b.world === 'company' ? 'company' : 'decisions',
+    world,
     strength: b.strength,
     confirmed: b.confirmed,
     spine: false,
@@ -48,10 +53,36 @@ function toMemoryBond(b: GraphBond): MemoryBond {
   };
 }
 
+// The lightweight read for a tapped pattern node (a strength / blind spot /
+// working-style read). A pattern is a CLAIM the brain noticed, not a verified
+// fact, so it gets its own honest, un-verifiable read - never the fact reader.
+function PatternRead({ pattern }: { pattern: UserPattern }) {
+  const KIND_LABEL: Record<string, string> = {
+    strength: 'A strength',
+    blindspot: 'A blind spot',
+    behavior: 'How you work',
+    preference: 'How you work',
+    anti_preference: 'How you work',
+  };
+  const kind = KIND_LABEL[pattern.pattern_type] ?? 'A pattern';
+  const evidence = pattern.evidence_count ?? 0;
+  return (
+    <div className="flex w-full flex-col gap-3">
+      <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/25 bg-accent/[0.07] px-2.5 py-1 text-[11px] font-semibold text-accent">
+        {kind}
+      </span>
+      <p className="text-[15px] font-semibold leading-snug text-foreground">{pattern.pattern_text}</p>
+      <p className="text-[12px] leading-relaxed text-muted-foreground">
+        Something I have noticed{evidence > 0 ? ` across ${evidence} signal${evidence === 1 ? '' : 's'}` : ''}, not a fact you have confirmed. The more we see it, the more sure I get.
+      </p>
+    </div>
+  );
+}
+
 export default function MemoryCenter() {
   const navigate = useNavigate();
   const { isMobile } = useDevice();
-  const { stats, facts, isLoading, verifyFact: verifyMemoryFact } = useMemoryWeb();
+  const { stats, facts, patterns, isLoading, verifyFact: verifyMemoryFact } = useMemoryWeb();
   const { edges } = useMemoryEdges();
   const {
     isFlowOpen,
@@ -71,6 +102,8 @@ export default function MemoryCenter() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   // The selected bond for the centred brain canvas (desktop rail / mobile sheet).
   const [selectedBond, setSelectedBond] = useState<MemoryBond | null>(null);
+  // The selected pattern (strength / blind spot / style) - its own lightweight read.
+  const [selectedPattern, setSelectedPattern] = useState<UserPattern | null>(null);
   const { triggerImport, isImporting, fileInputProps } = useMarkdownImport();
   const { artifacts: libraryArtifacts } = useGeneratedArtifacts();
 
@@ -81,6 +114,12 @@ export default function MemoryCenter() {
 
   const handleBondSelect = useCallback((b: GraphBond | null) => {
     setSelectedBond(b ? toMemoryBond(b) : null);
+    if (b) setSelectedPattern(null);
+  }, []);
+
+  const handlePatternSelect = useCallback((p: UserPattern | null) => {
+    setSelectedPattern(p);
+    if (p) setSelectedBond(null);
   }, []);
 
   // Confirm = the one real backend action (verify the underlying fact). The
@@ -130,19 +169,22 @@ export default function MemoryCenter() {
       <div className="relative min-h-0 min-w-0 flex-1">
         <BrainCanvas
           facts={facts}
+          patterns={patterns}
           edges={edges}
           loading={isLoading}
           selectedFactId={selectedBond?.id ?? null}
           onBondSelect={handleBondSelect}
+          onPatternSelect={handlePatternSelect}
           onAdd={() => setIsAddOpen(true)}
           isMobile={isMobile}
         />
       </div>
-      {/* Desktop right-rail bond reader: collapsed until a node is selected so the
+      {/* Desktop right-rail reader: collapsed until a node is selected so the
           brain canvas claims the full width by default (the centred graph fills
-          it); it slides in only on selection. */}
+          it); it slides in only on selection - the fact bond reader, or the
+          lightweight pattern read for a strength / blind spot / style node. */}
       <AnimatePresence initial={false}>
-        {!isMobile && selectedBond && (
+        {!isMobile && (selectedBond || selectedPattern) && (
           <motion.div
             key="bond-rail"
             initial={{ width: 0, opacity: 0 }}
@@ -152,7 +194,11 @@ export default function MemoryCenter() {
             className="hidden flex-shrink-0 overflow-hidden md:flex"
           >
             <div className="scrollbar-hide flex w-[300px] flex-shrink-0 overflow-y-auto rounded-2xl border border-border/60 bg-card/40 p-4">
-              <BondReader bond={selectedBond} variant="rail" onConfirm={handleConfirmBond} />
+              {selectedPattern ? (
+                <PatternRead pattern={selectedPattern} />
+              ) : selectedBond ? (
+                <BondReader bond={selectedBond} variant="rail" onConfirm={handleConfirmBond} />
+              ) : null}
             </div>
           </motion.div>
         )}
@@ -238,14 +284,19 @@ export default function MemoryCenter() {
         )}
       </AnimatePresence>
 
-      {/* Bond reader sheet (mobile only - desktop uses the right rail). Opens when
-          a node in the centred Brain canvas is tapped. */}
+      {/* Reader sheet (mobile only - desktop uses the right rail). Opens when a
+          node in the centred Brain canvas is tapped: the fact bond reader, or the
+          lightweight pattern read for a strength / blind spot / style node. */}
       <Sheet
-        open={isMobile && !!selectedBond}
-        onOpenChange={(open) => { if (!open) setSelectedBond(null); }}
+        open={isMobile && (!!selectedBond || !!selectedPattern)}
+        onOpenChange={(open) => { if (!open) { setSelectedBond(null); setSelectedPattern(null); } }}
       >
         <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl border-border bg-background">
-          <BondReader bond={selectedBond} variant="sheet" onConfirm={handleConfirmBond} />
+          {selectedPattern ? (
+            <PatternRead pattern={selectedPattern} />
+          ) : (
+            <BondReader bond={selectedBond} variant="sheet" onConfirm={handleConfirmBond} />
+          )}
         </SheetContent>
       </Sheet>
     </MemoryErrorBoundary>
