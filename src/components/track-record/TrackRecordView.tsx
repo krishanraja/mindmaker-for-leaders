@@ -13,12 +13,14 @@
 // Device-native: mobile is a calm focused column (minimal scroll); desktop is a spacious
 // two-zone reading surface (calibration left, calls right). No em dashes. Tokens only.
 
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Scale, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { haptics } from '@/lib/haptics';
 import { AgedCallRow } from './AgedCallRow';
 import { CalibrationSparkline, ProofGlyph } from './trackRecordMotifs';
-import type { CalibrationRead, SharpenTrend, TrackRecordModel } from './trackRecordModel';
+import type { AgedOutcome, CalibrationRead, SharpenTrend, TrackRecordModel } from './trackRecordModel';
 
 // ---------------------------------------------------------------------------------------
 // COLD: the inviting promise. ONE centrepiece + a few questions worth weighing (each one
@@ -300,6 +302,45 @@ function SectionLabel({ children, count }: { children: React.ReactNode; count?: 
   );
 }
 
+// Plain-English outcome filter for the rich aged-calls list (the same segmented-lens
+// grammar as the Decisions ladder): jump straight to the calls that worked out, the
+// ones that fell short, or the ones still playing out.
+const OUTCOME_SEGMENTS: { key: 'all' | AgedOutcome; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'held', label: 'Worked out' },
+  { key: 'broke', label: 'Fell short' },
+  { key: 'watch', label: 'Playing out' },
+];
+
+function OutcomeFilter({
+  counts, value, onChange,
+}: {
+  counts: Record<'all' | AgedOutcome, number>;
+  value: 'all' | AgedOutcome;
+  onChange: (v: 'all' | AgedOutcome) => void;
+}) {
+  return (
+    <div className="flex gap-1 rounded-xl border border-border bg-foreground/[0.03] p-1">
+      {OUTCOME_SEGMENTS.map((s) => {
+        const on = value === s.key;
+        return (
+          <button
+            key={s.key}
+            type="button"
+            onClick={() => { onChange(s.key); haptics.light(); }}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-lg px-1.5 py-1.5 text-[11px] font-bold transition-colors',
+              on ? 'bg-gradient-to-b from-accent to-accent text-accent-foreground shadow-[0_8px_18px_-10px_hsl(var(--accent)/0.6)]' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {s.label}<span className={cn('text-[10px] tabular-nums', on ? 'opacity-80' : 'opacity-60')}>{counts[s.key] ?? 0}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------------------
 // The view.
 // ---------------------------------------------------------------------------------------
@@ -313,6 +354,18 @@ export interface TrackRecordViewProps {
 }
 
 export function TrackRecordView({ model, desktop, onWeigh, animated = true }: TrackRecordViewProps) {
+  // Outcome filter for the rich list (hooks must run before any early return).
+  const [outcome, setOutcome] = useState<'all' | AgedOutcome>('all');
+  const outcomeCounts = useMemo(() => {
+    const c: Record<'all' | AgedOutcome, number> = { all: model.calls.length, held: 0, broke: 0, watch: 0 };
+    for (const call of model.calls) c[call.outcome] += 1;
+    return c;
+  }, [model.calls]);
+  const richCalls = useMemo(
+    () => (outcome === 'all' ? model.calls : model.calls.filter((c) => c.outcome === outcome)),
+    [model.calls, outcome],
+  );
+
   if (model.kind === 'cold') {
     return <PromiseState desktop={desktop} onWeigh={onWeigh} />;
   }
@@ -353,14 +406,16 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
   );
 
   if (desktop) {
-    // Two-zone reading surface: calibration left, the full aged-calls scroll right.
+    // Two-zone reading surface: calibration left, the filterable aged-calls scroll right.
     return (
       <div className="grid min-h-0 flex-1 grid-cols-[1.05fr_1fr] gap-6">
         <div className="flex min-h-0 flex-col gap-4">{calibration}</div>
-        <div className="flex min-h-0 flex-col gap-3.5">
+        <div className="flex min-h-0 flex-col gap-3">
           <SectionLabel count={model.calls.length}>How they turned out</SectionLabel>
+          <OutcomeFilter counts={outcomeCounts} value={outcome} onChange={setOutcome} />
           <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-hide pb-1">
-            {model.calls.map((c, i) => (
+            {richCalls.length === 0 && <p className="text-[12.5px] text-muted-foreground">None in this group.</p>}
+            {richCalls.map((c, i) => (
               <AgedCallRow key={c.id} call={c} index={i} animated={animated} />
             ))}
           </div>
@@ -369,13 +424,15 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
     );
   }
 
-  // Mobile rich: calibration hero, then a tighter, fully-readable list in the single scroll.
+  // Mobile rich: calibration hero, the outcome filter, then a tighter readable list.
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3.5">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       {calibration}
       <SectionLabel count={model.calls.length}>How your calls aged</SectionLabel>
-      <div className="flex min-h-0 flex-col gap-2.5">
-        {model.calls.map((c, i) => (
+      <OutcomeFilter counts={outcomeCounts} value={outcome} onChange={setOutcome} />
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-hide">
+        {richCalls.length === 0 && <p className="text-[12.5px] text-muted-foreground">None in this group.</p>}
+        {richCalls.map((c, i) => (
           <AgedCallRow key={c.id} call={c} index={i} animated={animated} />
         ))}
       </div>

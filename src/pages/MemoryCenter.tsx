@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ArrowUpRight, FileText } from 'lucide-react';
+import { Plus, ArrowUpRight, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { haptics } from '@/lib/haptics';
 import { MemoryErrorBoundary } from '@/components/memory/MemoryErrorBoundary';
 import { MemoryList } from '@/components/memory/MemoryList';
 import { MemoryDetailSheet } from '@/components/memory/MemoryDetailSheet';
@@ -114,13 +114,15 @@ export default function MemoryCenter() {
 
   const handleBondSelect = useCallback((b: GraphBond | null) => {
     setSelectedBond(b ? toMemoryBond(b) : null);
-    if (b) setSelectedPattern(null);
+    if (b) { setSelectedPattern(null); haptics.light(); }
   }, []);
 
   const handlePatternSelect = useCallback((p: UserPattern | null) => {
     setSelectedPattern(p);
-    if (p) setSelectedBond(null);
+    if (p) { setSelectedBond(null); haptics.light(); }
   }, []);
+
+  const clearSelection = useCallback(() => { setSelectedBond(null); setSelectedPattern(null); }, []);
 
   // Confirm = the one real backend action (verify the underlying fact). The
   // canvas reflects the new confirmed state on the next refresh.
@@ -163,9 +165,20 @@ export default function MemoryCenter() {
       </div>
     ) : null;
 
-  // The Brain tab body: the centred canvas + (desktop) the slide-in bond rail.
+  // The reader for the selected node (a confirmed-fact bond, or the lightweight
+  // read for a strength / blind spot / style pattern). Shared by the desktop rail
+  // and the mobile inline panel.
+  const reader = selectedPattern ? (
+    <PatternRead pattern={selectedPattern} />
+  ) : selectedBond ? (
+    <BondReader bond={selectedBond} variant={isMobile ? 'sheet' : 'rail'} onConfirm={handleConfirmBond} />
+  ) : null;
+
+  // The Brain tab body: the centred canvas + the node reader. Desktop slides it in
+  // as a right rail; mobile opens it INLINE under the canvas (no bottom-sheet hop),
+  // so the read happens in place and nothing sits over the graph.
   const brainBody = (
-    <div className="flex h-full min-h-0 gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 md:flex-row">
       <div className="relative min-h-0 min-w-0 flex-1">
         <BrainCanvas
           facts={facts}
@@ -179,10 +192,9 @@ export default function MemoryCenter() {
           isMobile={isMobile}
         />
       </div>
+
       {/* Desktop right-rail reader: collapsed until a node is selected so the
-          brain canvas claims the full width by default (the centred graph fills
-          it); it slides in only on selection - the fact bond reader, or the
-          lightweight pattern read for a strength / blind spot / style node. */}
+          centred graph fills the canvas by default; slides in only on selection. */}
       <AnimatePresence initial={false}>
         {!isMobile && (selectedBond || selectedPattern) && (
           <motion.div
@@ -193,13 +205,42 @@ export default function MemoryCenter() {
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="hidden flex-shrink-0 overflow-hidden md:flex"
           >
-            <div className="scrollbar-hide flex w-[300px] flex-shrink-0 overflow-y-auto rounded-2xl border border-border/60 bg-card/40 p-4">
-              {selectedPattern ? (
-                <PatternRead pattern={selectedPattern} />
-              ) : selectedBond ? (
-                <BondReader bond={selectedBond} variant="rail" onConfirm={handleConfirmBond} />
-              ) : null}
+            <div className="scrollbar-hide relative flex w-[300px] flex-shrink-0 overflow-y-auto rounded-2xl border border-border/60 bg-card/40 p-4">
+              <button
+                type="button"
+                onClick={clearSelection}
+                aria-label="Close"
+                className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              {reader}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile inline reader: opens in place under the canvas (no bottom-sheet
+          hop). The canvas reflows above it and the graph re-centres on resize. */}
+      <AnimatePresence initial={false}>
+        {isMobile && (selectedBond || selectedPattern) && (
+          <motion.div
+            key="bond-inline"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="relative max-h-[44%] shrink-0 overflow-y-auto scrollbar-hide rounded-2xl border border-border/60 bg-card/60 p-4 md:hidden"
+          >
+            <button
+              type="button"
+              onClick={clearSelection}
+              aria-label="Close"
+              className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            {reader}
           </motion.div>
         )}
       </AnimatePresence>
@@ -283,22 +324,6 @@ export default function MemoryCenter() {
           />
         )}
       </AnimatePresence>
-
-      {/* Reader sheet (mobile only - desktop uses the right rail). Opens when a
-          node in the centred Brain canvas is tapped: the fact bond reader, or the
-          lightweight pattern read for a strength / blind spot / style node. */}
-      <Sheet
-        open={isMobile && (!!selectedBond || !!selectedPattern)}
-        onOpenChange={(open) => { if (!open) { setSelectedBond(null); setSelectedPattern(null); } }}
-      >
-        <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl border-border bg-background">
-          {selectedPattern ? (
-            <PatternRead pattern={selectedPattern} />
-          ) : (
-            <BondReader bond={selectedBond} variant="sheet" onConfirm={handleConfirmBond} />
-          )}
-        </SheetContent>
-      </Sheet>
     </MemoryErrorBoundary>
   );
 

@@ -1,14 +1,19 @@
 # CI gate for mm-ctrl.
 #
 # Runs on every PR + every push to main. Three checks, each blocking:
-#   1. typecheck — tsc --noEmit catches type errors before they hit prod
+#   1. typecheck — baseline-gated tsc (catches type errors before they hit prod)
 #   2. build     — full Vite build catches integration breakage that tsc alone misses
 #   3. lint      — eslint with --max-warnings=0 only on files this PR touched
 #
-# We deliberately scope lint to the PR diff because the existing codebase has
-# ~1600 pre-existing warnings (mostly any-typed Stripe/Supabase responses).
-# Failing CI on those would block every PR forever. New code must be clean;
-# old code is a separate cleanup track.
+# typecheck + lint are both BASELINE-scoped because the existing codebase carries
+# ~430 pre-existing type errors and ~1600 lint warnings (mostly any-typed
+# Stripe/Supabase responses). Failing CI on all of them would block every PR
+# forever. New code must be clean; old debt is a separate cleanup track.
+#
+# NOTE: a plain `tsc --noEmit` is a NO-OP here - the solution tsconfig.json has
+# `files: []`, so it checks nothing (this is how a missing-import crash once
+# shipped). The real check runs tsc against tsconfig.app.json and compares to
+# scripts/typecheck-baseline.json; see scripts/typecheck-ci.mjs.
 #
 # To strengthen later: add the test:run job once vitest coverage exists,
 # wire to required-status-checks in branch protection, and enable Dependabot.
@@ -32,7 +37,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx tsc --noEmit
+      - run: npm run typecheck
 
   build:
     name: build
