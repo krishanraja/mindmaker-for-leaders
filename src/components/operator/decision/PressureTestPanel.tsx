@@ -1,15 +1,15 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDecisionEngine } from '@/hooks/useDecisionEngine';
-import { useDecisionInbox, type OpenAlert } from '@/hooks/useDecisionInbox';
+import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { useDecisionCall } from '@/hooks/useDecisionCall';
 import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 import {
-  DecisionCold, DecisionLoading, DecisionErrorView, AlertBanner, UpgradeCard,
+  DecisionCold, DecisionLoading, DecisionErrorView, UpgradeCard,
 } from '@/components/operator/decision/decision-views';
-import { DecisionBoard } from '@/components/operator/decision/DecisionBoard';
 import { DecisionRunning } from '@/components/operator/decision/DecisionRunning';
 import { DecisionResultView } from '@/components/operator/decision/DecisionResultView';
+import { DecisionAnatomy } from '@/components/operator/decision/DecisionAnatomy';
 import { CriticalCallStep } from '@/components/operator/decision/CriticalCallStep';
 
 /**
@@ -55,27 +55,50 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   useEffect(() => { setBanked(false); }, [engine.decisionCase?.id]);
 
   // "Compose" forces the COLD one-ask even when the account already has decisions
-  // (the warm board's fast-capture / desktop "new" tap), so a returning leader can
-  // always weigh another. Cleared once a run starts or a case is opened.
-  const [composing, setComposing] = useState(false);
+  // (the anatomy's "weigh a new one" tap, or a prefilled deep-link from History /
+  // the Decision Map), so a returning leader can always weigh another. Cleared
+  // once a run starts or a case is opened.
+  const [composing, setComposing] = useState(Boolean(initialStatement));
+
+  // justRan = the leader actively weighed this case in this session, so the
+  // critical-call gate + the result view apply. When a case is auto-loaded or
+  // switched-to for REVIEW, we skip the gate and open straight into the anatomy.
+  const [justRan, setJustRan] = useState(false);
+  useEffect(() => { setJustRan(false); }, [engine.decisionCase?.id]);
+
+  // Auto-load the latest decision so the tab opens into its anatomy (not a list).
+  // Runs once per "rest" state; the ref re-arms whenever we reset back to blank.
+  const autoLoadedRef = useRef(false);
+  useEffect(() => {
+    if (autoLoadedRef.current) return;
+    if (composing || engine.starting || engine.decisionCase) return;
+    if (inbox.loading || inbox.cases.length === 0) return;
+    autoLoadedRef.current = true;
+    engine.load(inbox.cases[0].id);
+  }, [composing, engine, inbox.loading, inbox.cases]);
 
   const handleUpgrade = async () => { const url = await subscribe(); if (url) window.location.href = url; };
 
   const startNew = async () => {
     setComposing(false);
+    setJustRan(true);
+    autoLoadedRef.current = true; // a fresh run owns the surface; don't auto-load over it
     await engine.start(statement);
     inbox.refresh();
   };
-  // From the result/error: clear everything back to the account's natural state
-  // (the warm board if cases exist, else cold).
-  const newBlank = () => { engine.reset(); setStatement(''); setComposing(false); };
-  // From the warm board's fast-capture: open the cold one-ask to weigh another.
+  // From the anatomy/error: clear back to the account's natural state (re-arm
+  // auto-load so the latest decision's anatomy returns).
+  const newBlank = () => { engine.reset(); setStatement(''); setComposing(false); autoLoadedRef.current = false; };
+  // From the anatomy's "weigh a new one": open the cold one-ask.
   const compose = () => { engine.reset(); setStatement(''); setComposing(true); };
-  const openCase = (id: string) => { setComposing(false); engine.reset(); engine.load(id); };
-  const reRun = (a: OpenAlert) => {
-    const c = inbox.cases.find((x) => x.id === a.decision_case_id);
-    inbox.acknowledge(a.id);
-    if (c) { setStatement(c.statement); engine.reset(); }
+  // From the anatomy's switcher: open another decision for review.
+  const switchTo = (id: string) => { setComposing(false); setJustRan(false); engine.reset(); engine.load(id); };
+  // Re-weigh the decision in focus (from its folded-in watch alert chip).
+  const reWeigh = () => {
+    const c = engine.decisionCase;
+    const open = c ? inbox.alerts.find((a) => a.decision_case_id === c.id) : undefined;
+    if (open) inbox.acknowledge(open.id);
+    if (c) { setStatement(c.title || c.statement); setComposing(true); }
   };
 
   const bankCall = async () => {
@@ -98,40 +121,59 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
 
   const hasActive = Boolean(engine.decisionCase) && (engine.isRunning || engine.isComplete || engine.decisionCase?.stage === 'error');
   const isErrored = engine.decisionCase?.stage === 'error';
-  const needsCall = engine.isComplete && engine.claims.some((c) => c.is_load_bearing) && !callDone;
+  // The critical-call gate only fires for a freshly-weighed case (justRan), so
+  // reviewing an existing decision opens straight into its anatomy.
+  const needsCall = justRan && engine.isComplete && engine.claims.some((c) => c.is_load_bearing) && !callDone;
   const activeStatement = engine.decisionCase?.title || engine.decisionCase?.statement || statement;
+  // The open watch alert for the decision currently in focus (folded into the
+  // anatomy as a chip - the old standalone orange box is gone).
+  const caseAlert = engine.decisionCase
+    ? inbox.alerts.find((a) => a.decision_case_id === engine.decisionCase!.id) ?? null
+    : null;
 
   // ---- pick the one surface in focus ---------------------------------------
   let surface: React.ReactNode;
   if (engine.upgradeRequired) {
     surface = <UpgradeCard message={engine.upgradeMessage} onUpgrade={handleUpgrade} processing={isProcessing} />;
+  } else if (engine.starting) {
+    surface = <DecisionLoading />;
   } else if (hasActive && isErrored) {
     surface = <DecisionErrorView message={engine.error || engine.decisionCase?.error_detail || null} onReset={newBlank} />;
   } else if (hasActive && engine.isRunning && engine.decisionCase) {
     surface = <DecisionRunning stage={engine.decisionCase.stage} statement={activeStatement} isDesktop={isDesktop} />;
   } else if (hasActive && needsCall) {
     surface = <CriticalCallStep engine={engine} onDone={handleCallDone} />;
-  } else if (hasActive && engine.isComplete) {
+  } else if (hasActive && engine.isComplete && justRan) {
+    // Fresh run: the focused result + closure (bank), then back to the anatomy.
     surface = <DecisionResultView engine={engine} onBack={newBlank} onBank={bankCall} banked={banked} banking={banking} isDesktop={isDesktop} />;
-  } else if (inbox.loading) {
+  } else if (hasActive && engine.isComplete) {
+    // Review: the in-depth anatomy of this decision (the tab's front door).
+    surface = (
+      <DecisionAnatomy
+        engine={engine}
+        cases={inbox.cases}
+        alert={caseAlert}
+        onReWeigh={reWeigh}
+        onAcknowledgeAlert={(id) => inbox.acknowledge(id)}
+        onSwitch={switchTo}
+        onCompose={compose}
+        onBank={bankCall}
+        banked={banked}
+        banking={banking}
+        isDesktop={isDesktop}
+      />
+    );
+  } else if (composing) {
+    surface = <DecisionCold value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} isDesktop={isDesktop} />;
+  } else if (inbox.loading || inbox.cases.length > 0) {
+    // cases exist: the auto-load / switch is in flight - hold on the branded loader.
     surface = <DecisionLoading />;
-  } else if (inbox.cases.length > 0 && !composing) {
-    surface = <DecisionBoard cases={inbox.cases} onOpen={openCase} onNew={compose} isDesktop={isDesktop} />;
   } else {
     surface = <DecisionCold value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} isDesktop={isDesktop} />;
   }
 
-  // The alert banner shows only on the cold / warm states (never over a live run
-  // or result), and only one canonical home per thing (SPEC s2.1).
-  const showAlert = !hasActive && !inbox.loading && inbox.alerts.length > 0;
-
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {showAlert && (
-        <div className="shrink-0 pb-3">
-          <AlertBanner alerts={inbox.alerts} onReRun={reRun} onDismiss={(a) => inbox.acknowledge(a.id)} />
-        </div>
-      )}
       <div className="min-h-0 flex-1">{surface}</div>
     </div>
   );
