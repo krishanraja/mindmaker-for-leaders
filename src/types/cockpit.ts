@@ -72,6 +72,12 @@ export interface DeckCard {
   betId?: string | null;
 }
 
+// The session-adaptive Home state, derived off REAL data volume (never faked):
+//  cold = a brand-new leader, no own briefing/signals yet (generic orientation deck)
+//  warm = some personalization: interests tuned in, own signals woven
+//  rich = a real briefing + 2+ own signals: dense triage
+export type HomeState = 'cold' | 'warm' | 'rich';
+
 export interface CockpitData {
   hero: CockpitHero;
   bets: CockpitBet[];
@@ -79,4 +85,7 @@ export interface CockpitData {
   needsYouCount: number;
   deck: DeckCard[];
   topBlocker?: CockpitBlocker | null;
+  // session state + own-signal volume, for the adaptive Home shell.
+  homeState: HomeState;
+  ownSignalCount: number;
 }

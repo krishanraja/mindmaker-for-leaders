@@ -1,32 +1,37 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
 import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
-import { CockpitHome } from './CockpitHome';
-import { cockpitGreeting, COCKPIT_FRAMING } from './cockpitGreeting';
+import { HomeFeed } from './HomeFeed';
+import { cockpitGreeting } from './cockpitGreeting';
 
 /**
- * The mobile home, behind VITE_COCKPIT_ENABLED. The chief-of-staff ONE-THING
- * surface: a warm greeting + a single framing line, ONE hero (the top of the
- * useCockpit ranked stream), a small secondary peek of the next item, then a
- * thin footer rail of quiet doors - all in ONE composed, non-scrolling frame
- * between the AppHeader and the BottomNav.
+ * The mobile Home (behind VITE_COCKPIT_ENABLED) - the unified 2028 Home:
+ * browsable industry headlines (a thumb-first SWIPE feed) + the three doors
+ * (Briefing / Weigh / Build) in a fixed reserved place above the nav, all in ONE
+ * composed, non-scrolling frame between the AppHeader and the BottomNav.
  *
- * THE BUG FIX (the deck used to overlap the other home blocks): the frame is a
- * single CSS grid - header (auto) / focus (1fr) / footer rail + nav (auto). The
- * focus row is min-h-0 + overflow-hidden, so the hero (and the in-place stream
- * reveal) can never blow past the viewport width or collide with the rail/nav.
- * Nothing is absolutely positioned over a sibling.
+ * Same information model as the desktop rail (HomeFeed), rendered device-native.
+ * Loading is an IN-SHELL branded skeleton (chrome present, skeleton headline
+ * cards + an anticipatory caption), never a raw spinner. See HomeFeed.tsx and
+ * prototypes/home-2028.html for the design + CTRL-SYSTEM-SPEC s0,1,2,6 for the rules.
+ *
+ * THE no-clip / no-scroll contract: MobileFrame owns a single CSS grid (header /
+ * bounded <main> / pinned BottomNav). HomeFeed fills <main> as a flex column
+ * whose feed zone is min-h-0 + overflow-hidden, so the headlines can never blow
+ * past the viewport or collide with the doors/nav (the live clip bug fix).
  */
 interface CockpitViewProps {
   /** Optional onboarding banner, rendered inside the frame so the whole home
       still fits one viewport with no page scroll for a brand-new leader. */
   banner?: ReactNode;
+  /** Hold the in-shell skeleton while an upstream gate (the onboarding check) is
+      still resolving, so the Home route never flashes a raw text loader. */
+  forceLoading?: boolean;
 }
 
-export function CockpitView({ banner }: CockpitViewProps) {
+export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data, loading, recordDeckReaction } = useCockpit();
@@ -37,27 +42,22 @@ export function CockpitView({ banner }: CockpitViewProps) {
     '';
 
   return (
-    // The shared mobile shell (MobileFrame) owns the header + bottom nav; the
-    // content row is bounded + non-scrolling and CockpitHome fills it as a flex
-    // column. This is the pattern MobileFrame was extracted from.
+    // pb reserves the fixed BottomNav's height (h-16 + safe area) so the three
+    // doors keep their reserved place ABOVE the nav and never clip behind it
+    // (CTRL-SYSTEM-SPEC s2: nothing clips behind the nav).
     <MobileFrame banner={banner} padding="px-4">
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col py-3">
-        {loading ? (
-          <div className="flex flex-1 items-center justify-center text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </div>
-        ) : (
-          <CockpitHome
-            data={data}
-            greeting={cockpitGreeting(firstName)}
-            framing={COCKPIT_FRAMING}
-            onPlayBriefing={() => navigate('/briefing')}
-            onGoDecide={() => navigate('/decision')}
-            onBuildSkill={() => navigate('/context')}
-            onOpenBet={(id) => navigate(`/decision-map?case=${id}`)}
-            onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
-          />
-        )}
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col pt-3 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
+        <HomeFeed
+          variant="mobile"
+          data={data}
+          loading={loading || !!forceLoading}
+          greeting={cockpitGreeting(firstName)}
+          onPlayBriefing={() => navigate('/briefing')}
+          onGoDecide={() => navigate('/decision')}
+          onBuildSkill={() => navigate('/context')}
+          onOpenCard={(card) => { if (card.betId) navigate(`/decision-map?case=${card.betId}`); }}
+          onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
+        />
       </div>
     </MobileFrame>
   );

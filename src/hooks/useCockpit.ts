@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
-import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, HeroMagnitude } from '@/types/cockpit';
+import { COLD_DECK } from '@/components/cockpit/coldDeck';
+import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, HeroMagnitude, HomeState } from '@/types/cockpit';
 
 const db = supabase as unknown as SupabaseClient;
 
@@ -57,7 +58,11 @@ function stateFromAlertKind(kind: string | undefined): BetState {
  * reaction-number extraction backend supplies an honest magnitude - so it never
  * fabricates a figure (clearest-unit-first + honesty).
  */
-export function useCockpit(): { data: CockpitData; loading: boolean } {
+export function useCockpit(): {
+  data: CockpitData & { topBlocker: CockpitBlocker | null };
+  loading: boolean;
+  recordDeckReaction: (card: DeckCard, reaction: 'like' | 'dislike') => Promise<void>;
+} {
   const { cases, alerts, loading } = useDecisionInbox();
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
@@ -258,14 +263,46 @@ export function useCockpit(): { data: CockpitData; loading: boolean } {
       });
     // interleave: lead with a personal signal when there is one, then alternate
     // news and signals so the deck feels both informed and personal.
-    const deck: DeckCard[] = [];
+    const woven: DeckCard[] = [];
     const maxLen = Math.max(newsCards.length, signalCards.length);
     for (let i = 0; i < maxLen; i++) {
-      if (signalCards[i]) deck.push(signalCards[i]);
-      if (newsCards[i]) deck.push(newsCards[i]);
+      if (signalCards[i]) woven.push(signalCards[i]);
+      if (newsCards[i]) woven.push(newsCards[i]);
     }
 
-    return { hero, bets, liveCount: bets.length, needsYouCount, deck: deck.slice(0, 5) };
+    // THE EMPTY-HOME FIX: Home is the industry read first, personalized second.
+    // When the leader has no own briefing yet (newsCards empty), fall back to the
+    // bundled cold deck so Home is NEVER empty; still LEAD with any real own
+    // signals (weave them on top of the generic deck the moment they exist).
+    let deck: DeckCard[];
+    if (newsCards.length === 0) {
+      // no personal news; show generic AI-native headlines, signals first.
+      const generic = COLD_DECK.filter((c) => !(c.category && dislikedCats.has(c.category)));
+      deck = [...signalCards, ...generic];
+    } else {
+      deck = woven;
+    }
+
+    // Session-adaptive state, driven off REAL data volume (never faked):
+    //  cold = no own briefing AND no own signals (the generic orientation deck)
+    //  rich = a real briefing AND 2+ own signals (dense triage)
+    //  warm = anything in between (personalized, own signals woven)
+    const ownSignals = signalCards.length;
+    const hasOwnNews = newsCards.length > 0;
+    let homeState: HomeState;
+    if (!hasOwnNews && ownSignals === 0) homeState = 'cold';
+    else if (hasOwnNews && ownSignals >= 2) homeState = 'rich';
+    else homeState = 'warm';
+
+    return {
+      hero,
+      bets,
+      liveCount: bets.length,
+      needsYouCount,
+      deck: deck.slice(0, 7),
+      homeState,
+      ownSignalCount: ownSignals,
+    };
   }, [cases, alerts, reactions, segments, dislikedCats]);
 
   return { data: { ...data, topBlocker }, loading, recordDeckReaction };
