@@ -26,6 +26,7 @@ interface LiveHeadline {
   headline: string;
   say: string | null;
   source: string | null;
+  corroboration?: string | null; // "+2 sources" when multiple outlets agree
   url: string;
   category: string | null;
   timeAgo: string | null;
@@ -264,6 +265,7 @@ export function useCockpit(): {
         headline: h.headline.trim(),
         say: h.say ?? null,
         source: h.source ?? null,
+        corroboration: h.corroboration ?? null,
         timeAgo: h.timeAgo ?? null,
         url: h.url ?? null,
       }));

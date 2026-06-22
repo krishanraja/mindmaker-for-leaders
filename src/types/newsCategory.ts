@@ -59,11 +59,12 @@ export const DEFAULT_NEWS_CATEGORY: NewsCategoryId = 'model';
  *   2. otherwise a SMALL keyword classifier maps the headline + why-line text to
  *      a category, defaulting to {@link DEFAULT_NEWS_CATEGORY}.
  *
- * TODO(news-pipeline): replace the keyword fallback with the server-assigned
- * category + the AI-native filter (the briefing pipeline does not populate
- * `category` yet - that is a separate follow-up PR, MAIN-APP-POLISH-SPEC s2/s5).
- * This client-side classifier is a stopgap so the branded card has a coherent
- * motif today; it is intentionally simple and not a substitute for the model.
+ * The live-headlines pipeline now populates `category` server-side (the
+ * deterministic AI-native classifier in supabase/functions/_shared/news-ai-native.ts
+ * runs over each clustered story), so path 1 is the live path for the Home feed.
+ * This client-side keyword classifier remains as the fallback for any card that
+ * arrives without a valid category id (older briefing rows, the bundled cold
+ * deck); it is intentionally simple and not a substitute for the server tagger.
  */
 const KEYWORD_RULES: Array<{ id: NewsCategoryId; words: RegExp }> = [
   // order matters: earlier rules win on a tie. Specific risk/compliance terms

@@ -112,7 +112,7 @@ Built one at a time, mock-driven, after this spec is locked. Order in section 5.
 ## 5. Build sequence
 
 1. **This spec** (strategy) - lock it.
-2. **Generate the 9 category images** + wire the news pipeline to tag categories, and rebuild the headline card with the visual. (Surface: Briefing/Cockpit deck.)
+2. **Generate the 9 category images** + wire the news pipeline to tag categories, and rebuild the headline card with the visual. (Surface: Briefing/Cockpit deck.) **DONE.** Categories are now tagged server-side: the Home `live-headlines` pipeline gathers across four free sources (GDELT + Hacker News + a curated RSS allowlist + Brave), cross-verifies by clustering near-duplicate headlines across sources (the distinct-source count is the corroboration/trust signal), AI-native-filters + tags each story to one of the nine categories (`_shared/news-ai-native.ts`), ranks by `corroboration x reputation x freshness x engagement`, balances across the nine lanes, and writes a grounded "why it matters" line. The `NewsHeadlineCard` renders the branded `CategoryMotif` + a `corroboration` chip ("+2 sources"). Cached daily in `live_headlines_cache`, pre-warmed by the `live-headlines-prewarm` pg_cron job. No new API keys needed. (See CLAUDE.md "Home live-headlines pipeline" + `_shared/news-{sources,cluster,synthesis}.ts`.)
 3. **Decision engine AI-native re-scope** (prompts + examples + reframe) + the Decision surface no-scroll one-ask rebuild.
 4. **Cockpit/Dashboard** no-scroll one-ask + language.
 5. **Brain**: visual-verify first, then fix layout + zoom + interactivity.

@@ -67,6 +67,9 @@ export interface DeckCard {
   // a soft (modelled) or sourced figure, only when the source honestly has one
   magnitude?: { value: string; kind: 'sourced' | 'modelled' } | null;
   source?: string | null; // the publication, for the meta row (news only)
+  // how many independent sources reported the story, e.g. "+2 sources" (news
+  // only). The cross-verification trust signal; null when a single source.
+  corroboration?: string | null;
   timeAgo?: string | null; // relative time, e.g. "2h ago" (news only)
   // a real, dated article link (live news cards). Tapping the card opens it.
   url?: string | null;
