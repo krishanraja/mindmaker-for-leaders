@@ -140,6 +140,14 @@ export function NewsHeadlineCard({ card, variant = 'feed', focused, onOpen }: Ne
           ) : (
             <>
               <span className="font-semibold text-[#aab2c0]">{card.source ?? 'CTRL briefing'}</span>
+              {card.corroboration && (
+                <span
+                  className="rounded-full border border-accent/25 bg-accent/10 px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-accent"
+                  title="Independent sources reporting this story"
+                >
+                  {card.corroboration}
+                </span>
+              )}
               {card.timeAgo && (
                 <>
                   <span className="text-[#3a4150]">&middot;</span>
