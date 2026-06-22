@@ -125,6 +125,24 @@ describe('balanced selection', () => {
     expect(cats.has('governance')).toBe(true);
     expect(cats.has('model')).toBe(true);
   });
+
+  it('caps a dominant lane via maxPerCategory rather than flooding the deck', () => {
+    const clusters = scoreClusters(clusterArticles([
+      art({ title: 'model alpha frontier', source: 's1.com' }),
+      art({ title: 'model beta frontier', source: 's2.com' }),
+      art({ title: 'model gamma frontier', source: 's3.com' }),
+      art({ title: 'model delta frontier', source: 's4.com' }),
+      art({ title: 'model epsilon frontier', source: 's5.com' }),
+      art({ title: 'model zeta frontier', source: 's6.com' }),
+      art({ title: 'regulation governance policy ai act', source: 's7.com' }),
+    ]));
+    const categoryOf = (c: typeof clusters[number]) =>
+      c.rep.title.includes('regulation') ? 'governance' : 'model';
+    const picked = selectBalanced(clusters, categoryOf, 10, 2);
+    const modelCount = picked.filter((c) => categoryOf(c) === 'model').length;
+    expect(modelCount).toBeLessThanOrEqual(2); // the cap held
+    expect(picked.some((c) => categoryOf(c) === 'governance')).toBe(true);
+  });
 });
 
 describe('corroboration label', () => {

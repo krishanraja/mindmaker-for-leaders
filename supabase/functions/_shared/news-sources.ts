@@ -84,7 +84,13 @@ async function getText(url: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<str
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
-      headers: { Accept: "application/rss+xml, application/xml, text/xml, */*", "User-Agent": "ctrl-news/1.0" },
+      // A browser-like UA: several reputable feeds (the Verge, Ars) 403 a bare
+      // bot UA. We still identify honestly via the trailing token.
+      headers: {
+        Accept: "application/rss+xml, application/xml, text/xml, */*",
+        "User-Agent":
+          "Mozilla/5.0 (compatible; ctrl-news/1.0; +https://ctrl.themindmaker.ai)",
+      },
       signal: controller.signal,
     });
     if (!res.ok) return null;
@@ -170,6 +176,10 @@ export async function fetchHackerNews(): Promise<RawArticle[]> {
       const url = typeof h.url === "string" ? h.url : "";
       const title = stripHtml(typeof h.title === "string" ? h.title : "");
       if (!url || !title || seen.has(url)) continue; // skip Ask HN (no url) + dupes
+      // Skip self-promotion posts (Show HN / Launch HN / Ask HN). These are
+      // founder/project announcements, not the reputable industry news a chief
+      // of staff needs; letting them through filled the feed with personal repos.
+      if (/^(show|launch|ask)\s+hn[:\s]/i.test(title)) continue;
       seen.add(url);
       const host = hostOf(url);
       const points = typeof h.points === "number" ? h.points : 0;
@@ -180,8 +190,10 @@ export async function fetchHackerNews(): Promise<RawArticle[]> {
         source: host,
         publishedIso: typeof h.created_at === "string" ? h.created_at : null,
         engagement: points,
-        // HN surfacing is itself a weak quality vote; bump generic hosts to >=2.
-        sourceTier: Math.max(reputationTier(host), 2),
+        // Honest reputation of the LINKED outlet: HN community attention is
+        // captured by `engagement`, not by inflating the source tier. A story
+        // HN surfaced from a reputable outlet still gets that outlet's tier.
+        sourceTier: reputationTier(host),
         origin: "hn",
       });
     }

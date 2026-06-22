@@ -47,6 +47,9 @@ interface HeadlineCard {
 }
 
 const MAX_CARDS = 14;
+// Stories older than this are dropped: a daily Home feed should be recent news,
+// not a months-old archive item a category RSS feed happened to surface.
+const MAX_AGE_DAYS = 14;
 // Stories worth surfacing must clear a low bar: either corroborated by 2+
 // sources, or a single strong/fresh source. This filters lone low-tier rehashes.
 function worthSurfacing(c: Cluster): boolean {
@@ -86,9 +89,19 @@ serve(async (req) => {
       }
     }
 
-    // 2. Gather across all free sources, keep AI-native only.
+    // 2. Gather across all free sources, keep AI-native + recent only. A
+    //    freshness cutoff matters because some category-archive RSS feeds
+    //    (e.g. VentureBeat) return months-old items; stale stories are not
+    //    "news". Items with a parseable date older than the cutoff are dropped;
+    //    undated items are kept (we cannot prove they are stale).
+    const cutoffMs = Date.now() - MAX_AGE_DAYS * 24 * 3_600_000;
     const raw = await gatherAll(braveKey);
-    const aiNative = raw.filter((a) => isAiNative(`${a.title} ${a.description}`));
+    const aiNative = raw.filter((a) => {
+      if (!isAiNative(`${a.title} ${a.description}`)) return false;
+      if (!a.publishedIso) return true;
+      const t = Date.parse(a.publishedIso);
+      return !Number.isFinite(t) || t >= cutoffMs;
+    });
     if (aiNative.length === 0) {
       return json({ cards: [], cached: false, error: "no AI-native stories gathered" });
     }
