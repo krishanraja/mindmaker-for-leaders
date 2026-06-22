@@ -1,191 +1,159 @@
-import { useCallback, useRef, useState } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { MessageSquare, Mic, Radio, Settings as SettingsIcon, UserCircle } from 'lucide-react'
+import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { Mic, Square, Loader2, Check } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { haptics } from '@/lib/haptics'
-import { useGenerateBriefing } from '@/hooks/useBriefing'
-import { useBriefingContext } from '@/contexts/BriefingContext'
-import { useSettingsSheet } from '@/contexts/SettingsSheetContext'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { useVoice } from '@/hooks/useVoice'
+import { supabase } from '@/integrations/supabase/client'
 
-const LONG_PRESS_MS = 220
+/**
+ * GlobalFAB - the app-wide voice brain-dump.
+ *
+ * Previously this was a mic-SHAPED button that only opened a navigation menu
+ * (Talk to ctrl / Brief me / Settings / Profile) - all of which are already
+ * reachable from the header gear + bottom nav, and the floating button overlapped
+ * real content. It was "a mic that doesn't listen".
+ *
+ * Now it is a real, single-purpose affordance: tap to talk, and CTRL parses your
+ * raw thinking into memory facts (the extract-user-context pipeline, the same one
+ * the Brain tab uses). Voice in CTRL means one thing - a brain-dump that enriches
+ * what CTRL knows about you.
+ *
+ * It is deliberate, not ever-present:
+ *   - mobile only (desktop has the command palette + larger inputs).
+ *   - hidden on every surface that already invites long-format voice in context
+ *     (Decisions capture, Brain add-memory, Automator, Briefing steer, onboarding,
+ *     enrich), so it never duplicates or overlaps a contextual mic. It shows on the
+ *     reflective surfaces that lack one (Home, You), as the general "tell me
+ *     anything and I'll remember it" entry.
+ */
+
+// Route prefixes that own a contextual voice affordance (or are utility surfaces
+// where a brain-dump makes no sense). startsWith, so '/decision' also covers
+// '/decision-map'.
+const HIDE_ON = [
+  '/decision', // Decisions capture has its own "talk it out" mic
+  '/memory', // Brain has Add-memory voice
+  '/context', // Automator has "talk through the workflow"
+  '/briefing', // Briefing has voice-steer
+  '/enrich', // Enrich is itself a long-format context capture
+  '/onboarding',
+  '/settings',
+  '/profile',
+  '/compliance',
+]
 
 export function GlobalFAB() {
-  const navigate = useNavigate()
+  const isMobile = useIsMobile()
   const location = useLocation()
-  const [searchParams] = useSearchParams()
+  const [saving, setSaving] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
-  // The dashboard memory view (home tab) has its own on-screen mic and a
-  // Settings gear in the header, so a second mic-shaped FAB here just
-  // duplicates affordances. Hide the FAB on that one view; keep it on
-  // tabs that lack a voice entry point.
-  const isHomeMemoryView =
-    location.pathname === '/dashboard' && (searchParams.get('view') || 'memory') === 'memory'
-  const [menuOpen, setMenuOpen] = useState(false)
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const didLongPress = useRef(false)
+  const { isRecording, isProcessing, duration, startRecording, stopRecording } = useVoice({
+    maxDuration: 120,
+    onTranscript: async (text) => {
+      const trimmed = text.trim()
+      if (!trimmed) return
+      setSaving(true)
+      try {
+        // Same brain-dump -> structured facts pipeline the Brain tab uses.
+        const { data, error } = await supabase.functions.invoke('extract-user-context', {
+          body: { transcript: trimmed, source_type: 'voice' },
+        })
+        if (error) throw error
+        const d = (data ?? {}) as { stored_count?: number; pending_verifications?: unknown[] }
+        const n = d.stored_count ?? d.pending_verifications?.length ?? 0
+        haptics.success()
+        setJustSaved(true)
+        window.setTimeout(() => setJustSaved(false), 1800)
+        toast.success(
+          n > 0
+            ? `Got it. Added ${n} thing${n === 1 ? '' : 's'} to your brain.`
+            : "Got it. I couldn't pull a clear fact from that - try naming specifics.",
+        )
+      } catch {
+        toast.error("Couldn't save that. Try again.")
+      } finally {
+        setSaving(false)
+      }
+    },
+  })
 
-  const { generate, generating } = useGenerateBriefing()
-  const { setSheetOpen, playback } = useBriefingContext()
-  const { openSheet, openTo } = useSettingsSheet()
+  const hidden = !isMobile || HIDE_ON.some((p) => location.pathname.startsWith(p))
+  if (hidden) return null
 
-  const clearLongPress = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
+  const busy = isProcessing || saving
+
+  const onTap = async () => {
+    haptics.light()
+    if (isRecording) {
+      stopRecording()
+      return
+    }
+    if (busy) return
+    try {
+      await startRecording()
+    } catch {
+      toast.error('I could not reach the microphone. Check the permission and try again.')
     }
   }
-
-  const handlePressStart = useCallback(() => {
-    didLongPress.current = false
-    longPressTimer.current = setTimeout(() => {
-      didLongPress.current = true
-      setMenuOpen(true)
-      haptics.light()
-    }, LONG_PRESS_MS)
-  }, [])
-
-  const handlePressEnd = useCallback(() => {
-    clearLongPress()
-    if (didLongPress.current) return
-    // Short tap opens the menu too; long-press is just a faster route.
-    // This avoids navigating to the legacy /voice redirect.
-    setMenuOpen(true)
-  }, [])
-
-  const handleTalkToCtrl = () => {
-    setMenuOpen(false)
-    navigate('/dashboard')
-  }
-
-  const handleBriefMe = async () => {
-    setMenuOpen(false)
-    const briefingId = await generate()
-    if (briefingId) {
-      setSheetOpen(true)
-    }
-  }
-
-  const handleSettings = () => {
-    setMenuOpen(false)
-    openSheet()
-  }
-
-  const handleProfile = () => {
-    setMenuOpen(false)
-    openTo('profile')
-  }
-
-  const briefingPlaying = playback.isPlaying
-
-  if (isHomeMemoryView) return null
 
   return (
     <>
+      {/* the recording status pill, above the button */}
       <AnimatePresence>
-        {menuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-30"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 8 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-              style={{ bottom: 'calc(84px + env(safe-area-inset-bottom))' }}
-              className="fixed right-4 z-40 min-w-[220px] bg-background border border-border rounded-xl shadow-xl overflow-hidden"
-              role="menu"
-            >
-              <FabMenuItem
-                icon={MessageSquare}
-                label="Talk to ctrl"
-                onClick={handleTalkToCtrl}
-              />
-              <FabMenuItem
-                icon={Radio}
-                label={generating ? 'Generating...' : 'Brief me now'}
-                accent
-                disabled={generating}
-                onClick={handleBriefMe}
-              />
-              <FabMenuItem icon={SettingsIcon} label="Settings" onClick={handleSettings} />
-              <FabMenuItem icon={UserCircle} label="Profile" onClick={handleProfile} />
-            </motion.div>
-          </>
+        {isRecording && (
+          <motion.div
+            initial={{ opacity: 0, y: 6, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+            style={{ bottom: 'calc(148px + env(safe-area-inset-bottom))' }}
+            className="fixed right-4 z-40 flex items-center gap-2 rounded-full border border-accent/30 bg-background/95 px-3.5 py-2 shadow-lg backdrop-blur"
+          >
+            <span className="flex h-2 w-2 items-center justify-center">
+              <span className="absolute h-2 w-2 animate-ping rounded-full bg-accent/60" />
+              <span className="h-2 w-2 rounded-full bg-accent" />
+            </span>
+            <span className="text-[12.5px] font-semibold text-foreground">
+              Listening... tap to finish
+            </span>
+            <span className="text-[11px] tabular-nums text-muted-foreground">{duration}s</span>
+          </motion.div>
         )}
       </AnimatePresence>
 
       <motion.button
-        onTouchStart={handlePressStart}
-        onTouchEnd={handlePressEnd}
-        onMouseDown={handlePressStart}
-        onMouseUp={handlePressEnd}
-        onMouseLeave={clearLongPress}
-        aria-label={menuOpen ? 'Close menu' : 'Open voice and actions menu'}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
+        type="button"
+        onClick={() => void onTap()}
+        aria-label={isRecording ? 'Finish brain-dump' : 'Brain-dump by voice'}
+        aria-pressed={isRecording}
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25, delay: 0.15 }}
         whileTap={{ scale: 0.94 }}
         style={{ bottom: 'calc(80px + env(safe-area-inset-bottom))' }}
         className={cn(
-          'fixed right-4 z-40 w-14 h-14 rounded-full',
-          'flex items-center justify-center',
-          'text-accent-foreground shadow-lg shadow-accent/25',
-          generating ? 'bg-accent/80' : 'bg-accent',
-          generating ? '' : 'fab-pulse',
+          'fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-colors',
+          isRecording
+            ? 'bg-rose-500 text-white shadow-rose-500/30'
+            : 'bg-accent text-accent-foreground shadow-accent/25',
+          !isRecording && !busy && 'fab-pulse',
         )}
       >
-        {generating ? (
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-            className="w-6 h-6 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full"
-          />
+        {busy ? (
+          <Loader2 className="h-6 w-6 animate-spin" />
+        ) : justSaved ? (
+          <Check className="h-6 w-6" strokeWidth={3} />
+        ) : isRecording ? (
+          <Square className="h-5 w-5" fill="currentColor" />
         ) : (
-          <>
-            <Mic className="h-6 w-6" />
-            {briefingPlaying && (
-              <span
-                aria-hidden="true"
-                className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-background border-2 border-accent"
-              />
-            )}
-          </>
+          <Mic className="h-6 w-6" />
         )}
       </motion.button>
     </>
-  )
-}
-
-interface FabMenuItemProps {
-  icon: React.ComponentType<{ className?: string }>
-  label: string
-  onClick: () => void
-  accent?: boolean
-  disabled?: boolean
-}
-
-function FabMenuItem({ icon: Icon, label, onClick, accent, disabled }: FabMenuItemProps) {
-  return (
-    <button
-      role="menuitem"
-      onClick={onClick}
-      disabled={disabled}
-      className={cn(
-        'flex items-center gap-3 w-full px-4 py-3 text-left transition-colors',
-        'hover:bg-muted disabled:opacity-60 disabled:cursor-not-allowed',
-        'border-b border-border last:border-b-0',
-      )}
-    >
-      <Icon className={cn('w-4 h-4', accent ? 'text-accent' : 'text-muted-foreground')} />
-      <span className={cn('text-sm font-medium', accent && 'text-accent')}>{label}</span>
-    </button>
   )
 }

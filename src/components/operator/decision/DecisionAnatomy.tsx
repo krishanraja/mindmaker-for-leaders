@@ -252,9 +252,10 @@ function Spine({
         <TrustGauge pct={pct} compact={collapsed} />
       </div>
 
-      {/* the "read my full answer" handle (hidden once collapsed) */}
+      {/* the "read my full answer" handle (hidden once collapsed), left-aligned
+          under the decision so it reads as part of the same column */}
       {!collapsed && (
-        <div className="relative mt-2.5 flex items-center justify-center gap-1.5 text-[10.5px] font-semibold text-muted-foreground">
+        <div className="relative mt-2.5 flex items-center justify-start gap-1.5 text-[10.5px] font-semibold text-muted-foreground">
           {showFull ? 'Hide the answer' : 'Read my full answer'}
           <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', showFull && 'rotate-180')} />
         </div>
