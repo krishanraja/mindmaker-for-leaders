@@ -30,34 +30,74 @@
  * ends are on the canvas).
  */
 
-import type { MemoryWebFact } from '@/types/memory';
-import { factWorld, factStrength, isConfirmed, factProvenance } from './worldModel';
+import type { MemoryWebFact, UserPattern } from '@/types/memory';
+import { factStrength, isConfirmed, factProvenance } from './worldModel';
 
-/** The mock's worlds: emerald hub + three orbit territories. */
-export type GraphWorld = 'you' | 'priority' | 'decisions' | 'company';
+/**
+ * The Brain worlds: the emerald YOU hub + a set of well-separated orbit
+ * territories. The old set (priority/decisions/company) was almost all
+ * amber/orange and hid everything personal under "priority"; this set splits the
+ * person out (who you are, how you work, your strengths/edge) AND your company,
+ * goals, challenges and outside signals, each in its own hue.
+ */
+export type GraphWorld =
+  | 'you'
+  | 'identity'
+  | 'style'
+  | 'goal'
+  | 'company'
+  | 'challenge'
+  | 'signal'
+  | 'strength';
 
 /** Token + label per world (drawn via hsl(var(--node-*))). */
 export const GRAPH_WORLD_META: Record<GraphWorld, { token: string; label: string }> = {
   you: { token: 'var(--node-you)', label: 'You' },
-  priority: { token: 'var(--node-priority)', label: 'Priorities' },
-  decisions: { token: 'var(--node-decisions)', label: 'Decisions' },
+  identity: { token: 'var(--node-identity)', label: 'About you' },
+  style: { token: 'var(--node-style)', label: 'Working style' },
+  goal: { token: 'var(--node-goal)', label: 'Goals' },
   company: { token: 'var(--node-company)', label: 'Company' },
+  challenge: { token: 'var(--node-challenge)', label: 'Challenges' },
+  signal: { token: 'var(--node-signal)', label: 'Signals' },
+  strength: { token: 'var(--node-strength)', label: 'Strengths' },
 };
 
+/** The orbit worlds (everything that is not the synthesized YOU hub). */
+export const ORBIT_WORLDS: Exclude<GraphWorld, 'you'>[] = [
+  'identity', 'style', 'goal', 'company', 'challenge', 'signal', 'strength',
+];
+
 /**
- * Map a real fact onto one of the three ORBIT worlds (the hub is synthesized, not
- * a fact). Honest re-grouping of the existing four-territory model onto the mock's
- * three orbit colours:
- *   you-world facts (objective / identity / preference) -> PRIORITY (amber)
- *   company-world facts (business / blocker)            -> COMPANY  (orange)
- *   ai-world facts (externally sourced context)         -> DECISIONS (purple,
- *     the "open calls / signals weighing on you" cluster the mock paints purple)
+ * Map a real fact onto an orbit world from its real category + source (no
+ * fabrication). Externally-sourced facts read as outside SIGNALS; the rest split
+ * by category so the person (identity / style) reads distinctly from the company.
  */
 export function factGraphWorld(fact: MemoryWebFact): Exclude<GraphWorld, 'you'> {
-  const w = factWorld(fact);
-  if (w === 'company') return 'company';
-  if (w === 'ai' || w === 'decisions') return 'decisions';
-  return 'priority';
+  const external = fact.source_type === 'enrichment'
+    || fact.source_type === 'linkedin'
+    || fact.source_type === 'calendar';
+  if (external) return 'signal';
+  switch (fact.fact_category) {
+    case 'identity': return 'identity';
+    case 'preference': return 'style';
+    case 'objective': return 'goal';
+    case 'business': return 'company';
+    case 'blocker': return 'challenge';
+    default: return 'company';
+  }
+}
+
+/**
+ * Map a real observed pattern onto an orbit world. A strength is the leader's
+ * edge; a blindspot reads as a challenge; everything else describes how they
+ * work (style). Patterns are CLAIMS the brain noticed, never verified facts.
+ */
+export function patternGraphWorld(pattern: UserPattern): Exclude<GraphWorld, 'you'> {
+  switch (pattern.pattern_type) {
+    case 'strength': return 'strength';
+    case 'blindspot': return 'challenge';
+    default: return 'style';
+  }
 }
 
 export interface GraphNode {
@@ -68,8 +108,12 @@ export interface GraphNode {
   y: number;
   r: number;
   label: string;
-  /** the underlying fact (null for the synthesized hub) */
+  /** what this node is: a memory fact, an observed pattern, or the hub. */
+  kind: 'fact' | 'pattern' | 'hub';
+  /** the underlying fact (null for patterns + the synthesized hub) */
   fact: MemoryWebFact | null;
+  /** the underlying pattern (only for kind === 'pattern') */
+  pattern: UserPattern | null;
   confirmed: boolean;
   strength: number;
   hub?: boolean;
@@ -93,7 +137,10 @@ const HUB_ID = '__you__';
  * whole thing stays centred on the hub (the centering math lives in
  * computeViewBox, not here).
  */
-export function buildGraph(facts: MemoryWebFact[]): { nodes: GraphNode[]; edges: GraphEdge[] } {
+export function buildGraph(
+  facts: MemoryWebFact[],
+  patterns: UserPattern[] = [],
+): { nodes: GraphNode[]; edges: GraphEdge[] } {
   const hub: GraphNode = {
     id: HUB_ID,
     world: 'you',
@@ -101,42 +148,80 @@ export function buildGraph(facts: MemoryWebFact[]): { nodes: GraphNode[]; edges:
     y: 0,
     r: 15,
     label: 'You',
+    kind: 'hub',
     fact: null,
+    pattern: null,
     confirmed: true,
     strength: 1,
     hub: true,
   };
 
-  if (facts.length === 0) {
+  // one unified item list: every fact + every observed pattern, each carrying its
+  // orbit world + a layout-ready label / strength / confirmed.
+  type Item = {
+    id: string;
+    world: Exclude<GraphWorld, 'you'>;
+    label: string;
+    strength: number;
+    confirmed: boolean;
+    fact: MemoryWebFact | null;
+    pattern: UserPattern | null;
+    kind: 'fact' | 'pattern';
+  };
+  const items: Item[] = [];
+  for (const f of facts) {
+    items.push({
+      id: f.id,
+      world: factGraphWorld(f),
+      label: f.fact_label,
+      strength: factStrength(f),
+      confirmed: isConfirmed(f),
+      fact: f,
+      pattern: null,
+      kind: 'fact',
+    });
+  }
+  for (const p of patterns) {
+    items.push({
+      id: `pattern-${p.id}`,
+      world: patternGraphWorld(p),
+      label: p.pattern_text,
+      // a pattern's "strength" is how confident the brain is it is real.
+      strength: Math.max(0.2, Math.min(1, p.confidence ?? 0.5)),
+      confirmed: p.status === 'confirmed',
+      fact: null,
+      pattern: p,
+      kind: 'pattern',
+    });
+  }
+
+  if (items.length === 0) {
     return { nodes: [hub], edges: [] };
   }
 
-  // group by orbit world (colour) but lay every fact out on ONE balanced ring of
+  // group by orbit world (colour) but lay every item out on ONE balanced ring of
   // evenly-spaced angles around the hub. Even angular spacing keeps the cluster's
   // centroid on the hub and its half-extents symmetric on BOTH axes, so the
   // hub-anchored, aspect-corrected viewBox (computeViewBox) lands the cluster in
-  // the optical centre with no dead quadrant - even for a thin 3-node graph in a
-  // tall portrait canvas (the live mobile failure mode). Facts are interleaved by
-  // world so colours read as a balanced field, not three hard spokes.
-  const orbits: Exclude<GraphWorld, 'you'>[] = ['priority', 'decisions', 'company'];
-  const byWorld: Record<Exclude<GraphWorld, 'you'>, MemoryWebFact[]> = {
-    priority: [],
-    decisions: [],
-    company: [],
-  };
-  for (const f of facts) byWorld[factGraphWorld(f)].push(f);
+  // the optical centre with no dead quadrant. Items are interleaved by world so
+  // colours read as a balanced field, not hard spokes.
+  const byWorld = new Map<Exclude<GraphWorld, 'you'>, Item[]>();
+  for (const w of ORBIT_WORLDS) byWorld.set(w, []);
+  for (const it of items) byWorld.get(it.world)!.push(it);
   // strongest first within each world so the anchor of each colour sits closest
-  for (const w of orbits) byWorld[w].sort((a, b) => factStrength(b) - factStrength(a));
+  for (const w of ORBIT_WORLDS) byWorld.get(w)!.sort((a, b) => b.strength - a.strength);
 
   // round-robin interleave so adjacent ring slots alternate colour where possible
-  const ordered: { fact: MemoryWebFact; world: Exclude<GraphWorld, 'you'> }[] = [];
-  const cursors = { priority: 0, decisions: 0, company: 0 };
-  let remaining = facts.length;
+  const ordered: Item[] = [];
+  const cursors = new Map<Exclude<GraphWorld, 'you'>, number>(ORBIT_WORLDS.map((w) => [w, 0]));
+  let remaining = items.length;
   while (remaining > 0) {
-    for (const w of orbits) {
-      if (cursors[w] < byWorld[w].length) {
-        ordered.push({ fact: byWorld[w][cursors[w]], world: w });
-        cursors[w] += 1;
+    for (const w of ORBIT_WORLDS) {
+      const list = byWorld.get(w)!;
+      const c = cursors.get(w)!;
+      if (c < list.length) {
+        ordered.push(list[c]);
+        cursors.set(w, c + 1);
         remaining -= 1;
       }
     }
@@ -149,22 +234,23 @@ export function buildGraph(facts: MemoryWebFact[]): { nodes: GraphNode[]; edges:
   // a half-step phase so an even count never leaves a node dead-top + dead-bottom
   // mirrored (keeps the silhouette balanced rather than barbell-shaped).
   const phase = -Math.PI / 2 + Math.PI / Math.max(2, n) * (n % 2 === 0 ? 1 : 0);
-  ordered.forEach(({ fact, world }, i) => {
-    const strength = factStrength(fact);
-    const confirmed = isConfirmed(fact);
+  ordered.forEach((it, i) => {
+    const { strength, confirmed } = it;
     // even angle around the full circle + a tiny deterministic jitter so it reads
     // organic without thrashing between renders.
     const jitter = (((i * 53) % 17) / 17 - 0.5) * 0.14;
     const ang = phase + (i / n) * Math.PI * 2 + jitter;
-    // ring radius: strong facts hug the hub, weak ones drift out; a gentle
+    // ring radius: strong items hug the hub, weak ones drift out; a gentle
     // alternation so concentric same-angle stacking never happens.
     const ring = 96 + (1 - strength) * 70 + (i % 2) * 18;
     const r = strength > 0.7 ? 10 : strength > 0.45 ? 9 : 7;
     const x = Math.cos(ang) * ring;
     const y = Math.sin(ang) * ring;
-    const id = fact.id;
-    nodes.push({ id, world, x, y, r, label: fact.fact_label, fact, confirmed, strength });
-    edges.push({ key: `hub-${id}`, from: HUB_ID, to: id, strong: confirmed && strength > 0.4 });
+    nodes.push({
+      id: it.id, world: it.world, x, y, r, label: it.label,
+      kind: it.kind, fact: it.fact, pattern: it.pattern, confirmed, strength,
+    });
+    edges.push({ key: `hub-${it.id}`, from: HUB_ID, to: it.id, strong: confirmed && strength > 0.4 });
   });
 
   return { nodes, edges };

@@ -25,7 +25,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Plus, Minus, Maximize2 } from 'lucide-react';
-import type { MemoryWebFact } from '@/types/memory';
+import type { MemoryWebFact, UserPattern } from '@/types/memory';
 import type { MemoryEdge } from '@/hooks/useMemoryEdges';
 import { cn } from '@/lib/utils';
 import {
@@ -33,6 +33,7 @@ import {
   computeViewBox,
   bondForNode,
   GRAPH_WORLD_META,
+  ORBIT_WORLDS,
   type GraphWorld,
   type GraphBond,
 } from './brainGraphModel';
@@ -45,18 +46,24 @@ export type { GraphBond } from './brainGraphModel';
 
 interface BrainGraphProps {
   facts: MemoryWebFact[];
+  /** observed strengths / blind spots / working-style patterns about the person */
+  patterns?: UserPattern[];
   edges?: MemoryEdge[];
   /** controlled selection by fact id (parent drives the rail / sheet) */
   selectedFactId?: string | null;
   onBondSelect?: (bond: GraphBond | null) => void;
+  /** a pattern node (a strength / blind spot / style read) was tapped */
+  onPatternSelect?: (pattern: UserPattern | null) => void;
   className?: string;
 }
 
 export function BrainGraph({
   facts,
+  patterns = [],
   edges = [],
   selectedFactId = null,
   onBondSelect,
+  onPatternSelect,
   className,
 }: BrainGraphProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -76,7 +83,7 @@ export function BrainGraph({
     return () => ro.disconnect();
   }, []);
 
-  const { nodes } = useMemo(() => buildGraph(facts), [facts]);
+  const { nodes } = useMemo(() => buildGraph(facts, patterns), [facts, patterns]);
 
   // THE CENTERING: recomputed every render from the live box + zoom.
   const vb = useMemo(
@@ -125,12 +132,28 @@ export function BrainGraph({
   const handleNodeClick = useCallback(
     (id: string) => {
       const n = nodeById.get(id);
-      if (!n || n.hub || !n.fact) return;
+      if (!n || n.hub) return;
       const next = selectedId === id ? null : id;
+      // a pattern node opens the lightweight pattern read (it is not a verified
+      // fact, so it never routes through the fact bond reader).
+      if (n.kind === 'pattern') {
+        onBondSelect?.(null);
+        onPatternSelect?.(next === null ? null : n.pattern);
+        return;
+      }
+      if (!n.fact) return;
+      onPatternSelect?.(null);
       onBondSelect?.(next === null ? null : bondForNode(n));
     },
-    [nodeById, selectedId, onBondSelect],
+    [nodeById, selectedId, onBondSelect, onPatternSelect],
   );
+
+  // only legend the worlds that are actually on the canvas, in orbit order.
+  const presentWorlds = useMemo(() => {
+    const seen = new Set<GraphWorld>();
+    for (const n of nodes) if (!n.hub) seen.add(n.world);
+    return ORBIT_WORLDS.filter((w) => seen.has(w));
+  }, [nodes]);
 
   const fit = useCallback(() => setZoom(1), []);
   const zoomIn = useCallback(() => setZoom((z) => Math.min(MAX_ZOOM, +(z * 1.25).toFixed(3))), []);
@@ -301,22 +324,25 @@ export function BrainGraph({
         </g>
       </svg>
 
-      {/* quiet legend, pinned bottom-left (only with facts) */}
-      {facts.length > 0 && (
-        <div className="pointer-events-none absolute bottom-3 left-3 z-[3] flex flex-col gap-1.5">
-          {(['priority', 'decisions', 'company'] as GraphWorld[]).map((w) => (
-            <span key={w} className="flex items-center gap-2 text-[10.5px] text-muted-foreground">
-              <span className="h-2 w-2 rounded-full" style={{ background: `hsl(${GRAPH_WORLD_META[w].token})` }} />
+      {/* quiet legend, pinned bottom-left (only with nodes). A compact 2-column
+          grid so the wider category set still fits on mobile without crowding. */}
+      {presentWorlds.length > 0 && (
+        <div className="pointer-events-none absolute bottom-3 left-3 z-[3] grid grid-cols-2 gap-x-3 gap-y-1">
+          {presentWorlds.map((w) => (
+            <span key={w} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="h-2 w-2 flex-none rounded-full" style={{ background: `hsl(${GRAPH_WORLD_META[w].token})` }} />
               {GRAPH_WORLD_META[w].label}
             </span>
           ))}
-          <span className="mt-0.5 flex items-center gap-2 text-[10.5px] text-muted-foreground">
-            <span className="h-0 w-4 border-t-2 border-muted-foreground/60" />
-            confirmed
-          </span>
-          <span className="flex items-center gap-2 text-[10.5px] text-muted-foreground">
-            <span className="h-0 w-4 border-t-2 border-dashed border-muted-foreground/40" />
-            worth a check
+          <span className="col-span-2 mt-0.5 flex items-center gap-3 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="h-0 w-3.5 border-t-2 border-muted-foreground/60" />
+              confirmed
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-0 w-3.5 border-t-2 border-dashed border-muted-foreground/40" />
+              worth a check
+            </span>
           </span>
         </div>
       )}

@@ -24,7 +24,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ListOrdered, Scale, Boxes } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ListOrdered, Scale, Boxes } from 'lucide-react';
 import type { CockpitData, DeckCard, HomeState } from '@/types/cockpit';
 import { CockpitHero } from './CockpitHero';
 import { CategoryMotif } from './CategoryMotif';
@@ -79,6 +79,9 @@ function MobileHome({
 }: HomeFeedProps) {
   const deck = data.deck;
   const [idx, setIdx] = useState(0);
+  // one-time "swipe up" hint: shown until the leader makes their first vertical
+  // move, so the gesture is taught once and never nags.
+  const [hasSwiped, setHasSwiped] = useState(false);
   const reduceMotion = useReducedMotion();
 
   // clamp the focus index whenever the deck shrinks (e.g. data arrives).
@@ -87,7 +90,10 @@ function MobileHome({
   }, [deck.length]);
 
   const go = useCallback(
-    (n: number) => setIdx((_) => Math.max(0, Math.min(deck.length - 1, n))),
+    (n: number) => {
+      setHasSwiped(true);
+      setIdx((_) => Math.max(0, Math.min(deck.length - 1, n)));
+    },
     [deck.length],
   );
 
@@ -111,6 +117,9 @@ function MobileHome({
     else go(idx - 1);
   };
 
+  // the hint only earns its place when there is somewhere to swipe to.
+  const showSwipeHint = !loading && !hasSwiped && deck.length > 1 && idx < deck.length - 1;
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* GREET + state-aware orientation (the shell stays put across states) */}
@@ -122,9 +131,11 @@ function MobileHome({
       </div>
 
       {/* THE FEED - the one browsable zone. min-h-0 + overflow-hidden so the cards
-          never spill onto the doors/nav (the live clip bug fix). */}
+          never spill onto the doors/nav (the live clip bug fix). A VERTICAL
+          progress rail + a one-time "swipe up" hint make the vertical gesture
+          unmistakable (the dots used to imply a sideways swipe). */}
       <div
-        className="relative mt-3 flex min-h-0 flex-1 flex-col overflow-hidden"
+        className="relative mt-3 flex min-h-0 flex-1 flex-col overflow-hidden pr-3.5"
         onTouchStart={loading ? undefined : onTouchStart}
         onTouchEnd={loading ? undefined : onTouchEnd}
         onWheel={loading ? undefined : onWheel}
@@ -135,33 +146,55 @@ function MobileHome({
             <SkeletonCard variant="feed" className="shrink-0 opacity-50" />
           </div>
         ) : (
-          <MobileSwipeTrack
-            deck={deck}
-            idx={idx}
-            reduceMotion={!!reduceMotion}
-            onFocus={go}
-            onOpen={onOpenCard}
-            onReact={onReactDeck}
-          />
+          <>
+            <MobileSwipeTrack
+              deck={deck}
+              idx={idx}
+              reduceMotion={!!reduceMotion}
+              onFocus={go}
+              onOpen={onOpenCard}
+              onReact={onReactDeck}
+            />
+            {/* vertical segmented progress rail, pinned to the right edge */}
+            {deck.length > 1 && (
+              <div className="pointer-events-none absolute right-0 top-1/2 z-[4] flex -translate-y-1/2 flex-col items-center gap-1.5">
+                {deck.map((c, i) => (
+                  <span
+                    key={c.id}
+                    className={cn(
+                      'w-[5px] rounded-full transition-all duration-300',
+                      i === idx ? 'h-[18px] bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.5)]' : 'h-[5px] bg-muted',
+                    )}
+                  />
+                ))}
+              </div>
+            )}
+            {/* one-time swipe-up affordance, fades after the first move */}
+            {showSwipeHint && (
+              <motion.div
+                key="swipe-hint"
+                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+                animate={
+                  reduceMotion
+                    ? { opacity: 0.9 }
+                    : { opacity: [0.35, 0.95, 0.35], y: [4, -4, 4] }
+                }
+                exit={{ opacity: 0 }}
+                transition={reduceMotion ? { duration: 0.3 } : { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                className="pointer-events-none absolute inset-x-0 bottom-1 z-[4] flex justify-center"
+              >
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-background/85 px-2.5 py-1 text-[10.5px] font-semibold text-accent backdrop-blur-sm">
+                  <ChevronUp className="h-3 w-3" strokeWidth={2.4} />
+                  Swipe up for more
+                </span>
+              </motion.div>
+            )}
+          </>
         )}
       </div>
 
-      {/* loading caption (anticipatory) OR the dot indicator */}
-      {loading ? (
-        <LoadingCaption>Reading the market and your world</LoadingCaption>
-      ) : (
-        <div className="flex shrink-0 justify-center gap-1.5 py-2">
-          {deck.map((c, i) => (
-            <span
-              key={c.id}
-              className={cn(
-                'h-[5px] rounded-full transition-all duration-300',
-                i === idx ? 'w-[18px] bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.5)]' : 'w-[5px] bg-muted',
-              )}
-            />
-          ))}
-        </div>
-      )}
+      {/* loading caption (anticipatory) */}
+      {loading && <LoadingCaption>Reading the market and your world</LoadingCaption>}
 
       {/* THE DOORS - fixed reserved place above the nav, never clipped */}
       <DoorRail
@@ -217,8 +250,9 @@ function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact }:
               key={card.id}
               onClick={() => { if (!focused) onFocus(i); }}
               className={cn(
-                'flex shrink-0 flex-col transition-[opacity,transform] duration-300',
-                focused ? '' : 'scale-[0.985] opacity-50',
+                'flex shrink-0 flex-col origin-top transition-[opacity,transform] duration-300',
+                // peeks stay clearly legible (a visible deck below), just secondary.
+                focused ? '' : 'scale-[0.97] opacity-[0.72]',
               )}
               style={{ minHeight: focused ? '0' : undefined }}
             >

@@ -14,6 +14,7 @@ import {
   Shield,
   LogOut,
   User,
+  History,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -23,14 +24,14 @@ import { CommandPaletteTrigger } from './CommandPalette';
 import { PageTransition } from './PageTransition';
 
 // PRIMARY nav: the SAME 4 stable tabs as the mobile BottomNav cockpit model
-// (Home / Decisions / Brain / You), in the same order and with the same icons,
-// so desktop and mobile read as one system (CTRL-SYSTEM-SPEC s1). Memory ->
-// Brain, Track Record -> You, the decision surfaces -> Decisions.
+// (Home / Decisions / Brain / History), in the same order and with the same
+// icons, so desktop and mobile read as one system (CTRL-SYSTEM-SPEC s1). Memory
+// -> Brain, Track Record -> History, the decision surfaces -> Decisions.
 const primaryNavItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home', shortcut: 'H' },
   { path: '/decision', search: '', icon: Scale, label: 'Decisions', shortcut: 'D' },
   { path: '/memory', search: '', icon: Brain, label: 'Brain', shortcut: 'B' },
-  { path: '/track-record', search: '', icon: User, label: 'You', shortcut: 'Y' },
+  { path: '/track-record', search: '', icon: History, label: 'History', shortcut: 'Y' },
 ];
 
 // SECONDARY surfaces: still one click away, just demoted out of the primary 4 so

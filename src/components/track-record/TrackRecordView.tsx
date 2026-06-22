@@ -14,35 +14,26 @@
 // two-zone reading surface (calibration left, calls right). No em dashes. Tokens only.
 
 import { motion } from 'framer-motion';
-import { Clock, Scale, TrendingUp } from 'lucide-react';
+import { ArrowRight, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AgedCallRow } from './AgedCallRow';
 import { CalibrationSparkline, ProofGlyph } from './trackRecordMotifs';
 import type { CalibrationRead, SharpenTrend, TrackRecordModel } from './trackRecordModel';
 
 // ---------------------------------------------------------------------------------------
-// COLD: the inviting promise. ONE centrepiece, three future-value rows, one door. No zeros.
+// COLD: the inviting promise. ONE centrepiece + a few questions worth weighing (each one
+// deep-links into the weigher, prefilled). No zeros, no jargon.
 // ---------------------------------------------------------------------------------------
 
-const PROMISE_ROWS = [
-  {
-    Icon: Scale,
-    title: 'Where your gut met the evidence',
-    sub: 'The call you made, against what the data said.',
-  },
-  {
-    Icon: TrendingUp,
-    title: 'How each call aged',
-    sub: 'Held up, did not hold, or still playing out.',
-  },
-  {
-    Icon: Clock,
-    title: 'Your hit-rate over time',
-    sub: 'Whether you are getting sharper, honestly scored.',
-  },
+// Generic, AI-native questions a leader should be asking (CTRL's north star: building /
+// orchestrating / productizing / getting your business to market the AI-native way).
+const SUGGESTED_QUESTIONS = [
+  'Which part of your business should an AI run first?',
+  'What is the one workflow worth turning into a product?',
+  'Where would going AI-native change your economics most?',
 ] as const;
 
-function PromiseState({ desktop, onWeigh }: { desktop: boolean; onWeigh?: () => void }) {
+function PromiseState({ desktop, onWeigh }: { desktop: boolean; onWeigh?: (prefill?: string) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -53,7 +44,7 @@ function PromiseState({ desktop, onWeigh }: { desktop: boolean; onWeigh?: () => 
         desktop && 'mx-auto max-w-[640px]',
       )}
     >
-      <div className={cn('relative mb-1.5', desktop ? 'h-[172px] w-[172px]' : 'h-[148px] w-[148px]')}>
+      <div className={cn('relative mb-1.5', desktop ? 'h-[150px] w-[150px]' : 'h-[128px] w-[128px]')}>
         <span
           className="pointer-events-none absolute -inset-[18%] rounded-full"
           style={{
@@ -67,59 +58,55 @@ function PromiseState({ desktop, onWeigh }: { desktop: boolean; onWeigh?: () => 
       <h2
         className={cn(
           'mt-1 font-extrabold leading-[1.16] tracking-tight text-foreground',
-          desktop ? 'max-w-[22ch] text-[32px]' : 'max-w-[19ch] text-2xl',
+          desktop ? 'max-w-[22ch] text-[30px]' : 'max-w-[19ch] text-2xl',
         )}
       >
-        Your judgment record <span className="text-accent">starts with your first banked call.</span>
+        Your history <span className="text-accent">starts with your first big decision.</span>
       </h2>
       <p
         className={cn(
-          'mt-3.5 leading-relaxed text-muted-foreground',
-          desktop ? 'max-w-[46ch] text-[15.5px]' : 'max-w-[30ch] text-sm',
+          'mt-3 leading-relaxed text-muted-foreground',
+          desktop ? 'max-w-[48ch] text-[15px]' : 'max-w-[32ch] text-sm',
         )}
       >
-        Pressure-test a decision, bank it, and I will track how it ages. Over time this becomes proof of how you
-        actually call it.
+        Weigh a decision and I will keep it here, then track how it turns out. Here are a few worth starting with.
       </p>
 
       <div
         className={cn(
-          'mt-6 flex w-full gap-2.5',
-          desktop ? 'max-w-[560px] flex-row' : 'max-w-[340px] flex-col',
+          'mt-5 flex w-full flex-col gap-2.5',
+          desktop ? 'max-w-[520px]' : 'max-w-[360px]',
         )}
       >
-        {PROMISE_ROWS.map(({ Icon, title, sub }) => (
-          <div
-            key={title}
-            className={cn(
-              'flex items-center gap-3.5 rounded-2xl border border-border bg-[linear-gradient(180deg,#0f141c,#0b0f15)] px-3.5 py-3 text-left',
-              desktop && 'flex-1 flex-col items-start gap-2.5',
-            )}
+        {SUGGESTED_QUESTIONS.map((q) => (
+          <button
+            key={q}
+            type="button"
+            onClick={() => onWeigh?.(q)}
+            className="group flex items-center gap-3 rounded-2xl border border-border bg-[linear-gradient(180deg,#0f141c,#0b0f15)] px-4 py-3.5 text-left transition-colors hover:border-accent/40"
           >
-            <span className="grid h-[34px] w-[34px] flex-none place-items-center rounded-[10px] border border-accent/30 bg-accent/10 text-accent">
-              <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+            <span className="grid h-[30px] w-[30px] flex-none place-items-center rounded-[10px] border border-accent/30 bg-accent/10 text-accent">
+              <Scale className="h-[16px] w-[16px]" strokeWidth={1.9} />
             </span>
-            <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-[13px] font-bold leading-tight text-foreground">{title}</span>
-              <span className="text-[11.5px] leading-snug text-muted-foreground">{sub}</span>
-            </span>
-          </div>
+            <span className="min-w-0 flex-1 text-[13.5px] font-semibold leading-snug text-foreground">{q}</span>
+            <ArrowRight className="h-4 w-4 flex-none text-muted-foreground transition-colors group-hover:text-accent" />
+          </button>
         ))}
       </div>
 
       <button
         type="button"
-        onClick={onWeigh}
+        onClick={() => onWeigh?.()}
         className={cn(
-          'mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl border-none bg-accent px-4 py-3.5 text-[14.5px] font-extrabold tracking-tight text-[#04241f] transition-transform hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-          desktop ? 'max-w-[300px]' : 'max-w-[340px]',
+          'mt-5 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl border-none bg-accent px-4 py-3.5 text-[14.5px] font-extrabold tracking-tight text-[#04241f] transition-transform hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+          desktop ? 'max-w-[300px]' : 'max-w-[360px]',
         )}
         style={{ boxShadow: '0 14px 30px -12px hsl(var(--accent)/0.55), inset 0 1px 0 rgba(255,255,255,.25)' }}
       >
         <Scale className="h-[18px] w-[18px]" strokeWidth={2.1} />
-        Weigh your first decision
+        Weigh your own decision
       </button>
-      <p className="mt-3 text-[11.5px] text-muted-foreground/80">Takes a minute. Nothing here until you bank one.</p>
+      <p className="mt-3 text-[11.5px] text-muted-foreground/80">Takes a minute. Nothing here until you weigh one.</p>
     </motion.div>
   );
 }
@@ -160,7 +147,7 @@ function WarmCalibration({ calibration, freshDays }: { calibration: CalibrationR
         aria-hidden="true"
       />
       <div className="relative flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">The first pattern</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">How they are turning out</span>
         {fresh && <span className="text-[11px] font-medium text-muted-foreground/80">{fresh}</span>}
       </div>
 
@@ -175,33 +162,33 @@ function WarmCalibration({ calibration, freshDays }: { calibration: CalibrationR
               <span className="text-[0.42em] font-semibold text-muted-foreground">/{calibration.scored}</span>
             </span>
             <span className="flex flex-col gap-0.5 pb-1.5">
-              <span className="text-[13px] font-bold text-foreground">calls read right</span>
+              <span className="text-[13px] font-bold text-foreground">turned out as you called</span>
               <span className="max-w-[18ch] text-[11.5px] leading-snug text-muted-foreground">
-                You called these the way the evidence landed.
+                These went the way you decided they would.
               </span>
             </span>
           </div>
           <p className="relative mt-3.5 text-[13px] leading-relaxed text-[#c2cad6]">
-            Early days, but it is honest. <b className="font-bold text-accent">One more banked call</b> and I can start
-            showing whether you are sharpening.
+            Early days, but it is honest. <b className="font-bold text-accent">One more decision plays out</b> and I can
+            start showing whether you are getting sharper.
           </p>
         </>
       )}
 
       {mode === 'firstMiss' && (
-        // No fabricated upside. We acknowledge the first read went the other way, plainly and
+        // No fabricated upside. We acknowledge the first one went the other way, plainly and
         // without a deflating "0/N" hero, and point forward.
         <p className="relative mt-3.5 text-[14px] leading-relaxed text-[#c2cad6]">
-          {calibration.scored === 1 ? 'Your first scored call' : `Your first ${calibration.scored} scored calls`} went
-          the other way to your read. <b className="font-bold text-accent">That is the point.</b> A few more banked
-          calls and the real pattern starts to show.
+          {calibration.scored === 1 ? 'Your first decision' : `Your first ${calibration.scored} decisions`} went the
+          other way to how you called {calibration.scored === 1 ? 'it' : 'them'}. <b className="font-bold text-accent">That is the point.</b> A few more play out
+          and the real pattern starts to show.
         </p>
       )}
 
       {mode === 'awaiting' && (
-        // Banked calls exist but none can be scored yet (no gut-vs-ground signal).
+        // Banked decisions exist but none has played out enough to judge yet.
         <p className="relative mt-3.5 text-[14px] leading-relaxed text-[#c2cad6]">
-          Your first calls are banked. As they pick up a gut-vs-ground signal, I will start showing how you call it.
+          Your first decisions are saved here. As they play out, I will start showing how your calls turn out.
         </p>
       )}
     </motion.div>
@@ -247,7 +234,7 @@ function RichCalibration({
       />
       <div className="relative flex items-center justify-between">
         <span className={cn('font-bold uppercase tracking-[0.12em] text-muted-foreground', desktop ? 'text-[11px]' : 'text-[10px]')}>
-          Calibration over {calibration.scored} scored {calibration.scored === 1 ? 'call' : 'calls'}
+          Across {calibration.scored} {calibration.scored === 1 ? 'decision' : 'decisions'} that played out
         </span>
         {fresh && <span className="text-[11px] font-medium text-muted-foreground/80">{fresh}</span>}
       </div>
@@ -264,9 +251,9 @@ function RichCalibration({
           <span className="text-[0.4em] font-bold text-accent">%</span>
         </span>
         <span className="flex flex-col gap-0.5 pb-1.5">
-          <span className="text-[13px] font-bold text-foreground">read the way it landed</span>
+          <span className="text-[13px] font-bold text-foreground">turned out as you called</span>
           <span className="max-w-[20ch] text-[11.5px] leading-snug text-muted-foreground">
-            {calibration.read} of {calibration.scored} calls aged the way you called them.
+            {calibration.read} of {calibration.scored} went the way you decided they would.
           </span>
         </span>
       </div>
@@ -292,7 +279,7 @@ function RichCalibration({
 
       {insight && (
         <p className={cn('relative leading-relaxed text-[#c2cad6]', desktop ? 'mt-5 max-w-[42ch] text-[14.5px]' : 'mt-4 text-[13px]')}>
-          <span className="font-bold text-accent">Where your gut beat the data: </span>
+          <span className="font-bold text-accent">Where you called it right: </span>
           {insight}
         </p>
       )}
@@ -320,7 +307,7 @@ function SectionLabel({ children, count }: { children: React.ReactNode; count?: 
 export interface TrackRecordViewProps {
   model: TrackRecordModel;
   desktop: boolean;
-  onWeigh?: () => void;
+  onWeigh?: (prefill?: string) => void;
   /** false renders at final state with no entrance motion (QC harness / static capture). */
   animated?: boolean;
 }
@@ -339,7 +326,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
         <WarmCalibration calibration={model.calibration} freshDays={model.freshDays} />
         {shown.length > 0 && (
           <>
-            <SectionLabel>Aging now</SectionLabel>
+            <SectionLabel>Still playing out</SectionLabel>
             <div className="flex min-h-0 flex-col gap-2.5">
               {shown.map((c, i) => (
                 <AgedCallRow key={c.id} call={c} index={i} animated={animated} />
@@ -348,7 +335,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
           </>
         )}
         <p className="mt-auto py-1.5 text-center text-[12px] text-muted-foreground/80">
-          Sharpens as more calls play out.
+          Fills in as more decisions play out.
         </p>
       </div>
     );
@@ -371,7 +358,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
       <div className="grid min-h-0 flex-1 grid-cols-[1.05fr_1fr] gap-6">
         <div className="flex min-h-0 flex-col gap-4">{calibration}</div>
         <div className="flex min-h-0 flex-col gap-3.5">
-          <SectionLabel count={model.calls.length}>How your calls aged</SectionLabel>
+          <SectionLabel count={model.calls.length}>How they turned out</SectionLabel>
           <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-hide pb-1">
             {model.calls.map((c, i) => (
               <AgedCallRow key={c.id} call={c} index={i} animated={animated} />

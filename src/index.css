@@ -49,13 +49,18 @@
     --radius: 0.75rem;
 
     /* === BRAIN GRAPH NODE WORLDS (prototypes/brain-2028.html) ===
-       The four memory worlds the centred Brain canvas draws. Emerald (you)
-       is the hub / centre; the other three are the territories that orbit it.
+       The memory worlds the centred Brain canvas draws. Emerald (you) is the
+       hub / centre; the rest are well-separated hues around the wheel so the
+       territories read distinctly (the old amber/orange/purple set blended).
        Kept as ctrl-ds tokens so the graph stays on-palette. */
     --node-you: 171 100% 43%;         /* emerald - the centre / you / confirmed */
-    --node-priority: 38 92% 58%;      /* amber - your priorities */
-    --node-decisions: 268 70% 66%;    /* purple - your open decisions */
-    --node-company: 24 90% 58%;       /* orange - your company */
+    --node-identity: 210 90% 62%;     /* blue - about you (who you are) */
+    --node-style: 270 75% 68%;        /* violet - how you work / your voice */
+    --node-goal: 42 95% 58%;          /* amber - your goals + priorities */
+    --node-company: 22 90% 60%;       /* orange - your company */
+    --node-challenge: 350 82% 64%;    /* rose - your challenges + blind spots */
+    --node-signal: 190 85% 56%;       /* cyan - signals read in from outside */
+    --node-strength: 100 60% 58%;     /* lime - your strengths + edge */
 
     /* === SHADOWS === */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);

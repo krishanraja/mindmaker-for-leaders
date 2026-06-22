@@ -24,6 +24,8 @@ export interface AgedCall {
   outcome: AgedOutcome;
   /** The decision statement (the call itself). */
   statement: string;
+  /** The statement re-phrased as the key question it answered (the card lead). */
+  question: string;
   /** Human freshness/aging label, e.g. "aged 14 weeks" / "decided 6d ago". */
   ageLabel: string;
   /** Whether this call could be SCORED (gut vs ground both present and resolvable). */
@@ -94,6 +96,28 @@ function outcomeFor(row: TrackRecordRow): AgedOutcome {
   return 'watch'; // too_early or not-yet-recorded
 }
 
+// Re-phrase a decision statement as the key question it answered, so each History
+// card reads as a question (the founder's ask). Pure + client-side: it only
+// reshapes the leader's own words, never invents content.
+export function statementToQuestion(statement: string): string {
+  let s = (statement ?? '').trim();
+  if (!s) return 'Was this the right call?';
+  // drop a trailing "because ..." rationale clause - the question is the call, not the why.
+  s = s.replace(/[,;]?\s+because\b[\s\S]*$/i, '').trim();
+  s = s.replace(/[.!]+$/, '').trim();
+  if (s.endsWith('?')) return s.charAt(0).toUpperCase() + s.slice(1);
+  // strip a leading commitment phrase -> "Should we X?"
+  const m = s.match(
+    /^(?:we should|we need to|we have to|we must|we will|we'?re going to|we are going to|i should|i need to|i'?ll|i will|let'?s|let us)\s+(.+)$/i,
+  );
+  if (m && m[1]) {
+    const rest = m[1].trim();
+    return `Should we ${rest.charAt(0).toLowerCase()}${rest.slice(1)}?`;
+  }
+  // generic fallback: pose the statement itself as a yes/no call.
+  return `Was this the right call: ${s.charAt(0).toLowerCase()}${s.slice(1)}?`;
+}
+
 // --- the trend (recent half vs earlier half of SCORED calls) -------------------------
 // Honest by construction: we only claim a trend with >= 4 scorable calls, and the series
 // we hand the sparkline is the per-window read-rate, never an invented per-day curve.
@@ -134,9 +158,9 @@ function buildInsight(rows: TrackRecordRow[]): string | null {
   for (const r of rows) {
     const m = calibrationMatch(r.breakpoint_call, r.breakpoint_verdict);
     if (m === true) {
-      const stmt = r.statement.trim();
-      const short = stmt.length > 86 ? `${stmt.slice(0, 84).trimEnd()}...` : stmt;
-      return `You read this the way it landed: "${short}"`;
+      const q = statementToQuestion(r.statement);
+      const short = q.length > 92 ? `${q.slice(0, 90).trimEnd()}...` : q;
+      return `"${short}"`;
     }
   }
   return null;
@@ -174,6 +198,7 @@ export function buildTrackRecordModel(records: TrackRecordRow[]): TrackRecordMod
       id: r.decision_id,
       outcome,
       statement: r.statement,
+      question: statementToQuestion(r.statement),
       ageLabel: ageLabelFor(r, outcome),
       scored: m !== null,
       readMatch: m,
