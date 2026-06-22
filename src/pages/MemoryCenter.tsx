@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Plus, Shield, Download, ArrowUpRight, FileText, CheckCircle2, Flame, Thermometer, Layers, Network } from 'lucide-react';
+import { Plus, ArrowUpRight, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -11,7 +11,6 @@ import { MemoryDetailSheet } from '@/components/memory/MemoryDetailSheet';
 import { AddMemorySheet } from '@/components/memory/AddMemorySheet';
 import { PrivacyControlsPanel } from '@/components/memory/PrivacyControlsPanel';
 import { ExportImportPanel } from '@/components/memory/ExportImportPanel';
-import { VerificationBanner } from '@/components/memory/VerificationBanner';
 import { VerificationSwipeStack } from '@/components/memory/VerificationSwipeStack';
 import { LibraryTab } from '@/components/library/LibraryTab';
 import { useGeneratedArtifacts } from '@/hooks/useGeneratedArtifacts';
@@ -22,16 +21,38 @@ import { useMarkdownImport } from '@/hooks/useMarkdownImport';
 import { useVerificationFlow } from '@/hooks/useVerificationFlow';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { MobileFrame } from '@/components/layout/MobileFrame';
-import { MemoryWebVisualization, type MemoryBond } from '@/components/memory-web/MemoryWebVisualization';
+import { BrainCanvas } from '@/components/memory-web/BrainCanvas';
 import { BondReader } from '@/components/memory-web/BondReader';
-import { showThermometer } from '@/lib/memorySignals';
+import type { MemoryBond } from '@/components/memory-web/MemoryWebVisualization';
+import type { GraphBond } from '@/components/memory-web/BrainGraph';
 import type { UserMemoryFact } from '@/types/memory';
+
+// Cap the gentle verify nudge so it is never a backlog ("30 to verify").
+// CTRL-SYSTEM-SPEC s2.4 + the mock: a single quiet "Verify N", small N.
+const VERIFY_NUDGE_CAP = 5;
+
+// Bridge the new GraphBond (from BrainGraph) onto the MemoryBond the existing
+// BondReader reads. Same honest fields; `spine` is not a concept in the centred
+// graph, so it is always false.
+function toMemoryBond(b: GraphBond): MemoryBond {
+  return {
+    id: b.id,
+    fact: b.fact,
+    // GraphWorld 'priority' maps back to the reader's 'you' territory copy; the
+    // other worlds line up with the reader's vocabulary.
+    world: b.world === 'priority' ? 'you' : b.world === 'company' ? 'company' : 'decisions',
+    strength: b.strength,
+    confirmed: b.confirmed,
+    spine: false,
+    provenance: b.provenance,
+  };
+}
 
 export default function MemoryCenter() {
   const navigate = useNavigate();
   const { isMobile } = useDevice();
-  const { stats, facts, verifyFact: verifyMemoryFact, refresh: refreshMemoryWeb } = useMemoryWeb();
-  const { edges, strengthenFact, fixFact, refetch: refetchEdges } = useMemoryEdges();
+  const { stats, facts, isLoading, verifyFact: verifyMemoryFact } = useMemoryWeb();
+  const { edges } = useMemoryEdges();
   const {
     isFlowOpen,
     pendingFacts,
@@ -48,7 +69,7 @@ export default function MemoryCenter() {
   const [selectedMemory, setSelectedMemory] = useState<UserMemoryFact | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  // The selected bond for the four-world brain canvas (mobile sheet reader).
+  // The selected bond for the centred brain canvas (desktop rail / mobile sheet).
   const [selectedBond, setSelectedBond] = useState<MemoryBond | null>(null);
   const { triggerImport, isImporting, fileInputProps } = useMarkdownImport();
   const { artifacts: libraryArtifacts } = useGeneratedArtifacts();
@@ -58,6 +79,10 @@ export default function MemoryCenter() {
     setIsDetailOpen(true);
   };
 
+  const handleBondSelect = useCallback((b: GraphBond | null) => {
+    setSelectedBond(b ? toMemoryBond(b) : null);
+  }, []);
+
   // Confirm = the one real backend action (verify the underlying fact). The
   // canvas reflects the new confirmed state on the next refresh.
   const handleConfirmBond = useCallback(async (factId: string) => {
@@ -65,100 +90,110 @@ export default function MemoryCenter() {
     setSelectedBond((prev) => (prev ? { ...prev, confirmed: true } : prev));
   }, [verifyMemoryFact]);
 
+  // The gentle verify nudge: only shown when there is something to verify, and
+  // the number is capped so it reads as a quiet invitation, never a guilt-list.
+  const showVerifyNudge = !isLoading && facts.length > 0 && unverifiedCount > 0;
+  const verifyN = Math.min(unverifiedCount, VERIFY_NUDGE_CAP);
+
+  // The calm quiet meta line + the single gentle verify nudge (the mock's
+  // .meta-line). Stats live small here; nothing shouts. Hidden in cold + loading.
+  const metaLine =
+    !isLoading && facts.length > 0 ? (
+      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+        <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+          <span className="h-[5px] w-[5px] rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent))]" />
+          {facts.length} {facts.length === 1 ? 'thing' : 'things'} I know
+        </span>
+        <span className="h-3 w-px bg-border" aria-hidden />
+        <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+          <span className="h-[5px] w-[5px] rounded-full bg-muted-foreground/60" />
+          {stats?.verified_count ?? 0} confirmed by you
+        </span>
+        {showVerifyNudge && (
+          <button
+            type="button"
+            onClick={openFlow}
+            className="ml-auto inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.07] px-2.5 py-1.5 text-[11.5px] text-foreground transition-colors hover:bg-accent/[0.12]"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent))]" />
+            <span>
+              Verify <b className="font-[650] text-accent">{verifyN}</b> while you&apos;re here
+            </span>
+          </button>
+        )}
+      </div>
+    ) : null;
+
+  // The Brain tab body: the centred canvas + (desktop) the slide-in bond rail.
+  const brainBody = (
+    <div className="flex h-full min-h-0 gap-3">
+      <div className="relative min-h-0 min-w-0 flex-1">
+        <BrainCanvas
+          facts={facts}
+          edges={edges}
+          loading={isLoading}
+          selectedFactId={selectedBond?.id ?? null}
+          onBondSelect={handleBondSelect}
+          onAdd={() => setIsAddOpen(true)}
+          isMobile={isMobile}
+        />
+      </div>
+      {/* Desktop right-rail bond reader: collapsed until a node is selected so the
+          brain canvas claims the full width by default (the centred graph fills
+          it); it slides in only on selection. */}
+      <AnimatePresence initial={false}>
+        {!isMobile && selectedBond && (
+          <motion.div
+            key="bond-rail"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 300, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="hidden flex-shrink-0 overflow-hidden md:flex"
+          >
+            <div className="scrollbar-hide flex w-[300px] flex-shrink-0 overflow-y-auto rounded-2xl border border-border/60 bg-card/40 p-4">
+              <BondReader bond={selectedBond} variant="rail" onConfirm={handleConfirmBond} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
   const content = (
     <MemoryErrorBoundary>
       {/* Hidden file input for markdown import */}
       <input {...fileInputProps} />
-      <div className="flex-1 min-h-0 flex flex-col space-y-2">
-        {/* Verification banner */}
-        {unverifiedCount > 0 && (
-          <VerificationBanner
-            unverifiedCount={unverifiedCount}
-            verifiedRate={verifiedRate}
-            onStartVerification={openFlow}
-          />
-        )}
-
-        {/* Tabs */}
+      <div className="flex min-h-0 flex-1 flex-col">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex-1 min-h-0 flex flex-col overflow-hidden"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
         >
-          <TabsList className="h-9 flex-shrink-0">
-            <TabsTrigger value="brain" className="text-xs px-3">
-              <Network className="h-3.5 w-3.5 mr-1 hidden sm:inline" />
-              Brain
-            </TabsTrigger>
-            <TabsTrigger value="memories" className="text-xs px-3">
-              <Brain className="h-3.5 w-3.5 mr-1 hidden sm:inline" />
-              All Facts
-            </TabsTrigger>
-            <TabsTrigger value="library" className="text-xs px-3">
-              <Layers className="h-3.5 w-3.5 mr-1 hidden sm:inline" />
-              Library
-              {libraryArtifacts.length > 0 && (
-                <span className="ml-1 text-muted-foreground">
-                  ({libraryArtifacts.length})
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="privacy" className="text-xs px-3">
-              <Shield className="h-3.5 w-3.5 mr-1 hidden sm:inline" />
-              Privacy
-            </TabsTrigger>
-            <TabsTrigger value="data" className="text-xs px-3">
-              <Download className="h-3.5 w-3.5 mr-1 hidden sm:inline" />
-              Data
-            </TabsTrigger>
+          {/* quiet, secondary facets (the mock's .facets) */}
+          <TabsList className="h-auto flex-shrink-0 justify-start gap-1 bg-transparent p-0">
+            {[
+              { v: 'brain', label: 'Graph' },
+              { v: 'memories', label: 'All facts' },
+              { v: 'library', label: `Library${libraryArtifacts.length > 0 ? ` (${libraryArtifacts.length})` : ''}` },
+              { v: 'privacy', label: 'Privacy' },
+              { v: 'data', label: 'Data' },
+            ].map((t) => (
+              <TabsTrigger
+                key={t.v}
+                value={t.v}
+                className="rounded-lg px-2.5 py-1.5 text-[11.5px] font-[550] text-muted-foreground data-[state=active]:bg-secondary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              >
+                {t.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          <TabsContent value="brain" className="mt-2 flex-1 min-h-0 overflow-hidden">
-            {/* The four-world walked canvas. On desktop the bond reader is a
-                right rail (matching the mock); on mobile a bottom sheet opens
-                on tap. Never a blank slate (falls back to empty-state). */}
-            <div className="h-full min-h-0 flex gap-3">
-              <div className="flex-1 min-w-0 min-h-0 rounded-2xl border border-border/60 bg-card/40 overflow-hidden relative">
-                <MemoryWebVisualization
-                  facts={facts}
-                  showEmptyState={facts.length === 0}
-                  onBondSelect={setSelectedBond}
-                  selectedFactId={selectedBond?.id ?? null}
-                />
-                {facts.length > 0 && (
-                  <p className="absolute top-2.5 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground/70 pointer-events-none">
-                    {isMobile ? 'Tap a node to read its bond' : 'Click a node to read its bond'}
-                  </p>
-                )}
-              </div>
-              {/* Desktop right-rail bond reader (the mock's signature panel).
-                  Collapsed until a node is selected so the brain canvas claims
-                  the full width by default (no portrait letterboxing); it
-                  slides in only on selection. */}
-              <AnimatePresence initial={false}>
-                {!isMobile && selectedBond && (
-                  <motion.div
-                    key="bond-rail"
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: 300, opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="hidden md:flex flex-shrink-0 overflow-hidden"
-                  >
-                    <div className="flex w-[300px] flex-shrink-0 rounded-2xl border border-border/60 bg-card/40 p-4 overflow-y-auto scrollbar-hide">
-                      <BondReader
-                        bond={selectedBond}
-                        variant="rail"
-                        onConfirm={handleConfirmBond}
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          <TabsContent value="brain" className="mt-3 min-h-0 flex-1 overflow-hidden">
+            {brainBody}
           </TabsContent>
 
-          <TabsContent value="memories" className="mt-2 flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0">
+          <TabsContent value="memories" className="scrollbar-hide mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
             <MemoryList
               onEditMemory={handleEditMemory}
               onAddMemory={() => setIsAddOpen(true)}
@@ -166,15 +201,15 @@ export default function MemoryCenter() {
             />
           </TabsContent>
 
-          <TabsContent value="library" className="mt-2 flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0">
+          <TabsContent value="library" className="scrollbar-hide mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
             <LibraryTab />
           </TabsContent>
 
-          <TabsContent value="privacy" className="mt-2 flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0">
+          <TabsContent value="privacy" className="scrollbar-hide mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
             <PrivacyControlsPanel />
           </TabsContent>
 
-          <TabsContent value="data" className="mt-2 flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0">
+          <TabsContent value="data" className="scrollbar-hide mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
             <ExportImportPanel />
           </TabsContent>
         </Tabs>
@@ -186,10 +221,7 @@ export default function MemoryCenter() {
         onClose={() => { setIsDetailOpen(false); setSelectedMemory(null); }}
       />
 
-      <AddMemorySheet
-        isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-      />
+      <AddMemorySheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
 
       <AnimatePresence>
         {isFlowOpen && (
@@ -206,19 +238,14 @@ export default function MemoryCenter() {
         )}
       </AnimatePresence>
 
-      {/* Bond reader sheet (mobile only - desktop uses the right rail). Opens
-          when a node in the Brain canvas is tapped. Confirm is the one real
-          action (verify); Strengthen/Fix render honest but disabled. */}
+      {/* Bond reader sheet (mobile only - desktop uses the right rail). Opens when
+          a node in the centred Brain canvas is tapped. */}
       <Sheet
         open={isMobile && !!selectedBond}
         onOpenChange={(open) => { if (!open) setSelectedBond(null); }}
       >
-        <SheetContent side="bottom" className="rounded-t-2xl border-border bg-background max-h-[80vh]">
-          <BondReader
-            bond={selectedBond}
-            variant="sheet"
-            onConfirm={handleConfirmBond}
-          />
+        <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl border-border bg-background">
+          <BondReader bond={selectedBond} variant="sheet" onConfirm={handleConfirmBond} />
         </SheetContent>
       </Sheet>
     </MemoryErrorBoundary>
@@ -227,7 +254,7 @@ export default function MemoryCenter() {
   if (!isMobile) {
     return (
       <DesktopShell
-        eyebrow="Memory"
+        eyebrow="Brain"
         title="Let's keep your story straight"
         actions={
           <>
@@ -237,7 +264,7 @@ export default function MemoryCenter() {
               size="sm"
               className="border-0 bg-accent/10 text-accent hover:bg-accent/20"
             >
-              <ArrowUpRight className="h-4 w-4 mr-1" />
+              <ArrowUpRight className="mr-1 h-4 w-4" />
               Export to AI
             </Button>
             <Button
@@ -247,52 +274,22 @@ export default function MemoryCenter() {
               size="sm"
               className="border-0 bg-secondary/50"
             >
-              <FileText className="h-4 w-4 mr-1" />
+              <FileText className="mr-1 h-4 w-4" />
               {isImporting ? 'Importing...' : 'Import'}
             </Button>
             <Button onClick={() => setIsAddOpen(true)} size="sm" className="border-0">
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="mr-1 h-4 w-4" />
               Add
             </Button>
           </>
         }
       >
-        <div className="max-w-4xl w-full mx-auto flex-1 min-h-0 flex flex-col">
-          <p className="text-xs text-muted-foreground mb-3 flex-shrink-0">
-            This is the memory that helps your AI understand your business. The more it holds, the more any AI you use knows your context and sounds like you.
+        <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
+          {/* head-sub: the calm chief-of-staff line */}
+          <p className="mb-3 max-w-[460px] flex-shrink-0 text-[13px] leading-relaxed text-muted-foreground">
+            Your context, so every AI you use already knows you. The more it holds, the more it sounds like you.
           </p>
-          {stats && (
-            <div className="flex flex-wrap gap-2 mb-4 flex-shrink-0">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent/10 text-accent text-xs font-medium">
-                <Brain className="h-3 w-3" />
-                {stats.total_facts} facts
-              </span>
-              <motion.button
-                onClick={openFlow}
-                whileTap={{ scale: 0.95 }}
-                animate={stats.verified_rate === 0 ? { opacity: [1, 0.7, 1] } : undefined}
-                transition={stats.verified_rate === 0 ? { repeat: Infinity, duration: 2 } : undefined}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-medium cursor-pointer hover:bg-emerald-500/20 transition-colors"
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                {stats.verified_rate}% verified
-              </motion.button>
-              {showThermometer(facts, stats) && (
-                <>
-                  {(stats.temperature_distribution?.hot || 0) > 0 && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-500 text-xs font-medium">
-                      <Flame className="h-3 w-3" />
-                      {stats.temperature_distribution.hot} hot
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-500 text-xs font-medium">
-                    <Thermometer className="h-3 w-3" />
-                    {stats.temperature_distribution?.warm || 0} warm
-                  </span>
-                </>
-              )}
-            </div>
-          )}
+          {metaLine && <div className="mb-3 flex-shrink-0">{metaLine}</div>}
           {content}
         </div>
       </DesktopShell>
@@ -305,43 +302,12 @@ export default function MemoryCenter() {
       onExport={() => navigate('/context')}
       padding="px-4 pt-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]"
       banner={
-        <>
-          <div className="flex-shrink-0 px-5 pt-1 pb-0.5">
-            <p className="text-[11px] text-muted-foreground/80 leading-tight">
-              Let's keep your story straight, so every AI you use knows you.
-            </p>
-          </div>
-
-          {stats && (
-            <div className="flex-shrink-0 px-5 pb-1.5">
-              <p className="text-[11px] text-muted-foreground leading-tight">
-                <span className="text-accent font-medium">{stats.total_facts} facts</span>
-                {' · '}
-                <motion.button
-                  onClick={openFlow}
-                  whileTap={{ scale: 0.95 }}
-                  animate={stats.verified_rate === 0 ? { opacity: [1, 0.7, 1] } : undefined}
-                  transition={stats.verified_rate === 0 ? { repeat: Infinity, duration: 2 } : undefined}
-                  className="text-emerald-500 font-medium hover:underline"
-                >
-                  {stats.verified_rate}% verified
-                </motion.button>
-                {showThermometer(facts, stats) && (
-                  <>
-                    {(stats.temperature_distribution?.hot || 0) > 0 && (
-                      <>
-                        {' · '}
-                        <span className="text-orange-500 font-medium">{stats.temperature_distribution.hot} hot</span>
-                      </>
-                    )}
-                    {' · '}
-                    <span className="text-amber-500 font-medium">{stats.temperature_distribution?.warm || 0} warm</span>
-                  </>
-                )}
-              </p>
-            </div>
-          )}
-        </>
+        <div className="flex-shrink-0 px-5 pb-2 pt-1">
+          <p className="text-[11.5px] leading-snug text-muted-foreground/85">
+            Your context, so every AI you use already knows you.
+          </p>
+          {metaLine && <div className="mt-2">{metaLine}</div>}
+        </div>
       }
     >
       {content}
