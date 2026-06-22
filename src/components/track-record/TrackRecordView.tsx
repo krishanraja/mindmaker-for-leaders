@@ -138,7 +138,14 @@ function freshnessLabel(freshDays: number | null): string | null {
 
 function WarmCalibration({ calibration, freshDays }: { calibration: CalibrationRead; freshDays: number | null }) {
   const fresh = freshnessLabel(freshDays);
-  const canScore = calibration.scored > 0;
+  // Three honest warm sub-states, none of which is ever a zero-scoreboard (spec s4):
+  //  - readRight:  read >= 1  -> the positive n/N hero ("3/4 calls read right").
+  //  - firstMiss:  scored >= 1 but read === 0 -> the pattern has not landed your way YET.
+  //                We never lead a brand-new leader with a stark "0/N" hero; we frame it as
+  //                early and forward-looking, honestly (the calls are still listed below).
+  //  - awaiting:   scored === 0 -> banked, but no gut-vs-ground signal to score yet.
+  const mode: 'readRight' | 'firstMiss' | 'awaiting' =
+    calibration.read > 0 ? 'readRight' : calibration.scored > 0 ? 'firstMiss' : 'awaiting';
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -157,7 +164,7 @@ function WarmCalibration({ calibration, freshDays }: { calibration: CalibrationR
         {fresh && <span className="text-[11px] font-medium text-muted-foreground/80">{fresh}</span>}
       </div>
 
-      {canScore ? (
+      {mode === 'readRight' && (
         <>
           <div className="relative mt-3.5 flex items-baseline gap-3.5">
             <span
@@ -179,9 +186,20 @@ function WarmCalibration({ calibration, freshDays }: { calibration: CalibrationR
             showing whether you are sharpening.
           </p>
         </>
-      ) : (
+      )}
+
+      {mode === 'firstMiss' && (
+        // No fabricated upside. We acknowledge the first read went the other way, plainly and
+        // without a deflating "0/N" hero, and point forward.
+        <p className="relative mt-3.5 text-[14px] leading-relaxed text-[#c2cad6]">
+          {calibration.scored === 1 ? 'Your first scored call' : `Your first ${calibration.scored} scored calls`} went
+          the other way to your read. <b className="font-bold text-accent">That is the point.</b> A few more banked
+          calls and the real pattern starts to show.
+        </p>
+      )}
+
+      {mode === 'awaiting' && (
         // Banked calls exist but none can be scored yet (no gut-vs-ground signal).
-        // Stay honest: no fabricated read-rate, just the count and the promise.
         <p className="relative mt-3.5 text-[14px] leading-relaxed text-[#c2cad6]">
           Your first calls are banked. As they pick up a gut-vs-ground signal, I will start showing how you call it.
         </p>
