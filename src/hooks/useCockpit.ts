@@ -19,12 +19,16 @@ interface BriefingSeg {
   magnitude?: { value?: string; kind?: 'sourced' | 'modelled' } | null;
 }
 
-// first plain sentence of an analysis, trimmed - the deck's one-line "why".
-function firstSentence(s: string | undefined): string | null {
-  if (!s) return null;
-  const m = s.trim().match(/^.*?[.!?](\s|$)/);
-  const out = (m ? m[0] : s).trim();
-  return out.length > 140 ? out.slice(0, 137).trimEnd() + '...' : out;
+// A real, dated, sourced article from the live-headlines edge function (Brave).
+// This is what the Home deck now shows instead of cryptic curated lines.
+interface LiveHeadline {
+  id: string;
+  headline: string;
+  say: string | null;
+  source: string | null;
+  url: string;
+  category: string | null;
+  timeAgo: string | null;
 }
 
 // A claim's stored reaction (the honest, gated magnitude). null fields => words lead.
@@ -67,6 +71,7 @@ export function useCockpit(): {
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
   const [segments, setSegments] = useState<BriefingSeg[]>([]);
+  const [liveHeadlines, setLiveHeadlines] = useState<LiveHeadline[]>([]);
   // Categories the leader has recently disliked on the deck -> down-weighted out
   // of the news half (the swipe trains the feed). Best-effort; empty on error.
   const [dislikedCats, setDislikedCats] = useState<Set<string>>(new Set());
@@ -115,8 +120,8 @@ export function useCockpit(): {
     }).then(undefined, () => { /* best-effort */ });
   }, []);
 
-  // The deck's NEWS half: the latest briefing's already-curated segments (the
-  // briefing pipeline does the fetch + score + plain-language work for us).
+  // Whether the leader has their OWN briefing yet (drives the cold/warm/rich
+  // session state - personalization signal, not the deck content).
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -128,6 +133,27 @@ export function useCockpit(): {
       if (cancelled || error) return;
       const row = (data as { segments?: BriefingSeg[] | null }[] | null)?.[0];
       setSegments(Array.isArray(row?.segments) ? row!.segments!.slice(0, 4) : []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The deck's NEWS half: real, dated, sourced AI-native headlines (Brave via the
+  // live-headlines fn, cached daily). This replaces the cryptic curated lines
+  // with headlines the leader can actually open. Best-effort: on failure the deck
+  // falls back to the bundled cold deck so Home is never empty.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('live-headlines');
+        if (cancelled || error) return;
+        const cards = (data as { cards?: LiveHeadline[] } | null)?.cards;
+        if (Array.isArray(cards)) setLiveHeadlines(cards);
+      } catch {
+        /* keep empty -> the cold-deck fallback renders */
+      }
     })();
     return () => {
       cancelled = true;
@@ -226,27 +252,25 @@ export function useCockpit(): {
       hero = { kind: 'cold', headline: 'No live bets yet. Pressure-test a decision and it lands here.' };
     }
 
-    // ---- the "worth a look" deck: news (briefing) + own signals (alerts) ----
-    const newsCards: DeckCard[] = segments
-      .filter((s) => s.headline && !(s.framework_tag && dislikedCats.has(s.framework_tag)))
-      .map((s, i) => ({
-        id: `news-${i}`,
+    // ---- the "worth a look" deck: real live news + own signals (alerts) ----
+    // The news half is now live, dated, sourced, openable headlines (Brave).
+    const liveCards: DeckCard[] = liveHeadlines
+      .filter((h) => h.headline && !(h.category && dislikedCats.has(h.category)))
+      .map((h, i) => ({
+        id: h.id || `live-${i}`,
         kind: 'news' as const,
         eyebrow: 'Worth a look',
-        // Prefer a server-assigned category; the NewsHeadlineCard falls back to
-        // the keyword classifier when this is absent/unmapped.
-        // TODO(news-pipeline): the briefing pipeline does not assign one of the
-        // nine category ids yet (a separate PR) - until then this is null and
-        // the card self-classifies from the headline text.
-        category: s.category ?? null,
-        headline: s.headline!.trim(),
-        say: firstSentence(s.analysis),
-        source: s.source ?? null,
-        timeAgo: s.time_ago ?? null,
-        magnitude: s.magnitude?.value
-          ? { value: s.magnitude.value, kind: s.magnitude.kind === 'modelled' ? 'modelled' : 'sourced' }
-          : null,
+        category: h.category ?? null,
+        headline: h.headline.trim(),
+        say: h.say ?? null,
+        source: h.source ?? null,
+        timeAgo: h.timeAgo ?? null,
+        url: h.url ?? null,
       }));
+    // Generic in-app deck only when the live feed is unavailable (offline/empty),
+    // so Home is never blank.
+    const generic = COLD_DECK.filter((c) => !(c.category && dislikedCats.has(c.category)));
+    const newsCards: DeckCard[] = liveCards.length > 0 ? liveCards : generic;
     const signalCards: DeckCard[] = alerts
       .filter((a) => live.some((c) => c.id === a.decision_case_id))
       .slice(0, 3)
@@ -262,36 +286,25 @@ export function useCockpit(): {
         };
       });
     // interleave: lead with a personal signal when there is one, then alternate
-    // news and signals so the deck feels both informed and personal.
+    // news and signals so the deck feels both informed and personal. newsCards is
+    // never empty (live headlines, or the cold-deck fallback), so Home is never blank.
     const woven: DeckCard[] = [];
     const maxLen = Math.max(newsCards.length, signalCards.length);
     for (let i = 0; i < maxLen; i++) {
       if (signalCards[i]) woven.push(signalCards[i]);
       if (newsCards[i]) woven.push(newsCards[i]);
     }
+    const deck: DeckCard[] = woven;
 
-    // THE EMPTY-HOME FIX: Home is the industry read first, personalized second.
-    // When the leader has no own briefing yet (newsCards empty), fall back to the
-    // bundled cold deck so Home is NEVER empty; still LEAD with any real own
-    // signals (weave them on top of the generic deck the moment they exist).
-    let deck: DeckCard[];
-    if (newsCards.length === 0) {
-      // no personal news; show generic AI-native headlines, signals first.
-      const generic = COLD_DECK.filter((c) => !(c.category && dislikedCats.has(c.category)));
-      deck = [...signalCards, ...generic];
-    } else {
-      deck = woven;
-    }
-
-    // Session-adaptive state, driven off REAL data volume (never faked):
-    //  cold = no own briefing AND no own signals (the generic orientation deck)
-    //  rich = a real briefing AND 2+ own signals (dense triage)
-    //  warm = anything in between (personalized, own signals woven)
+    // Session-adaptive state, driven off REAL personalization volume (never
+    // faked): the leader's OWN briefing + OWN signals. The live news half is the
+    // industry read everyone gets, so it must NOT make a brand-new account look
+    // "warm" - state keys off own-briefing, not the deck content.
     const ownSignals = signalCards.length;
-    const hasOwnNews = newsCards.length > 0;
+    const hasOwnBriefing = segments.length > 0;
     let homeState: HomeState;
-    if (!hasOwnNews && ownSignals === 0) homeState = 'cold';
-    else if (hasOwnNews && ownSignals >= 2) homeState = 'rich';
+    if (!hasOwnBriefing && ownSignals === 0) homeState = 'cold';
+    else if (hasOwnBriefing && ownSignals >= 2) homeState = 'rich';
     else homeState = 'warm';
 
     return {
@@ -303,7 +316,7 @@ export function useCockpit(): {
       homeState,
       ownSignalCount: ownSignals,
     };
-  }, [cases, alerts, reactions, segments, dislikedCats]);
+  }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats]);
 
   return { data: { ...data, topBlocker }, loading, recordDeckReaction };
 }

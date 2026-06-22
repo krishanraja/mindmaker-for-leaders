@@ -58,7 +58,10 @@ export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; 
         briefingState={briefingState}
         onGoDecide={() => navigate('/decision')}
         onBuildSkill={() => navigate('/context')}
-        onOpenCard={(card) => { if (card.betId) navigate(`/decision-map?case=${card.betId}`); }}
+        onOpenCard={(card) => {
+          if (card.betId) navigate(`/decision-map?case=${card.betId}`);
+          else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');
+        }}
         onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
       />
     </DesktopShell>
