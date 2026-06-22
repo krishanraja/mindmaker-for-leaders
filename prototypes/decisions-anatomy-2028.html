@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CTRL Decisions - anatomy redesign (collapsing spine + inline ladder)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  @font-face { font-family:'Gobold'; src:url('../public/fonts/Gobold-Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
+
+  /* ---- the real CTRL dark instrument palette (src/index.css, hex form) ---- */
+  :root{
+    --bg:#08090c; --card:#101319; --card-2:#0c1016; --popover:#0e1014; --secondary:#14171d;
+    --fg:#E6EAF2; --muted-fg:#8b94a3; --muted-bg:#1c2027; --border:#22262e;
+    --acc:#00D9B6; --acc-ink:#aef6ea; --acc-deep:#0a8e7a; --acc-soft:rgba(0,217,182,.10); --acc-line:rgba(0,217,182,.28);
+    --warn:#e0a13a; --warn-soft:rgba(224,161,58,.10); --warn-line:rgba(224,161,58,.30);
+    --display:'Gobold','Space Grotesk',ui-sans-serif,-apple-system,'Segoe UI',sans-serif;
+    --grotesk:'Space Grotesk',ui-sans-serif,sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{ font-family:'Inter',ui-sans-serif,-apple-system,'Segoe UI',sans-serif; color:var(--fg); letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    background:radial-gradient(120% 80% at 50% -10%, #0d141a 0%, var(--bg) 55%); min-height:100vh; }
+  .brand{ display:inline-flex; align-items:center; gap:9px; }
+  .brand img.icon{ height:19px; width:auto; }
+  .brand img.word{ height:13px; width:auto; }
+  @keyframes spinslow{ to{ transform:rotate(360deg) } }
+
+  /* ===== phone frame (same composed surface as decisions-2028) ===== */
+  .stage{ display:grid; place-items:start center; padding:18px 14px 70px; }
+  .phone{ width:100%; max-width:412px; height:min(871px, calc(100vh - 92px)); border-radius:36px; position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#0a0d12,#070809); box-shadow:0 50px 110px -36px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.04);
+    display:grid; grid-template-rows:auto 1fr auto; min-height:0; }
+  .ptop{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 12px; }
+  .ptop .stat{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9px; font-weight:700;
+    color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:5px 9px; border-radius:999px; display:inline-flex; align-items:center; gap:6px; }
+  .ptop .stat .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+  .focus{ position:relative; min-height:0; min-width:0; padding:0 16px 8px; display:flex; flex-direction:column; }
+  .pnav{ display:flex; align-items:center; justify-content:space-around; padding:8px 12px calc(12px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid rgba(255,255,255,.05); background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.34)); }
+  .navit{ display:flex; flex-direction:column; align-items:center; gap:4px; color:#4d5663; cursor:pointer; background:none; border:none; font-family:inherit; padding:4px 12px; }
+  .navit svg{ width:21px; height:21px; }
+  .navit span{ font-size:9.5px; font-weight:600; }
+  .navit.on{ color:var(--acc); }
+
+  /* ============================================================
+     THE ANATOMY VIEW: a collapsing spine + a segmented, inline ladder.
+     ============================================================ */
+  .anat{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  /* the scroll surface holds the spine (sticky) + the ladder; the shelf is pinned outside it */
+  .ascroll{ flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; padding-top:8px; }
+  .ascroll::-webkit-scrollbar{ display:none; }
+
+  /* ---- THE SPINE (sticky; expanded at rest, collapses on scroll) ---- */
+  .spine{ position:sticky; top:0; z-index:6; cursor:pointer;
+    background:linear-gradient(180deg,#101822 0%, #0b1118 100%); border:1px solid var(--acc-line); border-radius:20px;
+    box-shadow:0 24px 50px -34px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.025);
+    padding:14px 15px 13px; transition:padding .26s cubic-bezier(.4,0,.2,1), border-radius .26s ease; overflow:hidden; }
+  .spine::before{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(90% 70% at 90% -10%, rgba(0,217,182,.13), transparent 60%); }
+  .spine .srow{ position:relative; display:flex; align-items:flex-start; gap:10px; }
+  .spine .smain{ flex:1; min-width:0; }
+  .spine .eyebrow{ font-family:var(--display); text-transform:uppercase; letter-spacing:.13em; font-size:9px; font-weight:700; color:var(--acc); }
+  .spine h2{ font-size:16.5px; line-height:1.28; font-weight:800; letter-spacing:-.015em; color:var(--fg); margin-top:6px; text-wrap:balance;
+    transition:font-size .26s ease; }
+  /* the trust gauge: a compact ring */
+  .gauge{ flex:none; width:46px; height:46px; position:relative; display:grid; place-items:center; transition:width .26s ease, height .26s ease; }
+  .gauge svg{ position:absolute; inset:0; transform:rotate(-90deg); }
+  .gauge .track{ fill:none; stroke:rgba(255,255,255,.08); stroke-width:4; }
+  .gauge .val{ fill:none; stroke:var(--acc); stroke-width:4; stroke-linecap:round; filter:drop-shadow(0 0 5px rgba(0,217,182,.6)); }
+  .gauge b{ font-family:var(--grotesk); font-weight:700; font-size:13px; color:var(--acc-ink); font-variant-numeric:tabular-nums; }
+  .gauge .gunit{ display:none; }
+  /* the "tap for the full call" handle */
+  .spine .shandle{ position:relative; display:flex; align-items:center; justify-content:center; gap:6px; margin-top:11px;
+    font-size:10.5px; font-weight:600; color:var(--muted-fg); transition:opacity .2s ease; }
+  .spine .shandle svg{ width:13px; height:13px; transition:transform .26s ease; }
+  .spine.open .shandle svg{ transform:rotate(180deg); }
+  /* the full call, revealed in place */
+  .callfull{ position:relative; max-height:0; opacity:0; overflow:hidden; transition:max-height .3s cubic-bezier(.4,0,.2,1), opacity .26s ease, margin-top .26s ease; }
+  .spine.open .callfull{ max-height:420px; opacity:1; margin-top:12px; }
+  .callfull .cf-h{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:8.5px; font-weight:700; color:var(--muted-fg); margin:12px 0 6px; }
+  .callfull .cf-h:first-child{ margin-top:0; }
+  .callfull p{ font-size:12.5px; line-height:1.5; color:#c2cad6; }
+  .callfull .cf-rule{ height:1px; background:var(--border); margin:13px 0; }
+  .callfull .cf-next{ list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .callfull .cf-next li{ position:relative; padding-left:15px; font-size:12px; line-height:1.4; color:#c2cad6; }
+  .callfull .cf-next li::before{ content:""; position:absolute; left:0; top:6px; width:5px; height:5px; border-radius:999px; background:var(--acc); box-shadow:0 0 6px var(--acc); }
+
+  /* ---- collapsed spine: shrinks to a slim status bar ---- */
+  .spine.collapsed{ padding:10px 14px; border-radius:15px; }
+  .spine.collapsed h2{ font-size:13px; line-height:1.25; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; margin-top:0; }
+  .spine.collapsed .eyebrow{ display:none; }
+  .spine.collapsed .gauge{ width:34px; height:34px; }
+  .spine.collapsed .gauge b{ font-size:11px; }
+  .spine.collapsed .shandle{ display:none; }
+  .spine.collapsed.open .callfull{ max-height:0; opacity:0; margin-top:0; } /* collapsed never shows full call inline */
+
+  /* ---- THE SEGMENTED LADDER ---- */
+  .lwrap{ padding:14px 1px 2px; }
+  .seg{ display:flex; gap:5px; padding:4px; background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:13px; position:sticky; top:0; z-index:4; }
+  .seg button{ flex:1; font-family:inherit; font-size:11px; font-weight:700; letter-spacing:.005em; cursor:pointer; color:var(--muted-fg);
+    background:none; border:none; border-radius:9px; padding:8px 4px; display:inline-flex; align-items:center; justify-content:center; gap:5px; transition:color .15s ease, background .15s ease; white-space:nowrap; }
+  .seg button .sn{ font-family:var(--grotesk); font-size:10px; opacity:.8; }
+  .seg button.on{ color:#04130f; background:linear-gradient(180deg,#1fe7c6,#00d9b6); box-shadow:0 8px 18px -10px rgba(0,217,182,.6); }
+  .seglab{ font-family:var(--display); text-transform:uppercase; letter-spacing:.12em; font-size:9px; font-weight:700; color:var(--muted-fg); display:flex; align-items:center; gap:7px; padding:16px 3px 9px; }
+  .seglab .lc{ color:var(--acc); }
+
+  .rungs{ display:flex; flex-direction:column; gap:9px; padding-bottom:6px; }
+  .rung{ border:1px solid var(--border); border-radius:16px; overflow:hidden; background:linear-gradient(180deg,#0f141c,#0a0e13); transition:border-color .15s ease; }
+  .rung:hover{ border-color:var(--acc-line); }
+  .rung.open{ border-color:var(--acc-line); }
+  .rung[hidden]{ display:none; }
+  .rhead{ display:flex; align-items:stretch; gap:11px; padding:13px 13px; cursor:pointer; }
+  .rrail{ width:3.5px; flex:none; border-radius:999px; }
+  .rrail.holds{ background:var(--acc); box-shadow:0 0 8px rgba(0,217,182,.5); }
+  .rrail.shaky{ background:var(--warn); box-shadow:0 0 8px rgba(224,161,58,.5); }
+  .rrail.yours{ background:rgba(255,255,255,.28); }
+  .rbody{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+  .rtags{ display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
+  .chip{ display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:3px 8px; border-radius:999px; border:1px solid; }
+  .chip svg{ width:11px; height:11px; }
+  .chip.holds{ color:var(--acc); background:var(--acc-soft); border-color:var(--acc-line); }
+  .chip.shaky{ color:var(--warn); background:var(--warn-soft); border-color:var(--warn-line); }
+  .chip.yours{ color:var(--muted-fg); background:rgba(255,255,255,.04); border-color:var(--border); }
+  .hinge{ font-family:var(--display); text-transform:uppercase; letter-spacing:.05em; font-size:8.5px; font-weight:700; color:var(--acc); background:var(--acc-soft); border:1px solid var(--acc-line); padding:3px 7px; border-radius:999px; }
+  .rnum{ margin-left:auto; display:inline-flex; align-items:baseline; gap:4px; color:var(--acc-ink); }
+  .rnum .est{ font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted-fg); }
+  .rnum b{ font-family:var(--grotesk); font-size:15px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; text-shadow:0 0 12px rgba(0,217,182,.4); }
+  .rclaim{ font-size:13px; line-height:1.36; font-weight:600; color:var(--fg); }
+  .rmeter{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .pips{ display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
+  .pipg{ display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--muted-fg); }
+  .pipg .dots{ display:flex; gap:3px; }
+  .pipg .dots i{ width:6px; height:6px; border-radius:999px; }
+  .pipg.back .dots i{ background:var(--acc); box-shadow:0 0 5px rgba(0,217,182,.6); }
+  .pipg.against .dots i{ background:rgba(244,114,114,.8); }
+  .rchev{ flex:none; color:var(--muted-fg); align-self:center; transition:transform .26s ease, color .15s ease; }
+  .rchev svg{ width:15px; height:15px; }
+  .rung.open .rchev{ transform:rotate(90deg); color:var(--acc); }
+  /* the rung body: evidence, revealed inline (no sheet hop) */
+  .revid{ max-height:0; opacity:0; overflow:hidden; transition:max-height .3s cubic-bezier(.4,0,.2,1), opacity .26s ease; border-top:0 solid var(--border); }
+  .rung.open .revid{ max-height:460px; opacity:1; border-top:1px solid var(--border); }
+  .revid-in{ padding:13px; display:flex; flex-direction:column; gap:11px; }
+  .revid .why{ font-size:11.5px; line-height:1.45; color:var(--muted-fg); }
+  .evh{ font-family:var(--display); text-transform:uppercase; letter-spacing:.07em; font-size:8.5px; font-weight:700; color:var(--muted-fg); }
+  .src{ display:flex; flex-direction:column; gap:4px; }
+  .src .stop{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+  .src .sb{ font-size:9px; font-weight:700; padding:2px 6px; border-radius:999px; border:1px solid; }
+  .sb.supports{ color:var(--acc); background:var(--acc-soft); border-color:var(--acc-line); }
+  .sb.refutes{ color:#f47272; background:rgba(244,114,114,.1); border-color:rgba(244,114,114,.3); }
+  .src a{ font-size:11.5px; font-weight:600; color:var(--acc); text-decoration:none; }
+  .src .ret{ font-size:10px; color:#566070; }
+  .src .ex{ font-size:11px; line-height:1.45; color:#aab2c0; }
+
+  /* ---- the pinned action shelf ---- */
+  .shelf{ flex:none; display:flex; gap:10px; padding-top:11px; }
+  .shelf .sbtn{ flex:1; display:inline-flex; align-items:center; justify-content:center; gap:7px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:700; border-radius:14px; padding:13px 12px; }
+  .shelf .sbtn svg{ width:15px; height:15px; }
+  .sbtn.ghost{ color:#cdd6e2; background:#11161d; border:1px solid var(--border); }
+  .sbtn.ghost:hover{ border-color:var(--acc-line); color:var(--fg); }
+  .sbtn.prime{ color:#04130f; background:linear-gradient(180deg,#1fe7c6,#00d9b6); border:none; box-shadow:0 12px 26px -12px rgba(0,217,182,.5), inset 0 1px 0 rgba(255,255,255,.3); }
+
+  /* ============================================================
+     DESKTOP (>=1100px): spine + call + shelf left, segmented ladder right
+     ============================================================ */
+  .desk{ display:none; }
+  @media (min-width:1100px){
+    .stage{ display:none; }
+    body{ display:grid; place-items:center; padding-bottom:64px; }
+    .desk{ display:grid; width:min(1320px, calc(100vw - 64px)); height:min(832px, calc(100vh - 120px));
+      grid-template-columns:300px 1fr; grid-template-rows:auto 1fr;
+      background:linear-gradient(180deg,#0b0e13,#08090c); border:1px solid var(--border); border-radius:26px; overflow:hidden;
+      box-shadow:0 60px 120px -50px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.03); }
+    .dhead{ grid-column:1/3; display:flex; align-items:center; justify-content:space-between; padding:22px 32px 18px; border-bottom:1px solid rgba(255,255,255,.05); }
+    .dhead .stat{ font-family:var(--display); text-transform:uppercase; letter-spacing:.08em; font-size:9.5px; font-weight:700; color:var(--acc);
+      background:var(--acc-soft); border:1px solid var(--acc-line); padding:6px 11px; border-radius:999px; display:inline-flex; align-items:center; gap:7px; }
+    .dhead .stat .pip{ width:6px; height:6px; border-radius:999px; background:var(--acc); box-shadow:0 0 8px var(--acc); }
+    .dside{ grid-row:2/3; border-right:1px solid rgba(255,255,255,.05); padding:30px 28px; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(255,255,255,.012), transparent); }
+    .dside .eyebrow{ font-family:var(--display); text-transform:uppercase; letter-spacing:.13em; font-size:10px; font-weight:700; color:var(--acc); }
+    .dside h1{ font-size:25px; font-weight:800; letter-spacing:-.025em; line-height:1.12; margin-top:12px; }
+    .dside .frame{ font-size:13.5px; color:var(--muted-fg); margin-top:11px; line-height:1.5; max-width:26ch; }
+    .dside .dnav{ margin-top:auto; display:flex; flex-direction:column; gap:3px; padding-top:24px; }
+    .dnav .navit{ flex-direction:row; gap:12px; justify-content:flex-start; width:100%; padding:11px 12px; border-radius:11px; color:#4d5663; }
+    .dnav .navit span{ font-size:13.5px; }
+    .dnav .navit.on{ background:var(--acc-soft); color:var(--acc); }
+    .dnav .navit:hover{ background:rgba(255,255,255,.03); }
+
+    .dwork{ grid-row:2/3; min-height:0; padding:28px 34px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .dleft{ display:flex; flex-direction:column; min-height:0; }
+    .dleft .spine{ position:relative; cursor:default; }
+    .dleft .spine .shandle{ cursor:pointer; }
+    .dleft .spine h2{ font-size:21px; }
+    .dleft .spine.open .callfull{ max-height:520px; }
+    .dleft .shelf{ margin-top:auto; }
+    .dright{ display:flex; flex-direction:column; min-height:0; }
+    .dright .seglab{ padding-top:0; }
+    .dright .lwrap{ display:flex; flex-direction:column; min-height:0; padding-top:0; }
+    .dright .ladder-scroll{ flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; margin-top:12px; }
+    .dright .ladder-scroll::-webkit-scrollbar{ display:none; }
+    .dright .seg{ position:relative; }
+  }
+
+  /* ===== control bar (mock only) ===== */
+  .ctl{ position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:50; display:flex; align-items:center; gap:6px; padding:7px 9px;
+    border-radius:14px; background:rgba(12,16,22,.9); border:1px solid var(--border); backdrop-filter:blur(12px); box-shadow:0 18px 40px -16px rgba(0,0,0,.8); }
+  .ctl .lab{ font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:#566070; font-weight:700; padding:0 6px 0 4px; }
+  .ctl button{ font-family:inherit; font-size:11px; font-weight:600; color:var(--muted-fg); cursor:pointer; background:rgba(255,255,255,.03);
+    border:1px solid var(--border); border-radius:9px; padding:6px 10px; }
+  .ctl button:hover{ color:var(--fg); border-color:var(--acc-line); }
+  .ctl .note{ font-size:10px; color:#566070; max-width:300px; line-height:1.3; }
+</style>
+</head>
+<body>
+
+<!-- ======== shared content rendered into both frames via JS so the mock stays DRY ======== -->
+<div class="stage">
+  <div class="phone">
+    <div class="ptop">
+      <span class="brand">
+        <img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" />
+        <img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" />
+      </span>
+      <span class="stat"><span class="pip"></span>On watch</span>
+    </div>
+    <div class="focus">
+      <div class="anat">
+        <div class="ascroll" id="mscroll">
+          <div class="spine" id="mspine" onclick="toggleSpine('m')"></div>
+          <div class="lwrap" id="mladder"></div>
+        </div>
+        <div class="shelf" id="mshelf"></div>
+      </div>
+    </div>
+    <div class="pnav">
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg><span>Home</span></button>
+      <button class="navit on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg><span>Decisions</span></button>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7 7L5.5 5.5M18.5 18.5L17 17M17 7l1.5-1.5M5.5 18.5L7 17"/></svg><span>Brain</span></button>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c0-3.2 2.9-5.5 6.5-5.5s6.5 2.3 6.5 5.5"/></svg><span>You</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== DESKTOP ======== -->
+<div class="desk">
+  <div class="dhead">
+    <span class="brand"><img class="icon" src="../src/assets/mindmaker-icon.png" alt="" aria-hidden="true" style="height:22px" /><img class="word" src="../src/assets/ctrl-logo.png" alt="ctrl" style="height:15px" /></span>
+    <span class="stat"><span class="pip"></span>On watch &middot; re-checking your open calls</span>
+  </div>
+  <div class="dside">
+    <div class="eyebrow">Decisions</div>
+    <h1>How your call holds up.</h1>
+    <p class="frame">One call in focus. Tap it to read it in full; everything it rests on is laid out beside it.</p>
+    <div class="dnav">
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg><span>Home</span></button>
+      <button class="navit on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 6l9 4 5-2M5 6l-2 7a4 4 0 0 0 8 0L5 6zM19 8l2 6a3 3 0 0 1-6 0l4-6z"/></svg><span>Decisions</span></button>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7 7L5.5 5.5M18.5 18.5L17 17M17 7l1.5-1.5M5.5 18.5L7 17"/></svg><span>Brain</span></button>
+      <button class="navit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c0-3.2 2.9-5.5 6.5-5.5s6.5 2.3 6.5 5.5"/></svg><span>You</span></button>
+    </div>
+  </div>
+  <div class="dwork">
+    <div class="dleft">
+      <div class="spine open" id="dspine"></div>
+      <div class="shelf" id="dshelf"></div>
+    </div>
+    <div class="dright">
+      <div class="lwrap" id="dladder"></div>
+    </div>
+  </div>
+</div>
+
+<div class="ctl">
+  <span class="lab">Mock</span>
+  <span class="note">Scroll the ladder &rarr; the call spine collapses to a status bar. Tap the spine for the full call. Tap a rung for its sources inline. Segments filter. Haptics fire on Android.</span>
+</div>
+
+<script>
+  /* ---- haptics: mirrors src/lib/haptics.ts (navigator.vibrate, no-ops where unsupported) ---- */
+  function buzz(ms){ try{ if('vibrate' in navigator) navigator.vibrate(ms||10); }catch(e){} }
+
+  /* ---- the one decision in focus (would come from useDecisionEngine) ---- */
+  const DECISION = {
+    statement: "Whether to commit to a full enterprise pivot next quarter.",
+    confidence: 0.25,
+    recommendation: "Do not commit to a full enterprise pivot next quarter. The strategic direction is correct but the timing is not, because three load-bearing forecasts and one load-bearing assumption are all unverifiable right now. Run the enterprise motion in parallel with SMB stabilization: pursue the 2 prospects already in negotiation, get a hard read on SOC 2 timeline and product readiness, and validate Pro tier pricing before you deprioritize the self-serve build.",
+    counter: "If both prospects sign in 30 days and SOC 2 lands on the optimistic date, the timing risk collapses and a faster commit becomes the stronger call.",
+    next: [
+      "Get a written SOC 2 completion date from the auditor.",
+      "Confirm both enterprise prospects' procurement timelines.",
+      "Validate Pro tier pricing with 5 self-serve accounts."
+    ]
+  };
+  const RUNGS = [
+    { v:'shaky', hinge:true, claim:"Both enterprise prospects close within the quarter.", num:null, why:"This is the hinge. The whole pivot's timing rests on it, and nothing outside your own pipeline confirms it yet.",
+      ev:[{s:'refutes',t:"Enterprise sales cycle benchmark",ret:'perplexity',ex:"Median mid-market enterprise close is 84 days from first negotiation; both deals started under 40 days ago."}] },
+    { v:'shaky', hinge:false, claim:"SOC 2 will be ready before enterprise onboarding.", num:null, why:"Load-bearing and unverified. Enterprise buyers gate onboarding on it, and you do not have a committed date.",
+      ev:[{s:'refutes',t:"Auditor status email",ret:'your files',ex:"Type II observation window not yet scheduled as of last upload."}] },
+    { v:'holds', hinge:false, claim:"SMB base is stable enough to fund the parallel motion.", num:'+8%', why:"Backed by your own revenue record and two outside benchmarks; safe to lean on.",
+      ev:[{s:'supports',t:"Net revenue retention (your data)",ret:'memory',ex:"Trailing 3-month NRR 108%, churn flat."},{s:'supports',t:"SMB SaaS retention benchmark",ret:'tavily',ex:"Healthy SMB NRR band is 100-110% for this ARPU."}] },
+    { v:'holds', hinge:false, claim:"Pro tier pricing has room to move up.", num:'2.1x', why:"Backed by comparable pricing pages; a modelled multiple, so it wears the est. mark.", est:true,
+      ev:[{s:'supports',t:"Competitor pricing scan",ret:'brave',ex:"Three closest comparables price the equivalent tier 1.8-2.4x your current Pro."}] },
+    { v:'yours', hinge:false, claim:"The team has appetite for a pivot right now.", num:null, why:"Only you can answer this one. No outside source can read your team's readiness; it belongs to you.",
+      ev:[] }
+  ];
+
+  const VICON = {
+    holds:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
+    shaky:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 17h.01"/><path d="M10.3 4l-7 12a2 2 0 0 0 1.7 3h14a2 2 0 0 0 1.7-3l-7-12a2 2 0 0 0-3.4 0z"/></svg>',
+    yours:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/></svg>'
+  };
+  const VLABEL = { holds:'Holds up', shaky:'Shaky', yours:'Your call' };
+
+  function gaugeSVG(pct){
+    const r=20, c=2*Math.PI*r, off=c*(1-pct/100);
+    return `<svg viewBox="0 0 46 46"><circle class="track" cx="23" cy="23" r="${r}"/><circle class="val" cx="23" cy="23" r="${r}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><b>${pct}</b>`;
+  }
+  function spineHTML(pct){
+    return `<div class="srow">
+        <div class="smain">
+          <div class="eyebrow">The call &middot; ${pct}% holds up</div>
+          <h2>${DECISION.statement}</h2>
+        </div>
+        <div class="gauge">${gaugeSVG(pct)}</div>
+      </div>
+      <div class="shandle">Read the full call
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="callfull">
+        <div class="cf-h">The call</div>
+        <p>${DECISION.recommendation}</p>
+        <div class="cf-rule"></div>
+        <div class="cf-h">When this flips</div>
+        <p>${DECISION.counter}</p>
+        <div class="cf-rule"></div>
+        <div class="cf-h">Validate next</div>
+        <ul class="cf-next">${DECISION.next.map(n=>`<li>${n}</li>`).join('')}</ul>
+      </div>`;
+  }
+  function pips(n,cls,lab){ if(!n) return ''; const d=Array.from({length:Math.min(n,5)}).map(()=>'<i></i>').join('');
+    return `<span class="pipg ${cls}"><span class="dots">${d}</span>${n} ${lab}</span>`; }
+  function rungHTML(r,i){
+    const backs=r.ev.filter(e=>e.s==='supports').length, against=r.ev.filter(e=>e.s==='refutes').length;
+    const meter = (backs||against) ? `${pips(backs,'back','back'+(backs===1?'s':''))}${pips(against,'against','push'+(against===1?'es':'')+' back')}`
+      : `<span class="pipg">Only you can answer this one</span>`;
+    const num = r.num ? `<span class="rnum">${r.est?'<span class="est">est.</span>':''}<b>${r.num}</b></span>` : '';
+    const sources = r.ev.length ? r.ev.map(e=>`<div class="src"><div class="stop"><span class="sb ${e.s}">${e.s==='supports'?'Backs it':'Pushes back'}</span><a href="#">${e.t}</a><span class="ret">&middot; ${e.ret}</span></div><div class="ex">${e.ex}</div></div>`).join('')
+      : `<div class="ex">No outside source settles this. It is a judgment only you can make.</div>`;
+    return `<div class="rung" data-v="${r.v}">
+      <div class="rhead" onclick="toggleRung(this)">
+        <span class="rrail ${r.v}"></span>
+        <span class="rbody">
+          <span class="rtags">
+            <span class="chip ${r.v}">${VICON[r.v]}${VLABEL[r.v]}</span>
+            ${r.hinge?'<span class="hinge">The hinge</span>':''}
+            ${num}
+          </span>
+          <span class="rclaim">${r.claim}</span>
+          <span class="rmeter"><span class="pips">${meter}</span></span>
+        </span>
+        <span class="rchev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="revid"><div class="revid-in">
+        <div class="why">${r.why}</div>
+        <div class="evh">${r.ev.length?'What I found':'The sources'}</div>
+        ${sources}
+      </div></div>
+    </div>`;
+  }
+  function counts(){ const c={all:RUNGS.length,holds:0,shaky:0,yours:0}; RUNGS.forEach(r=>c[r.v]++); return c; }
+  function ladderHTML(scrollWrap){
+    const c=counts();
+    const seg=`<div class="seg">
+        <button class="on" onclick="filter(this,'all')">All <span class="sn">${c.all}</span></button>
+        <button onclick="filter(this,'holds')">Holds <span class="sn">${c.holds}</span></button>
+        <button onclick="filter(this,'shaky')">Shaky <span class="sn">${c.shaky}</span></button>
+        <button onclick="filter(this,'yours')">Your call <span class="sn">${c.yours}</span></button>
+      </div>`;
+    const lab=`<div class="seglab"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--acc)"><path d="M3 7h18M3 12h18M3 17h18"/></svg> What the call rests on <span class="lc">&middot; ${c.all}</span></div>`;
+    const rungs=`<div class="rungs">${RUNGS.map(rungHTML).join('')}</div>`;
+    return scrollWrap ? `${lab}${seg}<div class="ladder-scroll">${rungs}</div>` : `${lab}${seg}${rungs}`;
+  }
+  function shelfHTML(){
+    return `<button class="sbtn ghost" onclick="buzz(8)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Your decisions</button>
+      <button class="sbtn prime" onclick="buzz([12,40,18])"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Bank this call</button>`;
+  }
+
+  /* ---- interactions ---- */
+  function toggleSpine(p){ const s=document.getElementById(p+'spine'); s.classList.toggle('open'); buzz(10);
+    if(s.classList.contains('open') && s.classList.contains('collapsed')){ const sc=document.getElementById(p+'scroll'); if(sc) sc.scrollTo({top:0,behavior:'smooth'}); } }
+  function toggleRung(head){ head.parentElement.classList.toggle('open'); buzz(10); }
+  function filter(btn,v){ btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); buzz(8);
+    btn.closest('.lwrap').querySelectorAll('.rung').forEach(r=>{ r.hidden = (v!=='all' && r.dataset.v!==v); }); }
+
+  /* ---- render ---- */
+  const pct=Math.round(DECISION.confidence*100);
+  document.getElementById('mspine').innerHTML=spineHTML(pct);
+  document.getElementById('mladder').innerHTML=ladderHTML(false);
+  document.getElementById('mshelf').innerHTML=shelfHTML();
+  document.getElementById('dspine').innerHTML=spineHTML(pct);
+  document.getElementById('dladder').innerHTML=ladderHTML(true);
+  document.getElementById('dshelf').innerHTML=shelfHTML();
+
+  /* ---- mobile: collapse the spine on scroll (the native large-title move) ---- */
+  const msc=document.getElementById('mscroll'), msp=document.getElementById('mspine');
+  msc.addEventListener('scroll',()=>{ const collapsed = msc.scrollTop>46; msp.classList.toggle('collapsed', collapsed); if(collapsed) msp.classList.remove('open'); });
+</script>
+</body>
+</html>
