@@ -516,33 +516,29 @@ export default function PreviewPage() {
               </div>
             </div>
           </div>
+          {/* Desktop blocks break out of the mobile-width harness column to a realistic
+              ~1080px main width (DesktopShell main at 1366), so the two-zone layout is
+              previewable honestly. data-tr-desktop marks them for the screenshot tool. */}
           {[
-            { label: 'warm - first pattern (desktop two-zone-ready)', rows: WARM_ROWS },
-            { label: 'rich - earned record (desktop two-zone)', rows: RICH_ROWS },
+            { label: 'desktop - cold (the promise, room to breathe)', rows: [] as TrackRecordRow[], h: 'h-[520px]' },
+            { label: 'desktop - warm (calm single column)', rows: WARM_ROWS, h: 'h-[440px]' },
+            { label: 'desktop - rich (two-zone)', rows: RICH_ROWS, h: 'h-[460px]' },
           ].map((f) => {
             const model = buildTrackRecordModel(f.rows);
             return (
-              <div key={`d-${f.label}`}>
-                <p className="mb-1 text-[10px] text-muted-foreground/70">desktop - {f.label}</p>
-                <div className="rounded-2xl border border-border bg-background p-5">
-                  <div className="flex h-[420px] flex-col">
+              <div key={`d-${f.label}`} data-tr-desktop className="relative left-1/2 w-[1080px] max-w-[92vw] -translate-x-1/2">
+                <p className="mb-1 text-[10px] text-muted-foreground/70">{f.label}</p>
+                <div className="rounded-2xl border border-border bg-background p-6">
+                  <div className={`flex ${f.h} flex-col`}>
                     <TrackRecordView model={model} desktop onWeigh={noop} animated={false} />
                   </div>
                 </div>
               </div>
             );
           })}
-          <div>
-            <p className="mb-1 text-[10px] text-muted-foreground/70">desktop - cold (the promise, room to breathe)</p>
-            <div className="rounded-2xl border border-border bg-background p-5">
-              <div className="flex h-[520px] flex-col">
-                <TrackRecordView model={buildTrackRecordModel([])} desktop onWeigh={noop} animated={false} />
-              </div>
-            </div>
-          </div>
-          <div>
+          <div data-tr-desktop className="relative left-1/2 w-[1080px] max-w-[92vw] -translate-x-1/2">
             <p className="mb-1 text-[10px] text-muted-foreground/70">desktop - loading (in-shell skeleton)</p>
-            <div className="rounded-2xl border border-border bg-background p-5">
+            <div className="rounded-2xl border border-border bg-background p-6">
               <div className="flex h-[420px] flex-col">
                 <TrackRecordSkeleton desktop />
               </div>
