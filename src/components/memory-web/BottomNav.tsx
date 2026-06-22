@@ -1,6 +1,6 @@
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Zap, Brain, Scale, Radio, TrendingUp, User } from 'lucide-react';
+import { Home, Zap, Brain, Scale, Radio, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // COCKPIT v1 (flag on): the 4-tab model. Home=cockpit, Decisions=Decide + map,
@@ -10,7 +10,7 @@ const cockpitNav = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
   { path: '/decision', search: '', icon: Scale, label: 'Decisions' },
   { path: '/memory', search: '', icon: Brain, label: 'Brain' },
-  { path: '/track-record', search: '', icon: User, label: 'You' },
+  { path: '/track-record', search: '', icon: History, label: 'History' },
 ];
 
 // Legacy 6-tab nav (flag off). "Decide" leads over the old "Export" tab.
@@ -20,7 +20,7 @@ const legacyNav = [
   { path: '/memory', search: '', icon: Brain, label: 'Memory' },
   { path: '/decision', search: '', icon: Scale, label: 'Decide' },
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing' },
-  { path: '/track-record', search: '', icon: TrendingUp, label: 'Record' },
+  { path: '/track-record', search: '', icon: History, label: 'History' },
 ];
 
 const COCKPIT_ENABLED = import.meta.env.VITE_COCKPIT_ENABLED === 'true';

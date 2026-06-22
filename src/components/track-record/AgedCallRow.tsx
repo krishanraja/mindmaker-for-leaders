@@ -100,7 +100,7 @@ export function AgedCallRow({
           <span className="ml-auto whitespace-nowrap text-[10.5px] text-muted-foreground">{call.ageLabel}</span>
         </div>
         <h3 className="text-[13.5px] font-bold leading-snug tracking-tight text-foreground [overflow-wrap:anywhere]">
-          {call.statement}
+          {call.question}
         </h3>
         <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted-foreground">{readLine(call)}</p>
       </div>
