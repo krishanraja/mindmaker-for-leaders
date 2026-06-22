@@ -30,6 +30,8 @@ import {
   useDecisionEngine, type DecisionClaim, type Verdict, type DecisionEvidence, type DecisionTension,
 } from '@/hooks/useDecisionEngine';
 import { type DecisionCaseSummary, type OpenAlert } from '@/hooks/useDecisionInbox';
+import { SkeletonCard, LoadingCaption } from '@/components/system/SkeletonCard';
+import { DecisionCapture } from '@/components/operator/decision/DecisionCapture';
 
 // ----- shared atoms ---------------------------------------------------------
 
@@ -513,5 +515,68 @@ export function UpgradeCard({ message, onUpgrade, processing }: { message: strin
         <Button onClick={onUpgrade} disabled={processing} size="lg" className="w-full sm:w-auto">{processing ? 'Opening checkout...' : 'Upgrade to Edge Pro'}</Button>
       </CardContent>
     </Card>
+  );
+}
+
+// ----- 2028 Decisions tab states (prototypes/decisions-2028.html) -----------
+// COLD, LOADING, and the error close-out, built to the approved mock. These power
+// the rebuilt Decisions tab (PressureTestPanel); onboarding keeps DecisionResult /
+// CaptureView above. The mock's RUNNING / WARM / RESULT live in their own files
+// (DecisionRunning / DecisionBoard / DecisionResultView).
+
+/**
+ * COLD: the one ask. A quiet identity line, then ONE input card (DecisionCapture)
+ * that holds type-or-talk, the example as ghost text, and one "Weigh it" CTA.
+ * Mobile centres the invite + input as a calm group; desktop gives it room.
+ */
+export function DecisionCold({
+  value, onChange, onStart, starting, isDesktop = false,
+}: { value: string; onChange: (v: string) => void; onStart: () => void; starting: boolean; isDesktop?: boolean }) {
+  return (
+    <div className="flex h-full min-h-0 flex-col justify-center">
+      <div className={cn(isDesktop && 'mx-auto w-full max-w-[620px]')}>
+        <h1 className={cn('font-extrabold tracking-tight text-foreground', isDesktop ? 'text-[23px]' : 'text-[22px]')}>
+          Weigh your first decision.
+        </h1>
+        <p className={cn('mt-2 leading-relaxed text-muted-foreground text-pretty', isDesktop ? 'max-w-[48ch] text-sm' : 'text-[13px]')}>
+          Tell me the call you're weighing. I'll break it into what it rests on, check each part against real sources, and show you where it holds and where it breaks.
+        </p>
+        <div className="mt-4">
+          <DecisionCapture value={value} onChange={onChange} onStart={onStart} starting={starting} autoFocus={isDesktop} isDesktop={isDesktop} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * LOADING: the branded in-shell skeleton (not a raw spinner). Reuses the shared
+ * SkeletonCard + LoadingCaption so the Decisions tab warms up like every other
+ * surface (CTRL-SYSTEM-SPEC.md s6 "loading is purposeful, branded, anticipatory").
+ */
+export function DecisionLoading() {
+  return (
+    <div className="flex h-full min-h-0 flex-col justify-center">
+      <SkeletonCard variant="lead" />
+      <div className="pt-4"><LoadingCaption>Opening your decisions</LoadingCaption></div>
+    </div>
+  );
+}
+
+/**
+ * The honest close-out when a run could not finish. Calm, not alarming; one way
+ * forward (weigh another).
+ */
+export function DecisionErrorView({ message, onReset }: { message: string | null; onReset: () => void }) {
+  return (
+    <div className="flex h-full min-h-0 items-center justify-center px-2">
+      <Card className="w-full max-w-md border-amber-500/30 bg-amber-500/10">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 text-amber-300"><AlertTriangle className="h-4 w-4" /><p className="text-sm font-medium">This could not finish.</p></div>
+          <p className="mt-2 text-xs text-muted-foreground text-pretty">{message || 'The pressure test hit an error. Try another decision.'}</p>
+          <Button variant="outline" size="sm" className="mt-4" onClick={onReset}>Weigh another decision</Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
