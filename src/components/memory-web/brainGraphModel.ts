@@ -111,7 +111,13 @@ export function buildGraph(facts: MemoryWebFact[]): { nodes: GraphNode[]; edges:
     return { nodes: [hub], edges: [] };
   }
 
-  // group by orbit world so each territory packs into its own angular sector
+  // group by orbit world (colour) but lay every fact out on ONE balanced ring of
+  // evenly-spaced angles around the hub. Even angular spacing keeps the cluster's
+  // centroid on the hub and its half-extents symmetric on BOTH axes, so the
+  // hub-anchored, aspect-corrected viewBox (computeViewBox) lands the cluster in
+  // the optical centre with no dead quadrant - even for a thin 3-node graph in a
+  // tall portrait canvas (the live mobile failure mode). Facts are interleaved by
+  // world so colours read as a balanced field, not three hard spokes.
   const orbits: Exclude<GraphWorld, 'you'>[] = ['priority', 'decisions', 'company'];
   const byWorld: Record<Exclude<GraphWorld, 'you'>, MemoryWebFact[]> = {
     priority: [],
@@ -119,41 +125,46 @@ export function buildGraph(facts: MemoryWebFact[]): { nodes: GraphNode[]; edges:
     company: [],
   };
   for (const f of facts) byWorld[factGraphWorld(f)].push(f);
-  // strongest first so the anchor of each world sits closest to the hub
+  // strongest first within each world so the anchor of each colour sits closest
   for (const w of orbits) byWorld[w].sort((a, b) => factStrength(b) - factStrength(a));
 
-  // base sector angle per populated world (only populated worlds claim a sector,
-  // so a thin web still spreads evenly instead of leaving a colour's wedge empty)
-  const populated = orbits.filter((w) => byWorld[w].length > 0);
-  const sector = (Math.PI * 2) / Math.max(1, populated.length);
+  // round-robin interleave so adjacent ring slots alternate colour where possible
+  const ordered: { fact: MemoryWebFact; world: Exclude<GraphWorld, 'you'> }[] = [];
+  const cursors = { priority: 0, decisions: 0, company: 0 };
+  let remaining = facts.length;
+  while (remaining > 0) {
+    for (const w of orbits) {
+      if (cursors[w] < byWorld[w].length) {
+        ordered.push({ fact: byWorld[w][cursors[w]], world: w });
+        cursors[w] += 1;
+        remaining -= 1;
+      }
+    }
+  }
 
   const nodes: GraphNode[] = [hub];
   const edges: GraphEdge[] = [];
 
-  populated.forEach((world, wi) => {
-    const group = byWorld[world];
-    const base = wi * sector - Math.PI / 2; // start from "up" so it reads upright
-    group.forEach((fact, i) => {
-      const strength = factStrength(fact);
-      const confirmed = isConfirmed(fact);
-      // ring radius: strong facts close in, weak ones farther; +index spread so
-      // same-world nodes never stack. Tuned to the mock's ~95..255 model spread.
-      const ring = 84 + (1 - strength) * 96 + i * 26;
-      // spread within the world's sector, biased so the field reads as an even
-      // fan rather than a hard spoke; a gentle deterministic jitter keeps it
-      // organic without thrashing between renders (seeded by the index).
-      const spread = group.length > 1 ? (i / (group.length - 1) - 0.5) : 0;
-      const jitter = (((i * 53) % 17) / 17 - 0.5) * 0.28;
-      const ang = base + spread * sector * 0.74 + jitter;
-      const r = strength > 0.7 ? 10 : strength > 0.45 ? 9 : 7;
-      const x = Math.cos(ang) * ring;
-      // flatten y a touch so a dense graph reads as a field, like the mock
-      const y = Math.sin(ang) * ring * 0.9;
-      const id = fact.id;
-      nodes.push({ id, world, x, y, r, label: fact.fact_label, fact, confirmed, strength });
-      // hub -> node spoke; lit when the fact is confirmed + load-bearing
-      edges.push({ key: `hub-${id}`, from: HUB_ID, to: id, strong: confirmed && strength > 0.4 });
-    });
+  const n = ordered.length;
+  // a half-step phase so an even count never leaves a node dead-top + dead-bottom
+  // mirrored (keeps the silhouette balanced rather than barbell-shaped).
+  const phase = -Math.PI / 2 + Math.PI / Math.max(2, n) * (n % 2 === 0 ? 1 : 0);
+  ordered.forEach(({ fact, world }, i) => {
+    const strength = factStrength(fact);
+    const confirmed = isConfirmed(fact);
+    // even angle around the full circle + a tiny deterministic jitter so it reads
+    // organic without thrashing between renders.
+    const jitter = (((i * 53) % 17) / 17 - 0.5) * 0.14;
+    const ang = phase + (i / n) * Math.PI * 2 + jitter;
+    // ring radius: strong facts hug the hub, weak ones drift out; a gentle
+    // alternation so concentric same-angle stacking never happens.
+    const ring = 96 + (1 - strength) * 70 + (i % 2) * 18;
+    const r = strength > 0.7 ? 10 : strength > 0.45 ? 9 : 7;
+    const x = Math.cos(ang) * ring;
+    const y = Math.sin(ang) * ring;
+    const id = fact.id;
+    nodes.push({ id, world, x, y, r, label: fact.fact_label, fact, confirmed, strength });
+    edges.push({ key: `hub-${id}`, from: HUB_ID, to: id, strong: confirmed && strength > 0.4 });
   });
 
   return { nodes, edges };
