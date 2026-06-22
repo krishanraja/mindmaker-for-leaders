@@ -9,14 +9,15 @@ import { TrackRecordView } from '@/components/track-record/TrackRecordView';
 import { TrackRecordSkeleton } from '@/components/track-record/TrackRecordSkeleton';
 import { ShareWinButton } from '@/components/share/ShareWinButton';
 
-// The chief-of-staff voice per state (mock VOICE map). One job: your judgment over time.
-// The cold copy never implies an empty scoreboard; it frames the FUTURE value.
+// The chief-of-staff voice per state. Plain language: the questions you have
+// weighed and how they turned out. The cold copy frames the FUTURE value, never
+// an empty scoreboard.
 type VoiceKey = 'loading' | 'cold' | 'warm' | 'rich';
 const VOICE: Record<VoiceKey, { title: string; frame: string }> = {
-  loading: { title: 'How your decisions are aging', frame: 'Reading your record.' },
-  cold: { title: 'How your decisions will age', frame: 'This fills in the first time you bank a call.' },
-  warm: { title: 'How your decisions are aging', frame: 'The first pattern is starting to show.' },
-  rich: { title: 'How your decisions are aging', frame: 'Every call you bank, judged on your read, not the result.' },
+  loading: { title: 'The big questions you have weighed', frame: 'Reading your history.' },
+  cold: { title: 'The big questions you weigh, kept on the record', frame: 'This fills in the first time you bank a decision.' },
+  warm: { title: 'The big questions you have weighed', frame: 'A first pattern is starting to show.' },
+  rich: { title: 'The big questions you have weighed', frame: 'Each one tracked by how it actually turned out.' },
 };
 
 /** The page head shown inside the content (eyebrow + title + one-line frame), per state. */
@@ -26,7 +27,7 @@ function PageHead({ voiceKey }: { voiceKey: VoiceKey }) {
     <div>
       <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
         <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent))]" />
-        Track Record
+        History
       </span>
       <h1 className="mt-1.5 text-[25px] font-extrabold leading-tight tracking-tight text-foreground">{v.title}</h1>
       <p className="mt-1.5 max-w-[34ch] text-[13px] leading-snug text-muted-foreground">{v.frame}</p>
@@ -42,7 +43,9 @@ export default function TrackRecordPage() {
   const model = useMemo(() => buildTrackRecordModel(records), [records]);
   const voiceKey: VoiceKey = loading ? 'loading' : model.kind;
 
-  const handleWeigh = () => navigate('/decision');
+  // Open the decision weigher, optionally prefilled with a suggested question.
+  const handleWeigh = (prefill?: string) =>
+    navigate('/decision', prefill ? { state: { prefill } } : undefined);
 
   // The desktop Share action only appears once there is a real, earned record to share.
   const shareAction =
@@ -62,7 +65,7 @@ export default function TrackRecordPage() {
   // ----- DESKTOP -----
   if (!isMobile) {
     return (
-      <DesktopShell eyebrow="Workspace" title="Track Record" actions={shareAction}>
+      <DesktopShell eyebrow="History" title="The questions you have weighed" actions={shareAction}>
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="mb-5 flex-none">
             <PageHead voiceKey={voiceKey} />
