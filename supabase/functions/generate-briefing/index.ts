@@ -1335,6 +1335,8 @@ interface V2PipelineArgs {
   resolvedScriptModel: string;
   resolvedCurationModel: string;
   providerKeys: { perplexity?: string; tavily?: string; brave?: string };
+  /** Pre-created 'queued' row this run fills in (insert happened in the handler). */
+  briefingId: string;
 }
 
 /**
@@ -1344,12 +1346,13 @@ interface V2PipelineArgs {
  */
 async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unknown>> {
   const {
-    supabase, supabaseUrl, supabaseServiceKey, openaiKey, userId, userCtx,
-    briefingType, customContext, voiceNoteUrl, isProOnly, today,
-    resolvedScriptModel, resolvedCurationModel, providerKeys,
+    supabase, openaiKey, userId, userCtx,
+    briefingType, customContext,
+    resolvedScriptModel, resolvedCurationModel, providerKeys, briefingId,
   } = args;
 
   const t0 = Date.now();
+  await setBriefingStage(supabase, briefingId, "searching");
 
   // Fetch mission + decision IDs so lens_item refs point at real rows.
   // Missions live in leader_missions, keyed on leader_id (not a user_missions
@@ -1416,13 +1419,9 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     };
   });
 
-  const { data: earlyBriefing, error: earlyInsertError } = await supabase
+  const { error: earlyUpdateError } = await supabase
     .from("briefings")
-    .insert({
-      user_id: userId,
-      briefing_date: today,
-      briefing_type: briefingType,
-      script_text: null,
+    .update({
       segments: preliminarySegments,
       context_snapshot: {
         ...userCtx,
@@ -1434,21 +1433,17 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
       },
       news_sources: scored.map(s => ({ title: s.title, source: s.source, provider: s.provider })),
       generation_model: resolvedScriptModel,
-      custom_context: customContext || null,
-      voice_note_url: voiceNoteUrl || null,
-      is_pro_only: isProOnly,
-      schema_version: 2,
+      stage: "curating",
     })
-    .select("id")
-    .single();
+    .eq("id", briefingId);
 
-  if (earlyInsertError) throw earlyInsertError;
-  const briefingId = (earlyBriefing as { id: string }).id;
-  console.log(`[v2] Preliminary briefing inserted: ${briefingId}`);
+  if (earlyUpdateError) throw earlyUpdateError;
+  console.log(`[v2] Preliminary segments written: ${briefingId}`);
 
   if (scored.length === 0) {
-    // No candidates survived - return the briefing with an empty curated segment list.
-    // Client will show a friendly "no new stories worth your time today" state.
+    // No candidates survived - finish the briefing with an empty curated list.
+    // Client shows a friendly "no new stories worth your time today" state.
+    await setBriefingStage(supabase, briefingId, "complete", { script_text: "" });
     return {
       briefing_id: briefingId,
       already_exists: false,
@@ -1495,6 +1490,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   }));
 
   console.log("[v2] Generating script...");
+  await setBriefingStage(supabase, briefingId, "scripting");
   const { script, training_version } = await generateBriefingScript(
     scriptHeadlines,
     userCtx,
@@ -1540,6 +1536,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     .update({
       script_text: injected.script,
       segments: injected.segments,
+      stage: "complete",
     })
     .eq("id", briefingId);
 
@@ -1561,6 +1558,32 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     used_fallback: false,
     pipeline_version: 2,
   };
+}
+
+// ── Background-job stage tracking ──────────────────────────────────
+// Generation is slow (provider fan-out + LLM curation + GPT-4o script,
+// commonly 30-60s). Blocking the HTTP request behind it is what made the
+// briefing feel broken: a 60s client cliff over a fake progress bar. So we
+// insert a row up front, return its id immediately, and run the pipeline in
+// the background via EdgeRuntime.waitUntil - writing real stage transitions
+// the frontend polls. Terminal stages: 'complete' (script_text set) and
+// 'failed' (error_text set). EdgeRuntime is a Supabase runtime global.
+declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void } | undefined;
+
+type BriefingStage =
+  | "queued" | "searching" | "curating" | "scripting" | "complete" | "failed";
+
+async function setBriefingStage(
+  supabase: ReturnType<typeof createClient>,
+  briefingId: string,
+  stage: BriefingStage,
+  extra: Record<string, unknown> = {},
+): Promise<void> {
+  const { error } = await supabase
+    .from("briefings")
+    .update({ stage, ...extra })
+    .eq("id", briefingId);
+  if (error) console.warn(`[stage] failed to set ${stage} on ${briefingId}:`, error.message);
 }
 
 // ── Main Handler ───────────────────────────────────────────────────
@@ -1900,27 +1923,59 @@ serve(async (req) => {
     if (requestedVersion === 2) v2Enabled = true;
     if (requestedVersion === 1) v2Enabled = false;
 
-    if (v2Enabled && briefingType !== "ai_landscape") {
-      const result = await runV2Pipeline({
-        supabase,
-        supabaseUrl,
-        supabaseServiceKey,
-        openaiKey,
-        userId: user.id,
-        userCtx,
-        briefingType,
-        customContext,
-        voiceNoteUrl,
-        isProOnly,
-        today,
-        resolvedScriptModel,
-        resolvedCurationModel,
-        providerKeys: { perplexity: perplexityKey, tavily: tavilyKey, brave: braveKey },
-      });
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // ── Background generation ──────────────────────────────────────
+    // Insert the row now (stage 'queued') and hand its id back immediately;
+    // the slow pipeline (fan-out + curation + GPT-4o script) runs AFTER the
+    // response via EdgeRuntime.waitUntil, writing `stage` for the client to
+    // poll. This is what stops the briefing from blocking the UI for 30-60s.
+    const isV2 = v2Enabled && briefingType !== "ai_landscape";
+    const { data: queuedRow, error: queueErr } = await supabase
+      .from("briefings")
+      .insert({
+        user_id: user.id,
+        briefing_date: today,
+        briefing_type: briefingType,
+        script_text: null,
+        segments: [],
+        stage: "queued",
+        generation_started_at: new Date().toISOString(),
+        context_snapshot: userCtx,
+        custom_context: customContext || null,
+        voice_note_url: voiceNoteUrl || null,
+        is_pro_only: isProOnly,
+        schema_version: isV2 ? 2 : 1,
+      })
+      .select("id")
+      .single();
+    if (queueErr) throw queueErr;
+    const briefingId = (queuedRow as { id: string }).id;
+    console.log(`Briefing ${briefingId} queued (v2=${isV2}); generating in background.`);
+
+    const pipeline = (async () => {
+     try {
+      if (isV2) {
+        await runV2Pipeline({
+          supabase,
+          supabaseUrl,
+          supabaseServiceKey,
+          openaiKey,
+          userId: user.id,
+          userCtx,
+          briefingType,
+          customContext,
+          voiceNoteUrl,
+          isProOnly,
+          today,
+          resolvedScriptModel,
+          resolvedCurationModel,
+          providerKeys: { perplexity: perplexityKey, tavily: tavilyKey, brave: braveKey },
+          briefingId,
+        });
+        return;
+      }
+
+      // ── v1 / ai_landscape pipeline (background; fills in the queued row) ──
+      await setBriefingStage(supabase, briefingId, "searching");
 
     // 2. Fetch news (shaped by briefing type)
     console.log(`Fetching news for ${briefingType} briefing...`);
@@ -2024,28 +2079,19 @@ serve(async (req) => {
       };
     });
 
-    const { data: earlyBriefing, error: earlyInsertError } = await supabase
+    const { error: earlyUpdateError } = await supabase
       .from("briefings")
-      .insert({
-        user_id: user.id,
-        briefing_date: today,
-        briefing_type: briefingType,
-        script_text: null,
+      .update({
         segments: preliminarySegments,
         context_snapshot: { ...userCtx, used_fallback: usedFallback },
         news_sources: headlines,
         generation_model: resolvedScriptModel,
-        custom_context: customContext || null,
-        voice_note_url: voiceNoteUrl || null,
-        is_pro_only: isProOnly,
+        stage: "curating",
       })
-      .select("id")
-      .single();
+      .eq("id", briefingId);
 
-    if (earlyInsertError) throw earlyInsertError;
-
-    const briefingId = earlyBriefing.id;
-    console.log(`Preliminary briefing inserted: ${briefingId} (${preliminarySegments.length} raw headlines)`);
+    if (earlyUpdateError) throw earlyUpdateError;
+    console.log(`Preliminary segments written: ${briefingId} (${preliminarySegments.length} raw headlines)`);
 
     // 3. Second-pass curation: deduplicate, rank, keep top 6-8
     console.log("Running second-pass curation...");
@@ -2069,6 +2115,7 @@ serve(async (req) => {
     const userDirectives = (directivesRow?.body as string | undefined) || undefined;
 
     console.log("Generating personalised briefing...");
+    await setBriefingStage(supabase, briefingId, "scripting");
     const { segments, script, training_version } = await generateBriefingScript(
       headlines,
       userCtx,
@@ -2093,6 +2140,7 @@ serve(async (req) => {
         script_text: injected.script,
         segments: injected.segments,
         news_sources: headlines,
+        stage: "complete",
       })
       .eq("id", briefingId);
 
@@ -2101,20 +2149,32 @@ serve(async (req) => {
     } else {
       console.log(`Briefing refined: ${briefingId} (${segments.length} polished segments)`);
     }
+     } catch (e) {
+       const msg = e instanceof Error ? e.message : String(e);
+       console.error(`[bg] briefing ${briefingId} failed:`, msg);
+       await setBriefingStage(supabase, briefingId, "failed", { error_text: msg });
+     }
+    })();
 
-    // 6. Audio synthesis is user-triggered (see v2 path note above).
+    // Keep the worker alive for the background pipeline after we respond.
+    // Audio synthesis stays user-triggered (frontend calls synthesize-briefing).
+    if (typeof EdgeRuntime !== "undefined" && EdgeRuntime?.waitUntil) {
+      EdgeRuntime.waitUntil(pipeline);
+    } else {
+      await pipeline; // local/dev fallback: no background runtime
+    }
 
-    // 7. Return briefing ID
+    // 202: accepted, generating. Client polls `stage` on the briefing row.
     return new Response(
       JSON.stringify({
         briefing_id: briefingId,
         already_exists: false,
         has_audio: false,
-        segment_count: segments.length,
+        stage: "queued",
+        status: "generating",
         briefing_type: briefingType,
-        used_fallback: usedFallback,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("generate-briefing error:", error);

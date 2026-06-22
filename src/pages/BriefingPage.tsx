@@ -42,7 +42,7 @@ import { useSuggestedInterests } from "@/hooks/useSuggestedInterests";
 import { useBriefingStreamPreview } from "@/hooks/useBriefingStreamPreview";
 import { StreamingBriefingPreview } from "@/components/briefing/StreamingBriefingPreview";
 import { FF } from "@/lib/flags";
-import { BRIEFING_TYPES } from "@/types/briefing";
+import { BRIEFING_TYPES, isBriefingGenerating, isBriefingReady } from "@/types/briefing";
 import type { Briefing, BriefingType } from "@/types/briefing";
 
 function BriefingPage() {
@@ -149,8 +149,21 @@ function BriefingPage() {
     await Promise.all([refetchInterests(), refetchSuggestions()]);
   };
 
-  const isGenerating = generating;
-  const currentPhase = phase;
+  // "Generating" is true for a local in-flight generate() OR a row that is
+  // still working in the background - so the page shows honest live progress
+  // even on a fresh mount (e.g. the user navigated away and back mid-run).
+  const rowStage = defaultBriefing?.stage ?? null;
+  const isGenerating = generating || isBriefingGenerating(defaultBriefing);
+  const currentPhase: typeof phase =
+    generating
+      ? phase
+      : rowStage === "queued"
+      ? "scanning"
+      : rowStage === "searching"
+      ? "personalising"
+      : rowStage === "curating" || rowStage === "scripting"
+      ? "preparing"
+      : phase;
   // Flag-gated (FF.briefingStream / ?ff_stream=1): live preliminary-segment preview.
   const streamPreview = useBriefingStreamPreview(isGenerating);
   const showStream = FF.briefingStream() && isGenerating && !!streamPreview?.segments?.length;
@@ -207,8 +220,11 @@ function BriefingPage() {
     | "play";       // a briefing exists, play it
   const coldState: ColdState = (() => {
     if (loading) return "loading";
-    if (defaultBriefing && briefingRead) return "play";
+    // A still-generating row shows live progress - checked before "play" so an
+    // early (empty) background row is never mistaken for a finished briefing.
     if (isGenerating) return "generating";
+    if (defaultBriefing?.stage === "failed") return "error";
+    if (defaultBriefing && isBriefingReady(defaultBriefing) && briefingRead) return "play";
     if (!defaultBriefing && generateError) return "error";
     if (!defaultBriefing && sparseProfile) return "sparse";
     if (!hasDeclaredOrInferred) return "pick";

@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Briefing, BriefingFeedback, BriefingType } from '@/types/briefing';
+import type { Briefing, BriefingFeedback, BriefingStage, BriefingType } from '@/types/briefing';
+import { isBriefingGenerating } from '@/types/briefing';
 
-const GENERATE_TIMEOUT = 60_000; // news fetch + curation + training load + script gen can exceed 30s on cold start
 const POLL_INTERVAL = 3_000;
 const MAX_POLLS = 40; // 40 * 3s = 120s max
+// Background generation safety cap. The pipeline (fan-out + curation + GPT-4o
+// script) commonly runs 30-60s; we poll the row's `stage` until it finishes and
+// stop after this long so a stuck job surfaces an error instead of spinning.
+const GENERATE_MAX_MS = 180_000;
+const GENERATE_POLL_MS = 2_500;
 
 /**
  * Fetch today's briefings for the current user.
@@ -15,9 +20,9 @@ export function useTodaysBriefing() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBriefings = useCallback(async () => {
+  const fetchBriefings = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -48,6 +53,16 @@ export function useTodaysBriefing() {
   useEffect(() => {
     fetchBriefings();
   }, [fetchBriefings]);
+
+  // While any briefing is still generating in the background, poll silently so
+  // its stage advances and the finished briefing appears without a manual
+  // refresh - even if the user navigated away and back mid-generation.
+  const anyGenerating = briefings.some(isBriefingGenerating);
+  useEffect(() => {
+    if (!anyGenerating) return;
+    const t = setInterval(() => { void fetchBriefings(true); }, GENERATE_POLL_MS);
+    return () => clearInterval(t);
+  }, [anyGenerating, fetchBriefings]);
 
   // Convenience: the default briefing
   const defaultBriefing = briefings.find(b => (b.briefing_type || 'default') === 'default') || null;
@@ -83,6 +98,20 @@ export interface SparseProfileInfo {
   message: string;
 }
 
+/** Map a real pipeline stage to the three UI progress phases. */
+function stageToPhase(stage: BriefingStage): 'scanning' | 'personalising' | 'preparing' {
+  switch (stage) {
+    case 'queued':
+      return 'scanning';
+    case 'searching':
+      return 'personalising';
+    case 'curating':
+    case 'scripting':
+    default:
+      return 'preparing';
+  }
+}
+
 export function useGenerateBriefing() {
   const [generating, setGenerating] = useState(false);
   const [phase, setPhase] = useState<'idle' | 'scanning' | 'personalising' | 'preparing'>('idle');
@@ -109,27 +138,17 @@ export function useGenerateBriefing() {
         setSparseProfile(null);
         setPhase('scanning');
 
-        const phaseTimer = setTimeout(() => setPhase('personalising'), 3000);
-        const phaseTimer2 = setTimeout(() => setPhase('preparing'), 7000);
-
-        const timeout = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Briefing generation timed out. Please try again.')), GENERATE_TIMEOUT)
-        );
-
         const body: Record<string, unknown> = {};
         if (briefingType) body.briefing_type = briefingType;
         if (customContext) body.custom_context = customContext;
         if (options?.force) body.force = true;
 
-        const { data, error: genErr } = await Promise.race([
-          supabase.functions.invoke('generate-briefing', {
-            body: Object.keys(body).length > 0 ? body : undefined,
-          }),
-          timeout,
-        ]);
-
-        clearTimeout(phaseTimer);
-        clearTimeout(phaseTimer2);
+        // The function returns fast (202) and runs the pipeline in the
+        // background. We then poll the row's real `stage` - no client-side
+        // timeout cliff, because a 30-60s pipeline is normal, not a failure.
+        const { data, error: genErr } = await supabase.functions.invoke('generate-briefing', {
+          body: Object.keys(body).length > 0 ? body : undefined,
+        });
 
         if (genErr) throw genErr;
 
@@ -148,8 +167,38 @@ export function useGenerateBriefing() {
           return null;
         }
 
-        const briefingId = data?.briefing_id || null;
+        const briefingId: string | null = data?.briefing_id || null;
+        if (!briefingId) { setPhase('idle'); return null; }
 
+        // Already-complete responses (already_exists / alert_only / a legacy
+        // synchronous row) need no polling.
+        if (data?.status !== 'generating') {
+          setPhase('idle');
+          return briefingId;
+        }
+
+        // Poll the background pipeline's real stage until it finishes.
+        const deadline = Date.now() + GENERATE_MAX_MS;
+        while (Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, GENERATE_POLL_MS));
+          const { data: row } = await supabase
+            .from('briefings')
+            .select('stage')
+            .eq('id', briefingId)
+            .maybeSingle();
+          // `stage` was added by migration; the generated DB types may not yet
+          // include it, so read it through a narrow cast.
+          const stage = ((row as unknown as { stage?: BriefingStage | null } | null)?.stage) ?? null;
+          if (stage) setPhase(stageToPhase(stage));
+          if (stage === 'complete') { setPhase('idle'); return briefingId; }
+          if (stage === 'failed') {
+            setError('Briefing generation failed. Please try again.');
+            setPhase('idle');
+            return null;
+          }
+        }
+        // Hit the safety cap. The job may still finish; useTodaysBriefing keeps
+        // polling and will reveal it. Don't hard-fail.
         setPhase('idle');
         return briefingId;
       } catch (err) {
