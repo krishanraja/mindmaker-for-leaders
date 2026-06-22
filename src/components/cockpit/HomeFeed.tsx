@@ -24,7 +24,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ChevronUp, ListOrdered, Scale, Boxes } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ListOrdered, Scale, Boxes, Loader2 } from 'lucide-react';
 import type { CockpitData, DeckCard, HomeState } from '@/types/cockpit';
 import { CockpitHero } from './CockpitHero';
 import { CategoryMotif } from './CategoryMotif';
@@ -39,6 +39,8 @@ export interface HomeFeedProps {
   onPlayBriefing: () => void;
   onGoDecide: () => void;
   onBuildSkill: () => void;
+  /** Drives the Briefing door's icon/label: a trigger that shows progress. */
+  briefingState?: 'idle' | 'generating' | 'ready';
   onOpenCard: (card: DeckCard) => void;
   onReactDeck?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
   /** desktop = the spacious rail; mobile = the swipe feed. */
@@ -74,6 +76,7 @@ function MobileHome({
   onPlayBriefing,
   onGoDecide,
   onBuildSkill,
+  briefingState = 'idle',
   onOpenCard,
   onReactDeck,
 }: HomeFeedProps) {
@@ -203,6 +206,7 @@ function MobileHome({
         onPlayBriefing={onPlayBriefing}
         onGoDecide={onGoDecide}
         onBuildSkill={onBuildSkill}
+        briefingState={briefingState}
       />
     </div>
   );
@@ -300,6 +304,7 @@ function DesktopHome({
   onPlayBriefing,
   onGoDecide,
   onBuildSkill,
+  briefingState = 'idle',
   onOpenCard,
   onReactDeck,
 }: HomeFeedProps) {
@@ -378,6 +383,7 @@ function DesktopHome({
         onPlayBriefing={onPlayBriefing}
         onGoDecide={onGoDecide}
         onBuildSkill={onBuildSkill}
+        briefingState={briefingState}
       />
     </div>
   );
@@ -413,13 +419,23 @@ interface DoorRailProps {
   onPlayBriefing: () => void;
   onGoDecide: () => void;
   onBuildSkill: () => void;
+  briefingState?: 'idle' | 'generating' | 'ready';
 }
 
-function DoorRail({ variant, disabled, onPlayBriefing, onGoDecide, onBuildSkill }: DoorRailProps) {
+function DoorRail({ variant, disabled, onPlayBriefing, onGoDecide, onBuildSkill, briefingState = 'idle' }: DoorRailProps) {
+  // The Briefing door is a trigger: tapping it starts generation, the icon
+  // becomes a spinner while it builds, and it reads "ready" once it lands. The
+  // parent gates navigation so the user only enters a finished briefing.
+  const briefingDoor =
+    briefingState === 'generating'
+      ? { icon: Loader2, label: 'Briefing', sub: 'building...', spin: true }
+      : briefingState === 'ready'
+      ? { icon: ListOrdered, label: 'Briefing', sub: 'ready to read', spin: false }
+      : { icon: ListOrdered, label: 'Briefing', sub: "today's read", spin: false };
   const doors = [
-    { icon: ListOrdered, label: 'Briefing', sub: "today's read", onClick: onPlayBriefing },
-    { icon: Scale, label: 'Weigh', sub: 'a decision', onClick: onGoDecide },
-    { icon: Boxes, label: 'Build', sub: 'a skill', onClick: onBuildSkill },
+    { ...briefingDoor, onClick: onPlayBriefing },
+    { icon: Scale, label: 'Weigh', sub: 'a decision', onClick: onGoDecide, spin: false },
+    { icon: Boxes, label: 'Build', sub: 'a skill', onClick: onBuildSkill, spin: false },
   ];
   const wide = variant === 'desktop';
   return (
@@ -440,7 +456,7 @@ function DoorRail({ variant, disabled, onPlayBriefing, onGoDecide, onBuildSkill 
             className="flex flex-1 items-center gap-3.5 rounded-2xl border border-border bg-[linear-gradient(180deg,#0f141b,#0b0e13)] px-[18px] py-[17px] text-left transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-accent/30"
           >
             <span className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
-              <Icon className="h-[21px] w-[21px]" strokeWidth={1.7} />
+              <Icon className={cn('h-[21px] w-[21px]', d.spin && 'animate-spin')} strokeWidth={1.7} />
             </span>
             <span className="flex flex-col">
               <span className="text-[14.5px] font-bold leading-tight tracking-[-0.01em] text-foreground">{d.label}</span>
@@ -455,7 +471,7 @@ function DoorRail({ variant, disabled, onPlayBriefing, onGoDecide, onBuildSkill 
             className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl border border-border bg-[linear-gradient(180deg,#0f141b,#0b0e13)] px-1.5 py-[11px] text-muted-foreground transition-[border-color,transform] duration-150 active:scale-[0.98] hover:border-accent/30 hover:text-foreground"
           >
             <span className="flex h-[34px] w-[34px] items-center justify-center rounded-[11px] border border-accent/30 bg-accent/10 text-accent">
-              <Icon className="h-[18px] w-[18px]" strokeWidth={1.7} />
+              <Icon className={cn('h-[18px] w-[18px]', d.spin && 'animate-spin')} strokeWidth={1.7} />
             </span>
             <span className="text-[12px] font-bold leading-none tracking-[-0.01em] text-foreground">{d.label}</span>
             <span className="text-[9px] font-medium leading-none tracking-[0.01em] text-[#5b6573]">{d.sub}</span>

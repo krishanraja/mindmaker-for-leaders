@@ -128,6 +128,50 @@ export interface Briefing {
   created_at: string;
   // 1 = legacy pipeline. 2 = evidence-based lens pipeline.
   schema_version?: number;
+  // Background-job pipeline stage (added when generation moved off the request
+  // thread). queued|searching|curating|scripting|complete|failed. Legacy rows
+  // (generated synchronously, before the background job) have stage = null.
+  stage?: BriefingStage | null;
+  error_text?: string | null;
+  generation_started_at?: string | null;
+}
+
+export type BriefingStage =
+  | 'queued'
+  | 'searching'
+  | 'curating'
+  | 'scripting'
+  | 'complete'
+  | 'failed';
+
+/** Stages where the pipeline is still working (the UI shows live progress). */
+const ACTIVE_STAGES: ReadonlySet<string> = new Set([
+  'queued',
+  'searching',
+  'curating',
+  'scripting',
+]);
+
+/**
+ * A briefing is "generating" when it has an active stage. Legacy rows (stage
+ * null) are never generating - they were written synchronously and complete.
+ */
+export function isBriefingGenerating(b: Pick<Briefing, 'stage'> | null | undefined): boolean {
+  return !!b?.stage && ACTIVE_STAGES.has(b.stage);
+}
+
+/**
+ * A briefing is "ready to read" when the background job finished
+ * (stage = complete) OR it is a legacy synchronous row (stage null) with a
+ * script. A failed row is neither generating nor ready.
+ */
+export function isBriefingReady(
+  b: Pick<Briefing, 'stage' | 'script_text'> | null | undefined,
+): boolean {
+  if (!b) return false;
+  if (b.stage === 'complete') return true;
+  if (!b.stage) return !!b.script_text; // legacy row
+  return false;
 }
 
 export interface BriefingFeedback {
