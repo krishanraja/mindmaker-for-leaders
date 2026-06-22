@@ -50,7 +50,7 @@ export function KitVoiceProfileCard({
           {hasProfile ? "Update my voice" : "Set my voice (60 seconds)"}
         </Button>
         <p className="text-[11px] text-muted-foreground text-center">
-          Free. Carries over when you add a password and open CTRL.
+          Free. Saved with your kit, and it carries over when CTRL opens up.
         </p>
       </div>
 

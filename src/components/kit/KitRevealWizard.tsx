@@ -469,8 +469,8 @@ function KeepItScreen({
       </KitSub>
 
       <div className="mt-4">
-        {/* Email is the zero-friction default; the in-card password row is the
-            quiet one-time profile upsell, never pushed. */}
+        {/* Email is the zero-friction default; the waitlist join (the app is not
+            in production yet) is the quiet follow-on, never pushed. */}
         <SendPackCard
           redemption={redemption}
           tool={tool}
