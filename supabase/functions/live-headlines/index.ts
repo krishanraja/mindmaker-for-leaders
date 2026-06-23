@@ -85,6 +85,22 @@ function worthSurfacing(c: Cluster): boolean {
   return Number.isFinite(t) && t >= Date.now() - FRESH_SINGLE_MS;
 }
 
+// Strip a trailing publication suffix so cards read like clean headlines, not
+// raw RSS titles (e.g. "... auto synthesis system | VentureBeat" -> drop the
+// "| VentureBeat"). A pipe is essentially always a "Headline | Publication"
+// separator; a dash/colon tail is only stripped when it matches the article's
+// own outlet host, so real punctuation in a headline is preserved.
+function cleanHeadline(title: string, sourceHost: string | null): string {
+  let t = (title || "").trim();
+  t = t.replace(/\s*\|\s*[^|]{1,40}$/u, "").trim();
+  const tok = (sourceHost || "").replace(/^www\./, "").split(".")[0];
+  if (tok && tok.length >= 3) {
+    const esc = tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    t = t.replace(new RegExp(`\\s*[-\\u2013\\u2014:]\\s*${esc}\\b.*$`, "i"), "").trim();
+  }
+  return t || title;
+}
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -190,7 +206,7 @@ serve(async (req) => {
         : null;
       return {
         id,
-        headline: c.rep.title,
+        headline: cleanHeadline(c.rep.title, c.rep.source),
         say: reads.get(id) ?? fallbackSay,
         source: c.rep.source || null,
         corroboration: corroborationLabel(c.sourceCount),
