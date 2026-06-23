@@ -14,6 +14,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createLogger } from "../_shared/logger.ts";
 import { selectOptimalModel } from "../_shared/model-router.ts";
 import { getModelBenchmarks } from "../_shared/aa-cache.ts";
 import type { AAModel } from "../_shared/aa-types.ts";
@@ -346,7 +347,7 @@ async function fetchWithTavily(apiKey: string, userCtx: UserContext): Promise<Ne
     if (result.status === "fulfilled" && result.value.length > 0) {
       allResults.push(...result.value);
     } else if (result.status === "rejected") {
-      console.warn("Tavily query failed:", result.reason);
+      log.warn("Tavily query failed", { error: result.reason });
     }
   }
 
@@ -474,7 +475,7 @@ async function fetchBraveNews(apiKey: string, userCtx: UserContext): Promise<str
     if (result.status === "fulfilled" && result.value.length > 0) {
       allResults.push(...result.value);
     } else if (result.status === "rejected") {
-      console.warn("Brave query failed:", result.reason);
+      log.warn("Brave query failed", { error: result.reason });
     }
   }
 
@@ -673,7 +674,7 @@ Return ONLY a JSON array: [{"title": "headline", "source": "Source"}]`,
   }
 
   if (!response.ok) {
-    console.warn("Second-pass curation failed, using original headlines");
+    log.warn("Second-pass curation failed, using original headlines");
     return headlines.slice(0, 8);
   }
 
@@ -1191,7 +1192,7 @@ async function v2FetchTavily(apiKey: string, queries: PlannedQuery[]): Promise<V
         });
       }
     } catch (e) {
-      console.warn(`v2 Tavily query failed (${q.target_lens_item_id}):`, e instanceof Error ? e.message : e);
+      log.warn(`v2 Tavily query failed (${q.target_lens_item_id}):`, e instanceof Error ? e.message : e);
     }
   }));
   return { candidates, provider: "tavily" };
@@ -1234,7 +1235,7 @@ async function v2FetchBrave(apiKey: string, queries: PlannedQuery[]): Promise<V2
         });
       }
     } catch (e) {
-      console.warn(`v2 Brave query failed (${q.target_lens_item_id}):`, e instanceof Error ? e.message : e);
+      log.warn(`v2 Brave query failed (${q.target_lens_item_id}):`, e instanceof Error ? e.message : e);
     }
   }));
   return { candidates, provider: "brave" };
@@ -1296,7 +1297,7 @@ async function v2FetchPerplexity(apiKey: string, queries: PlannedQuery[]): Promi
       }));
     return { candidates, provider: "perplexity" };
   } catch (e) {
-    console.warn("v2 Perplexity failed:", e instanceof Error ? e.message : e);
+    log.warn("v2 Perplexity failed", { error: e instanceof Error ? e.message : e });
     return { candidates: [], provider: "perplexity" };
   }
 }
@@ -1383,9 +1384,9 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   const source = toLensSource(userId, userCtx, missionIds, decisionIds);
 
   // Stage 1: lens + user-declared excludes.
-  console.log("[v2] Building importance lens...");
+  log.info("[v2] Building importance lens...");
   const { items: lens, excludes } = await buildImportanceLens(supabase, openaiKey, source, briefingType);
-  console.log(`[v2] Lens size=${lens.length}, top=${lens.slice(0, 3).map(l => `${l.type}(${l.weight.toFixed(2)})`).join(", ")}, excludes=${excludes.length}`);
+  log.info(`[v2] Lens size=${lens.length}, top=${lens.slice(0, 3).map(l => `${l.type}(${l.weight.toFixed(2)})`).join(", ")}, excludes=${excludes.length}`);
 
   if (lens.length === 0) {
     throw new Error("Lens empty - user has no profile data to personalise against");
@@ -1393,23 +1394,23 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
 
   // Stage 2: query plan. Pass industry so queries stay inside the leader's
   // domain (e.g., a technology leader doesn't pull biomedical headlines).
-  console.log("[v2] Planning queries...");
+  log.info("[v2] Planning queries...");
   const queries = await planQueries(openaiKey, lens, training, briefingType, customContext, source.industry);
-  console.log(`[v2] Queries planned: ${queries.length}`);
+  log.info(`[v2] Queries planned: ${queries.length}`);
 
   // Stage 3: provider fan-out with hard 12s cap.
-  console.log("[v2] Fetching providers...");
+  log.info("[v2] Fetching providers...");
   const tFetch = Date.now();
   const rawCandidates = await v2FetchAll(queries, providerKeys, 12_000);
-  console.log(`[v2] Providers returned ${rawCandidates.length} raw candidates in ${Date.now() - tFetch}ms`);
+  log.info(`[v2] Providers returned ${rawCandidates.length} raw candidates in ${Date.now() - tFetch}ms`);
 
   // Stage 4: embed + dedupe + score + exclude-filter.
   let scored: ScoredHeadline[] = [];
   if (rawCandidates.length > 0) {
-    console.log("[v2] Scoring candidates...");
+    log.info("[v2] Scoring candidates...");
     const tScore = Date.now();
     scored = await dedupeAndScore(supabase, openaiKey, rawCandidates, lens, excludes);
-    console.log(`[v2] ${scored.length} survivors after dedupe+excludes in ${Date.now() - tScore}ms`);
+    log.info(`[v2] ${scored.length} survivors after dedupe+excludes in ${Date.now() - tScore}ms`);
   }
 
   const usedFallback = scored.length === 0;
@@ -1451,7 +1452,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     .eq("id", briefingId);
 
   if (earlyUpdateError) throw earlyUpdateError;
-  console.log(`[v2] Preliminary segments written: ${briefingId}`);
+  log.info(`[v2] Preliminary segments written: ${briefingId}`);
 
   if (scored.length === 0) {
     // No candidates survived - finish the briefing with an empty curated list.
@@ -1476,7 +1477,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
 
   const leaderDesc = `${userCtx.role || "executive"}${userCtx.industry ? ` in ${userCtx.industry}` : ""}${userCtx.company ? ` at ${userCtx.company}` : ""}`;
 
-  console.log(`[v2] Curating ${targetCount} segments from ${scored.length} candidates...`);
+  log.info(`[v2] Curating ${targetCount} segments from ${scored.length} candidates...`);
   const curated: CuratedSegment[] = await curateSegments(
     openaiKey,
     scored,
@@ -1487,7 +1488,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     targetCount,
     resolvedCurationModel,
   );
-  console.log(`[v2] Curation produced ${curated.length} segments`);
+  log.info(`[v2] Curation produced ${curated.length} segments`);
 
   // Stage 6: v1 script generator, now fed curated segments instead of raw headlines.
   const { data: directivesRow } = await supabase
@@ -1502,7 +1503,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     source: c.source,
   }));
 
-  console.log("[v2] Generating script...");
+  log.info("[v2] Generating script...");
   await setBriefingStage(supabase, briefingId, "scripting");
   const { script, training_version } = await generateBriefingScript(
     scriptHeadlines,
@@ -1514,7 +1515,7 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     training,
     userDirectives,
   );
-  console.log(`[v2] Script produced (training_material_version=${training_version})`);
+  log.info(`[v2] Script produced (training_material_version=${training_version})`);
 
   // Merge v2 curated segments with any script-side rewrites: we keep the v2
   // segments as-is because they carry the evidence fields; the script is the
@@ -1553,14 +1554,14 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     })
     .eq("id", briefingId);
 
-  if (updateError) console.error("[v2] Failed to update briefing with polished content:", updateError);
-  else console.log(`[v2] Briefing refined: ${briefingId}`);
+  if (updateError) log.error("[v2] Failed to update briefing with polished content", { error: updateError });
+  else log.info(`[v2] Briefing refined: ${briefingId}`);
 
   // Audio synthesis is user-triggered: the frontend calls synthesize-briefing
   // only when the user clicks "Generate audio". This avoids TTS spend on
   // briefings that are read but not listened to.
 
-  console.log(`[v2] Total pipeline time: ${Date.now() - t0}ms`);
+  log.info(`[v2] Total pipeline time: ${Date.now() - t0}ms`);
 
   return {
     briefing_id: briefingId,
@@ -1596,10 +1597,12 @@ async function setBriefingStage(
     .from("briefings")
     .update({ stage, ...extra })
     .eq("id", briefingId);
-  if (error) console.warn(`[stage] failed to set ${stage} on ${briefingId}:`, error.message);
+  if (error) log.warn(`[stage] failed to set ${stage} on ${briefingId}`, { error: error.message });
 }
 
 // ── Main Handler ───────────────────────────────────────────────────
+
+const log = createLogger("generate-briefing");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -1736,7 +1739,7 @@ serve(async (req) => {
         existing.created_at &&
         Date.now() - new Date(existing.created_at).getTime() > STALE_INCOMPLETE_GRACE_MS
       ) {
-        console.warn(
+        log.warn(
           `Stale-incomplete briefing ${existing.id} (script_text null, age >5m); replacing.`,
         );
         await supabase.from("briefing_feedback").delete().eq("briefing_id", existing.id);
@@ -1755,7 +1758,7 @@ serve(async (req) => {
           supabase,
         );
         if (!forceCooldown.allowed) {
-          console.log(
+          log.info(
             `Force-regen cooldown for ${user.id} ${today} ${briefingType}; returning existing briefing.`,
           );
           return new Response(
@@ -1772,7 +1775,7 @@ serve(async (req) => {
         }
 
         // Force regeneration: delete old briefing and its feedback
-        console.log(`Force regeneration: deleting briefing ${existing.id}`);
+        log.info(`Force regeneration: deleting briefing ${existing.id}`);
         await supabase.from("briefing_feedback").delete().eq("briefing_id", existing.id);
         await supabase.from("briefings").delete().eq("id", existing.id);
       } else if (existing) {
@@ -1792,10 +1795,10 @@ serve(async (req) => {
     const curationModelSelection = await selectOptimalModel("briefing_curation", supabase);
     const resolvedScriptModel = scriptModelSelection.model;
     const resolvedCurationModel = curationModelSelection.model;
-    console.log(`Model routing: script=${resolvedScriptModel}, curation=${resolvedCurationModel}`);
+    log.info(`Model routing: script=${resolvedScriptModel}, curation=${resolvedCurationModel}`);
 
     // 1. Get user context
-    console.log("Fetching user context...");
+    log.info("Fetching user context...");
     const touchIds: string[] = [];
     const userCtx = await getUserContext(supabase, user.id, { collectTouchIds: touchIds });
     // Fire-and-forget reliance signal. Never awaited; a slow/failed touch must
@@ -1803,7 +1806,7 @@ serve(async (req) => {
     // auth.uid() IS NULL inside touch_memory_facts.
     if (touchIds.length) {
       void supabase.rpc("touch_memory_facts", { p_fact_ids: [...new Set(touchIds)] })
-        .then(({ error }) => { if (error) console.warn("touch failed:", error.message); });
+        .then(({ error }) => { if (error) log.warn("touch failed", { error: error.message }); });
     }
 
     // Sparse-profile guardrail: a thin profile produces a generic lens which
@@ -1882,7 +1885,7 @@ serve(async (req) => {
         if (positiveInterests < 3) missing.push("interests");
         if (missionCount < 1) missing.push("missions");
         if (decisionCount < 1) missing.push("recent decisions");
-        console.log(
+        log.info(
           `Profile too sparse (depth=${depth}, interests=${positiveInterests}, missions=${missionCount}, decisions=${decisionCount}); returning onboarding signal.`,
         );
         return new Response(
@@ -1899,7 +1902,7 @@ serve(async (req) => {
     }
 
     const searchTopics = buildPersonalizedSearchTopics(userCtx);
-    console.log("User context populated:", {
+    log.info("User context populated", {
       name: userCtx.name,
       role: userCtx.role,
       company: userCtx.company,
@@ -1962,7 +1965,7 @@ serve(async (req) => {
       .single();
     if (queueErr) throw queueErr;
     const briefingId = (queuedRow as { id: string }).id;
-    console.log(`Briefing ${briefingId} queued (v2=${isV2}); generating in background.`);
+    log.info(`Briefing ${briefingId} queued (v2=${isV2}); generating in background.`);
 
     const pipeline = (async () => {
      try {
@@ -1995,7 +1998,7 @@ serve(async (req) => {
           );
           return;
         } catch (v2err) {
-          console.warn("v2 pipeline timed out or failed; falling back to v1:", v2err instanceof Error ? v2err.message : v2err);
+          log.warn("v2 pipeline timed out or failed; falling back to v1", { error: v2err instanceof Error ? v2err.message : v2err });
           // fall through to the v1 pipeline below
         }
       }
@@ -2004,7 +2007,7 @@ serve(async (req) => {
       await setBriefingStage(supabase, briefingId, "searching");
 
     // 2. Fetch news (shaped by briefing type)
-    console.log(`Fetching news for ${briefingType} briefing...`);
+    log.info(`Fetching news for ${briefingType} briefing...`);
     let headlines: NewsHeadline[] = [];
 
     // AI Landscape briefing: generate synthetic headlines from live benchmark data
@@ -2013,10 +2016,10 @@ serve(async (req) => {
         const aaModels = await getModelBenchmarks(supabase);
         if (aaModels.length > 0) {
           headlines = generateAILandscapeHeadlines(aaModels, userCtx);
-          console.log(`AI Landscape: ${headlines.length} synthetic headlines from benchmark data`);
+          log.info(`AI Landscape: ${headlines.length} synthetic headlines from benchmark data`);
         }
       } catch (e) {
-        console.error("AI Landscape data fetch failed:", e);
+        log.error("AI Landscape data fetch failed", { error: e });
       }
     }
 
@@ -2029,7 +2032,7 @@ serve(async (req) => {
           fetchWithPerplexity(perplexityKey, userCtx, briefingType, customContext)
             .then(h => {
               if (h.length === 0) throw new Error("Empty Perplexity result");
-              console.log(`Perplexity: ${h.length} headlines`);
+              log.info(`Perplexity: ${h.length} headlines`);
               return h;
             })
         );
@@ -2049,7 +2052,7 @@ serve(async (req) => {
             })
             .then(h => {
               if (h.length === 0) throw new Error("Empty Tavily+OpenAI result");
-              console.log(`Tavily+OpenAI: ${h.length} headlines`);
+              log.info(`Tavily+OpenAI: ${h.length} headlines`);
               return h;
             })
         );
@@ -2064,7 +2067,7 @@ serve(async (req) => {
             })
             .then(h => {
               if (h.length === 0) throw new Error("Empty Brave+OpenAI result");
-              console.log(`Brave+OpenAI: ${h.length} headlines`);
+              log.info(`Brave+OpenAI: ${h.length} headlines`);
               return h;
             })
         );
@@ -2074,14 +2077,14 @@ serve(async (req) => {
         try {
           headlines = await Promise.any(providers);
         } catch (e) {
-          console.error("All news providers failed:", e);
+          log.error("All news providers failed", { error: e });
         }
       }
     }
 
     let usedFallback = false;
     if (headlines.length === 0) {
-      console.log("Using static fallback");
+      log.info("Using static fallback");
       headlines = STATIC_FALLBACK;
       usedFallback = true;
     }
@@ -2117,20 +2120,20 @@ serve(async (req) => {
       .eq("id", briefingId);
 
     if (earlyUpdateError) throw earlyUpdateError;
-    console.log(`Preliminary segments written: ${briefingId} (${preliminarySegments.length} raw headlines)`);
+    log.info(`Preliminary segments written: ${briefingId} (${preliminarySegments.length} raw headlines)`);
 
     // 3. Second-pass curation: deduplicate, rank, keep top 6-8
-    console.log("Running second-pass curation...");
+    log.info("Running second-pass curation...");
     headlines = await curateHeadlines(headlines, userCtx, openaiKey, briefingType, customContext, resolvedCurationModel);
-    console.log(`After curation: ${headlines.length} headlines`);
+    log.info(`After curation: ${headlines.length} headlines`);
 
     // 4. Load training material + user directives, then generate briefing.
     //    Training material contains voice, typography, dont_phrases,
     //    exemplars, rubric and self-check. User directives are optional
     //    per-user prose from Settings -> Briefing Rules.
-    console.log("Loading training material...");
+    log.info("Loading training material...");
     const training = await loadTrainingForUser(supabase, user.id).catch(e => {
-      console.warn("training load failed (non-blocking):", e);
+      log.warn("training load failed (non-blocking):", e);
       return undefined;
     });
     const { data: directivesRow } = await supabase
@@ -2140,7 +2143,7 @@ serve(async (req) => {
       .maybeSingle();
     const userDirectives = (directivesRow?.body as string | undefined) || undefined;
 
-    console.log("Generating personalised briefing...");
+    log.info("Generating personalised briefing...");
     await setBriefingStage(supabase, briefingId, "scripting");
     const { segments, script, training_version } = await generateBriefingScript(
       headlines,
@@ -2152,7 +2155,7 @@ serve(async (req) => {
       training,
       userDirectives,
     );
-    console.log(`Briefing produced with training_material_version=${training_version}`);
+    log.info(`Briefing produced with training_material_version=${training_version}`);
 
     if (!script || segments.length === 0) {
       throw new Error("Failed to generate briefing content");
@@ -2171,13 +2174,13 @@ serve(async (req) => {
       .eq("id", briefingId);
 
     if (updateError) {
-      console.error("Failed to update briefing with polished content:", updateError);
+      log.error("Failed to update briefing with polished content", { error: updateError });
     } else {
-      console.log(`Briefing refined: ${briefingId} (${segments.length} polished segments)`);
+      log.info(`Briefing refined: ${briefingId} (${segments.length} polished segments)`);
     }
      } catch (e) {
        const msg = e instanceof Error ? e.message : String(e);
-       console.error(`[bg] briefing ${briefingId} failed:`, msg);
+       log.error(`[bg] briefing ${briefingId} failed`, { error: msg });
        await setBriefingStage(supabase, briefingId, "failed", { error_text: msg });
      }
     })();
@@ -2203,7 +2206,7 @@ serve(async (req) => {
       { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("generate-briefing error:", error);
+    log.error("generate-briefing error", { error });
     return new Response(
       JSON.stringify({ error: (error as Error).message }),
       {
