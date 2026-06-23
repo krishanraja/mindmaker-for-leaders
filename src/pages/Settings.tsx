@@ -36,50 +36,53 @@ function isValidSection(value: string | null): value is SettingsSection {
   return value !== null && (VALID_SECTIONS as string[]).includes(value)
 }
 
+// Stack related settings sections in one tab with a quiet divider between them,
+// so the eight old tabs collapse to four calm groups without losing anything.
+function StackedTab({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-10 divide-y divide-border [&>*:not(:first-child)]:pt-10">
+      {children}
+    </div>
+  )
+}
+
+const TAB_CONTENT_CLASS =
+  'flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4'
+
 function SettingsTabs() {
   return (
-    <Tabs defaultValue="work" className="flex-1 flex flex-col overflow-hidden min-h-0">
+    <Tabs defaultValue="you" className="flex-1 flex flex-col overflow-hidden min-h-0">
       <TabsList className="flex-shrink-0 flex flex-nowrap overflow-x-auto scrollbar-hide w-full bg-secondary px-1 gap-0.5 md:flex-wrap md:h-auto md:overflow-x-visible">
+        <TabsTrigger value="you" className="text-xs whitespace-nowrap flex-shrink-0">You</TabsTrigger>
+        <TabsTrigger value="briefing" className="text-xs whitespace-nowrap flex-shrink-0">Briefing</TabsTrigger>
+        <TabsTrigger value="privacy" className="text-xs whitespace-nowrap flex-shrink-0">Privacy &amp; data</TabsTrigger>
         <TabsTrigger value="account" className="text-xs whitespace-nowrap flex-shrink-0">Account</TabsTrigger>
-        <TabsTrigger value="work" className="text-xs whitespace-nowrap flex-shrink-0">Work context</TabsTrigger>
-        <TabsTrigger value="briefing-interests" className="text-xs whitespace-nowrap flex-shrink-0">Briefing interests</TabsTrigger>
-        <TabsTrigger value="briefing-directives" className="text-xs whitespace-nowrap flex-shrink-0">Briefing tone & rules</TabsTrigger>
-        <TabsTrigger value="privacy" className="text-xs whitespace-nowrap flex-shrink-0">Privacy</TabsTrigger>
-        <TabsTrigger value="preferences" className="text-xs whitespace-nowrap flex-shrink-0">Preferences</TabsTrigger>
-        <TabsTrigger value="edge-pro" className="text-xs whitespace-nowrap flex-shrink-0">Edge Pro</TabsTrigger>
-        <TabsTrigger value="manifesto" className="text-xs whitespace-nowrap flex-shrink-0">Leadership manifesto</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="account" className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4">
-        <AccountTab />
-      </TabsContent>
-
-      <TabsContent value="work" className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4">
+      <TabsContent value="you" className={TAB_CONTENT_CLASS}>
         <WorkContextTab />
       </TabsContent>
 
-      <TabsContent value="privacy" className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4">
-        <PrivacyDataTab />
+      <TabsContent value="briefing" className={TAB_CONTENT_CLASS}>
+        <StackedTab>
+          <BriefingInterestsTab />
+          <BriefingDirectivesTab />
+        </StackedTab>
       </TabsContent>
 
-      <TabsContent value="preferences" className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4">
-        <PreferencesTab />
+      <TabsContent value="privacy" className={TAB_CONTENT_CLASS}>
+        <StackedTab>
+          <PrivacyDataTab />
+          <PreferencesTab />
+        </StackedTab>
       </TabsContent>
 
-      <TabsContent value="edge-pro" className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4">
-        <EdgeProTab />
-      </TabsContent>
-
-      <TabsContent value="manifesto" className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4">
-        <ManifestoTab />
-      </TabsContent>
-
-      <TabsContent value="briefing-interests" className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4">
-        <BriefingInterestsTab />
-      </TabsContent>
-
-      <TabsContent value="briefing-directives" className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain min-h-0 mt-4">
-        <BriefingDirectivesTab />
+      <TabsContent value="account" className={TAB_CONTENT_CLASS}>
+        <StackedTab>
+          <AccountTab />
+          <EdgeProTab />
+          <ManifestoTab />
+        </StackedTab>
       </TabsContent>
     </Tabs>
   )

@@ -226,10 +226,30 @@ export function OnboardingInterview({ onComplete }: Props) {
                 </p>
                 <p className="text-muted-foreground leading-relaxed text-sm text-balance">
                   Everything you share stays private, and you can edit or delete any of it
-                  later. We never pretend to know more than you have told us. Let's start with a
-                  few quick questions.
+                  later. We never pretend to know more than you have told us.
                 </p>
               </motion.div>
+              {/* The spine: tell the leader exactly what happens, so the journey
+                  never feels like an unexplained series of surfaces. */}
+              <motion.ol
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mx-auto flex max-w-sm flex-col gap-2 text-left"
+              >
+                {[
+                  'Three quick questions about your work.',
+                  "I'll show you what I learned about you.",
+                  'We weigh one real decision together.',
+                ].map((t, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-accent/30 bg-accent/10 text-[11px] font-bold text-accent">
+                      {i + 1}
+                    </span>
+                    {t}
+                  </li>
+                ))}
+              </motion.ol>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
