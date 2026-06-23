@@ -62,12 +62,11 @@ export function BriefingDirectivesTab() {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-card p-5">
-        <h3 className="text-lg font-semibold">Briefing Directives</h3>
+        <h3 className="text-lg font-semibold">Your briefing rules</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Things you want every briefing to do or not do. Injected verbatim into the
-          briefing prompt under a dedicated block. House rules on voice, typography,
-          and style already apply automatically, so skip those; focus on content and
-          posture (what to emphasize, what to avoid, how to open).
+          Tell me what every briefing should do or avoid, and I will follow it. I
+          already handle the voice and formatting, so just focus on what to
+          emphasize, what to skip, and how to open.
         </p>
 
         <textarea
