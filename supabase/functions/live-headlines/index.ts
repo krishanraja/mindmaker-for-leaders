@@ -27,7 +27,7 @@ import {
   selectBalanced,
   type Cluster,
 } from "../_shared/news-cluster.ts";
-import { gatherAll } from "../_shared/news-sources.ts";
+import { gatherAll, fetchAaModelIndex, matchAaModel, type AaModel } from "../_shared/news-sources.ts";
 import { synthesizeReads, type SynthInput } from "../_shared/news-synthesis.ts";
 
 const corsHeaders = {
@@ -50,6 +50,15 @@ interface HeadlineCard {
   // leader's selected priorities (src/lib/newsPriority.ts) without a per-user
   // gather. Higher = more important in the world.
   score: number;
+  // Independent benchmark cross-check from Artificial Analysis, present only when
+  // the story names a specific model AA tracks. Enriches + validates the news
+  // with real numbers (it is NOT a standalone card).
+  benchmark: {
+    model: string;
+    intelligenceIndex: number | null;
+    pricePer1m: number | null;
+    rank: number | null;
+  } | null;
 }
 
 // Return a RICHER pool than the deck shows (~7), so the client has room to
@@ -118,7 +127,13 @@ serve(async (req) => {
     //    "news". Items with a parseable date older than the cutoff are dropped;
     //    undated items are kept (we cannot prove they are stale).
     const cutoffMs = Date.now() - MAX_AGE_DAYS * 24 * 3_600_000;
-    const raw = await gatherAll({ braveKey, newsApiKey, exaKey, aaKey });
+    // Gather the news AND the Artificial Analysis leaderboard in parallel. AA is
+    // a validation/enrichment layer (real model benchmarks), not a news source,
+    // so it is fetched alongside rather than mixed into the article gather.
+    const [raw, aaModels] = await Promise.all([
+      gatherAll({ braveKey, newsApiKey, exaKey }),
+      aaKey ? fetchAaModelIndex(aaKey).catch(() => [] as AaModel[]) : Promise.resolve([] as AaModel[]),
+    ]);
     const aiNative = raw.filter((a) => {
       if (!isAiNative(`${a.title} ${a.description}`)) return false;
       if (!a.publishedIso) return true;
@@ -132,7 +147,8 @@ serve(async (req) => {
       const by = (o: string) => raw.filter((a) => a.origin === o).length;
       return json({
         gathered: { total: raw.length, aiNative: aiNative.length },
-        bySource: { gdelt: by("gdelt"), hn: by("hn"), rss: by("rss"), brave: by("brave"), newsapi: by("newsapi"), exa: by("exa"), aa: by("aa") },
+        bySource: { gdelt: by("gdelt"), hn: by("hn"), rss: by("rss"), brave: by("brave"), newsapi: by("newsapi"), exa: by("exa") },
+        aaModels: aaModels.length, // benchmark rows loaded for news enrichment
         keysPresent: { brave: !!braveKey, newsapi: !!newsApiKey, exa: !!exaKey, aa: !!aaKey, openai: !!openaiKey },
       });
     }
@@ -147,20 +163,7 @@ serve(async (req) => {
       2,
     );
     const categoryOf = (c: Cluster) => classifyCategory(c.blob);
-    let picked = selectBalanced(clusters, categoryOf, POOL_SIZE, POOL_PER_CATEGORY);
-
-    // Pin the authoritative Artificial Analysis leaderboard read into the pool.
-    // It is the single most authoritative model-capability signal (a numeric
-    // benchmark standing, not a press headline), so guarantee it a slot even
-    // when hot news edges it past the model lane's per-category cap. Just the
-    // top one, so AA never floods. The client re-ranker still demotes it for
-    // leaders who downrank the models lane.
-    const topAa = clusters
-      .filter((c) => c.rep.origin === "aa")
-      .sort((a, b) => b.score - a.score)[0];
-    if (topAa && !picked.includes(topAa)) {
-      picked = [topAa, ...picked].slice(0, POOL_SIZE);
-    }
+    const picked = selectBalanced(clusters, categoryOf, POOL_SIZE, POOL_PER_CATEGORY);
 
     // 4. One grounded "why it matters" line per story (best-effort; falls back
     //    to the article snippet when the LLM is unavailable).
@@ -173,11 +176,18 @@ serve(async (req) => {
     }));
     const reads = await synthesizeReads(openaiKey, synthInputs);
 
-    // 5. Build the cards.
+    // 5. Build the cards, ENRICHING any model-about story with its Artificial
+    //    Analysis benchmark standing (an independent numeric cross-check). A
+    //    matched card also gets a small score lift: a claim backed by real data
+    //    is more trustworthy/important than an unbacked one.
     const cards: HeadlineCard[] = picked.map((c, i) => {
       const id = `live-${today}-${i}`;
       const desc = c.rep.description;
       const fallbackSay = desc ? (desc.length > 170 ? `${desc.slice(0, 167)}...` : desc) : null;
+      const aa = matchAaModel(`${c.rep.title} ${desc}`, aaModels);
+      const benchmark = aa
+        ? { model: aa.name, intelligenceIndex: aa.intelligence, pricePer1m: aa.pricePer1m, rank: aa.rank }
+        : null;
       return {
         id,
         headline: c.rep.title,
@@ -188,7 +198,8 @@ serve(async (req) => {
         url: c.rep.url,
         category: categoryOf(c),
         timeAgo: relativeTimeAgo(c.bestPublishedIso),
-        score: Math.round(c.score * 100) / 100,
+        score: Math.round((c.score + (benchmark ? 1.5 : 0)) * 100) / 100,
+        benchmark,
       };
     });
 

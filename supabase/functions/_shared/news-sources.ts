@@ -496,26 +496,29 @@ export async function fetchExa(apiKey: string): Promise<RawArticle[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Artificial Analysis (ARTIFICIALANALYSIS_API_KEY): structured frontier-model
-// benchmark data (intelligence index, blended price, speed). Unlike the news
-// sources, this is a live LEADERBOARD, not articles - so it gives the "Frontier
-// models" lane authoritative, numeric cards ("X leads on intelligence at index
-// N", "best intelligence-per-dollar") that a press headline can't. A couple of
-// notable standings per day, tier-3 (authoritative), dated now (current read).
+// Artificial Analysis (ARTIFICIALANALYSIS_API_KEY): NOT a source of its own
+// cards. It is structured frontier-model ground-truth (intelligence index,
+// blended price, rank) used to ENRICH and VALIDATE the news: when a story names
+// a specific model, we attach that model's real benchmark standing so the card
+// carries an independent, numeric cross-check instead of just a press claim.
 // ---------------------------------------------------------------------------
-interface AAModel {
-  name: string;
-  slug: string;
-  creator: string;
-  intel: number | null;
-  price: number | null;
+export interface AaModel {
+  name: string; // cleaned display name, e.g. "Claude Fable 5"
+  matchKey: string; // lowercased name used to spot the model in a headline
+  intelligence: number | null; // Artificial Analysis Intelligence Index
+  pricePer1m: number | null; // blended $/1M tokens (3:1)
+  rank: number | null; // 1-based rank by intelligence
 }
 
 function aaNum(v: unknown): number | null {
   return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
 
-export async function fetchArtificialAnalysis(apiKey: string): Promise<RawArticle[]> {
+/**
+ * Fetch the AA model leaderboard as a reference index (cleaned names + numbers +
+ * intelligence rank). Best-effort: returns [] on any failure.
+ */
+export async function fetchAaModelIndex(apiKey: string): Promise<AaModel[]> {
   const data = await getJson(
     "https://artificialanalysis.ai/api/v2/data/llms/models",
     { "x-api-key": apiKey },
@@ -524,73 +527,57 @@ export async function fetchArtificialAnalysis(apiKey: string): Promise<RawArticl
   const rows = (data as { data?: Array<Record<string, unknown>> } | null)?.data;
   if (!Array.isArray(rows) || rows.length === 0) return [];
 
-  const models: AAModel[] = [];
+  const models: AaModel[] = [];
   for (const r of rows) {
     // Strip AA's config qualifier (e.g. "Claude Fable 5 (Adaptive Reasoning,
-    // Max Effort, ...)") so cards read cleanly with the plain model name.
+    // Max Effort, ...)") so the name matches how a headline writes it.
     const name = stripHtml(typeof r.name === "string" ? r.name : "").replace(/\s*\([^)]*\).*$/, "").trim();
     if (!name) continue;
-    const slug = typeof r.slug === "string" ? r.slug : "";
-    const creatorObj = (r.model_creator ?? r.creator) as { name?: string } | undefined;
     const ev = (r.evaluations ?? {}) as Record<string, unknown>;
     const pricing = (r.pricing ?? {}) as Record<string, unknown>;
-    const intel = aaNum(
+    const intelligence = aaNum(
       ev.artificial_analysis_intelligence_index ?? ev.intelligence_index ?? r.intelligence_index,
     );
-    const price = aaNum(
+    const pricePer1m = aaNum(
       pricing.price_1m_blended_3_to_1 ?? pricing.price_1m_blended ?? r.price_1m_blended_3_to_1,
     );
-    models.push({ name, slug, creator: creatorObj?.name ?? "", intel, price });
+    models.push({ name, matchKey: name.toLowerCase(), intelligence, pricePer1m, rank: null });
   }
 
-  const ranked = models.filter((m) => m.intel != null).sort((a, b) => (b.intel as number) - (a.intel as number));
-  if (ranked.length === 0) return [];
+  // Rank by intelligence (1 = smartest), so an enriched card can say "#2".
+  const ranked = [...models].filter((m) => m.intelligence != null).sort((a, b) => (b.intelligence as number) - (a.intelligence as number));
+  ranked.forEach((m, i) => { m.rank = i + 1; });
+  return models;
+}
 
-  const nowIso = new Date().toISOString();
-  const urlFor = (m: AAModel) => (m.slug ? `https://artificialanalysis.ai/models/${m.slug}` : "https://artificialanalysis.ai/models");
-  const card = (title: string, description: string, m: AAModel): RawArticle => ({
-    title,
-    url: urlFor(m),
-    description,
-    source: "artificialanalysis.ai",
-    publishedIso: nowIso,
-    engagement: 0,
-    sourceTier: 3, // authoritative benchmark aggregator
-    origin: "aa",
-  });
+// A model name is specific enough to match in prose only if it carries a version
+// token (a digit). Bare family words ("Claude", "Gemini") would match far too
+// loosely and mis-attribute a number to the wrong model.
+function isSpecificModelName(matchKey: string): boolean {
+  return matchKey.length >= 4 && /\d/.test(matchKey);
+}
 
-  const out: RawArticle[] = [];
-  const leader = ranked[0];
-  out.push(
-    card(
-      `Frontier model benchmark: ${leader.name} leads on intelligence (index ${leader.intel})`,
-      `${leader.name}${leader.creator ? ` from ${leader.creator}` : ""} currently tops the Artificial Analysis Intelligence Index at ${leader.intel}${leader.price != null ? `, at a blended $${leader.price} per 1M tokens` : ""}.`,
-      leader,
-    ),
-  );
-  // Best intelligence-per-dollar among genuinely capable models (>=60% of the
-  // leader's intelligence), if it is not the leader itself.
-  const valued = ranked
-    .filter((m) => m.price != null && (m.price as number) > 0 && (m.intel as number) >= (leader.intel as number) * 0.6)
-    .sort((a, b) => (b.intel as number) / (b.price as number) - (a.intel as number) / (a.price as number));
-  if (valued[0] && valued[0].name !== leader.name) {
-    const m = valued[0];
-    out.push(
-      card(
-        `Best value frontier model: ${m.name} delivers intelligence ${m.intel} at $${m.price}/1M tokens`,
-        `${m.name} offers the strongest intelligence-per-dollar on the Artificial Analysis benchmark: an intelligence index of ${m.intel} at a blended $${m.price} per 1M tokens.`,
-        m,
-      ),
-    );
+/**
+ * Find the AA model a piece of news text is about, if any. Prefers the longest
+ * (most specific) matching name so "GPT-5.5" beats "GPT". Returns null when no
+ * specific model is named, so only genuinely model-about stories get enriched.
+ */
+export function matchAaModel(text: string, models: AaModel[]): AaModel | null {
+  const hay = ` ${text.toLowerCase()} `;
+  let best: AaModel | null = null;
+  for (const m of models) {
+    if (!isSpecificModelName(m.matchKey)) continue;
+    if (hay.includes(m.matchKey) && (!best || m.matchKey.length > best.matchKey.length)) {
+      best = m;
+    }
   }
-  return out;
+  return best;
 }
 
 export interface GatherKeys {
   braveKey?: string;
   newsApiKey?: string;
   exaKey?: string;
-  aaKey?: string;
 }
 
 /**
@@ -609,7 +596,6 @@ export async function gatherAll(keys: GatherKeys | string | undefined): Promise<
   if (k.braveKey) tasks.push(fetchBrave(k.braveKey).catch(() => []));
   if (k.newsApiKey) tasks.push(fetchNewsApi(k.newsApiKey).catch(() => []));
   if (k.exaKey) tasks.push(fetchExa(k.exaKey).catch(() => []));
-  if (k.aaKey) tasks.push(fetchArtificialAnalysis(k.aaKey).catch(() => []));
   const results = await Promise.all(tasks);
   return results.flat();
 }
