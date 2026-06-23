@@ -129,7 +129,7 @@ export function InterestsSheet({ open, onOpenChange, onSaved }: Props) {
           {!loading && data && data.beats.length > 0 && (
             <section>
               <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
-                Beats
+                Topics
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {data.beats.map((b) => (

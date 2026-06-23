@@ -17,6 +17,7 @@
 
 import { X, Heart, BadgeCheck } from 'lucide-react';
 import { CategoryMotif } from './CategoryMotif';
+import { AiTermHint } from '@/components/system/AiTermHint';
 import type { DeckCard, NewsBenchmark } from '@/types/cockpit';
 import { getNewsCategory, resolveNewsCategory } from '@/types/newsCategory';
 import { cn } from '@/lib/utils';
@@ -91,8 +92,13 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
             )}
           >
             {/* Signals are the leader's OWN decisions, not industry news - never
-                mislabel them with a news category (e.g. "MODEL & CAPABILITY"). */}
-            {isSignal ? 'Your decision' : category.label}
+                mislabel them with a news category. News chips demystify the AI
+                term in place: tap to read what the category means in plain words. */}
+            {isSignal ? (
+              'Your decision'
+            ) : (
+              <AiTermHint term={category.label} meaning={category.meaning} className="font-gobold uppercase tracking-[0.07em] text-accent" />
+            )}
           </span>
           {card.magnitude?.value && (
             <span className="flex items-baseline gap-1.5 text-right">

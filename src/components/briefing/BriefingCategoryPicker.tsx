@@ -23,19 +23,8 @@ import { NEWS_CATEGORIES, type NewsCategoryId } from '@/types/newsCategory';
 // leader's own world, not a generic feed. Matches the old MIN_INTERESTS.
 export const MIN_BRIEFING_CATEGORIES = 3;
 
-// A warm, first-timer one-liner per category: what it covers, in plain words.
-// (The registry's `blurb` describes the art; this describes the topic.)
-const CATEGORY_HINT: Record<NewsCategoryId, string> = {
-  model: 'New models and what you can now build with them.',
-  economics: 'What it costs to run AI, and when that drops.',
-  tools: 'The tools, platforms and vendors you build on.',
-  orchestration: 'Wiring agents together so they run reliably.',
-  product: 'How AI-native products get packaged and sold.',
-  governance: 'The rules for what you are allowed to deploy.',
-  security: 'Keeping your agents and data safe from misuse.',
-  org: 'How teams and roles change in an AI-native company.',
-  proof: 'What is really shipping and working, beyond the hype.',
-};
+// The plain one-liner per category now lives in the registry (newsCategory.ts
+// `meaning`), so the picker and the card chip hint speak with one voice.
 
 export interface BriefingCategoryPickerProps {
   /** The category ids already chosen (controlled). */
@@ -118,7 +107,7 @@ export function BriefingCategoryPicker({
                     {cat.label}
                   </p>
                   <p className="mt-0.5 line-clamp-2 text-[10.5px] leading-snug text-muted-foreground">
-                    {CATEGORY_HINT[cat.id]}
+                    {cat.meaning}
                   </p>
                 </div>
               </button>
