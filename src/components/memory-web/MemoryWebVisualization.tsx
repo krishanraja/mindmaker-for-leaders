@@ -856,7 +856,7 @@ export function MemoryWebVisualization({
                   {selectedNode.fact.fact_value}
                 </p>
                 <p className="text-[9px] text-muted-foreground/60 mt-1.5">
-                  {selectedNode.confirmed ? 'You confirmed this' : 'Inferred - tap to read the bond'}
+                  {selectedNode.confirmed ? 'You confirmed this' : 'Inferred - tap to read the connection'}
                 </p>
               </div>
             </motion.div>

@@ -81,7 +81,7 @@ export function BondReader({
         </div>
         <p className="text-sm text-foreground font-medium">Walk to a connection</p>
         <p className="text-xs text-muted-foreground mt-1 max-w-[220px]">
-          Tap a node in your brain to read the bond it sits on - then confirm, strengthen, or fix it with your hands.
+          Tap a node in your brain to read the connection it sits on - then confirm, strengthen, or fix it with your hands.
         </p>
       </div>
     );

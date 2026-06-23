@@ -52,7 +52,7 @@ export default function TrackRecordPage() {
     !loading && model.kind === 'rich' && model.calibration.pct !== null ? (
       <ShareWinButton
         win={{
-          title: 'My decision calibration, on the record',
+          title: 'My decision track record, on the record',
           stat: `${model.calibration.pct}%`,
           sub: 'of my calls aged the way I read them',
           text: `I read ${model.calibration.read} of ${model.calibration.scored} of my decision calls the way the evidence landed. CTRL keeps my judgment honest.`,

@@ -68,7 +68,7 @@ export function BrainCanvas({
       ) : (
         <>
           <p className="pointer-events-none absolute left-0 right-0 top-3.5 z-[3] text-center text-[11px] tracking-[0.04em] text-muted-foreground/80">
-            {isMobile ? 'Tap a node to read its bond' : 'Click a node to read its bond'}
+            {isMobile ? 'Tap a node to read its connection' : 'Click a node to read its connection'}
           </p>
           <BrainGraph
             facts={facts}

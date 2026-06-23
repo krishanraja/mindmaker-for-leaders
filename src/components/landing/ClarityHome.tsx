@@ -6,7 +6,7 @@ import { CtrlLogo } from '@/components/landing/CtrlLogo';
 const TOOLS = ['ChatGPT', 'Claude', 'Gemini', 'Cursor', 'Claude Code'];
 
 const PILLARS = [
-  { icon: Scale, title: 'Pressure-test the call', body: 'Decompose a real decision into its considerations, check each against live evidence, and see exactly where only you can decide. It clarifies; it never recommends from a thin signal.' },
+  { icon: Scale, title: 'Weigh the call', body: 'Decompose a real decision into its considerations, check each against live evidence, and see exactly where only you can decide. It clarifies; it never recommends from a thin signal.' },
   { icon: Brain, title: 'Your portable AI double', body: 'A Memory Web of who you are - ranked by importance, kept fresh. Export it to any AI in one tap so nothing starts from zero.' },
   { icon: Plug, title: 'Agent-native', body: 'A read-only MCP server: your own AI agents pull your live context on every call. No pasting, never stale.' },
   { icon: Radio, title: 'A daily read, not noise', body: 'A ~3-minute briefing anchored to your real priorities - and a structured feed your agents can read too.' },
