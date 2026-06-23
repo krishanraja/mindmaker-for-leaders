@@ -70,6 +70,9 @@
 ## Key Conventions
 
 - No em dashes in any copy - use hyphens, semicolons, or parentheses
+- PLAIN LANGUAGE, never app jargon (first-principles cleanup PRs #261-264): a leader must NEVER have to learn CTRL's own vocabulary. Renamed in UI copy - bond->connection, calibration->track record, deliverable->"something you do over and over", pressure test->weigh/check, Beats->Topics. Internal identifiers (GraphBond, CalibrationRead, onPressureTest, etc.) keep their names; only display strings change. Demystify genuine AI CONCEPTS a non-technical leader meets (orchestration, agents, inference) with the reusable `AiTermHint` (`src/components/system/AiTermHint.tsx`, popover; the news category `meaning` in `newsCategory.ts` is the single source of truth, surfaced on the card chip). Use AiTermHint for AI/industry terms ONLY, never for app vocabulary.
+- FEWER DOORS (PRs #263-264): every entry screen leads with ONE primary action; extras sit behind a quiet disclosure or "More" (Automator Step 1, the search-first command palette, Settings collapsed 8 tabs -> 4 groups You/Briefing/Privacy & data/Account).
+- Backend resilience is standardized (PRs #265-267): route every external call through `_shared/with-timeout.ts` (or an `AbortSignal.timeout`/outer `withTimeout`); the briefing OpenAI calls + v2 pipeline + the Artificial Analysis fetchers are all bounded now. Prefer the structured `_shared/logger.ts` (`createLogger(fn)`) over raw `console.*` for new code.
 - Globally forced dark; ctrl-ds instrument palette; emerald #00D9B6 (--primary 171 100% 43%). App brand mark in headers/sidebars (mobile + desktop) is the `BrandLockup` (Mindmaker icon + `ctrl-logo.png` wordmark), which replaced the generated emerald `ctrl.` text (PRs #197/#200); not the old green Mindmaker logo.
 - Mobile-first, no-scroll pattern on key pages
 - Voice-first interaction where applicable
