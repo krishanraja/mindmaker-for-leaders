@@ -15,7 +15,7 @@
 // flex column with min-h-0 so it shares the focus zone without ever overflowing
 // onto the peek or footer (the bug fix: one composed frame, no overlap).
 
-import { X, Heart, BadgeCheck } from 'lucide-react';
+import { X, Heart, BadgeCheck, Scale } from 'lucide-react';
 import { CategoryMotif } from './CategoryMotif';
 import { AiTermHint } from '@/components/system/AiTermHint';
 import type { DeckCard, NewsBenchmark } from '@/types/cockpit';
@@ -56,9 +56,11 @@ export interface CockpitHeroProps {
   onOpen?: (card: DeckCard) => void;
   /** the swipe-trained reactions; placed on the hero per the new design. */
   onReact?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
+  /** quiet flag when this headline touches the user's pinned decision. */
+  relevantToPinnedDecision?: boolean;
 }
 
-export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: CockpitHeroProps) {
+export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantToPinnedDecision }: CockpitHeroProps) {
   const isSignal = card.kind === 'signal';
   const isLead = variant === 'lead';
   // server-assigned category id wins; else classify the headline text.
@@ -154,6 +156,14 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
 
         {/* Independent benchmark cross-check (model-about news only). */}
         {!isSignal && card.benchmark && <BenchmarkChip benchmark={card.benchmark} />}
+
+        {/* Quiet flag: this headline touches the decision you have pinned. */}
+        {!isSignal && relevantToPinnedDecision && (
+          <span className="mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
+            <Scale className="h-3 w-3" />
+            Relevant to your decision
+          </span>
+        )}
 
         {/* META + REACTIONS row, pinned to the card bottom (mt-auto). The
             heart/skip train the feed; they sit with the source so the one card

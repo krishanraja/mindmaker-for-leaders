@@ -5,6 +5,7 @@ import { X, Play, Pause, RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBriefingContext } from "@/contexts/BriefingContext";
 import { useSubmitFeedback, useGenerateBriefing, usePollAudio } from "@/hooks/useBriefing";
+import { usePinnedDecision } from "@/hooks/usePinnedDecision";
 import { supabase } from "@/integrations/supabase/client";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { FRAMEWORK_TAG_CONFIG, BRIEFING_TYPES } from "@/types/briefing";
@@ -37,6 +38,7 @@ export function BriefingSheet() {
 
   const { submitFeedback } = useSubmitFeedback();
   const { regenerate, generating: regenerating } = useGenerateBriefing();
+  const { matchesHeadline } = usePinnedDecision();
   const { watchedCompanies, watchCompany } = useWatchlist();
   const { keyboardHeight } = useVisualViewport();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -297,6 +299,7 @@ export function BriefingSheet() {
                     onWatchCompany={watchCompany}
                     watchedCompanies={watchedCompanies}
                     briefingId={briefing.id}
+                    relevantToPinnedDecision={matchesHeadline(segment.headline)}
                   />
                 </div>
               ))}

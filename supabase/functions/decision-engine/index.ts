@@ -97,6 +97,16 @@ serve(async (req) => {
     if (caseErr || !created) throw new Error(`case insert failed: ${caseErr?.message ?? "unknown"}`);
 
     const caseId = created.id as string;
+
+    // Make this the single pinned decision (one in focus at a time). Clear the
+    // user's other pins first so the partial unique index is never violated.
+    // Best-effort: a pin hiccup must not fail the run (the client falls back to
+    // the most recent case).
+    await admin.from("decision_cases").update({ pinned_at: null })
+      .eq("user_id", userId).not("pinned_at", "is", null);
+    await admin.from("decision_cases").update({ pinned_at: new Date().toISOString() })
+      .eq("id", caseId);
+
     const pipeline = runPipeline(admin, { caseId, userId, statement, ctx, objectiveFactIds, isPro }, log.withContext({ caseId }));
 
     // Fire-and-forget reliance signal, inside the background pipeline scope so

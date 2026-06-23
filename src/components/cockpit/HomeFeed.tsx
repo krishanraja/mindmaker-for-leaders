@@ -31,7 +31,15 @@ import { CategoryMotif } from './CategoryMotif';
 import { TuneFeedButton } from './TuneFeedButton';
 import { SkeletonCard, LoadingCaption } from '@/components/system/SkeletonCard';
 import { resolveNewsCategory } from '@/types/newsCategory';
+import { usePinnedDecision } from '@/hooks/usePinnedDecision';
 import { cn } from '@/lib/utils';
+
+// Quiet "relevant to your pinned decision" test for a news card. Signals (own
+// decisions) are never flagged - they already lead with "Your decision".
+function useDeckRelevance() {
+  const { matchesHeadline } = usePinnedDecision();
+  return (card: DeckCard) => card.kind !== 'signal' && matchesHeadline(card.headline);
+}
 
 export interface HomeFeedProps {
   data: CockpitData;
@@ -112,6 +120,8 @@ function MobileHome({
     else go(idx - 1);
   };
 
+  const relevant = useDeckRelevance();
+
   // the hint only earns its place when there is somewhere to swipe to.
   const showSwipeHint = !loading && !hasSwiped && deck.length > 1 && idx < deck.length - 1;
 
@@ -150,6 +160,7 @@ function MobileHome({
               onFocus={go}
               onOpen={onOpenCard}
               onReact={onReactDeck}
+              relevant={relevant}
             />
             {/* vertical segmented progress rail, pinned to the right edge */}
             {deck.length > 1 && (
@@ -204,9 +215,10 @@ interface MobileSwipeTrackProps {
   onFocus: (n: number) => void;
   onOpen: (card: DeckCard) => void;
   onReact?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
+  relevant: (card: DeckCard) => boolean;
 }
 
-function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact }: MobileSwipeTrackProps) {
+function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact, relevant }: MobileSwipeTrackProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
 
@@ -244,7 +256,7 @@ function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact }:
               style={{ minHeight: focused ? '0' : undefined }}
             >
               {focused ? (
-                <CockpitHero card={card} variant="feed" onOpen={onOpen} onReact={onReact} />
+                <CockpitHero card={card} variant="feed" onOpen={onOpen} onReact={onReact} relevantToPinnedDecision={relevant(card)} />
               ) : (
                 <PeekCard card={card} />
               )}
@@ -289,6 +301,7 @@ function DesktopHome({
 }: HomeFeedProps) {
   const deck = data.deck;
   const railRef = useRef<HTMLDivElement>(null);
+  const relevant = useDeckRelevance();
   const scrollBy = (dx: number) => railRef.current?.scrollBy({ left: dx, behavior: 'smooth' });
 
   const railLabel = loading
@@ -346,7 +359,7 @@ function DesktopHome({
             >
               {deck.map((card, i) => (
                 <div key={card.id} className={cn('flex flex-col', i === 0 ? 'w-[480px] shrink-0' : 'w-[330px] shrink-0')}>
-                  <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} />
+                  <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} relevantToPinnedDecision={relevant(card)} />
                 </div>
               ))}
             </div>

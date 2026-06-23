@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDecisionEngine } from '@/hooks/useDecisionEngine';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
+import { usePinnedDecision } from '@/hooks/usePinnedDecision';
 import { useDecisionCall } from '@/hooks/useDecisionCall';
 import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 import {
@@ -40,6 +41,7 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   const [statement, setStatement] = useState(initialStatement ?? '');
   const engine = useDecisionEngine();
   const inbox = useDecisionInbox();
+  const { pin } = usePinnedDecision();
   const { subscribe, isProcessing } = useEdgeSubscription();
   const { recordCall } = useDecisionCall();
 
@@ -66,7 +68,8 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   const [justRan, setJustRan] = useState(false);
   useEffect(() => { setJustRan(false); }, [engine.decisionCase?.id]);
 
-  // Auto-load the latest decision so the tab opens into its anatomy (not a list).
+  // Auto-load the ONE pinned decision so the tab opens into its anatomy (not a
+  // list). Falls back to the most recent case if a pin somehow isn't set yet.
   // Runs once per "rest" state; the ref re-arms whenever we reset back to blank.
   const autoLoadedRef = useRef(false);
   useEffect(() => {
@@ -74,7 +77,8 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
     if (composing || engine.starting || engine.decisionCase) return;
     if (inbox.loading || inbox.cases.length === 0) return;
     autoLoadedRef.current = true;
-    engine.load(inbox.cases[0].id);
+    const pinned = inbox.cases.find((c) => c.pinned_at) ?? inbox.cases[0];
+    engine.load(pinned.id);
   }, [composing, engine, inbox.loading, inbox.cases]);
 
   const handleUpgrade = async () => { const url = await subscribe(); if (url) window.location.href = url; };
@@ -91,15 +95,9 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   const newBlank = () => { engine.reset(); setStatement(''); setComposing(false); autoLoadedRef.current = false; };
   // From the anatomy's "weigh a new one": open the cold one-ask.
   const compose = () => { engine.reset(); setStatement(''); setComposing(true); };
-  // From the anatomy's switcher: open another decision for review.
-  const switchTo = (id: string) => { setComposing(false); setJustRan(false); engine.reset(); engine.load(id); };
-  // Re-weigh the decision in focus (from its folded-in watch alert chip).
-  const reWeigh = () => {
-    const c = engine.decisionCase;
-    const open = c ? inbox.alerts.find((a) => a.decision_case_id === c.id) : undefined;
-    if (open) inbox.acknowledge(open.id);
-    if (c) { setStatement(c.title || c.statement); setComposing(true); }
-  };
+  // From the anatomy's switcher: open another decision for review AND make it the
+  // single pinned one (one decision in focus at a time).
+  const switchTo = (id: string) => { setComposing(false); setJustRan(false); engine.reset(); engine.load(id); void pin(id); inbox.refresh(); };
 
   const bankCall = async () => {
     const c = engine.decisionCase;
@@ -125,11 +123,6 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   // reviewing an existing decision opens straight into its anatomy.
   const needsCall = justRan && engine.isComplete && engine.claims.some((c) => c.is_load_bearing) && !callDone;
   const activeStatement = engine.decisionCase?.title || engine.decisionCase?.statement || statement;
-  // The open watch alert for the decision currently in focus (folded into the
-  // anatomy as a chip - the old standalone orange box is gone).
-  const caseAlert = engine.decisionCase
-    ? inbox.alerts.find((a) => a.decision_case_id === engine.decisionCase!.id) ?? null
-    : null;
 
   // ---- pick the one surface in focus ---------------------------------------
   let surface: React.ReactNode;
@@ -152,9 +145,6 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
       <DecisionAnatomy
         engine={engine}
         cases={inbox.cases}
-        alert={caseAlert}
-        onReWeigh={reWeigh}
-        onAcknowledgeAlert={(id) => inbox.acknowledge(id)}
         onSwitch={switchTo}
         onCompose={compose}
         onBank={bankCall}

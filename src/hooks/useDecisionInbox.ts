@@ -15,6 +15,7 @@ export interface DecisionCaseSummary {
   confidence: number | null;
   created_at: string;
   last_verified_at: string | null;
+  pinned_at: string | null;
 }
 
 export interface OpenAlert {
@@ -37,7 +38,7 @@ export function useDecisionInbox() {
 
   const refresh = useCallback(async () => {
     const [{ data: caseRows }, { data: alertRows }] = await Promise.all([
-      db.from('decision_cases').select('id, title, statement, stage, status, decision_kind, confidence, created_at, last_verified_at').order('created_at', { ascending: false }).limit(20),
+      db.from('decision_cases').select('id, title, statement, stage, status, decision_kind, confidence, created_at, last_verified_at, pinned_at').order('created_at', { ascending: false }).limit(20),
       db.from('decision_alerts').select('id, decision_case_id, headline, detail, kind').eq('status', 'open').order('created_at', { ascending: false }),
     ]);
     setCases((caseRows ?? []) as DecisionCaseSummary[]);

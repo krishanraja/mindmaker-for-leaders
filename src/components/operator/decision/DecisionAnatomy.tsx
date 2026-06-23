@@ -26,13 +26,13 @@
 import { useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  AlertTriangle, ChevronDown, ChevronRight, Layers, Plus, RotateCcw, X, Check,
+  ChevronDown, ChevronRight, Layers, Plus, Check,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import type { useDecisionEngine, DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
-import type { DecisionCaseSummary, OpenAlert } from '@/hooks/useDecisionInbox';
+import type { DecisionCaseSummary } from '@/hooks/useDecisionInbox';
 import { VERDICT_STYLE, STANCE_STYLE, STANCE_ORDER, verdictBucket, type VerdictBucket } from './decisionParts';
 
 type Engine = ReturnType<typeof useDecisionEngine>;
@@ -123,7 +123,7 @@ function LadderRung({
             </span>
             {isHinge && (
               <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-accent">
-                Matters most
+                Most important
               </span>
             )}
             {num && (
@@ -237,7 +237,7 @@ function Spine({
         <div className="min-w-0 flex-1">
           {!collapsed && (
             <p className="text-[9px] font-bold uppercase tracking-[0.13em] text-accent">
-              What you're weighing{pct != null ? ` · ${pct}% sure so far` : ''}
+              Your current decision
             </p>
           )}
           <h2
@@ -344,13 +344,10 @@ function SwitcherSheet({
 }
 
 export function DecisionAnatomy({
-  engine, cases, alert, onReWeigh, onAcknowledgeAlert, onSwitch, onCompose, onBank, banked, banking, isDesktop = false,
+  engine, cases, onSwitch, onCompose, onBank, banked, banking, isDesktop = false,
 }: {
   engine: Engine;
   cases: DecisionCaseSummary[];
-  alert: OpenAlert | null;
-  onReWeigh: () => void;
-  onAcknowledgeAlert: (id: string) => void;
   onSwitch: (id: string) => void;
   onCompose: () => void;
   onBank: () => void;
@@ -439,21 +436,6 @@ export function DecisionAnatomy({
     />
   );
 
-  const alertChip = alert ? (
-    <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-amber-500/35 bg-amber-500/[0.07] px-3 py-2.5">
-      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400" />
-      <p className="min-w-0 flex-1 text-[11.5px] leading-snug text-foreground/90">
-        <span className="font-semibold text-amber-200">{alert.headline}</span>
-      </p>
-      <button type="button" onClick={onReWeigh} className="flex-none rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-200 transition-colors hover:bg-amber-500/20">
-        <RotateCcw className="mr-1 inline h-3 w-3" />Check it again
-      </button>
-      <button type="button" onClick={() => onAcknowledgeAlert(alert.id)} aria-label="Dismiss" className="flex-none text-muted-foreground transition-colors hover:text-foreground">
-        <X className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  ) : null;
-
   const seg = (
     <div className="flex gap-1 rounded-xl border border-border bg-foreground/[0.03] p-1">
       {SEGMENTS.map((s) => {
@@ -483,12 +465,30 @@ export function DecisionAnatomy({
   );
 
   const rungs = (
-    <div className="flex flex-col gap-2.5 pb-1">
-      {ladder.length === 0 && <p className="text-[12.5px] text-muted-foreground">I am still breaking this one down. Check back in a moment.</p>}
-      {ladder.length > 0 && visible.length === 0 && <p className="text-[12.5px] text-muted-foreground">Nothing in this group.</p>}
-      {visible.map((c) => (
-        <LadderRung key={c.id} claim={c} evidence={evByClaim(c.id)} isHinge={c.id === hingeId} open={openClaimId === c.id} onToggle={() => toggleRung(c.id)} />
-      ))}
+    <div className="relative pl-5">
+      {/* The ladder rail: every point visibly branches UP to the decision, so the
+          screen reads top-down as "this decision rests on these things". */}
+      {visible.length > 0 && (
+        <span aria-hidden className="pointer-events-none absolute left-1.5 top-0 bottom-4 w-px bg-gradient-to-b from-accent/45 via-border to-transparent" />
+      )}
+      <div className="flex flex-col gap-2.5 pb-1">
+        {ladder.length === 0 && <p className="text-[12.5px] text-muted-foreground">I am still breaking this one down. Check back in a moment.</p>}
+        {ladder.length > 0 && visible.length === 0 && <p className="text-[12.5px] text-muted-foreground">Nothing in this group.</p>}
+        {visible.map((c) => (
+          <div key={c.id} className="relative">
+            {/* the node + tick where this point meets the rail */}
+            <span aria-hidden className="pointer-events-none absolute top-[22px] -left-[14px] h-px w-3 bg-border" />
+            <span
+              aria-hidden
+              className={cn(
+                'pointer-events-none absolute top-[18px] -left-[17px] h-2 w-2 rounded-full border-2 border-background',
+                c.id === hingeId ? 'bg-accent shadow-[0_0_7px_hsl(var(--accent)/0.7)]' : 'bg-muted-foreground/60',
+              )}
+            />
+            <LadderRung claim={c} evidence={evByClaim(c.id)} isHinge={c.id === hingeId} open={openClaimId === c.id} onToggle={() => toggleRung(c.id)} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 
@@ -509,7 +509,7 @@ export function DecisionAnatomy({
         </button>
         <button type="button" onClick={() => { onCompose(); haptics.light(); }}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] bg-gradient-to-b from-accent to-accent px-3 py-3 text-[13px] font-bold text-accent-foreground shadow-[0_12px_26px_-12px_hsl(var(--accent)/0.5)]">
-          <Plus className="h-3.5 w-3.5" strokeWidth={3} />Weigh a new one
+          <Plus className="h-3.5 w-3.5" strokeWidth={3} />Add a new decision
         </button>
       </div>
     </div>
@@ -521,7 +521,6 @@ export function DecisionAnatomy({
   if (isDesktop) {
     return (
       <div className="flex h-full min-h-0 flex-col gap-3">
-        {alertChip}
         <div className="grid min-h-0 flex-1 grid-cols-[1fr_1fr] gap-4">
           <div className="flex min-h-0 flex-col gap-3 overflow-y-auto scrollbar-hide pr-1">
             {spine}
@@ -542,7 +541,6 @@ export function DecisionAnatomy({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div ref={scrollRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
-        {alertChip && <div className="pb-2.5">{alertChip}</div>}
         {/* only the spine is sticky; it collapses to a status bar as the ladder
             scrolls up behind it (the native large-title move) */}
         <div className="sticky top-0 z-10 bg-background pb-1">{spine}</div>
