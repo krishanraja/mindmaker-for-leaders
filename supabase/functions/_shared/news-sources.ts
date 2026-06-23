@@ -117,7 +117,15 @@ export async function fetchGdelt(maxRecords = 75): Promise<RawArticle[]> {
     timespan: "3d",
     sort: "DateDesc",
   });
-  const data = await getJson(`https://api.gdeltproject.org/api/v2/doc/doc?${params}`);
+  const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?${params}`;
+  // GDELT frequently 429s, and it is our biggest breadth source so its flakiness
+  // hurts most. One backoff retry recovers the common transient throttle without
+  // slowing the gather when the first call succeeds.
+  let data = await getJson(gdeltUrl);
+  if (data === null) {
+    await new Promise((r) => setTimeout(r, 1_500));
+    data = await getJson(gdeltUrl);
+  }
   const arts = (data as { articles?: Array<Record<string, unknown>> } | null)?.articles;
   if (!Array.isArray(arts)) return [];
   const out: RawArticle[] = [];
@@ -367,17 +375,148 @@ export async function fetchBrave(apiKey: string): Promise<RawArticle[]> {
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// NewsAPI.org (NEWSAPI_KEY): a large mainstream aggregator. Adds breadth and,
+// crucially, extra independent outlets so more stories cross the corroboration
+// bar (the trust signal). One /v2/everything pass over an AI query, recent-first.
+// ---------------------------------------------------------------------------
+const NEWSAPI_QUERY =
+  '"artificial intelligence" OR "AI model" OR "AI agent" OR "generative AI" OR LLM OR OpenAI OR Anthropic OR "Gemini" OR "Claude"';
+
+export async function fetchNewsApi(apiKey: string, pageSize = 60): Promise<RawArticle[]> {
+  const from = new Date(Date.now() - 3 * 24 * 3_600_000).toISOString().split("T")[0];
+  const params = new URLSearchParams({
+    q: NEWSAPI_QUERY,
+    language: "en",
+    sortBy: "publishedAt",
+    pageSize: String(pageSize),
+    from,
+    searchIn: "title,description",
+  });
+  // Key sent as a header (not the query string) so it never lands in logs/caches.
+  const data = await getJson(`https://newsapi.org/v2/everything?${params}`, { "X-Api-Key": apiKey });
+  const arts = (data as { articles?: Array<Record<string, unknown>> } | null)?.articles;
+  if (!Array.isArray(arts)) return [];
+  const out: RawArticle[] = [];
+  for (const a of arts) {
+    const url = typeof a.url === "string" ? a.url : "";
+    const title = stripHtml(typeof a.title === "string" ? a.title : "");
+    if (!url || !title || /\[Removed\]/i.test(title)) continue;
+    const host = hostOf(url);
+    const src = a.source as { name?: string } | undefined;
+    out.push({
+      title,
+      url,
+      description: stripHtml(typeof a.description === "string" ? a.description : ""),
+      source: host || (src?.name ?? ""),
+      publishedIso: typeof a.publishedAt === "string" ? a.publishedAt : null,
+      engagement: 0,
+      sourceTier: reputationTier(host),
+      origin: "newsapi",
+    });
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Exa (EXA_API_KEY): neural/semantic search built for finding high-signal
+// content by MEANING, not keywords. This is the best complement to the keyword
+// aggregators: it surfaces the specific AI-native stories (agent frameworks,
+// model launches, real deployments) that keyword feeds miss, and it does not
+// rate-limit like GDELT. A few intent-shaped queries, each recent-first.
+// ---------------------------------------------------------------------------
+const EXA_QUERIES: string[] = [
+  "major new AI model release or benchmark result",
+  "AI agent framework, orchestration, or autonomous agent launch for builders",
+  "notable enterprise AI deployment or real-world results",
+  "AI pricing, funding, or go-to-market move",
+];
+
+interface ExaResult {
+  title?: string;
+  url?: string;
+  publishedDate?: string;
+  text?: string;
+  summary?: string;
+}
+
+export async function fetchExa(apiKey: string): Promise<RawArticle[]> {
+  const startPublishedDate = new Date(Date.now() - 5 * 24 * 3_600_000).toISOString();
+  const lanes = await Promise.all(
+    EXA_QUERIES.map(async (q) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+      try {
+        const res = await fetch("https://api.exa.ai/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+          body: JSON.stringify({
+            query: q,
+            type: "auto",
+            category: "news",
+            numResults: 10,
+            startPublishedDate,
+            contents: { summary: true },
+          }),
+          signal: controller.signal,
+        });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch {
+        return null;
+      } finally {
+        clearTimeout(timer);
+      }
+    }),
+  );
+  const out: RawArticle[] = [];
+  const seen = new Set<string>();
+  for (const data of lanes) {
+    const results = (data as { results?: ExaResult[] } | null)?.results;
+    if (!Array.isArray(results)) continue;
+    for (const r of results) {
+      const url = typeof r.url === "string" ? r.url : "";
+      const title = stripHtml(r.title);
+      if (!url || !title || seen.has(url)) continue;
+      seen.add(url);
+      const host = hostOf(url);
+      out.push({
+        title,
+        url,
+        description: stripHtml(r.summary || r.text || "").slice(0, 400),
+        source: host,
+        publishedIso: r.publishedDate ?? null,
+        engagement: 0,
+        sourceTier: reputationTier(host),
+        origin: "exa",
+      });
+    }
+  }
+  return out;
+}
+
+export interface GatherKeys {
+  braveKey?: string;
+  newsApiKey?: string;
+  exaKey?: string;
+}
+
 /**
- * Gather from every free source in parallel. Each is best-effort: failures
- * resolve to []. Brave is included only when its key is present.
+ * Gather from every source in parallel. Each is best-effort: failures resolve to
+ * []. The keyed sources (Brave / NewsAPI / Exa) are included only when their key
+ * is present, so the gather degrades gracefully if any key is missing.
  */
-export async function gatherAll(braveKey: string | undefined): Promise<RawArticle[]> {
+export async function gatherAll(keys: GatherKeys | string | undefined): Promise<RawArticle[]> {
+  // Back-compat: an old caller passed just the Brave key as a string.
+  const k: GatherKeys = typeof keys === "string" ? { braveKey: keys } : (keys ?? {});
   const tasks: Array<Promise<RawArticle[]>> = [
     fetchGdelt().catch(() => []),
     fetchHackerNews().catch(() => []),
     fetchRss().catch(() => []),
   ];
-  if (braveKey) tasks.push(fetchBrave(braveKey).catch(() => []));
+  if (k.braveKey) tasks.push(fetchBrave(k.braveKey).catch(() => []));
+  if (k.newsApiKey) tasks.push(fetchNewsApi(k.newsApiKey).catch(() => []));
+  if (k.exaKey) tasks.push(fetchExa(k.exaKey).catch(() => []));
   const results = await Promise.all(tasks);
   return results.flat();
 }

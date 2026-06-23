@@ -60,10 +60,20 @@ const POOL_PER_CATEGORY = 4;
 // Stories older than this are dropped: a daily Home feed should be recent news,
 // not a months-old archive item a category RSS feed happened to surface.
 const MAX_AGE_DAYS = 14;
-// Stories worth surfacing must clear a low bar: either corroborated by 2+
-// sources, or a single strong/fresh source. This filters lone low-tier rehashes.
+// How fresh a lone tier-1 story must be to earn a place (see below).
+const FRESH_SINGLE_MS = 2 * 24 * 3_600_000;
+// Stories worth surfacing must clear a low bar that filters lone low-tier
+// rehashes, while keeping enough depth PER CATEGORY for per-user re-ranking:
+//   - corroborated by 2+ independent sources (the trust signal), OR
+//   - a reputable outlet (allowlist / curated RSS, tier >= 2), OR
+//   - a genuinely FRESH (< 2 days) single story. With the wider gather
+//     (NewsAPI + Exa), this admits the recent stories that fill out each lane
+//     so "Tune feed" has real options to lift; the per-source and per-category
+//     caps still stop any one outlet or lane from flooding.
 function worthSurfacing(c: Cluster): boolean {
-  return c.sourceCount >= 2 || c.rep.sourceTier >= 2;
+  if (c.sourceCount >= 2 || c.rep.sourceTier >= 2) return true;
+  const t = c.bestPublishedIso ? Date.parse(c.bestPublishedIso) : NaN;
+  return Number.isFinite(t) && t >= Date.now() - FRESH_SINGLE_MS;
 }
 
 function json(body: unknown, status = 200): Response {
@@ -80,6 +90,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const braveKey = Deno.env.get("BRAVE_SEARCH_API");
+    const newsApiKey = Deno.env.get("NEWSAPI_KEY") ?? Deno.env.get("NEWSAPI_API_KEY");
+    const exaKey = Deno.env.get("EXA_API_KEY");
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
@@ -105,13 +117,24 @@ serve(async (req) => {
     //    "news". Items with a parseable date older than the cutoff are dropped;
     //    undated items are kept (we cannot prove they are stale).
     const cutoffMs = Date.now() - MAX_AGE_DAYS * 24 * 3_600_000;
-    const raw = await gatherAll(braveKey);
+    const raw = await gatherAll({ braveKey, newsApiKey, exaKey });
     const aiNative = raw.filter((a) => {
       if (!isAiNative(`${a.title} ${a.description}`)) return false;
       if (!a.publishedIso) return true;
       const t = Date.parse(a.publishedIso);
       return !Number.isFinite(t) || t >= cutoffMs;
     });
+    // Ops visibility: ?debug=1 returns the per-source gather counts so we can
+    // confirm every source (GDELT/HN/RSS/Brave/NewsAPI/Exa) is contributing,
+    // without exposing any keys. Returns before the LLM synthesis spend.
+    if (new URL(req.url).searchParams.get("debug") === "1") {
+      const by = (o: string) => raw.filter((a) => a.origin === o).length;
+      return json({
+        gathered: { total: raw.length, aiNative: aiNative.length },
+        bySource: { gdelt: by("gdelt"), hn: by("hn"), rss: by("rss"), brave: by("brave"), newsapi: by("newsapi"), exa: by("exa") },
+        keysPresent: { brave: !!braveKey, newsapi: !!newsApiKey, exa: !!exaKey, openai: !!openaiKey },
+      });
+    }
     if (aiNative.length === 0) {
       return json({ cards: [], cached: false, error: "no AI-native stories gathered" });
     }
