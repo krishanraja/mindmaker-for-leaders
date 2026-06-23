@@ -31,6 +31,9 @@ export async function fetchLLMModels(): Promise<AAModel[]> {
   const response = await fetch(`${AA_BASE_URL}/data/llms/models`, {
     method: "GET",
     headers: buildHeaders(),
+    // Bound the request so a slow or stalled AA endpoint can never hang a caller
+    // (the model-router fragility). On timeout fetch throws and callers fall back.
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {
@@ -51,6 +54,9 @@ export async function fetchTTSModels(): Promise<AAMediaModel[]> {
   const response = await fetch(`${AA_BASE_URL}/data/media/text-to-speech`, {
     method: "GET",
     headers: buildHeaders(),
+    // Bound the request so a slow or stalled AA endpoint can never hang a caller
+    // (the model-router fragility). On timeout fetch throws and callers fall back.
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {
@@ -71,6 +77,9 @@ export async function fetchImageModels(): Promise<AAMediaModel[]> {
   const response = await fetch(`${AA_BASE_URL}/data/media/text-to-image`, {
     method: "GET",
     headers: buildHeaders(),
+    // Bound the request so a slow or stalled AA endpoint can never hang a caller
+    // (the model-router fragility). On timeout fetch throws and callers fall back.
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {
