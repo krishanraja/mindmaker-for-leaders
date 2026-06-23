@@ -68,11 +68,17 @@ export function useCockpit(): {
   loading: boolean;
   recordDeckReaction: (card: DeckCard, reaction: 'like' | 'dislike') => Promise<void>;
 } {
-  const { cases, alerts, loading } = useDecisionInbox();
+  const { cases, alerts, loading: inboxLoading } = useDecisionInbox();
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
   const [segments, setSegments] = useState<BriefingSeg[]>([]);
   const [liveHeadlines, setLiveHeadlines] = useState<LiveHeadline[]>([]);
+  // Whether the live-headlines fetch has settled (resolved OR errored). We keep
+  // the skeleton up until it has, so Home does not flash the bundled cold deck
+  // first and then swap to the real live cards (the "flashes content then
+  // reloads" glitch). The cold deck remains the fallback only when the fetch
+  // genuinely fails.
+  const [headlinesSettled, setHeadlinesSettled] = useState(false);
   // Categories the leader has recently disliked on the deck -> down-weighted out
   // of the news half (the swipe trains the feed). Best-effort; empty on error.
   const [dislikedCats, setDislikedCats] = useState<Set<string>>(new Set());
@@ -149,11 +155,17 @@ export function useCockpit(): {
     void (async () => {
       try {
         const { data, error } = await supabase.functions.invoke('live-headlines');
-        if (cancelled || error) return;
-        const cards = (data as { cards?: LiveHeadline[] } | null)?.cards;
-        if (Array.isArray(cards)) setLiveHeadlines(cards);
+        if (cancelled) return;
+        if (!error) {
+          const cards = (data as { cards?: LiveHeadline[] } | null)?.cards;
+          if (Array.isArray(cards)) setLiveHeadlines(cards);
+        }
       } catch {
         /* keep empty -> the cold-deck fallback renders */
+      } finally {
+        // Settled (success OR failure): release the skeleton. On failure the
+        // cold-deck fallback renders, so Home is still never blank.
+        if (!cancelled) setHeadlinesSettled(true);
       }
     })();
     return () => {
@@ -288,12 +300,21 @@ export function useCockpit(): {
       .slice(0, 3)
       .map((a) => {
         const bet = live.find((c) => c.id === a.decision_case_id);
+        const about = bet ? (bet.title || bet.statement) : null;
+        // Lead the advisory line with the alert's actual SUBSTANCE (a.detail =
+        // what changed and why), not the vague "on a call you are weighing X".
+        // Fall back to naming the decision when no detail was written.
+        const say = a.detail?.trim()
+          ? (about ? `${a.detail.trim()} (your call: ${about})` : a.detail.trim())
+          : about
+            ? `Worth a re-read: a load-bearing claim under "${about}" just moved.`
+            : 'A decision you are weighing just moved - worth a re-read.';
         return {
           id: `sig-${a.id}`,
           kind: 'signal' as const,
           eyebrow: 'From your world',
           headline: a.headline,
-          say: bet ? `On a call you are weighing: ${bet.title || bet.statement}` : 'A decision you are weighing just moved.',
+          say,
           betId: a.decision_case_id,
         };
       });
@@ -330,5 +351,9 @@ export function useCockpit(): {
     };
   }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats]);
 
+  // Hold the skeleton until BOTH the decision inbox and the first live-headlines
+  // fetch have settled, so Home renders its real deck once instead of flashing
+  // the cold deck and then swapping (the glitchy reload feel).
+  const loading = inboxLoading || !headlinesSettled;
   return { data: { ...data, topBlocker }, loading, recordDeckReaction };
 }
