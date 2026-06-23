@@ -514,8 +514,10 @@ async function curateWithOpenAI(
 
   const leaderDesc = `${userCtx.role || 'executive'}${userCtx.industry ? ` in ${userCtx.industry}` : ''}${userCtx.company ? ` at ${userCtx.company}` : ''}`;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
     method: "POST",
+    provider: "openai",
+    timeoutMs: 30_000,
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
@@ -626,8 +628,14 @@ async function curateHeadlines(
     ? `This leader tends to find ${userCtx.feedbackPreferences.preferredTags.join(', ')} stories most useful.${userCtx.feedbackPreferences.preferredSources.length > 0 ? ` Stories from ${userCtx.feedbackPreferences.preferredSources.join(', ')} resonate.` : ''} Lean toward these.`
     : '';
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  // The second-pass curation is optional polish: on a timeout or any failure we
+  // fall back to the top headlines rather than letting the briefing hang.
+  let response: Response;
+  try {
+    response = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
     method: "POST",
+    provider: "openai",
+    timeoutMs: 30_000,
     headers: {
       Authorization: `Bearer ${openaiKey}`,
       "Content-Type": "application/json",
@@ -659,7 +667,10 @@ Return ONLY a JSON array: [{"title": "headline", "source": "Source"}]`,
       ],
       temperature: 0.1,
     }),
-  });
+    });
+  } catch {
+    return headlines.slice(0, 8);
+  }
 
   if (!response.ok) {
     console.warn("Second-pass curation failed, using original headlines");
@@ -838,8 +849,10 @@ async function generateBriefingScript(
   }
   const trainingInjection = trainingBlocks.join("\n\n");
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
     method: "POST",
+    provider: "openai",
+    timeoutMs: 30_000,
     headers: {
       Authorization: `Bearer ${openaiKey}`,
       "Content-Type": "application/json",
@@ -1954,24 +1967,37 @@ serve(async (req) => {
     const pipeline = (async () => {
      try {
       if (isV2) {
-        await runV2Pipeline({
-          supabase,
-          supabaseUrl,
-          supabaseServiceKey,
-          openaiKey,
-          userId: user.id,
-          userCtx,
-          briefingType,
-          customContext,
-          voiceNoteUrl,
-          isProOnly,
-          today,
-          resolvedScriptModel,
-          resolvedCurationModel,
-          providerKeys: { perplexity: perplexityKey, tavily: tavilyKey, brave: braveKey },
-          briefingId,
-        });
-        return;
+        // v2 is the heavier, evidence-based path. Bound the WHOLE pipeline so a
+        // slow lane can never hang the background task; on timeout or failure we
+        // fall through to the robust v1 path rather than leaving the briefing
+        // stuck. (v2 is flag-gated and non-default, so this is purely a safety net.)
+        try {
+          await withTimeout(
+            runV2Pipeline({
+              supabase,
+              supabaseUrl,
+              supabaseServiceKey,
+              openaiKey,
+              userId: user.id,
+              userCtx,
+              briefingType,
+              customContext,
+              voiceNoteUrl,
+              isProOnly,
+              today,
+              resolvedScriptModel,
+              resolvedCurationModel,
+              providerKeys: { perplexity: perplexityKey, tavily: tavilyKey, brave: braveKey },
+              briefingId,
+            }),
+            55_000,
+            "v2-pipeline",
+          );
+          return;
+        } catch (v2err) {
+          console.warn("v2 pipeline timed out or failed; falling back to v1:", v2err instanceof Error ? v2err.message : v2err);
+          // fall through to the v1 pipeline below
+        }
       }
 
       // ── v1 / ai_landscape pipeline (background; fills in the queued row) ──
