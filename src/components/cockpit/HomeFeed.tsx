@@ -24,13 +24,37 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ChevronUp, ListOrdered, Scale, Boxes, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ListOrdered, Scale, Boxes, Loader2, SlidersHorizontal } from 'lucide-react';
 import type { CockpitData, DeckCard, HomeState } from '@/types/cockpit';
 import { CockpitHero } from './CockpitHero';
 import { CategoryMotif } from './CategoryMotif';
+import { NewsPreferencesSheet } from './NewsPreferencesSheet';
 import { SkeletonCard, LoadingCaption } from '@/components/system/SkeletonCard';
 import { resolveNewsCategory } from '@/types/newsCategory';
 import { cn } from '@/lib/utils';
+
+// A small "tune what pops up" affordance that opens the news-priority picker.
+// Owns its own open state so it can drop into either body's greeting row.
+function TuneFeedButton({ compact }: { compact?: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Tune what pops up in your feed"
+        className={cn(
+          'flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card/50 text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground',
+          compact ? 'h-9 w-9 justify-center' : 'px-3.5 py-2',
+        )}
+      >
+        <SlidersHorizontal className={compact ? 'h-[17px] w-[17px]' : 'h-4 w-4'} strokeWidth={1.9} />
+        {!compact && <span className="text-[12.5px] font-semibold">Tune feed</span>}
+      </button>
+      <NewsPreferencesSheet open={open} onOpenChange={setOpen} />
+    </>
+  );
+}
 
 export interface HomeFeedProps {
   data: CockpitData;
@@ -126,11 +150,14 @@ function MobileHome({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* GREET + state-aware orientation (the shell stays put across states) */}
-      <div className="shrink-0 px-0.5">
-        <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-foreground">{greeting}</h1>
-        <p className="mt-1 text-pretty text-[12.5px] leading-snug text-muted-foreground">
-          {loading ? 'Reading the market and your world.' : framingFor(data.homeState)}
-        </p>
+      <div className="flex shrink-0 items-start justify-between gap-3 px-0.5">
+        <div className="min-w-0">
+          <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-foreground">{greeting}</h1>
+          <p className="mt-1 text-pretty text-[12.5px] leading-snug text-muted-foreground">
+            {loading ? 'Reading the market and your world.' : framingFor(data.homeState)}
+          </p>
+        </div>
+        <TuneFeedButton compact />
       </div>
 
       {/* THE FEED - the one browsable zone. min-h-0 + overflow-hidden so the cards
@@ -328,6 +355,7 @@ function DesktopHome({
             {loading ? 'Reading the market and your world.' : framingFor(data.homeState)}
           </p>
         </div>
+        <TuneFeedButton />
       </div>
 
       {/* rich-only "what moved" strip: own-signal count vs world (real data only) */}

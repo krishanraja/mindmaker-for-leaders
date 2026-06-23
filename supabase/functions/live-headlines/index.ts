@@ -45,9 +45,18 @@ interface HeadlineCard {
   url: string;
   category: NewsCategoryId;
   timeAgo: string | null;
+  // The server importance score (corroboration x reputation x freshness x
+  // engagement). Returned so the client can re-rank this shared pool against the
+  // leader's selected priorities (src/lib/newsPriority.ts) without a per-user
+  // gather. Higher = more important in the world.
+  score: number;
 }
 
-const MAX_CARDS = 14;
+// Return a RICHER pool than the deck shows (~7), so the client has room to
+// re-rank by each leader's priorities. A looser per-category cap keeps the pool
+// spanning lanes without truncating to a tight balanced few.
+const POOL_SIZE = 20;
+const POOL_PER_CATEGORY = 4;
 // Stories older than this are dropped: a daily Home feed should be recent news,
 // not a months-old archive item a category RSS feed happened to surface.
 const MAX_AGE_DAYS = 14;
@@ -114,7 +123,7 @@ serve(async (req) => {
       2,
     );
     const categoryOf = (c: Cluster) => classifyCategory(c.blob);
-    const picked = selectBalanced(clusters, categoryOf, MAX_CARDS);
+    const picked = selectBalanced(clusters, categoryOf, POOL_SIZE, POOL_PER_CATEGORY);
 
     // 4. One grounded "why it matters" line per story (best-effort; falls back
     //    to the article snippet when the LLM is unavailable).
@@ -142,6 +151,7 @@ serve(async (req) => {
         url: c.rep.url,
         category: categoryOf(c),
         timeAgo: relativeTimeAgo(c.bestPublishedIso),
+        score: Math.round(c.score * 100) / 100,
       };
     });
 
