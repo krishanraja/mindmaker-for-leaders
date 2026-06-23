@@ -70,7 +70,9 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
               isLead ? 'px-3 py-1.5 text-[10px]' : 'px-2.5 py-1 text-[9.5px]',
             )}
           >
-            {category.label}
+            {/* Signals are the leader's OWN decisions, not industry news - never
+                mislabel them with a news category (e.g. "MODEL & CAPABILITY"). */}
+            {isSignal ? 'Your decision' : category.label}
           </span>
           {card.magnitude?.value && (
             <span className="flex items-baseline gap-1.5 text-right">

@@ -35,6 +35,8 @@ import { supabase } from '@/integrations/supabase/client'
 // where a brain-dump makes no sense). startsWith, so '/decision' also covers
 // '/decision-map'.
 const HIDE_ON = [
+  '/dashboard', // Home: the three doors own the bottom band; a floating FAB here
+  //              sat directly on top of the "Build a skill" door (content overlap).
   '/decision', // Decisions capture has its own "talk it out" mic
   '/memory', // Brain has Add-memory voice
   '/context', // Automator has "talk through the workflow"
