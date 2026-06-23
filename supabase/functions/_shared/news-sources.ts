@@ -495,10 +495,102 @@ export async function fetchExa(apiKey: string): Promise<RawArticle[]> {
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// Artificial Analysis (ARTIFICIALANALYSIS_API_KEY): structured frontier-model
+// benchmark data (intelligence index, blended price, speed). Unlike the news
+// sources, this is a live LEADERBOARD, not articles - so it gives the "Frontier
+// models" lane authoritative, numeric cards ("X leads on intelligence at index
+// N", "best intelligence-per-dollar") that a press headline can't. A couple of
+// notable standings per day, tier-3 (authoritative), dated now (current read).
+// ---------------------------------------------------------------------------
+interface AAModel {
+  name: string;
+  slug: string;
+  creator: string;
+  intel: number | null;
+  price: number | null;
+}
+
+function aaNum(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+export async function fetchArtificialAnalysis(apiKey: string): Promise<RawArticle[]> {
+  const data = await getJson(
+    "https://artificialanalysis.ai/api/v2/data/llms/models",
+    { "x-api-key": apiKey },
+    8_000,
+  );
+  const rows = (data as { data?: Array<Record<string, unknown>> } | null)?.data;
+  if (!Array.isArray(rows) || rows.length === 0) return [];
+
+  const models: AAModel[] = [];
+  for (const r of rows) {
+    // Strip AA's config qualifier (e.g. "Claude Fable 5 (Adaptive Reasoning,
+    // Max Effort, ...)") so cards read cleanly with the plain model name.
+    const name = stripHtml(typeof r.name === "string" ? r.name : "").replace(/\s*\([^)]*\).*$/, "").trim();
+    if (!name) continue;
+    const slug = typeof r.slug === "string" ? r.slug : "";
+    const creatorObj = (r.model_creator ?? r.creator) as { name?: string } | undefined;
+    const ev = (r.evaluations ?? {}) as Record<string, unknown>;
+    const pricing = (r.pricing ?? {}) as Record<string, unknown>;
+    const intel = aaNum(
+      ev.artificial_analysis_intelligence_index ?? ev.intelligence_index ?? r.intelligence_index,
+    );
+    const price = aaNum(
+      pricing.price_1m_blended_3_to_1 ?? pricing.price_1m_blended ?? r.price_1m_blended_3_to_1,
+    );
+    models.push({ name, slug, creator: creatorObj?.name ?? "", intel, price });
+  }
+
+  const ranked = models.filter((m) => m.intel != null).sort((a, b) => (b.intel as number) - (a.intel as number));
+  if (ranked.length === 0) return [];
+
+  const nowIso = new Date().toISOString();
+  const urlFor = (m: AAModel) => (m.slug ? `https://artificialanalysis.ai/models/${m.slug}` : "https://artificialanalysis.ai/models");
+  const card = (title: string, description: string, m: AAModel): RawArticle => ({
+    title,
+    url: urlFor(m),
+    description,
+    source: "artificialanalysis.ai",
+    publishedIso: nowIso,
+    engagement: 0,
+    sourceTier: 3, // authoritative benchmark aggregator
+    origin: "aa",
+  });
+
+  const out: RawArticle[] = [];
+  const leader = ranked[0];
+  out.push(
+    card(
+      `Frontier model benchmark: ${leader.name} leads on intelligence (index ${leader.intel})`,
+      `${leader.name}${leader.creator ? ` from ${leader.creator}` : ""} currently tops the Artificial Analysis Intelligence Index at ${leader.intel}${leader.price != null ? `, at a blended $${leader.price} per 1M tokens` : ""}.`,
+      leader,
+    ),
+  );
+  // Best intelligence-per-dollar among genuinely capable models (>=60% of the
+  // leader's intelligence), if it is not the leader itself.
+  const valued = ranked
+    .filter((m) => m.price != null && (m.price as number) > 0 && (m.intel as number) >= (leader.intel as number) * 0.6)
+    .sort((a, b) => (b.intel as number) / (b.price as number) - (a.intel as number) / (a.price as number));
+  if (valued[0] && valued[0].name !== leader.name) {
+    const m = valued[0];
+    out.push(
+      card(
+        `Best value frontier model: ${m.name} delivers intelligence ${m.intel} at $${m.price}/1M tokens`,
+        `${m.name} offers the strongest intelligence-per-dollar on the Artificial Analysis benchmark: an intelligence index of ${m.intel} at a blended $${m.price} per 1M tokens.`,
+        m,
+      ),
+    );
+  }
+  return out;
+}
+
 export interface GatherKeys {
   braveKey?: string;
   newsApiKey?: string;
   exaKey?: string;
+  aaKey?: string;
 }
 
 /**
@@ -517,6 +609,7 @@ export async function gatherAll(keys: GatherKeys | string | undefined): Promise<
   if (k.braveKey) tasks.push(fetchBrave(k.braveKey).catch(() => []));
   if (k.newsApiKey) tasks.push(fetchNewsApi(k.newsApiKey).catch(() => []));
   if (k.exaKey) tasks.push(fetchExa(k.exaKey).catch(() => []));
+  if (k.aaKey) tasks.push(fetchArtificialAnalysis(k.aaKey).catch(() => []));
   const results = await Promise.all(tasks);
   return results.flat();
 }

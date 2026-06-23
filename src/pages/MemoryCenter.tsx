@@ -21,6 +21,7 @@ import { useMarkdownImport } from '@/hooks/useMarkdownImport';
 import { useVerificationFlow } from '@/hooks/useVerificationFlow';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { MobileFrame } from '@/components/layout/MobileFrame';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { BrainCanvas } from '@/components/memory-web/BrainCanvas';
 import { BondReader } from '@/components/memory-web/BondReader';
 import type { MemoryBond } from '@/components/memory-web/MemoryWebVisualization';
@@ -174,9 +175,11 @@ export default function MemoryCenter() {
     <BondReader bond={selectedBond} variant={isMobile ? 'sheet' : 'rail'} onConfirm={handleConfirmBond} />
   ) : null;
 
-  // The Brain tab body: the centred canvas + the node reader. Desktop slides it in
-  // as a right rail; mobile opens it INLINE under the canvas (no bottom-sheet hop),
-  // so the read happens in place and nothing sits over the graph.
+  // The Brain tab body: the centred canvas + the node reader. Desktop slides the
+  // reader in as a right rail (it has the width to spare). Mobile opens it as a
+  // bottom DRAWER that slides up OVER the canvas, so the brain graph keeps its
+  // full size instead of being squashed into the top half (the inline panel used
+  // to steal ~44% of the height and cram the visual).
   const brainBody = (
     <div className="flex h-full min-h-0 flex-col gap-3 md:flex-row">
       <div className="relative min-h-0 min-w-0 flex-1">
@@ -219,32 +222,24 @@ export default function MemoryCenter() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Mobile inline reader: opens in place under the canvas (no bottom-sheet
-          hop). The canvas reflows above it and the graph re-centres on resize. */}
-      <AnimatePresence initial={false}>
-        {isMobile && (selectedBond || selectedPattern) && (
-          <motion.div
-            key="bond-inline"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="relative max-h-[44%] shrink-0 overflow-y-auto scrollbar-hide rounded-2xl border border-border/60 bg-card/60 p-4 md:hidden"
-          >
-            <button
-              type="button"
-              onClick={clearSelection}
-              aria-label="Close"
-              className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            {reader}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
+  );
+
+  // Mobile node reader as a bottom drawer: slides up over the brain (the graph
+  // stays full-size behind it), drag-down or tap-away to dismiss. Rendered
+  // outside brainBody so it overlays the whole surface, not the canvas column.
+  const mobileBondDrawer = (
+    <Drawer
+      open={isMobile && !!(selectedBond || selectedPattern)}
+      onOpenChange={(open) => { if (!open) clearSelection(); }}
+    >
+      <DrawerContent className="border-border bg-[linear-gradient(180deg,#0d1219,#0a0e12)] md:hidden">
+        <DrawerTitle className="sr-only">Reading a connection</DrawerTitle>
+        <div className="scrollbar-hide max-h-[64vh] overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pt-3">
+          {reader}
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 
   const content = (
@@ -301,6 +296,8 @@ export default function MemoryCenter() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {mobileBondDrawer}
 
       <MemoryDetailSheet
         memory={selectedMemory}

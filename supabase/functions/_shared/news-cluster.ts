@@ -25,7 +25,7 @@ export interface RawArticle {
   publishedIso: string | null;
   engagement: number; // HN points (or any 0+ attention signal); 0 when unknown
   sourceTier: number; // reputation weight: 3 = primary/top-tier, 2 = strong, 1 = generic
-  origin: "brave" | "gdelt" | "hn" | "rss" | "newsapi" | "exa";
+  origin: "brave" | "gdelt" | "hn" | "rss" | "newsapi" | "exa" | "aa";
 }
 
 // A cluster of articles judged to be the same story across sources.
