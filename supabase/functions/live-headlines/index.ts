@@ -20,6 +20,7 @@ import {
   type NewsCategoryId,
 } from "../_shared/news-ai-native.ts";
 import {
+  capPerSource,
   clusterArticles,
   corroborationLabel,
   scoreClusters,
@@ -106,9 +107,12 @@ serve(async (req) => {
       return json({ cards: [], cached: false, error: "no AI-native stories gathered" });
     }
 
-    // 3. Cluster across sources (cross-verification), score, balance the pick.
-    const clusters = scoreClusters(clusterArticles(aiNative))
-      .filter(worthSurfacing);
+    // 3. Cluster across sources (cross-verification), score, de-flood any single
+    //    outlet (per-source cap), then balance the pick across categories.
+    const clusters = capPerSource(
+      scoreClusters(clusterArticles(aiNative)).filter(worthSurfacing),
+      2,
+    );
     const categoryOf = (c: Cluster) => classifyCategory(c.blob);
     const picked = selectBalanced(clusters, categoryOf, MAX_CARDS);
 

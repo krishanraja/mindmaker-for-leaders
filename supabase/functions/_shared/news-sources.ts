@@ -204,17 +204,34 @@ export async function fetchHackerNews(): Promise<RawArticle[]> {
 // ---------------------------------------------------------------------------
 // Curated RSS allowlist (open, no key): quality is controlled by the outlet set.
 // ---------------------------------------------------------------------------
+// Breadth matters: GDELT rate-limits (429) and any single feed can fail, so a
+// wide reputable allowlist keeps the deck full and raises the odds that a story
+// is corroborated across outlets. All run in parallel under one timeout, so more
+// feeds do not slow the gather. Per-source capping (capPerSource) stops any one
+// prolific outlet from flooding, so it is safe to include high-volume blogs.
 export const RSS_FEEDS: string[] = [
+  // mainstream tech press
   "https://techcrunch.com/category/artificial-intelligence/feed/",
   "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
   "https://venturebeat.com/category/ai/feed/",
   "https://www.technologyreview.com/topic/artificial-intelligence/feed",
   "https://feeds.arstechnica.com/arstechnica/technology-lab",
-  "https://huggingface.co/blog/feed.xml",
-  "https://simonwillison.net/atom/everything/",
-  "https://blog.google/technology/ai/rss/",
-  "https://news.mit.edu/rss/topic/artificial-intelligence2",
+  "https://www.wired.com/feed/tag/ai/latest/rss",
+  "https://www.zdnet.com/topic/artificial-intelligence/rss.xml",
+  "https://www.theregister.com/headlines.atom",
+  "https://the-decoder.com/feed/",
+  "https://www.artificialintelligence-news.com/feed/",
+  // primary sources / labs / vendors
   "https://openai.com/news/rss.xml",
+  "https://huggingface.co/blog/feed.xml",
+  "https://blog.google/technology/ai/rss/",
+  "https://deepmind.google/blog/rss.xml",
+  "https://blogs.microsoft.com/ai/feed/",
+  "https://blogs.nvidia.com/feed/",
+  // research / institutions / expert commentary
+  "https://news.mit.edu/rss/topic/artificial-intelligence2",
+  "https://simonwillison.net/atom/everything/",
+  "https://importai.substack.com/feed",
 ];
 
 export async function fetchRss(feeds: string[] = RSS_FEEDS, perFeed = 6): Promise<RawArticle[]> {

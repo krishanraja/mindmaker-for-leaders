@@ -273,8 +273,18 @@ export function useCockpit(): {
     // so Home is never blank.
     const generic = COLD_DECK.filter((c) => !(c.category && dislikedCats.has(c.category)));
     const newsCards: DeckCard[] = liveCards.length > 0 ? liveCards : generic;
+    // One signal card per DECISION, not per alert: a decision can raise several
+    // watch-alerts, and mapping each one produced several near-identical cards
+    // (e.g. three "DeepSeek V3 vs GPT-4o" cards). Keep the first (most recent)
+    // alert per case, then take the top 3 cases.
+    const seenSignalCases = new Set<string>();
     const signalCards: DeckCard[] = alerts
       .filter((a) => live.some((c) => c.id === a.decision_case_id))
+      .filter((a) => {
+        if (seenSignalCases.has(a.decision_case_id)) return false;
+        seenSignalCases.add(a.decision_case_id);
+        return true;
+      })
       .slice(0, 3)
       .map((a) => {
         const bet = live.find((c) => c.id === a.decision_case_id);
