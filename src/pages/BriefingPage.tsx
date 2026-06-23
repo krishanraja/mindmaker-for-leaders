@@ -4,7 +4,6 @@ import {
   Radio,
   Play,
   Clock,
-  ChevronDown,
   Settings2,
   Plus,
   Calendar,
@@ -12,20 +11,16 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   BriefingSheet,
   MiniPlayer,
   CustomBriefingSheet,
-  VoiceSteerBar,
   InterestChipsRow,
   SuggestedInterestsCard,
-  BriefingHero,
   BriefingCategoryPicker,
-  deriveBriefingRead,
 } from "@/components/briefing";
+import { BriefingPlayLanding, PastBriefingsSheet } from "@/components/briefing/BriefingPlay";
 import { InterestsSheet } from "@/components/briefing/InterestsSheet";
 import { DesktopShell } from "@/components/layout/DesktopShell";
 import { MobileFrame } from "@/components/layout/MobileFrame";
@@ -42,7 +37,7 @@ import { useSuggestedInterests } from "@/hooks/useSuggestedInterests";
 import { useBriefingStreamPreview } from "@/hooks/useBriefingStreamPreview";
 import { StreamingBriefingPreview } from "@/components/briefing/StreamingBriefingPreview";
 import { FF } from "@/lib/flags";
-import { BRIEFING_TYPES, isBriefingGenerating, isBriefingReady } from "@/types/briefing";
+import { isBriefingGenerating, isBriefingReady } from "@/types/briefing";
 import type { Briefing, BriefingType } from "@/types/briefing";
 
 function BriefingPage() {
@@ -83,7 +78,10 @@ function BriefingPage() {
   const [customSheetOpen, setCustomSheetOpen] = useState(false);
   const [interestsSheetOpen, setInterestsSheetOpen] = useState(false);
   const [presetCustomPrompt, setPresetCustomPrompt] = useState<string | null>(null);
-  const [showHistory, setShowHistory] = useState(false);
+  const [pastOpen, setPastOpen] = useState(false);
+  // When the user presses Play before a briefing exists, we generate it and then
+  // open the player automatically, so "Play" always just plays.
+  const [autoPlayWhenReady, setAutoPlayWhenReady] = useState(false);
 
   useEffect(() => {
     if (defaultBriefing) setBriefing(defaultBriefing);
@@ -100,17 +98,6 @@ function BriefingPage() {
   const handlePlayBriefing = (b: Briefing) => {
     setBriefing(b);
     setSheetOpen(true);
-  };
-
-  const [refreshingBriefing, setRefreshingBriefing] = useState(false);
-  const handleRefreshBriefing = async () => {
-    setRefreshingBriefing(true);
-    try {
-      await generate("default", undefined, { force: true });
-      await refetch();
-    } finally {
-      setRefreshingBriefing(false);
-    }
   };
 
   const handleCustomGenerate = async (
@@ -140,13 +127,15 @@ function BriefingPage() {
     await handleGenerateToday();
   };
 
-  const handleVoiceCustomRequest = (prompt: string) => {
-    setPresetCustomPrompt(prompt);
-    setCustomSheetOpen(true);
-  };
-
-  const handleNudgeApplied = async () => {
-    await Promise.all([refetchInterests(), refetchSuggestions()]);
+  // The one Play button on the landing: if a briefing already exists, open the
+  // player; if not, generate it and auto-open the player when it lands.
+  const handlePlayTop = () => {
+    if (defaultBriefing && isBriefingReady(defaultBriefing)) {
+      handlePlayBriefing(defaultBriefing);
+      return;
+    }
+    setAutoPlayWhenReady(true);
+    void handleGenerateToday();
   };
 
   // "Generating" is true for a local in-flight generate() OR a row that is
@@ -178,22 +167,31 @@ function BriefingPage() {
     });
   }, [briefings, defaultBriefing]);
 
-  // Honest "what just moved" read derived from the real briefing segments.
-  const briefingRead = useMemo(
-    () => (defaultBriefing ? deriveBriefingRead(defaultBriefing) : null),
-    [defaultBriefing],
-  );
+  // Auto-open the player once a Play-triggered generation finishes.
+  useEffect(() => {
+    if (autoPlayWhenReady && defaultBriefing && isBriefingReady(defaultBriefing)) {
+      handlePlayBriefing(defaultBriefing);
+      setAutoPlayWhenReady(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlayWhenReady, defaultBriefing]);
 
-  const heroHasAudio = !!defaultBriefing?.audio_url;
-  const heroCtaLabel = heroHasAudio ? "Listen" : "Listen to your briefing";
+  // One plain sentence for the landing, with the real length when we know it.
+  const durationMin = defaultBriefing?.audio_duration_seconds
+    ? Math.ceil(defaultBriefing.audio_duration_seconds / 60)
+    : null;
+  const playLine = durationMin
+    ? `A ${durationMin}-minute audio of today's AI news, read in your voice.`
+    : "A short audio of today's AI news, read in your voice.";
+  const hasPast = customBriefings.length > 0 || earlierBriefings.length > 0;
 
   const liveStatus = (() => {
     if (loading) return "Loading...";
     if (isGenerating) {
       if (currentPhase === "scanning") return "Reading your profile";
       if (currentPhase === "personalising") return "Searching today's news";
-      if (currentPhase === "preparing") return "Curating";
-      return "Preparing your briefing";
+      if (currentPhase === "preparing") return "Getting it ready";
+      return "Getting it ready";
     }
     if (defaultBriefing) {
       const created = new Date(defaultBriefing.created_at);
@@ -224,7 +222,7 @@ function BriefingPage() {
     // early (empty) background row is never mistaken for a finished briefing.
     if (isGenerating) return "generating";
     if (defaultBriefing?.stage === "failed") return "error";
-    if (defaultBriefing && isBriefingReady(defaultBriefing) && briefingRead) return "play";
+    if (defaultBriefing && isBriefingReady(defaultBriefing)) return "play";
     if (!defaultBriefing && generateError) return "error";
     if (!defaultBriefing && sparseProfile) return "sparse";
     if (!hasDeclaredOrInferred) return "pick";
@@ -236,7 +234,7 @@ function BriefingPage() {
       ? "Reading your profile"
       : currentPhase === "personalising"
       ? "Searching today's news"
-      : "Curating";
+      : "Getting it ready";
 
   /* ─── Mobile layout: one no-scroll viewport, one ask per state ─────── */
   if (isMobile) {
@@ -245,11 +243,11 @@ function BriefingPage() {
         padding="px-4 pb-20"
         banner={
           /* One calm header: what this is + its status + a single way to adjust
-             it. Everything else lives behind "Adjust" so the page stays one step. */
+             it. Everything else lives behind "Topics" so the page stays one step. */
           <div className="flex-shrink-0 flex items-center justify-between px-4 pt-3 pb-2">
             <div className="min-w-0">
               <h1 className="text-lg font-semibold text-foreground truncate">
-                Your daily read
+                Today&apos;s briefing
               </h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <span
@@ -273,7 +271,7 @@ function BriefingPage() {
                 className="gap-1.5 text-xs h-8"
               >
                 <Settings2 className="w-3.5 h-3.5" />
-                Adjust
+                Topics
               </Button>
             )}
           </div>
@@ -300,6 +298,13 @@ function BriefingPage() {
                 void refetchSuggestions();
               }}
             />
+            <PastBriefingsSheet
+              open={pastOpen}
+              onOpenChange={setPastOpen}
+              custom={customBriefings}
+              earlier={earlierBriefings}
+              onPlay={handlePlayBriefing}
+            />
           </>
         }
       >
@@ -325,7 +330,7 @@ function BriefingPage() {
               </div>
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold text-foreground">
-                  Building today's briefing
+                  Putting your briefing together
                 </h2>
                 <p className="text-sm text-muted-foreground">{generatingSubline}</p>
               </div>
@@ -387,130 +392,24 @@ function BriefingPage() {
               </div>
             </div>
           ) : coldState === "ready" ? (
-            <div className="flex h-full flex-col items-center justify-center gap-5 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-accent/15 flex items-center justify-center">
-                <Radio className="w-8 h-8 text-accent" />
-              </div>
-              <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-foreground">
-                  Your briefing is ready to build
-                </h2>
-                <p className="text-sm text-muted-foreground max-w-xs">
-                  We will pull today's AI news for the topics you picked and read
-                  it back in your voice. About 30 seconds.
-                </p>
-              </div>
-              <Button onClick={handleGenerateToday} size="lg" className="w-full max-w-xs">
-                Build today's briefing
-              </Button>
-              <button
-                type="button"
-                onClick={() => setInterestsSheetOpen(true)}
-                className="text-xs text-muted-foreground hover:text-accent transition-colors"
-              >
-                Change your topics
-              </button>
-            </div>
-          ) : coldState === "play" && defaultBriefing && briefingRead ? (
-            <div className="flex h-full min-h-0 flex-col overflow-y-auto scrollbar-hide py-2">
-              <BriefingHero
-                read={briefingRead}
-                ctaLabel={heroCtaLabel}
-                onCta={() => handlePlayBriefing(defaultBriefing)}
-                onGoDeeper={() => handlePlayBriefing(defaultBriefing)}
-              />
-              {/* one quiet follow-on: steer it by voice, plus earlier briefings */}
-              <div className="mt-4 space-y-4">
-                <VoiceSteerBar
-                  briefingId={defaultBriefing?.id ?? null}
-                  onCustomRequest={handleVoiceCustomRequest}
-                  onApplied={handleNudgeApplied}
-                />
-                {customBriefings.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1">
-                      Custom briefings today
-                    </p>
-                    {customBriefings.map((b) => {
-                      const typeConfig = BRIEFING_TYPES.find((t) => t.type === b.briefing_type);
-                      const durationMin = b.audio_duration_seconds
-                        ? Math.ceil(b.audio_duration_seconds / 60)
-                        : 3;
-                      return (
-                        <Card
-                          key={b.id}
-                          className="cursor-pointer hover:border-accent/30 transition-colors"
-                          onClick={() => handlePlayBriefing(b)}
-                        >
-                          <CardContent className="p-3 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                              <Play className="w-3.5 h-3.5 text-accent fill-accent" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-medium text-foreground">
-                                  {typeConfig?.label || b.briefing_type}
-                                </p>
-                                <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">
-                                  {durationMin} min
-                                </Badge>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {earlierBriefings.length > 0 && (
-                  <div className="space-y-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowHistory((v) => !v)}
-                      className="flex items-center justify-between w-full px-1"
-                    >
-                      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                        Earlier this week ({earlierBriefings.length})
-                      </p>
-                      <ChevronDown
-                        className={cn(
-                          "w-3.5 h-3.5 text-muted-foreground transition-transform",
-                          showHistory && "rotate-180",
-                        )}
-                      />
-                    </button>
-                    {showHistory && (
-                      <div className="space-y-1.5 pb-2">
-                        {earlierBriefings.map((b) => {
-                          const created = new Date(b.created_at);
-                          const dayLabel = created.toLocaleDateString("en-US", {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                          });
-                          return (
-                            <Card
-                              key={b.id}
-                              className="cursor-pointer hover:border-accent/30 transition-colors"
-                              onClick={() => handlePlayBriefing(b)}
-                            >
-                              <CardContent className="p-3 flex items-center gap-3">
-                                <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium text-foreground">{dayLabel}</p>
-                                </div>
-                                <Play className="w-3.5 h-3.5 text-accent fill-accent shrink-0" />
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <BriefingPlayLanding
+              title="Play today's briefing"
+              line="A short audio of today's AI news, read in your voice."
+              sub="Press play and I will make it. About 30 seconds."
+              onPlay={handlePlayTop}
+              busy={isGenerating}
+              hasPast={hasPast}
+              onOpenPast={() => setPastOpen(true)}
+            />
+          ) : coldState === "play" && defaultBriefing ? (
+            <BriefingPlayLanding
+              title="Play today's briefing"
+              line={playLine}
+              sub={liveStatus}
+              onPlay={() => handlePlayBriefing(defaultBriefing)}
+              hasPast={hasPast}
+              onOpenPast={() => setPastOpen(true)}
+            />
           ) : null}
         </div>
       </MobileFrame>
@@ -606,7 +505,7 @@ function BriefingPage() {
   return (
     <>
       <DesktopShell
-        eyebrow="Your daily read"
+        eyebrow="Today's briefing"
         title={
           <span className="flex items-center gap-2">
             <span
@@ -637,7 +536,7 @@ function BriefingPage() {
                 className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-secondary/50 transition-colors"
               >
                 <Settings2 className="h-3.5 w-3.5" />
-                Adjust
+                Topics
               </button>
             </>
           ) : undefined
@@ -667,7 +566,7 @@ function BriefingPage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-foreground">
-                    Building today's briefing
+                    Putting your briefing together
                   </h2>
                   <p className="text-sm text-muted-foreground">{generatingSubline}</p>
                 </div>
@@ -741,77 +640,23 @@ function BriefingPage() {
               </div>
             </div>
           ) : coldState === "ready" ? (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="w-full max-w-md rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 via-card to-card p-8 shadow-xl shadow-accent/5"
-            >
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-accent/15 flex items-center justify-center flex-shrink-0">
-                  <Radio className="w-7 h-7 text-accent" />
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-foreground mb-1">
-                    Your briefing is ready to build
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    We will pull today's AI news for your topics and read it back
-                    in your voice. About 30 seconds.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleGenerateToday}
-                  size="lg"
-                  className="px-6 h-11 text-sm font-semibold bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20"
-                >
-                  Build today's briefing
-                </Button>
-                <Button
-                  onClick={() => setCustomSheetOpen(true)}
-                  variant="ghost"
-                  size="lg"
-                  className="h-11 text-sm"
-                >
-                  Pick a different kind
-                </Button>
-              </div>
-            </motion.div>
-          ) : coldState === "play" && defaultBriefing && briefingRead ? (
-            <div className="flex h-full min-h-0 w-full max-w-md flex-col justify-center overflow-y-auto scrollbar-hide py-6">
-              <BriefingHero
-                read={briefingRead}
-                ctaLabel={heroCtaLabel}
-                onCta={() => handlePlayBriefing(defaultBriefing)}
-                onGoDeeper={() => handlePlayBriefing(defaultBriefing)}
+            <div className="w-full max-w-sm">
+              <BriefingPlayLanding
+                title="Play today's briefing"
+                line="A short audio of today's AI news, read in your voice."
+                sub="Press play and I will make it. About 30 seconds."
+                onPlay={handlePlayTop}
+                busy={isGenerating}
               />
-              <div className="mt-4">
-                <VoiceSteerBar
-                  briefingId={defaultBriefing?.id ?? null}
-                  onCustomRequest={handleVoiceCustomRequest}
-                  onApplied={handleNudgeApplied}
-                />
-              </div>
-              <div className="mt-3 flex items-center justify-center gap-6">
-                <button
-                  type="button"
-                  onClick={() => setCustomSheetOpen(true)}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-accent transition-colors"
-                >
-                  <Plus className="h-3 w-3" />
-                  Custom briefing
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRefreshBriefing}
-                  disabled={refreshingBriefing}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-accent transition-colors disabled:opacity-50"
-                >
-                  <RefreshCw className={cn("h-3 w-3", refreshingBriefing && "animate-spin")} />
-                  Rebuild today
-                </button>
-              </div>
+            </div>
+          ) : coldState === "play" && defaultBriefing ? (
+            <div className="w-full max-w-sm">
+              <BriefingPlayLanding
+                title="Play today's briefing"
+                line={playLine}
+                sub={liveStatus}
+                onPlay={() => handlePlayBriefing(defaultBriefing)}
+              />
             </div>
           ) : null}
         </div>
