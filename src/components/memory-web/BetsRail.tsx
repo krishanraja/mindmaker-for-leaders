@@ -143,7 +143,7 @@ export function BetsRail({
         ))}
         {bets.length === 0 && (
           <p className="px-4 py-6 text-center text-[12px] leading-relaxed text-muted-foreground">
-            No live bets yet. Pressure-test a decision and it lands on your board.
+            No live decisions yet. Weigh one and it lands on your board.
           </p>
         )}
       </div>

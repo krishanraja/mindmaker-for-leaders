@@ -436,7 +436,7 @@ export function CaptureView({ value, onChange, onStart, starting, autoFocus, hea
   return (
     <div>
       <div className="flex items-center gap-2 mb-1.5"><Scale className="h-5 w-5 text-primary" /><h3 className="text-lg font-semibold text-foreground">{heading ?? 'Weigh a decision with CTRL'}</h3></div>
-      <p className="text-sm text-muted-foreground mb-4 text-pretty">{subhead ?? 'Tell CTRL the AI-native move you are weighing. It breaks the decision into the things it rests on, checks each against real sources, and shows you where it holds and where it breaks. This is the pressure test.'}</p>
+      <p className="text-sm text-muted-foreground mb-4 text-pretty">{subhead ?? 'Tell CTRL the AI-native move you are weighing. It breaks the decision into the things it rests on, checks each against real sources, and shows you where it holds and where it breaks.'}</p>
       <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20 mb-3">
         <Mic className="h-4 w-4 text-primary shrink-0" />
         <span className="text-xs text-muted-foreground flex-1">Prefer to talk it out? Say it out loud.</span>
@@ -573,7 +573,7 @@ export function DecisionErrorView({ message, onReset }: { message: string | null
       <Card className="w-full max-w-md border-amber-500/30 bg-amber-500/10">
         <CardContent className="p-5">
           <div className="flex items-center gap-2 text-amber-300"><AlertTriangle className="h-4 w-4" /><p className="text-sm font-medium">This could not finish.</p></div>
-          <p className="mt-2 text-xs text-muted-foreground text-pretty">{message || 'The pressure test hit an error. Try another decision.'}</p>
+          <p className="mt-2 text-xs text-muted-foreground text-pretty">{message || 'That check hit an error. Try another decision.'}</p>
           <Button variant="outline" size="sm" className="mt-4" onClick={onReset}>Weigh another decision</Button>
         </CardContent>
       </Card>
