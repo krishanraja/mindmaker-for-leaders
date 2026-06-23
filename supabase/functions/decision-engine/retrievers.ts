@@ -5,7 +5,8 @@
 // returns "unverified", never "false".
 
 import { fetchWithTimeout } from "../_shared/with-timeout.ts";
-import type { ClaimType, Evidence } from "./types.ts";
+import { fetchAaModelIndex, matchAaModel, type AaModel } from "../_shared/news-sources.ts";
+import type { ClaimType, Evidence, Retriever } from "./types.ts";
 
 function hostOf(url: string | null): string | null {
   if (!url) return null;
@@ -229,6 +230,79 @@ async function searchPdl(company: string): Promise<Evidence[]> {
   }];
 }
 
+// Artificial Analysis ground-truth, reused across a decision's claims (the
+// leaderboard moves slowly, so one fetch per warm instance is plenty). The memo
+// caches only a SUCCESSFUL, non-empty result: a failed/timed-out fetch must not
+// poison a warm instance for every later decision (the intermittency bug). The
+// timeout is generous because the payload is large (~540 models) and this can
+// run amid the concurrent verify storm.
+let aaIndexPromise: Promise<AaModel[]> | null = null;
+function getAaIndex(): Promise<AaModel[]> {
+  const key = Deno.env.get("ARTIFICIALANALYSIS_API_KEY");
+  if (!key) return Promise.resolve([]);
+  if (!aaIndexPromise) {
+    aaIndexPromise = fetchAaModelIndex(key, 20_000)
+      .then((models) => {
+        if (models.length === 0) aaIndexPromise = null; // don't cache a miss; let the next call retry
+        return models;
+      })
+      .catch(() => {
+        aaIndexPromise = null;
+        return [] as AaModel[];
+      });
+  }
+  return aaIndexPromise;
+}
+
+/**
+ * Kick off the AA leaderboard fetch early (e.g. during the pipeline's reframe +
+ * decompose LLM calls) so it is already resolved by the time the concurrent
+ * claim-verification storm needs it. Fetching it in isolation here avoids the
+ * 8s timeout losing the race against ~16 simultaneous retriever calls (which
+ * silently dropped the model-validation evidence). Best-effort.
+ */
+export function prewarmAaIndex(): Promise<AaModel[]> {
+  return getAaIndex();
+}
+
+// A cheap pre-filter so we only reach for AA when a claim plausibly names a
+// specific model (a model family word + a version digit). Avoids fetching the
+// leaderboard for decisions that have nothing to do with model capability.
+function looksModelish(text: string): boolean {
+  return (
+    /\b(gpt|claude|gemini|llama|mistral|grok|qwen|deepseek|glm|opus|sonnet|fable|haiku|phi|command|nova|titan|kimi|minimax)\b/i.test(text) &&
+    /\d/.test(text)
+  );
+}
+
+/**
+ * Artificial Analysis as an EVIDENCE retriever: when a claim names a specific
+ * model, attach that model's real benchmark standing (intelligence index,
+ * blended price, rank) as an independent, numeric ground-truth source. This
+ * validates capability/cost claims ("model X is the smartest", "Y is too
+ * expensive") with hard data the web search may not surface cleanly, and counts
+ * as an independent domain for the corroboration governor.
+ */
+async function searchArtificialAnalysis(query: string): Promise<Evidence[]> {
+  const models = await getAaIndex();
+  if (models.length === 0) return [];
+  const m = matchAaModel(query, models);
+  if (!m) return [];
+  const bits: string[] = [];
+  if (m.rank) bits.push(`ranked #${m.rank} by intelligence`);
+  if (m.intelligence != null) bits.push(`Artificial Analysis Intelligence Index ${m.intelligence}`);
+  if (m.pricePer1m != null) bits.push(`blended price $${m.pricePer1m} per 1M tokens`);
+  if (bits.length === 0) return [];
+  return [{
+    source_url: "https://artificialanalysis.ai/models",
+    source_title: `Artificial Analysis benchmark: ${m.name}`,
+    excerpt: `${m.name}: ${bits.join("; ")} (independent model benchmark aggregator, current standing).`,
+    stance: "neutral",
+    retriever: "artificialanalysis",
+    relevance_score: null,
+  }];
+}
+
 /**
  * Gather evidence for a single claim. Always runs the breadth providers
  * (Perplexity, Exa, Brave). Adds typed retrievers by claim type and detected
@@ -240,6 +314,10 @@ export async function gatherEvidence(query: string, type?: ClaimType): Promise<E
   const jobs: Array<Promise<Evidence[]>> = [searchPerplexity(query), searchExa(query), searchBrave(query)];
 
   if (type === "factual" || type === "market") jobs.push(searchNewsApi(query));
+
+  // Model-capability/cost claims get the Artificial Analysis benchmark as
+  // independent ground-truth (validates "X is smartest"/"Y is too expensive").
+  if (looksModelish(query)) jobs.push(searchArtificialAnalysis(query));
 
   const domain = extractDomain(query);
   if (domain) {
@@ -266,5 +344,13 @@ export async function gatherEvidence(query: string, type?: ClaimType): Promise<E
     seen.add(k);
     deduped.push(e);
   }
-  return deduped.slice(0, 16);
+  // Keep the structured ground-truth retrievers (a single, authoritative, often
+  // numeric row each) ahead of the breadth providers before the cap, so they are
+  // never truncated off the end. Previously perplexity+exa+brave alone filled the
+  // 16 slots and a late-appended Artificial Analysis / BuiltWith / Tranco / PDL
+  // row was silently dropped.
+  const AUTHORITATIVE: Retriever[] = ["artificialanalysis", "builtwith", "tranco", "pdl"];
+  const priority = deduped.filter((e) => AUTHORITATIVE.includes(e.retriever));
+  const rest = deduped.filter((e) => !AUTHORITATIVE.includes(e.retriever));
+  return [...priority, ...rest].slice(0, 16);
 }

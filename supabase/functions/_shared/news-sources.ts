@@ -518,11 +518,11 @@ function aaNum(v: unknown): number | null {
  * Fetch the AA model leaderboard as a reference index (cleaned names + numbers +
  * intelligence rank). Best-effort: returns [] on any failure.
  */
-export async function fetchAaModelIndex(apiKey: string): Promise<AaModel[]> {
+export async function fetchAaModelIndex(apiKey: string, timeoutMs = 8_000): Promise<AaModel[]> {
   const data = await getJson(
     "https://artificialanalysis.ai/api/v2/data/llms/models",
     { "x-api-key": apiKey },
-    8_000,
+    timeoutMs,
   );
   const rows = (data as { data?: Array<Record<string, unknown>> } | null)?.data;
   if (!Array.isArray(rows) || rows.length === 0) return [];
