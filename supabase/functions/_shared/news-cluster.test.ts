@@ -5,6 +5,7 @@ import {
   clusterArticles,
   scoreClusters,
   selectBalanced,
+  capPerSource,
   freshnessScore,
   freshest,
   corroborationLabel,
@@ -142,6 +143,22 @@ describe('balanced selection', () => {
     const modelCount = picked.filter((c) => categoryOf(c) === 'model').length;
     expect(modelCount).toBeLessThanOrEqual(2); // the cap held
     expect(picked.some((c) => categoryOf(c) === 'governance')).toBe(true);
+  });
+});
+
+describe('per-source cap', () => {
+  it('limits a flooding outlet to its top N, keeping others', () => {
+    const clusters = scoreClusters(clusterArticles([
+      art({ title: 'willison post one about ai agents', source: 'simonwillison.net', sourceTier: 2 }),
+      art({ title: 'willison post two about llm evals', source: 'simonwillison.net', sourceTier: 2 }),
+      art({ title: 'willison post three about prompts', source: 'simonwillison.net', sourceTier: 2 }),
+      art({ title: 'willison post four about tools', source: 'simonwillison.net', sourceTier: 2 }),
+      art({ title: 'reuters reports ai regulation', source: 'reuters.com', sourceTier: 3 }),
+    ]));
+    const capped = capPerSource(clusters, 2);
+    const fromWillison = capped.filter((c) => c.rep.source === 'simonwillison.net').length;
+    expect(fromWillison).toBe(2); // flood capped
+    expect(capped.some((c) => c.rep.source === 'reuters.com')).toBe(true); // others kept
   });
 });
 

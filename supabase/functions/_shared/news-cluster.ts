@@ -227,6 +227,27 @@ export function selectBalanced(
 }
 
 /**
+ * Cap how many clusters any single source (outlet) can contribute, keeping each
+ * source's highest-scored stories. Without this a high-volume blog (e.g. a
+ * prolific AI link-blog) floods the deck: its many fresh, reputable posts each
+ * win a different category lane, so the per-category cap alone does not stop it.
+ * Run this BEFORE selectBalanced so the balanced pick draws from a de-flooded set.
+ */
+export function capPerSource(clusters: Cluster[], maxPerSource = 2): Cluster[] {
+  const byScore = [...clusters].sort((a, b) => b.score - a.score);
+  const taken = new Map<string, number>();
+  const out: Cluster[] = [];
+  for (const c of byScore) {
+    const src = c.rep.source || "";
+    const n = taken.get(src) ?? 0;
+    if (n >= maxPerSource) continue;
+    taken.set(src, n + 1);
+    out.push(c);
+  }
+  return out;
+}
+
+/**
  * A human corroboration label for a cluster's source row, e.g.
  *   1 source  -> null (the source name already shows; no "+N")
  *   2 sources -> "+1 source"
