@@ -153,7 +153,7 @@ export function BriefingSheet() {
                 <h2 className="text-lg font-semibold text-foreground">
                   {(() => {
                     const typeConfig = BRIEFING_TYPES.find(t => t.type === (briefing.briefing_type || 'default'));
-                    return typeConfig?.type === 'default' ? 'Your Briefing' : typeConfig?.label || 'Your Briefing';
+                    return typeConfig?.type === 'default' ? "Today's briefing" : typeConfig?.label || "Today's briefing";
                   })()}
                 </h2>
                 {briefing.custom_context && (

@@ -10,7 +10,7 @@ export function MiniPlayer() {
   if (!isMiniPlayerVisible || !briefing) return null;
 
   const currentSegment = briefing.segments?.[playback.currentSegmentIndex];
-  const headline = currentSegment?.headline || "Your Briefing";
+  const headline = currentSegment?.headline || "Today's briefing";
 
   const progress = playback.duration > 0
     ? (playback.currentTime / playback.duration) * 100

@@ -81,7 +81,7 @@ export function InterestsSheet({ open, onOpenChange, onSaved }: Props) {
 
   const industryLine = data?.industry_label
     ? `Based on your industry (${data.industry_label}), here's what others like you track.`
-    : `Here's a starter set of beats to pick from.`;
+    : `Here's a starter set of topics to pick from.`;
 
   const remaining = Math.max(0, MIN_INTERESTS - totalDeclared);
 
@@ -115,7 +115,7 @@ export function InterestsSheet({ open, onOpenChange, onSaved }: Props) {
           {loading && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground py-6 justify-center">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Finding relevant beats...
+              Finding topics...
             </div>
           )}
 
