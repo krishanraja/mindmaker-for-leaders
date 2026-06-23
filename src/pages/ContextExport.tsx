@@ -148,6 +148,9 @@ export default function ContextExport() {
   //   - a seed: arrived from an entry point, opens the cascade pre-anchored
   // null = the export wizard (use-case presets) is showing.
   const [skillFocus, setSkillFocus] = useState<boolean>(false);
+  // Step 1 leads with ONE primary action (build a skill); the quick-export
+  // presets sit behind a single quiet disclosure so the door is not crowded.
+  const [showPresets, setShowPresets] = useState<boolean>(false);
   const [skillSeed, setSkillSeed] = useState<SkillSeed | null>(null);
 
   // Entry points (Edge AutomatePainCard, Memory blocker button, Briefing
@@ -372,6 +375,24 @@ export default function ContextExport() {
         </div>
       </div>
 
+      {/* Secondary path behind ONE quiet disclosure, so Step 1 leads with a
+          single primary action (the audit's "fewer doors"). */}
+      {!showPresets && (
+        <button
+          type="button"
+          onClick={() => setShowPresets(true)}
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition-colors hover:border-accent/30"
+        >
+          <span className="text-sm text-muted-foreground">
+            Just need a quick context export?{' '}
+            <span className="font-medium text-foreground">Pick a preset</span>
+          </span>
+          <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+        </button>
+      )}
+
+      {showPresets && (
+        <>
       {/* Recommended presets */}
       {hasRecommendations && (
         <div>
@@ -444,6 +465,8 @@ export default function ContextExport() {
           })}
         </div>
       </div>
+        </>
+      )}
     </motion.div>
   );
 
