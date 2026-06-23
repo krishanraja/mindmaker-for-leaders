@@ -15,11 +15,31 @@
 // flex column with min-h-0 so it shares the focus zone without ever overflowing
 // onto the peek or footer (the bug fix: one composed frame, no overlap).
 
-import { X, Heart } from 'lucide-react';
+import { X, Heart, BadgeCheck } from 'lucide-react';
 import { CategoryMotif } from './CategoryMotif';
-import type { DeckCard } from '@/types/cockpit';
+import type { DeckCard, NewsBenchmark } from '@/types/cockpit';
 import { getNewsCategory, resolveNewsCategory } from '@/types/newsCategory';
 import { cn } from '@/lib/utils';
+
+// The independent benchmark cross-check on a model-about news card: a quiet
+// trust chip that validates the story with real Artificial Analysis numbers.
+function BenchmarkChip({ benchmark }: { benchmark: NewsBenchmark }) {
+  const bits: string[] = [];
+  if (benchmark.rank) bits.push(`#${benchmark.rank} by intelligence`);
+  if (benchmark.intelligenceIndex != null) bits.push(`index ${benchmark.intelligenceIndex}`);
+  if (benchmark.pricePer1m != null) bits.push(`$${benchmark.pricePer1m}/1M`);
+  if (bits.length === 0) return null;
+  return (
+    <div className="mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-lg border border-accent/25 bg-accent/[0.07] px-2.5 py-1.5">
+      <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2.2} />
+      <span className="text-[11px] leading-tight text-[#aeb6c2]">
+        <span className="font-semibold text-foreground/90">Artificial Analysis</span>
+        {' · '}
+        {bits.join(' · ')}
+      </span>
+    </div>
+  );
+}
 
 // A short descriptor for the magnitude stat (DeckCard carries only value+kind):
 // a sourced figure is a measured read of the world; a modelled one is flagged.
@@ -121,6 +141,9 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
             {card.say}
           </p>
         )}
+
+        {/* Independent benchmark cross-check (model-about news only). */}
+        {!isSignal && card.benchmark && <BenchmarkChip benchmark={card.benchmark} />}
 
         {/* META + REACTIONS row, pinned to the card bottom (mt-auto). The
             heart/skip train the feed; they sit with the source so the one card

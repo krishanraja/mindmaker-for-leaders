@@ -34,6 +34,12 @@ interface LiveHeadline {
   timeAgo: string | null;
   score?: number | null; // server importance, for client re-ranking by prefs
   sourceCount?: number | null; // corroboration depth (used by the "big moves" bias)
+  benchmark?: {
+    model: string;
+    intelligenceIndex: number | null;
+    pricePer1m: number | null;
+    rank: number | null;
+  } | null;
 }
 
 // A claim's stored reaction (the honest, gated magnitude). null fields => words lead.
@@ -290,6 +296,7 @@ export function useCockpit(): {
       corroboration: h.corroboration ?? null,
       timeAgo: h.timeAgo ?? null,
       url: h.url ?? null,
+      benchmark: h.benchmark ?? null,
     }));
     // Generic in-app deck only when the live feed is unavailable (offline/empty),
     // so Home is never blank.

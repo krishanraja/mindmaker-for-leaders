@@ -57,6 +57,16 @@ export type DeckCardKind = 'news' | 'signal';
 // TODO(news-pipeline) in newsCategory.ts.
 import type { NewsCategoryId } from './newsCategory';
 
+// Artificial Analysis ground-truth attached to a model-about news card: an
+// independent, numeric cross-check that validates the story. Enrichment only -
+// never its own card.
+export interface NewsBenchmark {
+  model: string;
+  intelligenceIndex: number | null;
+  pricePer1m: number | null;
+  rank: number | null;
+}
+
 export interface DeckCard {
   id: string;
   kind: DeckCardKind; // news = from the world (briefing); signal = from your world
@@ -75,6 +85,9 @@ export interface DeckCard {
   url?: string | null;
   // routing: a signal card may deep-link to the decision it refers to
   betId?: string | null;
+  // independent Artificial Analysis benchmark cross-check, present only on news
+  // cards that name a specific model it tracks (validates the story).
+  benchmark?: NewsBenchmark | null;
 }
 
 // The session-adaptive Home state, derived off REAL data volume (never faked):
