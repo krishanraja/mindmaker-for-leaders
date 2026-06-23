@@ -17,6 +17,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { selectModel } from "../_shared/openai-utils.ts";
 import { callLLMWithFallback, providerFromModel } from "../_shared/llm-fallback.ts";
 import { recordAiUsage } from "../_shared/ai-usage.ts";
+import { createLogger } from "../_shared/logger.ts";
+
+const log = createLogger("extract-voice-profile");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -172,7 +175,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ success: true, profile });
   } catch (error) {
-    console.error("extract-voice-profile error:", error);
+    log.error("voice profile extraction failed", { error });
     return jsonResponse(
       { error: error instanceof Error ? error.message : "Voice extraction failed." },
       500,
