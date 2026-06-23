@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
+import { useNewsPreferences } from '@/hooks/useNewsPreferences';
+import { rankByPreferences } from '@/lib/newsPriority';
 import { COLD_DECK } from '@/components/cockpit/coldDeck';
 import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, HeroMagnitude, HomeState } from '@/types/cockpit';
 
@@ -30,6 +32,8 @@ interface LiveHeadline {
   url: string;
   category: string | null;
   timeAgo: string | null;
+  score?: number | null; // server importance, for client re-ranking by prefs
+  sourceCount?: number | null; // corroboration depth (used by the "big moves" bias)
 }
 
 // A claim's stored reaction (the honest, gated magnitude). null fields => words lead.
@@ -69,6 +73,7 @@ export function useCockpit(): {
   recordDeckReaction: (card: DeckCard, reaction: 'like' | 'dislike') => Promise<void>;
 } {
   const { cases, alerts, loading: inboxLoading } = useDecisionInbox();
+  const { preferences } = useNewsPreferences();
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
   const [segments, setSegments] = useState<BriefingSeg[]>([]);
@@ -266,21 +271,26 @@ export function useCockpit(): {
     }
 
     // ---- the "worth a look" deck: real live news + own signals (alerts) ----
-    // The news half is now live, dated, sourced, openable headlines (Brave).
-    const liveCards: DeckCard[] = liveHeadlines
-      .filter((h) => h.headline && !(h.category && dislikedCats.has(h.category)))
-      .map((h, i) => ({
-        id: h.id || `live-${i}`,
-        kind: 'news' as const,
-        eyebrow: 'Worth a look',
-        category: h.category ?? null,
-        headline: h.headline.trim(),
-        say: h.say ?? null,
-        source: h.source ?? null,
-        corroboration: h.corroboration ?? null,
-        timeAgo: h.timeAgo ?? null,
-        url: h.url ?? null,
-      }));
+    // The shared headline pool (live-headlines) is re-ranked into THIS leader's
+    // feed by their selected priorities (lifted lanes + scan bias) before it is
+    // mapped to cards, so the most relevant stories lead. Neutral prefs leave the
+    // server's world-importance order intact.
+    const ranked = rankByPreferences(
+      liveHeadlines.filter((h) => h.headline && !(h.category && dislikedCats.has(h.category))),
+      preferences,
+    );
+    const liveCards: DeckCard[] = ranked.map((h, i) => ({
+      id: h.id || `live-${i}`,
+      kind: 'news' as const,
+      eyebrow: 'Worth a look',
+      category: h.category ?? null,
+      headline: h.headline.trim(),
+      say: h.say ?? null,
+      source: h.source ?? null,
+      corroboration: h.corroboration ?? null,
+      timeAgo: h.timeAgo ?? null,
+      url: h.url ?? null,
+    }));
     // Generic in-app deck only when the live feed is unavailable (offline/empty),
     // so Home is never blank.
     const generic = COLD_DECK.filter((c) => !(c.category && dislikedCats.has(c.category)));
@@ -349,7 +359,7 @@ export function useCockpit(): {
       homeState,
       ownSignalCount: ownSignals,
     };
-  }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats]);
+  }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats, preferences]);
 
   // Hold the skeleton until BOTH the decision inbox and the first live-headlines
   // fetch have settled, so Home renders its real deck once instead of flashing
