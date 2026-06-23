@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { runGuardrails, type IncomingFact } from '../_shared/fact-guardrails.ts';
 import { fetchWithTimeout, ProviderUnavailableError } from '../_shared/with-timeout.ts';
+import { createLogger } from '../_shared/logger.ts';
 import { encryptFactContent } from '../_shared/memory-crypto.ts';
 import { resolveContradiction } from '../_shared/contradiction.ts';
 
@@ -70,6 +71,8 @@ Return a JSON object with two arrays:
 }
 If nothing extractable, return {"facts": [], "rejected": []}.`;
 
+const log = createLogger('extract-user-context');
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -119,7 +122,7 @@ serve(async (req) => {
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY not configured');
+      log.error('OPENAI_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'AI service not configured', facts: [] }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -149,9 +152,9 @@ serve(async (req) => {
       });
     } catch (err) {
       if (err instanceof ProviderUnavailableError) {
-        console.error('OpenAI extraction timed out or unavailable:', err.message);
+        log.error('OpenAI extraction timed out or unavailable', { error: err.message });
       } else {
-        console.error('OpenAI extraction fetch error:', err);
+        log.error('OpenAI extraction fetch error', { error: err });
       }
       return new Response(
         JSON.stringify({ error: 'AI extraction failed', facts: [] }),
@@ -161,7 +164,7 @@ serve(async (req) => {
 
     if (!openaiResponse.ok) {
       const errorText = await openaiResponse.text();
-      console.error('OpenAI API error:', errorText);
+      log.error('OpenAI API error', { errorText });
       return new Response(
         JSON.stringify({ error: 'AI extraction failed', facts: [] }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -177,7 +180,7 @@ serve(async (req) => {
       const parsed = JSON.parse(content);
       extractedFacts = Array.isArray(parsed) ? parsed : (parsed.facts || []);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', parseError);
+      log.error('Failed to parse OpenAI response', { error: parseError });
       return new Response(
         JSON.stringify({ error: 'Failed to parse extraction', facts: [] }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -256,7 +259,7 @@ Return a JSON object with a "results" array. Each entry has:
             .filter(fact => {
               const v = validationMap.get(fact.fact_key);
               if (v?.status === 'invalid') {
-                console.log(`Validation rejected fact "${fact.fact_key}": ${v.reason}`);
+                log.info(`Validation rejected fact "${fact.fact_key}": ${v.reason}`);
                 return false;
               }
               return true;
@@ -264,7 +267,7 @@ Return a JSON object with a "results" array. Each entry has:
             .map(fact => {
               const v = validationMap.get(fact.fact_key);
               if (v?.status === 'adjusted') {
-                console.log(`Validation adjusted fact "${fact.fact_key}": ${v.reason}`);
+                log.info(`Validation adjusted fact "${fact.fact_key}": ${v.reason}`);
                 return {
                   ...fact,
                   fact_value: v.adjusted_value || fact.fact_value,
@@ -274,10 +277,10 @@ Return a JSON object with a "results" array. Each entry has:
               return fact;
             });
         } else {
-          console.warn('Validation pass failed, proceeding with unvalidated facts');
+          log.warn('Validation pass failed, proceeding with unvalidated facts');
         }
       } catch (validationError) {
-        console.warn('Validation pass error (non-blocking):', validationError);
+        log.warn('Validation pass error (non-blocking)', { error: validationError });
       }
     }
 
@@ -380,7 +383,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
               );
 
               if (contradictions.length > 0) {
-                console.log(`Found ${contradictions.length} contradictions:`);
+                log.info(`Found ${contradictions.length} contradictions:`);
                 // Resolve each contradiction by the locked policy (resolveContradiction):
                 // mutable, low-stakes -> recency wins (supersede the old fact);
                 // high-stakes / identity / business -> ask user (flag the new fact).
@@ -394,7 +397,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
                   if (!newFact) continue;
                   const existingId = existingFactIdByKey.get(existingKey) ?? null;
                   const res = resolveContradiction(newFact.fact_category, newFact.is_high_stakes);
-                  console.log(`  "${c.new_fact}" vs "${c.existing_fact}" -> ${res.strategy}`);
+                  log.info(`  "${c.new_fact}" vs "${c.existing_fact}" -> ${res.strategy}`);
                   if (res.flagNew) flagKeys.add(newKey);
                   if (res.retireExisting && existingId) retireIds.add(existingId);
                   events.push({
@@ -432,7 +435,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
           }
         }
       } catch (contradictionError) {
-        console.warn('Contradiction detection error (non-blocking):', contradictionError);
+        log.warn('Contradiction detection error (non-blocking)', { error: contradictionError });
       }
     }
 
@@ -453,11 +456,11 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
         extractedFacts = guarded.kept as unknown as ExtractedFact[];
         guardrailTrainingVersion = guarded.training_version;
         if (guarded.rejected.length > 0) {
-          console.log(`Guardrails rejected ${guarded.rejected.length} fact(s):`,
-            guarded.rejected.map(r => `${r.reason_id}: ${r.fact.fact_key}`).join('; '));
+          log.info(`Guardrails rejected ${guarded.rejected.length} fact(s)`, {
+            rejected: guarded.rejected.map(r => `${r.reason_id}: ${r.fact.fact_key}`).join('; ') });
         }
       } catch (guardErr) {
-        console.warn('Guardrails error (non-blocking):', guardErr);
+        log.warn('Guardrails error (non-blocking)', { error: guardErr });
       }
     }
 
@@ -468,7 +471,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
       extractedFacts = extractedFacts.filter(f => {
         const claimed = (f as unknown as { user_id?: string }).user_id;
         if (claimed && claimed !== userId) {
-          console.error(`User-scope assertion failed for fact ${f.fact_key}; dropping`);
+          log.error(`User-scope assertion failed for fact ${f.fact_key}; dropping`);
           return false;
         }
         return true;
@@ -546,7 +549,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
               }
               if (bestSim >= SIMILARITY_THRESHOLD && bestExistingIdx >= 0) {
                 const existing = existingList[bestExistingIdx];
-                console.log(
+                log.info(
                   `Semantic duplicate: "${newFacts[ni].fact_key}" ≈ "${existing.fact_key}" (similarity: ${bestSim.toFixed(3)})`
                 );
                 semanticDuplicates.set(newFacts[ni].fact_key, {
@@ -557,10 +560,10 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
               }
             }
           } else {
-            console.warn('Embedding API failed, falling back to key-based dedup only');
+            log.warn('Embedding API failed, falling back to key-based dedup only');
           }
         } catch (embeddingError) {
-          console.warn('Semantic dedup error (non-blocking):', embeddingError);
+          log.warn('Semantic dedup error (non-blocking)', { error: embeddingError });
         }
       }
 
@@ -639,7 +642,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
       // Final assert: every row about to be inserted MUST carry this user's id.
       const violating = factsToInsert.filter(row => row.user_id !== userId);
       if (violating.length > 0) {
-        console.error(`Refusing to insert: ${violating.length} rows failed user_id assertion`);
+        log.error(`Refusing to insert: ${violating.length} rows failed user_id assertion`);
       }
       const safeInsert = factsToInsert.filter(row => row.user_id === userId);
 
@@ -650,7 +653,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
           .insert(safeInsert);
 
         if (insertError) {
-          console.error('Error inserting facts:', insertError);
+          log.error('Error inserting facts', { error: insertError });
         }
       }
 
@@ -678,7 +681,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
               'Authorization': req.headers.get('Authorization')!,
               'Content-Type': 'application/json',
             },
-          }).catch(err => console.warn('Edge re-synthesis trigger failed (non-critical):', err));
+          }).catch(err => log.warn('Edge re-synthesis trigger failed (non-critical)', { error: err }));
         }
       } catch {
         // Non-critical - don't fail the extraction
@@ -697,7 +700,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({}),
-          }).catch(err => console.warn('Briefing inference trigger failed (non-critical):', err));
+          }).catch(err => log.warn('Briefing inference trigger failed (non-critical)', { error: err }));
         } catch {
           // Non-critical
         }
@@ -725,7 +728,7 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
     );
 
   } catch (error) {
-    console.error('Unexpected error:', error);
+    log.error('Unexpected error', { error });
     return new Response(
       JSON.stringify({ error: 'Internal server error', facts: [] }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
