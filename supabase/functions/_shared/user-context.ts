@@ -13,6 +13,9 @@
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import type { LensSource } from "./briefing-lens.ts";
+import { createLogger } from "./logger.ts";
+
+const log = createLogger("user-context");
 
 /**
  * Resolve the leader record id(s) for an auth user. Some leader rows use
@@ -113,7 +116,7 @@ export async function getUserContext(
       }
     }
   } catch (e) {
-    console.warn("user-context: failed to fetch user memory:", e);
+    log.warn("failed to fetch user memory", { error: e });
   }
 
   try {
@@ -134,7 +137,7 @@ export async function getUserContext(
         .map((w: { label: string }) => w.label);
     }
   } catch (e) {
-    console.warn("user-context: failed to fetch edge profile:", e);
+    log.warn("failed to fetch edge profile", { error: e });
   }
 
   try {
@@ -154,7 +157,7 @@ export async function getUserContext(
       }
     }
   } catch (e) {
-    console.warn("user-context: failed to fetch missions:", e);
+    log.warn("failed to fetch missions", { error: e });
   }
 
   try {
@@ -172,7 +175,7 @@ export async function getUserContext(
       });
     }
   } catch (e) {
-    console.warn("user-context: failed to fetch watchlist:", e);
+    log.warn("failed to fetch watchlist", { error: e });
   }
 
   try {
@@ -188,7 +191,7 @@ export async function getUserContext(
       ctx.recentDecisions = decisions.map((d: { decision_text: string }) => d.decision_text);
     }
   } catch (e) {
-    console.warn("user-context: failed to fetch decisions:", e);
+    log.warn("failed to fetch decisions", { error: e });
   }
 
   try {
@@ -207,7 +210,7 @@ export async function getUserContext(
       );
     }
   } catch (e) {
-    console.warn("user-context: failed to fetch patterns:", e);
+    log.warn("failed to fetch patterns", { error: e });
   }
 
   try {
@@ -224,7 +227,7 @@ export async function getUserContext(
       ctx.learningStyle = session.compass_tier;
     }
   } catch (e) {
-    console.warn("user-context: failed to fetch learning style:", e);
+    log.warn("failed to fetch learning style", { error: e });
   }
 
   try {
@@ -265,7 +268,7 @@ export async function getUserContext(
       }
     }
   } catch (e) {
-    console.warn("user-context: failed to fetch feedback preferences:", e);
+    log.warn("failed to fetch feedback preferences", { error: e });
   }
 
   return ctx;
