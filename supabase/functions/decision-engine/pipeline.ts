@@ -8,6 +8,7 @@ import type { Logger } from "../_shared/logger.ts";
 import type { UserContext } from "../_shared/user-context.ts";
 import { decompose } from "./decompose.ts";
 import { verifyClaim } from "./verify.ts";
+import { prewarmAaIndex } from "./retrievers.ts";
 import { advise, type AdversarialInput } from "./advise.ts";
 import { reframeToAiNative } from "./reframe.ts";
 import { crossExamine } from "./crossexamine.ts";
@@ -44,6 +45,11 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
   const started = Date.now();
 
   try {
+    // Warm the Artificial Analysis leaderboard now, so it is ready (and fetched
+    // in isolation, not racing the verify storm) by the time claims need the
+    // model-benchmark cross-check. Fire-and-forget; the memo holds the result.
+    prewarmAaIndex();
+
     // --- Stage 0: AI-native reframe ----------------------------------------
     // CTRL only pressure-tests the AI-native version of a decision. If the
     // submitted statement is already AI-native it passes through unchanged; if
@@ -116,6 +122,12 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
       );
     }
 
+    // Ensure the Artificial Analysis index is resolved BEFORE the concurrent
+    // verify storm, so its fetch never has to race ~16 simultaneous retriever
+    // calls (which intermittently timed it out). Prewarm started at pipeline
+    // entry, so this usually returns instantly. Best-effort.
+    await prewarmAaIndex().catch(() => {});
+
     // --- Stage 2: verify each claim ----------------------------------------
     const verified = await mapLimit(claims, 4, async (row) => {
       const claim: ExtractedClaim = { text: row.text, type: row.type, is_load_bearing: row.is_load_bearing };
@@ -126,7 +138,7 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
       // PostgREST preserves input order on return, so the ids line up 1:1.
       let evidenceLite: EvidenceLite[] = [];
       if (evidence.length) {
-        const { data: insertedEvidence } = await admin
+        const { data: insertedEvidence, error: evErr } = await admin
           .from("decision_evidence")
           .insert(
             evidence.map((e) => ({
@@ -143,6 +155,10 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
             })),
           )
           .select("id, excerpt");
+        // Surface insert failures instead of swallowing them: a single bad row
+        // (e.g. a retriever value outside the CHECK constraint) rejects the whole
+        // batch, which previously dropped a claim's evidence silently.
+        if (evErr) log.error("evidence insert failed", { claimId: row.id, error: evErr.message });
         evidenceLite = (insertedEvidence ?? evidence.map((e) => ({ id: null, excerpt: e.excerpt }))).map(
           (e: { id?: string | null; excerpt?: string | null }) => ({ id: e.id ?? null, excerpt: e.excerpt ?? null }),
         );

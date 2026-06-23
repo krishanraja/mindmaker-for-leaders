@@ -18,8 +18,9 @@ export type ReliabilityTier = "primary" | "reputable" | "community" | "unverifie
 
 // Retrievers that, by their nature, return a first-party / official primary datum.
 // BuiltWith reports the site's own detected stack; Tranco is a measured ranking; PDL is
-// firmographic record data. These are primary regardless of the URL host.
-const PRIMARY_RETRIEVERS = new Set(["builtwith", "tranco", "pdl"]);
+// firmographic record data; Artificial Analysis is a measured model benchmark standing.
+// These are primary regardless of the URL host.
+const PRIMARY_RETRIEVERS = new Set(["builtwith", "tranco", "pdl", "artificialanalysis"]);
 // Retrievers that return press / news items.
 const NEWS_RETRIEVERS = new Set(["newsapi"]);
 

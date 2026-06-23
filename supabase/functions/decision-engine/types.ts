@@ -3,7 +3,7 @@
 export type ClaimType = "factual" | "market" | "causal" | "assumption" | "forecast";
 export type Verdict = "supported" | "contested" | "unverified" | "unverifiable" | "pending";
 export type Stance = "supports" | "refutes" | "neutral";
-export type Retriever = "perplexity" | "exa" | "brave" | "tavily" | "newsapi" | "pdl" | "builtwith" | "tranco" | "memory";
+export type Retriever = "perplexity" | "exa" | "brave" | "tavily" | "newsapi" | "pdl" | "builtwith" | "tranco" | "memory" | "artificialanalysis";
 
 export interface ExtractedClaim {
   text: string;
