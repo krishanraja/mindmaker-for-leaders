@@ -3,14 +3,13 @@ import { motion } from 'framer-motion';
 import { Home, Zap, Brain, Scale, Radio, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// COCKPIT v1 (flag on): the 4-tab model. Home=cockpit, Decisions=Decide + map,
-// Brain=memory, You=profile + record. Briefing dissolves into the cockpit hero;
-// Edge/automate is contextual (zap on a blocker + an Edge card on Home).
+// COCKPIT v1 (flag on): the 3-tab model. Home=cockpit, Decisions=weigh + history
+// (Track record folded in as a Now|History toggle), Memory=brain. Briefing dissolves
+// into the cockpit hero; Edge/automate is contextual (zap on a blocker + an Edge card).
 const cockpitNav = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
   { path: '/decision', search: '', icon: Scale, label: 'Decisions' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory' },
-  { path: '/track-record', search: '', icon: History, label: 'Track record' },
 ];
 
 // Legacy 6-tab nav (flag off). "Decide" leads over the old "Export" tab.

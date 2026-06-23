@@ -344,15 +344,13 @@ function SwitcherSheet({
 }
 
 export function DecisionAnatomy({
-  engine, cases, onSwitch, onCompose, onBank, banked, banking, isDesktop = false,
+  engine, cases, onSwitch, onCompose, onResolve, isDesktop = false,
 }: {
   engine: Engine;
   cases: DecisionCaseSummary[];
   onSwitch: (id: string) => void;
   onCompose: () => void;
-  onBank: () => void;
-  banked: boolean;
-  banking: boolean;
+  onResolve: () => void;
   isDesktop?: boolean;
 }) {
   const { decisionCase, claims, evidence } = engine;
@@ -419,7 +417,6 @@ export function DecisionAnatomy({
 
   const pickFilter = (key: 'all' | VerdictBucket) => { setFilter(key); haptics.light(); };
   const toggleRung = (id: string) => { setOpenClaimId((cur) => (cur === id ? null : id)); haptics.light(); };
-  const doBank = () => { onBank(); haptics.success(); };
 
   const spine = (
     <Spine
@@ -494,14 +491,12 @@ export function DecisionAnatomy({
 
   const shelf = (
     <div className="flex shrink-0 flex-col gap-2.5 pt-3">
-      {!banked ? (
-        <button type="button" onClick={doBank} disabled={banking}
-          className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.07] px-3 py-2.5 text-[12.5px] font-bold text-accent transition-colors hover:bg-accent/[0.12] disabled:opacity-70">
-          {banking ? 'Saving...' : (<><Check className="h-3.5 w-3.5" strokeWidth={3} />Save this decision</>)}
-        </button>
-      ) : (
-        <p className="text-center text-[11.5px] text-muted-foreground">Saved. I will keep an eye on how it ages.</p>
-      )}
+      {/* the closing move: say how it played out, leave an optional note, and it
+          drops into History (the Now|History toggle on this same tab). */}
+      <button type="button" onClick={() => { onResolve(); haptics.light(); }}
+        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.07] px-3 py-2.5 text-[12.5px] font-bold text-accent transition-colors hover:bg-accent/[0.12]">
+        <Check className="h-3.5 w-3.5" strokeWidth={3} />Resolve this decision
+      </button>
       <div className="flex gap-2.5">
         <button type="button" onClick={() => { setSwitcherOpen(true); haptics.light(); }} disabled={cases.length <= 1}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-border bg-secondary px-3 py-3 text-[13px] font-bold text-foreground/90 transition-colors hover:border-accent/30 hover:text-foreground disabled:opacity-50">

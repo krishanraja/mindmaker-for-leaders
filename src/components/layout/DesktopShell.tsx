@@ -24,22 +24,24 @@ import { CommandPaletteTrigger } from './CommandPalette';
 import { PageTransition } from './PageTransition';
 import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
 
-// PRIMARY nav: the SAME 4 stable tabs as the mobile BottomNav cockpit model
-// (Home / Decisions / Memory / Track record), in the same order and with the
-// same icons, so desktop and mobile read as one system (CTRL-SYSTEM-SPEC s1).
+// PRIMARY nav: the SAME 3 stable tabs as the mobile BottomNav cockpit model
+// (Home / Decisions / Memory), in the same order and with the same icons, so
+// desktop and mobile read as one system (CTRL-SYSTEM-SPEC s1). Track record is
+// folded into Decisions (a Now|History toggle), so the spine is now three tabs.
 // Plain names: every tab says exactly what it is.
 const primaryNavItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home', shortcut: 'H' },
   { path: '/decision', search: '', icon: Scale, label: 'Decisions', shortcut: 'D' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory', shortcut: 'B' },
-  { path: '/track-record', search: '', icon: History, label: 'Track record', shortcut: 'Y' },
 ];
 
-// SECONDARY surfaces: still one click away, just demoted out of the primary 4 so
-// the spine stays the 4 tabs. No routes removed; everything stays reachable.
+// SECONDARY surfaces: still one click away, just demoted out of the primary spine.
+// No routes removed; everything stays reachable. Track record keeps its own route
+// here for deep links even though it now also lives inside the Decisions tab.
 const secondaryNavItems = [
   { path: '/dashboard', search: '?view=edge', icon: Zap, label: 'Edge', shortcut: 'E' },
   { path: '/briefing', search: '', icon: Radio, label: 'Briefing', shortcut: 'R' },
+  { path: '/track-record', search: '', icon: History, label: 'Track record', shortcut: 'Y' },
   { path: '/context', search: '', icon: ArrowUpRight, label: 'Export', shortcut: 'X' },
   { path: '/goals', search: '', icon: Target, label: 'Goals', shortcut: 'G' },
   { path: '/decision-map', search: '', icon: MapIcon, label: 'Decision Map', shortcut: 'M' },
