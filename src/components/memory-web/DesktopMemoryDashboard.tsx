@@ -35,7 +35,6 @@ import { MemoryWebVisualization } from './MemoryWebVisualization';
 import { BetsRail, type OvernightLine } from './BetsRail';
 import { DesktopSignalHero, type NeedsCallItem } from './DesktopSignalHero';
 import { SeedBeatsPrompt } from '@/components/briefing/SeedBeatsPrompt';
-import { BriefingSheet } from '@/components/briefing/BriefingSheet';
 import { TranscriptReviewPanel } from '@/components/voice/TranscriptReviewPanel';
 import { useTodaysBriefing, useGenerateBriefing } from '@/hooks/useBriefing';
 import { useBriefingContext } from '@/contexts/BriefingContext';
@@ -857,8 +856,6 @@ export function DesktopMemoryDashboard() {
           </div>
         )}
       </DesktopShell>
-
-      <BriefingSheet />
     </div>
   );
 }

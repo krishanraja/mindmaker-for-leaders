@@ -1,6 +1,9 @@
 import { Plus, ArrowUpRight, Settings as SettingsIcon } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { BrandLockup } from '@/components/landing/BrandLockup';
 import { useSettingsSheet } from '@/contexts/SettingsSheetContext';
+import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
+import { TuneFeedButton } from '@/components/cockpit/TuneFeedButton';
 
 interface AppHeaderProps {
   /**
@@ -19,6 +22,8 @@ interface AppHeaderProps {
  */
 export function AppHeader({ onAdd, onExport }: AppHeaderProps) {
   const { openSheet } = useSettingsSheet();
+  const location = useLocation();
+  const isHome = location.pathname === '/dashboard' && !location.search;
 
   return (
     <header className="flex-shrink-0 flex items-center justify-between px-5 pt-4 pb-2">
@@ -26,6 +31,10 @@ export function AppHeader({ onAdd, onExport }: AppHeaderProps) {
         <BrandLockup />
       </div>
       <div className="flex items-center gap-1.5">
+        {/* Tune-feed sits with the chrome on Home (the one place it applies). */}
+        {isHome && <TuneFeedButton compact />}
+        {/* Your audio digest: one tap, from any tab. */}
+        <BriefingHeaderButton />
         {onExport && (
           <button
             onClick={onExport}

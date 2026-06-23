@@ -9,18 +9,17 @@ import {
   Calendar,
   RefreshCw,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  BriefingSheet,
-  MiniPlayer,
   CustomBriefingSheet,
   InterestChipsRow,
   SuggestedInterestsCard,
   BriefingCategoryPicker,
 } from "@/components/briefing";
-import { BriefingPlayLanding, PastBriefingsSheet } from "@/components/briefing/BriefingPlay";
+import { PastBriefingsSheet } from "@/components/briefing/BriefingPlay";
 import { InterestsSheet } from "@/components/briefing/InterestsSheet";
 import { DesktopShell } from "@/components/layout/DesktopShell";
 import { MobileFrame } from "@/components/layout/MobileFrame";
@@ -39,6 +38,53 @@ import { StreamingBriefingPreview } from "@/components/briefing/StreamingBriefin
 import { FF } from "@/lib/flags";
 import { isBriefingGenerating, isBriefingReady } from "@/types/briefing";
 import type { Briefing, BriefingType } from "@/types/briefing";
+
+// A calm, minimal entry to the audio player: a modest Play button + the plain
+// status. Tapping it opens the global player drawer, which builds the audio if
+// needed and plays - one tap, no second button. (The big "amateur" landing was
+// removed; the primary way to listen is now the top-bar audio button.)
+function BriefingPlayEntry({
+  status,
+  busy,
+  onPlay,
+  hasPast,
+  onOpenPast,
+}: {
+  status: string;
+  busy?: boolean;
+  onPlay: () => void;
+  hasPast?: boolean;
+  onOpenPast?: () => void;
+}) {
+  return (
+    <div className="flex h-full min-h-0 flex-col items-center justify-center px-4 text-center">
+      <button
+        type="button"
+        onClick={onPlay}
+        disabled={busy}
+        aria-label="Play today's briefing"
+        className="grid h-16 w-16 place-items-center rounded-full bg-accent text-accent-foreground shadow-lg shadow-accent/25 transition-transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-60"
+      >
+        {busy ? (
+          <Loader2 className="h-6 w-6 animate-spin" />
+        ) : (
+          <Play className="h-7 w-7 translate-x-0.5 fill-current" strokeWidth={0} />
+        )}
+      </button>
+      <h2 className="mt-4 text-lg font-semibold text-foreground">Today&apos;s briefing</h2>
+      <p className="mt-1 text-xs text-muted-foreground">{status}</p>
+      {hasPast && onOpenPast && (
+        <button
+          type="button"
+          onClick={onOpenPast}
+          className="mt-5 text-xs text-muted-foreground transition-colors hover:text-accent"
+        >
+          Past briefings
+        </button>
+      )}
+    </div>
+  );
+}
 
 function BriefingPage() {
   const { isMobile } = useDevice();
@@ -176,13 +222,6 @@ function BriefingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPlayWhenReady, defaultBriefing]);
 
-  // One plain sentence for the landing, with the real length when we know it.
-  const durationMin = defaultBriefing?.audio_duration_seconds
-    ? Math.ceil(defaultBriefing.audio_duration_seconds / 60)
-    : null;
-  const playLine = durationMin
-    ? `A ${durationMin}-minute audio of today's AI news, read in your voice.`
-    : "A short audio of today's AI news, read in your voice.";
   const hasPast = customBriefings.length > 0 || earlierBriefings.length > 0;
 
   const liveStatus = (() => {
@@ -278,8 +317,6 @@ function BriefingPage() {
         }
         extras={
           <>
-            <MiniPlayer />
-            <BriefingSheet />
             <CustomBriefingSheet
               isOpen={customSheetOpen}
               onClose={() => {
@@ -392,20 +429,16 @@ function BriefingPage() {
               </div>
             </div>
           ) : coldState === "ready" ? (
-            <BriefingPlayLanding
-              title="Play today's briefing"
-              line="A short audio of today's AI news, read in your voice."
-              sub="Press play and I will make it. About 30 seconds."
-              onPlay={handlePlayTop}
+            <BriefingPlayEntry
+              status="Tap to play. I will read you today's AI news in your voice."
               busy={isGenerating}
+              onPlay={handlePlayTop}
               hasPast={hasPast}
               onOpenPast={() => setPastOpen(true)}
             />
           ) : coldState === "play" && defaultBriefing ? (
-            <BriefingPlayLanding
-              title="Play today's briefing"
-              line={playLine}
-              sub={liveStatus}
+            <BriefingPlayEntry
+              status={liveStatus}
               onPlay={() => handlePlayBriefing(defaultBriefing)}
               hasPast={hasPast}
               onOpenPast={() => setPastOpen(true)}
@@ -641,20 +674,16 @@ function BriefingPage() {
             </div>
           ) : coldState === "ready" ? (
             <div className="w-full max-w-sm">
-              <BriefingPlayLanding
-                title="Play today's briefing"
-                line="A short audio of today's AI news, read in your voice."
-                sub="Press play and I will make it. About 30 seconds."
-                onPlay={handlePlayTop}
+              <BriefingPlayEntry
+                status="Tap to play. I will read you today's AI news in your voice."
                 busy={isGenerating}
+                onPlay={handlePlayTop}
               />
             </div>
           ) : coldState === "play" && defaultBriefing ? (
             <div className="w-full max-w-sm">
-              <BriefingPlayLanding
-                title="Play today's briefing"
-                line={playLine}
-                sub={liveStatus}
+              <BriefingPlayEntry
+                status={liveStatus}
                 onPlay={() => handlePlayBriefing(defaultBriefing)}
               />
             </div>
@@ -662,8 +691,6 @@ function BriefingPage() {
         </div>
       </DesktopShell>
 
-      <MiniPlayer />
-      <BriefingSheet />
       <CustomBriefingSheet
         isOpen={customSheetOpen}
         onClose={() => {

@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils';
 const cockpitNav = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
   { path: '/decision', search: '', icon: Scale, label: 'Decisions' },
-  { path: '/memory', search: '', icon: Brain, label: 'Brain' },
-  { path: '/track-record', search: '', icon: History, label: 'History' },
+  { path: '/memory', search: '', icon: Brain, label: 'Memory' },
+  { path: '/track-record', search: '', icon: History, label: 'Track record' },
 ];
 
 // Legacy 6-tab nav (flag off). "Decide" leads over the old "Export" tab.
