@@ -13,6 +13,9 @@ import {
   LogOut,
   Mic,
   Download,
+  Scale,
+  History,
+  Boxes,
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -54,6 +57,12 @@ function CommandPalette() {
   const { open, setOpen } = useCommandPalette();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  // Search-first: at rest we show a SHORT primary set (the four tabs + the core
+  // actions); the rest only appears once the leader types, so the door is never
+  // a wall of 13 options. cmdk filters across everything that is rendered, so
+  // rendering "More" only while searching keeps everything findable.
+  const [q, setQ] = useState('');
+  const searching = q.trim().length > 0;
 
   const go = (path: string) => () => {
     setOpen(false);
@@ -62,95 +71,112 @@ function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Search or jump anywhere..." />
+      <CommandInput value={q} onValueChange={setQ} placeholder="Search or jump anywhere..." />
       <CommandList className="max-h-[420px]">
         <CommandEmpty>No matches.</CommandEmpty>
 
-        <CommandGroup heading="Navigate">
+        {/* PRIMARY: the four tabs (matching the app nav + its G_ chords) + the
+            two actions a leader reaches for most. Always shown. */}
+        <CommandGroup heading="Go to">
           <CommandItem onSelect={go('/dashboard')}>
             <Home className="mr-2 h-4 w-4" />
             Home
             <CommandShortcut>G H</CommandShortcut>
           </CommandItem>
-          <CommandItem onSelect={go('/dashboard?view=edge')}>
-            <Zap className="mr-2 h-4 w-4" />
-            Edge
-            <CommandShortcut>G E</CommandShortcut>
+          <CommandItem onSelect={go('/decision')}>
+            <Scale className="mr-2 h-4 w-4" />
+            Decisions
+            <CommandShortcut>G D</CommandShortcut>
           </CommandItem>
           <CommandItem onSelect={go('/memory')}>
             <Brain className="mr-2 h-4 w-4" />
-            Memory Web
-            <CommandShortcut>G M</CommandShortcut>
-          </CommandItem>
-          <CommandItem onSelect={go('/context')}>
-            <ArrowUpRight className="mr-2 h-4 w-4" />
-            Export
-            <CommandShortcut>G X</CommandShortcut>
-          </CommandItem>
-          <CommandItem onSelect={go('/briefing')}>
-            <Radio className="mr-2 h-4 w-4" />
-            Briefing
+            Brain
             <CommandShortcut>G B</CommandShortcut>
           </CommandItem>
-          <CommandItem onSelect={go('/goals')}>
-            <Target className="mr-2 h-4 w-4" />
-            Goals
-            <CommandShortcut>G G</CommandShortcut>
+          <CommandItem onSelect={go('/track-record')}>
+            <History className="mr-2 h-4 w-4" />
+            History
+            <CommandShortcut>G Y</CommandShortcut>
           </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
 
-        <CommandGroup heading="Quick actions">
-          <CommandItem
-            onSelect={() => {
-              setOpen(false);
-              window.dispatchEvent(new CustomEvent('mm:capture-voice'));
-            }}
-          >
-            <Mic className="mr-2 h-4 w-4" />
-            Capture a thought (voice)
-          </CommandItem>
-          <CommandItem
-            onSelect={() => {
-              setOpen(false);
-              window.dispatchEvent(new CustomEvent('mm:generate-briefing'));
-            }}
-          >
-            <Zap className="mr-2 h-4 w-4" />
-            Generate today's briefing
+        <CommandGroup heading="Do">
+          <CommandItem onSelect={go('/briefing')}>
+            <Radio className="mr-2 h-4 w-4" />
+            Read today's briefing
           </CommandItem>
           <CommandItem onSelect={go('/context')}>
-            <Download className="mr-2 h-4 w-4" />
-            Quick export to AI
+            <Boxes className="mr-2 h-4 w-4" />
+            Build a skill
           </CommandItem>
         </CommandGroup>
 
-        <CommandSeparator />
+        {/* MORE: only while searching, so it never crowds the resting palette. */}
+        {searching && (
+          <>
+            <CommandSeparator />
+            <CommandGroup heading="More">
+              <CommandItem onSelect={go('/dashboard?view=edge')}>
+                <Zap className="mr-2 h-4 w-4" />
+                Edge
+              </CommandItem>
+              <CommandItem onSelect={go('/goals')}>
+                <Target className="mr-2 h-4 w-4" />
+                Goals
+              </CommandItem>
+              <CommandItem onSelect={go('/context')}>
+                <Download className="mr-2 h-4 w-4" />
+                Quick export to AI
+              </CommandItem>
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
+                  window.dispatchEvent(new CustomEvent('mm:capture-voice'));
+                }}
+              >
+                <Mic className="mr-2 h-4 w-4" />
+                Capture a thought (voice)
+              </CommandItem>
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
+                  window.dispatchEvent(new CustomEvent('mm:generate-briefing'));
+                }}
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                Generate today's briefing
+              </CommandItem>
+            </CommandGroup>
 
-        <CommandGroup heading="Account">
-          <CommandItem onSelect={go('/profile')}>
-            <User className="mr-2 h-4 w-4" />
-            Profile
-          </CommandItem>
-          <CommandItem onSelect={go('/compliance')}>
-            <Shield className="mr-2 h-4 w-4" />
-            Compliance
-          </CommandItem>
-          <CommandItem onSelect={go('/settings')}>
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </CommandItem>
-          <CommandItem
-            onSelect={() => {
-              setOpen(false);
-              signOut();
-            }}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign out
-          </CommandItem>
-        </CommandGroup>
+            <CommandSeparator />
+
+            <CommandGroup heading="Account">
+              <CommandItem onSelect={go('/profile')}>
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </CommandItem>
+              <CommandItem onSelect={go('/compliance')}>
+                <Shield className="mr-2 h-4 w-4" />
+                Compliance
+              </CommandItem>
+              <CommandItem onSelect={go('/settings')}>
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </CommandItem>
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
+                  signOut();
+                }}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </CommandItem>
+            </CommandGroup>
+          </>
+        )}
       </CommandList>
     </CommandDialog>
   );
