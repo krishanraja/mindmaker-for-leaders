@@ -115,7 +115,7 @@ export function SeedBeatsPrompt({ hidden, onDismiss, onAnyAdded }: Props) {
 
       {data!.beats.length > 0 && (
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Beats</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Topics</p>
           <div className="flex flex-wrap gap-1.5">
             {data!.beats.map((b) => (
               <SeedChip

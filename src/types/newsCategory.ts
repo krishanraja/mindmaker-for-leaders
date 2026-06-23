@@ -22,19 +22,22 @@ export interface NewsCategory {
   label: string; // the short chip label on the card
   name: string; // the full spec name (preview / a11y)
   blurb: string; // one line describing the motif (preview only)
+  meaning: string; // plain-language "what this means", for first-timers (demystifies the AI term)
 }
 
 // Ordered as in the spec (1..9). The chip labels match the approved prototype.
+// `meaning` is the single source of truth for the plain one-liner shown wherever
+// a non-technical leader meets the category (card chip hint + briefing picker).
 export const NEWS_CATEGORIES: NewsCategory[] = [
-  { id: 'model', label: 'Model & capability', name: '1. Model & capability shifts', blurb: 'A glowing neural core inside a capability dial.' },
-  { id: 'economics', label: 'AI economics', name: '2. AI economics', blurb: 'A falling cost curve reading down to today’s low.' },
-  { id: 'tools', label: 'Tools & vendors', name: '3. Tools, platforms & vendors', blurb: 'A connector lattice threading a three-plane stack.' },
-  { id: 'orchestration', label: 'Orchestration', name: '4. Orchestration & agent reliability', blurb: 'An agent mesh around a bright orchestrator hub.' },
-  { id: 'product', label: 'Product & GTM', name: '5. AI-native product & go-to-market', blurb: 'A sealed package on a rising launch arc.' },
-  { id: 'governance', label: 'Governance', name: '6. Governance, safety & compliance', blurb: 'A shield drawing its compliance seal.' },
-  { id: 'security', label: 'Security & risk', name: '7. Security & agent risk', blurb: 'A lock split by a live emerald fracture.' },
-  { id: 'org', label: 'Org & talent', name: '8. Org, talent & ways of working', blurb: 'An org tree of person-nodes, gently drifting.' },
-  { id: 'proof', label: 'Proof & adoption', name: '9. Proof & adoption', blurb: 'Adoption bars under a rising, verified proof line.' },
+  { id: 'model', label: 'Model & capability', name: '1. Model & capability shifts', blurb: 'A glowing neural core inside a capability dial.', meaning: 'New AI models and what you can now build with them.' },
+  { id: 'economics', label: 'AI economics', name: '2. AI economics', blurb: 'A falling cost curve reading down to today’s low.', meaning: 'What it costs to run AI, and when that drops.' },
+  { id: 'tools', label: 'Tools & vendors', name: '3. Tools, platforms & vendors', blurb: 'A connector lattice threading a three-plane stack.', meaning: 'The tools, platforms and vendors you build on.' },
+  { id: 'orchestration', label: 'Orchestration', name: '4. Orchestration & agent reliability', blurb: 'An agent mesh around a bright orchestrator hub.', meaning: 'Wiring AI agents together so they run reliably.' },
+  { id: 'product', label: 'Product & GTM', name: '5. AI-native product & go-to-market', blurb: 'A sealed package on a rising launch arc.', meaning: 'How AI-native products get packaged and sold.' },
+  { id: 'governance', label: 'Governance', name: '6. Governance, safety & compliance', blurb: 'A shield drawing its compliance seal.', meaning: 'The rules for what you are allowed to deploy.' },
+  { id: 'security', label: 'Security & risk', name: '7. Security & agent risk', blurb: 'A lock split by a live emerald fracture.', meaning: 'Keeping your agents and data safe from misuse.' },
+  { id: 'org', label: 'Org & talent', name: '8. Org, talent & ways of working', blurb: 'An org tree of person-nodes, gently drifting.', meaning: 'How teams and roles change in an AI-native company.' },
+  { id: 'proof', label: 'Proof & adoption', name: '9. Proof & adoption', blurb: 'Adoption bars under a rising, verified proof line.', meaning: 'What is really shipping and working, beyond the hype.' },
 ];
 
 const BY_ID = new Map<NewsCategoryId, NewsCategory>(NEWS_CATEGORIES.map((c) => [c.id, c]));
