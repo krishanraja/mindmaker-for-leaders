@@ -200,14 +200,17 @@ serve(async (req) => {
       const id = `live-${today}-${i}`;
       const desc = c.rep.description;
       const fallbackSay = desc ? (desc.length > 170 ? `${desc.slice(0, 167)}...` : desc) : null;
+      const read = reads.get(id);
       const aa = matchAaModel(`${c.rep.title} ${desc}`, aaModels);
       const benchmark = aa
         ? { model: aa.name, intelligenceIndex: aa.intelligence, pricePer1m: aa.pricePer1m, rank: aa.rank }
         : null;
       return {
         id,
-        headline: cleanHeadline(c.rep.title, c.rep.source),
-        say: reads.get(id) ?? fallbackSay,
+        // Editorial: the LLM-rewritten news headline (consistent voice + fit),
+        // falling back to the cleaned original title when the rewrite is absent.
+        headline: read?.headline ?? cleanHeadline(c.rep.title, c.rep.source),
+        say: read?.say ?? fallbackSay,
         source: c.rep.source || null,
         corroboration: corroborationLabel(c.sourceCount),
         sourceCount: c.sourceCount,
