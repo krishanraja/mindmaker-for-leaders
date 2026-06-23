@@ -77,12 +77,12 @@ export interface HomeFeedProps {
 function framingFor(state: HomeState): string {
   switch (state) {
     case 'cold':
-      return "I read the AI shift and your world; what is worth a look lands here. Browse, and teach me what matters.";
+      return 'The AI-native moves worth your attention, curated. Browse from the top, and teach me what matters.';
     case 'rich':
-      return 'Triage from the top. Your own signals are woven in where they moved.';
+      return "Today's AI-native headlines, curated and ranked for you. Browse from the top.";
     case 'warm':
     default:
-      return 'Tuned to what you track, with your own signals woven in.';
+      return 'Curated to what you are building - the AI-native headlines that matter to you.';
   }
 }
 
@@ -358,11 +358,12 @@ function DesktopHome({
         <TuneFeedButton />
       </div>
 
-      {/* rich-only "what moved" strip: own-signal count vs world (real data only) */}
+      {/* rich-only strip: a quiet "curated to you" reassurance (news feed, no
+          decision dialogue) */}
       {!loading && data.homeState === 'rich' && (
         <div className="mt-4 flex shrink-0 flex-wrap gap-2.5">
-          <Chip own>{`From your world · ${data.ownSignalCount} moved`}</Chip>
-          <Chip>The world · headlines tuned to you</Chip>
+          <Chip own>Curated to your priorities</Chip>
+          <Chip>Ranked by what matters to you</Chip>
         </div>
       )}
 

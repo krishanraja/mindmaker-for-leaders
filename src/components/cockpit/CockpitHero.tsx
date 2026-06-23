@@ -117,11 +117,14 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
           )}
         </div>
 
-        {/* EDITORIAL HEADLINE */}
-        <button type="button" onClick={() => onOpen?.(card)} className="text-left">
+        {/* EDITORIAL HEADLINE. Hard-clamped to 3 lines: headlines are real
+            outlet titles (variable, sometimes very long), so the clamp is the
+            SYSTEM guarantee that a long headline can never push the body or meta
+            row off the card. The full title is on the linked article. */}
+        <button type="button" onClick={() => onOpen?.(card)} className="block w-full text-left">
           <h2
             className={cn(
-              'm-0 text-balance font-extrabold tracking-[-0.02em] text-foreground',
+              'm-0 line-clamp-3 text-balance font-extrabold tracking-[-0.02em] text-foreground',
               isLead ? 'text-[30px] leading-[1.12]' : 'text-[21px] leading-[1.18]',
             )}
           >
@@ -129,12 +132,13 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
           </h2>
         </button>
 
-        {/* THE CHIEF-OF-STAFF ADVISORY LINE: why it matters / what I'd do.
-            Un-clamped on purpose - it wraps freely and its tail is never cut. */}
+        {/* THE "WHY IT MATTERS" LINE. Clamped to 2 lines: it is generated text,
+            so the clamp is the SYSTEM guarantee that an over-long line can never
+            overflow. The generator is also told to keep it to <=16 words. */}
         {card.say && (
           <p
             className={cn(
-              'leading-[1.48] text-[#c2cad6]',
+              'line-clamp-2 leading-[1.48] text-[#c2cad6]',
               isLead ? 'mt-3.5 max-w-[54ch] text-[16px] leading-[1.55]' : 'mt-2.5 text-[13.5px]',
             )}
           >

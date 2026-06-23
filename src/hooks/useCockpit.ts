@@ -9,6 +9,23 @@ import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, Hero
 
 const db = supabase as unknown as SupabaseClient;
 
+// Normalize a headline into a dedup key: lowercase, strip punctuation + outlet
+// suffixes, collapse whitespace, keep the first ~10 significant words. So two
+// near-identical headlines (different outlet, trailing " | Source", minor
+// punctuation) collapse to the same key and never both appear in the deck.
+function normalizeHeadlineKey(headline: string | null | undefined): string {
+  if (!headline) return '';
+  return headline
+    .toLowerCase()
+    .replace(/\s*[|\u2013\u2014-]\s*[^|\u2013\u2014-]{1,30}$/u, '') // drop a trailing " | outlet" tail
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .slice(0, 10)
+    .join(' ');
+}
+
 // A briefing segment as the deck reads it (the curated, scored news item the
 // briefing pipeline already produced). Read defensively from the jsonb column.
 interface BriefingSeg {
@@ -302,55 +319,27 @@ export function useCockpit(): {
     // so Home is never blank.
     const generic = COLD_DECK.filter((c) => !(c.category && dislikedCats.has(c.category)));
     const newsCards: DeckCard[] = liveCards.length > 0 ? liveCards : generic;
-    // One signal card per DECISION, not per alert: a decision can raise several
-    // watch-alerts, and mapping each one produced several near-identical cards
-    // (e.g. three "DeepSeek V3 vs GPT-4o" cards). Keep the first (most recent)
-    // alert per case, then take the top 3 cases.
-    const seenSignalCases = new Set<string>();
-    const signalCards: DeckCard[] = alerts
-      .filter((a) => live.some((c) => c.id === a.decision_case_id))
-      .filter((a) => {
-        if (seenSignalCases.has(a.decision_case_id)) return false;
-        seenSignalCases.add(a.decision_case_id);
-        return true;
-      })
-      .slice(0, 3)
-      .map((a) => {
-        const bet = live.find((c) => c.id === a.decision_case_id);
-        const about = bet ? (bet.title || bet.statement) : null;
-        // Lead the advisory line with the alert's actual SUBSTANCE (a.detail =
-        // what changed and why), not the vague "on a call you are weighing X".
-        // Fall back to naming the decision when no detail was written.
-        const say = a.detail?.trim()
-          ? (about ? `${a.detail.trim()} (your call: ${about})` : a.detail.trim())
-          : about
-            ? `Worth a re-read: a load-bearing claim under "${about}" just moved.`
-            : 'A decision you are weighing just moved - worth a re-read.';
-        return {
-          id: `sig-${a.id}`,
-          kind: 'signal' as const,
-          eyebrow: 'From your world',
-          headline: a.headline,
-          say,
-          betId: a.decision_case_id,
-        };
-      });
-    // interleave: lead with a personal signal when there is one, then alternate
-    // news and signals so the deck feels both informed and personal. newsCards is
-    // never empty (live headlines, or the cold-deck fallback), so Home is never blank.
-    const woven: DeckCard[] = [];
-    const maxLen = Math.max(newsCards.length, signalCards.length);
-    for (let i = 0; i < maxLen; i++) {
-      if (signalCards[i]) woven.push(signalCards[i]);
-      if (newsCards[i]) woven.push(newsCards[i]);
-    }
-    const deck: DeckCard[] = woven;
 
-    // Session-adaptive state, driven off REAL personalization volume (never
-    // faked): the leader's OWN briefing + OWN signals. The live news half is the
-    // industry read everyone gets, so it must NOT make a brand-new account look
-    // "warm" - state keys off own-briefing, not the deck content.
-    const ownSignals = signalCards.length;
+    // Home is a CURATED, PERSONALIZED NEWS FEED - real-world headlines, never
+    // dialogue about the leader's own decisions. Watch-alerts ("an assumption
+    // just weakened") are NOT headlines; they live in the Decisions tab and are
+    // never cards here. So the deck is news only, with a defensive de-dup so a
+    // near-identical headline can never appear twice (clustering runs
+    // server-side; this is the belt-and-braces guarantee against duplicates).
+    const seenKeys = new Set<string>();
+    const deck: DeckCard[] = [];
+    for (const c of newsCards) {
+      const key = normalizeHeadlineKey(c.headline) || c.url || c.id;
+      if (key && seenKeys.has(key)) continue;
+      if (key) seenKeys.add(key);
+      deck.push(c);
+    }
+
+    // Personalization VOLUME still drives the adaptive copy (it is real, not
+    // faked, and not shown as cards): how much of the leader's own world is live.
+    const ownSignals = new Set(
+      alerts.filter((a) => live.some((c) => c.id === a.decision_case_id)).map((a) => a.decision_case_id),
+    ).size;
     const hasOwnBriefing = segments.length > 0;
     let homeState: HomeState;
     if (!hasOwnBriefing && ownSignals === 0) homeState = 'cold';
