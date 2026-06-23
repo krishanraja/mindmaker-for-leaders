@@ -92,6 +92,7 @@ serve(async (req) => {
     const braveKey = Deno.env.get("BRAVE_SEARCH_API");
     const newsApiKey = Deno.env.get("NEWSAPI_KEY") ?? Deno.env.get("NEWSAPI_API_KEY");
     const exaKey = Deno.env.get("EXA_API_KEY");
+    const aaKey = Deno.env.get("ARTIFICIALANALYSIS_API_KEY");
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
@@ -117,7 +118,7 @@ serve(async (req) => {
     //    "news". Items with a parseable date older than the cutoff are dropped;
     //    undated items are kept (we cannot prove they are stale).
     const cutoffMs = Date.now() - MAX_AGE_DAYS * 24 * 3_600_000;
-    const raw = await gatherAll({ braveKey, newsApiKey, exaKey });
+    const raw = await gatherAll({ braveKey, newsApiKey, exaKey, aaKey });
     const aiNative = raw.filter((a) => {
       if (!isAiNative(`${a.title} ${a.description}`)) return false;
       if (!a.publishedIso) return true;
@@ -131,8 +132,8 @@ serve(async (req) => {
       const by = (o: string) => raw.filter((a) => a.origin === o).length;
       return json({
         gathered: { total: raw.length, aiNative: aiNative.length },
-        bySource: { gdelt: by("gdelt"), hn: by("hn"), rss: by("rss"), brave: by("brave"), newsapi: by("newsapi"), exa: by("exa") },
-        keysPresent: { brave: !!braveKey, newsapi: !!newsApiKey, exa: !!exaKey, openai: !!openaiKey },
+        bySource: { gdelt: by("gdelt"), hn: by("hn"), rss: by("rss"), brave: by("brave"), newsapi: by("newsapi"), exa: by("exa"), aa: by("aa") },
+        keysPresent: { brave: !!braveKey, newsapi: !!newsApiKey, exa: !!exaKey, aa: !!aaKey, openai: !!openaiKey },
       });
     }
     if (aiNative.length === 0) {
@@ -146,7 +147,20 @@ serve(async (req) => {
       2,
     );
     const categoryOf = (c: Cluster) => classifyCategory(c.blob);
-    const picked = selectBalanced(clusters, categoryOf, POOL_SIZE, POOL_PER_CATEGORY);
+    let picked = selectBalanced(clusters, categoryOf, POOL_SIZE, POOL_PER_CATEGORY);
+
+    // Pin the authoritative Artificial Analysis leaderboard read into the pool.
+    // It is the single most authoritative model-capability signal (a numeric
+    // benchmark standing, not a press headline), so guarantee it a slot even
+    // when hot news edges it past the model lane's per-category cap. Just the
+    // top one, so AA never floods. The client re-ranker still demotes it for
+    // leaders who downrank the models lane.
+    const topAa = clusters
+      .filter((c) => c.rep.origin === "aa")
+      .sort((a, b) => b.score - a.score)[0];
+    if (topAa && !picked.includes(topAa)) {
+      picked = [topAa, ...picked].slice(0, POOL_SIZE);
+    }
 
     // 4. One grounded "why it matters" line per story (best-effort; falls back
     //    to the article snippet when the LLM is unavailable).
