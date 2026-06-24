@@ -26,8 +26,9 @@
 import { useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  ChevronDown, ChevronRight, Layers, Check,
+  ChevronDown, ChevronRight, Layers, Check, ShieldCheck, Search, Swords, Loader2,
 } from 'lucide-react';
+import type { ResearchMode } from '@/hooks/useDecisionEngine';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
@@ -49,6 +50,14 @@ const SEGMENTS: { key: 'all' | VerdictBucket; label: string }[] = [
   { key: 'checks', label: 'Checks out' },
   { key: 'unsure', label: 'Unsure' },
   { key: 'yours', label: 'Your call' },
+];
+
+// The action-oriented moves a finished decision offers: firm up the case, dig
+// deeper, or actively look for the case against. Plain labels, no jargon.
+const RESEARCH_ACTIONS: { mode: ResearchMode; label: string; Icon: typeof ShieldCheck }[] = [
+  { mode: 'strengthen', label: 'Strengthen', Icon: ShieldCheck },
+  { mode: 'research_more', label: 'Research more', Icon: Search },
+  { mode: 'counter_evidence', label: 'Counter-points', Icon: Swords },
 ];
 
 function evidenceCounts(evidence: DecisionEvidence[]) {
@@ -493,12 +502,30 @@ export function DecisionAnatomy({
     </div>
   );
 
+  const onResearch = (mode: ResearchMode) => { engine.research(mode); haptics.light(); };
   const shelf = (
     <div className="flex shrink-0 flex-col gap-2 pt-3">
+      {/* Make the decision actionable: three ways to take it further, then the
+          one closing move. Each kicks the decision-research pipeline; the panel
+          flips to its running state and the refreshed evidence + recommendation
+          land when it completes. */}
+      <div className="grid grid-cols-3 gap-2">
+        {RESEARCH_ACTIONS.map((a) => (
+          <button
+            key={a.mode}
+            type="button"
+            onClick={() => onResearch(a.mode)}
+            disabled={engine.researching}
+            className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-secondary/60 px-2 py-2.5 text-[11px] font-bold leading-tight text-foreground/85 transition-colors hover:border-accent/40 hover:text-foreground disabled:opacity-50"
+          >
+            {engine.researching ? <Loader2 className="h-4 w-4 animate-spin text-accent" /> : <a.Icon className="h-4 w-4 text-accent" />}
+            {a.label}
+          </button>
+        ))}
+      </div>
       {/* ONE clear closing move: say how it played out and it drops into History
           (the Now|History toggle on this same tab). Starting another decision and
-          switching between them are quiet, secondary text links underneath - so
-          the screen leads with the single thing to do here, not three. */}
+          switching between them are quiet, secondary text links underneath. */}
       <button type="button" onClick={() => { onResolve(); haptics.light(); }}
         className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.08] px-3 py-3 text-[13px] font-bold text-accent transition-colors hover:bg-accent/[0.13]">
         <Check className="h-4 w-4" strokeWidth={3} />Resolve and move on

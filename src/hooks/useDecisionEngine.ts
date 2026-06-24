@@ -11,6 +11,8 @@ const db = supabase as unknown as SupabaseClient;
 export type ClaimType = 'factual' | 'market' | 'causal' | 'assumption' | 'forecast';
 export type Verdict = 'supported' | 'contested' | 'unverified' | 'unverifiable' | 'pending';
 export type Stage = 'decomposing' | 'verifying' | 'cross_examining' | 'advising' | 'complete' | 'error';
+// The action-oriented research modes a finished decision can be pushed through.
+export type ResearchMode = 'research_more' | 'strengthen' | 'counter_evidence';
 
 export interface DecisionCase {
   id: string;
@@ -97,9 +99,13 @@ export function useDecisionEngine() {
   const [evidence, setEvidence] = useState<DecisionEvidence[]>([]);
   const [tensions, setTensions] = useState<DecisionTension[]>([]);
   const [starting, setStarting] = useState(false);
+  const [researching, setResearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [upgradeMessage, setUpgradeMessage] = useState<string | null>(null);
+  // Bumped to (re)start polling after a research run flips a complete case back
+  // to a running stage server-side.
+  const [pollNonce, setPollNonce] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const reset = useCallback(() => {
@@ -184,6 +190,36 @@ export function useDecisionEngine() {
     [refetch],
   );
 
+  // Make a finished decision actionable: kick a research mode (strengthen /
+  // research more / counter-evidence), optimistically flip to a running stage so
+  // the panel shows progress, and restart polling so the refreshed evidence +
+  // recommendation land without a reload.
+  const research = useCallback(
+    async (mode: ResearchMode) => {
+      if (!caseId) return;
+      setResearching(true);
+      setError(null);
+      try {
+        const { data, error: invokeError } = await supabase.functions.invoke('decision-research', {
+          body: { case_id: caseId, mode },
+        });
+        if (invokeError) throw invokeError;
+        if (data?.upgrade_required) {
+          setUpgradeRequired(true);
+          setUpgradeMessage(data.message ?? 'Upgrade to Edge Pro to continue.');
+          return;
+        }
+        setDecisionCase((c) => (c ? { ...c, stage: 'verifying' } : c));
+        setPollNonce((n) => n + 1);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not start that research.');
+      } finally {
+        setResearching(false);
+      }
+    },
+    [caseId],
+  );
+
   useEffect(() => {
     if (!caseId) return;
     let active = true;
@@ -218,10 +254,10 @@ export function useDecisionEngine() {
       active = false;
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [caseId]);
+  }, [caseId, pollNonce]);
 
   const isRunning = Boolean(caseId) && !!decisionCase && !TERMINAL.includes(decisionCase.stage);
   const isComplete = decisionCase?.stage === 'complete';
 
-  return { start, load, reset, refetch, enrichClaim, starting, isRunning, isComplete, error, upgradeRequired, upgradeMessage, decisionCase, claims, evidence, tensions };
+  return { start, load, reset, refetch, enrichClaim, research, researching, starting, isRunning, isComplete, error, upgradeRequired, upgradeMessage, decisionCase, claims, evidence, tensions };
 }

@@ -87,6 +87,10 @@ verify_jwt = false
 [functions.enrich-decision]
 verify_jwt = true
 
+# Make a finished decision actionable: strengthen / research more / counter-evidence. Authed user.
+[functions.decision-research]
+verify_jwt = true
+
 # Propose candidate decisions during onboarding (the draft-cockpit chip-rail). Authed user.
 [functions.suggest-bets]
 verify_jwt = true
