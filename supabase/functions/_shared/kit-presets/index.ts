@@ -8,6 +8,7 @@ import { vibeCodingPreset } from "./vibe-coding/preset.ts";
 import { autonomousBusinessPreset } from "./autonomous-business/preset.ts";
 import { memoryIdentityPreset } from "./memory-identity/preset.ts";
 import { orgchartPreset } from "./orgchart/preset.ts";
+import { chiefOfStaffPreset } from "./chief-of-staff/preset.ts";
 
 export * from "./types.ts";
 
@@ -16,6 +17,7 @@ export const PRESETS: Record<string, KitPreset> = {
   [autonomousBusinessPreset.slug]: autonomousBusinessPreset,
   [memoryIdentityPreset.slug]: memoryIdentityPreset,
   [orgchartPreset.slug]: orgchartPreset,
+  [chiefOfStaffPreset.slug]: chiefOfStaffPreset,
 };
 
 export function getPreset(slug: string): KitPreset | null {
