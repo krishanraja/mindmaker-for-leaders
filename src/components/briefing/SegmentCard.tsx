@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { ThumbsUp, ThumbsDown, Eye, Check, Anchor, Bookmark, BookmarkCheck, Ban, Loader2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Eye, Check, Anchor, Bookmark, BookmarkCheck, Ban, Loader2, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { haptics } from "@/lib/haptics";
 import { useBriefingInterests } from "@/hooks/useBriefingInterests";
@@ -22,6 +23,8 @@ interface SegmentCardProps {
   watchedCompanies?: string[];
   /** v2: briefing id used by the kill action. Omit on v1 briefings. */
   briefingId?: string;
+  /** Quiet chip when this headline touches the user's pinned decision. */
+  relevantToPinnedDecision?: boolean;
 }
 
 // Extract likely company names from headline + source
@@ -60,9 +63,11 @@ export function SegmentCard({
   onWatchCompany,
   watchedCompanies = [],
   briefingId,
+  relevantToPinnedDecision,
 }: SegmentCardProps) {
   const [feedback, setFeedback] = useState<"useful" | "not_useful" | null>(null);
   const [justWatched, setJustWatched] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Fire haptics.light() once when this segment transitions to active.
   // Guarded by prefers-reduced-motion to avoid triggering on motion-sensitive setups.
@@ -166,6 +171,19 @@ export function SegmentCard({
       )}
     >
       <CardContent className="p-3 space-y-2">
+        {/* Quiet flag: this headline touches the decision you have pinned. Taps
+            through to it. No verdict/jargon - just a relevance signal. */}
+        {relevantToPinnedDecision && (
+          <button
+            type="button"
+            onClick={() => navigate('/decision-map')}
+            className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent transition-colors hover:bg-accent/20"
+          >
+            <Scale className="h-3 w-3" />
+            Relevant to your decision
+          </button>
+        )}
+
         {/* Headline */}
         <p className="text-sm font-semibold leading-snug">{segment.headline}</p>
 
