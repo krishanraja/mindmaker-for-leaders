@@ -207,6 +207,8 @@ function KitPdfBody({ model }: { model: KitPdfModel }) {
       return <OrgChartBody model={model} />;
     case "memory":
       return <MemoryBody model={model} />;
+    case "chief":
+      return <ChiefBody model={model} />;
     case "vibe":
     case "generic":
     default:
@@ -529,6 +531,95 @@ function MemoryBody({
           </p>
         )}
       </section>
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Build Your AI Chief of Staff body: "Your path, decided"            */
+/* ------------------------------------------------------------------ */
+
+function ChiefBody({
+  model,
+}: {
+  model: Extract<KitPdfModel, { kind: "chief" }>;
+}) {
+  return (
+    <>
+      <section className="kit-pdf-section">
+        <h2 className="kit-pdf-h2">Your recommended path</h2>
+        <p className="kit-pdf-body kit-pdf-build">
+          Rung {model.rung}: {model.rungName}
+        </p>
+        <p className="kit-pdf-lede">{model.oneLiner}</p>
+        {model.whoYouAre && <p className="kit-pdf-note">Chosen for you as {model.whoYouAre.toLowerCase()}.</p>}
+      </section>
+
+      {model.fit.length > 0 && (
+        <section className="kit-pdf-section">
+          <h2 className="kit-pdf-h2">Why this fits you</h2>
+          <ul className="kit-pdf-list">
+            {model.fit.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div className="kit-pdf-grid">
+        <section className="kit-pdf-block">
+          <h2 className="kit-pdf-h2">The one wall to expect</h2>
+          <p className="kit-pdf-body">{model.wall}</p>
+          <p className="kit-pdf-note">Heads it off: {model.designCall}</p>
+        </section>
+
+        <section className="kit-pdf-block">
+          <h2 className="kit-pdf-h2">Your first move</h2>
+          <p className="kit-pdf-body">{model.firstStep}</p>
+          {model.tools.length > 0 && (
+            <p className="kit-pdf-note">Tools: {model.tools.join(", ")}.</p>
+          )}
+        </section>
+      </div>
+
+      {model.guardrails.length > 0 && (
+        <section className="kit-pdf-section">
+          <h2 className="kit-pdf-h2">What we held the line on</h2>
+          <ul className="kit-pdf-list kit-pdf-list-clay">
+            {model.guardrails.map((g) => (
+              <li key={g}>{g}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {model.runnersUp.length > 0 && (
+        <section className="kit-pdf-section">
+          <h2 className="kit-pdf-h2">Close seconds</h2>
+          <p className="kit-pdf-lede">
+            Climb only when you hit a real wall. These are the next rungs worth a look.
+          </p>
+          <ul className="kit-pdf-list">
+            {model.runnersUp.map((r) => (
+              <li key={r.rung}>
+                Rung {r.rung}, {r.name}: {r.oneLiner}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <PlanSection plan={model.plan} heading="Your first week. Day 1 is tonight." />
+
+      {model.warnings.length > 0 && (
+        <section className="kit-pdf-section">
+          {model.warnings.map((w) => (
+            <p key={w} className="kit-pdf-note">
+              {w}
+            </p>
+          ))}
+        </section>
+      )}
     </>
   );
 }

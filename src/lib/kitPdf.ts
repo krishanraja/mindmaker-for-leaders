@@ -40,6 +40,15 @@ import {
   whatItDoesOf,
   workflowOf,
 } from "../../supabase/functions/_shared/kit-presets/autonomous-business/scoring.ts";
+import {
+  scoreChief,
+  roleFromIntake as chiefRoleFromIntake,
+} from "../../supabase/functions/_shared/kit-presets/chief-of-staff/scoring.ts";
+import {
+  RUNG_DETAIL,
+  ROLE_LABEL as CHIEF_ROLE_LABEL,
+  fitReasons,
+} from "../../supabase/functions/_shared/kit-presets/chief-of-staff/templates.ts";
 import { KIT_TOOL_LABELS, toolFromIntake } from "@/content/kits";
 import type { KitPreset, IntakeAnswers } from "@/content/kits";
 import {
@@ -172,6 +181,46 @@ export interface MemoryHero {
   jobFile: string;
 }
 
+/** A runner-up rung on the chief-of-staff recommendation. */
+export interface ChiefRunnerUp {
+  rung: number;
+  name: string;
+  oneLiner: string;
+}
+
+/** Build Your AI Chief of Staff hero body: "Your AI Chief of Staff, mapped". */
+export interface ChiefHero {
+  kind: "chief";
+  /** The recommended rung number (1 to 7). */
+  rung: number;
+  /** The recommended rung's name, e.g. "Native, switched on". */
+  rungName: string;
+  /** One line on what that rung is. */
+  oneLiner: string;
+  /** The person's role, when given (may be empty). */
+  whoYouAre: string;
+  /** Why this rung fits them, traced to their answers. */
+  fit: string[];
+  /** The one wall to expect on this rung. */
+  wall: string;
+  /** The design call that heads that wall off. */
+  designCall: string;
+  /** The first concrete move. */
+  firstStep: string;
+  /** The tools for this rung. */
+  tools: string[];
+  /** The close-second rungs (may be empty). */
+  runnersUp: ChiefRunnerUp[];
+  /** Guardrail notes we held the line on (may be empty). */
+  guardrails: string[];
+  /** Standing warnings (autonomy) plus the pillars line. */
+  warnings: string[];
+  /** The first-week plan, day by day (may be empty). */
+  plan: KitPlanDay[];
+  /** The tool they chose, named (or "your AI" when none). */
+  toolName: string;
+}
+
 /** Generic fallback body for any kit/slug not explicitly handled. */
 export interface GenericHero {
   kind: "generic";
@@ -184,12 +233,13 @@ export interface GenericHero {
 }
 
 export type KitPdfModel = KitPdfShell &
-  (VibeHero | AutonomousHero | OrgChartHero | MemoryHero | GenericHero);
+  (VibeHero | AutonomousHero | OrgChartHero | MemoryHero | ChiefHero | GenericHero);
 
 const VIBE_SLUG = "vibe-coding";
 const AUTONOMOUS_SLUG = "autonomous-business";
 const ORGCHART_SLUG = "orgchart";
 const MEMORY_SLUG = "memory-identity";
+const CHIEF_SLUG = "chief-of-staff";
 
 /* ------------------------------------------------------------------ */
 /* The model builder: dispatch to the right per-kit hero                */
@@ -217,6 +267,8 @@ export function buildKitPdfModel(
       return buildOrgChartHero(preset, intake, artifacts);
     case MEMORY_SLUG:
       return buildMemoryHero(preset, intake, artifacts, toolName);
+    case CHIEF_SLUG:
+      return buildChiefHero(preset, intake, artifacts, toolName);
     default:
       return buildGenericHero(preset, intake, artifacts, toolName);
   }
@@ -606,6 +658,54 @@ function parseMemoryMap(body: string): MemoryMap | null {
   } catch {
     return null;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Build Your AI Chief of Staff hero: the recommendation               */
+/* ------------------------------------------------------------------ */
+
+function buildChiefHero(
+  preset: KitPreset,
+  intake: IntakeAnswers,
+  artifacts: KitArtifactRow[],
+  toolName: string,
+): KitPdfModel {
+  // The recommendation is computed deterministically from the quiz answers, the
+  // same engine the kit composes from. Never invented here.
+  const scores = scoreChief(intake);
+  const rec = scores.recommended;
+  const d = RUNG_DETAIL[rec.rung];
+  const roleLabel = CHIEF_ROLE_LABEL[chiefRoleFromIntake(intake)] ?? "";
+  const plan = planFromArtifacts(artifacts);
+
+  const runnersUp: ChiefRunnerUp[] = scores.ranked
+    .filter((r) => r.rung !== rec.rung)
+    .slice(0, 2)
+    .map((r) => ({ rung: r.rung, name: RUNG_DETAIL[r.rung].name, oneLiner: RUNG_DETAIL[r.rung].oneLiner }));
+
+  return {
+    classTitle: preset.title,
+    kitName: "Your AI Chief of Staff",
+    heroTitle: "Your path, decided.",
+    heroSubtitle:
+      "Of seven ways to build an AI chief of staff, here is the one that fits how you work, with the first move and the starter files.",
+    footer: `Built around how you work . any AI platform`,
+    kind: "chief",
+    rung: rec.rung,
+    rungName: d.name,
+    oneLiner: d.oneLiner,
+    whoYouAre: roleLabel,
+    fit: fitReasons(scores),
+    wall: d.wall,
+    designCall: d.designCall,
+    firstStep: d.firstStep,
+    tools: d.tools,
+    runnersUp,
+    guardrails: scores.guardrailsApplied,
+    warnings: scores.warnings,
+    plan,
+    toolName,
+  };
 }
 
 /* ------------------------------------------------------------------ */
