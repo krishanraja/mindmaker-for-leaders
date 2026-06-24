@@ -155,7 +155,7 @@ export default function MemoryCenter() {
           <button
             type="button"
             onClick={openFlow}
-            className="ml-auto inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.07] px-2.5 py-1.5 text-[11.5px] text-foreground transition-colors hover:bg-accent/[0.12]"
+            className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.07] px-2.5 py-1.5 text-[11.5px] text-foreground transition-colors hover:bg-accent/[0.12]"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent))]" />
             <span>
@@ -371,9 +371,9 @@ export default function MemoryCenter() {
       onExport={() => navigate('/context')}
       padding="px-4 pt-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]"
       banner={
-        <div className="flex flex-shrink-0 items-center justify-between gap-3 px-5 pb-2 pt-1">
+        <div className="flex flex-shrink-0 flex-col gap-1.5 px-5 pb-2 pt-1">
           <h1 className="text-[17px] font-bold tracking-tight text-foreground">Your Digital Brain</h1>
-          {metaLine && <div className="flex-shrink-0">{metaLine}</div>}
+          {metaLine && <div>{metaLine}</div>}
         </div>
       }
     >
