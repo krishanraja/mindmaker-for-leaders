@@ -106,4 +106,9 @@ export interface CockpitData {
   // session state + own-signal volume, for the adaptive Home shell.
   homeState: HomeState;
   ownSignalCount: number;
+  // Profile gate: when the brain is below the minimum (vertical + role + 3
+  // interests) and the gate is enabled server-side, Home shows an "unlock"
+  // prompt instead of headlines. `missingProfile` lists what is still needed.
+  needsProfile?: boolean;
+  missingProfile?: string[];
 }

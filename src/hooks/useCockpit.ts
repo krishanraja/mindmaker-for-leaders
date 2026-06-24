@@ -107,6 +107,12 @@ export function useCockpit(): {
   // reloads" glitch). The cold deck remains the fallback only when the fetch
   // genuinely fails.
   const [headlinesSettled, setHeadlinesSettled] = useState(false);
+  // Whether the server already personalized the feed (scored it against the
+  // brain). When true the client must NOT re-rank - the order is authoritative.
+  const [serverPersonalized, setServerPersonalized] = useState(false);
+  // Profile gate: the server asked the leader to complete their brain first.
+  const [needsProfile, setNeedsProfile] = useState(false);
+  const [missingProfile, setMissingProfile] = useState<string[]>([]);
   // Categories the leader has recently disliked on the deck -> down-weighted out
   // of the news half (the swipe trains the feed). Best-effort; empty on error.
   const [dislikedCats, setDislikedCats] = useState<Set<string>>(new Set());
@@ -185,8 +191,19 @@ export function useCockpit(): {
         const { data, error } = await supabase.functions.invoke('live-headlines');
         if (cancelled) return;
         if (!error) {
-          const cards = (data as { cards?: LiveHeadline[] } | null)?.cards;
-          if (Array.isArray(cards)) setLiveHeadlines(cards);
+          const res = data as { cards?: LiveHeadline[]; status?: string; missing?: string[]; personalized?: boolean } | null;
+          if (res?.status === 'needs_profile') {
+            // Below the profile gate: Home will prompt to unlock instead of
+            // showing headlines. Keep the deck empty.
+            setNeedsProfile(true);
+            setMissingProfile(Array.isArray(res.missing) ? res.missing : []);
+            setLiveHeadlines([]);
+          } else {
+            setNeedsProfile(false);
+            setServerPersonalized(res?.personalized === true);
+            const cards = res?.cards;
+            if (Array.isArray(cards)) setLiveHeadlines(cards);
+          }
         }
       } catch {
         /* keep empty -> the cold-deck fallback renders */
@@ -298,10 +315,11 @@ export function useCockpit(): {
     // feed by their selected priorities (lifted lanes + scan bias) before it is
     // mapped to cards, so the most relevant stories lead. Neutral prefs leave the
     // server's world-importance order intact.
-    const ranked = rankByPreferences(
-      liveHeadlines.filter((h) => h.headline && !(h.category && dislikedCats.has(h.category))),
-      preferences,
-    );
+    // When the server already scored the feed against the brain, its order is
+    // authoritative - the client must not re-rank (that would fight the engine).
+    // Only the generic shared pool gets the local preference re-rank.
+    const filtered = liveHeadlines.filter((h) => h.headline && !(h.category && dislikedCats.has(h.category)));
+    const ranked = serverPersonalized ? filtered : rankByPreferences(filtered, preferences);
     const liveCards: DeckCard[] = ranked.map((h, i) => ({
       id: h.id || `live-${i}`,
       kind: 'news' as const,
@@ -316,9 +334,10 @@ export function useCockpit(): {
       benchmark: h.benchmark ?? null,
     }));
     // Generic in-app deck only when the live feed is unavailable (offline/empty),
-    // so Home is never blank.
+    // so Home is never blank. EXCEPT below the profile gate: then the deck is
+    // deliberately empty so Home shows the "unlock" prompt rather than headlines.
     const generic = COLD_DECK.filter((c) => !(c.category && dislikedCats.has(c.category)));
-    const newsCards: DeckCard[] = liveCards.length > 0 ? liveCards : generic;
+    const newsCards: DeckCard[] = needsProfile ? [] : liveCards.length > 0 ? liveCards : generic;
 
     // Home is a CURATED, PERSONALIZED NEWS FEED - real-world headlines, never
     // dialogue about the leader's own decisions. Watch-alerts ("an assumption
@@ -355,11 +374,11 @@ export function useCockpit(): {
       homeState,
       ownSignalCount: ownSignals,
     };
-  }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats, preferences]);
+  }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats, preferences, serverPersonalized, needsProfile]);
 
   // Hold the skeleton until BOTH the decision inbox and the first live-headlines
   // fetch have settled, so Home renders its real deck once instead of flashing
   // the cold deck and then swapping (the glitchy reload feel).
   const loading = inboxLoading || !headlinesSettled;
-  return { data: { ...data, topBlocker }, loading, recordDeckReaction };
+  return { data: { ...data, topBlocker, needsProfile, missingProfile }, loading, recordDeckReaction };
 }
