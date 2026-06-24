@@ -60,7 +60,7 @@ export function BriefingHeaderButton({ className }: { className?: string }) {
       }
       title="Your audio briefing"
       className={cn(
-        'relative flex h-8 items-center gap-1.5 rounded-full pl-2.5 pr-3 text-[12.5px] font-semibold transition-colors',
+        'relative flex h-8 min-w-[104px] items-center justify-center gap-1.5 rounded-full pl-2.5 pr-3 text-[12.5px] font-semibold transition-colors',
         ready
           ? 'bg-accent text-accent-foreground shadow-[0_0_0_3px_hsl(var(--accent)/0.18)] hover:brightness-110'
           : 'border border-border bg-card/60 text-foreground hover:border-accent/40 hover:text-accent',
