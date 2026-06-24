@@ -232,6 +232,44 @@ async function resolveUserId(req: Request, supabase: SupabaseClient): Promise<st
   }
 }
 
+// A category is treated as disliked once the leader has skipped it this many
+// times in the recent window - one accidental skip never kills a lane.
+const DISLIKE_THRESHOLD = 2;
+const DISLIKE_WINDOW_DAYS = 30;
+
+/**
+ * The reactions half of the self-recursive loop. The leader's heart/skip on the
+ * Home deck is persisted to `feedback` (page_context 'cockpit-deck'); this reads
+ * the recent skips and returns the categories disliked >= DISLIKE_THRESHOLD
+ * times, which the engine then penalises (and which bust the per-user cache, so
+ * a fresh skip re-ranks immediately). Best-effort: empty on any error.
+ */
+async function loadDislikedCategories(supabase: SupabaseClient, userId: string): Promise<string[]> {
+  try {
+    const since = new Date(Date.now() - DISLIKE_WINDOW_DAYS * 24 * 3_600_000).toISOString();
+    const { data, error } = await supabase
+      .from("feedback")
+      .select("feedback_text")
+      .eq("user_id", userId)
+      .eq("page_context", "cockpit-deck")
+      .gte("created_at", since)
+      .limit(300);
+    if (error || !data) return [];
+    const counts = new Map<string, number>();
+    for (const row of data as Array<{ feedback_text: string }>) {
+      try {
+        const p = JSON.parse(row.feedback_text) as { reaction?: string; category?: string };
+        if (p.reaction === "dislike" && p.category) {
+          counts.set(p.category, (counts.get(p.category) ?? 0) + 1);
+        }
+      } catch { /* skip malformed */ }
+    }
+    return [...counts.entries()].filter(([, n]) => n >= DISLIKE_THRESHOLD).map(([cat]) => cat);
+  } catch {
+    return [];
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -309,9 +347,13 @@ serve(async (req) => {
         return json({ cards: genericCards, cached: !force, personalized: false, reason: "below_gate" });
       }
 
-      const signature = brainSignature(profile);
+      // The full self-recursive key: the brain (facts/tuning/interests) AND the
+      // leader's recent deck skips. Any change to either re-scores the feed.
+      const dislikedCategories = await loadDislikedCategories(supabase, userId);
+      const signature = brainSignature(profile) + (dislikedCategories.length ? `|d:${[...dislikedCategories].sort().join(",")}` : "");
 
-      // Per-user cache (keyed on the brain signature so it busts when the brain changes).
+      // Per-user cache (keyed on the signature so it busts when the brain or the
+      // leader's reactions change).
       const { data: pc } = await supabase
         .from("personal_pool_cache")
         .select("payload, signature")
@@ -331,6 +373,7 @@ serve(async (req) => {
         profile,
         candidates,
         lens,
+        dislikedCategories,
         poolSize: POOL_SIZE,
         perCategory: POOL_PER_CATEGORY,
       });
