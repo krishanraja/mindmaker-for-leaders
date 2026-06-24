@@ -27,6 +27,7 @@ import { useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ChevronDown, ChevronRight, Layers, Check, ShieldCheck, Search, Swords, Loader2,
+  Sparkles, Plus, ArrowRightLeft,
 } from 'lucide-react';
 import type { ResearchMode } from '@/hooks/useDecisionEngine';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
@@ -54,10 +55,10 @@ const SEGMENTS: { key: 'all' | VerdictBucket; label: string }[] = [
 
 // The action-oriented moves a finished decision offers: firm up the case, dig
 // deeper, or actively look for the case against. Plain labels, no jargon.
-const RESEARCH_ACTIONS: { mode: ResearchMode; label: string; Icon: typeof ShieldCheck }[] = [
-  { mode: 'strengthen', label: 'Strengthen', Icon: ShieldCheck },
-  { mode: 'research_more', label: 'Research more', Icon: Search },
-  { mode: 'counter_evidence', label: 'Counter-points', Icon: Swords },
+const RESEARCH_ACTIONS: { mode: ResearchMode; label: string; desc: string; Icon: typeof ShieldCheck }[] = [
+  { mode: 'strengthen', label: 'Strengthen', desc: 'Firm up the case for it with more backing.', Icon: ShieldCheck },
+  { mode: 'research_more', label: 'Research more', desc: 'Dig wider for anything I might have missed.', Icon: Search },
+  { mode: 'counter_evidence', label: 'Counter-points', desc: 'Actively look for the case against.', Icon: Swords },
 ];
 
 function evidenceCounts(evidence: DecisionEvidence[]) {
@@ -311,6 +312,79 @@ function Spine({
 }
 
 /* ------------------------------------------------------------------ */
+/* "Take it further": the secondary moves, off the page in a sheet so   */
+/* the decision content owns the screen and one closing action stays    */
+/* pinned. Mirrors the SwitcherSheet's bottom-sheet styling.            */
+/* ------------------------------------------------------------------ */
+function DecisionActionsSheet({
+  open, onOpenChange, researching, onResearch, onCompose, onSwitchDecisions, casesCount,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  researching: boolean;
+  onResearch: (mode: ResearchMode) => void;
+  onCompose: () => void;
+  onSwitchDecisions: () => void;
+  casesCount: number;
+}) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="max-h-[72vh] overflow-y-auto rounded-t-2xl scrollbar-hide sm:mx-auto sm:max-w-lg">
+        <SheetTitle className="mb-3 text-[15px] font-bold text-foreground">Take it further</SheetTitle>
+        <div className="flex flex-col gap-2 pb-2">
+          {RESEARCH_ACTIONS.map((a) => (
+            <button
+              key={a.mode}
+              type="button"
+              disabled={researching}
+              onClick={() => { onResearch(a.mode); onOpenChange(false); }}
+              className="flex w-full items-center gap-3 rounded-xl border border-border bg-foreground/[0.02] p-3 text-left transition-colors hover:border-accent/30 disabled:opacity-50"
+            >
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-accent/[0.08]">
+                {researching ? <Loader2 className="h-4 w-4 animate-spin text-accent" /> : <a.Icon className="h-4 w-4 text-accent" />}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-bold text-foreground">{a.label}</span>
+                <span className="block text-[11.5px] leading-snug text-muted-foreground">{a.desc}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 flex-none text-muted-foreground/50" />
+            </button>
+          ))}
+
+          <span className="my-1 h-px bg-border" aria-hidden />
+
+          <button
+            type="button"
+            onClick={() => { onCompose(); onOpenChange(false); }}
+            className="flex w-full items-center gap-3 rounded-xl border border-border bg-foreground/[0.02] p-3 text-left transition-colors hover:border-accent/30"
+          >
+            <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-accent/[0.08]">
+              <Plus className="h-4 w-4 text-accent" />
+            </span>
+            <span className="min-w-0 flex-1 text-[13px] font-bold text-foreground">Weigh a new one</span>
+            <ChevronRight className="h-4 w-4 flex-none text-muted-foreground/50" />
+          </button>
+
+          {casesCount > 1 && (
+            <button
+              type="button"
+              onClick={onSwitchDecisions}
+              className="flex w-full items-center gap-3 rounded-xl border border-border bg-foreground/[0.02] p-3 text-left transition-colors hover:border-accent/30"
+            >
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-accent/[0.08]">
+                <ArrowRightLeft className="h-4 w-4 text-accent" />
+              </span>
+              <span className="min-w-0 flex-1 text-[13px] font-bold text-foreground">Switch decision ({casesCount})</span>
+              <ChevronRight className="h-4 w-4 flex-none text-muted-foreground/50" />
+            </button>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* The "your other decisions" switcher (a navigation menu, not content) */
 /* ------------------------------------------------------------------ */
 function SwitcherSheet({
@@ -365,6 +439,7 @@ export function DecisionAnatomy({
   const { decisionCase, claims, evidence } = engine;
   const [openClaimId, setOpenClaimId] = useState<string | null>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | VerdictBucket>('all');
   // The spine starts open on desktop (room to breathe) and closed on mobile.
   const [callOpen, setCallOpen] = useState(isDesktop);
@@ -548,7 +623,44 @@ export function DecisionAnatomy({
     </div>
   );
 
-  const sheets = <SwitcherSheet open={switcherOpen} onOpenChange={setSwitcherOpen} cases={cases} currentId={decisionCase.id} onSwitch={onSwitch} />;
+  // Mobile keeps just ONE closing move pinned ("Resolve and move on"), with the
+  // ways to take it further folded into a sheet behind "Take it further". This
+  // hands the ~130px the old three-row shelf ate back to the ladder, so the
+  // decision content owns the screen; every removed action is one tap away.
+  const mobileShelf = (
+    <div className="flex shrink-0 items-stretch gap-2 pt-3">
+      <button
+        type="button"
+        onClick={() => { setActionsOpen(true); haptics.light(); }}
+        className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/60 px-3.5 py-3 text-[13px] font-bold text-foreground/85 transition-colors hover:border-accent/40 hover:text-foreground"
+      >
+        {engine.researching ? <Loader2 className="h-4 w-4 animate-spin text-accent" /> : <Sparkles className="h-4 w-4 text-accent" />}
+        Take it further
+      </button>
+      <button
+        type="button"
+        onClick={() => { onResolve(); haptics.light(); }}
+        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.08] px-3 py-3 text-[13px] font-bold text-accent transition-colors hover:bg-accent/[0.13]"
+      >
+        <Check className="h-4 w-4" strokeWidth={3} />Resolve and move on
+      </button>
+    </div>
+  );
+
+  const sheets = (
+    <>
+      <SwitcherSheet open={switcherOpen} onOpenChange={setSwitcherOpen} cases={cases} currentId={decisionCase.id} onSwitch={onSwitch} />
+      <DecisionActionsSheet
+        open={actionsOpen}
+        onOpenChange={setActionsOpen}
+        researching={engine.researching}
+        onResearch={onResearch}
+        onCompose={onCompose}
+        onSwitchDecisions={() => { setActionsOpen(false); setSwitcherOpen(true); }}
+        casesCount={cases.length}
+      />
+    </>
+  );
 
   // ---- DESKTOP: spine + answer + shelf on the left, the ladder on the right ----
   if (isDesktop) {
@@ -586,7 +698,7 @@ export function DecisionAnatomy({
         </div>
         {rungs}
       </div>
-      {shelf}
+      {mobileShelf}
       {sheets}
     </div>
   );
