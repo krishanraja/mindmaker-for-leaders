@@ -328,7 +328,7 @@ export default function MemoryCenter() {
     return (
       <DesktopShell
         eyebrow="Brain"
-        title="Let's keep your story straight"
+        title="Your Digital Brain"
         actions={
           <>
             <Button
@@ -358,10 +358,6 @@ export default function MemoryCenter() {
         }
       >
         <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
-          {/* head-sub: the calm chief-of-staff line */}
-          <p className="mb-3 max-w-[460px] flex-shrink-0 text-[13px] leading-relaxed text-muted-foreground">
-            Your context, so every AI you use already knows you. The more it holds, the more it sounds like you.
-          </p>
           {metaLine && <div className="mb-3 flex-shrink-0">{metaLine}</div>}
           {content}
         </div>
@@ -375,11 +371,9 @@ export default function MemoryCenter() {
       onExport={() => navigate('/context')}
       padding="px-4 pt-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]"
       banner={
-        <div className="flex-shrink-0 px-5 pb-2 pt-1">
-          <p className="text-[11.5px] leading-snug text-muted-foreground/85">
-            Your context, so every AI you use already knows you.
-          </p>
-          {metaLine && <div className="mt-2">{metaLine}</div>}
+        <div className="flex flex-shrink-0 items-center justify-between gap-3 px-5 pb-2 pt-1">
+          <h1 className="text-[17px] font-bold tracking-tight text-foreground">Your Digital Brain</h1>
+          {metaLine && <div className="flex-shrink-0">{metaLine}</div>}
         </div>
       }
     >
