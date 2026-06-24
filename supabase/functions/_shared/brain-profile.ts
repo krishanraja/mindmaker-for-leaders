@@ -10,10 +10,14 @@
  * and the audio Briefing (`generate-briefing`) score against it, so their
  * headlines can never diverge.
  *
- * Physical consolidation into `user_memory` happens at the end of the rollout;
- * until then this accessor is the single read API, so callers already see one
- * brain even while the underlying rows are still being unified. Every sub-read
- * degrades independently (a missing table never nukes the profile).
+ * Physical write-paths stay in their semantically-correct tables (memory facts
+ * in `user_memory`, tuning in `news_preferences`, interests in
+ * `briefing_interests`), but the READ is unified: the tuning + interest signals
+ * come from ONE normalized view (`brain_profile_inputs`) the accessor queries
+ * once, so callers see a single brain repository. (They are deliberately NOT
+ * merged into `user_memory`, which is "facts about the leader" consumed by the
+ * brain graph / skills / Memory Center - tuning rows there would masquerade as
+ * biographical facts.)
  *
  * Pure helpers (completeness/gate, signature, lens projection) carry no runtime
  * imports so they unit-test under vitest; the I/O path (`loadBrainProfile`)
@@ -181,11 +185,8 @@ export async function loadBrainProfile(
   const ctx = await getUserContext(supabase, userId, opts);
   const lensSource = await loadLensSource(supabase, userId, ctx);
 
-  const [boostedCategories, newsBias, interests] = await Promise.all([
-    loadBoostedCategories(supabase, userId),
-    loadNewsBias(supabase, userId),
-    loadInterests(supabase, userId),
-  ]);
+  // ONE read of the unified view yields tuning + interests together.
+  const { boostedCategories, newsBias, interests } = await loadTuning(supabase, userId);
 
   const completeness = computeCompleteness({
     vertical: ctx.industry,
@@ -216,73 +217,53 @@ export async function loadBrainProfile(
   };
 }
 
-/**
- * Tuning reads. These still hit `news_preferences` / `briefing_interests`
- * today; the writers converge onto `user_memory` over the rollout and this
- * accessor is the one place that has to change when they do.
- */
-async function loadBoostedCategories(
-  supabase: SupabaseClient,
-  userId: string,
-): Promise<string[]> {
-  try {
-    const { data } = await supabase
-      .from("news_preferences")
-      .select("boosted_categories")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const cats = (data as { boosted_categories?: string[] } | null)?.boosted_categories;
-    return Array.isArray(cats) ? cats.filter(Boolean) : [];
-  } catch {
-    return [];
-  }
-}
-
-async function loadNewsBias(
-  supabase: SupabaseClient,
-  userId: string,
-): Promise<NewsBias> {
-  try {
-    const { data } = await supabase
-      .from("news_preferences")
-      .select("bias")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const bias = (data as { bias?: string } | null)?.bias;
-    return bias === "big" || bias === "practical" ? bias : "balanced";
-  } catch {
-    return "balanced";
-  }
-}
-
 interface LoadedInterests {
   beats: BrainInterest[];
   entities: BrainInterest[];
   excludes: string[];
 }
 
-async function loadInterests(
+interface LoadedTuning {
+  boostedCategories: string[];
+  newsBias: NewsBias;
+  interests: LoadedInterests;
+}
+
+/**
+ * The one tuning read. Pulls every non-fact brain input (boosted categories,
+ * scan bias, interests/excludes) from the unified `brain_profile_inputs` view in
+ * a single query and partitions by kind. Degrades to neutral defaults on any
+ * error so a missing/again-unreachable view never nukes the profile.
+ */
+async function loadTuning(
   supabase: SupabaseClient,
   userId: string,
-): Promise<LoadedInterests> {
-  const out: LoadedInterests = { beats: [], entities: [], excludes: [] };
+): Promise<LoadedTuning> {
+  const interests: LoadedInterests = { beats: [], entities: [], excludes: [] };
+  const boosted: string[] = [];
+  let newsBias: NewsBias = "balanced";
   try {
     const { data, error } = await supabase
-      .from("briefing_interests")
-      .select("id, kind, text")
+      .from("brain_profile_inputs")
+      .select("kind, value, ref_id, interest_kind")
       .eq("user_id", userId)
-      .eq("is_active", true)
       .order("created_at", { ascending: true });
-    if (error || !data) return out;
-    for (const row of data as Array<{ id: string; kind: string; text: string }>) {
-      const text = (row.text ?? "").trim();
-      if (!text) continue;
-      if (row.kind === "beat") out.beats.push({ id: row.id, text });
-      else if (row.kind === "entity") out.entities.push({ id: row.id, text });
-      else if (row.kind === "exclude") out.excludes.push(text);
+    if (error || !data) return { boostedCategories: boosted, newsBias, interests };
+    for (const row of data as Array<{ kind: string; value: string; ref_id: string | null; interest_kind: string | null }>) {
+      const value = (row.value ?? "").trim();
+      if (!value) continue;
+      if (row.kind === "boosted_category") {
+        boosted.push(value);
+      } else if (row.kind === "bias") {
+        newsBias = value === "big" || value === "practical" ? value : "balanced";
+      } else if (row.kind === "interest") {
+        if (row.interest_kind === "beat") interests.beats.push({ id: row.ref_id ?? value, text: value });
+        else if (row.interest_kind === "entity") interests.entities.push({ id: row.ref_id ?? value, text: value });
+        else if (row.interest_kind === "exclude") interests.excludes.push(value);
+      }
     }
-    return out;
+    return { boostedCategories: boosted, newsBias, interests };
   } catch {
-    return out;
+    return { boostedCategories: boosted, newsBias, interests };
   }
 }
