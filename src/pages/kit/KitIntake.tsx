@@ -18,6 +18,7 @@ import { VoiceInput } from "@/components/ui/voice-input";
 import { KitPortalLayout } from "@/components/kit/KitPortalLayout";
 import { OrgChartView } from "@/components/kit/OrgChartView";
 import { KitPicksBoard } from "@/components/kit/KitPicksBoard";
+import { KitPathLeaderboard } from "@/components/kit/KitPathLeaderboard";
 import {
   KIT_SCOPE_VARS,
   KitCard,
@@ -299,10 +300,19 @@ function LinearIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
   }
 
   const answer = answers[question.id];
+  // Decision kits (chief-of-staff) carry a live leaderboard in a desktop right
+  // pane; the quiz column stays single-column on mobile (the no-scroll law).
+  const showLeaderboard = preset.previewKind === "leaderboard";
 
   return (
     <KitPortalLayout classTitle={preset.title} passEndsAt={passEndsAt}>
-      <div className="space-y-6">
+      <div
+        className={cn(
+          "grid grid-cols-1 items-start gap-5",
+          showLeaderboard ? "md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-8" : "",
+        )}
+      >
+        <div className="min-w-0 space-y-6">
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
@@ -374,6 +384,13 @@ function LinearIntake({ preset, passEndsAt, answers, setAnswer, onSubmit }: Inta
             )}
           </motion.div>
         </AnimatePresence>
+        </div>
+
+        {showLeaderboard && (
+          <aside className="order-first hidden md:order-last md:sticky md:top-4 md:block">
+            <KitPathLeaderboard answers={answers} />
+          </aside>
+        )}
       </div>
     </KitPortalLayout>
   );

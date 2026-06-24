@@ -68,10 +68,18 @@ export type ChartFeed = "boxes" | "startBox" | "tags";
  *              chartFeed items as cards, the startBox flagged). Reads
  *              buildPicksModel. Used by the three retrofitted kits, which emit
  *              chartFeed questions but do not warrant a full org chart.
+ * - "leaderboard": the live path leaderboard (KitPathLeaderboard) for the
+ *               chief-of-staff decision kit. As each answer lands it re-ranks
+ *               the seven rungs by the deterministic scoring engine, so the
+ *               person watches their recommendation form. Unlike "orgchart" /
+ *               "picks", this one is honoured in the LINEAR flow too (a desktop
+ *               right pane beside the single-column quiz); mobile stays single
+ *               column.
  * Absent (no previewKind): no preview pane; the intake renders single-column.
- * Linear (non-forked) presets ignore this entirely.
+ * Linear (non-forked) presets ignore "orgchart" / "picks", but DO honour
+ * "leaderboard".
  */
-export type KitPreviewKind = "orgchart" | "picks";
+export type KitPreviewKind = "orgchart" | "picks" | "leaderboard";
 
 export interface IntakeFactMapping {
   /** Only write the fact when this option was selected. Omit = always (chip label or text becomes the value). */

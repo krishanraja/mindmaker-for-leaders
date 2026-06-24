@@ -326,6 +326,10 @@ export const chiefOfStaffPreset: KitPreset = {
   codePrefixes: ["CHIEF"],
   passDays: 30,
   skillQuota: 3,
+  // The live path leaderboard fills the desktop right pane: the seven rungs
+  // re-rank by the deterministic engine as each answer lands. Honoured in the
+  // linear flow (this kit stays a single-column quiz on mobile).
+  previewKind: "leaderboard",
   intake,
   artifacts,
   score: (intake: IntakeAnswers) => scoreChief(intake),
