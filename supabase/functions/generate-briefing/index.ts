@@ -26,6 +26,11 @@ import { dedupeAndScore, type CandidateHeadline, type ScoredHeadline } from "../
 import { curateSegments, segmentCountFromBudget, type CuratedSegment } from "../_shared/briefing-curation.ts";
 import { type NewsCategoryId, relativeTimeAgo, classifyCategory } from "../_shared/news-ai-native.ts";
 import { getUserContext, toLensSource, resolveLeaderIds, type UserContext } from "../_shared/user-context.ts";
+// The ONE brain accessor (PR2). Behind BRIEFING_USE_BRAIN_PROFILE the briefing
+// reads the leader's lens source through the same unified profile Home uses, so
+// both surfaces score against one brain. `toLensSource` already exists from
+// user-context (the legacy path), so the brain one is aliased.
+import { loadBrainProfile, toLensSource as brainToLensSource } from "../_shared/brain-profile.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
 import { extractSegmentMagnitude, type SegmentMagnitude } from "../_shared/briefing-magnitude.ts";
@@ -1401,7 +1406,36 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   const missionIds = ((missions as Array<{ id: string }> | null) ?? []).map(m => m.id);
   const decisionIds = ((decisions as Array<{ id: string }> | null) ?? []).map(d => d.id);
 
-  const source = toLensSource(userId, userCtx, missionIds, decisionIds);
+  // The lens source. Through the ONE brain accessor when enabled, so the
+  // briefing and Home score against the same unified brain (no silos); else the
+  // legacy inline projection (default, behaviour unchanged). The brain path also
+  // yields the unified profile gate.
+  const useBrainProfile = (Deno.env.get("BRIEFING_USE_BRAIN_PROFILE") ?? "false") === "true";
+  const gateEnabled = (Deno.env.get("BRIEFING_PROFILE_GATE_ENABLED") ?? "false") === "true";
+  let source: ReturnType<typeof toLensSource>;
+  if (useBrainProfile) {
+    const profile = await loadBrainProfile(supabase, userId);
+    if (gateEnabled && !profile.completeness.passesGate) {
+      // Below the unified gate: finish with a friendly needs-profile state
+      // (mirrors Home). No headlines until the brain is complete.
+      log.info("[v2] Below profile gate - finishing with needs_profile state");
+      await setBriefingStage(supabase, briefingId, "complete", { script_text: "" });
+      return {
+        briefing_id: briefingId,
+        already_exists: false,
+        has_audio: false,
+        segment_count: 0,
+        briefing_type: briefingType,
+        used_fallback: true,
+        needs_profile: true,
+        missing_profile: profile.completeness.missing,
+        pipeline_version: 2,
+      };
+    }
+    source = brainToLensSource(profile);
+  } else {
+    source = toLensSource(userId, userCtx, missionIds, decisionIds);
+  }
 
   // Stage 1: lens + user-declared excludes.
   log.info("[v2] Building importance lens...");
