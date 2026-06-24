@@ -263,12 +263,18 @@ export async function scorePoolForUser(opts: ScorePoolOptions): Promise<Personal
   )) as Array<ScoredHeadline & EngineCandidate>;
 
   // Stages 5 + 7 - combine user x external (+ tuning) into one final score.
-  const disliked = opts.dislikedCategories ?? [];
-  const pool: ScoredPoolItem[] = scored.map((s) => {
+  // A repeatedly-disliked category is HARD-dropped (not just penalised): the
+  // leader has told us to stop showing that lane, and category-balancing would
+  // otherwise keep refilling it. This matches the client's "train the feed".
+  const dislikedList = opts.dislikedCategories ?? [];
+  const dislikedSet = new Set(dislikedList);
+  const pool: ScoredPoolItem[] = scored
+    .filter((s) => !dislikedSet.has(s.category))
+    .map((s) => {
     const tuning = tuningBoost(
       { category: s.category, sourceCount: s.sourceCount },
       profile,
-      disliked,
+      dislikedList,
     );
     const finalScore = combineFinalScore({
       userRelevance: s.relevance_score,
