@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
-import { useTodaysBriefing, useGenerateBriefing } from '@/hooks/useBriefing';
-import { isBriefingGenerating, isBriefingReady } from '@/types/briefing';
 import { HomeFeed } from './HomeFeed';
 import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 
@@ -25,23 +23,6 @@ export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; 
   const { user } = useAuth();
   const { data, loading, recordDeckReaction } = useCockpit();
 
-  // The Briefing door is a trigger (see CockpitView): start, watch it build,
-  // enter only once ready - driven by the real row stage.
-  const { briefing: defaultBriefing, refetch: refetchBriefing } = useTodaysBriefing();
-  const { generate, generating } = useGenerateBriefing();
-  const briefingReady = isBriefingReady(defaultBriefing);
-  const briefingBusy = generating || isBriefingGenerating(defaultBriefing);
-  const briefingState: 'idle' | 'generating' | 'ready' = briefingBusy
-    ? 'generating'
-    : briefingReady
-    ? 'ready'
-    : 'idle';
-  const handleBriefingDoor = () => {
-    if (briefingReady) { navigate('/briefing'); return; }
-    if (briefingBusy) return;
-    void generate('default').then(() => { void refetchBriefing(); });
-  };
-
   // Real name when we have one; null when the only identifier is an email /
   // handle / random id, so the greeting omits the ugly id gracefully.
   const firstName = resolveDisplayName(user);
@@ -54,10 +35,6 @@ export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; 
         data={data}
         loading={loading || !!forceLoading}
         greeting={cockpitGreeting(firstName)}
-        onPlayBriefing={handleBriefingDoor}
-        briefingState={briefingState}
-        onGoDecide={() => navigate('/decision')}
-        onBuildSkill={() => navigate('/context')}
         onOpenCard={(card) => {
           if (card.betId) navigate(`/decision-map?case=${card.betId}`);
           else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');

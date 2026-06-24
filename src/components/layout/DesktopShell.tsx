@@ -22,16 +22,17 @@ import { resolveDisplayName } from '@/components/cockpit/cockpitGreeting';
 import { BrandLockup } from '@/components/landing/BrandLockup';
 import { CommandPaletteTrigger } from './CommandPalette';
 import { PageTransition } from './PageTransition';
+import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
 
 // PRIMARY nav: the SAME 4 stable tabs as the mobile BottomNav cockpit model
-// (Home / Decisions / Brain / History), in the same order and with the same
-// icons, so desktop and mobile read as one system (CTRL-SYSTEM-SPEC s1). Memory
-// -> Brain, Track Record -> History, the decision surfaces -> Decisions.
+// (Home / Decisions / Memory / Track record), in the same order and with the
+// same icons, so desktop and mobile read as one system (CTRL-SYSTEM-SPEC s1).
+// Plain names: every tab says exactly what it is.
 const primaryNavItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home', shortcut: 'H' },
   { path: '/decision', search: '', icon: Scale, label: 'Decisions', shortcut: 'D' },
-  { path: '/memory', search: '', icon: Brain, label: 'Brain', shortcut: 'B' },
-  { path: '/track-record', search: '', icon: History, label: 'History', shortcut: 'Y' },
+  { path: '/memory', search: '', icon: Brain, label: 'Memory', shortcut: 'B' },
+  { path: '/track-record', search: '', icon: History, label: 'Track record', shortcut: 'Y' },
 ];
 
 // SECONDARY surfaces: still one click away, just demoted out of the primary 4 so
@@ -253,7 +254,11 @@ function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
           <CommandPaletteTrigger />
         </div>
       </div>
-      {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Your audio digest: one tap, from any tab (matches the mobile header). */}
+        <BriefingHeaderButton />
+        {actions}
+      </div>
     </header>
   );
 }

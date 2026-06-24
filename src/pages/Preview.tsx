@@ -92,7 +92,7 @@ const RICH_ROWS: TrackRecordRow[] = [
 ];
 
 function claim(p: Partial<DecisionClaim> & { id: string; text: string; verdict: DecisionClaim['verdict'] }): DecisionClaim {
-  return { type: 'market', is_load_bearing: false, confidence: 0.6, rationale: null, ...p };
+  return { type: 'market', is_load_bearing: false, confidence: 0.6, rationale: null, reaction_value: null, reaction_descriptor: null, reaction_kind: null, reaction_evidence_id: null, ...p };
 }
 
 const ev = (id: string, claimId: string, stance: DecisionEvidence['stance'], title: string, url: string | null): DecisionEvidence => ({
@@ -434,9 +434,6 @@ export default function PreviewPage() {
                   data={f.data}
                   loading={false}
                   greeting="Good morning, Krish."
-                  onPlayBriefing={noop}
-                  onGoDecide={noop}
-                  onBuildSkill={noop}
                   onOpenCard={noop}
                 />
               </div>
@@ -450,9 +447,6 @@ export default function PreviewPage() {
                 data={COCKPIT_FIXTURES[0].data}
                 loading
                 greeting="Good morning, Krish."
-                onPlayBriefing={noop}
-                onGoDecide={noop}
-                onBuildSkill={noop}
                 onOpenCard={noop}
               />
             </div>

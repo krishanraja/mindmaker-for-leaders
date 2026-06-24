@@ -44,7 +44,7 @@ import { sanitizeTranscriptionError } from '@/utils/transcriptionErrors';
 import { TranscriptReviewPanel } from '@/components/voice/TranscriptReviewPanel';
 import { BriefingCard } from '@/components/dashboard/BriefingCard';
 import { DecisionInboxCard } from '@/components/operator/decision/DecisionInboxCard';
-import { BriefingSheet, MiniPlayer, CustomBriefingSheet } from '@/components/briefing';
+import { CustomBriefingSheet } from '@/components/briefing';
 import { InterestsSheet } from '@/components/briefing/InterestsSheet';
 import { useTodaysBriefing, useGenerateBriefing } from '@/hooks/useBriefing';
 import { useBriefingInterests } from '@/hooks/useBriefingInterests';
@@ -809,8 +809,6 @@ export function MobileMemoryDashboard() {
 
         {/* Spacer for fixed bottom nav */}
         <div className="flex-shrink-0 h-20" />
-
-        <MiniPlayer />
       </div>
       <BottomNav />
 
@@ -864,7 +862,6 @@ export function MobileMemoryDashboard() {
           />
         )}
       </AnimatePresence>
-      <BriefingSheet />
       <CustomBriefingSheet
         isOpen={customSheetOpen}
         onClose={() => setCustomSheetOpen(false)}

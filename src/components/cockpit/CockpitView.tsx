@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
-import { useTodaysBriefing, useGenerateBriefing } from '@/hooks/useBriefing';
-import { isBriefingGenerating, isBriefingReady } from '@/types/briefing';
 import { HomeFeed } from './HomeFeed';
 import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 
@@ -38,24 +36,6 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
   const { user } = useAuth();
   const { data, loading, recordDeckReaction } = useCockpit();
 
-  // The Briefing door is a trigger: tap to start, watch the icon build, enter
-  // only once it's ready. Driven by the real row stage (useTodaysBriefing polls
-  // while it generates) so it stays honest across navigation.
-  const { briefing: defaultBriefing, refetch: refetchBriefing } = useTodaysBriefing();
-  const { generate, generating } = useGenerateBriefing();
-  const briefingReady = isBriefingReady(defaultBriefing);
-  const briefingBusy = generating || isBriefingGenerating(defaultBriefing);
-  const briefingState: 'idle' | 'generating' | 'ready' = briefingBusy
-    ? 'generating'
-    : briefingReady
-    ? 'ready'
-    : 'idle';
-  const handleBriefingDoor = () => {
-    if (briefingReady) { navigate('/briefing'); return; }
-    if (briefingBusy) return; // already building - the spinner shows progress
-    void generate('default').then(() => { void refetchBriefing(); });
-  };
-
   // Real name when we have one; null when the only identifier is an email /
   // handle / random id, so the greeting reads "Good morning." not
   // "Good morning, ctrl-qa-1782077550632."
@@ -72,10 +52,6 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
           data={data}
           loading={loading || !!forceLoading}
           greeting={cockpitGreeting(firstName)}
-          onPlayBriefing={handleBriefingDoor}
-          briefingState={briefingState}
-          onGoDecide={() => navigate('/decision')}
-          onBuildSkill={() => navigate('/context')}
           onOpenCard={(card) => {
             if (card.betId) navigate(`/decision-map?case=${card.betId}`);
             else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');

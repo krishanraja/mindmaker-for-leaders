@@ -124,7 +124,10 @@ export function BriefingProvider({ children }: { children: React.ReactNode }) {
   }, [briefing]);
 
   const play = useCallback(() => {
-    audioRef.current?.play();
+    // A blocked/failed play() rejects its promise; swallow it quietly so it
+    // never throws, but never silently pretend it worked either (the caller
+    // surfaces a retry when audio is genuinely missing).
+    audioRef.current?.play().catch(() => {});
   }, []);
 
   const pause = useCallback(() => {
@@ -133,7 +136,7 @@ export function BriefingProvider({ children }: { children: React.ReactNode }) {
 
   const togglePlay = useCallback(() => {
     if (audioRef.current?.paused) {
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {});
     } else {
       audioRef.current?.pause();
     }

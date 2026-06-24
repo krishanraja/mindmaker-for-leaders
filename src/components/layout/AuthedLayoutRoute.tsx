@@ -7,6 +7,7 @@ import { GlobalFAB } from '@/components/mobile/GlobalFAB'
 import { SettingsSheet } from '@/components/settings/SettingsSheet'
 import { CommandPaletteProvider } from '@/components/layout/CommandPalette'
 import { ContestProvider } from '@/contexts/ContestProvider'
+import { GlobalBriefingPlayer } from '@/components/briefing/GlobalBriefingPlayer'
 
 function AuthedChrome() {
   const { isAuthenticated } = useAuth()
@@ -20,6 +21,14 @@ function AuthedChrome() {
       <SettingsSheet />
     </>
   )
+}
+
+// The briefing audio drawer lives once, app-wide, on both devices, so the
+// top-bar audio button can open + play it from any tab in a single tap.
+function AuthedBriefingPlayer() {
+  const { isAuthenticated } = useAuth()
+  if (!isAuthenticated) return null
+  return <GlobalBriefingPlayer />
 }
 
 export function AuthedLayoutRoute() {
@@ -44,6 +53,7 @@ export function AuthedLayoutRoute() {
         <ContestProvider>
           <Outlet />
           <AuthedChrome />
+          <AuthedBriefingPlayer />
         </ContestProvider>
       </CommandPaletteProvider>
     </SettingsSheetProvider>

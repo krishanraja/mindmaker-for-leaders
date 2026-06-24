@@ -1,68 +1,13 @@
-// BriefingPlay - the dead-simple, no-scroll, Play-first briefing landing.
+// PastBriefingsSheet - a quiet bottom sheet listing earlier + custom briefings.
 //
-// The briefing is the easiest thing in the app: one big Play button near the top,
-// one plain sentence, nothing else to read or decide. Press Play -> hear a short
-// audio rundown of today's AI news in your voice. Zero app jargon. Past briefings
-// (and any custom ones) live behind a single quiet link that opens a sheet, so
-// the main screen never has to ask more than one thing.
+// The briefing itself is now an audio drawer opened in one tap from the top-bar
+// "Your audio digest" button (no landing screen). This sheet is the calm,
+// secondary way to replay an earlier or custom briefing, one tap to play.
 
 import { Play } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { cn } from '@/lib/utils';
 import { BRIEFING_TYPES } from '@/types/briefing';
 import type { Briefing } from '@/types/briefing';
-
-interface BriefingPlayLandingProps {
-  /** The bold line under the button (e.g. "Play today's briefing"). */
-  title: string;
-  /** One plain sentence describing what playing does. */
-  line: string;
-  /** Optional tiny line below (e.g. freshness "Updated 4 minutes ago"). */
-  sub?: string | null;
-  onPlay: () => void;
-  busy?: boolean;
-  hasPast?: boolean;
-  onOpenPast?: () => void;
-  className?: string;
-}
-
-/** Big Play button at the top + one plain sentence. Fits the viewport, no scroll. */
-export function BriefingPlayLanding({
-  title,
-  line,
-  sub,
-  onPlay,
-  busy,
-  hasPast,
-  onOpenPast,
-  className,
-}: BriefingPlayLandingProps) {
-  return (
-    <div className={cn('flex h-full min-h-0 flex-col items-center px-2 pt-6 text-center', className)}>
-      <button
-        type="button"
-        onClick={onPlay}
-        disabled={busy}
-        aria-label={title}
-        className="grid h-24 w-24 place-items-center rounded-full bg-accent text-accent-foreground shadow-[0_18px_44px_-14px_hsl(var(--accent)/0.65)] transition-transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-60"
-      >
-        <Play className="h-10 w-10 translate-x-0.5 fill-current" strokeWidth={0} />
-      </button>
-      <h2 className="mt-6 text-2xl font-bold tracking-tight text-foreground">{title}</h2>
-      <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">{line}</p>
-      {sub && <p className="mt-1.5 text-xs text-muted-foreground/70">{sub}</p>}
-      {hasPast && onOpenPast && (
-        <button
-          type="button"
-          onClick={onOpenPast}
-          className="mt-auto pb-1 text-xs text-muted-foreground transition-colors hover:text-accent"
-        >
-          Past briefings
-        </button>
-      )}
-    </div>
-  );
-}
 
 function rowLabel(b: Briefing): string {
   if (b.briefing_type && b.briefing_type !== 'default') {

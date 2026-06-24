@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
-import { X, Play, Pause, RefreshCw, Mic } from "lucide-react";
+import { X, Play, Pause, RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useBriefingContext } from "@/contexts/BriefingContext";
-import { useSubmitFeedback, useGenerateBriefing } from "@/hooks/useBriefing";
+import { useSubmitFeedback, useGenerateBriefing, usePollAudio } from "@/hooks/useBriefing";
 import { supabase } from "@/integrations/supabase/client";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { FRAMEWORK_TAG_CONFIG, BRIEFING_TYPES } from "@/types/briefing";
@@ -30,6 +29,7 @@ export function BriefingSheet() {
     playback,
     isSheetOpen,
     setSheetOpen,
+    play,
     togglePlay,
     seek,
     setSpeed,
@@ -42,20 +42,52 @@ export function BriefingSheet() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Voice-commands hint: shown once on first sheet open, dismissable. A busy
-  // CEO would never discover the playback voice commands (pause / next /
-  // faster / slower) from an unlabeled mic icon.
-  const [voiceHintDismissed, setVoiceHintDismissed] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return window.localStorage.getItem("briefing.voice.hint.seen") === "1";
-  });
-  const dismissVoiceHint = () => {
-    setVoiceHintDismissed(true);
-    try {
-      window.localStorage.setItem("briefing.voice.hint.seen", "1");
-    } catch {
-      /* localStorage unavailable */
+  // Audio is built on demand: the briefing row carries the script + segments,
+  // but the voice MP3 is synthesized separately. Opening the player means
+  // "play it", so we make sure the audio exists and start it - no second tap.
+  const { audioUrl, polling, synthError, start, clearError } = usePollAudio();
+  const synthStartedFor = useRef<string | null>(null);
+  const wantAutoplay = useRef(false);
+  const preparingAudio = polling && !!briefing && !briefing.audio_url;
+
+  // On open: intend to play. If the audio is already built, it plays; if not,
+  // kick synthesis once for this briefing and play the moment it lands.
+  useEffect(() => {
+    if (!isSheetOpen || !briefing) return;
+    wantAutoplay.current = true;
+    if (briefing.audio_url) return;
+    if (synthStartedFor.current !== briefing.id) {
+      synthStartedFor.current = briefing.id;
+      clearError();
+      start(briefing.id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSheetOpen, briefing?.id, briefing?.audio_url]);
+
+  // Synthesis resolved -> attach the fresh URL so the <audio> element mounts.
+  useEffect(() => {
+    if (audioUrl && briefing && audioUrl !== briefing.audio_url) {
+      setBriefing({ ...briefing, audio_url: audioUrl });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioUrl]);
+
+  // Audio is ready and we opened with intent to listen -> play once.
+  useEffect(() => {
+    if (isSheetOpen && briefing?.audio_url && wantAutoplay.current) {
+      wantAutoplay.current = false;
+      const t = setTimeout(() => play(), 80);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [briefing?.audio_url, isSheetOpen]);
+
+  const retryAudio = () => {
+    if (!briefing) return;
+    clearError();
+    wantAutoplay.current = true;
+    synthStartedFor.current = briefing.id;
+    start(briefing.id);
   };
 
   // Auto-scroll to current segment
@@ -65,9 +97,6 @@ export function BriefingSheet() {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [playback.currentSegmentIndex]);
-
-  // No auto-play: opening the sheet shows the player in paused state so the
-  // user decides when to start. Tap the play button (togglePlay) to begin.
 
   const handleSpeedToggle = () => {
     const currentIdx = SPEEDS.indexOf(playback.speed);
@@ -180,26 +209,15 @@ export function BriefingSheet() {
 
             {/* Player controls (fixed) */}
             <div className="px-4 py-4 border-b border-border flex-shrink-0">
-              {!voiceHintDismissed && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-3 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20"
+              {synthError && (
+                <button
+                  type="button"
+                  onClick={retryAudio}
+                  className="mb-3 flex w-full items-center justify-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[12px] font-medium text-amber-500 transition-colors hover:bg-amber-500/15"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Mic className="w-3.5 h-3.5 text-accent flex-shrink-0" />
-                    <p className="text-[11px] text-foreground leading-snug">
-                      Try saying &ldquo;pause&rdquo;, &ldquo;next&rdquo;, or &ldquo;faster&rdquo;.
-                    </p>
-                  </div>
-                  <button
-                    onClick={dismissVoiceHint}
-                    aria-label="Dismiss voice hint"
-                    className="p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors flex-shrink-0"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </motion.div>
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Couldn&apos;t load the audio - tap to try again.
+                </button>
               )}
               {/* Play button + speed */}
               <div className="flex items-center justify-center gap-4 mb-3">
@@ -212,10 +230,14 @@ export function BriefingSheet() {
 
                 <motion.button
                   whileTap={{ scale: 0.9 }}
-                  onClick={togglePlay}
-                  className="w-14 h-14 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-lg shadow-accent/25"
+                  onClick={preparingAudio ? undefined : togglePlay}
+                  disabled={preparingAudio}
+                  aria-label={preparingAudio ? "Getting your audio ready" : playback.isPlaying ? "Pause" : "Play"}
+                  className="w-14 h-14 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-lg shadow-accent/25 disabled:opacity-70"
                 >
-                  {playback.isPlaying ? (
+                  {preparingAudio ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : playback.isPlaying ? (
                     <Pause className="w-6 h-6 fill-current" />
                   ) : (
                     <Play className="w-6 h-6 fill-current ml-0.5" />
@@ -224,6 +246,12 @@ export function BriefingSheet() {
 
                 <BriefingVoiceButton />
               </div>
+
+              {preparingAudio && (
+                <p className="mb-2 text-center text-[11px] text-muted-foreground">
+                  Getting your audio ready...
+                </p>
+              )}
 
               {/* Progress bar */}
               <div

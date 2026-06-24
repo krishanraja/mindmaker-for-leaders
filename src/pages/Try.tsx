@@ -11,7 +11,7 @@ import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine'
 const STATEMENT = 'Should we switch our primary AI vendor to cut inference costs?';
 
 function claim(p: Partial<DecisionClaim> & { id: string; text: string; verdict: DecisionClaim['verdict'] }): DecisionClaim {
-  return { type: 'market', is_load_bearing: false, confidence: 0.6, rationale: null, ...p };
+  return { type: 'market', is_load_bearing: false, confidence: 0.6, rationale: null, reaction_value: null, reaction_descriptor: null, reaction_kind: null, reaction_evidence_id: null, ...p };
 }
 const ev = (id: string, claimId: string, stance: DecisionEvidence['stance'], title: string, url: string | null): DecisionEvidence => ({
   id, claim_id: claimId, source_url: url, source_title: title, excerpt: null, stance, retriever: 'perplexity', retrieved_at: null, relevance_score: 0.8,

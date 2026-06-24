@@ -28,7 +28,6 @@ import { type NewsCategoryId, relativeTimeAgo, classifyCategory } from "../_shar
 import { getUserContext, toLensSource, resolveLeaderIds, type UserContext } from "../_shared/user-context.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
-import { prependDecisionAlerts } from "../_shared/decision-alerts.ts";
 import { extractSegmentMagnitude, type SegmentMagnitude } from "../_shared/briefing-magnitude.ts";
 
 const corsHeaders = {
@@ -36,6 +35,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+// Pre-build the voice audio as part of generation so the briefing PLAYS in one
+// tap (the player no longer has to synthesize on first open). Best-effort: a
+// TTS failure must never fail the briefing - the player still synthesizes on
+// demand as a fallback. Runs inside the background job, so the ~15s TTS cost is
+// off the request path.
+async function prebuildBriefingAudio(
+  supabase: ReturnType<typeof createClient>,
+  briefingId: string,
+  log: { info: (m: string, c?: unknown) => void; warn: (m: string, c?: unknown) => void },
+): Promise<void> {
+  try {
+    const { error } = await supabase.functions.invoke("synthesize-briefing", {
+      body: { briefing_id: briefingId },
+    });
+    if (error) log.warn("Audio pre-build returned an error", { error, briefingId });
+    else log.info(`Audio pre-built for ${briefingId}`);
+  } catch (e) {
+    log.warn("Audio pre-build failed", { error: e, briefingId });
+  }
+}
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -1542,14 +1562,14 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     return seg;
   });
 
-  // Lead with any open decision-watch alerts (audio preamble + leading segment).
-  const injected = await prependDecisionAlerts(supabase, userId, briefingId, script, finalSegments);
-
+  // News stays news: the briefing is pure curated AI headlines. Decision-watch
+  // alerts live in the Decisions tab; a relevant headline is flagged there with
+  // a quiet "relevant to your decision" chip, never narrated into the audio.
   const { error: updateError } = await supabase
     .from("briefings")
     .update({
-      script_text: injected.script,
-      segments: injected.segments,
+      script_text: script,
+      segments: finalSegments,
       stage: "complete",
     })
     .eq("id", briefingId);
@@ -1557,9 +1577,8 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   if (updateError) log.error("[v2] Failed to update briefing with polished content", { error: updateError });
   else log.info(`[v2] Briefing refined: ${briefingId}`);
 
-  // Audio synthesis is user-triggered: the frontend calls synthesize-briefing
-  // only when the user clicks "Generate audio". This avoids TTS spend on
-  // briefings that are read but not listened to.
+  // Pre-build the voice audio so the briefing plays in one tap.
+  await prebuildBriefingAudio(supabase, briefingId, log);
 
   log.info(`[v2] Total pipeline time: ${Date.now() - t0}ms`);
 
@@ -1827,60 +1846,6 @@ serve(async (req) => {
       const decisionCount = userCtx.recentDecisions?.length ?? 0;
       const depth = positiveInterests + missionCount + decisionCount;
       if (depth < 5) {
-        // Even on a sparse day, an open decision alert must still reach the
-        // leader: the decision that watches your back cannot go quiet just
-        // because the news lens is thin. Build a minimal alert-led briefing
-        // and only fall back to the onboarding signal when nothing is open.
-        const { data: openAlerts } = await supabase
-          .from("decision_alerts")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("status", "open")
-          .limit(1);
-
-        if (openAlerts && openAlerts.length > 0) {
-          const { data: inserted } = await supabase
-            .from("briefings")
-            .insert({
-              user_id: user.id,
-              briefing_date: today,
-              briefing_type: briefingType,
-              script_text: "",
-              segments: [],
-            })
-            .select("id")
-            .single();
-          const alertBriefingId = (inserted as { id: string } | null)?.id;
-          if (alertBriefingId) {
-            const base =
-              "A quiet morning for the news. Your decision watch flagged something worth a look.";
-            const injected = await prependDecisionAlerts(
-              supabase,
-              user.id,
-              alertBriefingId,
-              base,
-              [],
-            );
-            await supabase
-              .from("briefings")
-              .update({ script_text: injected.script, segments: injected.segments })
-              .eq("id", alertBriefingId);
-            return new Response(
-              JSON.stringify({
-                briefing_id: alertBriefingId,
-                already_exists: false,
-                has_audio: false,
-                segment_count: injected.segments.length,
-                briefing_type: briefingType,
-                used_fallback: false,
-                pipeline_version: 2,
-                alert_only: true,
-              }),
-              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-            );
-          }
-        }
-
         const missing: string[] = [];
         if (positiveInterests < 3) missing.push("interests");
         if (missionCount < 1) missing.push("missions");
@@ -2161,13 +2126,13 @@ serve(async (req) => {
       throw new Error("Failed to generate briefing content");
     }
 
-    // 5. Update briefing with polished segments + script (lead with decision alerts)
-    const injected = await prependDecisionAlerts(supabase, user.id, briefingId, script, segments);
+    // 5. Update briefing with polished segments + script. News stays news -
+    // decision-watch alerts live in the Decisions tab, never in the audio.
     const { error: updateError } = await supabase
       .from("briefings")
       .update({
-        script_text: injected.script,
-        segments: injected.segments,
+        script_text: script,
+        segments: segments,
         news_sources: headlines,
         stage: "complete",
       })
@@ -2178,6 +2143,9 @@ serve(async (req) => {
     } else {
       log.info(`Briefing refined: ${briefingId} (${segments.length} polished segments)`);
     }
+
+    // Pre-build the voice audio so the briefing plays in one tap.
+    await prebuildBriefingAudio(supabase, briefingId, log);
      } catch (e) {
        const msg = e instanceof Error ? e.message : String(e);
        log.error(`[bg] briefing ${briefingId} failed`, { error: msg });
@@ -2185,8 +2153,8 @@ serve(async (req) => {
      }
     })();
 
-    // Keep the worker alive for the background pipeline after we respond.
-    // Audio synthesis stays user-triggered (frontend calls synthesize-briefing).
+    // Keep the worker alive for the background pipeline after we respond. The
+    // pipeline pre-builds the audio at the end so the briefing plays in one tap.
     if (typeof EdgeRuntime !== "undefined" && EdgeRuntime?.waitUntil) {
       EdgeRuntime.waitUntil(pipeline);
     } else {
