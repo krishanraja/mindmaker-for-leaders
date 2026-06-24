@@ -23,8 +23,9 @@
 // the rail tiles and the swipe feed are byte-for-byte the same instrument.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, Sparkles } from 'lucide-react';
 import type { CockpitData, DeckCard, HomeState } from '@/types/cockpit';
 import { CockpitHero } from './CockpitHero';
 import { CategoryMotif } from './CategoryMotif';
@@ -68,6 +69,40 @@ function framingFor(state: HomeState): string {
 
 export function HomeFeed(props: HomeFeedProps) {
   return props.variant === 'desktop' ? <DesktopHome {...props} /> : <MobileHome {...props} />;
+}
+
+// The profile-gate "unlock" prompt: shown in the feed zone when the brain is
+// below the minimum (vertical + role + a few interests) and the gate is enabled
+// server-side. Warm, first-person, never a scold; leads with one clear action.
+const GATE_LABELS: Record<string, string> = {
+  vertical: 'your industry',
+  role: 'your role',
+  interests: 'a few interests',
+};
+function ProfileGateCard({ missing, variant }: { missing?: string[]; variant: 'mobile' | 'desktop' }) {
+  const navigate = useNavigate();
+  const items = (missing && missing.length ? missing : ['vertical', 'role', 'interests']).map((m) => GATE_LABELS[m] ?? m);
+  const list = items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}` : items[0];
+  return (
+    <div className="flex min-h-0 flex-1 items-center justify-center">
+      <div className={cn('w-full rounded-2xl border border-accent/25 bg-[linear-gradient(180deg,#101620,#0a0e12)] p-6 text-center', variant === 'desktop' && 'max-w-md')}>
+        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent/12 text-accent">
+          <Sparkles className="h-5 w-5" />
+        </span>
+        <h2 className="mt-3 text-[18px] font-extrabold tracking-tight text-foreground">Let me get to know you first</h2>
+        <p className="mx-auto mt-2 max-w-[42ch] text-pretty text-[13px] leading-relaxed text-muted-foreground">
+          I curate the AI-native news that actually matters to your business. To do that well I need {list}.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/memory')}
+          className="mt-4 inline-flex items-center justify-center rounded-xl bg-accent px-5 py-2.5 text-[13px] font-bold text-accent-foreground transition hover:brightness-110"
+        >
+          Complete your brain
+        </button>
+      </div>
+    </div>
+  );
 }
 
 /* ============================================================
@@ -151,6 +186,8 @@ function MobileHome({
             <SkeletonCard variant="feed" className="shrink-0" />
             <SkeletonCard variant="feed" className="shrink-0 opacity-50" />
           </div>
+        ) : data.needsProfile ? (
+          <ProfileGateCard missing={data.missingProfile} variant="mobile" />
         ) : (
           <>
             <MobileSwipeTrack
@@ -351,6 +388,8 @@ function DesktopHome({
             <SkeletonCard variant="feed" className="w-[330px] shrink-0" />
             <SkeletonCard variant="feed" className="w-[330px] shrink-0" />
           </div>
+        ) : data.needsProfile ? (
+          <ProfileGateCard missing={data.missingProfile} variant="desktop" />
         ) : (
           <>
             <div
