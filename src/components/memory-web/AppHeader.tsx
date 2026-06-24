@@ -31,10 +31,11 @@ export function AppHeader({ onAdd, onExport }: AppHeaderProps) {
         <BrandLockup />
       </div>
       <div className="flex items-center gap-1.5">
-        {/* Tune-feed sits with the chrome on Home (the one place it applies). */}
+        {/* Tune-feed and the audio digest belong to Home (the daily-read door).
+            Off Home, the header carries only that page's own actions, so each tab
+            reads as its own surface (Play lives on Home, not on Memory/Decisions). */}
         {isHome && <TuneFeedButton compact />}
-        {/* Your audio digest: one tap, from any tab. */}
-        <BriefingHeaderButton />
+        {isHome && <BriefingHeaderButton />}
         {onExport && (
           <button
             onClick={onExport}

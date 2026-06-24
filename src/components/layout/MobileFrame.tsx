@@ -2,7 +2,17 @@ import type { ReactNode } from 'react';
 import { AppHeader } from '@/components/memory-web/AppHeader';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { MobilePageTransition } from './MobilePageTransition';
+import { useBriefingContext } from '@/contexts/BriefingContext';
 import { cn } from '@/lib/utils';
+
+/**
+ * When the audio mini-player is showing, it floats `fixed` just above the bottom
+ * nav. Reserve that height on the frame so no page's content (a scroll bottom or
+ * a pinned shelf) ever hides under it. Padding the grid root shrinks the 1fr
+ * <main> from the bottom, lifting every surface uniformly without touching any
+ * page's own nav-clearance padding. ~56px = player row (48) + progress + breathing room.
+ */
+const MINI_PLAYER_CLEARANCE = '56px';
 
 /**
  * MobileFrame: the ONE shared mobile chrome for every authenticated page.
@@ -90,6 +100,7 @@ export function MobileFrame({
   mainClassName,
   extras,
 }: MobileFrameProps) {
+  const { isMiniPlayerVisible } = useBriefingContext();
   const derivedMainClass = cn(
     'min-h-0',
     scroll ? 'overflow-y-auto' : 'overflow-hidden',
@@ -98,7 +109,10 @@ export function MobileFrame({
   );
 
   return (
-    <div className="grid h-screen-safe grid-rows-[auto_1fr_auto] overflow-hidden bg-background">
+    <div
+      className="grid h-screen-safe grid-rows-[auto_1fr_auto] overflow-hidden bg-background"
+      style={isMiniPlayerVisible ? { paddingBottom: MINI_PLAYER_CLEARANCE } : undefined}
+    >
       <div className="min-h-0">
         <AppHeader onAdd={onAdd} onExport={onExport} />
         {banner}

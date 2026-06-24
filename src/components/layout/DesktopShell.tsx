@@ -23,6 +23,11 @@ import { BrandLockup } from '@/components/landing/BrandLockup';
 import { CommandPaletteTrigger } from './CommandPalette';
 import { PageTransition } from './PageTransition';
 import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
+import { useBriefingContext } from '@/contexts/BriefingContext';
+
+// The audio mini-player floats `fixed` near the bottom; reserve its height on the
+// content column so no page's content hides under it (mirrors MobileFrame).
+const MINI_PLAYER_CLEARANCE = '60px';
 
 // PRIMARY nav: the SAME 3 stable tabs as the mobile BottomNav cockpit model
 // (Home / Decisions / Memory), in the same order and with the same icons, so
@@ -235,6 +240,11 @@ type DesktopTopBarProps = {
 };
 
 function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
+  const location = useLocation();
+  // Play belongs to Home (the daily-read door), matching the mobile header. Off
+  // Home the top bar carries only that page's own actions; the briefing stays
+  // reachable from Home and the "Briefing" rail item.
+  const isHome = location.pathname === '/dashboard' && !location.search;
   return (
     <header className="h-14 flex-shrink-0 flex items-center gap-4 px-6 border-b border-border/60 bg-background/80 backdrop-blur-md z-30">
       <div className="min-w-0 flex-1 flex items-center gap-4">
@@ -257,8 +267,8 @@ function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        {/* Your audio digest: one tap, from any tab (matches the mobile header). */}
-        <BriefingHeaderButton />
+        {/* Your audio digest lives on Home (matches the mobile header). */}
+        {isHome && <BriefingHeaderButton />}
         {actions}
       </div>
     </header>
@@ -314,10 +324,15 @@ export function DesktopShell({
     };
   }, []);
 
+  const { isMiniPlayerVisible } = useBriefingContext();
+
   return (
     <div className="h-screen-safe overflow-hidden bg-background">
       <DesktopRail />
-      <div className="ml-[220px] flex flex-col h-full min-h-0">
+      <div
+        className="ml-[220px] flex flex-col h-full min-h-0"
+        style={isMiniPlayerVisible ? { paddingBottom: MINI_PLAYER_CLEARANCE } : undefined}
+      >
         <DesktopTopBar title={title} eyebrow={eyebrow} actions={actions} />
         <div className="flex-1 flex min-h-0">
           <main

@@ -26,7 +26,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  ChevronDown, ChevronRight, Layers, Plus, Check,
+  ChevronDown, ChevronRight, Layers, Check,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -410,8 +410,12 @@ export function DecisionAnatomy({
   const onScroll = () => {
     if (isDesktop) return;
     const top = scrollRef.current?.scrollTop ?? 0;
-    const next = top > 44;
-    setCollapsed((prev) => (prev !== next ? next : prev));
+    // Hysteresis: collapse once past 64px, and don't expand again until back
+    // under 16px. A single wide dead-band stops the collapse/expand oscillation
+    // (the spine's height change nudged scrollTop back across a single 44px line,
+    // which re-toggled it every frame and read as flicker).
+    const next = collapsed ? top > 16 : top > 64;
+    if (next !== collapsed) setCollapsed(next);
     if (next && callOpen) setCallOpen(false);
   };
 
@@ -490,22 +494,29 @@ export function DecisionAnatomy({
   );
 
   const shelf = (
-    <div className="flex shrink-0 flex-col gap-2.5 pt-3">
-      {/* the closing move: say how it played out, leave an optional note, and it
-          drops into History (the Now|History toggle on this same tab). */}
+    <div className="flex shrink-0 flex-col gap-2 pt-3">
+      {/* ONE clear closing move: say how it played out and it drops into History
+          (the Now|History toggle on this same tab). Starting another decision and
+          switching between them are quiet, secondary text links underneath - so
+          the screen leads with the single thing to do here, not three. */}
       <button type="button" onClick={() => { onResolve(); haptics.light(); }}
-        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.07] px-3 py-2.5 text-[12.5px] font-bold text-accent transition-colors hover:bg-accent/[0.12]">
-        <Check className="h-3.5 w-3.5" strokeWidth={3} />Resolve this decision
+        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.08] px-3 py-3 text-[13px] font-bold text-accent transition-colors hover:bg-accent/[0.13]">
+        <Check className="h-4 w-4" strokeWidth={3} />Resolve and move on
       </button>
-      <div className="flex gap-2.5">
-        <button type="button" onClick={() => { setSwitcherOpen(true); haptics.light(); }} disabled={cases.length <= 1}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-border bg-secondary px-3 py-3 text-[13px] font-bold text-foreground/90 transition-colors hover:border-accent/30 hover:text-foreground disabled:opacity-50">
-          <Layers className="h-3.5 w-3.5" />Your other decisions{cases.length > 1 ? ` (${cases.length})` : ''}
-        </button>
+      <div className="flex items-center justify-center gap-3 text-[11.5px] text-muted-foreground">
         <button type="button" onClick={() => { onCompose(); haptics.light(); }}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] bg-gradient-to-b from-accent to-accent px-3 py-3 text-[13px] font-bold text-accent-foreground shadow-[0_12px_26px_-12px_hsl(var(--accent)/0.5)]">
-          <Plus className="h-3.5 w-3.5" strokeWidth={3} />Add a new decision
+          className="font-semibold transition-colors hover:text-foreground">
+          Weigh a new one
         </button>
+        {cases.length > 1 && (
+          <>
+            <span aria-hidden className="text-muted-foreground/40">&middot;</span>
+            <button type="button" onClick={() => { setSwitcherOpen(true); haptics.light(); }}
+              className="font-semibold transition-colors hover:text-foreground">
+              Switch decision ({cases.length})
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -536,11 +547,16 @@ export function DecisionAnatomy({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div ref={scrollRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
-        {/* only the spine is sticky; it collapses to a status bar as the ladder
-            scrolls up behind it (the native large-title move) */}
-        <div className="sticky top-0 z-10 bg-background pb-1">{spine}</div>
-        {ladderHeader}
-        <div className="pb-2">{seg}</div>
+        {/* The spine AND the filter ride in ONE sticky block. The spine collapses
+            to a status bar as the ladder scrolls up behind it (the native
+            large-title move); keeping the filter inside the same pinned block
+            means it no longer jumps when the spine changes height - it just stays
+            put, always reachable, while only the rungs scroll underneath. */}
+        <div className="sticky top-0 z-20 bg-background pb-2">
+          {spine}
+          {ladderHeader}
+          {seg}
+        </div>
         {rungs}
       </div>
       {shelf}
