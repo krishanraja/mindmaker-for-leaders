@@ -5,23 +5,104 @@ import { RequireAuth } from '@/components/auth/RequireAuth'
 import { AuthedLayoutRoute } from '@/components/layout/AuthedLayoutRoute'
 import { BrandedAppLoader } from '@/components/system/BrandedAppLoader'
 
+const CHUNK_RELOAD_KEY = 'chunk_reload'
+
+function readChunkReload(): number {
+  try {
+    return Number(sessionStorage.getItem(CHUNK_RELOAD_KEY) || '0') || 0
+  } catch {
+    return 0
+  }
+}
+function writeChunkReload(n: number) {
+  try {
+    if (n <= 0) sessionStorage.removeItem(CHUNK_RELOAD_KEY)
+    else sessionStorage.setItem(CHUNK_RELOAD_KEY, String(n))
+  } catch {
+    /* sessionStorage unavailable (private mode / blocked) - degrade quietly */
+  }
+}
+
+/**
+ * A recoverable fallback for when a route chunk genuinely cannot be fetched
+ * (a missing chunk after a deploy, or a network that keeps dropping). We have
+ * already tried an automatic reload once; rather than leave a blank screen,
+ * give the user an explicit, branded way to recover. Dark/token styling so it
+ * reads on the forced-dark shell even if app CSS is the very thing that failed.
+ */
+function ChunkLoadError() {
+  return (
+    <div
+      className="emergency-fallback"
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        background: '#0a0e12',
+        color: '#e6edf3',
+        fontFamily: 'system-ui, sans-serif',
+        textAlign: 'center',
+      }}
+    >
+      <div style={{ maxWidth: '20rem' }}>
+        <p style={{ fontSize: '15px', lineHeight: 1.5, marginBottom: '20px', color: '#aeb6c2' }}>
+          We could not finish loading. This usually clears with a fresh start.
+        </p>
+        <button
+          onClick={() => {
+            writeChunkReload(0)
+            window.location.reload()
+          }}
+          style={{
+            background: '#00D9B6',
+            color: '#06231f',
+            padding: '12px 22px',
+            borderRadius: '12px',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '15px',
+            fontWeight: 700,
+          }}
+        >
+          Reload
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /**
  * Wrap lazy imports so that stale-chunk 404s trigger a single page
  * reload instead of crashing the app. After a new deploy, the old
  * HTML may reference chunk filenames that no longer exist.
+ *
+ * A successful load CLEARS the one-shot guard, so a later, unrelated
+ * transient failure (e.g. a flaky mobile network mid-session) can still
+ * earn its own recovery reload. If a chunk is still unreachable after the
+ * one auto-reload, we surface a recoverable UI - never a blank `() => null`,
+ * which previously left users staring at a black screen.
  */
 function lazyWithRetry(importFn: () => Promise<{ default: React.ComponentType }>) {
   return lazy(() =>
-    importFn().catch(() => {
-      const key = 'chunk_reload'
-      if (!sessionStorage.getItem(key)) {
-        sessionStorage.setItem(key, '1')
-        window.location.reload()
-      }
-      // Return a no-op module so TypeScript is happy; the reload above
-      // means this line is effectively unreachable.
-      return { default: () => null } as { default: React.ComponentType }
-    }),
+    importFn()
+      .then((mod) => {
+        writeChunkReload(0)
+        return mod
+      })
+      .catch(() => {
+        if (readChunkReload() < 1) {
+          writeChunkReload(1)
+          window.location.reload()
+          // Keep Suspense on the branded loader while the reload navigates
+          // away (never resolves) - so the user sees "loading", not black.
+          return new Promise<{ default: React.ComponentType }>(() => {})
+        }
+        // Already auto-reloaded once and still failing: offer a manual,
+        // visible recovery instead of rendering nothing.
+        return { default: ChunkLoadError } as { default: React.ComponentType }
+      }),
   )
 }
 
