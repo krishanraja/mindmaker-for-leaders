@@ -3,6 +3,7 @@ import { AppHeader } from '@/components/memory-web/AppHeader';
 import { BottomNav } from '@/components/memory-web/BottomNav';
 import { MobilePageTransition } from './MobilePageTransition';
 import { useBriefingContext } from '@/contexts/BriefingContext';
+import { MobileHeaderSlotProvider, useMobileHeaderSlotValue } from '@/contexts/MobileHeaderSlotContext';
 import { cn } from '@/lib/utils';
 
 /**
@@ -109,25 +110,37 @@ export function MobileFrame({
   );
 
   return (
-    <div
-      className="grid h-screen-safe grid-rows-[auto_1fr_auto] overflow-hidden bg-background"
-      style={isMiniPlayerVisible ? { paddingBottom: MINI_PLAYER_CLEARANCE } : undefined}
-    >
-      <div className="min-h-0">
-        <AppHeader onAdd={onAdd} onExport={onExport} />
-        {banner}
+    <MobileHeaderSlotProvider>
+      <div
+        className="grid h-screen-safe grid-rows-[auto_1fr_auto] overflow-hidden bg-background"
+        style={isMiniPlayerVisible ? { paddingBottom: MINI_PLAYER_CLEARANCE } : undefined}
+      >
+        <div className="min-h-0">
+          <MobileFrameHeader onAdd={onAdd} onExport={onExport} />
+          {banner}
+        </div>
+        <main className={mainClassName ?? derivedMainClass}>
+          <MobilePageTransition scroll={scroll}>
+            {maxWidth ? (
+              <div className={cn('mx-auto w-full', maxWidth)}>{children}</div>
+            ) : (
+              children
+            )}
+          </MobilePageTransition>
+        </main>
+        {extras}
+        <BottomNav />
       </div>
-      <main className={mainClassName ?? derivedMainClass}>
-        <MobilePageTransition scroll={scroll}>
-          {maxWidth ? (
-            <div className={cn('mx-auto w-full', maxWidth)}>{children}</div>
-          ) : (
-            children
-          )}
-        </MobilePageTransition>
-      </main>
-      {extras}
-      <BottomNav />
-    </div>
+    </MobileHeaderSlotProvider>
   );
+}
+
+/**
+ * Renders the AppHeader with whatever the active page has pushed into the
+ * header slot (for example the Decisions "Now | History" toggle). Lives inside
+ * MobileHeaderSlotProvider so it re-renders when the slot changes.
+ */
+function MobileFrameHeader({ onAdd, onExport }: { onAdd?: () => void; onExport?: () => void }) {
+  const slot = useMobileHeaderSlotValue();
+  return <AppHeader onAdd={onAdd} onExport={onExport} center={slot} />;
 }

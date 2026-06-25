@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMobileHeaderSlot } from '@/contexts/MobileHeaderSlotContext';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import { useDecisionEngine } from '@/hooks/useDecisionEngine';
@@ -231,8 +232,19 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
     </div>
   );
 
-  const viewToggle = (
-    <div className="mb-2.5 flex shrink-0 gap-1 rounded-xl border border-border bg-foreground/[0.03] p-1">
+  // Two renderings of the same Now | History switch:
+  //  - inline (`viewToggle`): a full-width segmented control above the surface,
+  //    used on desktop where there is room.
+  //  - header (`headerToggle`): a compact pill teleported into the persistent
+  //    mobile AppHeader (MobileHeaderSlotContext), so the toggle reads as chrome
+  //    and the phone gets back a full row of content height.
+  const renderToggle = (compact: boolean) => (
+    <div
+      className={cn(
+        'flex shrink-0 gap-1 rounded-xl border border-border bg-foreground/[0.03] p-1',
+        compact ? 'w-[180px]' : 'mb-2.5',
+      )}
+    >
       {(['now', 'history'] as const).map((v) => {
         const on = view === v;
         return (
@@ -241,7 +253,8 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
             type="button"
             onClick={() => { setView(v); haptics.light(); }}
             className={cn(
-              'flex-1 rounded-lg px-3 py-1.5 text-[12px] font-bold transition-colors',
+              'flex-1 rounded-lg font-bold transition-colors',
+              compact ? 'px-3 py-1 text-[12px]' : 'px-3 py-1.5 text-[12px]',
               on ? 'bg-gradient-to-b from-accent to-accent text-accent-foreground shadow-[0_8px_18px_-10px_hsl(var(--accent)/0.6)]' : 'text-muted-foreground hover:text-foreground',
             )}
           >
@@ -251,10 +264,22 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
       })}
     </div>
   );
+  const viewToggle = renderToggle(false);
+
+  // On mobile, push the compact toggle into the header (memoized so the slot
+  // setter only fires when the relevant state changes, never every render).
+  const headerToggle = useMemo(
+    () => (isMobile && showToggle ? renderToggle(true) : null),
+    // renderToggle closes over `view` (the only mutable input); setView/haptics
+    // are stable. Re-create only when the toggle's visibility or state changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isMobile, showToggle, view],
+  );
+  useMobileHeaderSlot(headerToggle);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {showToggle && viewToggle}
+      {showToggle && !isMobile && viewToggle}
       <div className="min-h-0 flex-1">{effectiveView === 'history' ? historySurface : surface}</div>
       <ResolveDecisionSheet
         open={resolveOpen}
