@@ -24,7 +24,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ChevronUp, Sparkles } from 'lucide-react';
 import type { CockpitData, DeckCard, HomeState } from '@/types/cockpit';
 import { CockpitHero } from './CockpitHero';
@@ -167,7 +167,7 @@ function MobileHome({
       <div className="flex shrink-0 flex-col gap-1 px-0.5">
         <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-foreground">{greeting}</h1>
         <p className="text-pretty text-[12.5px] leading-snug text-muted-foreground">
-          {loading ? 'Reading the market and your world.' : framingFor(data.homeState)}
+          {loading ? 'Curating what you need to know in AI today.' : framingFor(data.homeState)}
         </p>
       </div>
 
@@ -181,57 +181,61 @@ function MobileHome({
         onTouchEnd={loading ? undefined : onTouchEnd}
         onWheel={loading ? undefined : onWheel}
       >
-        {loading ? (
-          <GlobeLoader caption="Reading the market and your world" />
-        ) : data.needsProfile ? (
-          <ProfileGateCard missing={data.missingProfile} variant="mobile" />
-        ) : (
-          <>
-            <MobileSwipeTrack
-              deck={deck}
-              idx={idx}
-              reduceMotion={!!reduceMotion}
-              onFocus={go}
-              onOpen={onOpenCard}
-              onReact={onReactDeck}
-              relevant={relevant}
-            />
-            {/* vertical segmented progress rail, pinned to the right edge */}
-            {deck.length > 1 && (
-              <div className="pointer-events-none absolute right-0 top-1/2 z-[4] flex -translate-y-1/2 flex-col items-center gap-1.5">
-                {deck.map((c, i) => (
-                  <span
-                    key={c.id}
-                    className={cn(
-                      'w-[5px] rounded-full transition-all duration-300',
-                      i === idx ? 'h-[18px] bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.5)]' : 'h-[5px] bg-muted',
-                    )}
-                  />
-                ))}
-              </div>
-            )}
-            {/* one-time swipe-up affordance, fades after the first move */}
-            {showSwipeHint && (
-              <motion.div
-                key="swipe-hint"
-                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
-                animate={
-                  reduceMotion
-                    ? { opacity: 0.9 }
-                    : { opacity: [0.35, 0.95, 0.35], y: [4, -4, 4] }
-                }
-                exit={{ opacity: 0 }}
-                transition={reduceMotion ? { duration: 0.3 } : { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                className="pointer-events-none absolute inset-x-0 bottom-1 z-[4] flex justify-center"
-              >
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-background/85 px-2.5 py-1 text-[10.5px] font-semibold text-accent backdrop-blur-sm">
-                  <ChevronUp className="h-3 w-3" strokeWidth={2.4} />
-                  Swipe up for more
-                </span>
-              </motion.div>
-            )}
-          </>
-        )}
+        {/* The real feed renders underneath once data is ready; the globe loader
+            overlays on top and cross-fades out (no abrupt swap). */}
+        {!loading &&
+          (data.needsProfile ? (
+            <ProfileGateCard missing={data.missingProfile} variant="mobile" />
+          ) : (
+            <>
+              <MobileSwipeTrack
+                deck={deck}
+                idx={idx}
+                reduceMotion={!!reduceMotion}
+                onFocus={go}
+                onOpen={onOpenCard}
+                onReact={onReactDeck}
+                relevant={relevant}
+              />
+              {/* vertical segmented progress rail, pinned to the right edge */}
+              {deck.length > 1 && (
+                <div className="pointer-events-none absolute right-0 top-1/2 z-[4] flex -translate-y-1/2 flex-col items-center gap-1.5">
+                  {deck.map((c, i) => (
+                    <span
+                      key={c.id}
+                      className={cn(
+                        'w-[5px] rounded-full transition-all duration-300',
+                        i === idx ? 'h-[18px] bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.5)]' : 'h-[5px] bg-muted',
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+              {/* one-time swipe-up affordance, fades after the first move */}
+              {showSwipeHint && (
+                <motion.div
+                  key="swipe-hint"
+                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+                  animate={
+                    reduceMotion
+                      ? { opacity: 0.9 }
+                      : { opacity: [0.35, 0.95, 0.35], y: [4, -4, 4] }
+                  }
+                  exit={{ opacity: 0 }}
+                  transition={reduceMotion ? { duration: 0.3 } : { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                  className="pointer-events-none absolute inset-x-0 bottom-1 z-[4] flex justify-center"
+                >
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-background/85 px-2.5 py-1 text-[10.5px] font-semibold text-accent backdrop-blur-sm">
+                    <ChevronUp className="h-3 w-3" strokeWidth={2.4} />
+                    Swipe up for more
+                  </span>
+                </motion.div>
+              )}
+            </>
+          ))}
+        <AnimatePresence>
+          {loading && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -336,7 +340,7 @@ function DesktopHome({
   const scrollBy = (dx: number) => railRef.current?.scrollBy({ left: dx, behavior: 'smooth' });
 
   const railLabel = loading
-    ? 'Reading the market and your world'
+    ? 'Curating what you need to know in AI today'
     : data.homeState === 'rich'
       ? 'What moved'
       : 'Worth a look today';
@@ -348,7 +352,7 @@ function DesktopHome({
         <div className="min-w-0">
           <h1 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em] text-foreground">{greeting}</h1>
           <p className="mt-2 max-w-[60ch] text-pretty text-[14px] leading-relaxed text-muted-foreground">
-            {loading ? 'Reading the market and your world.' : framingFor(data.homeState)}
+            {loading ? 'Curating what you need to know in AI today.' : framingFor(data.homeState)}
           </p>
         </div>
         <TuneFeedButton />
@@ -376,25 +380,29 @@ function DesktopHome({
 
       {/* THE RAIL - the one browsable zone. min-h-0 so the doors keep their place. */}
       <div className="relative mt-3.5 flex min-h-0 flex-1 flex-col">
-        {loading ? (
-          <GlobeLoader caption="Reading the market and your world" />
-        ) : data.needsProfile ? (
-          <ProfileGateCard missing={data.missingProfile} variant="desktop" />
-        ) : (
-          <>
-            <div
-              ref={railRef}
-              className="scrollbar-hide flex min-h-0 flex-1 gap-[18px] overflow-x-auto overflow-y-hidden pb-1"
-            >
-              {deck.map((card, i) => (
-                <div key={card.id} className={cn('flex flex-col', i === 0 ? 'w-[480px] shrink-0' : 'w-[330px] shrink-0')}>
-                  <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} relevantToPinnedDecision={relevant(card)} />
-                </div>
-              ))}
-            </div>
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-[2] w-[60px] bg-gradient-to-l from-background to-transparent" />
-          </>
-        )}
+        {/* The real rail renders underneath once data is ready; the globe loader
+            overlays on top and cross-fades out (no abrupt swap). */}
+        {!loading &&
+          (data.needsProfile ? (
+            <ProfileGateCard missing={data.missingProfile} variant="desktop" />
+          ) : (
+            <>
+              <div
+                ref={railRef}
+                className="scrollbar-hide flex min-h-0 flex-1 gap-[18px] overflow-x-auto overflow-y-hidden pb-1"
+              >
+                {deck.map((card, i) => (
+                  <div key={card.id} className={cn('flex flex-col', i === 0 ? 'w-[480px] shrink-0' : 'w-[330px] shrink-0')}>
+                    <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} relevantToPinnedDecision={relevant(card)} />
+                  </div>
+                ))}
+              </div>
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[2] w-[60px] bg-gradient-to-l from-background to-transparent" />
+            </>
+          ))}
+        <AnimatePresence>
+          {loading && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
+        </AnimatePresence>
       </div>
     </div>
   );
