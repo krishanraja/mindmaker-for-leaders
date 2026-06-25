@@ -1,25 +1,23 @@
-import * as React from "react"
-import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { Navigate } from "react-router-dom"
 import { ClarityHome } from "@/components/landing/ClarityHome"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { BrandedAppLoader } from "@/components/system/BrandedAppLoader"
 
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth()
-  const navigate = useNavigate()
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [isAuthenticated, isLoading, navigate])
-
+  // While the Supabase session is being restored we don't yet know whether this
+  // is a public visitor or a returning leader - show the branded loader, never
+  // the marketing hero.
   if (isLoading) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent" />
-      </div>
-    )
+    return <BrandedAppLoader fullscreen caption="Bringing your workspace up" />
+  }
+
+  // Redirect authenticated users SYNCHRONOUSLY during render. The old
+  // effect-based navigate let <ClarityHome /> paint for one frame first, which
+  // is the "CTRL · Clarity for leaders" ghost-flash users saw on load.
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
   }
 
   return <ClarityHome />
