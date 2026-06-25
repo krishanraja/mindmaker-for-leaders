@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Plus, ArrowUpRight, Settings as SettingsIcon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { BrandLockup } from '@/components/landing/BrandLockup';
@@ -13,14 +14,22 @@ interface AppHeaderProps {
   showProfile?: boolean;
   onAdd?: () => void;
   onExport?: () => void;
+  /**
+   * Optional control teleported into the header center by the active page (for
+   * example the Decisions "Now | History" toggle), so a page-level switcher
+   * lives in the bar instead of spending a row of content space. Centered
+   * between the brand lockup and the right-hand actions.
+   */
+  center?: ReactNode;
 }
 
 /**
  * Shared app header: small favicon icon + CTRL logo in top-left, and a
  * Settings gear in the top-right so chrome is always reachable. Used on all
- * authenticated mobile pages. Optionally renders Add / Export action buttons.
+ * authenticated mobile pages. Optionally renders Add / Export action buttons,
+ * and an optional page-pushed control in the center.
  */
-export function AppHeader({ onAdd, onExport }: AppHeaderProps) {
+export function AppHeader({ onAdd, onExport, center }: AppHeaderProps) {
   const { openSheet } = useSettingsSheet();
   const location = useLocation();
   const isHome = location.pathname === '/dashboard' && !location.search;
@@ -30,6 +39,9 @@ export function AppHeader({ onAdd, onExport }: AppHeaderProps) {
       <div className="flex items-center gap-2">
         <BrandLockup />
       </div>
+      {center && (
+        <div className="min-w-0 flex flex-1 justify-center px-2">{center}</div>
+      )}
       <div className="flex items-center gap-1.5">
         {/* Tune-feed and the audio digest belong to Home (the daily-read door).
             Off Home, the header carries only that page's own actions, so each tab
