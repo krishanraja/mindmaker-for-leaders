@@ -401,9 +401,11 @@ export function BrainGraph({
           })}
         </g>
 
-        {/* Generous, on-top tap target for the peeked node: spans the dot AND its
-            "Tap again to open" label so the second tap is easy to land on a phone.
-            Painted last so it wins hit-testing over neighbouring dots. */}
+        {/* The "open" tap target for the peeked node: a comfortable button-sized
+            zone over the "Tap again to open" pill (which sits in the empty space
+            BELOW the dot), painted last so it wins hit-testing. Kept to the pill
+            so it never blankets neighbouring dots - those stay tappable, and the
+            dot itself also still opens on a re-tap. */}
         {peekNode && (
           <g
             style={{ cursor: 'pointer' }}
@@ -413,11 +415,11 @@ export function BrainGraph({
             }}
           >
             <rect
-              x={peekNode.x - 72}
-              y={peekNode.y - peekNode.r - 14}
-              width={144}
-              height={peekNode.r * 2 + 56}
-              rx={12}
+              x={peekNode.x - 60}
+              y={peekNode.y + peekNode.r + 15}
+              width={120}
+              height={28}
+              rx={14}
               fill="transparent"
             />
           </g>
