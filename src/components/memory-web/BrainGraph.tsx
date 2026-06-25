@@ -54,6 +54,12 @@ interface BrainGraphProps {
   onBondSelect?: (bond: GraphBond | null) => void;
   /** a pattern node (a strength / blind spot / style read) was tapped */
   onPatternSelect?: (pattern: UserPattern | null) => void;
+  /**
+   * Two-step tap (mobile): the first tap on a node only reveals its label so the
+   * leader can browse without a drawer flying up every time; a second tap on the
+   * same node opens the reader. Desktop (false) keeps the single-tap open.
+   */
+  peekFirst?: boolean;
   className?: string;
 }
 
@@ -64,6 +70,7 @@ export function BrainGraph({
   selectedFactId = null,
   onBondSelect,
   onPatternSelect,
+  peekFirst = false,
   className,
 }: BrainGraphProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -128,14 +135,45 @@ export function BrainGraph({
 
   // selection sync (parent-driven)
   const selectedId = selectedFactId;
+  // The locally "peeked" node on mobile: tapped once to reveal its label, not
+  // yet committed to the reader. A committed parent selection always wins.
+  const [peekId, setPeekId] = useState<string | null>(null);
+  const activeId = selectedId ?? peekId;
+
+  // Open the reader for a node (commit the selection to the parent).
+  const commitNode = useCallback(
+    (n: (typeof nodes)[number]) => {
+      if (n.kind === 'pattern') {
+        onBondSelect?.(null);
+        onPatternSelect?.(n.pattern);
+        return;
+      }
+      if (!n.fact) return;
+      onPatternSelect?.(null);
+      onBondSelect?.(bondForNode(n));
+    },
+    [onBondSelect, onPatternSelect],
+  );
 
   const handleNodeClick = useCallback(
     (id: string) => {
       const n = nodeById.get(id);
       if (!n || n.hub) return;
+
+      // Two-step (mobile): first tap (or tapping a new node) just reveals the
+      // label; tapping the same peeked node again opens the reader.
+      if (peekFirst) {
+        if (peekId === id) {
+          setPeekId(null);
+          commitNode(n);
+        } else {
+          setPeekId(id);
+        }
+        return;
+      }
+
+      // Single-tap (desktop): toggle the reader open/closed.
       const next = selectedId === id ? null : id;
-      // a pattern node opens the lightweight pattern read (it is not a verified
-      // fact, so it never routes through the fact bond reader).
       if (n.kind === 'pattern') {
         onBondSelect?.(null);
         onPatternSelect?.(next === null ? null : n.pattern);
@@ -145,7 +183,7 @@ export function BrainGraph({
       onPatternSelect?.(null);
       onBondSelect?.(next === null ? null : bondForNode(n));
     },
-    [nodeById, selectedId, onBondSelect, onPatternSelect],
+    [nodeById, peekFirst, peekId, selectedId, commitNode, onBondSelect, onPatternSelect],
   );
 
   // only legend the worlds that are actually on the canvas, in orbit order.
@@ -162,7 +200,13 @@ export function BrainGraph({
   const viewBox = `${vb.x} ${vb.y} ${vb.w} ${vb.h}`;
 
   return (
-    <div ref={wrapRef} className={cn('absolute inset-0', className)} style={{ touchAction: 'none' }}>
+    <div
+      ref={wrapRef}
+      className={cn('absolute inset-0', className)}
+      style={{ touchAction: 'none' }}
+      // tapping empty canvas dismisses a pending label peek (nodes stopPropagation)
+      onClick={() => { if (peekFirst) setPeekId(null); }}
+    >
       <svg
         className="absolute inset-0 block h-full w-full"
         viewBox={viewBox}
@@ -227,8 +271,10 @@ export function BrainGraph({
         <g>
           {nodes.map((n, i) => {
             const meta = GRAPH_WORLD_META[n.world];
-            const isSelected = selectedId === n.id;
-            const dimmed = selectedId !== null && !isSelected && !n.hub;
+            const isSelected = activeId === n.id;
+            const dimmed = activeId !== null && !isSelected && !n.hub;
+            // a node tapped once on mobile - label shown, reader not yet opened
+            const isPeek = peekFirst && peekId === n.id && selectedId !== n.id;
 
             if (n.hub) {
               return (
@@ -316,6 +362,20 @@ export function BrainGraph({
                     style={{ pointerEvents: 'none' }}
                   >
                     {n.label.length > 22 ? n.label.slice(0, 20) + '...' : n.label}
+                  </text>
+                )}
+                {/* the quiet "you can open this" affordance after a first tap */}
+                {isPeek && (
+                  <text
+                    x={n.x}
+                    y={n.y + n.r + 27}
+                    textAnchor="middle"
+                    fill="hsl(171 100% 60%)"
+                    fontSize={9}
+                    fontWeight={600}
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    Tap again to open
                   </text>
                 )}
               </motion.g>

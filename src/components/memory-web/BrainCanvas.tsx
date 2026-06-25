@@ -43,6 +43,7 @@ export function BrainCanvas({
   onAdd,
   isMobile,
 }: BrainCanvasProps) {
+  const reduceMotion = useReducedMotion();
   // cold = nothing to draw at all (no facts AND no observed patterns).
   const cold = !loading && facts.length === 0 && patterns.length === 0;
 
@@ -66,7 +67,13 @@ export function BrainCanvas({
       ) : cold ? (
         <ColdInvite onAdd={onAdd} />
       ) : (
-        <>
+        // the whole graph eases in on first load instead of snapping in
+        <motion.div
+          className="absolute inset-0"
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+        >
           <p className="pointer-events-none absolute left-0 right-0 top-3.5 z-[3] text-center text-[11px] tracking-[0.04em] text-muted-foreground/80">
             {isMobile ? 'Tap a node to read its connection' : 'Click a node to read its connection'}
           </p>
@@ -77,8 +84,9 @@ export function BrainCanvas({
             selectedFactId={selectedFactId}
             onBondSelect={onBondSelect}
             onPatternSelect={onPatternSelect}
+            peekFirst={isMobile}
           />
-        </>
+        </motion.div>
       )}
     </div>
   );
