@@ -199,6 +199,11 @@ export function BrainGraph({
 
   const viewBox = `${vb.x} ${vb.y} ${vb.w} ${vb.h}`;
 
+  // The node currently "peeked" on mobile (label shown, not yet opened). It gets
+  // a generous on-top tap target so the second tap is easy to land - the bare
+  // node dot is far too small a touch target on a phone.
+  const peekNode = peekFirst && peekId ? nodes.find((n) => n.id === peekId && !n.hub) : null;
+
   return (
     <div
       ref={wrapRef}
@@ -364,24 +369,59 @@ export function BrainGraph({
                     {n.label.length > 22 ? n.label.slice(0, 20) + '...' : n.label}
                   </text>
                 )}
-                {/* the quiet "you can open this" affordance after a first tap */}
+                {/* the "you can open this" affordance after a first tap - drawn as
+                    a pill so it reads as a button (the big tap target sits on top). */}
                 {isPeek && (
-                  <text
-                    x={n.x}
-                    y={n.y + n.r + 27}
-                    textAnchor="middle"
-                    fill="hsl(171 100% 60%)"
-                    fontSize={9}
-                    fontWeight={600}
-                    style={{ pointerEvents: 'none' }}
-                  >
-                    Tap again to open
-                  </text>
+                  <g style={{ pointerEvents: 'none' }}>
+                    <rect
+                      x={n.x - 54}
+                      y={n.y + n.r + 20}
+                      width={108}
+                      height={18}
+                      rx={9}
+                      fill="hsl(171 100% 50% / 0.14)"
+                      stroke="hsl(171 100% 55% / 0.5)"
+                      strokeWidth={1}
+                    />
+                    <text
+                      x={n.x}
+                      y={n.y + n.r + 29}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fill="hsl(171 100% 72%)"
+                      fontSize={9.5}
+                      fontWeight={700}
+                    >
+                      Tap again to open
+                    </text>
+                  </g>
                 )}
               </motion.g>
             );
           })}
         </g>
+
+        {/* Generous, on-top tap target for the peeked node: spans the dot AND its
+            "Tap again to open" label so the second tap is easy to land on a phone.
+            Painted last so it wins hit-testing over neighbouring dots. */}
+        {peekNode && (
+          <g
+            style={{ cursor: 'pointer' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNodeClick(peekNode.id);
+            }}
+          >
+            <rect
+              x={peekNode.x - 72}
+              y={peekNode.y - peekNode.r - 14}
+              width={144}
+              height={peekNode.r * 2 + 56}
+              rx={12}
+              fill="transparent"
+            />
+          </g>
+        )}
       </svg>
 
       {/* quiet legend, pinned bottom-left (only with nodes). A compact 2-column
