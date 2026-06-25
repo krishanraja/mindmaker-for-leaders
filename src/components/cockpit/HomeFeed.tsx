@@ -30,7 +30,7 @@ import type { CockpitData, DeckCard, HomeState } from '@/types/cockpit';
 import { CockpitHero } from './CockpitHero';
 import { CategoryMotif } from './CategoryMotif';
 import { TuneFeedButton } from './TuneFeedButton';
-import { SkeletonCard, LoadingCaption } from '@/components/system/SkeletonCard';
+import { GlobeLoader } from '@/components/system/GlobeLoader';
 import { resolveNewsCategory } from '@/types/newsCategory';
 import { usePinnedDecision } from '@/hooks/usePinnedDecision';
 import { cn } from '@/lib/utils';
@@ -182,10 +182,7 @@ function MobileHome({
         onWheel={loading ? undefined : onWheel}
       >
         {loading ? (
-          <div className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-hidden">
-            <SkeletonCard variant="feed" className="shrink-0" />
-            <SkeletonCard variant="feed" className="shrink-0 opacity-50" />
-          </div>
+          <GlobeLoader caption="Reading the market and your world" />
         ) : data.needsProfile ? (
           <ProfileGateCard missing={data.missingProfile} variant="mobile" />
         ) : (
@@ -236,9 +233,6 @@ function MobileHome({
           </>
         )}
       </div>
-
-      {/* loading caption (anticipatory) */}
-      {loading && <LoadingCaption>Reading the market and your world</LoadingCaption>}
     </div>
   );
 }
@@ -383,11 +377,7 @@ function DesktopHome({
       {/* THE RAIL - the one browsable zone. min-h-0 so the doors keep their place. */}
       <div className="relative mt-3.5 flex min-h-0 flex-1 flex-col">
         {loading ? (
-          <div className="flex min-h-0 flex-1 gap-[18px] overflow-hidden">
-            <SkeletonCard variant="lead" className="w-[480px] shrink-0" />
-            <SkeletonCard variant="feed" className="w-[330px] shrink-0" />
-            <SkeletonCard variant="feed" className="w-[330px] shrink-0" />
-          </div>
+          <GlobeLoader caption="Reading the market and your world" />
         ) : data.needsProfile ? (
           <ProfileGateCard missing={data.missingProfile} variant="desktop" />
         ) : (
@@ -406,8 +396,6 @@ function DesktopHome({
           </>
         )}
       </div>
-
-      {loading && <div className="mt-2 shrink-0"><LoadingCaption>Reading the market and your world</LoadingCaption></div>}
     </div>
   );
 }
