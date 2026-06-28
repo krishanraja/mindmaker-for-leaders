@@ -55,20 +55,28 @@ describe('rankByPreferences', () => {
     const ranked = rankByPreferences(cards, prefs);
     expect(ranked[0].category).toBe('economics');
   });
-  it('caps a single lane for variety, overflow appended last', () => {
+  it('lets a chosen lane DOMINATE the top (no variety cap fighting the choice)', () => {
+    const prefs: NewsPreferences = { boosted: ['economics'], bias: 'balanced' };
     const cards: RankableCard[] = [
       { category: 'model', score: 9 },
-      { category: 'model', score: 8 },
-      { category: 'model', score: 7 },
-      { category: 'model', score: 6 },
-      { category: 'tools', score: 1 },
+      { category: 'economics', score: 5 },
+      { category: 'economics', score: 4 },
+      { category: 'economics', score: 3 },
+      { category: 'tools', score: 8 },
     ];
-    const ranked = rankByPreferences(cards, balanced, 2);
-    // first three keep variety: 2 model max before tools appears in the kept set
-    const firstThree = ranked.slice(0, 3).map((c) => c.category);
-    expect(firstThree.filter((c) => c === 'model').length).toBeLessThanOrEqual(2);
-    expect(firstThree).toContain('tools');
+    const ranked = rankByPreferences(cards, prefs);
+    // all three economics cards lead, in score order, before anything else
+    expect(ranked.slice(0, 3).map((c) => c.category)).toEqual(['economics', 'economics', 'economics']);
     expect(ranked.length).toBe(5); // nothing lost
+  });
+  it('neutral prefs keep the world-importance (score) order', () => {
+    const cards: RankableCard[] = [
+      { category: 'model', score: 3 },
+      { category: 'tools', score: 9 },
+      { category: 'economics', score: 6 },
+    ];
+    const ranked = rankByPreferences(cards, balanced);
+    expect(ranked.map((c) => c.score)).toEqual([9, 6, 3]);
   });
 });
 
@@ -91,6 +99,32 @@ describe('rankPersonalized', () => {
     const ranked = rankPersonalized(serverFeed, prefs);
     // economics was 3rd; boosted it rises near the top.
     expect(ranked[0].category).toBe('economics');
+  });
+
+  it('a boosted lane leads, preserving the server order WITHIN the lane', () => {
+    const prefs: NewsPreferences = { boosted: ['economics'], bias: 'balanced' };
+    const feed: RankableCard[] = [
+      { category: 'model', score: 99 },
+      { category: 'economics', score: 70 }, // server-higher economics
+      { category: 'governance', score: 80 },
+      { category: 'economics', score: 40 }, // server-lower economics
+    ];
+    const ranked = rankPersonalized(feed, prefs);
+    // both economics lead, in their original server order; model/governance follow
+    expect(ranked.slice(0, 2).map((c) => c.category)).toEqual(['economics', 'economics']);
+    expect(ranked[0].score).toBe(70); // server order kept within the lane
+    expect(ranked[1].score).toBe(40);
+  });
+
+  it('the scan bias is visible on its own (no lane chosen)', () => {
+    const prefs: NewsPreferences = { boosted: [], bias: 'practical' };
+    // practical floats actionable lanes (tools) above a model story of equal rank
+    const feed: RankableCard[] = [
+      { category: 'model', score: 50 },
+      { category: 'tools', score: 50 },
+    ];
+    const ranked = rankPersonalized(feed, prefs);
+    expect(ranked[0].category).toBe('tools');
   });
 
   it('does not re-sort by the generic score (server #1 stays unless out-boosted)', () => {
