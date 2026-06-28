@@ -3,8 +3,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { useNewsPreferences } from '@/hooks/useNewsPreferences';
-import { rankByPreferences } from '@/lib/newsPriority';
+import { rankByPreferences, rankPersonalized } from '@/lib/newsPriority';
 import { COLD_DECK } from '@/components/cockpit/coldDeck';
+import { cacheHeadlines } from '@/components/system/loadingLines';
 import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, HeroMagnitude, HomeState } from '@/types/cockpit';
 
 const db = supabase as unknown as SupabaseClient;
@@ -202,7 +203,12 @@ export function useCockpit(): {
             setNeedsProfile(false);
             setServerPersonalized(res?.personalized === true);
             const cards = res?.cards;
-            if (Array.isArray(cards)) setLiveHeadlines(cards);
+            if (Array.isArray(cards)) {
+              setLiveHeadlines(cards);
+              // Stash the real headlines so the NEXT load's GlobeLoader can
+              // preview them in its rotation (loadingLines.ts).
+              cacheHeadlines(cards.map((c) => c.headline).filter(Boolean));
+            }
           }
         }
       } catch {
@@ -319,7 +325,14 @@ export function useCockpit(): {
     // authoritative - the client must not re-rank (that would fight the engine).
     // Only the generic shared pool gets the local preference re-rank.
     const filtered = liveHeadlines.filter((h) => h.headline && !(h.category && dislikedCats.has(h.category)));
-    const ranked = serverPersonalized ? filtered : rankByPreferences(filtered, preferences);
+    // Tune always re-ranks the deck. On the generic shared pool we rank by the
+    // leader's prefs over the server importance score; on an already-personalized
+    // feed we keep the server order as the spine and only LIFT the chosen lanes a
+    // few slots (rankPersonalized), so tuning is visible without fighting the
+    // engine. Neutral prefs leave either order untouched.
+    const ranked = serverPersonalized
+      ? rankPersonalized(filtered, preferences)
+      : rankByPreferences(filtered, preferences);
     const liveCards: DeckCard[] = ranked.map((h, i) => ({
       id: h.id || `live-${i}`,
       kind: 'news' as const,

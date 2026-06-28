@@ -150,9 +150,15 @@ describe('brainSignature (per-user cache key)', () => {
 });
 
 describe('toLensSource', () => {
-  it('returns the preserved lens projection with real ids', () => {
+  it('preserves the lens projection (real ids) and carries the news tuning', () => {
     const p = makeProfile();
-    expect(toLensSource(p)).toBe(p.lensSource);
-    expect(toLensSource(p).missions[0].id).toBe('m1');
+    const lens = toLensSource(p);
+    // real mission/decision ids are preserved from the projection
+    expect(lens.missions[0].id).toBe('m1');
+    expect(lens.decisions).toEqual(p.lensSource.decisions);
+    // the leader's news tuning rides along so the briefing planner leans the
+    // same way as their tuned Home feed (no silos)
+    expect(lens.boosted).toEqual(['orchestration']);
+    expect(lens.bias).toBe('practical');
   });
 });

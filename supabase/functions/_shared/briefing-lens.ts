@@ -52,6 +52,8 @@ export interface PlannedQuery {
   target_lens_item_id: string;
 }
 
+export type NewsBias = "big" | "practical" | "balanced";
+
 export interface LensSource {
   userId: string;
   name: string;
@@ -64,6 +66,44 @@ export interface LensSource {
   decisions: Array<{ id: string; text: string }>;
   watchingCompanies: string[];
   patterns: Array<{ type: string; text: string; confidence: number }>;
+  /** News tuning (was `news_preferences`): the AI-native lanes the leader lifts
+   * to the top of Home. Carried here so the briefing's query planner leans the
+   * same way. One of the nine category ids (src/types/newsCategory.ts). */
+  boosted?: string[];
+  /** How the leader likes to scan: biggest moves vs practical vs balanced. */
+  bias?: NewsBias;
+}
+
+/** Plain-English angle for each of the nine AI-native lanes, fed to the query
+ * planner so a boosted lane steers query generation. Mirrors the nine angles in
+ * the planner system prompt and src/types/newsCategory.ts. */
+const CATEGORY_QUERY_ANGLE: Record<string, string> = {
+  model: "frontier model & capability shifts",
+  economics: "AI economics (token/compute/inference cost moves, funding)",
+  tools: "AI tools, platforms & vendors to build with",
+  orchestration: "agent orchestration & reliability engineering",
+  product: "AI-native product & go-to-market / packaging",
+  governance: "AI governance, safety & compliance",
+  security: "AI security & agent risk",
+  org: "AI-native org, talent & ways of working",
+  proof: "proof & adoption of AI deployments in the sector",
+};
+
+/** Build a short planner directive from the leader's tuning, or "" when neutral. */
+function tuningDirective(boosted: string[] | undefined, bias: NewsBias | undefined): string {
+  const parts: string[] = [];
+  const lanes = (boosted ?? [])
+    .map((c) => CATEGORY_QUERY_ANGLE[c])
+    .filter((x): x is string => Boolean(x));
+  if (lanes.length > 0) {
+    parts.push(`The leader has tuned their feed toward these lanes - weight queries toward them: ${lanes.join("; ")}.`);
+  }
+  if (bias === "big") {
+    parts.push("Scan bias: chase the biggest, most widely-reported moves first.");
+  } else if (bias === "practical") {
+    parts.push("Scan bias: prefer practical, actionable stories - tools to use, patterns and deployments to copy now.");
+  }
+  return parts.join(" ");
 }
 
 const LENS_CACHE_MODEL = "briefing-lens-v2";
@@ -401,6 +441,7 @@ export async function planQueries(
   customContext: string | undefined,
   industry: string | undefined = undefined,
   model: string = "gpt-4o-mini",
+  tuning: { boosted?: string[]; bias?: NewsBias } | undefined = undefined,
 ): Promise<PlannedQuery[]> {
   const topLens = lens.slice(0, 6);
   if (topLens.length === 0) return [];
@@ -418,6 +459,7 @@ export async function planQueries(
     const drop = training?.hot_signal_taxonomy?.drop ?? [];
     const watchlist = training?.watchlist ?? { companies: [], people: [], themes: [] };
     const industryGuidance = industryQueryBias(industry);
+    const tuningHint = tuningDirective(tuning?.boosted, tuning?.bias);
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -438,7 +480,7 @@ Given a lens (items that matter to a specific leader today) produce 4-6 distinct
 AI-NATIVE LOCK (the rule above all others): every query MUST hunt for AI-deployment news, not general business news. Steer each query toward how the leader can BUILD/RUN/SELL the AI-native version of their business, across these nine angles: (1) model & capability shifts, (2) AI economics (token/compute/inference cost moves), (3) AI tools, platforms & vendors, (4) orchestration & agent reliability, (5) AI-native product & go-to-market, (6) AI governance/safety/compliance, (7) AI security & agent risk, (8) AI-native org/talent, (9) proof & adoption of AI in the sector. Tie the AI angle to the leader's sector/role and the lens item. Never write a query that would only surface general business news (a funding round, an exec hire, a price change) with no AI angle; reframe it to the AI-native version (e.g. a hiring lens item becomes "AI agents taking over part of the [role] function in [sector]").
 
 Industry scoping still applies: the leader works in "${industry ?? "an unspecified industry"}". Keep the AI angle inside that industry's adjacent domains (see industry_bias.include) and out of industry_bias.exclude domains unless a lens item explicitly names that domain. When uncertain, stay inside industry_bias.include but keep the query AI-native.
-
+${tuningHint ? `\nLEADER TUNING (mirror their Home feed): ${tuningHint}\n` : ""}
 Return JSON: {"queries":[{"query":"...","intent":"...","target_lens_item_id":"..."}]}`,
           },
           {
@@ -448,6 +490,7 @@ Return JSON: {"queries":[{"query":"...","intent":"...","target_lens_item_id":"..
               custom_context: customContext ?? null,
               leader_industry: industry ?? null,
               industry_bias: industryGuidance,
+              tuning: tuningHint || null,
               lens: topLens,
               must_include: mustInclude,
               drop,

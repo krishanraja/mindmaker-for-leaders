@@ -10,9 +10,10 @@
 // prefers-reduced-motion (a single static frame, no spin, no shimmer).
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import createGlobe from 'cobe';
 import { cn } from '@/lib/utils';
+import { buildLoadingLines } from './loadingLines';
 
 // Emerald accent (#00D9B6) in cobe's 0..1 RGB. Kept in sync with --accent.
 const EMERALD: [number, number, number] = [0, 0.851, 0.714];
@@ -48,15 +49,41 @@ const LINKS: Array<[number, number]> = [
 ];
 
 export interface GlobeLoaderProps {
-  /** Anticipatory caption under the globe (with the three-dot pulse). */
+  /**
+   * A single fixed caption (no rotation). When omitted, the loader cycles the
+   * blended AI-fluency / durable-trend / cached-headline rotation from
+   * loadingLines.ts so the loading moment adds value instead of stalling.
+   */
   caption?: string;
+  /** Explicit rotation pool, overriding the default built rotation. */
+  captions?: string[];
   className?: string;
 }
 
-export function GlobeLoader({ caption = 'Curating what you need to know in AI today…', className }: GlobeLoaderProps) {
+const ROTATE_MS = 2600;
+
+export function GlobeLoader({ caption, captions, className }: GlobeLoaderProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reduceMotion = useReducedMotion();
+
+  // The rotation pool, resolved once on mount: an explicit single caption wins
+  // (no rotation); else explicit captions; else the built evergreen + trend +
+  // cached-headline rotation. Never empty.
+  const [lines] = useState<string[]>(() => {
+    if (caption) return [caption];
+    if (captions && captions.length) return captions;
+    const built = buildLoadingLines();
+    return built.length ? built : ['Curating what you need to know in AI today…'];
+  });
+  // Start at a random line so each load feels fresh, not the same first frame.
+  const [idx, setIdx] = useState(() => (lines.length > 1 ? Math.floor(Math.random() * lines.length) : 0));
+  useEffect(() => {
+    if (reduceMotion || lines.length <= 1) return;
+    const id = setInterval(() => setIdx((i) => (i + 1) % lines.length), ROTATE_MS);
+    return () => clearInterval(id);
+  }, [reduceMotion, lines.length]);
+  const current = lines[idx] ?? lines[0];
   // Square globe diameter, derived from the available space (capped so it sits
   // calmly inside the bounded no-scroll feed zone).
   const [size, setSize] = useState(0);
@@ -163,23 +190,22 @@ export function GlobeLoader({ caption = 'Curating what you need to know in AI to
               aria-hidden="true"
             />
 
-            {/* The caption lives INSIDE the globe - a centered, breathing "scan" line
-                over a soft radial scrim so it stays legible against the rotating Earth.
-                pointer-events-none so it never blocks the surface beneath. */}
-            {caption && (
+            {/* The caption lives INSIDE the globe - a centered "scan" line over a
+                soft radial scrim so it stays legible against the rotating Earth.
+                The line itself cross-fades as the rotation advances (the three-dot
+                pulse stays). pointer-events-none so it never blocks the surface. */}
+            {current && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6">
-                <motion.div
+                <div
                   role="status"
                   aria-live="polite"
-                  className="flex max-w-[80%] flex-col items-center gap-2 rounded-full px-5 py-3 text-center"
+                  className="flex max-w-[82%] flex-col items-center gap-2 rounded-2xl px-5 py-3 text-center"
                   style={{
                     // closest-side radial scrim, sized to the text, so the line reads
                     // without hiding the globe behind it.
                     background:
-                      'radial-gradient(closest-side, hsl(var(--background) / 0.78), hsl(var(--background) / 0.34) 62%, transparent)',
+                      'radial-gradient(closest-side, hsl(var(--background) / 0.82), hsl(var(--background) / 0.38) 62%, transparent)',
                   }}
-                  animate={reduceMotion ? { opacity: 1 } : { opacity: [0.6, 1, 0.6] }}
-                  transition={reduceMotion ? undefined : { duration: 2.4, ease: 'easeInOut', repeat: Infinity }}
                 >
                   <span className="inline-flex gap-[3px]">
                     {[0, 1, 2].map((i) => (
@@ -195,10 +221,20 @@ export function GlobeLoader({ caption = 'Curating what you need to know in AI to
                       />
                     ))}
                   </span>
-                  <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-foreground/85">
-                    {caption}
+                  <span className="relative flex min-h-[30px] items-center justify-center text-[11px] font-medium uppercase leading-snug tracking-[0.14em] text-foreground/85">
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.span
+                        key={idx}
+                        initial={reduceMotion ? false : { opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={reduceMotion ? undefined : { opacity: 0, y: -5 }}
+                        transition={{ duration: 0.42, ease: 'easeInOut' }}
+                      >
+                        {current}
+                      </motion.span>
+                    </AnimatePresence>
                   </span>
-                </motion.div>
+                </div>
               </div>
             )}
           </div>

@@ -157,9 +157,18 @@ export function brainSignature(profile: BrainProfile): string {
   return JSON.stringify(shape);
 }
 
-/** The briefing lens projection, for callers that still speak `LensSource`. */
+/**
+ * The briefing lens projection, for callers that still speak `LensSource`.
+ * Carries the leader's news tuning (boosted lanes + scan bias) onto the lens
+ * source so the briefing's query planner leans the SAME way as the tuned Home
+ * feed - the "no silos" promise, now end to end.
+ */
 export function toLensSource(profile: BrainProfile): LensSource {
-  return profile.lensSource;
+  return {
+    ...profile.lensSource,
+    boosted: profile.boostedCategories,
+    bias: profile.newsBias,
+  };
 }
 
 /* ------------------------------------------------------------------ */

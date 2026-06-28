@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   priorityScore,
   rankByPreferences,
+  rankPersonalized,
   categoriesForGroups,
   groupsForCategories,
   type NewsPreferences,
@@ -68,5 +69,37 @@ describe('rankByPreferences', () => {
     expect(firstThree.filter((c) => c === 'model').length).toBeLessThanOrEqual(2);
     expect(firstThree).toContain('tools');
     expect(ranked.length).toBe(5); // nothing lost
+  });
+});
+
+describe('rankPersonalized', () => {
+  // The server feed order is the spine; index 0 is the server's #1.
+  const serverFeed: RankableCard[] = [
+    { category: 'model', score: 99, sourceCount: 1 },
+    { category: 'governance', score: 80, sourceCount: 1 },
+    { category: 'economics', score: 70, sourceCount: 1 },
+    { category: 'security', score: 60, sourceCount: 1 },
+  ];
+
+  it('is an exact identity for an untuned (neutral) leader', () => {
+    const ranked = rankPersonalized(serverFeed, balanced);
+    expect(ranked).toBe(serverFeed); // same reference - server order untouched
+  });
+
+  it('lifts a boosted lane up the personalized order', () => {
+    const prefs: NewsPreferences = { boosted: ['economics'], bias: 'balanced' };
+    const ranked = rankPersonalized(serverFeed, prefs);
+    // economics was 3rd; boosted it rises near the top.
+    expect(ranked[0].category).toBe('economics');
+  });
+
+  it('does not re-sort by the generic score (server #1 stays unless out-boosted)', () => {
+    // 'model' has a huge generic score but no boost; 'governance' is boosted.
+    const prefs: NewsPreferences = { boosted: ['governance'], bias: 'balanced' };
+    const ranked = rankPersonalized(serverFeed, prefs);
+    expect(ranked[0].category).toBe('governance');
+    // model is lifted by neither score nor boost here; it should NOT leapfrog
+    // back to the top off its score=99 (that would be the generic-rank bug).
+    expect(ranked.indexOf(ranked.find((c) => c.category === 'governance')!)).toBe(0);
   });
 });
