@@ -8,6 +8,8 @@ Complete feature inventory.
 
 > **For sales/marketing AI agents**: pull feature mechanics from here, but the binding promise and hooks come from `AGENT_BRIEFING.md` (AI-native), not the older sales-anchor callouts below. Some sales anchors still carry the retired "decision speed / portable double" framing; prefer the AI-native frame.
 
+> **Curation system (2026-06-28, PRs #287, #293-296; LIVE)**: the Home daily read - news deck + Tune + role/business scoring + loading globe + audio Briefing - is ONE system over ONE brain. Canonical methodology + architecture: **`docs/CURATION-SYSTEM-SPEC.md`**. A chosen Tune lane DOMINATES the feed (uncapped), ordered by inferred role-archetype + industry fit, with a guaranteed on-topic floor of 3; Tune applies live; the Briefing covers the same pool. The three main areas' purpose/objectives/outcomes: `docs/CTRL-SYSTEM-SPEC.md` section 7.
+
 > **Current brand (2026-06-16, PR #186):** CTRL is **globally forced dark** on the `ctrl-ds` instrument palette, emerald `#00D9B6` accent, and the emerald `ctrl.` wordmark replacing the old green Mindmaker logo. It is NOT light-mode, NOT warm off-white, NOT white cards, NOT the green logo. Any older "white card / off-white / green logo" phrasing in this doc is stale and corrected inline. See **Redesign** and **Brain Engine** below.
 
 ---
