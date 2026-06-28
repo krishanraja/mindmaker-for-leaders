@@ -136,4 +136,16 @@ describe('rankPersonalized', () => {
     // back to the top off its score=99 (that would be the generic-rank bug).
     expect(ranked.indexOf(ranked.find((c) => c.category === 'governance')!)).toBe(0);
   });
+
+  it('role fit orders WITHIN a chosen lane (CFO: economics before product)', () => {
+    // both lanes boosted (the "commercial" group); role fit breaks the order.
+    const prefs: NewsPreferences = { boosted: ['economics', 'product'], bias: 'balanced' };
+    const feed: RankableCard[] = [
+      { category: 'product', score: 9 },
+      { category: 'economics', score: 8 },
+    ];
+    const fit = { economics: 0.9, product: 0.4 }; // a finance archetype
+    const ranked = rankPersonalized(feed, prefs, fit);
+    expect(ranked[0].category).toBe('economics');
+  });
 });

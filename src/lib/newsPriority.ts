@@ -99,6 +99,11 @@ export interface RankableCard {
 const BOOST_BLOCK = 1_000_000;
 const PRACTICAL_LIFT = 3; // within a group, the practical bias floats actionable lanes up
 const BIG_PER_SOURCE = 1.6; // within a group, "biggest moves" floats multi-source stories up
+const ROLE_FIT_WEIGHT = 3; // within a group, float lanes that fit the leader's role/business
+
+// Per-category suitability to the leader's role + business, 0..1 (see
+// roleArchetype.ts). Optional: when absent, ranking ignores role fit entirely.
+export type RoleFit = Partial<Record<NewsCategoryId, number>>;
 
 /** True when the leader has not tuned anything: pure world-importance order. */
 function isNeutral(prefs: NewsPreferences): boolean {
@@ -137,18 +142,26 @@ export function priorityScore(card: RankableCard, prefs: NewsPreferences): numbe
   return base + (isBoosted(card, prefs) ? BOOST_BLOCK : 0) + biasLift(card, prefs.bias);
 }
 
-/** Shared ordering core: stable sort by (boosted block + bias lift + base),
- * with the original index as the tiebreak so equal cards keep their order. */
+/** The role/business suitability lift for a card's lane (0 when no fit given). */
+function fitLift(card: RankableCard, fit: RoleFit | undefined): number {
+  if (!fit) return 0;
+  const cat = card.category as NewsCategoryId | undefined;
+  return cat ? ROLE_FIT_WEIGHT * (fit[cat] ?? 0) : 0;
+}
+
+/** Shared ordering core: stable sort by (boosted block + bias lift + role fit +
+ * base), with the original index as the tiebreak so equal cards keep order. */
 function rankCore<T extends RankableCard>(
   cards: T[],
   prefs: NewsPreferences,
   baseOf: (card: T, index: number, total: number) => number,
+  fit: RoleFit | undefined,
 ): T[] {
   const n = cards.length;
   const scored = cards.map((c, i) => ({
     c,
     i,
-    s: baseOf(c, i, n) + (isBoosted(c, prefs) ? BOOST_BLOCK : 0) + biasLift(c, prefs.bias),
+    s: baseOf(c, i, n) + (isBoosted(c, prefs) ? BOOST_BLOCK : 0) + biasLift(c, prefs.bias) + fitLift(c, fit),
   }));
   scored.sort((a, b) => (b.s - a.s) || (a.i - b.i));
   return scored.map((x) => x.c);
@@ -156,11 +169,16 @@ function rankCore<T extends RankableCard>(
 
 /**
  * Re-rank the GENERIC shared pool by the leader's preferences. The spine is the
- * server world-importance score; a chosen lane leads, the scan bias orders.
+ * server world-importance score; a chosen lane leads, the scan bias orders, and
+ * (when supplied) role/business fit sharpens the order within each group.
  * Returns a new array.
  */
-export function rankByPreferences<T extends RankableCard>(cards: T[], prefs: NewsPreferences): T[] {
-  return rankCore(cards, prefs, (c) => (typeof c.score === 'number' ? c.score : 0));
+export function rankByPreferences<T extends RankableCard>(
+  cards: T[],
+  prefs: NewsPreferences,
+  fit?: RoleFit,
+): T[] {
+  return rankCore(cards, prefs, (c) => (typeof c.score === 'number' ? c.score : 0), fit);
 }
 
 /**
@@ -174,8 +192,14 @@ export function rankByPreferences<T extends RankableCard>(cards: T[], prefs: New
  * Neutral prefs are an exact identity (the server order is authoritative and
  * untouched), so an untuned leader sees no change. Returns a new array.
  */
-export function rankPersonalized<T extends RankableCard>(cards: T[], prefs: NewsPreferences): T[] {
+export function rankPersonalized<T extends RankableCard>(
+  cards: T[],
+  prefs: NewsPreferences,
+  fit?: RoleFit,
+): T[] {
+  // Untuned: the server order is authoritative (it already scored against the
+  // brain, including role), so leave it - applying role fit here would fight it.
   if (isNeutral(prefs)) return cards;
   // base = position (n-i): index 0 keeps the highest base, ties broken by index.
-  return rankCore(cards, prefs, (_c, i, n) => n - i);
+  return rankCore(cards, prefs, (_c, i, n) => n - i, fit);
 }
