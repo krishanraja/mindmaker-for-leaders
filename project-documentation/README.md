@@ -4,7 +4,7 @@
 
 This folder is the deeper source of truth for CTRL. The two highest-authority documents in the whole repo are the canonical product/build specs in `docs/`, and the top-level `README.md`. Where any file in this folder disagrees with them, the spec and the root README win.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (documentation reconciliation pass; phases 17-23 and fifth kit reflected; all file dates updated).
 
 ---
 
@@ -27,7 +27,7 @@ The product has two halves:
 | `src/router.tsx` | The live route table | Code is truth |
 | `src/constants/billing.ts` + `supabase/functions/_shared/edge-pricing.ts` | The live Edge Pro price | Code is truth |
 
-> Reconciliation note (2026-06-21): the sales/positioning docs in this folder were written for an earlier positioning ("clarity for leaders", "portable AI double", "the zero-context tax", a light/Apple-quality look). They have been reconciled to the AI-native positioning and the globally-dark visual where the facts are settled, and any AI-native ICP/messaging/go-to-market detail that is NOT yet decided is flagged `TODO(founder)` rather than invented. Read them through the AI-native lens above. The product mechanics they describe (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the Kits) are real and still in the code; it is the FRAMING that moved to AI-native.
+> Reconciliation note (2026-06-28): the sales/positioning docs in this folder were written for an earlier positioning ("clarity for leaders", "portable AI double", "the zero-context tax", a light/Apple-quality look). They have been reconciled to the AI-native positioning and the globally-dark visual where the facts are settled, and any AI-native ICP/messaging/go-to-market detail that is NOT yet decided is flagged `TODO(founder)` rather than invented. Read them through the AI-native lens above. The product mechanics they describe (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the Kits) are real and still in the code; it is the FRAMING that moved to AI-native. A 2026-06-28 reconciliation pass added coverage of Phases 17-23 and the fifth kit ("Build Your AI Chief of Staff") to FEATURES.md, HISTORY.md (done previously), AGENT_BRIEFING.md, ARCHITECTURE.md; corrected stale items (framer-motion version, supabase db push references, Lovable -> Claude Code, DESIGN_SYSTEM.md archive path, compliance positioning); and bumped all file dates.
 
 ---
 

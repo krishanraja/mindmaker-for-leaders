@@ -1,5 +1,7 @@
 # CTRL Pricing
 
+**Last Updated:** 2026-06-28 (verify-clean; content accurate).
+
 CTRL has two tiers. There is no separate SKU for the Automator. Building skills is FREE for now: any authenticated user (including anonymous Kit sessions) can run the Automator and export skills, with no per-month quota and no paywall on the build itself. Edge Pro still gates other things.
 
 | Capability | Free | Edge Pro ($29 / month) |

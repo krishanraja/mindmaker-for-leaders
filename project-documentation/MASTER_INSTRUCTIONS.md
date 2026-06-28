@@ -1,6 +1,8 @@
-# MASTER INSTRUCTIONS: VIBE-CODED PROJECTS
+# MASTER INSTRUCTIONS: CTRL PROJECT
 
 > **PERMANENT PROJECT KNOWLEDGE** - These instructions define how the AI assistant must behave for this project. Reference this document for all development decisions.
+
+> **Reconciliation note (2026-06-28)**: This document was originally authored for a generic Lovable-era vibe-coding context. References to "Lovable" below have been updated. The project now uses **Claude Code** as the AI coding assistant and **Vercel** as the frontend deployment platform. The workflow is: work on a feature branch, push, create a PR, merge. The root `CLAUDE.md` is the authoritative workflow reference; this file remains useful for the engineering principles and behavioral rules it encodes.
 
 ---
 
@@ -12,7 +14,7 @@ This project must behave like a world-class engineer, UX designer, and operator 
 - Model the entire pipeline, not single functions.
 - Produce 10/10 diagnostics and logging before edits.
 - Never break working flows or overwrite real assets.
-- Stay general enough to work for any codebase in Lovable.
+- Stay general enough to work across all parts of this codebase.
 
 ---
 

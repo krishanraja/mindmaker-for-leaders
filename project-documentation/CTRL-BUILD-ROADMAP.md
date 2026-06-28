@@ -1,6 +1,8 @@
 # CTRL - Build Roadmap
 
-> **RECONCILIATION BANNER (2026-06-21).** This roadmap is a dated build record (state as of 2026-06-17). Phases 0 to 4 shipped against the prior "clarity engine" positioning and the dark redesign. It predates the LOCKED AI-native positioning (2026-06-19) and the two halves that shipped after: the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Read it as a historical route, not the current plan. The current product/build truth is `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, and `CLAUDE.md`. TODO(founder): decide whether this roadmap is retired or rewritten to the AI-native build sequence.
+**Last reconciled:** 2026-06-28 (date bump; content verify-clean).
+
+> **RECONCILIATION BANNER (2026-06-21; date-bumped 2026-06-28).** This roadmap is a dated build record (state as of 2026-06-17). Phases 0 to 4 shipped against the prior "clarity engine" positioning and the dark redesign. It predates the LOCKED AI-native positioning (2026-06-19) and the two halves that shipped after: the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Read it as a historical route, not the current plan. The current product/build truth is `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, and `CLAUDE.md`. TODO(founder): decide whether this roadmap is retired or rewritten to the AI-native build sequence.
 
 > The Corpus is the destination; this is the route. Sequenced by **value and proof**, not by feature list. Decision (D3): a clean-room **frontend rebuild on the existing Supabase backend**, learn-loop first. The moat and engines survive; the surfacing is reborn; the cut wires get closed.
 

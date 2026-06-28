@@ -1,8 +1,8 @@
 # Branding
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (DESIGN_SYSTEM.md archive path corrected).
 
-> RECONCILIATION BANNER. The voice mechanics here (short sentences, active voice, second person, no hype, no FOMO, no emojis, no em dashes) are still correct and useful. But two things in this doc are OFF and corrected below: (1) the positioning is now **building the AI-native version of your business**, not "decision speed / clarity for leaders / portable AI double"; lead with the AI-native frame and the reframe rule. (2) The visual brand is globally DARK (the ctrl-ds instrument palette, emerald `#00D9B6`, the BrandLockup), NOT light / "white backgrounds / generous white space / Mint sparingly on white". The "Visual Brand Elements" section below is corrected to the dark system; the canonical visual reference is `project-documentation/DESIGN_SYSTEM.md` and the code. TODO(founder): lock the AI-native messaging pillars and word-choices (the decision-speed pillars below are placeholders).
+> RECONCILIATION BANNER. The voice mechanics here (short sentences, active voice, second person, no hype, no FOMO, no emojis, no em dashes) are still correct and useful. But two things in this doc are OFF and corrected below: (1) the positioning is now **building the AI-native version of your business**, not "decision speed / clarity for leaders / portable AI double"; lead with the AI-native frame and the reframe rule. (2) The visual brand is globally DARK (the ctrl-ds instrument palette, emerald `#00D9B6`, the BrandLockup), NOT light / "white backgrounds / generous white space / Mint sparingly on white". The "Visual Brand Elements" section below is corrected to the dark system; the canonical visual reference is `project-documentation/_archive/DESIGN_SYSTEM.md` (archived; the live dark `ctrl-ds` tokens are in `src/styles/tokens.css` and `index.css`) and the code. TODO(founder): lock the AI-native messaging pillars and word-choices (the decision-speed pillars below are placeholders).
 
 ---
 

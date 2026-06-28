@@ -1,5 +1,7 @@
 # Briefing Generation - Known Failure Modes & Fix History
 
+**Last Updated:** 2026-06-28 (verify-clean; content accurate).
+
 > **Purpose.** Every "generate/refresh briefing hangs / silently fails /
 > shows Generate CTA mid-flight" bug we've shipped has come back in a new
 > disguise. This file is the running log so the next person (or session)

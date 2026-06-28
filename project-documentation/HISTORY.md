@@ -725,6 +725,194 @@ The Skill Builder is open, the harness will not invent a leader's voice, voice l
 
 ---
 
+## Phase 17: Kit Redesign - All 4 Kits Fully Live (PRs #206-212, 2026-06-19)
+
+### Context
+
+The Phase 11 portal and the Phase 14 parity retrofit gave the program the right model (strictly sequential, pick-cascade, live picks-board). What was missing was the reveal experience: after compose, the leader landed on a `KitHome` scroll-dump of ~10 competing actions. Phase 17 rebuilt the reveal into a wizard, redesigned every surface to `docs/KIT-REDESIGN-SPEC.md`, and live-verified all 4 kits end to end on prod.
+
+### What Shipped
+
+- **Kit reveal wizard (`KitRevealWizard`)**: reveal -> what's-inside -> voice -> keep-it -> plan -> ship. Replaces the old `KitHome` reveal-scroll and `HomeworkCard`.
+- **`KitBuildTrace`**: honest build trace driven by real `kit_builds.artifact_statuses`, no faked latency.
+- **`KitWhatsInside`**: two buttons only per artifact (Download / Copy); no walls of text on screen. Content is platform-agnostic; instructions name the user's chosen tool (never hardcoded Claude/ChatGPT).
+- **One branded hero PDF per kit** (print-styled `/kit/pdf`, `src/lib/kitPdf.ts` + `src/pages/kit/KitPdf.tsx`).
+- **Shared brand primitives**: `src/components/kit/kitPrimitives.tsx`.
+- **`kit-compose` redeployed** so presets and frontend align.
+- Seeded throwaway codes for each kit; live-verified e2e on prod; zero-residue cleanup.
+
+### Outcome
+
+All 4 kits are fully live. Every kit: strictly sequential (one action per screen), no-scroll on mobile, native two-pane on desktop, honest build trace, reveal wizard, one branded hero PDF. PRs #206-212, prod-verified 2026-06-19.
+
+---
+
+## Phase 18: Main App Polish + AI-Native Enforcement (PRs #215-222, 2026-06-20/21)
+
+### Context
+
+The main CTRL app needed to reach the same standard as the kits: no-scroll on all devices, one ask per screen, AI-native throughout. An audit found: decision engine seed examples that were pure general business ("move upmarket to enterprise", "hire a VP of Sales"); news cards with no visual identity per category; a brain canvas squashed into a letterboxed box; and copy that was presumptuous or insider-jargon-heavy. `docs/MAIN-APP-POLISH-SPEC.md` locked the standard; Phase 18 built it.
+
+### What Shipped
+
+- **Decision Stage 0: AI-native reframe** (PR #216): `decision-engine` rewrites a general-business statement to its AI-native version before decompose. Additive `decision_cases` columns: `reframed`, `reframed_statement`, `reframe_note`, `lifecycle_stage` (original `statement` always kept). A banner surfaces the reframe to the leader.
+- **9 AI-native news category motifs** (PR #215): branded SVG per category (`CategoryMotif`, `src/types/newsCategory.ts`; IDs: model / economics / tools / orchestration / product / governance / security / org / proof). `NewsHeadlineCard` rebuilt. `generate-briefing` AI-native-filters + category-tags every story via `_shared/news-ai-native.ts`.
+- **Brain canvas squash fix** (PR #217): aspect-aware viewBox + fractional world positions + visible zoom controls (minScale 0.5) + rail-only-on-select. Replaces the hardcoded landscape `760x520` viewBox.
+- **No-scroll one-ask sweep** (PRs #218-#222): every main surface (home / compliance / settings / briefing / decision-page / automator) is no-scroll on all devices + one ask per screen. Copy rewritten warm + first-timer-friendly + AI-native.
+- **Briefing interests** updated to the 9 AI-native categories.
+
+### Outcome
+
+The main app matches the kit standard. Every authed surface: no-scroll, one ask, AI-native framing. Decision engine reframes general-business inputs at Stage 0. News cards have branded SVG motifs. Brain canvas fills its frame. PRs #215-222, prod-verified (component render + green CI + prod deploy).
+
+---
+
+## Phase 19: CTRL System Coherence Campaign (PRs #228-232, 2026-06-21)
+
+### Context
+
+With the kits and the main app each at their own standard, the app as a whole still did not feel like one instrument. A live authed walk (2026-06-21) surfaced: the home news deck overlapping its siblings (two independently-laid-out blocks fighting), the same decision alert appearing on both Home and Decisions, real-data overflow behind the nav, tabs that stacked too many asks, and the brain not centering. `docs/CTRL-SYSTEM-SPEC.md` locked the unifying rule (sections 1-5); Phase 19 fixed the live bugs and unified the shell.
+
+### What Shipped
+
+- **Home rebuilt as "one adaptive thing"** (PR #228): `CockpitView` is now ONE composed grid. `CockpitHome` shows ONE hero (top of the `useCockpit` ranked stream) + a small secondary peek + an in-place "rest of what I'm tracking" reveal + a quiet briefing/weigh/build rail. **The old `CockpitDeck` swipe deck was deleted.** Heart/skip reactions preserved on the hero. New components: `CockpitHero`, `CockpitStreamRow`, `cockpitGreeting.ts`.
+- **Chief-of-staff voice across tabs** (PR #229): every tab retitled to the advisory first-person voice. Copy only; legal/honesty text untouched.
+- **Page transitions** (PRs #230, #232): `PageTransition.tsx` (desktop) and `MobilePageTransition.tsx` cross-fade only the content keyed by pathname; chrome is persistent. Desktop sidebar active-nav glow (shared `layoutId`) matches mobile `BottomNav`.
+- **`MobileFrame.tsx`** (PR #232): the shared mobile shell (persistent `AppHeader` + bounded no-scroll `<main>` + pinned `BottomNav`), applied to all key mobile surfaces.
+- **Design-token unification** (PR #231): hardcoded hex moved onto `ctrl-ds` tokens (exact literals kept as CSS fallbacks so `CategoryMotif` renders byte-identical); one radius / one padding / one hover scale.
+
+### Canonical
+
+`docs/CTRL-SYSTEM-SPEC.md` (sections 1-5; section 6 = Phase 20 below).
+
+### Outcome
+
+The home news-deck overlap fixed. The app unified into one holistic instrument. Verified by real-component + harness renders + green CI + prod-deploy success. The `Dashboard ?view=edge` edge-reveal wiring was deliberately left as-is. PRs #228-232, prod-deployed 2026-06-21.
+
+---
+
+## Phase 20: CTRL 2028 Radical-Focus Refactor (PRs #234-241, 2026-06-22)
+
+### Context
+
+Phase 19 fixed the structural bugs. Phase 20 rebuilt every tab to the "2028 world-class" bar (section 6 of `docs/CTRL-SYSTEM-SPEC.md`): radical focus not density, state as the experience, device-native not scaled-down, motion with meaning. Live-verified on the real authed prod app; 8/8 QA gates pass.
+
+### Process Fix (locked from this phase)
+
+Every surface is verified on the **REAL authed surface with real data** (local Playwright login as QA account `ctrl-qa-1782077550632@example.com`, autoconfirm ON; `storageState` in `_verify/auth/`), NOT a synthetic harness/component render. All live-walk issues from prior phases hid behind harness renders that used short, fake content.
+
+### What Shipped
+
+**Home** (PR #237):
+- `HomeFeed.tsx` + `DesktopHomeView.tsx` replace BOTH the mobile cockpit home AND the legacy desktop `DesktopMemoryDashboard` with ONE unified model: browsable headlines (mobile swipe-feed / desktop rail) + the 3 doors. `CockpitHome` / `CockpitStreamRow` / `CockpitDeck` deleted.
+- Empty-Home bug fixed via `coldDeck.ts` (generic AI-native headlines floor so Home is never blank before the first briefing generates).
+- New loading primitive `src/components/system/SkeletonCard.tsx` (+ `SkeletonBar` / `LoadingCaption`).
+
+**Decisions** (PR #241):
+- `DecisionBoard`, `DecisionCapture`, `DecisionOrb`, `DecisionRunning`, `DecisionResultView`. One calm board + ONE fast-capture input (mic embedded). Explainer wall, Record button, chips, floating FAB killed. Running state is a branded orb + 4-step pipeline wired to the real `useDecisionEngine` stages.
+
+**Brain** (PR #240):
+- `BrainGraph.tsx` + `BrainCanvas.tsx` + `brainGraphModel.ts` (`computeViewBox`). Graph centered at every size (hub-anchored, half-extents per axis, aspect-corrected to the live canvas ratio every render via ResizeObserver, `preserveAspectRatio=xMidYMid meet`), fixing the upper-left clustering from prior phases.
+- On MOBILE: the tapped-node bond reader (`BondReader`) is now a bottom DRAWER over the full canvas; the old inline `max-h-[44%]` panel that squashed the visual was removed. Desktop keeps the slide-in right rail.
+
+**You / TrackRecord** (PR #239):
+- 0/0/0 scoreboards removed. Cold = a promise, warm = honest first pattern (never a deflating 0/N), rich = earned calibration record. All from real data.
+
+**Shell** (PR #238):
+- `BrandedAppLoader.tsx` replaces raw spinners in Suspense, `RequireAuth`, and `InitializationLoader`.
+- `resolveDisplayName` in `cockpitGreeting.ts` replaces the raw email-id greeting.
+- `DesktopShell` primary nav: now 4 tabs (Home / Decisions / Brain / You) matching mobile; rest demoted to More/Account.
+- `BottomNav` flag-gated: `cockpitNav` (4-tab) when `VITE_COCKPIT_ENABLED=true`, `legacyNav` (6-tab) when off (a verify gotcha for local dev without the flag).
+
+### Minor non-blocker nits (disclosed, not hidden)
+
+- Desktop sidebar account footer still shows raw email/id.
+- Mobile header wordmark renders as text vs logo image in some contexts.
+- Brain mobile hub sits a touch high.
+- A transient pre-expired-session token-refresh console error (self-heals to 200).
+
+### Outcome
+
+All 4 tabs rebuilt to the 2028 bar. 8/8 QA gates pass on the real authed prod surface. PRs #234-241 merged 2026-06-22.
+
+---
+
+## Phase 21: Plain Language + Fewer Doors + Backend Resilience (PRs #261-267, 2026-06-22)
+
+### Context
+
+Two parallel cleanup tracks: (1) plain language - a leader must never have to learn CTRL's own vocabulary; (2) backend resilience - every external call must be bounded. Both shipped as part of the same push.
+
+### What Shipped
+
+**Plain Language + Fewer Doors (PRs #261-264):**
+- UI vocabulary renamed (internal identifiers unchanged): bond -> connection, calibration -> track record, deliverable -> "something you do over and over", pressure test -> weigh/check, Beats -> Topics.
+- `AiTermHint` (`src/components/system/AiTermHint.tsx`): a popover for genuine AI/industry terms only (orchestration, agents, inference). The news-category `meaning` field in `newsCategory.ts` is the single source of truth, surfaced on card chips via `AiTermHint`. Never used for app vocabulary.
+- **Fewer doors**: every entry screen leads with ONE primary action; extras sit behind a quiet disclosure or "More". Automator Step 1 cleaned up. Settings collapsed from 8 tabs to 4 groups (You / Briefing / Privacy & data / Account).
+
+**Backend Resilience (PRs #265-267):**
+- All external calls now route through `_shared/with-timeout.ts` (or `AbortSignal.timeout` / outer `withTimeout`). The briefing OpenAI calls, v2 pipeline, and Artificial Analysis fetchers are all bounded.
+- New code uses `_shared/logger.ts` (`createLogger(fn)`) over raw `console.*`.
+
+### Outcome
+
+A leader never hits an unfamiliar CTRL term cold. Every external API call is bounded. PRs #261-267 merged 2026-06-22.
+
+---
+
+## Phase 22: Unified Engine, Briefing, Decisions Lifecycle, Brain Improvements, Globe, Loading Alignment (PRs #270-293, 2026-06-22 to 2026-06-28)
+
+### Context
+
+A sustained improvement track across the four tabs and shared infrastructure. Briefing rebuilt as a pure Play-first surface. Decisions unified to one lifetime lifecycle. Home and Briefing converged on one brain and one curation engine. Brain graph improved for mobile. A globe replaced the loading skeleton. Feedback became recursive. A fifth kit was added. All verified live on prod.
+
+### What Shipped
+
+**Briefing** (PRs #270-271):
+- Dead-simple, no-scroll, Play-first surface. One tap plays the briefing. Zero jargon. Reliable audio playback on all devices.
+
+**Decisions** (PRs #272-273, #284, #286):
+- One tab for the whole decision lifecycle: pin -> enrich -> resolve -> history. No separate History or "Checked" silos.
+- Decisions Now|History toggle moved into the mobile top nav bar (PR #286).
+- Decisions shelf decluttered; Memory Center header no longer cramped on mobile (PR #284).
+
+**Unified infrastructure** (PRs #275-279, #281):
+- **Unified brain accessor** (PR #275): one `BrainProfile` from a single accessor; all Home/Briefing/Automator read silos removed.
+- **Curation engine** (PR #276): one transparent `CurationScore` governs both Home and Briefing. Shared pool floor; leader-specific queries ceiling.
+- **Profile-aware Home feed** (PR #277): Home reads from the one engine and one brain accessor (feature-flag gated, default off).
+- **Briefing convergence** (PR #278): Briefing reads from the one brain via a unified gate (flag-gated, default off).
+- **Self-recursive feedback** (PR #279): deck heart/skip reactions persist and feed the curation engine, gradually shifting the personalized pool.
+- **Decommission silos** (PR #281): one unified brain-inputs view.
+
+**New kit** (PRs #282-283):
+- **"Build Your AI Chief of Staff" kit**: the decision-engine kit. Output is a chief-of-staff setup. Includes a live path leaderboard (PR #283).
+
+**Globe loader** (PRs #285, #287):
+- The Home news-loading skeleton replaced by a rotating Earth `cobe` globe with caption inside the globe, breathing effect, and smooth fade in/out.
+
+**Brain graph** (PRs #290-292):
+- Graph fades in on load. Mobile tap is two-step (first = peek, second = open bond reader). Peek node has a larger tap target. Neighbour nodes remain tappable while a node is peeked.
+
+**Loading + Home/Briefing/Tune alignment** (PR #293, LIVE):
+- `GlobeLoader` rotates `src/components/system/loadingLines.ts` (evergreen AI-fluency one-liners + 3 durable trend lines + leader's last-loaded real headlines, cached via `cacheHeadlines`), cross-faded.
+- `useNewsPreferences` converted to a module-level shared store (`useSyncExternalStore`) so a `NewsPreferencesSheet` save propagates immediately to `useCockpit`.
+- `rankPersonalized` in `src/lib/newsPriority.ts` re-ranks the server pool by lifting chosen lanes on POSITION (never by generic score).
+- Briefing shares the shared pool: `brain-profile.ts` `toLensSource` carries `boosted`/`bias`; `briefing-lens.ts` `planQueries` leans toward those lanes; behind `BRIEFING_SOURCE_SHARED_POOL` the v2 pipeline merges today's `live_headlines_cache` into the fan-out.
+- `generate-briefing` redeployed (v72). Flags flipped ON: `BRIEFING_V2_ENABLED_DEFAULT=true`, `BRIEFING_USE_BRAIN_PROFILE=true`, `BRIEFING_SOURCE_SHARED_POOL=true`.
+
+**Bug fixes:**
+- Black-screen-of-death from stale-chunk reload guard (PR #288): bounded one-shot counter prevents double-fire.
+- Landing auth flash (PR #289): authenticated users no longer see a ghost marketing hero flash before redirect.
+
+**Decision research flows** (PR #280):
+- A finished decision gains actionable next-step research flows.
+
+### Outcome
+
+All four tabs improved. Briefing is dead-simple. Decisions have one lifetime lifecycle. Home and Briefing share one brain and one curation engine. Brain graph is smoother and more tappable on mobile. Globe replaces loading skeleton. Feedback is recursive. A fifth kit (chief of staff) is live. PRs #270-293 merged 2026-06-22 to 2026-06-28.
+
+---
+
 ## Post-Mortems
 
 ### Post-Mortem: The Redesign Trust Breach (Phase 12)

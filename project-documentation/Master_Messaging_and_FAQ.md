@@ -1,7 +1,7 @@
 # CTRL & Mindmaker Master Messaging & FAQ
 *Product marketing, sales, content, and outbound reference*
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (date bump; content verify-clean).
 
 > RECONCILIATION BANNER. The Mindmaker founder narrative, the enterprise-buyer pain, the Builder Economy theme, and the Sprint description are all still accurate and largely ON-positioning (the "AI-native competitors move faster by default" and "everyone will build" themes align with the current CTRL positioning). The one correction: the CTRL product description in PART 3 below was written as "a portable AI memory web / context layer". CTRL's positioning is now **building the AI-native version of your business** (the memory web is the substrate, not the headline). The pricing table (PART 5) is accurate: Edge Pro $29/month, Automator builds free for now; the one-time diagnostic SKUs are flagged TODO(founder) under the repositioning. Canonical: `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`.
 

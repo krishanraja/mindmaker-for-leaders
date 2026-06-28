@@ -1,6 +1,6 @@
 # Main CTRL App Polish Spec
 
-Status: DRAFT, founder-locked on the three forks below. This is the canonical rule for polishing the main CTRL app experience (not the `/kit` section, which is covered by `docs/KIT-REDESIGN-SPEC.md`). Build against this.
+Status: IMPLEMENTED and live on prod (PRs #215-222, 2026-06-20/21). This spec remains the canonical rule for the main CTRL app experience (not the `/kit` section, which is covered by `docs/KIT-REDESIGN-SPEC.md`); code is truth for any detail not covered here.
 
 Founder-locked decisions (2026-06-19):
 1. AI-native enforcement = **reframe** general-business inputs into the AI-native lens (never refuse, never stay general).

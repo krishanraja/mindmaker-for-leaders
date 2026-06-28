@@ -1,9 +1,9 @@
 # CTRL Compliance Documentation Pack
 
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-06-28 (updated 2026-06-28; product description updated to AI-native positioning)
 Owner: Krish Raja, Mindmaker
 Contact: privacy@themindmaker.ai
-Product: CTRL (executive leadership-clarity tool)
+Product: CTRL (the tool for building, orchestrating, productizing, and getting to market the AI-native version of your business)
 Production URL: https://ctrl.themindmaker.ai
 Supabase project ref: bkyuxvschuwngtcdhsyg
 

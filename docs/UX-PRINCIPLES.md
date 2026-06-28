@@ -1,5 +1,7 @@
 # CTRL UX Principles — designing for the ADHD CEO
 
+**Last Updated:** 2026-06-28 (verify-clean; content accurate).
+
 These are the load-bearing principles for every CTRL surface. When a screen
 gets cluttered, when a flow grows a step, or when we are unsure how to present a
 choice, we come back here.

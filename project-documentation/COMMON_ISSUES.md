@@ -2,7 +2,7 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (date bump; content verify-clean).
 
 > **Status**: This is a developer bug/pain log dated 2026-04-26. Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath." It predates the dark redesign (PR #186), the brain engine, the kit redesign, and the main-app polish, so for current known issues also read `CLAUDE.md` (the live architecture quick-reference, which lists the honest residual gaps). Note: where this doc lists "light mode color system" in an AVOID list, that is correct guidance; the app is globally dark.
 

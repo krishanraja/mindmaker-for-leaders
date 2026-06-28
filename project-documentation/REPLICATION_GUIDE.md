@@ -2,7 +2,7 @@
 
 Step-by-step instructions to replicate CTRL from scratch.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (supabase db push references corrected; Lovable Cloud -> Vercel; component names noted as Phase 1-3 era).
 
 > This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts are dated 2026-06-09 (a lower bound: ~80 edge functions, ~59 hooks, ~110 migrations, pgvector + pgcrypto + pg_cron); trust `CLAUDE.md` and the code for current totals. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222) that post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
 
@@ -76,10 +76,16 @@ supabase init
 
 # Link to remote project
 supabase link --project-ref YOUR_PROJECT_REF
-
-# Apply migrations
-supabase db push
 ```
+
+> **IMPORTANT: Do NOT use `supabase db push`.** The local migration history is out of sync with the remote project. Run SQL directly via the Supabase Management API instead:
+> ```bash
+> curl -X POST "https://api.supabase.com/v1/projects/YOUR_PROJECT_REF/database/query" \
+>   -H "Authorization: Bearer YOUR_SUPABASE_ACCESS_TOKEN" \
+>   -H "Content-Type: application/json" \
+>   -d '{"query": "YOUR SQL HERE"}'
+> ```
+> Use `CREATE TABLE IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS` for idempotency. See `CLAUDE.md` for the full invocation pattern.
 
 **Create `.env`**:
 ```
@@ -138,13 +144,15 @@ npx shadcn-ui@latest add progress skeleton tooltip
 
 ## Step 7: Build UI Components
 
-**src/components/HeroSection.tsx**: Landing page
+> **Note (2026-06-28):** The component names below are from Phase 1-3 (the AI Literacy Diagnostic era). The current product has a substantially different component tree. For current component architecture, see `project-documentation/ARCHITECTURE.md` (the directory structure section) and the source files in `src/components/`. The diagnostic-era components (`HeroSection`, `UnifiedAssessment`, `UnifiedResults`, `LeadershipBenchmarkV2`) still exist in the codebase but the product has grown well beyond them.
 
-**src/components/UnifiedAssessment.tsx**: Quiz + voice flow
+**src/components/HeroSection.tsx**: Landing page (Phase 1-3 era)
 
-**src/components/UnifiedResults.tsx**: Results with tabs
+**src/components/UnifiedAssessment.tsx**: Quiz + voice flow (Phase 1-3 era)
 
-**src/components/LeadershipBenchmarkV2.tsx**: Overview tab
+**src/components/UnifiedResults.tsx**: Results with tabs (Phase 1-3 era)
+
+**src/components/LeadershipBenchmarkV2.tsx**: Overview tab (Phase 1-3 era)
 
 **src/components/TensionsView.tsx**: Tensions tab
 
@@ -243,9 +251,9 @@ supabase functions serve
 
 ## Step 12: Deploy
 
-**Frontend** (Lovable Cloud):
+**Frontend** (Vercel - auto-deploys on push to main):
 ```bash
-git push origin main  # Auto-deploys
+git push origin main  # Triggers Vercel deployment
 ```
 
 **Edge Functions**:
@@ -253,10 +261,7 @@ git push origin main  # Auto-deploys
 supabase functions deploy --project-ref YOUR_REF
 ```
 
-**Database**:
-```bash
-supabase db push --project-ref YOUR_REF
-```
+**Database**: Use the Supabase Management API (see Step 3 above). Do NOT use `supabase db push`.
 
 ---
 

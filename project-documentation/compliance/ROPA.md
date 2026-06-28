@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-06-28 (date bump; content verify-clean)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://ctrl.themindmaker.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 

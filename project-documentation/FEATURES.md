@@ -2,7 +2,7 @@
 
 Complete feature inventory.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (documentation reconciliation pass; phases 17-23 added).
 
 > **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. The feature mechanics below are accurate; read them through that lens. Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`. The LATEST layer this doc predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing, the brain-canvas fix, the no-scroll/one-ask sweep). For those, trust the two specs and `CLAUDE.md`.
 
@@ -25,6 +25,38 @@ Complete feature inventory.
 - **Desktop UI redesign shipped** (PR #104, Phase 8; extended through Phase 10, PR #130-#139): every authenticated surface now wears the same `DesktopShell` (sticky top bar with page eyebrow + title + actions, optional right rail, Cmd/Ctrl+K Command Palette), viewport-pinned so the window never scrolls. No more stretched mobile markup on desktop.
 - **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
 - **Tests**: 6 Vitest unit/shared + 7 Playwright e2e in `src/__tests__/e2e/` (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency, desktop-zero-scroll)
+
+---
+
+## Phases 17-23: Kit Redesign, AI-Native Enforcement, CTRL System, 2028 Refactor, Resilience, and Unified Engine (2026-06-19 to 2026-06-28)
+
+> These phases post-date the detailed prose in this doc. For full detail, trust `CLAUDE.md` (architecture quick-reference) and `project-documentation/HISTORY.md` (per-phase narrative). The two specs are canonical: `docs/KIT-REDESIGN-SPEC.md` and `docs/MAIN-APP-POLISH-SPEC.md`.
+
+### Phase 17: Kit Redesign - All 4 Kits Fully Live (PRs #206-212, 2026-06-19)
+
+Every kit rebuilt to the spec. Strictly sequential, one action per screen, no-scroll on mobile, native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace (`KitBuildTrace`), a reveal wizard (`KitRevealWizard`), and one branded personalized hero PDF per kit (`/kit/pdf[/:redemptionId]`). Two output buttons only (Download / Copy). Old reveal-scroll + `HomeworkCard` retired. All 4 kits live-verified on prod. Canonical: `docs/KIT-REDESIGN-SPEC.md`.
+
+**A fifth kit, "Build Your AI Chief of Staff", was added in PRs #282-283.**
+
+### Phase 18: Main App Polish + AI-Native Enforcement (PRs #215-222, 2026-06-20/21)
+
+Whole main CTRL app polished to one standard. Decision engine gained AI-native reframe Stage 0 (new `decision_cases` cols: `reframed`, `reframed_statement`, `reframe_note`, `lifecycle_stage`). News deck rebuilt with 9 branded SVG category motifs (`CategoryMotif`, ids: model/economics/tools/orchestration/product/governance/security/org/proof) and a rebuilt `NewsHeadlineCard`. `generate-briefing` now AI-native-filters and category-tags every story (`_shared/news-ai-native.ts`). Every main surface is no-scroll on ALL devices + one ask per screen, with approachable AI-native copy. Briefing interests are now the 9 AI-native categories. Canonical: `docs/MAIN-APP-POLISH-SPEC.md`.
+
+### Phase 19: CTRL System Coherence Campaign (PRs #228-232, 2026-06-21)
+
+CTRL unified into ONE holistic instrument. Home rebuilt as the chief-of-staff "one adaptive thing": `CockpitView` is a composed grid with ONE hero + secondary peek + in-place "rest of what I'm tracking" reveal; the old `CockpitDeck` swipe deck was DELETED. Page transitions (`PageTransition.tsx`, `MobilePageTransition.tsx`) cross-fade content only, chrome persistent. `MobileFrame.tsx` (shared mobile shell) applied to all authed mobile surfaces. Desktop sidebar active-nav glow. Every tab retitled to chief-of-staff voice. Hardcoded hex moved onto `ctrl-ds` tokens. Canonical: `docs/CTRL-SYSTEM-SPEC.md`.
+
+### Phase 20: CTRL 2028 Radical-Focus Refactor (PRs #234-241, 2026-06-22)
+
+All 4 tabs + the shell rebuilt to "radical focus not overwhelm, native to each device". Live-verified on the real authed prod app (8/8 QA gates pass). Key new files: `HomeFeed.tsx` + `DesktopHomeView.tsx` (ONE unified Home model: headlines + 3 doors; `coldDeck.ts` fixes empty-home bug); `Decision{Board,Capture,Orb,Running,ResultView}.tsx` (one calm board + fast-capture input); `BrainGraph.tsx` + `BrainCanvas.tsx` + `brainGraphModel.ts` (graph CENTERED, hub-anchored, aspect-corrected via ResizeObserver; mobile tapped-node is a bottom drawer); `track-record/*` (honest cold/warm/rich data states). Shell: `BrandedAppLoader.tsx`, `resolveDisplayName` kills email-id greeting, desktop primary nav is now the 4 tabs. CTRL-SYSTEM-SPEC.md section 6 (2028 design language) added. `BottomNav` is flag-gated on `VITE_COCKPIT_ENABLED`.
+
+### Phase 21: Plain Language + Fewer Doors + Backend Resilience (PRs #261-267, 2026-06-22)
+
+Plain language sweep: all user-facing labels renamed to first-principles (bond->connection, calibration->track record, Beats->Topics). `AiTermHint` (`src/components/system/AiTermHint.tsx`, popover) demystifies AI concepts inline. Every entry screen leads with ONE primary action; extras sit behind a quiet "More" (Automator Step 1, command palette; Settings collapsed 8 tabs -> 4 groups: You/Briefing/Privacy & data/Account). Backend resilience: all external calls bounded via `_shared/with-timeout.ts`; `_shared/logger.ts` (`createLogger(fn)`) is the standard for new code.
+
+### Phase 22: Unified Engine, Briefing, Decisions Lifecycle, Brain Improvements, Globe, Loading Alignment (PRs #270-293, 2026-06-22 to 2026-06-28)
+
+Home `GlobeLoader` rotates `loadingLines.ts` (AI-fluency one-liners + trend lines + cached real headlines) cross-faded. `useNewsPreferences` is now a module-level shared store (`useSyncExternalStore`) so a save in `NewsPreferencesSheet` propagates to `useCockpit` immediately. New `rankPersonalized` (`src/lib/newsPriority.ts`) re-ranks the server pool by POSITION (not by generic score). Briefing shares the shared pool (`BRIEFING_SOURCE_SHARED_POOL=true`). Home live-headlines pipeline (`live-headlines`) gathers from SIX sources (GDELT, HN Algolia, curated RSS, Brave, NewsAPI, Exa), clusters near-duplicates, and enriches with Artificial Analysis benchmark data. Decision engine `decision_cases` gained the full lifecycle pipeline. Flags now live in Supabase secrets: `BRIEFING_V2_ENABLED_DEFAULT=true`, `BRIEFING_USE_BRAIN_PROFILE=true`, `BRIEFING_SOURCE_SHARED_POOL=true`.
 
 ---
 

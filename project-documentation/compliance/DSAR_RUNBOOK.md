@@ -1,6 +1,6 @@
 # Data Subject Access Request (DSAR) Runbook
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-28
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Operational runbook for handling data-subject rights requests for CTRL: access, rectification, erasure, portability, restriction/objection, and CCPA opt-out. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 9.

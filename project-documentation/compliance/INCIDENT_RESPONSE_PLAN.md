@@ -1,6 +1,6 @@
 # CTRL Incident Response Plan
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-28
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 How Mindmaker detects, responds to, and reports security incidents and personal-data breaches affecting CTRL. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 14 and [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md).

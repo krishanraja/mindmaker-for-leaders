@@ -2,7 +2,7 @@
 
 Complete system architecture and data flow documentation.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (documentation reconciliation pass; phases 17-23 noted; framer-motion version corrected; deployment section updated).
 
 > **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. General-business inputs are reframed into the AI-native lens. The canonical product/build specs are `docs/MAIN-APP-POLISH-SPEC.md` (the main app) and `docs/KIT-REDESIGN-SPEC.md` (the lesson kits); trust those + the root `README.md` + `CLAUDE.md` over this doc where they disagree. This file is technically current on the dark redesign, the brain engine, the routes, and the kit engine plumbing; the LATEST layer it predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing pipeline, the brain-canvas squash fix, and the no-scroll/one-ask sweep). For those, see the two specs and `CLAUDE.md`. The counts below are dated 2026-06-09 and are a lower bound pending re-count.
 
@@ -17,6 +17,10 @@ Complete system architecture and data flow documentation.
 > **Verified counts (as of 2026-06-09; not re-counted since the redesign)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop). Edge-function / hook / migration counts after the redesign, brain engine, and kit program are **verified counts pending re-count**.
 >
 > **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) = 85, +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`) = 62, +4 migrations = 114, +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
+>
+> **Phases 12-16 (2026-06-16 to 2026-06-17)**: see the UX Redesign, Brain Engine, and Skill Builder sections already documented below.
+>
+> **Phases 17-22 (2026-06-19 to 2026-06-28)**: Kit redesign (all 4 kits fully live + /kit/pdf routes, PRs #206-212); main app polish + AI-native enforcement (9 category motifs, decision reframe Stage 0, no-scroll sweep, PRs #215-222); CTRL system coherence campaign (MobileFrame, PageTransition, CockpitView one-hero, PRs #228-232); CTRL 2028 radical-focus refactor (HomeFeed, BrainGraph centered, DecisionBoard, BrandedAppLoader, 4-tab desktop nav, PRs #234-241); plain language + fewer doors + backend resilience (AiTermHint, useSyncExternalStore news prefs, with-timeout all external calls, PRs #261-267); unified engine + loading alignment + live-headlines six-source pipeline + decision lifecycle + briefing shared pool (PRs #270-293). A fifth kit ("Build Your AI Chief of Staff") was added in PRs #282-283. Full detail: `CLAUDE.md` and `project-documentation/HISTORY.md`.
 
 ---
 
@@ -1571,7 +1575,7 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
 ### Backend
 
 **Edge Functions**: Deployed via Supabase CLI
-**Database Migrations**: `supabase/migrations/`, applied via `supabase db push`
+**Database Migrations**: `supabase/migrations/`. **Do NOT use `supabase db push`** (the local migration history is out of sync with remote). Run SQL directly via the Supabase Management API: `POST https://api.supabase.com/v1/projects/bkyuxvschuwngtcdhsyg/database/query` with the access token in the `Authorization` header. Use `CREATE TABLE IF NOT EXISTS` / `CREATE INDEX IF NOT EXISTS` for idempotency. See `CLAUDE.md` for the exact invocation pattern.
 
 ### Environment Variables
 
@@ -1643,7 +1647,7 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
   "react-router-dom": "^6.26.2",
   "@supabase/supabase-js": "^2.50.3",
   "@tanstack/react-query": "^5.56.2",
-  "framer-motion": "^11.x",
+  "framer-motion": "^12.24.10",
   "tailwindcss": "^3.4.11",
   "lucide-react": "^0.462.0",
   "zod": "^3.23.8",

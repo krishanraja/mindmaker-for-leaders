@@ -1,5 +1,7 @@
 # Voice Profile
 
+**Last Updated:** 2026-06-28 (verify-clean; content accurate).
+
 The Voice Profile is the leader's self-identified style fingerprint. It tells the Automator (and any future skill-building surface) how the output should sound, so generated skills produce text that reads like the leader wrote it rather than generic AI prose.
 
 ## Why self-identification, not document collection

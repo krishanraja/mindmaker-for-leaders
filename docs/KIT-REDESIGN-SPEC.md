@@ -1,6 +1,6 @@
 # Kit Redesign Spec
 
-Status: DRAFT for founder review. No code written yet. This is the locked rule the build will follow.
+Status: IMPLEMENTED and live on prod (PRs #206-212, 2026-06-19; all 4 kits live-verified). A fifth kit, "Build Your AI Chief of Staff", was added in PRs #282-283. This spec remains the canonical rule each kit must follow; code is truth for any detail not covered here.
 
 Author note: this replaces the assumptions baked into the current kit flow. The current reveal page (`KitHome.tsx`) stacks ~10 competing actions into one long scroll (Send My Pack, Set My Voice, I Shipped It, Copy x N, Tune, Paste Homework, the 7-day plan, artifact groups, the dashboard bridge). The intake is mostly sequential already; everything after the build is a dumping ground, the homework prompt flashes past during the loading spinner so it can never be done, and outputs ship generic enough to need a "Tune" button and offer copy buttons for text that was never personalized.
 

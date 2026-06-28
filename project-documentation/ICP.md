@@ -1,6 +1,6 @@
 # Ideal Customer Profile
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (date bump; content verify-clean).
 
 > RECONCILIATION BANNER. The firmographics below (senior leaders, 50 to 5,000-person companies, already using AI) are a reasonable carry-over frame, but the PAIN sections are written for the old "zero-context tax / decision-speed / information-overload" positioning. CTRL now sells **building the AI-native version of your business**. Lead with the AI-native fit signals: "I know my business needs to become AI-native and do not know where to start", "I want an agent to own part of a workflow but cannot see which part is safe to hand off", "I am trying to figure out the AI-native version of what we sell". TODO(founder): confirm whether the AI-native positioning narrows or shifts the ICP before this doc's pain/trigger lists are used in outbound. Do not invent a new ICP; use this frame + the AI-native signals.
 

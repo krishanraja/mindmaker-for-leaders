@@ -1,6 +1,6 @@
 # CTRL Information Security Policy (ISMS-lite)
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-28
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 Applies to: CTRL (https://ctrl.themindmaker.ai), its codebase, Supabase backend (ref bkyuxvschuwngtcdhsyg), Vercel frontend, and all personnel/contractors with access.
 

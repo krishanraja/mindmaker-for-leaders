@@ -1,6 +1,6 @@
 # SOC 2 and ISO/IEC 27001:2022 Roadmap
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-28
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 A realistic path for CTRL to a SOC 2 report and, if pursued, an ISO/IEC 27001:2022 certificate. CTRL holds neither today. This roadmap is honest about what code can deliver and what requires human, vendor, or legal action.

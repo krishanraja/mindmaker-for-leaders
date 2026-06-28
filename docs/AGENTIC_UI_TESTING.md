@@ -1,5 +1,7 @@
 # Agentic UI Testing Guide
 
+**Last Updated:** 2026-06-28 (verify-clean; content accurate).
+
 A comprehensive guide for autonomous AI agents to perform thorough end-to-end testing of web applications. This document provides structured test scenarios, expected behaviors, and debugging procedures.
 
 ---

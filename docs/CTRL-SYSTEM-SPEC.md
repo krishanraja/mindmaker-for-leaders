@@ -1,6 +1,6 @@
 # CTRL System Spec (one holistic instrument, not separate parts)
 
-Status: founder-locked. The canonical rule for making CTRL feel like ONE coherent system. It sits above the surface specs (`MAIN-APP-POLISH-SPEC.md`, `KIT-REDESIGN-SPEC.md`): those say what each surface does; this says how they all cohere into one thing.
+Status: IMPLEMENTED and live on prod (PRs #228-232, 2026-06-21; CTRL 2028 radical-focus refactor PRs #234-241, 2026-06-22). Last Updated: 2026-06-28. The canonical rule for making CTRL feel like ONE coherent system. It sits above the surface specs (`MAIN-APP-POLISH-SPEC.md`, `KIT-REDESIGN-SPEC.md`): those say what each surface does; this says how they all cohere into one thing.
 
 Why this exists: the app was built surface by surface, so the parts did not share a layout contract, a single design rhythm, one story, or a continuous feel. The first symptom was the home news deck overlapping its siblings. A live authed walk (2026-06-21) then exposed deeper issues: real-data overflow behind the nav, the same content duplicated across tabs, tabs that ask too much, a brain that does not centre, and surfaces that look identical at session 1 and session 100. This spec is the unifying rule that fixes those.
 

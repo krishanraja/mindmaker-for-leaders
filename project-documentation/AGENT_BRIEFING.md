@@ -1,7 +1,7 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-28 (fifth kit added; date bumped).
 **Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, the root `README.md`. Trust those over this file where they disagree.
 
 > Reconciliation note: CTRL's positioning moved from "clarity / portable AI double for leaders" to **building the AI-native version of your business.** This briefing has been reframed to the AI-native lens. The product mechanics are real and in the code; the FRAMING is what changed. Where a precise AI-native ICP / message / price was not yet settled, it is flagged `TODO(founder)` instead of invented. The old runtime endpoint `https://ctrl.themindmaker.ai/.well-known/product.json` (dated 2026-05-30) still carries the OLD positioning, so do NOT treat it as authoritative for positioning until it is regenerated. TODO(founder): regenerate `/.well-known/product.json` to the AI-native positioning.
@@ -53,11 +53,12 @@
 ## 3. The two halves of the product (what you are selling)
 
 ### A. The lesson kits (`/kit`) - the front door
-A leader finishes a Mindmaker lightning lesson, scans a code, and walks a guided, build-it-with-you kit. Four kits, each about one thing:
+A leader finishes a Mindmaker lightning lesson, scans a code, and walks a guided, build-it-with-you kit. Five kits, each about one thing:
 - **Vibe Coding** - a *solution*: teach any AI how you work and what has burned you, then ship one real build.
 - **Autonomous Business** - a *process*: take one recurring workflow off your plate.
 - **Agentic Org Chart** - the *company*: map divisions to tasks to handoffs, each tagged green (AI runs it) / amber (AI assists, you approve the handoff) / red (you only), with a ranked place to start.
 - **Memory & Identity** - the *person*: make the AI know you across sessions, in your voice.
+- **Build Your AI Chief of Staff** - the *instrument*: wire the decision engine, briefing, and memory into one working chief-of-staff setup (added PRs #282-283).
 
 Each kit is strictly sequential (one action per screen), no-scroll on mobile, a native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace, a reveal wizard, and one branded personalized hero PDF. The kit program is public: a student scans the class QR, redeems a code, and runs in an anonymous session (no signup). Saving a profile graduates them into a named free CTRL account without losing data. Canonical: `docs/KIT-REDESIGN-SPEC.md`.
 
