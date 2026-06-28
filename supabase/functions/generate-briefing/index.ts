@@ -1359,6 +1359,47 @@ async function v2FetchAll(
   return candidates;
 }
 
+/**
+ * Read today's SHARED Home pool (live_headlines_cache) and project it into
+ * briefing candidates. This is the seam that makes the spoken briefing cover the
+ * SAME stories the Home cards show: both now flow through the same gathered,
+ * clustered, scored pool. Best-effort - any miss returns [] and the briefing
+ * falls back to its own provider fan-out, so a cache miss never empties it.
+ */
+async function loadSharedPoolCandidates(
+  supabase: ReturnType<typeof createClient>,
+  today: string,
+): Promise<CandidateHeadline[]> {
+  try {
+    const { data, error } = await supabase
+      .from("live_headlines_cache")
+      .select("payload")
+      .eq("briefing_date", today)
+      .maybeSingle();
+    if (error || !data) return [];
+    const payload = (data as { payload?: Array<Record<string, unknown>> }).payload;
+    if (!Array.isArray(payload)) return [];
+    return payload
+      .filter((p) => p && typeof p.headline === "string" && (p.headline as string).trim().length > 0)
+      .map((p) => {
+        const snippet = typeof p.snippet === "string" && p.snippet.trim()
+          ? (p.snippet as string)
+          : typeof p.say === "string"
+            ? (p.say as string)
+            : "";
+        return {
+          title: (p.headline as string).trim(),
+          source: typeof p.source === "string" && p.source.trim() ? (p.source as string) : "live",
+          snippet: snippet || undefined,
+          provider: "live",
+        } as CandidateHeadline;
+      });
+  } catch (e) {
+    log.warn("[v2] shared-pool read failed", { error: e instanceof Error ? e.message : e });
+    return [];
+  }
+}
+
 interface V2PipelineArgs {
   supabase: ReturnType<typeof createClient>;
   supabaseUrl: string;
@@ -1449,14 +1490,34 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
   // Stage 2: query plan. Pass industry so queries stay inside the leader's
   // domain (e.g., a technology leader doesn't pull biomedical headlines).
   log.info("[v2] Planning queries...");
-  const queries = await planQueries(openaiKey, lens, training, briefingType, customContext, source.industry);
+  const queries = await planQueries(
+    openaiKey,
+    lens,
+    training,
+    briefingType,
+    customContext,
+    source.industry,
+    undefined,
+    // Tune (boosted lanes + scan bias) carried from the unified brain so the
+    // briefing's queries lean the same way as the leader's Home feed.
+    { boosted: source.boosted, bias: source.bias },
+  );
   log.info(`[v2] Queries planned: ${queries.length}`);
 
-  // Stage 3: provider fan-out with hard 12s cap.
+  // Stage 3: provider fan-out with hard 12s cap, MERGED with the shared Home
+  // pool (so the briefing and the Home cards draw from the same stories). The
+  // shared pool is the floor; the leader-specific query fan-out is the ceiling,
+  // so a briefing can still chase a query the daily pool missed. Flag-gated;
+  // dedupeAndScore de-duplicates the union.
   log.info("[v2] Fetching providers...");
   const tFetch = Date.now();
-  const rawCandidates = await v2FetchAll(queries, providerKeys, 12_000);
-  log.info(`[v2] Providers returned ${rawCandidates.length} raw candidates in ${Date.now() - tFetch}ms`);
+  const useSharedPool = (Deno.env.get("BRIEFING_SOURCE_SHARED_POOL") ?? "false") === "true";
+  const [providerCandidates, poolCandidates] = await Promise.all([
+    v2FetchAll(queries, providerKeys, 12_000),
+    useSharedPool ? loadSharedPoolCandidates(supabase, args.today) : Promise.resolve([] as CandidateHeadline[]),
+  ]);
+  const rawCandidates = [...poolCandidates, ...providerCandidates];
+  log.info(`[v2] ${providerCandidates.length} provider + ${poolCandidates.length} shared-pool = ${rawCandidates.length} raw candidates in ${Date.now() - tFetch}ms`);
 
   // Stage 4: embed + dedupe + score + exclude-filter.
   let scored: ScoredHeadline[] = [];
