@@ -325,11 +325,11 @@ export function useCockpit(): {
     // authoritative - the client must not re-rank (that would fight the engine).
     // Only the generic shared pool gets the local preference re-rank.
     const filtered = liveHeadlines.filter((h) => h.headline && !(h.category && dislikedCats.has(h.category)));
-    // Tune always re-ranks the deck. On the generic shared pool we rank by the
-    // leader's prefs over the server importance score; on an already-personalized
-    // feed we keep the server order as the spine and only LIFT the chosen lanes a
-    // few slots (rankPersonalized), so tuning is visible without fighting the
-    // engine. Neutral prefs leave either order untouched.
+    // Tune re-ranks the deck so a chosen lane LEADS (dominates, not a gentle
+    // lift) and the scan bias orders within. On the generic shared pool we rank
+    // over the server importance score; on an already-personalized feed we keep
+    // the server order as the spine (rankPersonalized). Neutral prefs leave
+    // either order untouched.
     const ranked = serverPersonalized
       ? rankPersonalized(filtered, preferences)
       : rankByPreferences(filtered, preferences);
@@ -367,6 +367,24 @@ export function useCockpit(): {
       deck.push(c);
     }
 
+    // Filter-forward: when the leader has narrowed to lane(s), lead with THAT
+    // lane and show it PURE when it has real depth - "I picked economics, so my
+    // feed is economics". Only top up with the next-best stories when the lane is
+    // thin that day (the daily pool genuinely may hold few of a lane), so the
+    // feed reflects the choice but is never sparse. An empty lane (nothing in it
+    // today) falls back to the full ranked deck rather than a blank feed.
+    const LANE_FLOOR = 4;
+    let shown = deck;
+    if (preferences.boosted.length > 0) {
+      const boostedSet = new Set<string>(preferences.boosted);
+      const lane = deck.filter((c) => c.category != null && boostedSet.has(c.category));
+      if (lane.length >= LANE_FLOOR) shown = lane;
+      else if (lane.length > 0) {
+        const rest = deck.filter((c) => !(c.category != null && boostedSet.has(c.category)));
+        shown = [...lane, ...rest];
+      }
+    }
+
     // Personalization VOLUME still drives the adaptive copy (it is real, not
     // faked, and not shown as cards): how much of the leader's own world is live.
     const ownSignals = new Set(
@@ -383,7 +401,7 @@ export function useCockpit(): {
       bets,
       liveCount: bets.length,
       needsYouCount,
-      deck: deck.slice(0, 7),
+      deck: shown.slice(0, 8),
       homeState,
       ownSignalCount: ownSignals,
     };

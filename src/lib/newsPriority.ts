@@ -91,76 +91,76 @@ export interface RankableCard {
   sourceCount?: number | null; // corroboration depth (proxy for "a big, widely-reported move")
 }
 
-const BOOST_PRIORITY = 5; // a chosen lane outranks an unchosen one of similar world-importance
-const BOOST_PRACTICAL = 3;
-const BIG_PER_SOURCE = 1.6; // each extra corroborating outlet, when bias = "biggest moves"
+// A boosted lane LEADS the feed: this dominating term sits far above any base
+// importance score or position, so when a leader narrows to a lane, that lane
+// fills the top of the deck (up to supply) rather than just nudging up a few
+// slots. Domination, not a gentle lift - that is what "tune to economics and I
+// expect mostly economics" demands.
+const BOOST_BLOCK = 1_000_000;
+const PRACTICAL_LIFT = 3; // within a group, the practical bias floats actionable lanes up
+const BIG_PER_SOURCE = 1.6; // within a group, "biggest moves" floats multi-source stories up
 
 /** True when the leader has not tuned anything: pure world-importance order. */
 function isNeutral(prefs: NewsPreferences): boolean {
   return prefs.boosted.length === 0 && prefs.bias === 'balanced';
 }
 
-/**
- * The additive lift a card earns from the leader's preferences alone (no base
- * score). This is what a chosen lane / scan bias adds on TOP of whatever the
- * ranking spine is - the server importance score (generic pool) or the server
- * position (personalized feed).
- */
-function priorityLift(card: RankableCard, prefs: NewsPreferences): number {
+/** Whether a card sits in one of the leader's chosen lanes. */
+export function isBoosted(card: RankableCard, prefs: NewsPreferences): boolean {
   const cat = card.category as NewsCategoryId | undefined;
-  let s = 0;
-  if (cat && prefs.boosted.includes(cat)) s += BOOST_PRIORITY;
-  if (prefs.bias === 'practical') {
-    if (cat && PRACTICAL_CATEGORIES.has(cat)) s += BOOST_PRACTICAL;
-  } else if (prefs.bias === 'big') {
+  return !!cat && prefs.boosted.includes(cat);
+}
+
+/**
+ * The scan-bias lift (no base, no boost). This is a SECONDARY ordering applied
+ * within a group (boosted vs the rest): "practical" floats actionable lanes up,
+ * "biggest moves" floats widely-reported (multi-source) stories up. Visible on
+ * its own (tune only the scan, lanes untouched) and on top of a lane choice.
+ */
+function biasLift(card: RankableCard, bias: NewsBias): number {
+  const cat = card.category as NewsCategoryId | undefined;
+  if (bias === 'practical') return cat && PRACTICAL_CATEGORIES.has(cat) ? PRACTICAL_LIFT : 0;
+  if (bias === 'big') {
     const sources = typeof card.sourceCount === 'number' ? card.sourceCount : 1;
-    s += Math.max(0, sources - 1) * BIG_PER_SOURCE;
+    return Math.max(0, sources - 1) * BIG_PER_SOURCE;
   }
-  return s;
+  return 0;
 }
 
 /**
  * The personalized score of a card given the leader's preferences. Higher ranks
- * first. Built on the server importance score, then lifted by the leader's
- * chosen lanes and their scan bias.
+ * first. A boosted lane dominates (BOOST_BLOCK); the scan bias orders within.
+ * Built on top of the supplied base (importance score or feed position).
  */
 export function priorityScore(card: RankableCard, prefs: NewsPreferences): number {
   const base = typeof card.score === 'number' ? card.score : 0;
-  return base + priorityLift(card, prefs);
+  return base + (isBoosted(card, prefs) ? BOOST_BLOCK : 0) + biasLift(card, prefs.bias);
 }
 
-/** Keep variety: a per-category cap stops one lane filling the feed; overflow
- * is appended last so nothing is lost. Operates on an already-ordered list. */
-function capByCategory<T extends RankableCard>(ordered: T[], maxPerCategory: number): T[] {
-  const taken = new Map<string, number>();
-  const out: T[] = [];
-  const overflow: T[] = [];
-  for (const c of ordered) {
-    const key = (c.category as string) || '_';
-    const n = taken.get(key) ?? 0;
-    if (n >= maxPerCategory) {
-      overflow.push(c);
-      continue;
-    }
-    taken.set(key, n + 1);
-    out.push(c);
-  }
-  return [...out, ...overflow];
+/** Shared ordering core: stable sort by (boosted block + bias lift + base),
+ * with the original index as the tiebreak so equal cards keep their order. */
+function rankCore<T extends RankableCard>(
+  cards: T[],
+  prefs: NewsPreferences,
+  baseOf: (card: T, index: number, total: number) => number,
+): T[] {
+  const n = cards.length;
+  const scored = cards.map((c, i) => ({
+    c,
+    i,
+    s: baseOf(c, i, n) + (isBoosted(c, prefs) ? BOOST_BLOCK : 0) + biasLift(c, prefs.bias),
+  }));
+  scored.sort((a, b) => (b.s - a.s) || (a.i - b.i));
+  return scored.map((x) => x.c);
 }
 
 /**
  * Re-rank the GENERIC shared pool by the leader's preferences. The spine is the
- * server world-importance score; chosen lanes/bias lift on top. Stable for equal
- * scores (preserves the server's order). Returns a new array.
+ * server world-importance score; a chosen lane leads, the scan bias orders.
+ * Returns a new array.
  */
-export function rankByPreferences<T extends RankableCard>(
-  cards: T[],
-  prefs: NewsPreferences,
-  maxPerCategory = 3,
-): T[] {
-  const scored = cards.map((c, i) => ({ c, i, s: priorityScore(c, prefs) }));
-  scored.sort((a, b) => (b.s - a.s) || (a.i - b.i));
-  return capByCategory(scored.map((x) => x.c), maxPerCategory);
+export function rankByPreferences<T extends RankableCard>(cards: T[], prefs: NewsPreferences): T[] {
+  return rankCore(cards, prefs, (c) => (typeof c.score === 'number' ? c.score : 0));
 }
 
 /**
@@ -168,21 +168,14 @@ export function rankByPreferences<T extends RankableCard>(
  * fighting the server. The spine here is the incoming POSITION (the server's
  * per-user order), NOT card.score - using the score would re-introduce the
  * generic ranking math and undo the engine's personalization. A chosen lane
- * lifts a card a few slots; it nudges, never nukes, the server order.
+ * still leads (BOOST_BLOCK); within each group the server's order is preserved
+ * and the scan bias floats stories up.
  *
  * Neutral prefs are an exact identity (the server order is authoritative and
- * untouched - not even the variety cap runs), so an untuned leader sees no
- * change. Returns a new array.
+ * untouched), so an untuned leader sees no change. Returns a new array.
  */
-export function rankPersonalized<T extends RankableCard>(
-  cards: T[],
-  prefs: NewsPreferences,
-  maxPerCategory = 3,
-): T[] {
+export function rankPersonalized<T extends RankableCard>(cards: T[], prefs: NewsPreferences): T[] {
   if (isNeutral(prefs)) return cards;
-  const n = cards.length;
   // base = position (n-i): index 0 keeps the highest base, ties broken by index.
-  const scored = cards.map((c, i) => ({ c, i, s: (n - i) + priorityLift(c, prefs) }));
-  scored.sort((a, b) => (b.s - a.s) || (a.i - b.i));
-  return capByCategory(scored.map((x) => x.c), maxPerCategory);
+  return rankCore(cards, prefs, (_c, i, n) => n - i);
 }
