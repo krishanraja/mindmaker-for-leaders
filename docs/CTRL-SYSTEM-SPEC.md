@@ -93,3 +93,27 @@ The bar: what the CEO of Apple or Google ships in 2028. Stunning, world-class, c
 - **Craft in the details.** Type rhythm, optical alignment, consistent grid, micro-interactions on every touch, haptic-feeling feedback. The difference between good and world-class lives here.
 
 This language applies to every surface and every state, within the stable tab identities (section 1) and the session journey (section 3).
+
+---
+
+## 7. The three main areas: purpose, objectives, outcomes
+
+CTRL does three things for a leader, on ONE shared substrate (the brain). The four tabs in section 1 are how these are navigated; these are what they are FOR. There is only one system - the three areas are facets of the same brain, never silos. ("You" is the accountability thread that runs through all three: it records how the leader's judgment ages over time; it is not a fourth job.)
+
+### Area 1 - Home: your daily AI-native read (the curation system)
+Deep-dive: `docs/CURATION-SYSTEM-SPEC.md`.
+- **Purpose.** Keep a time-poor operator current on the AI shift that changes how they build/run the AI-native version of their business - without them doing the reading. Only AI-native, cross-verified stories reach them; general business news never does.
+- **Objectives.** Surface only what is AI-native and corroborated; personalize on three compounding layers (the brain, the leader's explicit Tune, and their role/business fit); make Tune honest and visible (a chosen lane dominates, the scan bias reorders, the change is instant); never empty, never below 3 on-topic cards in a chosen lane; one spoken Briefing over the SAME pool.
+- **Outcomes.** In one glance or one listen, the leader knows the few moves worth acting on this week; tuning visibly shapes the feed to their lane and role; the cards and the briefing agree; day-one leaders still get a sensible read.
+
+### Area 2 - Decisions: weigh a call, AI-native
+- **Purpose.** Move a real decision forward by reframing it to its AI-native version and stress-testing it against evidence (never general business advice).
+- **Objectives.** Reframe general → AI-native (Stage 0 lock); decompose into claims; verify claims web-grounded (plus Artificial Analysis as an evidence retriever for model claims); show where the decision holds and where it breaks; watch load-bearing claims and raise alerts when the ground shifts (`decision-watch`).
+- **Outcomes.** The leader acts with a grounded, contestable view of the decision, and is told when a load-bearing assumption weakens - judgment that compounds, not a one-shot answer.
+
+### Area 3 - Brain / Memory: the substrate that makes every AI know you
+- **Purpose.** Hold the leader's context (identity, business, goals, decisions, voice, and tuning) in ONE place so every CTRL surface and every external AI is instantly grounded - the leader never re-explains themselves.
+- **Objectives.** Capture facts with low friction; keep ONE unified brain accessor (`brain-profile.ts`, no silos); stay portable (Context Export + MCP); and drive both the Home curation and the Briefing from that single brain.
+- **Outcomes.** The feed, the briefing, and any connected AI all know the business; richer brain → sharper feed and briefing → more signal captured (the flywheel).
+
+The throughline: one brain, three facets. Tune the brain and all three areas move together; that is the whole point.
