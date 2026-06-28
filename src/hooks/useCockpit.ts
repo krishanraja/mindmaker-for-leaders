@@ -4,8 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { useNewsPreferences } from '@/hooks/useNewsPreferences';
 import { rankByPreferences, rankPersonalized } from '@/lib/newsPriority';
+import { roleFitByCategory } from '@/lib/roleArchetype';
 import { COLD_DECK } from '@/components/cockpit/coldDeck';
+import { reserveForCategories } from '@/components/cockpit/laneReserve';
 import { cacheHeadlines } from '@/components/system/loadingLines';
+import type { NewsCategoryId } from '@/types/newsCategory';
 import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, HeroMagnitude, HomeState } from '@/types/cockpit';
 
 const db = supabase as unknown as SupabaseClient;
@@ -140,6 +143,37 @@ export function useCockpit(): {
         } catch { /* skip malformed */ }
       }
       setDislikedCats(dis);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // The leader's role + sector, inferred from facts they already gave us (never
+  // re-asked), so the feed can score lanes by suitability to THEIR job/business
+  // (src/lib/roleArchetype.ts). Best-effort; neutral fit on any miss.
+  const [roleSector, setRoleSector] = useState<{ role: string | null; sector: string | null }>({ role: null, sector: null });
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await db
+        .from('user_memory')
+        .select('fact_category, fact_label, fact_value')
+        .eq('user_id', user.id)
+        .in('fact_category', ['identity', 'business'])
+        .eq('is_current', true)
+        .limit(20);
+      if (cancelled || error || !data) return;
+      let role: string | null = null;
+      let sector: string | null = null;
+      for (const f of data as { fact_category: string; fact_label: string; fact_value: string }[]) {
+        const v = (f.fact_value || '').trim();
+        if (!v) continue;
+        const l = (f.fact_label || '').toLowerCase();
+        if (!role && (l.includes('role') || l.includes('title') || f.fact_category === 'identity')) role = v;
+        if (!sector && (l.includes('sector') || l.includes('industry') || f.fact_category === 'business')) sector = v;
+      }
+      if (!cancelled) setRoleSector({ role, sector });
     })();
     return () => { cancelled = true; };
   }, []);
@@ -325,14 +359,18 @@ export function useCockpit(): {
     // authoritative - the client must not re-rank (that would fight the engine).
     // Only the generic shared pool gets the local preference re-rank.
     const filtered = liveHeadlines.filter((h) => h.headline && !(h.category && dislikedCats.has(h.category)));
+    // Suitability of each lane to THIS leader's job + business (role archetype +
+    // industry), inferred from facts we already hold. Sharpens the order within
+    // a chosen lane (a CFO's economics over product; a CTO's tools over model).
+    const fit = roleFitByCategory(roleSector.role, roleSector.sector);
     // Tune re-ranks the deck so a chosen lane LEADS (dominates, not a gentle
-    // lift) and the scan bias orders within. On the generic shared pool we rank
-    // over the server importance score; on an already-personalized feed we keep
-    // the server order as the spine (rankPersonalized). Neutral prefs leave
-    // either order untouched.
+    // lift), the scan bias orders within, and role fit breaks the rest. On the
+    // generic shared pool we rank over the server importance score; on an
+    // already-personalized feed we keep the server order as the spine. Neutral
+    // prefs leave either order untouched.
     const ranked = serverPersonalized
-      ? rankPersonalized(filtered, preferences)
-      : rankByPreferences(filtered, preferences);
+      ? rankPersonalized(filtered, preferences, fit)
+      : rankByPreferences(filtered, preferences, fit);
     const liveCards: DeckCard[] = ranked.map((h, i) => ({
       id: h.id || `live-${i}`,
       kind: 'news' as const,
@@ -367,21 +405,35 @@ export function useCockpit(): {
       deck.push(c);
     }
 
-    // Filter-forward: when the leader has narrowed to lane(s), lead with THAT
-    // lane and show it PURE when it has real depth - "I picked economics, so my
-    // feed is economics". Only top up with the next-best stories when the lane is
-    // thin that day (the daily pool genuinely may hold few of a lane), so the
-    // feed reflects the choice but is never sparse. An empty lane (nothing in it
-    // today) falls back to the full ranked deck rather than a blank feed.
-    const LANE_FLOOR = 4;
+    // Filter-forward with a GUARANTEED FLOOR OF 3. When the leader narrows to a
+    // lane, show that lane PURE - "I picked economics, so my feed is economics".
+    // If the live pool is thin in that lane that day, top up with ON-TOPIC
+    // evergreen reserve cards (ordered by role fit), never off-topic filler, so
+    // the lane always reaches >=3. An empty lane falls back to the reserve too
+    // (so it is still on-topic, not the generic feed).
+    const LANE_MIN = 3;
     let shown = deck;
     if (preferences.boosted.length > 0) {
       const boostedSet = new Set<string>(preferences.boosted);
-      const lane = deck.filter((c) => c.category != null && boostedSet.has(c.category));
-      if (lane.length >= LANE_FLOOR) shown = lane;
-      else if (lane.length > 0) {
-        const rest = deck.filter((c) => !(c.category != null && boostedSet.has(c.category)));
-        shown = [...lane, ...rest];
+      const realLane = deck.filter((c) => c.category != null && boostedSet.has(c.category));
+      if (realLane.length >= LANE_MIN) {
+        shown = realLane; // pure, already role-ordered
+      } else {
+        // Top up on-topic from the reserve, skipping anything already shown.
+        const usedKeys = new Set(realLane.map((c) => normalizeHeadlineKey(c.headline) || c.url || c.id));
+        const backfill = reserveForCategories(
+          preferences.boosted as NewsCategoryId[],
+          fit,
+          LANE_MIN - realLane.length,
+          (c) => usedKeys.has(normalizeHeadlineKey(c.headline) || c.url || c.id),
+        );
+        shown = [...realLane, ...backfill];
+        // Safety net: if the reserve somehow could not fill it, top up with the
+        // best of the rest so the feed is never below the floor.
+        if (shown.length < LANE_MIN) {
+          const rest = deck.filter((c) => !(c.category != null && boostedSet.has(c.category)));
+          shown = [...shown, ...rest].slice(0, LANE_MIN);
+        }
       }
     }
 
@@ -405,7 +457,7 @@ export function useCockpit(): {
       homeState,
       ownSignalCount: ownSignals,
     };
-  }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats, preferences, serverPersonalized, needsProfile]);
+  }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats, preferences, serverPersonalized, needsProfile, roleSector]);
 
   // Hold the skeleton until BOTH the decision inbox and the first live-headlines
   // fetch have settled, so Home renders its real deck once instead of flashing
