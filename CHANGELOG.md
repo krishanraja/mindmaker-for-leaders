@@ -8,7 +8,7 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ## [Unreleased] - 2026-06-29 - Unified onboarding → decisions → engagement loop (PR #298)
 
-> **Why.** Entry and re-entry had drifted into patchwork: a legacy 40-minute voice onboarding gated behind a `VITE_COCKPIT_ENABLED` fork (with older Memory dashboards as the other branch), a loose onboarding→first-decision handoff, and a cold-start trap where re-engagement only armed for leaders who already had decisions AND opted into daily email. A leader who set CTRL up but never weighed a decision — or who lapsed — got zero pull-back. Resolved by adapting the whole experience to the leader's lifecycle state (and to the device mindset). Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.
+> **Why.** Entry and re-entry had drifted into patchwork: a legacy 40-minute voice onboarding gated behind a `VITE_COCKPIT_ENABLED` fork (with older Memory dashboards as the other branch), a loose onboarding→first-decision handoff, and a cold-start trap where re-engagement only armed for leaders who already had decisions AND opted into daily email. A leader who set CTRL up but never weighed a decision - or who lapsed - got zero pull-back. Resolved by adapting the whole experience to the leader's lifecycle state (and to the device mindset). Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.
 
 ### Added
 - **Lifecycle-state spine.** `useCockpit` derives `userState` (new/dormant/active/power, off real timestamps + a 14-day dormancy window) → a `posture` (`guide` vs `partner`) on `CockpitData` (`src/types/cockpit.ts`). Posture + device context drive Home's lead and copy (mobile = on-the-go quick read; desktop = deep work).
@@ -21,7 +21,7 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ### Removed
 - The `VITE_COCKPIT_ENABLED` fork, `legacyNav`, and both legacy `Mobile/DesktopMemoryDashboard`.
-- The voice onboarding tree: `OnboardingInterview`, `DraftCockpit`, `onboarding/steps/*`, `useOnboardingInterview`, the dead `useGuidedCapture` state machine, `WelcomeTour`, `ProgressBar`. (`EdgeOnboarding` kept — still used by EdgeView.)
+- The voice onboarding tree: `OnboardingInterview`, `DraftCockpit`, `onboarding/steps/*`, `useOnboardingInterview`, the dead `useGuidedCapture` state machine, `WelcomeTour`, `ProgressBar`. (`EdgeOnboarding` kept - still used by EdgeView.)
 
 ### Verified
 - Typecheck clean (0 new errors; deletions cleared 10 stale baseline errors), Vite build green, 225/225 unit tests pass. Reactivation fn deployed + dry-run verified + cron armed. Live authed Playwright walk on desktop / tablet / mobile (fresh cold user): cold-start → inline onboarding → kickstart-led feed → `/decision` prefilled.
