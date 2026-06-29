@@ -100,6 +100,12 @@ const BOOST_BLOCK = 1_000_000;
 const PRACTICAL_LIFT = 3; // within a group, the practical bias floats actionable lanes up
 const BIG_PER_SOURCE = 1.6; // within a group, "biggest moves" floats multi-source stories up
 const ROLE_FIT_WEIGHT = 3; // within a group, float lanes that fit the leader's role/business
+// The "zeitgeist" nudge: lanes the broader cohort of leaders is anxious about
+// right now (the portfolio-pulse aggregate). Deliberately GENTLE - far below the
+// leader's own boost/bias/fit - so it only breaks ties among similar-importance
+// cards and never overrides a personal choice. Off unless a meaningful set is
+// supplied (the hook guards on volume, so thin data has no effect).
+const ZEITGEIST_LIFT = 0.5;
 
 // Per-category suitability to the leader's role + business, 0..1 (see
 // roleArchetype.ts). Optional: when absent, ranking ignores role fit entirely.
@@ -149,19 +155,36 @@ function fitLift(card: RankableCard, fit: RoleFit | undefined): number {
   return cat ? ROLE_FIT_WEIGHT * (fit[cat] ?? 0) : 0;
 }
 
+// The cohort-anxiety nudge: lanes the wider set of leaders is grappling with
+// right now. A gentle tie-breaker, never a dominator.
+export type ZeitgeistLanes = ReadonlySet<NewsCategoryId>;
+
+function zeitgeistLift(card: RankableCard, zeitgeist: ZeitgeistLanes | undefined): number {
+  if (!zeitgeist || zeitgeist.size === 0) return 0;
+  const cat = card.category as NewsCategoryId | undefined;
+  return cat && zeitgeist.has(cat) ? ZEITGEIST_LIFT : 0;
+}
+
 /** Shared ordering core: stable sort by (boosted block + bias lift + role fit +
- * base), with the original index as the tiebreak so equal cards keep order. */
+ * zeitgeist nudge + base), with the original index as the tiebreak so equal
+ * cards keep order. */
 function rankCore<T extends RankableCard>(
   cards: T[],
   prefs: NewsPreferences,
   baseOf: (card: T, index: number, total: number) => number,
   fit: RoleFit | undefined,
+  zeitgeist?: ZeitgeistLanes,
 ): T[] {
   const n = cards.length;
   const scored = cards.map((c, i) => ({
     c,
     i,
-    s: baseOf(c, i, n) + (isBoosted(c, prefs) ? BOOST_BLOCK : 0) + biasLift(c, prefs.bias) + fitLift(c, fit),
+    s:
+      baseOf(c, i, n) +
+      (isBoosted(c, prefs) ? BOOST_BLOCK : 0) +
+      biasLift(c, prefs.bias) +
+      fitLift(c, fit) +
+      zeitgeistLift(c, zeitgeist),
   }));
   scored.sort((a, b) => (b.s - a.s) || (a.i - b.i));
   return scored.map((x) => x.c);
@@ -177,8 +200,9 @@ export function rankByPreferences<T extends RankableCard>(
   cards: T[],
   prefs: NewsPreferences,
   fit?: RoleFit,
+  zeitgeist?: ZeitgeistLanes,
 ): T[] {
-  return rankCore(cards, prefs, (c) => (typeof c.score === 'number' ? c.score : 0), fit);
+  return rankCore(cards, prefs, (c) => (typeof c.score === 'number' ? c.score : 0), fit, zeitgeist);
 }
 
 /**
@@ -196,10 +220,13 @@ export function rankPersonalized<T extends RankableCard>(
   cards: T[],
   prefs: NewsPreferences,
   fit?: RoleFit,
+  zeitgeist?: ZeitgeistLanes,
 ): T[] {
   // Untuned: the server order is authoritative (it already scored against the
-  // brain, including role), so leave it - applying role fit here would fight it.
+  // brain, including role), so leave it - applying role fit or a cohort nudge
+  // here would fight a feed that already knows this leader. The zeitgeist prior
+  // is for the GENERIC pool (cold leaders), via rankByPreferences.
   if (isNeutral(prefs)) return cards;
   // base = position (n-i): index 0 keeps the highest base, ties broken by index.
-  return rankCore(cards, prefs, (_c, i, n) => n - i, fit);
+  return rankCore(cards, prefs, (_c, i, n) => n - i, fit, zeitgeist);
 }

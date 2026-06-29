@@ -149,3 +149,32 @@ describe('rankPersonalized', () => {
     expect(ranked[0].category).toBe('economics');
   });
 });
+
+describe('zeitgeist (cohort-anxiety) nudge', () => {
+  it('floats a card in a trending lane above a same-score card, on the generic pool', () => {
+    const feed: RankableCard[] = [
+      { category: 'model', score: 5 },
+      { category: 'org', score: 5 },
+    ];
+    const ranked = rankByPreferences(feed, balanced, undefined, new Set(['org']));
+    expect(ranked[0].category).toBe('org');
+  });
+  it('is gentle: never overrides the leader\'s own boosted lane', () => {
+    const prefs: NewsPreferences = { boosted: ['model'], bias: 'balanced' };
+    const feed: RankableCard[] = [
+      { category: 'org', score: 9 }, // trending cohort lane, higher score
+      { category: 'model', score: 1 }, // the leader's chosen lane, low score
+    ];
+    const ranked = rankByPreferences(feed, prefs, undefined, new Set(['org']));
+    expect(ranked[0].category).toBe('model'); // the personal choice still dominates
+  });
+  it('no zeitgeist set is an exact identity (no change)', () => {
+    const feed: RankableCard[] = [
+      { category: 'model', score: 5 },
+      { category: 'org', score: 5 },
+    ];
+    const a = rankByPreferences(feed, balanced);
+    const b = rankByPreferences(feed, balanced, undefined, new Set());
+    expect(a.map((c) => c.category)).toEqual(b.map((c) => c.category));
+  });
+});

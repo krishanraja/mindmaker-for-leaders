@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { useNewsPreferences } from '@/hooks/useNewsPreferences';
+import { usePortfolioPulse } from '@/hooks/usePortfolioPulse';
 import { rankByPreferences, rankPersonalized } from '@/lib/newsPriority';
 import { roleFitByCategory } from '@/lib/roleArchetype';
 import { COLD_DECK } from '@/components/cockpit/coldDeck';
@@ -112,6 +113,10 @@ export function useCockpit(): {
   // Bumped by `reload()` to re-run the brain-dependent fetches below.
   const [reloadKey, setReloadKey] = useState(0);
   const { preferences } = useNewsPreferences();
+  // The cohort-anxiety prior (portfolio hive mind): the lanes the wider set of
+  // leaders is grappling with right now, used as a GENTLE tie-breaker for a leader
+  // who has not tuned their own feed yet. Volume-guarded + empty-safe (identity).
+  const zeitgeist = usePortfolioPulse();
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
   const [segments, setSegments] = useState<BriefingSeg[]>([]);
@@ -385,8 +390,8 @@ export function useCockpit(): {
     // already-personalized feed we keep the server order as the spine. Neutral
     // prefs leave either order untouched.
     const ranked = serverPersonalized
-      ? rankPersonalized(filtered, preferences, fit)
-      : rankByPreferences(filtered, preferences, fit);
+      ? rankPersonalized(filtered, preferences, fit, zeitgeist)
+      : rankByPreferences(filtered, preferences, fit, zeitgeist);
     const liveCards: DeckCard[] = ranked.map((h, i) => ({
       id: h.id || `live-${i}`,
       kind: 'news' as const,
@@ -525,7 +530,7 @@ export function useCockpit(): {
       userState,
       posture,
     };
-  }, [cases, alerts, reactions, segments, briefedAt, liveHeadlines, dislikedCats, preferences, serverPersonalized, needsProfile, roleSector]);
+  }, [cases, alerts, reactions, segments, briefedAt, liveHeadlines, dislikedCats, preferences, zeitgeist, serverPersonalized, needsProfile, roleSector]);
 
   // Hold the skeleton until BOTH the decision inbox and the first live-headlines
   // fetch have settled, so Home renders its real deck once instead of flashing
