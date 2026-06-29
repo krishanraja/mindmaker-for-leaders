@@ -6,6 +6,28 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
+## [Unreleased] - 2026-06-29 - Unified onboarding → decisions → engagement loop (PR #298)
+
+> **Why.** Entry and re-entry had drifted into patchwork: a legacy 40-minute voice onboarding gated behind a `VITE_COCKPIT_ENABLED` fork (with older Memory dashboards as the other branch), a loose onboarding→first-decision handoff, and a cold-start trap where re-engagement only armed for leaders who already had decisions AND opted into daily email. A leader who set CTRL up but never weighed a decision — or who lapsed — got zero pull-back. Resolved by adapting the whole experience to the leader's lifecycle state (and to the device mindset). Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.
+
+### Added
+- **Lifecycle-state spine.** `useCockpit` derives `userState` (new/dormant/active/power, off real timestamps + a 14-day dormancy window) → a `posture` (`guide` vs `partner`) on `CockpitData` (`src/types/cockpit.ts`). Posture + device context drive Home's lead and copy (mobile = on-the-go quick read; desktop = deep work).
+- **Lightweight inline onboarding.** `InlineProfileSetup` (`src/components/cockpit/onboarding/`) + `useInlineProfile` capture industry + role into `user_memory` and interests via the reused `SeedBeatsPrompt`, rendered in the Home feed zone. No interview, no navigate-away.
+- **First/next-decision kickstart.** `KickstartCard` leads the guide-posture Home with a real, role-tailored starter decision (`src/lib/starterDecisions.ts`), routed to `/decision` pre-filled (`DeckCard.route`/`prefill`; `DecisionPage` also reads `?prefill=`). Unit-tested (`src/__tests__/starterDecisions.test.ts`).
+- **Reactivation engagement.** `supabase/functions/send-reactivation-nudge` + daily `reactivation-nudge` pg_cron (13:00 UTC) email NEW (never-weighed) and DORMANT (>14d) leaders into a first/next decision, de-duped on `leader_notification_prefs.reactivation_nudge_sent_at` (30-day re-arm), batch-capped. Migrations `20260629120000_reactivation_nudge.sql` + `20260629120100_reactivation_nudge_cron.sql`; smoke `scripts/smoke-reactivation-nudge.mjs`.
+
+### Changed
+- `Dashboard.tsx` is now cockpit-only (the one home, device-native). `BottomNav` is the single 3-tab cockpit nav.
+
+### Removed
+- The `VITE_COCKPIT_ENABLED` fork, `legacyNav`, and both legacy `Mobile/DesktopMemoryDashboard`.
+- The voice onboarding tree: `OnboardingInterview`, `DraftCockpit`, `onboarding/steps/*`, `useOnboardingInterview`, the dead `useGuidedCapture` state machine, `WelcomeTour`, `ProgressBar`. (`EdgeOnboarding` kept — still used by EdgeView.)
+
+### Verified
+- Typecheck clean (0 new errors; deletions cleared 10 stale baseline errors), Vite build green, 225/225 unit tests pass. Reactivation fn deployed + dry-run verified + cron armed. Live authed Playwright walk on desktop / tablet / mobile (fresh cold user): cold-start → inline onboarding → kickstart-led feed → `/decision` prefilled.
+
+---
+
 ## [5.4] - 2026-06-09 - Phase 10: Desktop Shell Unification + Goals + Enrich Loop
 
 ### Added
