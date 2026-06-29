@@ -45,7 +45,7 @@ Still internal-first on the public side - the Mindmaker LIVE / Substack widget t
 
 ## What remains (refinements on a live foundation)
 - **D-expose:** surface the `portfolio-pulse` distribution as a public Substack / Mindmaker LIVE widget ("what the cohort is wrestling with this week"). The curation-prior half of D is now LIVE (see above).
-- **C - one enrichment service:** collapse MYMU `enrich-profile` and Mindmaker `enrich-company` (near-identical PDL/Apollo/Brandfetch/BuiltWith/Tranco/Exa/Perplexity/Brave/NewsAPI waterfalls) into one shared module.
+- **C - one enrichment service (DESIGNED, big-bang deliberately deferred):** the structural map showed the two waterfalls are NOT near-identical duplicates - MYMU `enrich-profile` resolves a *person* (flat `ResolvedPerson`), Mindmaker `enrich-company` resolves a *company* (nested `Dossier` with a load-bearing `scale.*` privacy-routing layer + voice synthesis). They share only the four pure provider calls (PDL/Brandfetch/BuiltWith/Tranco) + the web-signals providers. A blind merge would vanilla away each one's soul and risk two live conversion functions unverifiably. The canonical shared-core contract (neutral `PartialEnrichment` body, sovereign orchestrators/output/voice) + a safe incremental migration path are specified in `docs/ENRICHMENT-CONVERGENCE.md`. The body converges; the personality stays.
 
 ## Deploy note
 Edge functions in this environment deploy via the Supabase Management API multipart bundler (`POST /v1/projects/<ref>/functions/deploy?slug=<slug>` with `-F metadata=...` + `-F file=@...;filename=...`); the CLI is proxy-blocked and the MCP deploy is permission-gated here.
