@@ -117,3 +117,27 @@ Deep-dive: `docs/CURATION-SYSTEM-SPEC.md`.
 - **Outcomes.** The feed, the briefing, and any connected AI all know the business; richer brain → sharper feed and briefing → more signal captured (the flywheel).
 
 The throughline: one brain, three facets. Tune the brain and all three areas move together; that is the whole point.
+
+---
+
+## 8. The unified onboarding → decisions → engagement loop (state-adaptive)
+
+Status: founder-locked (2026-06-29). The rule for how a leader ENTERS the system and how it pulls them back, so the three areas in section 7 are one continuous loop rather than three doors a newcomer has to discover.
+
+**Why this exists.** The entry and re-entry paths had drifted into patchwork, and the seams were doing real harm:
+- *Two onboardings, two homes.* A legacy 40-minute voice `OnboardingInterview` was auto-offered at first run, and `/dashboard` forked on a `VITE_COCKPIT_ENABLED` flag between the cockpit Home and the older Memory dashboards. A newcomer's first experience depended on a flag and a heavy interview, neither of which matched the "cold-start is the default state, earned-into" principle (section 2.4).
+- *A loose first-decision seam.* Nothing reliably carried a freshly-onboarded leader into their first weighed decision, so the Decisions area sat unused.
+- *A cold-start / dormancy trap.* The only re-engagement (`decision-watch` → alerts → `send-daily-briefing`) fired ONLY for a leader who already had decisions AND had opted into daily email. A leader who set CTRL up but never weighed a decision - or who lapsed - got zero pull-back, forever. The loop never closed for exactly the people who needed it most.
+
+**The founder principle.** Adapt the whole experience to *who the leader is right now*:
+- **New or dormant → guidance, inspiration, a kickstart.** Lead them in; teach by doing; surface the one next action.
+- **Active / power → decisiveness, evidence, a thinking partner.** Fast triage; less hand-holding.
+And match the **device mindset**: mobile is on-the-go (a quick read, one call worth weighing); desktop is deep work (room to think a decision through). Same information model, different lead and copy.
+
+**The model.**
+- **Lifecycle state (the spine).** `useCockpit` derives a `userState` off real timestamps (no new tracking): `new` (no brain, never weighed), `dormant` (has history but no activity in 14 days), `active`, `power`. It maps to a `posture` - `guide` (new/dormant, or simply no live decision in play) or `partner` - carried on `CockpitData`. This is a richer read than the news-only `homeState` (section 3) and supersedes nothing; the two coexist (homeState frames the news, posture frames the lead).
+- **Onboarding is lightweight + inline** (`InlineProfileSetup` + `useInlineProfile`), never a gate-by-interview. It captures the two gate-critical identity facts (industry, role) straight into `user_memory` and a few interests via the reused `SeedBeatsPrompt`, rendered inside the Home feed zone. The cockpit is the one cold-start; there is no second home.
+- **The first-decision seam.** In the `guide` posture, Home leads with a `KickstartCard` - a real, role-tailored starter decision (`src/lib/starterDecisions.ts`) - that routes into the decision engine pre-filled. The news deck stays pure news; the kickstart rides on top as the lead. Dormant leaders get a re-kickstart ("pick your thinking back up").
+- **Re-engagement arms for everyone.** `send-reactivation-nudge` (daily cron) emails NEW (never-weighed) and DORMANT (>14d) leaders a single lifecycle nudge into a first/next decision, de-duped on `leader_notification_prefs.reactivation_nudge_sent_at` with a 30-day re-arm. It is deliberately NOT gated on the daily-briefing marketing opt-in - it is a one-off "you set this up, let's use it," which is what closes the trap.
+
+**Outcome.** A time-poor, tool-fatigued leader with zero context lands on one home, is asked one light thing at a time, and is handed one real decision to weigh - and if they drift, the system brings them back to exactly that. The legacy fork, the legacy dashboards, and the voice interview were deleted, not flagged off; there is one loop.

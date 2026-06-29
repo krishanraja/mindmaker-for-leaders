@@ -6,6 +6,7 @@ import { DesktopShell } from '@/components/layout/DesktopShell';
 import { MobileFrame } from '@/components/layout/MobileFrame';
 import { cn } from '@/lib/utils';
 import { useDevice } from '@/hooks/useDevice';
+import { starterDecisionsFor } from '@/lib/starterDecisions';
 import { useDecisionEngine } from '@/hooks/useDecisionEngine';
 import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { useDecisionCall, type UserCall } from '@/hooks/useDecisionCall';
@@ -198,15 +199,6 @@ function MapBody({ caseId, onChange }: { caseId: string; onChange: () => void })
   );
 }
 
-// Starter decisions any leader is likely weighing, lightly tailored by the
-// leader's role/sector (read from the brain). Lets a leader with nothing pinned
-// start a real decision in one tap instead of facing a blank page.
-const STARTER_DECISIONS = [
-  'Should we build our own AI agents, or buy off the shelf?',
-  'Where should AI take work off my team first?',
-  'Which AI vendor should we standardise the company on?',
-];
-
 function CasePicker({ onPick }: { onPick: (id: string) => void }) {
   const navigate = useNavigate();
   const { cases, loading } = useDecisionInbox();
@@ -248,7 +240,7 @@ function CasePicker({ onPick }: { onPick: (id: string) => void }) {
           </p>
         </div>
         <div className="space-y-2">
-          {STARTER_DECISIONS.map((s) => (
+          {starterDecisionsFor(role).map((s) => (
             <button
               key={s}
               type="button"

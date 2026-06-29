@@ -21,7 +21,7 @@ import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; forceLoading?: boolean }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data, loading, recordDeckReaction } = useCockpit();
+  const { data, loading, recordDeckReaction, reload } = useCockpit();
 
   // Real name when we have one; null when the only identifier is an email /
   // handle / random id, so the greeting omits the ugly id gracefully.
@@ -36,10 +36,12 @@ export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; 
         loading={loading || !!forceLoading}
         greeting={cockpitGreeting(firstName)}
         onOpenCard={(card) => {
-          if (card.betId) navigate(`/decision-map?case=${card.betId}`);
+          if (card.route) navigate(card.route, card.prefill ? { state: { prefill: card.prefill } } : undefined);
+          else if (card.betId) navigate(`/decision-map?case=${card.betId}`);
           else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');
         }}
         onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
+        onProfileComplete={reload}
       />
     </DesktopShell>
   );

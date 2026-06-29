@@ -23,13 +23,14 @@
 // the rail tiles and the swipe feed are byte-for-byte the same instrument.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ChevronUp, Sparkles } from 'lucide-react';
-import type { CockpitData, DeckCard, HomeState } from '@/types/cockpit';
+import { ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
+import type { CockpitData, DeckCard, HomeState, UserPosture } from '@/types/cockpit';
 import { CockpitHero } from './CockpitHero';
+import { KickstartCard } from './KickstartCard';
 import { CategoryMotif } from './CategoryMotif';
 import { TuneFeedButton } from './TuneFeedButton';
+import { InlineProfileSetup } from './onboarding/InlineProfileSetup';
 import { GlobeLoader } from '@/components/system/GlobeLoader';
 import { resolveNewsCategory } from '@/types/newsCategory';
 import { usePinnedDecision } from '@/hooks/usePinnedDecision';
@@ -48,61 +49,58 @@ export interface HomeFeedProps {
   greeting: string; // "Good morning, Krish."
   onOpenCard: (card: DeckCard) => void;
   onReactDeck?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
+  /** Re-pull the cockpit after the inline onboarding saves (clears the gate). */
+  onProfileComplete?: () => void;
   /** desktop = the spacious rail; mobile = the swipe feed. */
   variant: 'mobile' | 'desktop';
 }
 
-// The one-line chief-of-staff orientation per state. Warm, advisory, AI-native,
-// never empty, no em dashes. The shell does not move between states; only this
-// line + the deck contents change.
-function framingFor(state: HomeState): string {
+// One-time dismissal so a NEW leader who chose "Browse first" isn't re-prompted
+// every load this session. A real server gate (needsProfile) ignores this.
+const INLINE_ONBOARD_DISMISS_KEY = 'ctrl:inline_onboard_dismissed_v1';
+
+function useInlineOnboarding(data: CockpitData) {
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try { return window.localStorage.getItem(INLINE_ONBOARD_DISMISS_KEY) === '1'; } catch { return false; }
+  });
+  const gated = !!data.needsProfile;
+  // Show for the server gate (forced) OR a brand-new leader (invited, skippable).
+  const show = gated || (data.userState === 'new' && !dismissed);
+  const dismiss = useCallback(() => {
+    setDismissed(true);
+    try { window.localStorage.setItem(INLINE_ONBOARD_DISMISS_KEY, '1'); } catch { /* ignore */ }
+  }, []);
+  return { show, gated, dismiss };
+}
+
+// The one-line chief-of-staff orientation. Warm, advisory, AI-native, never
+// empty, no em dashes. It adapts to BOTH posture (guide vs partner) and the
+// DEVICE CONTEXT the leader is in: mobile is on-the-go (a quick read, fast
+// triage), desktop is deep work (room to think a decision through). The shell
+// never moves; only this line + the deck contents change.
+function framingFor(state: HomeState, posture: UserPosture, variant: 'mobile' | 'desktop'): string {
+  if (posture === 'guide') {
+    return variant === 'mobile'
+      ? "A quick read on what's moving in AI, plus one call worth weighing. Start at the top."
+      : "Here's what's moving in AI, and a decision worth thinking through properly. Let's get into it.";
+  }
+  // partner
   switch (state) {
-    case 'cold':
-      return 'The AI-native moves worth your attention, curated. Browse from the top, and teach me what matters.';
     case 'rich':
-      return "Today's AI-native headlines, curated and ranked for you. Browse from the top.";
+      return variant === 'mobile'
+        ? 'The few AI-native moves worth a glance right now. Swipe to triage.'
+        : "Today's AI-native headlines, ranked for you, with room to dig into what matters.";
     case 'warm':
     default:
-      return 'Curated to what you are building - the AI-native headlines that matter to you.';
+      return variant === 'mobile'
+        ? 'Curated to what you are building. A fast read for on the move.'
+        : 'Curated to what you are building - the AI-native headlines that matter, with space to go deep.';
   }
 }
 
 export function HomeFeed(props: HomeFeedProps) {
   return props.variant === 'desktop' ? <DesktopHome {...props} /> : <MobileHome {...props} />;
-}
-
-// The profile-gate "unlock" prompt: shown in the feed zone when the brain is
-// below the minimum (vertical + role + a few interests) and the gate is enabled
-// server-side. Warm, first-person, never a scold; leads with one clear action.
-const GATE_LABELS: Record<string, string> = {
-  vertical: 'your industry',
-  role: 'your role',
-  interests: 'a few interests',
-};
-function ProfileGateCard({ missing, variant }: { missing?: string[]; variant: 'mobile' | 'desktop' }) {
-  const navigate = useNavigate();
-  const items = (missing && missing.length ? missing : ['vertical', 'role', 'interests']).map((m) => GATE_LABELS[m] ?? m);
-  const list = items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}` : items[0];
-  return (
-    <div className="flex min-h-0 flex-1 items-center justify-center">
-      <div className={cn('w-full rounded-2xl border border-accent/25 bg-[linear-gradient(180deg,#101620,#0a0e12)] p-6 text-center', variant === 'desktop' && 'max-w-md')}>
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent/12 text-accent">
-          <Sparkles className="h-5 w-5" />
-        </span>
-        <h2 className="mt-3 text-[18px] font-extrabold tracking-tight text-foreground">Let me get to know you first</h2>
-        <p className="mx-auto mt-2 max-w-[42ch] text-pretty text-[13px] leading-relaxed text-muted-foreground">
-          I curate the AI-native news that actually matters to your business. To do that well I need {list}.
-        </p>
-        <button
-          type="button"
-          onClick={() => navigate('/memory')}
-          className="mt-4 inline-flex items-center justify-center rounded-xl bg-accent px-5 py-2.5 text-[13px] font-bold text-accent-foreground transition hover:brightness-110"
-        >
-          Complete your brain
-        </button>
-      </div>
-    </div>
-  );
 }
 
 /* ============================================================
@@ -114,7 +112,9 @@ function MobileHome({
   greeting,
   onOpenCard,
   onReactDeck,
+  onProfileComplete,
 }: HomeFeedProps) {
+  const onboard = useInlineOnboarding(data);
   const deck = data.deck;
   const [idx, setIdx] = useState(0);
   // one-time "swipe up" hint: shown until the leader makes their first vertical
@@ -167,7 +167,7 @@ function MobileHome({
       <div className="flex shrink-0 flex-col gap-1 px-0.5">
         <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-foreground">{greeting}</h1>
         <p className="text-pretty text-[12.5px] leading-snug text-muted-foreground">
-          {loading ? 'Curating what you need to know in AI today.' : framingFor(data.homeState)}
+          {loading ? 'Curating what you need to know in AI today.' : framingFor(data.homeState, data.posture, 'mobile')}
         </p>
       </div>
 
@@ -184,8 +184,14 @@ function MobileHome({
         {/* The real feed renders underneath once data is ready; the globe loader
             overlays on top and cross-fades out (no abrupt swap). */}
         {!loading &&
-          (data.needsProfile ? (
-            <ProfileGateCard missing={data.missingProfile} variant="mobile" />
+          (onboard.show ? (
+            <InlineProfileSetup
+              variant="mobile"
+              gated={onboard.gated}
+              missing={data.missingProfile}
+              onComplete={() => { onboard.dismiss(); onProfileComplete?.(); }}
+              onSkip={onboard.dismiss}
+            />
           ) : (
             <>
               <MobileSwipeTrack
@@ -291,7 +297,11 @@ function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact, r
               style={{ minHeight: focused ? '0' : undefined }}
             >
               {focused ? (
-                <CockpitHero card={card} variant="feed" onOpen={onOpen} onReact={onReact} relevantToPinnedDecision={relevant(card)} />
+                card.kind === 'kickstart' ? (
+                  <KickstartCard card={card} variant="feed" onOpen={onOpen} />
+                ) : (
+                  <CockpitHero card={card} variant="feed" onOpen={onOpen} onReact={onReact} relevantToPinnedDecision={relevant(card)} />
+                )
               ) : (
                 <PeekCard card={card} />
               )}
@@ -333,7 +343,9 @@ function DesktopHome({
   greeting,
   onOpenCard,
   onReactDeck,
+  onProfileComplete,
 }: HomeFeedProps) {
+  const onboard = useInlineOnboarding(data);
   const deck = data.deck;
   const railRef = useRef<HTMLDivElement>(null);
   const relevant = useDeckRelevance();
@@ -352,7 +364,7 @@ function DesktopHome({
         <div className="min-w-0">
           <h1 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em] text-foreground">{greeting}</h1>
           <p className="mt-2 max-w-[60ch] text-pretty text-[14px] leading-relaxed text-muted-foreground">
-            {loading ? 'Curating what you need to know in AI today.' : framingFor(data.homeState)}
+            {loading ? 'Curating what you need to know in AI today.' : framingFor(data.homeState, data.posture, 'desktop')}
           </p>
         </div>
         <TuneFeedButton />
@@ -383,8 +395,14 @@ function DesktopHome({
         {/* The real rail renders underneath once data is ready; the globe loader
             overlays on top and cross-fades out (no abrupt swap). */}
         {!loading &&
-          (data.needsProfile ? (
-            <ProfileGateCard missing={data.missingProfile} variant="desktop" />
+          (onboard.show ? (
+            <InlineProfileSetup
+              variant="desktop"
+              gated={onboard.gated}
+              missing={data.missingProfile}
+              onComplete={() => { onboard.dismiss(); onProfileComplete?.(); }}
+              onSkip={onboard.dismiss}
+            />
           ) : (
             <>
               <div
@@ -393,7 +411,11 @@ function DesktopHome({
               >
                 {deck.map((card, i) => (
                   <div key={card.id} className={cn('flex flex-col', i === 0 ? 'w-[480px] shrink-0' : 'w-[330px] shrink-0')}>
-                    <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} relevantToPinnedDecision={relevant(card)} />
+                    {card.kind === 'kickstart' ? (
+                      <KickstartCard card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} />
+                    ) : (
+                      <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} relevantToPinnedDecision={relevant(card)} />
+                    )}
                   </div>
                 ))}
               </div>

@@ -7,7 +7,7 @@ import { HomeFeed } from './HomeFeed';
 import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 
 /**
- * The mobile Home (behind VITE_COCKPIT_ENABLED) - the unified 2028 Home:
+ * The mobile Home - the one unified 2028 Home (the VITE_COCKPIT_ENABLED fork was retired):
  * browsable industry headlines (a thumb-first SWIPE feed) + the three doors
  * (Briefing / Weigh / Build) in a fixed reserved place above the nav, all in ONE
  * composed, non-scrolling frame between the AppHeader and the BottomNav.
@@ -34,7 +34,7 @@ interface CockpitViewProps {
 export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data, loading, recordDeckReaction } = useCockpit();
+  const { data, loading, recordDeckReaction, reload } = useCockpit();
 
   // Real name when we have one; null when the only identifier is an email /
   // handle / random id, so the greeting reads "Good morning." not
@@ -53,10 +53,12 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
           loading={loading || !!forceLoading}
           greeting={cockpitGreeting(firstName)}
           onOpenCard={(card) => {
-            if (card.betId) navigate(`/decision-map?case=${card.betId}`);
+            if (card.route) navigate(card.route, card.prefill ? { state: { prefill: card.prefill } } : undefined);
+            else if (card.betId) navigate(`/decision-map?case=${card.betId}`);
             else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');
           }}
           onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
+          onProfileComplete={reload}
         />
       </div>
     </MobileFrame>

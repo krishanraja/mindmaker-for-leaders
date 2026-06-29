@@ -182,7 +182,7 @@ const COCKPIT_DECK: DeckCard[] = [
   { id: 'd3', kind: 'news', eyebrow: 'Worth a look', category: 'MODELS', headline: 'A new open model matched the paid frontier on coding.', say: 'You could cut your model bill without losing quality on the work you actually do.', magnitude: { value: '~10x', kind: 'modelled' } },
   { id: 'd4', kind: 'signal', eyebrow: 'From your world', headline: 'Your brain learned 3 new things this week.', say: 'Fresh context from your decisions and notes is now in the loop.' },
 ];
-const COCKPIT_BASE: Omit<CockpitData, 'deck'> = { hero: { kind: 'quiet', headline: '' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1, homeState: 'warm', ownSignalCount: 2 };
+const COCKPIT_BASE: Omit<CockpitData, 'deck'> = { hero: { kind: 'quiet', headline: '' }, bets: COCKPIT_BETS, liveCount: 4, needsYouCount: 1, homeState: 'warm', ownSignalCount: 2, userState: 'active', posture: 'partner' };
 const COCKPIT_FIXTURES: { label: string; data: CockpitData }[] = [
   { label: 'warm - mixed news + your own signals + the 3 doors', data: { ...COCKPIT_BASE, deck: COCKPIT_DECK } },
   { label: 'rich - dense triage (own signals woven)', data: { ...COCKPIT_BASE, homeState: 'rich', deck: COCKPIT_DECK } },

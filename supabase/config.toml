@@ -113,6 +113,11 @@ verify_jwt = false
 [functions.send-daily-briefing]
 verify_jwt = false
 
+# Called by pg_cron with the service role key; rejects everything else.
+# Re-engages NEW (never-weighed) and DORMANT (lapsed) leaders.
+[functions.send-reactivation-nudge]
+verify_jwt = false
+
 # === KIT ENGINE (class follow-up portal) ===
 # Anonymous JWTs are valid JWTs, so verify_jwt = true accepts code-redeeming
 # students who never created an account.
