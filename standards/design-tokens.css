@@ -1,21 +1,28 @@
 /**
- * MindmakerOS shared semantic token contract.
+ * MindmakerOS shared semantic token contract (portfolio source of truth).
  *
- * Each app keeps the SEMANTIC names and overrides the brand PRIMITIVE values.
- * Values are HSL triplets (no hsl() wrapper) so Tailwind can wrap them as
- * hsl(var(--token)). Every token referenced by a Tailwind theme must be defined
- * here for BOTH :root (light) and .dark. The build guard (check-standards.mjs)
+ * Three sibling products share this contract: CTRL (ctrl.themindmaker.ai, the
+ * dark cockpit), Mindmaker (themindmaker.ai, the light consulting room), and
+ * Make Your Mind Up (makeyourmindup.ai, the front door). Each app keeps the
+ * SEMANTIC names and overrides only the brand PRIMITIVE values + theme mode.
+ * Values are HSL triplets (no hsl() wrapper) so Tailwind wraps them as
+ * hsl(var(--token)). Every token a Tailwind theme references must be defined
+ * for BOTH :root (light) and .dark; the build guard (check-standards.mjs)
  * enforces this.
  *
- * The values below are CTRL's theme (warm light executive, mint accent). A
- * sibling app changes the primitives and the accent and inherits the structure.
+ * PORTFOLIO SIGNATURE ACCENT = emerald #00D9B6 = 171 100% 43% (CTRL's, the
+ * flagship). On a LIGHT surface, bright emerald must never be text (it fails
+ * WCAG); use a darkened text variant (Mindmaker's --emerald-deep 176 90% 24%,
+ * full AA). The structure below is the shared default; an app rethemes the
+ * primitives (e.g. CTRL forces dark; Mindmaker is light-default; MYMU is dark
+ * with a sanctioned rose/ember front-door accent layered on top).
  */
 
 :root {
   /* Brand primitives (retheme per app) */
   --brand-ink: 0 0% 9%;            /* near-black text */
   --brand-surface: 0 0% 98%;       /* app background */
-  --brand-accent: 158 64% 40%;     /* CTRL mint/green */
+  --brand-accent: 171 100% 43%;    /* portfolio signature emerald #00D9B6 */
 
   /* Surface */
   --background: 0 0% 98%;
@@ -30,8 +37,8 @@
   --primary-foreground: 0 0% 98%;
   --secondary: 0 0% 96%;
   --secondary-foreground: 0 0% 9%;
-  --accent: 158 64% 40%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 171 100% 43%;
+  --accent-foreground: 0 0% 7%;
   --success: 142 72% 38%;
   --success-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
@@ -42,7 +49,7 @@
   --muted-foreground: 0 0% 40%;
   --border: 0 0% 90%;
   --input: 0 0% 90%;
-  --ring: 158 64% 40%;
+  --ring: 171 100% 43%;
 
   /* Shape */
   --radius: 0.75rem;
@@ -72,11 +79,11 @@
   --popover: 0 0% 10%;
   --popover-foreground: 0 0% 95%;
 
-  --primary: 158 64% 45%;
+  --primary: 171 100% 43%;
   --primary-foreground: 0 0% 7%;
   --secondary: 0 0% 14%;
   --secondary-foreground: 0 0% 95%;
-  --accent: 158 64% 45%;
+  --accent: 171 100% 43%;
   --accent-foreground: 0 0% 7%;
   --success: 142 64% 45%;
   --success-foreground: 0 0% 7%;
@@ -87,5 +94,5 @@
   --muted-foreground: 0 0% 60%;
   --border: 0 0% 18%;
   --input: 0 0% 18%;
-  --ring: 158 64% 45%;
+  --ring: 171 100% 43%;
 }
