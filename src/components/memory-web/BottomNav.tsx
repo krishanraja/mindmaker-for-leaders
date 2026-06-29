@@ -1,29 +1,16 @@
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Zap, Brain, Scale, Radio, History } from 'lucide-react';
+import { Home, Brain, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// COCKPIT v1 (flag on): the 3-tab model. Home=cockpit, Decisions=weigh + history
-// (Track record folded in as a Now|History toggle), Memory=brain. Briefing dissolves
-// into the cockpit hero; Edge/automate is contextual (zap on a blocker + an Edge card).
-const cockpitNav = [
+// The unified cockpit nav (the legacy 6-tab fork + VITE_COCKPIT_ENABLED flag were
+// retired - the cockpit is the one home). Home=cockpit, Decisions=weigh + history,
+// Memory=brain. Briefing dissolves into the cockpit; Edge/automate is contextual.
+const navItems = [
   { path: '/dashboard', search: '', icon: Home, label: 'Home' },
   { path: '/decision', search: '', icon: Scale, label: 'Decisions' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory' },
 ];
-
-// Legacy 6-tab nav (flag off). "Decide" leads over the old "Export" tab.
-const legacyNav = [
-  { path: '/dashboard', search: '', icon: Home, label: 'Home' },
-  { path: '/dashboard', search: '?view=edge', icon: Zap, label: 'Edge' },
-  { path: '/memory', search: '', icon: Brain, label: 'Memory' },
-  { path: '/decision', search: '', icon: Scale, label: 'Decide' },
-  { path: '/briefing', search: '', icon: Radio, label: 'Briefing' },
-  { path: '/track-record', search: '', icon: History, label: 'History' },
-];
-
-const COCKPIT_ENABLED = import.meta.env.VITE_COCKPIT_ENABLED === 'true';
-const navItems = COCKPIT_ENABLED ? cockpitNav : legacyNav;
 
 export function BottomNav() {
   const navigate = useNavigate();

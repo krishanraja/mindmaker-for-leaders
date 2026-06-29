@@ -8,10 +8,15 @@ import { roleFitByCategory } from '@/lib/roleArchetype';
 import { COLD_DECK } from '@/components/cockpit/coldDeck';
 import { reserveForCategories } from '@/components/cockpit/laneReserve';
 import { cacheHeadlines } from '@/components/system/loadingLines';
+import { pickStarterDecision } from '@/lib/starterDecisions';
 import type { NewsCategoryId } from '@/types/newsCategory';
-import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, HeroMagnitude, HomeState } from '@/types/cockpit';
+import type { BetState, CockpitBlocker, CockpitData, CockpitHero, DeckCard, HeroMagnitude, HomeState, UserLifecycleState, UserPosture } from '@/types/cockpit';
 
 const db = supabase as unknown as SupabaseClient;
+
+// A leader with history but no activity in this many days reads as DORMANT - led
+// back in with the guide posture (a re-kickstart), not treated as a power user.
+const DORMANT_AFTER_DAYS = 14;
 
 // Normalize a headline into a dedup key: lowercase, strip punctuation + outlet
 // suffixes, collapse whitespace, keep the first ~10 significant words. So two
@@ -98,12 +103,21 @@ export function useCockpit(): {
   data: CockpitData & { topBlocker: CockpitBlocker | null };
   loading: boolean;
   recordDeckReaction: (card: DeckCard, reaction: 'like' | 'dislike') => Promise<void>;
+  /** Re-pull the brain-dependent data (gate, identity, briefing, headlines).
+      Called after the inline onboarding saves facts, so Home clears the gate
+      and flips out of the NEW state without a full reload. */
+  reload: () => void;
 } {
-  const { cases, alerts, loading: inboxLoading } = useDecisionInbox();
+  const { cases, alerts, loading: inboxLoading, refresh: refreshInbox } = useDecisionInbox();
+  // Bumped by `reload()` to re-run the brain-dependent fetches below.
+  const [reloadKey, setReloadKey] = useState(0);
   const { preferences } = useNewsPreferences();
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
   const [segments, setSegments] = useState<BriefingSeg[]>([]);
+  // When the leader's latest briefing was generated (ms epoch) - a dormancy
+  // signal. null = no briefing on record.
+  const [briefedAt, setBriefedAt] = useState<number | null>(null);
   const [liveHeadlines, setLiveHeadlines] = useState<LiveHeadline[]>([]);
   // Whether the live-headlines fetch has settled (resolved OR errored). We keep
   // the skeleton up until it has, so Home does not flash the bundled cold deck
@@ -176,7 +190,7 @@ export function useCockpit(): {
       if (!cancelled) setRoleSector({ role, sector });
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [reloadKey]);
 
   // Persist a deck swipe (the like/dislike that trains the feed) to the feedback
   // table. Recorded as JSON so no new table/migration is needed; useCockpit reads
@@ -203,17 +217,19 @@ export function useCockpit(): {
     void (async () => {
       const { data, error } = await db
         .from('briefings')
-        .select('segments')
+        .select('segments, created_at')
         .order('created_at', { ascending: false })
         .limit(1);
       if (cancelled || error) return;
-      const row = (data as { segments?: BriefingSeg[] | null }[] | null)?.[0];
+      const row = (data as { segments?: BriefingSeg[] | null; created_at?: string | null }[] | null)?.[0];
       setSegments(Array.isArray(row?.segments) ? row!.segments!.slice(0, 4) : []);
+      const ts = row?.created_at ? Date.parse(row.created_at) : NaN;
+      setBriefedAt(Number.isNaN(ts) ? null : ts);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   // The deck's NEWS half: real, dated, sourced AI-native headlines (Brave via the
   // live-headlines fn, cached daily). This replaces the cryptic curated lines
@@ -256,7 +272,7 @@ export function useCockpit(): {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   // The contextual Edge pain-card: the leader's highest-importance blocker (if any).
   useEffect(() => {
@@ -448,20 +464,79 @@ export function useCockpit(): {
     else if (hasOwnBriefing && ownSignals >= 2) homeState = 'rich';
     else homeState = 'warm';
 
+    // ---- lifecycle state + posture (the founder's adaptive spine) ----
+    // A real brain = the leader has told us their role/sector (the identity facts
+    // the feed personalizes on). History = a brain, a briefing, or any decision.
+    const hasBrain = !!(roleSector.role || roleSector.sector);
+    const hasHistory = hasBrain || hasOwnBriefing || cases.length > 0;
+    // lastActiveAt = the most recent real touch we can see client-side (newest
+    // decision OR newest briefing). null when there is simply no activity yet.
+    const newestCaseAt = cases.reduce<number>((max, c) => {
+      const t = c.created_at ? Date.parse(c.created_at) : NaN;
+      return Number.isNaN(t) ? max : Math.max(max, t);
+    }, 0);
+    const lastActiveAt = Math.max(newestCaseAt, briefedAt ?? 0) || null;
+    const dormant =
+      hasHistory &&
+      lastActiveAt != null &&
+      Date.now() - lastActiveAt > DORMANT_AFTER_DAYS * 24 * 3600 * 1000;
+
+    let userState: UserLifecycleState;
+    if (!hasBrain && cases.length === 0) userState = 'new';
+    else if (dormant) userState = 'dormant';
+    else if (homeState === 'rich') userState = 'power';
+    else userState = 'active';
+
+    // Posture: lead with a kickstart whenever there is no live decision in play
+    // (NEW, just-onboarded-but-not-yet-weighed, or DORMANT). Only a leader who is
+    // actively moving decisions AND not lapsed gets the partner posture.
+    const posture: UserPosture = bets.length > 0 && !dormant ? 'partner' : 'guide';
+
+    // In the guide posture, the Home LEAD is a kickstart: a real first/next
+    // decision to weigh, tailored to the leader's role, routed into the engine
+    // with a prefill. It is never a news headline (the deck stays pure news);
+    // it rides on TOP of the deck as deck[0]. Dormant leaders get a re-kickstart.
+    const starter = pickStarterDecision(roleSector.role);
+    const kickstart: DeckCard | null =
+      posture === 'guide'
+        ? {
+            id: 'kickstart-decision',
+            kind: 'kickstart',
+            eyebrow: userState === 'dormant' ? 'Pick your thinking back up' : 'Start here',
+            headline: starter,
+            say:
+              userState === 'dormant'
+                ? "It's been a while. Weigh a fresh call and I'll watch it for you as the ground shifts."
+                : "Weigh your first real decision. I'll stress-test it against the evidence, not just agree with you.",
+            route: '/decision',
+            prefill: starter,
+          }
+        : null;
+    const deckOut = kickstart ? [kickstart, ...shown.slice(0, 7)] : shown.slice(0, 8);
+
     return {
       hero,
       bets,
       liveCount: bets.length,
       needsYouCount,
-      deck: shown.slice(0, 8),
+      deck: deckOut,
       homeState,
       ownSignalCount: ownSignals,
+      userState,
+      posture,
     };
-  }, [cases, alerts, reactions, segments, liveHeadlines, dislikedCats, preferences, serverPersonalized, needsProfile, roleSector]);
+  }, [cases, alerts, reactions, segments, briefedAt, liveHeadlines, dislikedCats, preferences, serverPersonalized, needsProfile, roleSector]);
 
   // Hold the skeleton until BOTH the decision inbox and the first live-headlines
   // fetch have settled, so Home renders its real deck once instead of flashing
   // the cold deck and then swapping (the glitchy reload feel).
   const loading = inboxLoading || !headlinesSettled;
-  return { data: { ...data, topBlocker, needsProfile, missingProfile }, loading, recordDeckReaction };
+
+  const reload = useCallback(() => {
+    setHeadlinesSettled(false);
+    setReloadKey((k) => k + 1);
+    void refreshInbox();
+  }, [refreshInbox]);
+
+  return { data: { ...data, topBlocker, needsProfile, missingProfile }, loading, recordDeckReaction, reload };
 }

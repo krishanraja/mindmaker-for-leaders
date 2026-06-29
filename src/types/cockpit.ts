@@ -48,7 +48,12 @@ export interface CockpitBlocker {
 // the leader's own signals (a decision moved, the brain learned). Plain
 // language; swipe to skip / like to train the feed. Replaces the cryptic
 // single hero. The pinned-decision deep-dive lives in the Decisions tab.
-export type DeckCardKind = 'news' | 'signal';
+// news    = from the world (the curated headline feed)
+// signal  = from your world (a decision the card deep-links to)
+// kickstart = the guide-posture lead: a proposed first/next decision to weigh.
+//             Never a news headline; routes into the decision engine with a
+//             prefill. Rendered by KickstartCard, not CockpitHero.
+export type DeckCardKind = 'news' | 'signal' | 'kickstart';
 
 // One of the nine locked AI-native news categories (src/types/newsCategory.ts).
 // When present + valid it drives the headline card's branded motif directly;
@@ -85,6 +90,10 @@ export interface DeckCard {
   url?: string | null;
   // routing: a signal card may deep-link to the decision it refers to
   betId?: string | null;
+  // routing for a kickstart card: an in-app route + an optional prefill handed to
+  // the destination (e.g. /decision with a starter statement to weigh).
+  route?: string | null;
+  prefill?: string | null;
   // independent Artificial Analysis benchmark cross-check, present only on news
   // cards that name a specific model it tracks (validates the story).
   benchmark?: NewsBenchmark | null;
@@ -96,6 +105,25 @@ export interface DeckCard {
 //  rich = a real briefing + 2+ own signals: dense triage
 export type HomeState = 'cold' | 'warm' | 'rich';
 
+// The leader's LIFECYCLE state - a richer, engagement-aware read than HomeState
+// (which only measures news-personalization volume). It drives the app's POSTURE
+// (founder, 2026-06-29): a NEW or DORMANT leader is led in with guidance and a
+// kickstart; an ACTIVE/POWER leader who is using the loop gets decisiveness and a
+// thinking partner. Derived off real timestamps - never faked.
+//   new     = no brain yet (no industry/role) and no decisions ever weighed
+//   dormant = has history (brain and/or past decisions) but has gone quiet
+//   active  = engaged recently, building a real record
+//   power   = a dense, proven record (own briefing + 2+ live signals)
+export type UserLifecycleState = 'new' | 'dormant' | 'active' | 'power';
+
+// The two postures the whole experience adapts between (Home lead, decision
+// seam, re-engagement nudge all key off this single value).
+//   guide   = guidance + inspiration + a kickstart (NEW or DORMANT, or no live
+//             decision in play yet) - lead them in, surface the next action.
+//   partner = decisiveness + evidence + a thinking partner (ACTIVE/POWER and
+//             actually moving decisions) - fast triage, less hand-holding.
+export type UserPosture = 'guide' | 'partner';
+
 export interface CockpitData {
   hero: CockpitHero;
   bets: CockpitBet[];
@@ -106,6 +134,10 @@ export interface CockpitData {
   // session state + own-signal volume, for the adaptive Home shell.
   homeState: HomeState;
   ownSignalCount: number;
+  // Engagement-aware lifecycle state + the derived posture the whole experience
+  // adapts to. `guide` leads with a kickstart; `partner` leads with triage.
+  userState: UserLifecycleState;
+  posture: UserPosture;
   // Profile gate: when the brain is below the minimum (vertical + role + 3
   // interests) and the gate is enabled server-side, Home shows an "unlock"
   // prompt instead of headlines. `missingProfile` lists what is still needed.

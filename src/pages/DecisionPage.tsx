@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { DesktopShell } from '@/components/layout/DesktopShell';
 import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useDevice } from '@/hooks/useDevice';
@@ -20,8 +20,12 @@ import { PressureTestPanel } from '@/components/operator/decision/PressureTestPa
 export default function DecisionPage() {
   const { isMobile } = useDevice();
   const location = useLocation();
-  // A starter picked on the Decision Map empty state arrives as location.state.prefill.
-  const prefill = (location.state as { prefill?: string } | null)?.prefill;
+  const [searchParams] = useSearchParams();
+  // A starter arrives either as router state (Home kickstart / Decision Map) or as
+  // a ?prefill= query param (the reactivation-nudge email link, which can't set
+  // router state). State wins; query param is the email fallback.
+  const prefill =
+    (location.state as { prefill?: string } | null)?.prefill ?? searchParams.get('prefill') ?? undefined;
 
   if (!isMobile) {
     return (
