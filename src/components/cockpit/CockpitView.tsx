@@ -4,6 +4,7 @@ import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
 import { HomeFeed } from './HomeFeed';
+import { HandoffWelcome } from './HandoffWelcome';
 import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 
 /**
@@ -42,9 +43,11 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
   const firstName = resolveDisplayName(user);
 
   return (
-    // pb reserves the fixed BottomNav's height (h-16 + safe area) so the three
-    // doors keep their reserved place ABOVE the nav and never clip behind it
-    // (CTRL-SYSTEM-SPEC s2: nothing clips behind the nav).
+    <>
+    <HandoffWelcome />
+    {/* pb reserves the fixed BottomNav's height (h-16 + safe area) so the three
+      doors keep their reserved place ABOVE the nav and never clip behind it
+      (CTRL-SYSTEM-SPEC s2: nothing clips behind the nav). */}
     <MobileFrame banner={banner} padding="px-4">
       <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col pt-3 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
         <HomeFeed
@@ -62,5 +65,6 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
         />
       </div>
     </MobileFrame>
+    </>
   );
 }

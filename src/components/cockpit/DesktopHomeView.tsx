@@ -4,6 +4,7 @@ import { DesktopShell } from '@/components/layout/DesktopShell';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
 import { HomeFeed } from './HomeFeed';
+import { HandoffWelcome } from './HandoffWelcome';
 import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 
 /**
@@ -29,6 +30,7 @@ export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; 
 
   return (
     <DesktopShell eyebrow="Home" title="Worth a look">
+      <HandoffWelcome />
       {banner}
       <HomeFeed
         variant="desktop"
