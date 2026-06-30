@@ -76,6 +76,14 @@ export interface DecisionEvidence {
   retrieved_at: string | null;
   relevance_score: number | null;
   reliability_tier: ReliabilityTier | null;
+  // Additive (see decision-engine/reliability.ts + _shared/evidence-keypoint.ts). All optional so
+  // older rows / drifted types do not break:
+  //  - key_point: the one-line distillation shown by default (UI falls back to firstClause(excerpt)).
+  //  - published_at: source publish date when the retriever surfaced one; feeds the freshness score.
+  //  - evidence_score: the single 0-100 trust score (freshness + reliability + corroboration).
+  key_point?: string | null;
+  published_at?: string | null;
+  evidence_score?: number | null;
 }
 
 export interface DecisionTension {

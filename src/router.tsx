@@ -133,6 +133,31 @@ const Try = lazyWithRetry(() => import('@/pages/Try'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
+/**
+ * Warm the route chunk the app is booting into while the splash is still showing, so the first
+ * paint after the splash is real content - not a flash of the Suspense fallback (the second
+ * "loader" the boot used to show right after the splash). Vite dedupes this against the route's
+ * lazy import, so the route resolves from cache. Coarse by area so a public-landing visit never
+ * downloads the authed bundle. Best-effort and fire-and-forget; failure is harmless (the lazy
+ * import + its retry still run normally).
+ */
+function preloadInitialRouteChunk() {
+  if (typeof window === 'undefined') return
+  const warm = (fn: () => Promise<unknown>) => { try { void fn() } catch { /* noop */ } }
+  const p = window.location.pathname
+  if (p === '/' || p.startsWith('/build') || p.startsWith('/booking')) {
+    warm(() => import('@/pages/Landing'))
+  } else if (p.startsWith('/auth')) {
+    warm(() => import('@/pages/Auth'))
+  } else if (p.startsWith('/kit')) {
+    warm(() => import('@/pages/kit/KitRedeem'))
+  } else {
+    // The authed area: the home/dashboard is the overwhelmingly common entry point.
+    warm(() => import('@/pages/Dashboard'))
+  }
+}
+preloadInitialRouteChunk()
+
 // The lazy-route Suspense fallback. A route chunk loads before any in-app shell
 // has mounted, so this is the branded, anticipatory full-viewport loader (brand
 // lockup + settling chrome skeleton), never a raw spinner on black.

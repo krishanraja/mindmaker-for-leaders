@@ -18,7 +18,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createLogger } from "../_shared/logger.ts";
 import { verifyClaim } from "../decision-engine/verify.ts";
 import { proposeReaction } from "../decision-engine/reaction.ts";
-import { tierForEvidence } from "../decision-engine/reliability.ts";
+import { buildEvidenceRow } from "../decision-engine/reliability.ts";
+import { countIndependentSupport } from "../_shared/corroboration.ts";
 import type { ClaimType, Evidence } from "../decision-engine/types.ts";
 
 const corsHeaders = {
@@ -65,10 +66,11 @@ serve(async (req) => {
 
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    // Existing evidence for the claim (for dedupe + the refreshed verdict's full set).
+    // Existing evidence for the claim (for dedupe + the refreshed verdict's full set + the
+    // corroboration count the new rows' score is weighed against).
     const { data: existing } = await admin
       .from("decision_evidence")
-      .select("id, source_url, excerpt")
+      .select("id, source_url, excerpt, stance")
       .eq("claim_id", claimId);
     const existingUrls = new Set(
       (existing ?? []).map((e) => (e.source_url ?? "").trim().toLowerCase()).filter(Boolean),
@@ -106,19 +108,14 @@ serve(async (req) => {
 
     let added = 0;
     if (fresh.length) {
+      // Score each new row against the FULL backing for this claim (existing + fresh), so the
+      // corroboration component reflects total independent support, not just this batch.
+      const corroboration = countIndependentSupport([
+        ...(existing ?? []).map((e) => ({ stance: e.stance, source_url: e.source_url })),
+        ...fresh,
+      ]);
       const { error: insErr } = await admin.from("decision_evidence").insert(
-        fresh.map((e) => ({
-          claim_id: claimId,
-          user_id: userId,
-          source_url: e.source_url,
-          source_type: e.retriever,
-          source_title: e.source_title,
-          excerpt: e.excerpt,
-          stance: e.stance,
-          retriever: e.retriever,
-          relevance_score: e.relevance_score,
-          reliability_tier: tierForEvidence(e),
-        })),
+        fresh.map((e) => buildEvidenceRow(e, { userId, claimId, corroboration })),
       );
       if (insErr) throw insErr;
       added = fresh.length;

@@ -31,7 +31,8 @@ import { cn } from '@/lib/utils';
 import {
   type useDecisionEngine, type DecisionClaim, type DecisionEvidence,
 } from '@/hooks/useDecisionEngine';
-import { VERDICT_STYLE, STANCE_STYLE, STANCE_ORDER, deriveTruth } from './decisionParts';
+import { VERDICT_STYLE, deriveTruth, emptyEvidenceMessage } from './decisionParts';
+import { EvidenceList } from './EvidenceList';
 
 type Engine = ReturnType<typeof useDecisionEngine>;
 
@@ -56,26 +57,8 @@ export function ClaimSheet({ claim, evidence, onClose }: { claim: DecisionClaim 
               {claim.rationale && <p className="mt-2 text-xs leading-relaxed text-muted-foreground text-pretty">{claim.rationale}</p>}
             </div>
             <div>
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{evidence.length > 0 ? 'What I found' : 'Where this comes from'}</p>
-              {evidence.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No outside source settles this one yet. It may be something only you can answer.</p>
-              ) : (
-                <ul className="space-y-2.5">
-                  {[...evidence].sort((a, b) => STANCE_ORDER[a.stance] - STANCE_ORDER[b.stance]).map((e) => {
-                    const st = STANCE_STYLE[e.stance] ?? STANCE_STYLE.neutral;
-                    return (
-                      <li key={e.id} className="text-xs">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className={cn('rounded-full border px-1.5 py-0.5 text-[10px] font-medium', st.cls)}>{st.label}</span>
-                          <a href={e.source_url ?? '#'} target="_blank" rel="noreferrer" className="font-medium text-primary hover:underline">{e.source_title || e.source_url || e.retriever}</a>
-                          <span className="text-muted-foreground/60">· {e.retriever}</span>
-                        </div>
-                        {e.excerpt && <p className="mt-0.5 text-muted-foreground text-pretty">{e.excerpt}</p>}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">What this is based on</p>
+              <EvidenceList evidence={evidence} emptyMessage={emptyEvidenceMessage(claim.type)} />
             </div>
           </div>
         )}

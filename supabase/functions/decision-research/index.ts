@@ -26,7 +26,8 @@ import { verifyClaim } from "../decision-engine/verify.ts";
 import { gatherEvidence } from "../decision-engine/retrievers.ts";
 import { advise, type AdversarialInput } from "../decision-engine/advise.ts";
 import { crossExamine } from "../decision-engine/crossexamine.ts";
-import { tierForEvidence } from "../decision-engine/reliability.ts";
+import { buildEvidenceRow } from "../decision-engine/reliability.ts";
+import { countIndependentSupport } from "../_shared/corroboration.ts";
 import type { ClaimVerdict, ExtractedClaim, Evidence, Stance } from "../decision-engine/types.ts";
 
 const corsHeaders = {
@@ -65,22 +66,19 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
   return out;
 }
 
-/** Insert evidence rows for a claim, mirroring the engine's persistence shape. */
-async function insertEvidence(admin: SupabaseClient, claimId: string, userId: string, evidence: Evidence[]): Promise<void> {
+/** Insert evidence rows for a claim, via the shared builder so reliability tier, published date,
+ *  and the 0-100 score are stamped identically to the engine + enrich paths. `corroboration` is
+ *  the independent-support count for this research pass (per-batch approximation). */
+async function insertEvidence(
+  admin: SupabaseClient,
+  claimId: string,
+  userId: string,
+  evidence: Evidence[],
+  corroboration: number,
+): Promise<void> {
   if (!evidence.length) return;
   const { error } = await admin.from("decision_evidence").insert(
-    evidence.map((e) => ({
-      claim_id: claimId,
-      user_id: userId,
-      source_url: e.source_url,
-      source_type: e.retriever,
-      source_title: e.source_title,
-      excerpt: e.excerpt,
-      stance: e.stance,
-      retriever: e.retriever,
-      relevance_score: e.relevance_score,
-      reliability_tier: tierForEvidence(e),
-    })),
+    evidence.map((e) => buildEvidenceRow(e, { userId, claimId, corroboration })),
   );
   if (error) console.warn("decision-research: evidence insert failed", error.message);
 }
@@ -105,7 +103,7 @@ async function runResearch(
       await mapLimit(workSet, 3, async (c) => {
         const claim: ExtractedClaim = { text: c.text, type: c.type, is_load_bearing: c.is_load_bearing };
         const { verdict, evidence } = await verifyClaim(claim);
-        await insertEvidence(admin, c.id, userId, evidence);
+        await insertEvidence(admin, c.id, userId, evidence, countIndependentSupport(evidence));
         await admin.from("decision_claims").update({
           verdict: verdict.verdict,
           confidence: verdict.confidence,
@@ -122,7 +120,7 @@ async function runResearch(
       await mapLimit(workSet, 3, async (c) => {
         const ev = await gatherEvidence(`evidence that supports: ${c.text}`, c.type);
         const supportive = ev.filter((e) => e.stance === "supports" || e.stance === "neutral");
-        await insertEvidence(admin, c.id, userId, supportive);
+        await insertEvidence(admin, c.id, userId, supportive, countIndependentSupport(ev));
       });
     } else {
       // counter_evidence: adversarial panel + refuting evidence per claim.
@@ -156,7 +154,7 @@ async function runResearch(
       await mapLimit(workSet, 3, async (c) => {
         const ev = await gatherEvidence(`evidence against or risks of: ${c.text}`, c.type);
         const refuting = ev.filter((e) => (e.stance as Stance) === "refutes");
-        await insertEvidence(admin, c.id, userId, refuting);
+        await insertEvidence(admin, c.id, userId, refuting, countIndependentSupport(ev));
       });
     }
 

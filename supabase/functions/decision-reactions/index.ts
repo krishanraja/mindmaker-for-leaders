@@ -15,6 +15,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createLogger } from "../_shared/logger.ts";
 import { proposeReaction } from "../decision-engine/reaction.ts";
 import { hasNumericEvidence, type EvidenceLite } from "../_shared/reaction-extraction.ts";
+import { distillKeyPoints, type KeyPointInput } from "../_shared/evidence-keypoint.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,14 +51,23 @@ serve(async (req) => {
     if (cErr) throw cErr;
     if (!claims?.length) return json({ case_id: caseId, claims: 0, targets: 0, updated: 0 });
 
+    // Accumulate every claim's evidence rows that still need a one-line key_point, so we can
+    // distil them all in ONE batched gpt-4o-mini call after the reaction loop.
+    const keyPointCandidates: KeyPointInput[] = [];
+
     let targets = 0;
     let updated = 0;
     for (const c of claims) {
       const { data: ev } = await admin
         .from("decision_evidence")
-        .select("id, excerpt")
+        .select("id, excerpt, source_title, key_point")
         .eq("claim_id", c.id);
       const evidenceLite: EvidenceLite[] = (ev ?? []).map((e) => ({ id: e.id, excerpt: e.excerpt }));
+      for (const e of ev ?? []) {
+        if (!e.key_point && typeof e.excerpt === "string" && e.excerpt.trim()) {
+          keyPointCandidates.push({ id: e.id, title: e.source_title ?? "", excerpt: e.excerpt });
+        }
+      }
       if (!evidenceLite.length) continue;
       // Only worth proposing where there is something honest to source from.
       if (!(c.is_load_bearing || hasNumericEvidence(evidenceLite))) continue;
@@ -80,8 +90,25 @@ serve(async (req) => {
         log.warn("reaction failed for claim, leaving words-led", { claimId: c.id, error: String(re) });
       }
     }
-    log.info("reactions computed", { caseId, claims: claims.length, targets, updated });
-    return json({ case_id: caseId, claims: claims.length, targets, updated });
+
+    // One batched pass: distil a one-line key_point for every evidence row that lacks one, then
+    // write them back. Fully fenced - a failure here never touches the reactions above; the rows
+    // just stay without a key_point and the UI falls back to a first-clause of the excerpt.
+    let keyPoints = 0;
+    if (keyPointCandidates.length) {
+      try {
+        const distilled = await distillKeyPoints(Deno.env.get("OPENAI_API_KEY"), keyPointCandidates);
+        for (const [id, kp] of distilled) {
+          const { error } = await admin.from("decision_evidence").update({ key_point: kp }).eq("id", id);
+          if (!error) keyPoints++;
+        }
+      } catch (ke) {
+        log.warn("key_point distillation failed, evidence stays excerpt-led", { caseId, error: String(ke) });
+      }
+    }
+
+    log.info("reactions computed", { caseId, claims: claims.length, targets, updated, keyPoints });
+    return json({ case_id: caseId, claims: claims.length, targets, updated, keyPoints });
   } catch (e) {
     log.error("decision-reactions failed", { caseId, error: String(e) });
     return json({ error: String(e) }, 500);

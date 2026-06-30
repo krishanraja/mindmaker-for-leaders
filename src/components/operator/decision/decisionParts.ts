@@ -20,10 +20,12 @@ export const VERDICT_STYLE: Record<Verdict, { label: string; cls: string; Icon: 
   pending: { label: 'Checking', cls: 'text-muted-foreground bg-secondary border-border', Icon: Loader2 },
 };
 
+// Plain English a first-time reader gets at a glance: a source either SUPPORTS the point,
+// COUNTERS it, or is neutral CONTEXT. (Was "Agrees / Disagrees / Background".)
 export const STANCE_STYLE: Record<DecisionEvidence['stance'], { label: string; cls: string }> = {
-  supports: { label: 'Agrees', cls: 'text-accent bg-accent/10 border-accent/30' },
-  refutes: { label: 'Disagrees', cls: 'text-rose-300 bg-rose-500/10 border-rose-500/30' },
-  neutral: { label: 'Background', cls: 'text-muted-foreground bg-foreground/5 border-border' },
+  supports: { label: 'Supports', cls: 'text-accent bg-accent/10 border-accent/30' },
+  refutes: { label: 'Counters', cls: 'text-rose-300 bg-rose-500/10 border-rose-500/30' },
+  neutral: { label: 'Context', cls: 'text-muted-foreground bg-foreground/5 border-border' },
 };
 export const STANCE_ORDER: Record<DecisionEvidence['stance'], number> = { supports: 0, neutral: 1, refutes: 2 };
 
@@ -36,6 +38,16 @@ export function verdictBucket(v: Verdict): VerdictBucket {
   if (v === 'supported') return 'checks';
   if (v === 'unverifiable') return 'yours';
   return 'unsure';
+}
+
+// The honest "nothing settles this" copy, keyed on the claim type. A verifiable claim that
+// came back with no evidence (now that the engine strictly AI-locks the evidence) gets the
+// AI-world truth; an assumption/forecast is a judgment no source can settle.
+export function emptyEvidenceMessage(type: DecisionClaim['type']): string {
+  if (type === 'assumption' || type === 'forecast') {
+    return 'No outside source settles this one. It is a judgment only you can make.';
+  }
+  return 'No AI-world evidence speaks to this one directly yet.';
 }
 
 // First-sentence distillation: holds / breaks bullets stay short, like the mock.

@@ -6,6 +6,7 @@
 
 import { fetchWithTimeout } from "../_shared/with-timeout.ts";
 import { fetchAaModelIndex, matchAaModel, type AaModel } from "../_shared/news-sources.ts";
+import { isAiNativeDecision } from "../_shared/decision-ai-native.ts";
 import type { ClaimType, Evidence, Retriever } from "./types.ts";
 
 function hostOf(url: string | null): string | null {
@@ -31,6 +32,20 @@ function extractCompany(text: string): string | null {
   const suffix = text.match(/\b([A-Z][A-Za-z0-9&.-]+(?:\s+[A-Z][A-Za-z0-9&.-]+){0,3})\s+(?:Inc|Corp|Corporation|Ltd|LLC|GmbH|Co)\b/);
   if (suffix) return suffix[1].trim();
   return null;
+}
+
+/**
+ * AI-native query steering. CTRL only ever surfaces what is happening in the WORLD OF AI that
+ * bears on a decision, even for a general-business claim. A raw claim like "SMB SaaS churn is
+ * ~4.5% monthly" pulls general-business hits; appending an AI lens steers the breadth retrievers
+ * (Perplexity/Exa/Brave/NewsAPI) toward AI-world evidence. An already-AI-native claim is left
+ * untouched - steering it just dilutes a precise query. Used ONLY for the breadth retrievers;
+ * the structured/entity retrievers (Artificial Analysis, BuiltWith, Tranco, PDL) key off the
+ * literal claim text (a model name, a domain, a company) and must see it raw.
+ */
+function aiScopedQuery(query: string): string {
+  if (isAiNativeDecision(query)) return query;
+  return `${query} (artificial intelligence, AI models, LLMs, AI agents, or AI automation)`;
 }
 
 async function searchPerplexity(query: string): Promise<Evidence[]> {
@@ -99,7 +114,7 @@ async function searchExa(query: string): Promise<Evidence[]> {
   });
   if (!res.ok) return [];
   const data = await res.json();
-  const results: Array<{ title?: string; url?: string; text?: string; score?: number }> = data?.results ?? [];
+  const results: Array<{ title?: string; url?: string; text?: string; score?: number; publishedDate?: string }> = data?.results ?? [];
   return results.map((r) => ({
     source_url: r.url ?? null,
     source_title: r.title ?? hostOf(r.url ?? null),
@@ -107,6 +122,7 @@ async function searchExa(query: string): Promise<Evidence[]> {
     stance: "neutral" as const,
     retriever: "exa" as const,
     relevance_score: typeof r.score === "number" ? r.score : null,
+    published_at: typeof r.publishedDate === "string" ? r.publishedDate : null,
   }));
 }
 
@@ -145,7 +161,7 @@ async function searchNewsApi(query: string): Promise<Evidence[]> {
   });
   if (!res.ok) return [];
   const data = await res.json();
-  const articles: Array<{ title?: string; url?: string; description?: string; source?: { name?: string } }> = data?.articles ?? [];
+  const articles: Array<{ title?: string; url?: string; description?: string; publishedAt?: string; source?: { name?: string } }> = data?.articles ?? [];
   return articles.map((a) => ({
     source_url: a.url ?? null,
     source_title: a.title ?? a.source?.name ?? hostOf(a.url ?? null),
@@ -153,6 +169,7 @@ async function searchNewsApi(query: string): Promise<Evidence[]> {
     stance: "neutral" as const,
     retriever: "newsapi" as const,
     relevance_score: null,
+    published_at: typeof a.publishedAt === "string" ? a.publishedAt : null,
   }));
 }
 
@@ -311,9 +328,13 @@ async function searchArtificialAnalysis(query: string): Promise<Evidence[]> {
  * appears. Empty array is a valid outcome (claim could not be grounded).
  */
 export async function gatherEvidence(query: string, type?: ClaimType): Promise<Evidence[]> {
-  const jobs: Array<Promise<Evidence[]>> = [searchPerplexity(query), searchExa(query), searchBrave(query)];
+  // The breadth retrievers see an AI-steered query so they return AI-world evidence even for a
+  // general-business claim; the structured/entity retrievers (AA / BuiltWith / Tranco / PDL) see
+  // the RAW claim text, which they need to match a model name, domain, or company.
+  const webQuery = aiScopedQuery(query);
+  const jobs: Array<Promise<Evidence[]>> = [searchPerplexity(webQuery), searchExa(webQuery), searchBrave(webQuery)];
 
-  if (type === "factual" || type === "market") jobs.push(searchNewsApi(query));
+  if (type === "factual" || type === "market") jobs.push(searchNewsApi(webQuery));
 
   // Model-capability/cost claims get the Artificial Analysis benchmark as
   // independent ground-truth (validates "X is smartest"/"Y is too expensive").
@@ -344,13 +365,23 @@ export async function gatherEvidence(query: string, type?: ClaimType): Promise<E
     seen.add(k);
     deduped.push(e);
   }
-  // Keep the structured ground-truth retrievers (a single, authoritative, often
-  // numeric row each) ahead of the breadth providers before the cap, so they are
-  // never truncated off the end. Previously perplexity+exa+brave alone filled the
-  // 16 slots and a late-appended Artificial Analysis / BuiltWith / Tranco / PDL
-  // row was silently dropped.
-  const AUTHORITATIVE: Retriever[] = ["artificialanalysis", "builtwith", "tranco", "pdl"];
-  const priority = deduped.filter((e) => AUTHORITATIVE.includes(e.retriever));
-  const rest = deduped.filter((e) => !AUTHORITATIVE.includes(e.retriever));
+  // The structured ground-truth retrievers carry a single, authoritative, often numeric row each.
+  // They are kept ahead of the breadth providers before the cap (so they are never truncated off
+  // the end), AND they bypass the AI-native filter below: Artificial Analysis IS AI by
+  // construction, and BuiltWith / Tranco / PDL are facts about the specific entity the claim
+  // named (a domain / company the leader asked about), not general-business drift.
+  const STRUCTURED: Retriever[] = ["artificialanalysis", "builtwith", "tranco", "pdl"];
+
+  // AI-native lock (strict): drop breadth evidence that is not about the world of AI. This is
+  // what stops a "move upmarket" decision surfacing generic SaaS-churn benchmarks. Returning an
+  // empty set is a valid, handled outcome (verify.ts -> "unverified"); we never fall back to the
+  // unfiltered set, because that is exactly the leak. The honest "nothing AI-world speaks to this"
+  // message lives in the UI.
+  const aiNative = deduped.filter(
+    (e) => STRUCTURED.includes(e.retriever) || isAiNativeDecision(`${e.source_title ?? ""} ${e.excerpt ?? ""}`),
+  );
+
+  const priority = aiNative.filter((e) => STRUCTURED.includes(e.retriever));
+  const rest = aiNative.filter((e) => !STRUCTURED.includes(e.retriever));
   return [...priority, ...rest].slice(0, 16);
 }

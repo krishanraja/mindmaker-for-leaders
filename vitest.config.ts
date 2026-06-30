@@ -15,6 +15,9 @@ export default defineConfig({
       // logic like with-timeout / industry bias / scoring; vitest can run
       // them in jsdom for fast unit feedback.
       'supabase/functions/_shared/**/*.{test,spec}.{js,ts}',
+      // Pure decision-engine helpers (reliability scoring) are Deno-import-free
+      // too, so vitest can pin their formulas.
+      'supabase/functions/decision-engine/**/*.{test,spec}.{js,ts}',
     ],
     exclude: ['src/__tests__/e2e/**'],
     coverage: {
