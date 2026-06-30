@@ -127,6 +127,20 @@ export function NewsHeadlineCard({ card, variant = 'feed', focused, onOpen }: Ne
           </p>
         )}
 
+        {/* TAKE: the opinionated, lens-driven POV line. Present only when the
+            editorial lens is active server-side; otherwise the card is unchanged. */}
+        {card.pov && (
+          <p
+            className={cn(
+              'mt-2.5 border-l-2 border-accent/60 pl-2.5 leading-[1.45] text-foreground/85',
+              isLead ? 'max-w-[60ch] text-[13.5px]' : 'text-[12px]',
+            )}
+          >
+            <span className="mr-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-accent">Take</span>
+            {card.pov}
+          </p>
+        )}
+
         {/* META: source + relative time | (signal:) From your world pip */}
         <div className={cn('mt-auto flex items-center gap-2 text-[11px] text-muted-foreground', isLead ? 'pt-[18px]' : 'pt-3.5')}>
           {isSignal ? (

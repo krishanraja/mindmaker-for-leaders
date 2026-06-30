@@ -79,6 +79,10 @@ export interface DeckCard {
   category?: NewsCategoryId | string | null; // one of the 9 category ids (news); free-text tolerated for older rows
   headline: string; // the plain, simple read
   say?: string | null; // one plain line of why-it-matters-to-you
+  // an opinionated, lens-driven POV line (the editorial "take"). Present only
+  // when the editorial lens is active server-side; absent/null => no take shown,
+  // and the card reads exactly as before.
+  pov?: string | null;
   // a soft (modelled) or sourced figure, only when the source honestly has one
   magnitude?: { value: string; kind: 'sourced' | 'modelled' } | null;
   source?: string | null; // the publication, for the meta row (news only)

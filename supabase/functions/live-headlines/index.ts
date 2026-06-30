@@ -38,6 +38,7 @@ import {
 } from "../_shared/news-cluster.ts";
 import { gatherAll, fetchAaModelIndex, matchAaModel, type AaModel } from "../_shared/news-sources.ts";
 import { synthesizeReads, type SynthInput } from "../_shared/news-synthesis.ts";
+import { getEditorialLens } from "../_shared/editorial-lens.ts";
 import { loadBrainProfile, brainSignature, toLensSource } from "../_shared/brain-profile.ts";
 import { buildImportanceLens } from "../_shared/briefing-lens.ts";
 import { scorePoolForUser, type EngineCandidate, type ScoredPoolItem } from "../_shared/personalization-core.ts";
@@ -51,6 +52,9 @@ interface HeadlineCard {
   id: string;
   headline: string;
   say: string | null;
+  // An opinionated, lens-driven POV line. Null/absent unless the editorial lens
+  // flag is on (EDITORIAL_LENS_ENABLED); the feed reads exactly as before when off.
+  pov?: string | null;
   source: string | null;
   corroboration: string | null; // "+2 sources" when multiple outlets agree
   sourceCount: number;
@@ -164,7 +168,7 @@ async function buildSharedPool(
     category: categoryOf(c),
     sourceCount: c.sourceCount,
   }));
-  const reads = await synthesizeReads(openaiKey ?? "", synthInputs);
+  const reads = await synthesizeReads(openaiKey ?? "", synthInputs, getEditorialLens());
 
   return picked.map((c, i) => {
     const id = `live-${today}-${i}`;
@@ -179,6 +183,7 @@ async function buildSharedPool(
       id,
       headline: read?.headline ?? cleanHeadline(c.rep.title, c.rep.source),
       say: read?.say ?? fallbackSay,
+      pov: read?.pov ?? null,
       source: c.rep.source || null,
       corroboration: corroborationLabel(c.sourceCount),
       sourceCount: c.sourceCount,
@@ -386,6 +391,7 @@ serve(async (req) => {
         id: item.id,
         headline: item.headline,
         say: item.say,
+        pov: item.pov ?? null,
         source: item.source,
         corroboration: item.corroboration,
         sourceCount: item.sourceCount,
