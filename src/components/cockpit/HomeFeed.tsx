@@ -351,8 +351,12 @@ function DesktopHome({
   const relevant = useDeckRelevance();
   const scrollBy = (dx: number) => railRef.current?.scrollBy({ left: dx, behavior: 'smooth' });
 
+  // The rail label stays stable across load. During loading it must NOT echo the
+  // subtitle ("Curating what you need to know in AI today.") verbatim - that read
+  // as a duplicated line on desktop - so it holds its eventual "Worth a look
+  // today" value until the data resolves the rich-state "What moved".
   const railLabel = loading
-    ? 'Curating what you need to know in AI today'
+    ? 'Worth a look today'
     : data.homeState === 'rich'
       ? 'What moved'
       : 'Worth a look today';
