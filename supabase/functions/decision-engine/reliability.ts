@@ -99,3 +99,100 @@ export function classifyReliability(e: {
 export function tierForEvidence(e: Evidence): ReliabilityTier {
   return classifyReliability({ retriever: e.retriever, source_type: e.retriever, source_url: e.source_url });
 }
+
+// --- The single 0-100 evidence score (freshness + reliability + corroboration) -----------
+//
+// One honest, sortable number per source so the UI can show a compact score ring instead of
+// making the leader read a paragraph to judge trust. Pure + deterministic so all three insert
+// paths (pipeline / enrich / research) agree and the value never drifts the way a render-time
+// heuristic would.
+
+const TIER_WEIGHT: Record<ReliabilityTier, number> = {
+  primary: 100,
+  reputable: 80,
+  community: 50,
+  unverified: 30,
+};
+
+/**
+ * Freshness 0..1 from a published date. Fresh (<= 30d) = 1.0, then a linear decay to a 0.3
+ * floor by ~3y. An UNKNOWN date returns a neutral 0.6 (neither fresh nor stale) - we never
+ * punish a source for a date the retriever did not surface, and never flatter a stale one.
+ */
+function freshness(publishedAt: string | null | undefined): number {
+  if (!publishedAt) return 0.6;
+  const ts = Date.parse(publishedAt);
+  if (!Number.isFinite(ts)) return 0.6;
+  const days = (Date.now() - ts) / 86_400_000;
+  if (days < 0) return 0.6; // a future date is suspect, not "extra fresh"
+  if (days <= 30) return 1;
+  return Math.max(0.3, 1 - (days - 30) / 1000); // ~0.3 floor near 3 years
+}
+
+/**
+ * Combine reliability tier (the spine), freshness, retrieval relevance, and the claim's
+ * corroboration into one 0-100 score. `corroboration` is the number of INDEPENDENT supporting
+ * domains for the WHOLE claim (countIndependentSupport from corroboration.ts), applied to every
+ * row of that claim - a row sitting inside a well-corroborated claim earns a small bump.
+ *
+ * relevance_score is Exa-only; for every other retriever it is null, so we default to a neutral
+ * 0.7 rather than penalise a Perplexity/Brave row for a field its API never returns.
+ */
+export function scoreEvidence(
+  e: {
+    retriever?: string | null;
+    source_type?: string | null;
+    source_url?: string | null;
+    published_at?: string | null;
+    relevance_score?: number | null;
+  },
+  corroboration: number,
+): number {
+  const tier = TIER_WEIGHT[classifyReliability(e)];
+  const fresh = freshness(e.published_at);
+  const relevance =
+    typeof e.relevance_score === "number" ? Math.max(0, Math.min(1, e.relevance_score)) : 0.7;
+  const corrobBump = Math.min(Math.max(corroboration, 0), 3) * 5; // +0..15 for independent backing
+  const base = tier * 0.6 + fresh * 100 * 0.2 + relevance * 100 * 0.2;
+  return Math.round(Math.min(100, base + corrobBump));
+}
+
+/**
+ * Build the canonical decision_evidence insert row from a retrieved Evidence. The single place
+ * the three insert paths (decision-engine/pipeline, enrich-decision, decision-research) agree on
+ * the persisted shape - including the honestly-stamped reliability_tier, the captured
+ * published_at, and the computed evidence_score - so a new field can never silently ship from
+ * one path and not the others.
+ */
+export function buildEvidenceRow(
+  e: Evidence,
+  opts: { userId: string; claimId: string; corroboration: number },
+): {
+  claim_id: string;
+  user_id: string;
+  source_url: string | null;
+  source_type: string;
+  source_title: string | null;
+  excerpt: string | null;
+  stance: string;
+  retriever: string;
+  relevance_score: number | null;
+  reliability_tier: ReliabilityTier;
+  published_at: string | null;
+  evidence_score: number;
+} {
+  return {
+    claim_id: opts.claimId,
+    user_id: opts.userId,
+    source_url: e.source_url,
+    source_type: e.retriever,
+    source_title: e.source_title,
+    excerpt: e.excerpt,
+    stance: e.stance,
+    retriever: e.retriever,
+    relevance_score: e.relevance_score,
+    reliability_tier: tierForEvidence(e),
+    published_at: e.published_at ?? null,
+    evidence_score: scoreEvidence(e, opts.corroboration),
+  };
+}

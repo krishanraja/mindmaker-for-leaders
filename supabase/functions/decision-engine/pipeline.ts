@@ -13,7 +13,8 @@ import { advise, type AdversarialInput } from "./advise.ts";
 import { reframeToAiNative } from "./reframe.ts";
 import { crossExamine } from "./crossexamine.ts";
 import { type EvidenceLite } from "../_shared/reaction-extraction.ts";
-import { tierForEvidence } from "./reliability.ts";
+import { buildEvidenceRow } from "./reliability.ts";
+import { countIndependentSupport } from "../_shared/corroboration.ts";
 import type { ClaimVerdict, ExtractedClaim } from "./types.ts";
 
 export interface PipelineParams {
@@ -138,21 +139,11 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
       // PostgREST preserves input order on return, so the ids line up 1:1.
       let evidenceLite: EvidenceLite[] = [];
       if (evidence.length) {
+        const corroboration = countIndependentSupport(evidence);
         const { data: insertedEvidence, error: evErr } = await admin
           .from("decision_evidence")
           .insert(
-            evidence.map((e) => ({
-              claim_id: row.id,
-              user_id: userId,
-              source_url: e.source_url,
-              source_type: e.retriever,
-              source_title: e.source_title,
-              excerpt: e.excerpt,
-              stance: e.stance,
-              retriever: e.retriever,
-              relevance_score: e.relevance_score,
-              reliability_tier: tierForEvidence(e),
-            })),
+            evidence.map((e) => buildEvidenceRow(e, { userId, claimId: row.id, corroboration })),
           )
           .select("id, excerpt");
         // Surface insert failures instead of swallowing them: a single bad row

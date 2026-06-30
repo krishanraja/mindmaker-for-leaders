@@ -35,7 +35,8 @@ import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import type { useDecisionEngine, DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
 import type { DecisionCaseSummary } from '@/hooks/useDecisionInbox';
-import { VERDICT_STYLE, STANCE_STYLE, STANCE_ORDER, verdictBucket, type VerdictBucket } from './decisionParts';
+import { VERDICT_STYLE, verdictBucket, emptyEvidenceMessage, type VerdictBucket } from './decisionParts';
+import { EvidenceList } from './EvidenceList';
 
 type Engine = ReturnType<typeof useDecisionEngine>;
 
@@ -112,7 +113,6 @@ function LadderRung({
   const { backs, against } = evidenceCounts(evidence);
   const num = claim.reaction_value;
   const est = claim.reaction_kind === 'modelled';
-  const sorted = [...evidence].sort((a, b) => STANCE_ORDER[a.stance] - STANCE_ORDER[b.stance]);
 
   return (
     <div className={cn('overflow-hidden rounded-2xl border bg-[linear-gradient(180deg,#0f141c,#0a0e13)] transition-colors', open ? 'border-accent/30' : 'border-border')}>
@@ -158,32 +158,7 @@ function LadderRung({
         <div className="min-h-0 overflow-hidden">
           <div className="space-y-3 border-t border-border p-3.5">
             {claim.rationale && <p className="text-[11.5px] leading-relaxed text-muted-foreground text-pretty">{claim.rationale}</p>}
-            <p className="text-[8.5px] font-bold uppercase tracking-wide text-muted-foreground">
-              {sorted.length > 0 ? 'What I found' : 'Where this comes from'}
-            </p>
-            {sorted.length === 0 ? (
-              <p className="text-[11.5px] leading-relaxed text-muted-foreground">
-                No outside source settles this one. It is a judgment only you can make.
-              </p>
-            ) : (
-              <ul className="space-y-2.5">
-                {sorted.map((e) => {
-                  const st = STANCE_STYLE[e.stance] ?? STANCE_STYLE.neutral;
-                  return (
-                    <li key={e.id} className="text-[11.5px]">
-                      <span className="flex flex-wrap items-center gap-1.5">
-                        <span className={cn('rounded-full border px-1.5 py-0.5 text-[9.5px] font-bold', st.cls)}>{st.label}</span>
-                        <a href={e.source_url ?? '#'} target="_blank" rel="noreferrer" className="font-semibold text-accent hover:underline">
-                          {e.source_title || e.source_url || e.retriever}
-                        </a>
-                        <span className="text-[10px] text-muted-foreground/70">&middot; {e.retriever}</span>
-                      </span>
-                      {e.excerpt && <p className="mt-0.5 leading-relaxed text-muted-foreground text-pretty">{e.excerpt}</p>}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            <EvidenceList evidence={evidence} emptyMessage={emptyEvidenceMessage(claim.type)} />
           </div>
         </div>
       </div>
@@ -202,13 +177,13 @@ function EvidenceMeter({ backs, against }: { backs: number; against: number }) {
       {backs > 0 && (
         <span className="flex items-center gap-1.5">
           <span className="flex gap-[3px]">{pips(backs, 'bg-accent shadow-[0_0_5px_hsl(var(--accent)/0.6)]')}</span>
-          <span className="text-[11px] text-muted-foreground">{backs === 1 ? '1 agrees' : `${backs} agree`}</span>
+          <span className="text-[11px] text-muted-foreground">{backs === 1 ? '1 supports' : `${backs} support`}</span>
         </span>
       )}
       {against > 0 && (
         <span className="flex items-center gap-1.5">
           <span className="flex gap-[3px]">{pips(against, 'bg-rose-400/80')}</span>
-          <span className="text-[11px] text-muted-foreground">{against === 1 ? '1 disagrees' : `${against} disagree`}</span>
+          <span className="text-[11px] text-muted-foreground">{against === 1 ? '1 counters' : `${against} counter`}</span>
         </span>
       )}
     </span>

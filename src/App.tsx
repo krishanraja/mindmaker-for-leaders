@@ -3,15 +3,14 @@
  * Main app with splash screen, routing, and providers.
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as SonnerToaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/ui/theme-provider'
-import { AuthProvider } from '@/components/auth/AuthProvider'
+import { AuthProvider, useAuth } from '@/components/auth/AuthProvider'
 import { OfflineIndicator } from '@/components/ui/offline-indicator'
-import { SplashScreen } from '@/components/ui/splash-screen'
 import { InitializationLoader } from '@/components/ui/InitializationLoader'
 import { AppStateProvider, useAppState } from '@/contexts/AppStateContext'
 import { BriefingProvider } from '@/contexts/BriefingContext'
@@ -30,46 +29,42 @@ const queryClient = new QueryClient({
 })
 
 function AppContent() {
-  const { appState, advanceToSplash, advanceToReady } = useAppState()
+  const { appState, advanceToReady } = useAppState()
+  const { isLoading: authLoading } = useAuth()
+  // The ONE branded boot splash (rotating ring + Mindmaker icon) stays up until BOTH a short
+  // minimum brand time has passed AND auth has resolved, then content is revealed in a single
+  // swap. Holding one static splash - instead of fading it out on a fixed timer into a second
+  // "Bringing your workspace up" loader - is what removes the old duplicate-loader flip.
+  const [minElapsed, setMinElapsed] = useState(false)
 
   useEffect(() => {
-    // Initialize app (theme, viewport, etc.)
-    const initializeApp = async () => {
-      // Initialize mobile viewport
-      initMobileViewport()
+    initMobileViewport()
+    // First visit gets a short branded hold; a returning session in the same tab skips it and
+    // only waits on auth. The static index.html boot icon already covered the very first paint,
+    // so this continues the SAME visual rather than introducing a new one.
+    const splashShown = sessionStorage.getItem('mindmaker-splash-shown')
+    const minMs = splashShown ? 0 : 1500
+    const t = setTimeout(() => {
+      sessionStorage.setItem('mindmaker-splash-shown', 'true')
+      setMinElapsed(true)
+    }, minMs)
+    return () => clearTimeout(t)
+  }, [])
 
-      // Wait minimum 100ms to ensure theme is applied
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      // Check if splash already shown
-      const splashShown = sessionStorage.getItem('mindmaker-splash-shown')
-      if (splashShown) {
-        console.log('🔄 Splash already shown, advancing to READY')
-        advanceToReady()
-      } else {
-        console.log('🎬 First visit, advancing to SPLASH')
-        advanceToSplash()
-      }
+  // Reveal the app only when the brand hold AND auth have both resolved, so the router mounts
+  // with auth already settled - one continuous splash, never a flip to a second branded loader.
+  useEffect(() => {
+    if (minElapsed && !authLoading && appState !== 'READY') {
+      advanceToReady()
     }
+  }, [minElapsed, authLoading, appState, advanceToReady])
 
-    initializeApp()
-  }, [advanceToSplash, advanceToReady])
-
-  const handleSplashComplete = () => {
-    sessionStorage.setItem('mindmaker-splash-shown', 'true')
-    advanceToReady()
-  }
-
-  // Render based on state machine
-  if (appState === 'LOADING') {
+  // Hold the single branded splash for the whole boot, then swap straight to content.
+  if (appState !== 'READY') {
     return <InitializationLoader />
   }
 
-  if (appState === 'SPLASH') {
-    return <SplashScreen onComplete={handleSplashComplete} />
-  }
-
-  // Only render router when READY
+  // Only render router when READY (auth already settled)
   return (
     <>
       <RouterProvider router={router} />

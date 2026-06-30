@@ -25,6 +25,10 @@ export interface Evidence {
   stance: Stance;
   retriever: Retriever;
   relevance_score: number | null;
+  // When the source was published, if the retriever surfaced it (Exa `publishedDate`,
+  // NewsAPI `publishedAt`). null when unknown - the freshness score treats that as neutral,
+  // never as stale. ISO-8601 string.
+  published_at?: string | null;
 }
 
 export interface ClaimVerdict {
