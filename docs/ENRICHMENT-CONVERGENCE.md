@@ -66,6 +66,24 @@ Each step is independently shippable, verifiable by `deno check` + a live HTTP s
 0. **Pin the baseline (DONE, 2026-06-29).** `mindmaker/supabase/functions/enrich-company/dossier-contract.test.ts` - a self-contained Deno test capturing the live `Dossier` shape at both depths, the full provider waterfall, the `scale.*` privacy field set, and the pure `mergeDossier`/`toDomain` logic. 10/10 green. This is the safety net every later step must keep passing; without a captured baseline, "behavior-preserving" is unprovable. (Reading the code also confirmed Mindmaker's providers are ALREADY a shared module consumed by 5 Diagnosis Room functions and coupled to the `Dossier` contract - so steps 1-2 below are the cross-repo neutral-shape work, not an in-Mindmaker extraction.)
 
 1. **Land the neutral core in Mindmaker** (the more mature infra): extract `providers/*` + `net.ts` + `logger.ts` into `_shared/enrich-core/`, rewire `enrich-company` to import them, assert the `Dossier` output is unchanged (the step-0 test must stay green). Mindmaker's `timeout.ts`/`retry.ts`/`logger.ts` are the canonical infra. NOTE: `_shared/enrich/types.ts` is imported by `generate-proposal`/`session-digest`/`mindy-chat` (type-only) and `brandfetch.ts` by `company-search` - so the neutral core is ADDITIVE; the existing `_shared/enrich/` Dossier shapes stay until every consumer is migrated.
+
+## DECISION (2026-06-29): the company-identity providers stay SEPARATE
+
+A full code-level comparison (not the summary) of the three "shared" providers settled steps 1-2 with a result the plan did not anticipate. The providers are NOT worth merging, and merging them would actively harm the system:
+
+| Provider | MYMU resolver | Mindmaker provider | Verdict |
+| --- | --- | --- | --- |
+| Brandfetch | 40 lines, returns `{ company, companyBlurb, logoUrl, brandColors }` for email context | **414 lines**: logo theme/brightness, icon variants, `searchBrandDomain`, gasp-quality identity for the Diagnosis Room | **keep separate** - merging either bloats MYMU or degrades the gasp |
+| BuiltWith | 41 lines, `RELEVANT_TAGS` filter -> 8 techs | 365 lines, CMO-legible stack curation | keep separate (different curation intent) |
+| Tranco | 22 lines, rank only | 95 lines, rank only (more guarding) | identical intent; ~10 lines; not worth a cross-repo mirror + two live deploys |
+
+The duplication here is **shallow** (a few lines of "Brandfetch lives at `/v2/brands/{domain}` with Bearer auth; logo is `logos[0].formats[].src`; colors are `colors[].hex`"). The divergence is **intentional and load-bearing**: Mindmaker needs a rich, gasp-grade company identity; MYMU needs a lean company-context snippet for a background email. A shared core would have to be either as rich as Mindmaker's 414-line brandfetch (forcing needless complexity + a live behavior change onto MYMU) or as lean as MYMU's (degrading the Diagnosis Room co-brand reveal). **Both directions are the accidental vanilla-ization the portfolio brief explicitly forbids**, paid for with deploy risk on two live conversion surfaces.
+
+So: the providers stay sovereign. The shared "body" in enrichment is the provider *knowledge* (endpoints, auth, response paths), which is shallow, stable, and now documented here as the single reference. The durable convergence artifact is the **step-0 contract test** (shipped, Mindmaker PR #132), which pins Mindmaker's Dossier shape so the Diagnosis Room can never silently regress. PDL (company vs person endpoints), Apollo/Apify (person-only), and the synthesis voices were already sovereign by design.
+
+This closes Unit C: investigated to a definitive, evidenced conclusion. "One enrichment service" is realised as one *contract* + one *knowledge reference* + sovereign, purpose-fit resolvers - not a forced merge that flattens the system.
+
+### Superseded migration path (kept for the record)
 2. **Mirror the core into MYMU** (copy-identical), rewire `enrich-profile`'s PDL/Brandfetch/BuiltWith/Tranco calls to the shared adapters via a thin `PartialEnrichment -> ResolvedPerson` mapper; keep Apollo + Apify + its synthesis untouched. Assert `ResolvedPerson` is unchanged.
 3. **Converge the web-signals layer** (Exa/Perplexity/Brave/NewsAPI) into `web-signals.ts`; both apps consume it, each keeping its own cap/ordering.
 4. Optionally adopt Mindmaker's cache + rate-limit shell in MYMU if its traffic warrants it.

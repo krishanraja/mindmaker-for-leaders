@@ -1,6 +1,6 @@
 # Portfolio Hive Mind + Brand Cohesion
 
-**Status:** brand layer + the load-bearing hive-mind core are LIVE in production (2026-06-29). This is the canonical record of the cross-product effort spanning the three sibling repos: **Make Your Mind Up** (`makeyourmindup`), **Mindmaker** (`mindmaker`), and **CTRL** (`mm-ctrl`). They share ONE Supabase project (`bkyuxvschuwngtcdhsyg`).
+**Status:** COMPLETE + LIVE in production (2026-06-30). Brand cohesion, the one-pool/three-surfaces news engine, the consent-gated handoff, the cohort-anxiety curation prior, the aggregate engine, and the public Cohort Signal widget are all shipped; the enrichment-convergence unit is closed to an evidenced keep-separate decision (see below). This is the canonical record of the cross-product effort spanning the three sibling repos: **Make Your Mind Up** (`makeyourmindup`), **Mindmaker** (`mindmaker`), and **CTRL** (`mm-ctrl`). They share ONE Supabase project (`bkyuxvschuwngtcdhsyg`).
 
 ## North star: one operator, three rooms, one brain
 The three products are not three brands; they are three rooms a leader walks through by readiness, over one shared intelligence:
@@ -36,7 +36,7 @@ The funnel DNA travels the ladder, consent-gated, raw q5 never leaving:
 
 The prior is now WIRED into CTRL's news re-rank (the load-bearing payoff): `usePortfolioPulse` reads the aggregate (top 2 lanes, only when total volume >= 8) and feeds it to `newsPriority.ts` as a `zeitgeistLift` term (`ZEITGEIST_LIFT = 0.5`) - a deliberately GENTLE tie-breaker, far below the leader's own boost/bias/fit. It only breaks ties among similar-importance cards for a leader who has NOT tuned their own feed (the generic/cold path); an empty cohort signal is an exact identity (self-disables on thin data, never overrides a personal choice). So the front-door anxiety bends the cockpit's curation prior without homogenizing the feed.
 
-Still internal-first on the public side - the Mindmaker LIVE / Substack widget that surfaces this distribution publicly is the remaining D-expose follow-up.
+The public face (D-expose) is now LIVE too: Mindmaker `/signal` renders the **Cohort Signal** (`src/components/PortfolioPulse.tsx`) - "what leaders are actually wrestling with", the nine lanes as anonymised share bars, fed by `portfolio-pulse`. Volume-guarded (self-hides below 12 leaders so a thin room never reads as weakness) and prerender-safe (renders null during SSG). No PII reaches the client - counts + shares only.
 
 ## Privacy model (decisions, honored)
 - Anonymized **aggregate** signal flows freely (no PII): `portfolio-pulse`.
@@ -44,8 +44,8 @@ Still internal-first on the public side - the Mindmaker LIVE / Substack widget t
 - The **raw q5 and any transcript NEVER travel** - only the categorized lane/shape does. Categorization always happens server-side.
 
 ## What remains (refinements on a live foundation)
-- **D-expose:** surface the `portfolio-pulse` distribution as a public Substack / Mindmaker LIVE widget ("what the cohort is wrestling with this week"). The curation-prior half of D is now LIVE (see above).
-- **C - one enrichment service (DESIGNED, big-bang deliberately deferred):** the structural map showed the two waterfalls are NOT near-identical duplicates - MYMU `enrich-profile` resolves a *person* (flat `ResolvedPerson`), Mindmaker `enrich-company` resolves a *company* (nested `Dossier` with a load-bearing `scale.*` privacy-routing layer + voice synthesis). They share only the four pure provider calls (PDL/Brandfetch/BuiltWith/Tranco) + the web-signals providers. A blind merge would vanilla away each one's soul and risk two live conversion functions unverifiably. The canonical shared-core contract (neutral `PartialEnrichment` body, sovereign orchestrators/output/voice) + a safe incremental migration path are specified in `docs/ENRICHMENT-CONVERGENCE.md`. The body converges; the personality stays.
+- **Nothing load-bearing.** Both open items are closed: D (engine + curation prior + public widget) is LIVE; C is closed to an evidenced keep-separate decision (below). The only follow-on is naturally-occurring: the Cohort Signal widget lights up once >=12 leaders have answered q5 (it self-hides until then), and the enrichment providers should be re-reviewed only if their richness needs ever converge.
+- **C - one enrichment service (CLOSED: providers stay separate, evidenced):** the structural map showed the two waterfalls are NOT near-identical duplicates - MYMU `enrich-profile` resolves a *person* (flat `ResolvedPerson`), Mindmaker `enrich-company` resolves a *company* (nested `Dossier` with a load-bearing `scale.*` privacy-routing layer + voice synthesis). They share only the four pure provider calls (PDL/Brandfetch/BuiltWith/Tranco) + the web-signals providers. A blind merge would vanilla away each one's soul and risk two live conversion functions unverifiably. The canonical shared-core contract (neutral `PartialEnrichment` body, sovereign orchestrators/output/voice) + a safe incremental migration path are specified in `docs/ENRICHMENT-CONVERGENCE.md`. The body converges; the personality stays.
 
 ## Deploy note
 Edge functions in this environment deploy via the Supabase Management API multipart bundler (`POST /v1/projects/<ref>/functions/deploy?slug=<slug>` with `-F metadata=...` + `-F file=@...;filename=...`); the CLI is proxy-blocked and the MCP deploy is permission-gated here.
