@@ -54,6 +54,7 @@ interface LiveHeadline {
   id: string;
   headline: string;
   say: string | null;
+  pov?: string | null; // opinionated lens-driven take (only when the lens is on)
   source: string | null;
   corroboration?: string | null; // "+2 sources" when multiple outlets agree
   url: string;
@@ -399,6 +400,7 @@ export function useCockpit(): {
       category: h.category ?? null,
       headline: h.headline.trim(),
       say: h.say ?? null,
+      pov: h.pov ?? null,
       source: h.source ?? null,
       corroboration: h.corroboration ?? null,
       timeAgo: h.timeAgo ?? null,

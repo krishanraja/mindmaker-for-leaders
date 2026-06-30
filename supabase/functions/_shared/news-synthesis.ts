@@ -19,6 +19,8 @@
  * the real article is one tap away.
  */
 
+import type { EditorialLens } from "./editorial-lens.ts";
+
 export interface SynthInput {
   id: string;
   headline: string;
@@ -30,11 +32,13 @@ export interface SynthInput {
 export interface SynthRead {
   headline?: string;
   say?: string;
+  /** Opinionated POV line. Only produced when an editorial lens is active. */
+  pov?: string;
 }
 
 const OPENAI_TIMEOUT_MS = 20_000;
 
-const SYSTEM_PROMPT =
+const BASE_SYSTEM_PROMPT =
   "You are the news editor for CTRL, an AI-native chief of staff for a busy " +
   "business leader. For each story you get the original outlet title + snippet. " +
   "Produce TWO fields:\n" +
@@ -52,8 +56,37 @@ const SYSTEM_PROMPT =
   "the shift, the number, the risk, or the move directly.\n" +
   "GROUND both fields strictly in the supplied title + snippet: NEVER invent or " +
   "change a fact, number, date, company, model name, or quote. When the snippet " +
-  "is thin, stay conservative and factual.\n" +
+  "is thin, stay conservative and factual.\n";
+
+const REPLY_SPEC_BASE =
   'Reply ONLY with JSON: {"reads":[{"id":"<id>","headline":"<headline>","say":"<line>"}]}.';
+const REPLY_SPEC_WITH_POV =
+  'Reply ONLY with JSON: {"reads":[{"id":"<id>","headline":"<headline>","say":"<line>","pov":"<line>"}]}.';
+
+/**
+ * The optional editorial-POV addendum. Appended only when a lens is active, so
+ * the default (no lens) prompt is byte-identical to the original.
+ */
+function lensAddendum(lens: EditorialLens): string {
+  const calib = lens.exemplarPOVs.slice(0, 3).map((p) => `"${p}"`).join("; ");
+  return (
+    "You also hold a consistent editorial point of view.\n" +
+    `Thesis: ${lens.thesis}\n` +
+    "3. \"pov\": ONE sharp, opinionated line (MAX 18 words) reading THIS story " +
+    "through that thesis, in the CTRL chief-of-staff voice - what it really means " +
+    "for a leader building the AI-native version of their business, and what to do " +
+    "or stop doing. Take a clear stance; push against the easy button and hype with " +
+    "no shipped proof. Still GROUNDED strictly in the supplied title + snippet: " +
+    "never invent a fact, number, company or quote. If the story does not speak to " +
+    "the thesis, return \"pov\" as an empty string rather than forcing it. No em dashes.\n" +
+    `Calibration POVs (match the register, never copy verbatim): ${calib}\n`
+  );
+}
+
+function buildSystemPrompt(lens?: EditorialLens | null): string {
+  if (!lens) return BASE_SYSTEM_PROMPT + REPLY_SPEC_BASE;
+  return BASE_SYSTEM_PROMPT + lensAddendum(lens) + REPLY_SPEC_WITH_POV;
+}
 
 /**
  * Returns a map of story id -> { headline, say }. Empty map on any failure; the
@@ -62,6 +95,7 @@ const SYSTEM_PROMPT =
 export async function synthesizeReads(
   apiKey: string | undefined,
   items: SynthInput[],
+  lens?: EditorialLens | null,
 ): Promise<Map<string, SynthRead>> {
   const out = new Map<string, SynthRead>();
   if (!apiKey || items.length === 0) return out;
@@ -86,7 +120,7 @@ export async function synthesizeReads(
         temperature: 0.4,
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: buildSystemPrompt(lens) },
           { role: "user", content: JSON.stringify({ stories: userPayload }) },
         ],
       }),
@@ -96,7 +130,7 @@ export async function synthesizeReads(
     const content = data?.choices?.[0]?.message?.content;
     if (typeof content !== "string") return out;
     const parsed = JSON.parse(content) as {
-      reads?: Array<{ id?: string; headline?: string; say?: string }>;
+      reads?: Array<{ id?: string; headline?: string; say?: string; pov?: string }>;
     };
     if (!Array.isArray(parsed?.reads)) return out;
     for (const r of parsed.reads) {
@@ -104,7 +138,8 @@ export async function synthesizeReads(
       const read: SynthRead = {};
       if (typeof r.headline === "string" && r.headline.trim()) read.headline = r.headline.trim();
       if (typeof r.say === "string" && r.say.trim()) read.say = r.say.trim();
-      if (read.headline || read.say) out.set(r.id, read);
+      if (typeof r.pov === "string" && r.pov.trim()) read.pov = r.pov.trim();
+      if (read.headline || read.say || read.pov) out.set(r.id, read);
     }
     return out;
   } catch {

@@ -154,6 +154,20 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantT
           </p>
         )}
 
+        {/* THE TAKE: opinionated, lens-driven POV line. Present only when the
+            editorial lens is active server-side; otherwise the hero is unchanged. */}
+        {card.pov && (
+          <p
+            className={cn(
+              'border-l-2 border-accent/60 pl-3 leading-[1.5] text-foreground/90',
+              isLead ? 'mt-3.5 max-w-[54ch] text-[15px]' : 'mt-2.5 text-[13px]',
+            )}
+          >
+            <span className="mr-1.5 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">Take</span>
+            {card.pov}
+          </p>
+        )}
+
         {/* Independent benchmark cross-check (model-about news only). */}
         {!isSignal && card.benchmark && <BenchmarkChip benchmark={card.benchmark} />}
 
