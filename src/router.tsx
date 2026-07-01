@@ -3,7 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { RequireAuth } from '@/components/auth/RequireAuth'
 import { AuthedLayoutRoute } from '@/components/layout/AuthedLayoutRoute'
-import { BrandedAppLoader } from '@/components/system/BrandedAppLoader'
+import { BrandSplashVisual } from '@/components/ui/splash-screen'
 
 const CHUNK_RELOAD_KEY = 'chunk_reload'
 
@@ -194,12 +194,13 @@ export function prefetchAuthedRoutes() {
   else setTimeout(warm, 1200)
 }
 
-// The lazy-route Suspense fallback. A route chunk loads before any in-app shell
-// has mounted, so this is the branded, anticipatory full-viewport loader (brand
-// lockup + settling chrome skeleton), never a raw spinner on black.
-// CTRL-SYSTEM-SPEC s6.
+// The lazy-route Suspense fallback. This is the SAME rotating-ring + Mindmaker-icon splash the
+// SPA-boot shows (BrandSplashVisual), so the very first route resolving right after the boot
+// splash reads as ONE continuous splash - never a flip to a second, differently-branded
+// "Bringing your workspace up" loader for the ~tens of ms a chunk takes to resolve. Every
+// full-screen app loader is now this one visual. CTRL-SYSTEM-SPEC s6.
 function LoadingPage() {
-  return <BrandedAppLoader fullscreen caption="Bringing your workspace up" />
+  return <BrandSplashVisual />
 }
 
 function LazyWrapper({ children }: { children: React.ReactNode }) {
