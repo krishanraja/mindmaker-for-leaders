@@ -16,6 +16,7 @@ import {
 import { DecisionRunning } from '@/components/operator/decision/DecisionRunning';
 import { DecisionResultView } from '@/components/operator/decision/DecisionResultView';
 import { DecisionAnatomy } from '@/components/operator/decision/DecisionAnatomy';
+import { DecisionDemo } from '@/components/operator/decision/DecisionDemo';
 import { CriticalCallStep } from '@/components/operator/decision/CriticalCallStep';
 import { ResolveDecisionSheet } from '@/components/operator/decision/ResolveDecisionSheet';
 import { buildTrackRecordModel } from '@/components/track-record/trackRecordModel';
@@ -209,7 +210,9 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
     // active cases exist: the auto-load / switch is in flight - hold on the loader.
     surface = <DecisionLoading />;
   } else {
-    surface = <DecisionCold value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} isDesktop={isDesktop} />;
+    // No decisions yet: show the worked example so the tab always has the right shape, with one
+    // tap to weigh your own (which opens the cold capture input via `composing`).
+    surface = <DecisionDemo isDesktop={isDesktop} onWeighOwn={() => { setComposing(true); haptics.light(); }} />;
   }
 
   // The toggle (and History) only show in the restful states - never mid-weigh, so

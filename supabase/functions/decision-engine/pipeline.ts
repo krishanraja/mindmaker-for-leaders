@@ -89,6 +89,7 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
         title: decomposed.title,
         decision_kind: decomposed.decision_kind,
         objective_fact_ids: objectiveFactIds,
+        force_labels: decomposed.force_labels,
         stage: "verifying",
         updated_at: new Date().toISOString(),
       })
@@ -101,6 +102,7 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
       text: c.text,
       type: c.type,
       is_load_bearing: c.is_load_bearing,
+      dimension: c.dimension,
       verdict: "pending",
     }));
     const { data: insertedClaims, error: claimErr } = await admin
