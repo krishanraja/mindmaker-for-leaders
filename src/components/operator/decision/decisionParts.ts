@@ -7,6 +7,7 @@
 import {
   ShieldCheck, AlertTriangle, HelpCircle, CircleDashed, Loader2,
 } from 'lucide-react';
+import { formatDistanceStrict } from 'date-fns';
 import type { DecisionClaim, DecisionEvidence, Verdict } from '@/hooks/useDecisionEngine';
 
 // Plain-English labels: assume a non-technical reader with no app context, so
@@ -56,6 +57,57 @@ export function firstClause(text: string, max = 110): string {
   const stop = trimmed.search(/[.;]/);
   const clause = stop > 20 ? trimmed.slice(0, stop) : trimmed;
   return clause.length > max ? `${clause.slice(0, max - 1).trimEnd()}...` : clause;
+}
+
+// Sanitise a raw source string for display. Evidence excerpts/titles come straight off scraped
+// pages, so they arrive full of markdown (`## Bottom line`), HTML (`<strong>$0`), SEO title tails
+// (`... | Future AGI`), and em dashes. This strips that noise so a row reads like clean prose
+// instead of "crap looking text". Deterministic + pure, so the one-line badge and the fuller
+// excerpt reveal share exactly one cleaner.
+export function cleanEvidenceText(raw: string | null | undefined): string {
+  if (!raw) return '';
+  let s = raw
+    .replace(/<[^>]+>/g, ' ') // strip HTML tags
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0?39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/[\u2014\u2013]/g, '-') // em/en dash -> hyphen (house style, reads cleaner)
+    .replace(/[#>*_`~]+/g, ' ') // markdown heading / quote / emphasis / code / strike markers
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Drop a trailing SEO site-name segment: "Real title | Site Name" -> "Real title".
+  const piped = s.split(/\s+\|\s+/);
+  if (piped.length > 1 && piped[0].trim().length >= 12) s = piped[0].trim();
+  return s;
+}
+
+// The bare source domain for a provenance chip (e.g. "artificialanalysis.ai"). Empty on bad input.
+export function sourceDomain(url: string | null | undefined): string {
+  if (!url) return '';
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
+// A compact publish age for the provenance chip ("2mo", "5d", "3h"). Empty when the date is
+// missing/unparseable. `base` is injectable so the unit test is deterministic.
+export function shortAge(publishedAt: string | null | undefined, base: Date = new Date()): string {
+  if (!publishedAt) return '';
+  const ts = Date.parse(publishedAt);
+  if (!Number.isFinite(ts)) return '';
+  return formatDistanceStrict(new Date(ts), base)
+    .replace(/ years?/, 'y')
+    .replace(/ months?/, 'mo')
+    .replace(/ weeks?/, 'w')
+    .replace(/ days?/, 'd')
+    .replace(/ hours?/, 'h')
+    .replace(/ minutes?/, 'm')
+    .replace(/ seconds?/, 's');
 }
 
 export function deriveTruth(claims: DecisionClaim[], breakpointId: string | null, counterCase: string | null) {
