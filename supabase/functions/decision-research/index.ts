@@ -46,6 +46,7 @@ interface ClaimRow {
   text: string;
   type: ExtractedClaim["type"];
   is_load_bearing: boolean;
+  dimension: ExtractedClaim["dimension"] | null;
   verdict: ClaimVerdict["verdict"];
   confidence: number | null;
   rationale: string | null;
@@ -101,7 +102,7 @@ async function runResearch(
     if (mode === "research_more") {
       // Re-verify each target: fresh evidence + a refreshed verdict.
       await mapLimit(workSet, 3, async (c) => {
-        const claim: ExtractedClaim = { text: c.text, type: c.type, is_load_bearing: c.is_load_bearing };
+        const claim: ExtractedClaim = { text: c.text, type: c.type, is_load_bearing: c.is_load_bearing, dimension: c.dimension ?? "capability" };
         const { verdict, evidence } = await verifyClaim(claim);
         await insertEvidence(admin, c.id, userId, evidence, countIndependentSupport(evidence));
         await admin.from("decision_claims").update({
@@ -125,7 +126,7 @@ async function runResearch(
     } else {
       // counter_evidence: adversarial panel + refuting evidence per claim.
       const verifiedForJudging = claims.map((c) => ({
-        claim: { text: c.text, type: c.type, is_load_bearing: c.is_load_bearing } as ExtractedClaim,
+        claim: { text: c.text, type: c.type, is_load_bearing: c.is_load_bearing, dimension: c.dimension ?? "capability" } as ExtractedClaim,
         verdict: { verdict: c.verdict, confidence: c.confidence, rationale: c.rationale ?? "" } as ClaimVerdict,
       }));
       try {
@@ -162,7 +163,7 @@ async function runResearch(
     // counter-case, confidence and next checks reflect the new research.
     await admin.from("decision_cases").update({ stage: "advising", updated_at: new Date().toISOString() }).eq("id", caseId);
     const verified = claims.map((c) => ({
-      claim: { text: c.text, type: c.type, is_load_bearing: c.is_load_bearing } as ExtractedClaim,
+      claim: { text: c.text, type: c.type, is_load_bearing: c.is_load_bearing, dimension: c.dimension ?? "capability" } as ExtractedClaim,
       verdict: { verdict: c.verdict, confidence: c.confidence, rationale: c.rationale ?? "" } as ClaimVerdict,
     }));
     const result = await advise(statement, ctx, verified, [], adversarial);
@@ -230,7 +231,7 @@ serve(async (req) => {
 
     const { data: claimRows } = await admin
       .from("decision_claims")
-      .select("id, text, type, is_load_bearing, verdict, confidence, rationale")
+      .select("id, text, type, is_load_bearing, dimension, verdict, confidence, rationale")
       .eq("decision_case_id", caseId)
       .order("created_at");
     const claims = (claimRows ?? []) as ClaimRow[];

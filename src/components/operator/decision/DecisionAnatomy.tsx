@@ -23,36 +23,23 @@
  * reveal (real on Android, silently ignored elsewhere).
  */
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  ChevronDown, ChevronRight, Layers, Check, ShieldCheck, Search, Swords, Loader2,
+  ChevronDown, ChevronRight, Check, ShieldCheck, Search, Swords, Loader2,
   Sparkles, Plus, ArrowRightLeft,
 } from 'lucide-react';
-import type { ResearchMode } from '@/hooks/useDecisionEngine';
+import type { ResearchMode, Dimension } from '@/hooks/useDecisionEngine';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
-import type { useDecisionEngine, DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
+import type { useDecisionEngine } from '@/hooks/useDecisionEngine';
 import type { DecisionCaseSummary } from '@/hooks/useDecisionInbox';
-import { VERDICT_STYLE, verdictBucket, emptyEvidenceMessage, type VerdictBucket } from './decisionParts';
-import { EvidenceList } from './EvidenceList';
+import { DecisionSpider } from './DecisionSpider';
+import { ForceDrawer } from './ForceDrawer';
+import { buildSpider } from './decisionSpiderModel';
 
 type Engine = ReturnType<typeof useDecisionEngine>;
-
-// Ladder order: the most important point (the breakpoint) first, then the rest of
-// the load-bearing points, then supporting context.
-const VERDICT_RANK: Record<DecisionClaim['verdict'], number> = {
-  contested: 0, supported: 1, unverifiable: 2, unverified: 3, pending: 4,
-};
-
-// The filter segments, plain English. "All" plus the three buckets.
-const SEGMENTS: { key: 'all' | VerdictBucket; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'checks', label: 'Checks out' },
-  { key: 'unsure', label: 'Unsure' },
-  { key: 'yours', label: 'Your call' },
-];
 
 // The action-oriented moves a finished decision offers: firm up the case, dig
 // deeper, or actively look for the case against. Plain labels, no jargon.
@@ -61,16 +48,6 @@ const RESEARCH_ACTIONS: { mode: ResearchMode; label: string; desc: string; Icon:
   { mode: 'research_more', label: 'Research more', desc: 'Dig wider for anything I might have missed.', Icon: Search },
   { mode: 'counter_evidence', label: 'Counter-points', desc: 'Actively look for the case against.', Icon: Swords },
 ];
-
-function evidenceCounts(evidence: DecisionEvidence[]) {
-  let backs = 0;
-  let against = 0;
-  for (const e of evidence) {
-    if (e.stance === 'supports') backs += 1;
-    else if (e.stance === 'refutes') against += 1;
-  }
-  return { backs, against };
-}
 
 /* ------------------------------------------------------------------ */
 /* The trust gauge: a compact ring around the confidence %.            */
@@ -93,99 +70,6 @@ function TrustGauge({ pct, compact }: { pct: number | null; compact: boolean }) 
       <b className={cn('font-bold tabular-nums text-accent', compact ? 'text-[11px]' : 'text-[14px]')} style={{ textShadow: '0 0 12px hsl(var(--accent)/0.4)' }}>
         {pct != null ? pct : '?'}
       </b>
-    </span>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* One ladder row: a point the answer rests on, with inline evidence.  */
-/* ------------------------------------------------------------------ */
-function LadderRung({
-  claim, evidence, isHinge, open, onToggle,
-}: {
-  claim: DecisionClaim;
-  evidence: DecisionEvidence[];
-  isHinge: boolean;
-  open: boolean;
-  onToggle: () => void;
-}) {
-  const v = VERDICT_STYLE[claim.verdict] ?? VERDICT_STYLE.pending;
-  const { backs, against } = evidenceCounts(evidence);
-  const num = claim.reaction_value;
-  const est = claim.reaction_kind === 'modelled';
-
-  return (
-    <div className={cn('overflow-hidden rounded-2xl border bg-[linear-gradient(180deg,#0f141c,#0a0e13)] transition-colors', open ? 'border-accent/30' : 'border-border')}>
-      <button type="button" onClick={onToggle} className="flex w-full items-stretch gap-3 p-3.5 text-left" aria-expanded={open}>
-        {/* the rail: emerald when it checks out, amber when it does not add up, neutral otherwise */}
-        <span
-          className={cn('w-1 flex-none rounded-full',
-            claim.verdict === 'supported' ? 'bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.5)]'
-              : claim.verdict === 'contested' ? 'bg-amber-400 shadow-[0_0_8px_rgba(224,161,58,0.5)]'
-              : 'bg-muted-foreground/40')}
-          aria-hidden="true"
-        />
-        <span className="flex min-w-0 flex-1 flex-col gap-2">
-          <span className="flex flex-wrap items-center gap-2">
-            <span className={cn('inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold', v.cls)}>
-              <v.Icon className={cn('h-3 w-3', claim.verdict === 'pending' && 'animate-spin')} />
-              {v.label}
-            </span>
-            {isHinge && (
-              <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-accent">
-                Most important
-              </span>
-            )}
-            {num && (
-              <span className="ml-auto inline-flex items-baseline gap-1 text-accent">
-                {est && <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">est.</span>}
-                <b className="text-[15px] font-bold leading-none tabular-nums">{num}</b>
-              </span>
-            )}
-          </span>
-          <span className="text-[13px] font-semibold leading-snug text-foreground/90 [overflow-wrap:anywhere]">
-            {claim.text}
-          </span>
-          <span className="flex items-center justify-between gap-2">
-            <EvidenceMeter backs={backs} against={against} />
-            <ChevronRight className={cn('h-3.5 w-3.5 flex-none text-muted-foreground transition-transform', open && 'rotate-90 text-accent')} />
-          </span>
-        </span>
-      </button>
-
-      {/* inline evidence - opens in place, nothing hidden behind a sheet */}
-      <div className={cn('grid transition-all duration-300 ease-out', open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
-        <div className="min-h-0 overflow-hidden">
-          <div className="space-y-3 border-t border-border p-3.5">
-            {claim.rationale && <p className="text-[11.5px] leading-relaxed text-muted-foreground text-pretty">{claim.rationale}</p>}
-            <EvidenceList evidence={evidence} emptyMessage={emptyEvidenceMessage(claim.type)} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EvidenceMeter({ backs, against }: { backs: number; against: number }) {
-  if (backs === 0 && against === 0) {
-    return <span className="text-[11px] text-muted-foreground">Only you can answer this one</span>;
-  }
-  const pips = (n: number, cls: string) =>
-    Array.from({ length: Math.min(n, 5) }).map((_, i) => <span key={i} className={cn('h-[6px] w-[6px] rounded-full', cls)} />);
-  return (
-    <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-      {backs > 0 && (
-        <span className="flex items-center gap-1.5">
-          <span className="flex gap-[3px]">{pips(backs, 'bg-accent shadow-[0_0_5px_hsl(var(--accent)/0.6)]')}</span>
-          <span className="text-[11px] text-muted-foreground">{backs === 1 ? '1 supports' : `${backs} support`}</span>
-        </span>
-      )}
-      {against > 0 && (
-        <span className="flex items-center gap-1.5">
-          <span className="flex gap-[3px]">{pips(against, 'bg-rose-400/80')}</span>
-          <span className="text-[11px] text-muted-foreground">{against === 1 ? '1 counters' : `${against} counter`}</span>
-        </span>
-      )}
     </span>
   );
 }
@@ -412,74 +296,29 @@ export function DecisionAnatomy({
   isDesktop?: boolean;
 }) {
   const { decisionCase, claims, evidence } = engine;
-  const [openClaimId, setOpenClaimId] = useState<string | null>(null);
+  const [selectedForce, setSelectedForce] = useState<Dimension | null>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
-  const [filter, setFilter] = useState<'all' | VerdictBucket>('all');
-  // The spine starts open on desktop (room to breathe) and closed on mobile.
+  // The full answer (behind the decision) starts open on desktop, closed on mobile.
   const [callOpen, setCallOpen] = useState(isDesktop);
-  const [collapsed, setCollapsed] = useState(false);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Close any open force when the decision in focus changes.
+  const caseId = decisionCase?.id ?? null;
+  useEffect(() => { setSelectedForce(null); }, [caseId]);
 
   const evByClaim = (id: string) => evidence.filter((e) => e.claim_id === id);
-  const hingeId = decisionCase?.breakpoint_assumption_id ?? null;
-
-  const ladder = useMemo(() => {
-    return [...claims].sort((a, b) => {
-      if (a.id === hingeId) return -1;
-      if (b.id === hingeId) return 1;
-      const lb = Number(b.is_load_bearing) - Number(a.is_load_bearing);
-      if (lb !== 0) return lb;
-      return VERDICT_RANK[a.verdict] - VERDICT_RANK[b.verdict];
-    });
-  }, [claims, hingeId]);
-
-  const segCounts = useMemo(() => {
-    const c = { all: claims.length, checks: 0, unsure: 0, yours: 0 } as Record<string, number>;
-    for (const cl of claims) c[verdictBucket(cl.verdict)] += 1;
-    return c;
-  }, [claims]);
-
-  const visible = useMemo(
-    () => (filter === 'all' ? ladder : ladder.filter((c) => verdictBucket(c.verdict) === filter)),
-    [ladder, filter],
-  );
+  // The six fixed forces (with their claims + health), built from this decision's claims + labels.
+  const spider = useMemo(() => buildSpider(claims, decisionCase?.force_labels), [claims, decisionCase?.force_labels]);
 
   if (!decisionCase) return null;
   const pct = decisionCase.confidence != null ? Math.round(decisionCase.confidence * 100) : null;
-  // The spine leads with the decision itself; the recommendation is the answer
-  // behind the tap.
+  // The spine leads with the decision itself; the recommendation is the answer behind the tap.
   const statement = decisionCase.title || decisionCase.statement;
   const answer = decisionCase.recommendation;
   const reframeNote = decisionCase.reframed ? decisionCase.reframe_note ?? null : null;
+  const selectedForceObj = selectedForce ? spider.forces.find((f) => f.key === selectedForce) ?? null : null;
 
-  const toggleSpine = () => {
-    if (isDesktop) { setCallOpen((o) => !o); haptics.light(); return; }
-    if (collapsed) {
-      // scroll back to the top, then open the answer
-      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-      setCollapsed(false);
-      setCallOpen(true);
-    } else {
-      setCallOpen((o) => !o);
-    }
-    haptics.light();
-  };
-
-  const onScroll = () => {
-    if (isDesktop) return;
-    const top = scrollRef.current?.scrollTop ?? 0;
-    // Hysteresis: collapse once past 64px, and don't expand again until back
-    // under 16px. A single wide dead-band stops the collapse/expand oscillation
-    // (the spine's height change nudged scrollTop back across a single 44px line,
-    // which re-toggled it every frame and read as flicker).
-    const next = collapsed ? top > 16 : top > 64;
-    if (next !== collapsed) setCollapsed(next);
-    if (next && callOpen) setCallOpen(false);
-  };
-
-  const pickFilter = (key: 'all' | VerdictBucket) => { setFilter(key); haptics.light(); };
-  const toggleRung = (id: string) => { setOpenClaimId((cur) => (cur === id ? null : id)); haptics.light(); };
+  const toggleSpine = () => { setCallOpen((o) => !o); haptics.light(); };
 
   const spine = (
     <Spine
@@ -490,65 +329,24 @@ export function DecisionAnatomy({
       reframeNote={reframeNote}
       pct={pct}
       open={callOpen}
-      collapsed={collapsed}
+      collapsed={false}
       onToggle={toggleSpine}
       isDesktop={isDesktop}
     />
   );
 
-  const seg = (
-    <div className="flex gap-1 rounded-xl border border-border bg-foreground/[0.03] p-1">
-      {SEGMENTS.map((s) => {
-        const n = segCounts[s.key] ?? 0;
-        const on = filter === s.key;
-        return (
-          <button
-            key={s.key}
-            type="button"
-            onClick={() => pickFilter(s.key)}
-            className={cn('flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-lg px-1.5 py-2 text-[11px] font-bold transition-colors',
-              on ? 'bg-gradient-to-b from-accent to-accent text-accent-foreground shadow-[0_8px_18px_-10px_hsl(var(--accent)/0.6)]' : 'text-muted-foreground hover:text-foreground')}
-          >
-            {s.label}<span className={cn('text-[10px] tabular-nums', on ? 'opacity-80' : 'opacity-60')}>{n}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-
-  const ladderHeader = (
-    <div className="flex items-center gap-2 pb-2.5 pt-3">
-      <Layers className="h-3.5 w-3.5 text-accent" />
-      <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">What this is based on</span>
-      <span className="text-[10px] font-bold text-accent">&middot; {ladder.length}</span>
-    </div>
-  );
-
-  const rungs = (
-    <div className="relative pl-5">
-      {/* The ladder rail: every point visibly branches UP to the decision, so the
-          screen reads top-down as "this decision rests on these things". */}
-      {visible.length > 0 && (
-        <span aria-hidden className="pointer-events-none absolute left-1.5 top-0 bottom-4 w-px bg-gradient-to-b from-accent/45 via-border to-transparent" />
-      )}
-      <div className="flex flex-col gap-2.5 pb-1">
-        {ladder.length === 0 && <p className="text-[12.5px] text-muted-foreground">I am still breaking this one down. Check back in a moment.</p>}
-        {ladder.length > 0 && visible.length === 0 && <p className="text-[12.5px] text-muted-foreground">Nothing in this group.</p>}
-        {visible.map((c) => (
-          <div key={c.id} className="relative">
-            {/* the node + tick where this point meets the rail */}
-            <span aria-hidden className="pointer-events-none absolute top-[22px] -left-[14px] h-px w-3 bg-border" />
-            <span
-              aria-hidden
-              className={cn(
-                'pointer-events-none absolute top-[18px] -left-[17px] h-2 w-2 rounded-full border-2 border-background',
-                c.id === hingeId ? 'bg-accent shadow-[0_0_7px_hsl(var(--accent)/0.7)]' : 'bg-muted-foreground/60',
-              )}
-            />
-            <LadderRung claim={c} evidence={evByClaim(c.id)} isHinge={c.id === hingeId} open={openClaimId === c.id} onToggle={() => toggleRung(c.id)} />
-          </div>
-        ))}
-      </div>
+  // The hero: the decision at the centre, the six forces spidering out, coloured by health.
+  const spiderCanvas = (
+    <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(var(--accent)/0.05),transparent_60%)]">
+      <DecisionSpider
+        claims={claims}
+        forceLabels={decisionCase.force_labels}
+        pct={pct}
+        selectedKey={selectedForce}
+        onSelect={(k) => { setSelectedForce(k); haptics.light(); }}
+        onCenterTap={toggleSpine}
+        peekFirst={!isDesktop}
+      />
     </div>
   );
 
@@ -637,44 +435,31 @@ export function DecisionAnatomy({
     </>
   );
 
-  // ---- DESKTOP: spine + answer + shelf on the left, the ladder on the right ----
+  // ---- DESKTOP: decision + spider + shelf on the left, the tapped-force detail rail on the right --
   if (isDesktop) {
     return (
       <div className="flex h-full min-h-0 flex-col gap-3">
-        <div className="grid min-h-0 flex-1 grid-cols-[1fr_1fr] gap-4">
-          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto scrollbar-hide pr-1">
+        <div className="grid min-h-0 flex-1 grid-cols-[1.1fr_0.9fr] gap-4">
+          <div className="flex min-h-0 flex-col gap-3">
             {spine}
-            <div className="mt-auto">{shelf}</div>
+            {spiderCanvas}
+            {shelf}
           </div>
-          <div className="flex min-h-0 flex-col">
-            {ladderHeader}
-            {seg}
-            <div className="mt-3 min-h-0 flex-1 overflow-y-auto scrollbar-hide">{rungs}</div>
-          </div>
+          <ForceDrawer force={selectedForceObj} evidenceFor={evByClaim} isDesktop onClose={() => setSelectedForce(null)} />
         </div>
         {sheets}
       </div>
     );
   }
 
-  // ---- MOBILE: collapsing spine + ladder hero in one scroll, pinned shelf ----
+  // ---- MOBILE: compact decision on top, the spider fills the screen (no scroll), pinned shelf ----
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div ref={scrollRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
-        {/* The spine AND the filter ride in ONE sticky block. The spine collapses
-            to a status bar as the ladder scrolls up behind it (the native
-            large-title move); keeping the filter inside the same pinned block
-            means it no longer jumps when the spine changes height - it just stays
-            put, always reachable, while only the rungs scroll underneath. */}
-        <div className="sticky top-0 z-20 bg-background pb-2">
-          {spine}
-          {ladderHeader}
-          {seg}
-        </div>
-        {rungs}
-      </div>
+    <div className="flex h-full min-h-0 flex-col gap-2.5">
+      {spine}
+      {spiderCanvas}
       {mobileShelf}
       {sheets}
+      <ForceDrawer force={selectedForceObj} evidenceFor={evByClaim} isDesktop={false} onClose={() => setSelectedForce(null)} />
     </div>
   );
 }

@@ -5,10 +5,16 @@ export type Verdict = "supported" | "contested" | "unverified" | "unverifiable" 
 export type Stance = "supports" | "refutes" | "neutral";
 export type Retriever = "perplexity" | "exa" | "brave" | "tavily" | "newsapi" | "pdl" | "builtwith" | "tranco" | "memory" | "artificialanalysis";
 
+// The 6 fixed AI-native forces every decision spiders into (matches AI_NATIVE_DIMENSIONS in
+// _shared/decision-ai-native.ts). Each claim is tagged with the single force it most bears on.
+export type Dimension = "capability" | "economics" | "risk" | "build_buy" | "team" | "timing";
+export const DIMENSIONS: readonly Dimension[] = ["capability", "economics", "risk", "build_buy", "team", "timing"] as const;
+
 export interface ExtractedClaim {
   text: string;
   type: ClaimType;
   is_load_bearing: boolean;
+  dimension: Dimension;
 }
 
 export interface DecomposeResult {
@@ -16,6 +22,10 @@ export interface DecomposeResult {
   decision_kind: "binary" | "directional" | "investment" | "hiring" | "gtm" | "other";
   claims: ExtractedClaim[];
   profile_tensions: Array<{ description: string; severity: "low" | "medium" | "high" }>;
+  // A 1-2 word specific concern per force that appears in this decision, e.g.
+  // { economics: "Token cost", risk: "Hallucination" }. Supplies the decision-specific node
+  // captions in the spider (the client falls back to the generic force name when absent).
+  force_labels: Partial<Record<Dimension, string>>;
 }
 
 export interface Evidence {

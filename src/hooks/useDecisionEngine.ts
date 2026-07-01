@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 const db = supabase as unknown as SupabaseClient;
 
 export type ClaimType = 'factual' | 'market' | 'causal' | 'assumption' | 'forecast';
+// The 6 fixed AI-native forces a decision spiders into (see decision-engine/types.ts Dimension).
+export type Dimension = 'capability' | 'economics' | 'risk' | 'build_buy' | 'team' | 'timing';
 export type Verdict = 'supported' | 'contested' | 'unverified' | 'unverifiable' | 'pending';
 export type Stage = 'decomposing' | 'verifying' | 'cross_examining' | 'advising' | 'complete' | 'error';
 // The action-oriented research modes a finished decision can be pushed through.
@@ -37,6 +39,9 @@ export interface DecisionCase {
   reframed_statement?: string | null;
   reframe_note?: string | null;
   lifecycle_stage?: 'build' | 'orchestrate' | 'productize' | 'gtm' | 'substrate' | null;
+  // A 1-2 word specific concern per force (e.g. { economics: 'Token cost' }); supplies the
+  // decision-specific node captions in the spider. Optional/null on older rows.
+  force_labels?: Partial<Record<Dimension, string>> | null;
 }
 
 // The stored, honesty-gated hero magnitude. Populated by the decision-engine
@@ -51,6 +56,9 @@ export interface DecisionClaim {
   text: string;
   type: ClaimType;
   is_load_bearing: boolean;
+  // Which of the 6 fixed AI-native forces this claim bears on. Optional/null on older rows
+  // (predate the column) -> the spider infers a force from `type`.
+  dimension?: Dimension | null;
   verdict: Verdict;
   confidence: number | null;
   rationale: string | null;
