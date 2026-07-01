@@ -34,23 +34,18 @@ const SYSTEM_PROMPT =
   "point plainly.\n" +
   'Reply ONLY with JSON: {"points":[{"id":"<id>","key_point":"<line>"}]}.';
 
-/**
- * Returns a map of evidence id -> key_point. Empty map on any failure; the caller should fall
- * back to a deterministic first-clause of the excerpt for missing ids.
- */
-export async function distillKeyPoints(
-  apiKey: string | undefined,
-  items: KeyPointInput[],
-): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
-  if (!apiKey || items.length === 0) return out;
+// One decision can carry dozens of evidence rows. A single LLM call over all of them returns a
+// PARTIAL list (the model stops well short of covering 40+ items), leaving most rows without a
+// key_point. Distilling in small chunks keeps each call's output complete, so coverage is high.
+const CHUNK_SIZE = 10;
 
+/** Distil one small chunk. Returns partial results; never throws (best-effort). */
+async function distillChunk(apiKey: string, items: KeyPointInput[]): Promise<Array<[string, string]>> {
   const userPayload = items.map((i) => ({
     id: i.id,
     title: (i.title ?? "").slice(0, 160),
     excerpt: (i.excerpt ?? "").slice(0, 360),
   }));
-
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
   try {
@@ -68,22 +63,45 @@ export async function distillKeyPoints(
         ],
       }),
     });
-    if (!res.ok) return out;
+    if (!res.ok) return [];
     const data = await res.json();
     const content = data?.choices?.[0]?.message?.content;
-    if (typeof content !== "string") return out;
+    if (typeof content !== "string") return [];
     const parsed = JSON.parse(content) as { points?: Array<{ id?: string; key_point?: string }> };
-    if (!Array.isArray(parsed?.points)) return out;
+    if (!Array.isArray(parsed?.points)) return [];
+    const out: Array<[string, string]> = [];
     for (const p of parsed.points) {
       if (typeof p?.id !== "string") continue;
       if (typeof p.key_point === "string" && p.key_point.trim()) {
-        out.set(p.id, p.key_point.trim().slice(0, 160));
+        out.push([p.id, p.key_point.trim().slice(0, 160)]);
       }
     }
     return out;
   } catch {
-    return out;
+    return [];
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Returns a map of evidence id -> key_point. Distils in small chunks (run concurrently) so every
+ * row is covered, not just the first handful. Empty map on total failure; the caller should fall
+ * back to a deterministic first-clause of the excerpt for any missing ids.
+ */
+export async function distillKeyPoints(
+  apiKey: string | undefined,
+  items: KeyPointInput[],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (!apiKey || items.length === 0) return out;
+
+  const chunks: KeyPointInput[][] = [];
+  for (let i = 0; i < items.length; i += CHUNK_SIZE) chunks.push(items.slice(i, i + CHUNK_SIZE));
+
+  const results = await Promise.all(chunks.map((c) => distillChunk(apiKey, c)));
+  for (const pairs of results) {
+    for (const [id, kp] of pairs) out.set(id, kp);
+  }
+  return out;
 }
