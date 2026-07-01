@@ -27,7 +27,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ChevronDown, ChevronRight, Check, ShieldCheck, Search, Swords, Loader2,
-  Sparkles, Plus, ArrowRightLeft,
+  Microscope, Plus, ArrowRightLeft,
 } from 'lucide-react';
 import type { ResearchMode, Dimension } from '@/hooks/useDecisionEngine';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
@@ -221,9 +221,10 @@ function Spine({
 }
 
 /* ------------------------------------------------------------------ */
-/* "Take it further": the secondary moves, off the page in a sheet so   */
-/* the decision content owns the screen and one closing action stays    */
-/* pinned. Mirrors the SwitcherSheet's bottom-sheet styling.            */
+/* "Dig deeper": the secondary research moves (strengthen / research    */
+/* more / counter-points), off the page in a sheet so the decision      */
+/* content owns the screen and one closing action stays pinned.         */
+/* Mirrors the SwitcherSheet's bottom-sheet styling.                    */
 /* ------------------------------------------------------------------ */
 function DecisionActionsSheet({
   open, onOpenChange, researching, onResearch, onCompose, onSwitchDecisions, casesCount,
@@ -239,7 +240,10 @@ function DecisionActionsSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[72vh] overflow-y-auto rounded-t-2xl scrollbar-hide sm:mx-auto sm:max-w-lg">
-        <SheetTitle className="mb-3 text-[15px] font-bold text-foreground">Take it further</SheetTitle>
+        <SheetTitle className="text-[15px] font-bold text-foreground">Dig deeper</SheetTitle>
+        <p className="mb-3 mt-1 text-[12px] leading-snug text-muted-foreground">
+          I will go back out for fresh evidence: firm up the case, widen the net, or hunt for the case against.
+        </p>
         <div className="flex flex-col gap-2 pb-2">
           {RESEARCH_ACTIONS.map((a) => (
             <button
@@ -460,9 +464,9 @@ export function DecisionAnatomy({
   );
 
   // Mobile keeps just ONE closing move pinned ("Resolve and move on"), with the
-  // ways to take it further folded into a sheet behind "Take it further". This
-  // hands the ~130px the old three-row shelf ate back to the ladder, so the
-  // decision content owns the screen; every removed action is one tap away.
+  // deeper research moves folded into a sheet behind "Dig deeper". This hands the
+  // ~130px the old three-row shelf ate back to the ladder, so the decision
+  // content owns the screen; every removed action is one tap away.
   const mobileShelf = (
     <div className="flex shrink-0 items-stretch gap-2 pt-3">
       <button
@@ -470,8 +474,8 @@ export function DecisionAnatomy({
         onClick={() => { setActionsOpen(true); haptics.light(); }}
         className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/60 px-3.5 py-3 text-[13px] font-bold text-foreground/85 transition-colors hover:border-accent/40 hover:text-foreground"
       >
-        {engine.researching ? <Loader2 className="h-4 w-4 animate-spin text-accent" /> : <Sparkles className="h-4 w-4 text-accent" />}
-        Take it further
+        {engine.researching ? <Loader2 className="h-4 w-4 animate-spin text-accent" /> : <Microscope className="h-4 w-4 text-accent" />}
+        Dig deeper
       </button>
       <button
         type="button"
