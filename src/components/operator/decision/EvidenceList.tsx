@@ -22,7 +22,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import type { DecisionEvidence } from '@/hooks/useDecisionEngine';
-import { firstClause } from './decisionParts';
+import { cleanEvidenceText, firstClause, shortAge, sourceDomain } from './decisionParts';
 
 const TIER_LABEL: Record<string, string> = {
   primary: 'Primary source',
@@ -72,10 +72,19 @@ export function ScoreRing({ score, size = 30 }: { score: number; size?: number }
 }
 
 function evidenceLine(e: DecisionEvidence): string {
-  const kp = (e.key_point ?? '').trim();
+  // Prefer the distilled key_point (already a clean one-liner); still run it through the cleaner
+  // so a stray marker never leaks. Fall back to a sanitised first-clause of the raw excerpt, then
+  // the title - never the raw scraped text.
+  const kp = cleanEvidenceText(e.key_point);
   if (kp) return kp;
-  const clause = firstClause(e.excerpt ?? '', 120);
-  return clause || e.source_title || e.source_url || 'Source';
+  const ex = cleanEvidenceText(e.excerpt);
+  if (ex) return firstClause(ex, 140);
+  return cleanEvidenceText(e.source_title) || e.source_url || 'Source';
+}
+
+// The tiny provenance line under the badge: "domain · age". Either part may be empty.
+function provenance(e: DecisionEvidence): string {
+  return [sourceDomain(e.source_url), shortAge(e.published_at)].filter(Boolean).join(' · ');
 }
 
 function freshnessLabel(publishedAt?: string | null): string {
@@ -88,6 +97,8 @@ function freshnessLabel(publishedAt?: string | null): string {
 function EvidenceRow({ e }: { e: DecisionEvidence }) {
   const [open, setOpen] = useState(false);
   const line = evidenceLine(e);
+  const meta = provenance(e);
+  const fullExcerpt = cleanEvidenceText(e.excerpt);
   const score = typeof e.evidence_score === 'number' ? e.evidence_score : null;
   const tierLabel = e.reliability_tier ? TIER_LABEL[e.reliability_tier] ?? null : null;
 
@@ -99,8 +110,11 @@ function EvidenceRow({ e }: { e: DecisionEvidence }) {
         aria-expanded={open}
         className="flex w-full items-center gap-2.5 px-2.5 py-2 text-left"
       >
-        <span className="min-w-0 flex-1 text-[12px] font-medium leading-snug text-foreground/90 [overflow-wrap:anywhere]">
-          {line}
+        {/* One clean line (truncated) + a tiny provenance subline: an at-a-glance badge, not a
+            wall of scraped text. The full excerpt is one tap away below. */}
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[12px] font-medium leading-snug text-foreground/90">{line}</span>
+          {meta && <span className="mt-0.5 block truncate text-[10px] leading-tight text-muted-foreground/80">{meta}</span>}
         </span>
         {score != null && <ScoreRing score={score} />}
         <ChevronRight className={cn('h-3.5 w-3.5 flex-none text-muted-foreground transition-transform', open && 'rotate-90 text-accent')} />
@@ -110,8 +124,8 @@ function EvidenceRow({ e }: { e: DecisionEvidence }) {
       <div className={cn('grid transition-all duration-300 ease-out', open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
         <div className="min-h-0 overflow-hidden">
           <div className="space-y-2 border-t border-border px-2.5 py-2.5">
-            {e.excerpt && (
-              <p className="text-[11.5px] leading-relaxed text-muted-foreground text-pretty">{e.excerpt}</p>
+            {fullExcerpt && (
+              <p className="text-[11.5px] leading-relaxed text-muted-foreground text-pretty">{fullExcerpt}</p>
             )}
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] text-muted-foreground">
               {tierLabel && <span className="font-semibold text-foreground/80">{tierLabel}</span>}
