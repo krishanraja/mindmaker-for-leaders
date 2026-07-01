@@ -158,6 +158,42 @@ function preloadInitialRouteChunk() {
 }
 preloadInitialRouteChunk()
 
+/**
+ * Warm ALL authed-area route chunks once the app is up, so switching tabs never
+ * hits the full-screen Suspense fallback (`LoadingPage`) - that flash, stacked
+ * in front of each page's own data skeleton, was the "two loaders per tab" the
+ * user reported. With the chunk already in cache, `<Suspense>` resolves
+ * synchronously and the ONLY loader per tab is the page's own branded one.
+ *
+ * Fire-and-forget on idle so it never competes with the first paint; Vite
+ * dedupes each import against the route's lazy import, so no double download.
+ */
+let authedRoutesPrefetched = false
+export function prefetchAuthedRoutes() {
+  if (typeof window === 'undefined' || authedRoutesPrefetched) return
+  authedRoutesPrefetched = true
+  const warm = () => {
+    const imports: Array<() => Promise<unknown>> = [
+      () => import('@/pages/Dashboard'),
+      () => import('@/pages/MemoryCenter'),
+      () => import('@/pages/DecisionPage'),
+      () => import('@/pages/BriefingPage'),
+      () => import('@/pages/Goals'),
+      () => import('@/pages/TrackRecord'),
+      () => import('@/pages/DecisionMap'),
+      () => import('@/pages/ContextExport'),
+      () => import('@/pages/EnrichPage'),
+      () => import('@/pages/Settings'),
+      () => import('@/pages/Compliance'),
+      () => import('@/pages/Profile'),
+    ]
+    for (const fn of imports) { try { void fn() } catch { /* best-effort */ } }
+  }
+  const ric = (window as unknown as { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback
+  if (typeof ric === 'function') ric(warm)
+  else setTimeout(warm, 1200)
+}
+
 // The lazy-route Suspense fallback. A route chunk loads before any in-app shell
 // has mounted, so this is the branded, anticipatory full-viewport loader (brand
 // lockup + settling chrome skeleton), never a raw spinner on black.

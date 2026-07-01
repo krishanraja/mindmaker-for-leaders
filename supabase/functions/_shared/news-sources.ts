@@ -41,6 +41,27 @@ export function reputationTier(host: string): number {
   return 1;
 }
 
+// --- content-farm denylist. A small set of low-quality AI-news mills that
+// re-hash, mis-date, or fabricate stories (they were the source of misleading
+// cards like the "Fable 5 / Mythos 5" launch). Explicit hosts plus a narrow
+// heuristic for the "latestwithai / futuretech" style SEO farm. Matching
+// articles are dropped at gather time so they never reach clustering.
+const LOW_QUALITY_HOSTS = new Set([
+  "latestwithai.com",
+  "thefuturetech.co.uk",
+]);
+
+export function isLowQualityHost(host: string | null | undefined): boolean {
+  const h = (host || "").replace(/^www\./, "").toLowerCase();
+  if (!h) return false;
+  if (LOW_QUALITY_HOSTS.has(h)) return true;
+  // Heuristic: SEO content mills built around "ai"/"tech" + "news/daily/today"
+  // tokens in the bare domain (e.g. "latestwithai", "dailyainews").
+  const bare = h.split(".")[0];
+  return /^(latest|daily|today|the)?(with)?ai(news|daily|today|hub|wire|buzz)?$/.test(bare)
+    || /(ainews|ai-news|technews|tech-news|futuretech)/.test(bare);
+}
+
 export function hostOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
@@ -597,5 +618,8 @@ export async function gatherAll(keys: GatherKeys | string | undefined): Promise<
   if (k.newsApiKey) tasks.push(fetchNewsApi(k.newsApiKey).catch(() => []));
   if (k.exaKey) tasks.push(fetchExa(k.exaKey).catch(() => []));
   const results = await Promise.all(tasks);
-  return results.flat();
+  // Drop known content-farm hosts before anything downstream sees them, so a
+  // low-quality mill can never be the corroborating (or worse, the sole) source
+  // behind a card.
+  return results.flat().filter((a) => !isLowQualityHost(a.source));
 }

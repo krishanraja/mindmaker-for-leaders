@@ -106,6 +106,79 @@ export function isAiNative(text: string | null | undefined): boolean {
 }
 
 /**
+ * Off-lens topical exclusion.
+ *
+ * The North Star (docs/MAIN-APP-POLISH-SPEC.md section 0) is the AI-native
+ * version of a BUSINESS - building, orchestrating, productizing, and getting to
+ * market. A story can pass {@link isAiNative} on a keyword ("NVIDIA", "AI") yet
+ * be squarely about a domain a leader building an AI-native business has no use
+ * for: AI applied to drug discovery / genomics / medicine, pure scientific
+ * research, robotics/self-driving hardware, gaming, or crypto. Those are the
+ * off-lens buckets we hard-remove.
+ *
+ * The escape hatch: if the SAME text also carries a strong business / product /
+ * deployment / tooling signal (a real GTM, funding, enterprise-adoption, pricing
+ * or platform angle), we keep it - a genuinely AI-native business move that
+ * merely mentions an off-lens sector should not be dropped. So this is
+ * "off-lens subject AND no business signal".
+ */
+const OFF_LENS_SUBJECT = new RegExp(
+  [
+    // life sciences / medicine / bio
+    "drug discovery", "drug design", "protein", "genomic", "genom(e|ic)s?",
+    "molecul", "biolog", "biotech", "\\bpharma", "clinical", "\\bmedic(al|ine)\\b",
+    "\\bdisease", "\\bcancer\\b", "oncolog", "\\bgenes?\\b", "\\bdna\\b",
+    "\\brna\\b", "vaccine", "diagnos(is|tic|e)", "healthcare diagnos",
+    "patient", "\\bfda\\b", "life sciences", "bioinformatic", "neuroscience",
+    // pure scientific research (not the AI industry)
+    "astronom", "astrophys", "particle physics", "\\bquantum (chemistry|physics|computing)\\b",
+    "materials science", "climate model", "weather forecast", "fusion reactor",
+    "nuclear fusion", "telescope", "\\bgalax", "\\bcosmo",
+    // robotics / autonomous hardware
+    "\\brobot", "humanoid", "self-?driving", "autonomous vehicle", "\\bdrone",
+    "warehouse robot",
+    // consumer entertainment / gaming
+    "video game", "\\bgaming\\b", "game studio", "\\besports?\\b",
+    // crypto / web3 (NB: not "token price" - that is core LLM economics, not crypto)
+    "crypto", "blockchain", "bitcoin", "ethereum", "\\bnft\\b", "\\bweb3\\b",
+    "\\bdefi\\b",
+  ].join("|"),
+  "i",
+);
+
+// A story that ALSO reads as a business/product/GTM move is kept even if it
+// brushes an off-lens sector (e.g. "AI drug-discovery startup raises $200M and
+// ships an enterprise platform"). Keep this narrow: real commercial signal, not
+// any stray word.
+const BUSINESS_SIGNAL = new RegExp(
+  [
+    "raise[sd]?", "funding", "series [a-e]\\b", "valuation", "\\bipo\\b",
+    "acqui(re|red|sition)", "go-to-market", "\\bgtm\\b", "enterprise adoption",
+    "revenue", "pricing", "per-seat", "subscription", "productiz", "monetiz",
+    "launches an? (platform|product|api|tool)", "ships an? (platform|product)",
+    "developer platform", "\\bsaas\\b", "customers deploy", "in production at",
+  ].join("|"),
+  "i",
+);
+
+export function isOffLensTopic(text: string | null | undefined): boolean {
+  const hay = (text ?? "").trim();
+  if (hay.length === 0) return false;
+  if (!OFF_LENS_SUBJECT.test(hay)) return false;
+  // Off-lens subject present: keep ONLY if it also carries real business signal.
+  return !BUSINESS_SIGNAL.test(hay);
+}
+
+/**
+ * The composite gate the pipeline uses: a story earns a place in the AI-native
+ * business feed only if it is AI-native AND not an off-lens (science/bio/
+ * robotics/gaming/crypto) story without a business angle.
+ */
+export function isAiNativeBusiness(text: string | null | undefined): boolean {
+  return isAiNative(text) && !isOffLensTopic(text);
+}
+
+/**
  * The category classifier (deterministic backstop).
  *
  * Order matters: more specific risk/compliance/economics rules come before the

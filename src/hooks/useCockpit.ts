@@ -5,6 +5,8 @@ import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { useNewsPreferences } from '@/hooks/useNewsPreferences';
 import { usePortfolioPulse } from '@/hooks/usePortfolioPulse';
 import { rankByPreferences, rankPersonalized } from '@/lib/newsPriority';
+import { isOffLensHeadline } from '@/lib/newsLens';
+import { markHomeReady } from '@/lib/bootGate';
 import { roleFitByCategory } from '@/lib/roleArchetype';
 import { COLD_DECK } from '@/components/cockpit/coldDeck';
 import { reserveForCategories } from '@/components/cockpit/laneReserve';
@@ -380,7 +382,14 @@ export function useCockpit(): {
     // When the server already scored the feed against the brain, its order is
     // authoritative - the client must not re-rank (that would fight the engine).
     // Only the generic shared pool gets the local preference re-rank.
-    const filtered = liveHeadlines.filter((h) => h.headline && !(h.category && dislikedCats.has(h.category)));
+    const filtered = liveHeadlines.filter(
+      (h) =>
+        h.headline &&
+        !(h.category && dislikedCats.has(h.category)) &&
+        // Defensive off-lens drop (mirrors the server gate) so a pre-change
+        // cached row can't surface bio/science/crypto news for the rest of today.
+        !isOffLensHeadline(`${h.headline} ${h.say ?? ''}`),
+    );
     // Suitability of each lane to THIS leader's job + business (role archetype +
     // industry), inferred from facts we already hold. Sharpens the order within
     // a chosen lane (a CFO's economics over product; a CTO's tools over model).
@@ -538,6 +547,13 @@ export function useCockpit(): {
   // fetch have settled, so Home renders its real deck once instead of flashing
   // the cold deck and then swapping (the glitchy reload feel).
   const loading = inboxLoading || !headlinesSettled;
+
+  // On a cold Home landing, release the boot splash overlay only once this first
+  // load has settled, so the full app load is icon+wheel -> content with no
+  // globe loader in between (src/lib/bootGate.ts). No-op after the first load.
+  useEffect(() => {
+    if (!loading) markHomeReady();
+  }, [loading]);
 
   const reload = useCallback(() => {
     setHeadlinesSettled(false);
