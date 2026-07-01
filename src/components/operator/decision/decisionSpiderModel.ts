@@ -168,5 +168,7 @@ export function forceVerdict(force: Force): string {
   if (force.health === 'green') return 'This holds up.';
   if (force.health === 'grey') return 'Only you can call this one.';
   const shaky = force.claims.filter((c) => verdictBucket(c.verdict) === 'unsure').length;
-  return `Shaky - ${shaky} point${shaky === 1 ? '' : 's'} here don't add up yet.`;
+  return shaky === 1
+    ? 'Shaky - 1 point here does not add up yet.'
+    : `Shaky - ${shaky} points here do not add up yet.`;
 }

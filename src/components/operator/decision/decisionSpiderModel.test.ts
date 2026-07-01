@@ -99,4 +99,14 @@ describe('forceVerdict', () => {
     expect(forceVerdict(amber)).toMatch(/shaky/i);
     expect(forceVerdict(empty)).toMatch(/nothing here/i);
   });
+
+  it('agrees the verb with the shaky count (1 point does not / N points do not)', () => {
+    const one = buildSpider([mk({ verdict: 'contested', dimension: 'economics' })]).forces.find((f) => f.key === 'economics')!;
+    const two = buildSpider([
+      mk({ verdict: 'contested', dimension: 'risk' }),
+      mk({ verdict: 'unverified', dimension: 'risk' }),
+    ]).forces.find((f) => f.key === 'risk')!;
+    expect(forceVerdict(one)).toBe('Shaky - 1 point here does not add up yet.');
+    expect(forceVerdict(two)).toBe('Shaky - 2 points here do not add up yet.');
+  });
 });
