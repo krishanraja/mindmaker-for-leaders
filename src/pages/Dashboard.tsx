@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/memory-web/BottomNav"
 import { DesktopShell } from "@/components/layout/DesktopShell"
 import { AppHeader } from "@/components/memory-web/AppHeader"
 import { useDevice } from "@/hooks/useDevice"
+import { BrandedAppLoader } from "@/components/system/BrandedAppLoader"
 import type { EdgeView } from "@/types/edge"
 
 const EdgeViewLazy = React.lazy(() => import("@/components/edge/EdgeView"))
@@ -34,7 +35,7 @@ export default function Dashboard() {
         <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
           <AppHeader />
           <div data-edge-scroll className="flex-1 overflow-y-auto px-4 py-4 pb-44">
-            <React.Suspense fallback={<div className="flex items-center justify-center py-20">Loading...</div>}>
+            <React.Suspense fallback={<BrandedAppLoader caption="Opening your Edge" />}>
               <EdgeViewLazy />
             </React.Suspense>
           </div>
@@ -45,7 +46,7 @@ export default function Dashboard() {
     return (
       <DesktopShell eyebrow="Edge" title="Strategic thinking">
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
-          <React.Suspense fallback={<div className="flex items-center justify-center py-20">Loading...</div>}>
+          <React.Suspense fallback={<BrandedAppLoader caption="Opening your Edge" />}>
             <EdgeViewLazy />
           </React.Suspense>
         </div>

@@ -16,7 +16,8 @@ import { AppStateProvider, useAppState } from '@/contexts/AppStateContext'
 import { BriefingProvider } from '@/contexts/BriefingContext'
 import { DiagnosticsPanel } from '@/components/dev/DiagnosticsPanel'
 import { initMobileViewport } from '@/utils/mobileViewport'
-import { router } from '@/router'
+import { onHomeReady } from '@/lib/bootGate'
+import { router, prefetchAuthedRoutes } from '@/router'
 import '@/index.css'
 
 const queryClient = new QueryClient({
@@ -36,6 +37,16 @@ function AppContent() {
   // swap. Holding one static splash - instead of fading it out on a fixed timer into a second
   // "Bringing your workspace up" loader - is what removes the old duplicate-loader flip.
   const [minElapsed, setMinElapsed] = useState(false)
+
+  // Cold HOME landing: keep the ONE branded splash overlaid on top of the app
+  // until Home's first data settles, so a full load shows only the icon+wheel
+  // then content (never splash -> Home globe as a second full screen). Any other
+  // entry reveals immediately; a hard cap stops a slow gather from trapping boot.
+  const [bootRevealed, setBootRevealed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    const p = window.location.pathname
+    return !(p === '/' || p === '/dashboard')
+  })
 
   useEffect(() => {
     initMobileViewport()
@@ -59,15 +70,33 @@ function AppContent() {
     }
   }, [minElapsed, authLoading, appState, advanceToReady])
 
+  // Once READY (router mounting): warm the authed route chunks so tab switches
+  // never flash the full-screen Suspense loader, and - on a cold Home landing -
+  // hold the boot splash overlay until Home's first data settles (capped 2.5s).
+  useEffect(() => {
+    if (appState !== 'READY') return
+    prefetchAuthedRoutes()
+    if (bootRevealed) return
+    const off = onHomeReady(() => setBootRevealed(true))
+    const cap = setTimeout(() => setBootRevealed(true), 2500)
+    return () => {
+      off()
+      clearTimeout(cap)
+    }
+  }, [appState, bootRevealed])
+
   // Hold the single branded splash for the whole boot, then swap straight to content.
   if (appState !== 'READY') {
     return <InitializationLoader />
   }
 
-  // Only render router when READY (auth already settled)
+  // Only render router when READY (auth already settled). On a cold Home landing
+  // the same branded splash stays overlaid (fixed inset-0) until Home is ready,
+  // so the boot is one continuous icon+wheel and never flips to the globe loader.
   return (
     <>
       <RouterProvider router={router} />
+      {!bootRevealed && <InitializationLoader />}
       <Toaster />
       <SonnerToaster position="top-center" />
       <OfflineIndicator />

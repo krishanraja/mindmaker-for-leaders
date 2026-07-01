@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   isAiNative,
+  isOffLensTopic,
+  isAiNativeBusiness,
   classifyCategory,
   resolveCategory,
   relativeTimeAgo,
@@ -29,6 +31,46 @@ describe('news AI-native lock', () => {
 
   it('drops a generic exec-hire story with no AI angle', () => {
     expect(isAiNative('Acme Corp appoints new chief financial officer')).toBe(false);
+  });
+});
+
+describe('off-lens topical exclusion', () => {
+  it('drops an AI-in-drug-discovery science story (the BioNeMo case)', () => {
+    const headline = 'NVIDIA BioNeMo toolkit enables AI skills for drug discovery';
+    // keyword-AI-native, but off the AI-native BUSINESS lens
+    expect(isAiNative(headline)).toBe(true);
+    expect(isOffLensTopic(headline)).toBe(true);
+    expect(isAiNativeBusiness(headline)).toBe(false);
+  });
+
+  it.each([
+    'DeepMind AI predicts protein folding for a new class of medicine',
+    'AI model designs a cancer vaccine in clinical trials',
+    'AI telescope pipeline finds a new galaxy in astronomy survey',
+    'Humanoid robot uses AI to navigate a warehouse',
+    'AI crypto trading bot predicts bitcoin price swings',
+  ])('drops off-lens: %s', (headline) => {
+    expect(isOffLensTopic(headline)).toBe(true);
+    expect(isAiNativeBusiness(headline)).toBe(false);
+  });
+
+  it('keeps an off-lens sector story that is really a business/GTM move', () => {
+    const headline =
+      'AI drug-discovery startup raises $200M Series C and ships an enterprise platform';
+    expect(isOffLensTopic(headline)).toBe(false);
+    expect(isAiNativeBusiness(headline)).toBe(true);
+  });
+
+  it('keeps the core AI-native business stories untouched', () => {
+    for (const h of [
+      'OpenAI cuts GPT-4o API token price 40%',
+      'New agent orchestration framework ships an enterprise SDK',
+      'EU AI Act compliance forces model governance audits',
+      'Bank reports measurable ROI from AI deployed in production',
+    ]) {
+      expect(isOffLensTopic(h)).toBe(false);
+      expect(isAiNativeBusiness(h)).toBe(true);
+    }
   });
 });
 

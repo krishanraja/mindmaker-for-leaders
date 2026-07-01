@@ -22,7 +22,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   classifyCategory,
-  isAiNative,
+  isAiNativeBusiness,
   relativeTimeAgo,
   type NewsCategoryId,
 } from "../_shared/news-ai-native.ts";
@@ -89,8 +89,9 @@ interface SharedCard extends HeadlineCard {
 
 const POOL_SIZE = 20;
 const POOL_PER_CATEGORY = 4;
-const MAX_AGE_DAYS = 14;
-const FRESH_SINGLE_MS = 2 * 24 * 3_600_000;
+// Home is a recent-only feed. 7 days keeps genuinely current stories while
+// letting a well-corroborated item from earlier in the week still qualify.
+const MAX_AGE_DAYS = 7;
 // The lens "type" Home asks for: a broad "what matters across your world" lens.
 const HOME_LENS_TYPE = "macro_trends";
 // Per-user personalization is on by default but fully fallback-safe; set
@@ -102,10 +103,14 @@ const PERSONALIZE = (Deno.env.get("HOME_PERSONALIZATION_ENABLED") ?? "true") !==
 // the gate with the gate OFF, we serve the generic pool (today's behaviour).
 const GATE_ENABLED = (Deno.env.get("HOME_PROFILE_GATE_ENABLED") ?? "false") === "true";
 
+// A story earns a place only when it clears a TRUST floor: either corroborated
+// across 2+ distinct sources, OR carried by a reputable outlet (tier >= 2). A
+// lone story from an unvetted tier-1 host (a content farm) is never surfaced,
+// however fresh - that admission was how misleading/mis-dated single-source
+// items ("Fable 5 / Mythos 5") reached the feed. Thin lanes are backfilled
+// on-topic downstream (laneReserve + the cold deck), so the feed stays full.
 function worthSurfacing(c: Cluster): boolean {
-  if (c.sourceCount >= 2 || c.rep.sourceTier >= 2) return true;
-  const t = c.bestPublishedIso ? Date.parse(c.bestPublishedIso) : NaN;
-  return Number.isFinite(t) && t >= Date.now() - FRESH_SINGLE_MS;
+  return c.sourceCount >= 2 || c.rep.sourceTier >= 2;
 }
 
 function cleanHeadline(title: string, sourceHost: string | null): string {
@@ -142,7 +147,8 @@ async function gatherAiNative(env: GatherEnv): Promise<{ raw: RawArticle[]; aiNa
     env.aaKey ? fetchAaModelIndex(env.aaKey).catch(() => [] as AaModel[]) : Promise.resolve([] as AaModel[]),
   ]);
   const aiNative = raw.filter((a) => {
-    if (!isAiNative(`${a.title} ${a.description}`)) return false;
+    // AI-native AND on-lens (drops off-lens science/bio/robotics/gaming/crypto).
+    if (!isAiNativeBusiness(`${a.title} ${a.description}`)) return false;
     if (!a.publishedIso) return true;
     const t = Date.parse(a.publishedIso);
     return !Number.isFinite(t) || t >= cutoffMs;
@@ -175,7 +181,11 @@ async function buildSharedPool(
     const desc = c.rep.description ?? "";
     const fallbackSay = desc ? (desc.length > 170 ? `${desc.slice(0, 167)}...` : desc) : null;
     const read = reads.get(id);
-    const aa = matchAaModel(`${c.rep.title} ${desc}`, aaModels);
+    // Only lend an Artificial Analysis "trust chip" to a story we already trust
+    // (reputable outlet OR corroborated across sources). A lone, unverified
+    // headline that merely names a model must not borrow AA's authority.
+    const trusted = c.sourceCount >= 2 || c.rep.sourceTier >= 2;
+    const aa = trusted ? matchAaModel(`${c.rep.title} ${desc}`, aaModels) : null;
     const benchmark = aa
       ? { model: aa.name, intelligenceIndex: aa.intelligence, pricePer1m: aa.pricePer1m, rank: aa.rank }
       : null;
