@@ -1,75 +1,36 @@
 /**
  * DecisionRunning - the stunning "pressure-testing" thinking state.
  *
- * Faithful to prototypes/decisions-2028.html (.run): the branded orb + a live
- * four-step pipeline (decompose -> read sources -> cross-examine -> weigh) that
- * lights up in sequence. Critically, the pipeline is NEVER faked: it is driven by
- * the REAL useDecisionEngine `stage`, which the engine advances as it actually
- * decomposes, verifies, cross-examines, and advises. The "now doing" label and
- * detail track the same real stage.
+ * The show is NEVER faked: every element is driven by the REAL engine state as
+ * useDecisionEngine polls it (decisionRunningModel maps it 1:1):
+ *   - 'reading' is the genuinely in-flight kickoff (engine.starting);
+ *   - the statement chip morphs into the engine's real sharpened title when the
+ *     reframe/title row lands ("I understood you" made visible);
+ *   - the six forces light up as the engine labels them or lands claims on them;
+ *   - each claim line IS a decision_claims row, its verdict badge flipping live
+ *     from "Checking" to the real verdict as verify writes it;
+ *   - the footer strip + "N of M points checked" is the honest progress.
+ * The only artifice is reveal animation on already-real data (the KitBuildTrace
+ * precedent). Reduced-motion collapses every entrance to a plain fade.
  *
- * Stage mapping (real engine stage -> mock pipeline step index):
- *   decomposing      -> 0  Decompose      (into what it rests on)
- *   verifying        -> 1  Read sources   (real, not guessed)
- *   cross_examining  -> 2  Cross-examine  (argue both sides)
- *   advising         -> 3  Weigh          (the honest call)
- *
- * One focus zone, no page scroll. All from ctrl-ds tokens; reduced-motion safe
- * (the orb owns its own reduced-motion guard; the spinner glyph is the only other
- * motion and it is a small, in-place affordance).
+ * One focus zone, no page scroll: the claim list is capped (5 mobile / 7 desktop)
+ * and the middle zone clips rather than scrolls.
  */
 
-import type { Stage } from '@/hooks/useDecisionEngine';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import type { DecisionCase, DecisionClaim } from '@/hooks/useDecisionEngine';
+import { buildRunningModel, RUNNING_STEP_COUNT, type RunningStage } from './decisionRunningModel';
+import { VERDICT_STYLE } from './decisionParts';
 import { DecisionOrb } from './DecisionOrb';
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
-interface PipelineStep {
-  t: string;
-  sub: string;
-  lab: string;
-  det: string;
-}
-
-const STEPS: PipelineStep[] = [
-  { t: 'Break it down', sub: 'what it rests on', lab: 'Breaking the decision down', det: 'Splitting your decision into the points it actually depends on.' },
-  { t: 'Read sources', sub: 'real, not guessed', lab: 'Reading real sources', det: 'Checking each point against the record, not guessing.' },
-  { t: 'Argue both sides', sub: 'for and against', lab: 'Arguing both sides', det: 'Testing where each point is strong and where it is weak.' },
-  { t: 'Weigh it up', sub: 'the honest answer', lab: 'Weighing it up', det: "Turning the evidence into what's solid and what's shaky." },
-];
-
-// Real engine stage -> active pipeline index. `complete` lands on the last step
-// (all done); anything unexpected holds at decompose so we never show a blank.
-const STAGE_TO_INDEX: Record<Stage, number> = {
-  decomposing: 0,
-  verifying: 1,
-  cross_examining: 2,
-  advising: 3,
-  complete: 4,
-  error: 3,
-};
-
-function StepDot({ state }: { state: 'done' | 'active' | 'todo' }) {
+function VerdictBadge({ verdict }: { verdict: DecisionClaim['verdict'] }) {
+  const v = VERDICT_STYLE[verdict];
   return (
-    <span
-      className={cn(
-        'relative z-10 grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors',
-        state === 'done' && 'border-accent/30 bg-accent/10 text-accent',
-        state === 'active' && 'border-accent text-accent shadow-[0_0_0_4px_hsl(var(--accent)/0.1)]',
-        state === 'todo' && 'border-border text-muted-foreground/60',
-      )}
-    >
-      {state === 'done' ? (
-        <Check className="h-3 w-3" strokeWidth={3} />
-      ) : state === 'active' ? (
-        <svg className="h-3 w-3 motion-safe:animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round">
-          <path d="M12 3a9 9 0 1 0 9 9" />
-        </svg>
-      ) : (
-        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3.4" />
-        </svg>
-      )}
+    <span className={cn('inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9.5px] font-bold', v.cls)}>
+      <v.Icon className={cn('h-2.5 w-2.5', verdict === 'pending' && 'motion-safe:animate-spin')} />
+      {v.label}
     </span>
   );
 }
@@ -77,58 +38,131 @@ function StepDot({ state }: { state: 'done' | 'active' | 'todo' }) {
 export function DecisionRunning({
   stage,
   statement,
+  decisionCase = null,
+  claims = [],
   isDesktop = false,
 }: {
-  stage: Stage;
+  stage: RunningStage;
   statement: string;
+  decisionCase?: DecisionCase | null;
+  claims?: DecisionClaim[];
   isDesktop?: boolean;
 }) {
-  const activeIdx = Math.min(STAGE_TO_INDEX[stage] ?? 0, STEPS.length);
-  const now = STEPS[Math.min(activeIdx, STEPS.length - 1)];
+  const reduced = useReducedMotion();
+  const model = buildRunningModel(stage, decisionCase, claims, isDesktop ? 7 : 5);
+  const hasLines = model.claimLines.length > 0;
+  const litCount = model.forces.filter((f) => f.lit).length;
+
+  const enter = reduced
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 } }
+    : { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 } };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* what we are weighing - quiet, pinned at top */}
-      <div className={cn('flex shrink-0 items-center gap-2 rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5', isDesktop && 'mx-auto w-full max-w-[640px]')}>
-        <p className="text-xs leading-snug text-muted-foreground line-clamp-2">
-          <span className="font-semibold text-foreground">Weighing:</span> {statement}
-        </p>
+      {/* what we are weighing - morphs into the engine's real sharpened framing when it lands */}
+      <div
+        className={cn(
+          'shrink-0 rounded-xl border px-3 py-2.5 transition-colors duration-500',
+          model.sharpened ? 'border-accent/25 bg-accent/[0.05]' : 'border-border bg-foreground/[0.025]',
+          isDesktop && 'mx-auto w-full max-w-[640px]',
+        )}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          {model.sharpened ? (
+            <motion.div key="sharpened" {...enter} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+              <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-accent">
+                <Sparkles className="h-3 w-3" />I sharpened it to
+              </p>
+              <p className="mt-0.5 text-xs font-semibold leading-snug text-foreground line-clamp-2">{model.sharpened.title}</p>
+              {model.sharpened.note && (
+                <p className="mt-0.5 text-[10.5px] leading-snug text-muted-foreground line-clamp-1">{model.sharpened.note}</p>
+              )}
+            </motion.div>
+          ) : (
+            <motion.p key="raw" {...enter} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="text-xs leading-snug text-muted-foreground line-clamp-2">
+              <span className="font-semibold text-foreground">Weighing:</span> {statement}
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* the orb + status + pipeline, balanced in the remaining height */}
-      <div className="flex flex-1 min-h-0 flex-col items-center justify-center">
-        <DecisionOrb size={isDesktop ? 160 : 132} />
+      {/* the orb + live stage caption + the deconstruction, balanced in the remaining height */}
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden">
+        <DecisionOrb size={hasLines ? (isDesktop ? 116 : 92) : isDesktop ? 160 : 132} />
 
-        <div className="mt-3.5 text-center">
-          <p className="text-[17px] font-bold tracking-tight text-foreground sm:text-lg">{now.lab}</p>
-          <p className="mx-auto mt-1.5 max-w-[30ch] text-xs leading-snug text-muted-foreground">{now.det}</p>
+        <div className={cn('shrink-0 text-center', hasLines ? 'mt-2.5' : 'mt-3.5')}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div key={model.headline} {...enter} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+              <p className={cn('font-bold tracking-tight text-foreground', hasLines ? 'text-[15px]' : 'text-[17px] sm:text-lg')}>{model.headline}</p>
+              <p className="mx-auto mt-1 max-w-[34ch] text-xs leading-snug text-muted-foreground">{model.detail}</p>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* the live pipeline - one step per real stage, lit in sequence */}
-        <ol className={cn('mt-4 flex w-full max-w-[360px] flex-col gap-0.5', isDesktop && 'max-w-[520px]')}>
-          {STEPS.map((s, i) => {
-            const state: 'done' | 'active' | 'todo' = i < activeIdx ? 'done' : i === activeIdx ? 'active' : 'todo';
-            return (
-              <li
-                key={s.t}
-                className={cn('relative flex items-center gap-3 rounded-xl px-2.5 py-2 transition-colors', state === 'active' && 'bg-accent/10')}
-              >
-                {/* connector line between dots */}
-                {i < STEPS.length - 1 && (
-                  <span
-                    aria-hidden="true"
-                    className={cn('absolute left-[22px] top-[34px] h-3 w-px', state === 'done' ? 'bg-accent/30' : 'bg-border')}
-                  />
-                )}
-                <StepDot state={state} />
-                <span className={cn('flex-1 text-[13px] font-semibold transition-colors', state === 'todo' ? 'text-muted-foreground/60' : 'text-foreground')}>
-                  {s.t}
-                </span>
-                <span className={cn('text-[11px] font-medium', state === 'active' ? 'text-accent' : 'text-muted-foreground/60')}>{s.sub}</span>
-              </li>
-            );
-          })}
-        </ol>
+        {/* the six forces, lighting up as the engine really touches them */}
+        <div className={cn('mt-3 flex w-full max-w-[360px] shrink-0 flex-wrap items-center justify-center gap-1.5', isDesktop && 'max-w-[560px]')}>
+          {model.forces.map((f, i) => (
+            <motion.span
+              key={f.key}
+              initial={false}
+              animate={f.lit ? { opacity: 1, scale: 1 } : { opacity: 0.45, scale: reduced ? 1 : 0.97 }}
+              transition={{ duration: 0.35, delay: reduced ? 0 : i * 0.05 }}
+              className={cn(
+                'max-w-[46vw] truncate rounded-full border px-2.5 py-1 text-[10.5px] font-bold transition-colors duration-500 sm:max-w-[220px]',
+                f.lit ? 'border-accent/35 bg-accent/[0.08] text-accent' : 'border-border bg-foreground/[0.02] text-muted-foreground/70',
+              )}
+            >
+              {f.label ?? f.name}
+            </motion.span>
+          ))}
+        </div>
+
+        {/* the claim lines: real decision_claims rows landing, verdicts flipping live */}
+        {hasLines && (
+          <ul className={cn('mt-3 flex w-full max-w-[400px] min-h-0 flex-col gap-1 overflow-hidden', isDesktop && 'max-w-[560px]')}>
+            <AnimatePresence initial={false}>
+              {model.claimLines.map((line) => (
+                <motion.li
+                  key={line.id}
+                  layout={!reduced}
+                  {...enter}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-foreground/[0.02] px-2.5 py-1.5"
+                >
+                  <span className={cn('min-w-0 flex-1 truncate text-[11.5px] leading-snug', line.loadBearing ? 'font-semibold text-foreground' : 'text-foreground/80')}>
+                    {line.text}
+                  </span>
+                  <VerdictBadge verdict={line.verdict} />
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </ul>
+        )}
+      </div>
+
+      {/* honest progress footer: the stage strip + how many points are really checked */}
+      <div className="flex shrink-0 items-center justify-center gap-3 pb-1 pt-2">
+        <div className="flex items-center gap-1.5" aria-hidden="true">
+          {Array.from({ length: RUNNING_STEP_COUNT }, (_, i) => (
+            <span
+              key={i}
+              className={cn(
+                'h-1.5 rounded-full transition-all duration-500',
+                i < model.stageIndex ? 'w-1.5 bg-accent/50'
+                  : i === model.stageIndex ? 'w-5 bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.5)]'
+                    : 'w-1.5 bg-border',
+              )}
+            />
+          ))}
+        </div>
+        {model.totalClaims > 0 && (
+          <p className="text-[10.5px] font-semibold text-muted-foreground">
+            {model.checkedCount} of {model.totalClaims} points checked
+          </p>
+        )}
+        {model.totalClaims === 0 && litCount > 0 && (
+          <p className="text-[10.5px] font-semibold text-muted-foreground">{litCount} of 6 forces mapped</p>
+        )}
       </div>
     </div>
   );
