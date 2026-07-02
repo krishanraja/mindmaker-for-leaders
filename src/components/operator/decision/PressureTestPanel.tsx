@@ -16,7 +16,7 @@ import {
 } from '@/components/operator/decision/decision-views';
 import { DecisionRunning } from '@/components/operator/decision/DecisionRunning';
 import { DecisionResultView } from '@/components/operator/decision/DecisionResultView';
-import { DecisionAnatomy } from '@/components/operator/decision/DecisionAnatomy';
+import { DecisionAnatomy, SwitcherSheet } from '@/components/operator/decision/DecisionAnatomy';
 import { DecisionDemo } from '@/components/operator/decision/DecisionDemo';
 import { CriticalCallStep } from '@/components/operator/decision/CriticalCallStep';
 import { ResolveDecisionSheet } from '@/components/operator/decision/ResolveDecisionSheet';
@@ -86,6 +86,9 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
 
   // The resolve sheet (the closing move on the anatomy).
   const [resolveOpen, setResolveOpen] = useState(false);
+  // The "Open decisions (N)" switcher reachable from the capture-first cold state
+  // (the anatomy has its own instance for the in-review case).
+  const [coldSwitcherOpen, setColdSwitcherOpen] = useState(false);
   // The post-resolve moment: closure beat + the ask for the next decision. Set
   // only after the resolve write really committed.
   const [resolvedMoment, setResolvedMoment] = useState<{ caseId: string; statement: string; playedOut: PlayedOut } | null>(null);
@@ -99,17 +102,21 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   const [justRan, setJustRan] = useState(false);
   useEffect(() => { setJustRan(false); }, [engine.decisionCase?.id]);
 
-  // Auto-load the ONE pinned decision so the tab opens into its anatomy (not a
-  // list). Falls back to the most recent active case if a pin isn't set yet.
+  // Auto-load ONLY the pinned decision (the one genuinely in focus). With no pin -
+  // right after a resolve, or none ever set - the tab leads with the capture ask,
+  // never an arbitrary old case (that regression looked like "the decision I just
+  // closed popped back up"). Older actives stay one tap away via "Open decisions".
+  // A leader with no cases at all still gets the worked example (DecisionDemo).
   const autoLoadedRef = useRef(false);
   useEffect(() => {
     if (autoLoadedRef.current) return;
     if (composing || engine.starting || engine.decisionCase) return;
-    if (inbox.loading || activeCases.length === 0) return;
+    if (inbox.loading) return;
     autoLoadedRef.current = true;
-    const pinned = activeCases.find((c) => c.pinned_at) ?? activeCases[0];
-    engine.load(pinned.id);
-  }, [composing, engine, inbox.loading, activeCases]);
+    const pinned = activeCases.find((c) => c.pinned_at);
+    if (pinned) engine.load(pinned.id);
+    else if (inbox.cases.length > 0) setComposing(true);
+  }, [composing, engine, inbox.loading, inbox.cases.length, activeCases]);
 
   const handleUpgrade = async () => { const url = await subscribe(); if (url) window.location.href = url; };
 
@@ -252,7 +259,18 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
       />
     );
   } else if (composing) {
-    surface = <DecisionCold value={statement} onChange={setStatement} onStart={startNew} starting={engine.starting} isDesktop={isDesktop} />;
+    surface = (
+      <DecisionCold
+        value={statement}
+        onChange={setStatement}
+        onStart={startNew}
+        starting={engine.starting}
+        isDesktop={isDesktop}
+        returning={inbox.cases.length > 0}
+        openCount={activeCases.length}
+        onOpenDecisions={() => { setColdSwitcherOpen(true); haptics.light(); }}
+      />
+    );
   } else if (inbox.loading || activeCases.length > 0) {
     // active cases exist: the auto-load / switch is in flight - hold on the loader.
     surface = <DecisionLoading />;
@@ -338,6 +356,13 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
         statement={activeStatement}
         onResolve={doResolve}
         resolving={resolving}
+      />
+      <SwitcherSheet
+        open={coldSwitcherOpen}
+        onOpenChange={setColdSwitcherOpen}
+        cases={activeCases}
+        currentId={null}
+        onSwitch={switchTo}
       />
     </div>
   );
