@@ -76,6 +76,7 @@ export function DecisionCapture({
   const [transcribing, setTranscribing] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
   const recorderRef = useRef<AudioRecorder | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => () => { if (recorderRef.current?.isRecording()) recorderRef.current.stop(); }, []);
 
@@ -95,7 +96,19 @@ export function DecisionCapture({
         setTranscribing(true);
         try {
           const result = await api.transcribeAudio(audioBlob, `decision-${Date.now()}`, 'deep_profile');
-          if (result?.transcript) onChange(value ? `${value} ${result.transcript}` : result.transcript);
+          if (result?.transcript) {
+            const nextText = value ? `${value} ${result.transcript}` : result.transcript;
+            onChange(nextText);
+            // Land the leader in their own words: visible, editable, caret at the
+            // end, one tap from "Weigh it". setTimeout(0) so the controlled value
+            // has committed before we place the caret.
+            setTimeout(() => {
+              const el = textareaRef.current;
+              if (!el) return;
+              el.focus();
+              el.setSelectionRange(nextText.length, nextText.length);
+            }, 0);
+          }
         } catch {
           setMicError('Could not transcribe. Try typing it instead.');
         } finally {
@@ -123,6 +136,7 @@ export function DecisionCapture({
       ) : (
         <div className="relative">
           <textarea
+            ref={textareaRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onFocus={() => setFocused(true)}

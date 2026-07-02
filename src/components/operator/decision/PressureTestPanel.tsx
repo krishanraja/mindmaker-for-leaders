@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileHeaderSlot } from '@/contexts/MobileHeaderSlotContext';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,8 @@ import { DecisionAnatomy } from '@/components/operator/decision/DecisionAnatomy'
 import { DecisionDemo } from '@/components/operator/decision/DecisionDemo';
 import { CriticalCallStep } from '@/components/operator/decision/CriticalCallStep';
 import { ResolveDecisionSheet } from '@/components/operator/decision/ResolveDecisionSheet';
+import { DecisionResolvedMoment } from '@/components/operator/decision/DecisionResolvedMoment';
+import { nextActiveCase } from '@/components/operator/decision/resolveFlow';
 import { buildTrackRecordModel } from '@/components/track-record/trackRecordModel';
 import { TrackRecordView } from '@/components/track-record/TrackRecordView';
 import { TrackRecordSkeleton } from '@/components/track-record/TrackRecordSkeleton';
@@ -83,6 +86,9 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
 
   // The resolve sheet (the closing move on the anatomy).
   const [resolveOpen, setResolveOpen] = useState(false);
+  // The post-resolve moment: closure beat + the ask for the next decision. Set
+  // only after the resolve write really committed.
+  const [resolvedMoment, setResolvedMoment] = useState<{ caseId: string; statement: string; playedOut: PlayedOut } | null>(null);
 
   // "Compose" forces the COLD one-ask even when the account already has decisions.
   const [composing, setComposing] = useState(Boolean(initialStatement));
@@ -117,12 +123,12 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   };
   // From the anatomy/error: clear back to the account's natural state (re-arm
   // auto-load so the latest decision's anatomy returns).
-  const newBlank = () => { engine.reset(); setStatement(''); setComposing(false); setView('now'); autoLoadedRef.current = false; };
+  const newBlank = () => { engine.reset(); setStatement(''); setComposing(false); setResolvedMoment(null); setView('now'); autoLoadedRef.current = false; };
   // From the anatomy's "add a new decision": open the cold one-ask.
-  const compose = () => { engine.reset(); setStatement(''); setComposing(true); setView('now'); };
+  const compose = () => { engine.reset(); setStatement(''); setComposing(true); setResolvedMoment(null); setView('now'); };
   // From the anatomy's switcher / History: open another decision for review AND
   // make it the single pinned one (one decision in focus at a time).
-  const switchTo = (id: string) => { setComposing(false); setJustRan(false); setView('now'); engine.reset(); engine.load(id); void pin(id); inbox.refresh(); void refreshPinned(); };
+  const switchTo = (id: string) => { setComposing(false); setJustRan(false); setResolvedMoment(null); setView('now'); engine.reset(); engine.load(id); void pin(id); inbox.refresh(); void refreshPinned(); };
 
   const bankCall = async () => {
     const c = engine.decisionCase;
@@ -142,32 +148,46 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
     }
   };
 
-  // The closing move: record how it played out (+ optional conclusion), then move
-  // focus to the next active decision (or the cold state) and refresh History.
-  const doResolve = async (playedOut: PlayedOut, conclusion: string) => {
+  // The closing move: record how it played out (+ optional conclusion). Honest on
+  // failure (the sheet stays open and says so - never pretend a decision closed),
+  // and on success the surface becomes the resolved moment: a closure beat, then
+  // ONE ask - voice or type the next big decision.
+  const doResolve = async (playedOut: PlayedOut, conclusion: string): Promise<boolean> => {
     const c = engine.decisionCase;
-    if (!c) return;
+    if (!c) return false;
     try {
       await resolve(c.id, playedOut, conclusion);
     } catch {
-      // fail-open: don't trap the leader if the write hiccups; the refresh below
-      // reconciles against the real state.
+      toast.error('I could not close this one. Nothing was lost. Try again.');
+      return false;
     }
     setResolveOpen(false);
     setView('now');
     setComposing(false);
     setStatement('');
-    autoLoadedRef.current = true; // we drive the next surface explicitly; block the auto-load race
-
-    const remaining = activeCases.filter((x) => x.id !== c.id);
+    setCallDone(false);
+    autoLoadedRef.current = true; // the moment owns the surface; block the auto-load race
     engine.reset();
-    if (remaining.length > 0) {
-      const next = remaining.find((x) => x.pinned_at) ?? remaining[0];
-      engine.load(next.id);
-    }
-    inbox.refresh();
+    setResolvedMoment({ caseId: c.id, statement: c.title || c.statement, playedOut });
+    void inbox.refresh();
     void trackRecord.refetch();
     void refreshPinned();
+    return true;
+  };
+
+  // Exits from the resolved moment.
+  const startNextFromMoment = async () => { setResolvedMoment(null); await startNew(); };
+  const openNextDecision = () => {
+    // Read the LIVE active list at click time (never the pre-refresh snapshot),
+    // and never re-open the case that was just resolved.
+    const next = nextActiveCase(activeCases, resolvedMoment?.caseId ?? null);
+    setResolvedMoment(null);
+    if (next) { engine.load(next.id); void pin(next.id); void refreshPinned(); } else setComposing(true);
+  };
+  const seeHistory = () => {
+    setResolvedMoment(null);
+    autoLoadedRef.current = false; // re-arm so toggling back to Now auto-loads instead of stalling
+    setView('history');
   };
 
   const hasActive = Boolean(engine.decisionCase) && (engine.isRunning || engine.isComplete || engine.decisionCase?.stage === 'error');
@@ -182,11 +202,38 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   if (engine.upgradeRequired) {
     surface = <UpgradeCard message={engine.upgradeMessage} onUpgrade={handleUpgrade} processing={isProcessing} />;
   } else if (engine.starting) {
-    surface = <DecisionLoading />;
+    // The kickoff invoke is genuinely in flight: the honest "pausing on your
+    // words" beat of the same running show (never a raw skeleton here).
+    surface = <DecisionRunning stage="reading" statement={activeStatement} isDesktop={isDesktop} />;
+  } else if (resolvedMoment) {
+    // Just closed one: the closure beat, then THE ask - what's the next big call?
+    surface = (
+      <DecisionResolvedMoment
+        statement={resolvedMoment.statement}
+        playedOut={resolvedMoment.playedOut}
+        openCount={activeCases.filter((x) => x.id !== resolvedMoment.caseId).length}
+        resolvedCount={trackRecord.records.filter((r) => r.played_out != null).length}
+        captureValue={statement}
+        onCaptureChange={setStatement}
+        onWeigh={startNextFromMoment}
+        starting={engine.starting}
+        onOpenNext={openNextDecision}
+        onSeeHistory={seeHistory}
+        isDesktop={isDesktop}
+      />
+    );
   } else if (hasActive && isErrored) {
     surface = <DecisionErrorView message={engine.error || engine.decisionCase?.error_detail || null} onReset={newBlank} />;
   } else if (hasActive && engine.isRunning && engine.decisionCase) {
-    surface = <DecisionRunning stage={engine.decisionCase.stage} statement={activeStatement} isDesktop={isDesktop} />;
+    surface = (
+      <DecisionRunning
+        stage={engine.decisionCase.stage}
+        statement={activeStatement}
+        decisionCase={engine.decisionCase}
+        claims={engine.claims}
+        isDesktop={isDesktop}
+      />
+    );
   } else if (hasActive && needsCall) {
     surface = <CriticalCallStep engine={engine} onDone={handleCallDone} />;
   } else if (hasActive && engine.isComplete && justRan) {
@@ -219,6 +266,7 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   // one ask per screen holds during a run.
   const showToggle = !engine.upgradeRequired
     && !engine.starting
+    && !resolvedMoment
     && !(hasActive && (engine.isRunning || isErrored))
     && !needsCall
     && !(hasActive && engine.isComplete && justRan);
@@ -226,7 +274,7 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
 
   // ---- HISTORY surface: the Track Record, reused as-is -------------------------
   const trModel = useMemo(() => buildTrackRecordModel(trackRecord.records), [trackRecord.records]);
-  const openFromHistory = (prefill?: string) => { setStatement(prefill ?? ''); setComposing(true); setView('now'); haptics.light(); };
+  const openFromHistory = (prefill?: string) => { setStatement(prefill ?? ''); setComposing(true); setResolvedMoment(null); setView('now'); haptics.light(); };
   const historySurface = (
     <div className={cn('h-full min-h-0 overflow-y-auto scrollbar-hide', isDesktop ? '' : 'pb-2')}>
       {trackRecord.loading

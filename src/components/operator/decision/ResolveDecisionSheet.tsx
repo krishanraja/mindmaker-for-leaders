@@ -26,23 +26,27 @@ export function ResolveDecisionSheet({
   open: boolean;
   onOpenChange: (o: boolean) => void;
   statement: string;
-  onResolve: (playedOut: PlayedOut, conclusion: string) => void | Promise<void>;
+  /** Returns whether the resolve really saved; on false the sheet stays open and tells the truth. */
+  onResolve: (playedOut: PlayedOut, conclusion: string) => Promise<boolean>;
   resolving: boolean;
 }) {
   const [playedOut, setPlayedOut] = useState<PlayedOut | null>(null);
   const [conclusion, setConclusion] = useState('');
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Fresh start every time the sheet opens.
   useEffect(() => {
-    if (open) { setPlayedOut(null); setConclusion(''); }
+    if (open) { setPlayedOut(null); setConclusion(''); setSaveError(null); }
   }, [open]);
 
   const pick = (k: PlayedOut) => { setPlayedOut(k); haptics.light(); };
   const back = () => { setPlayedOut(null); haptics.light(); };
   const confirm = async () => {
     if (!playedOut || resolving) return;
-    haptics.success();
-    await onResolve(playedOut, conclusion);
+    setSaveError(null);
+    const ok = await onResolve(playedOut, conclusion);
+    if (ok) haptics.success();
+    else setSaveError('That did not save. Check your connection and try again.');
   };
 
   return (
@@ -92,6 +96,11 @@ export function ResolveDecisionSheet({
               rows={3}
               className="resize-none text-[13px]"
             />
+            {saveError && (
+              <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11.5px] font-medium text-amber-300">
+                {saveError}
+              </p>
+            )}
             <button
               type="button"
               onClick={confirm}
