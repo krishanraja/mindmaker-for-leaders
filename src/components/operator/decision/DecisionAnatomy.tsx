@@ -342,7 +342,7 @@ function DecisionActionsSheet({
 /* ------------------------------------------------------------------ */
 /* The "your other decisions" switcher (a navigation menu, not content) */
 /* ------------------------------------------------------------------ */
-function SwitcherSheet({
+export function SwitcherSheet({
   open, onOpenChange, cases, currentId, onSwitch,
 }: {
   open: boolean;

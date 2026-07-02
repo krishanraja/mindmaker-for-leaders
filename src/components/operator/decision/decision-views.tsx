@@ -530,20 +530,44 @@ export function UpgradeCard({ message, onUpgrade, processing }: { message: strin
  * Mobile centres the invite + input as a calm group; desktop gives it room.
  */
 export function DecisionCold({
-  value, onChange, onStart, starting, isDesktop = false,
-}: { value: string; onChange: (v: string) => void; onStart: () => void; starting: boolean; isDesktop?: boolean }) {
+  value, onChange, onStart, starting, isDesktop = false, returning = false, openCount = 0, onOpenDecisions,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onStart: () => void;
+  starting: boolean;
+  isDesktop?: boolean;
+  /** The leader has weighed before: ask for the NEXT call instead of the first. */
+  returning?: boolean;
+  /** Open (active) decisions reachable behind a quiet link, never auto-loaded. */
+  openCount?: number;
+  onOpenDecisions?: () => void;
+}) {
   return (
     <div className="flex h-full min-h-0 flex-col justify-center">
       <div className={cn(isDesktop && 'mx-auto w-full max-w-[620px]')}>
         <h1 className={cn('font-extrabold tracking-tight text-foreground', isDesktop ? 'text-[23px]' : 'text-[22px]')}>
-          Weigh your first decision.
+          {returning ? "What's the next big call on your plate?" : 'Weigh your first decision.'}
         </h1>
         <p className={cn('mt-2 leading-relaxed text-muted-foreground text-pretty', isDesktop ? 'max-w-[48ch] text-sm' : 'text-[13px]')}>
-          Tell me the decision you're weighing. I'll break it into the points it rests on, check each one against real sources, and show you what's solid and what's shaky.
+          {returning
+            ? "Say it or type it. I'll pull it apart before you commit."
+            : "Tell me the decision you're weighing. I'll break it into the points it rests on, check each one against real sources, and show you what's solid and what's shaky."}
         </p>
         <div className="mt-4">
           <DecisionCapture value={value} onChange={onChange} onStart={onStart} starting={starting} autoFocus={isDesktop} isDesktop={isDesktop} />
         </div>
+        {openCount > 0 && onOpenDecisions && (
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={onOpenDecisions}
+              className="text-[11.5px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Open decisions ({openCount})
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
