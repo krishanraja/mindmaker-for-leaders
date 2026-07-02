@@ -262,6 +262,30 @@ export async function runPipeline(admin: SupabaseClient, params: PipelineParams,
     } catch (re) {
       log.warn("reaction dispatch failed, claims remain words-led", { userId, error: re });
     }
+
+    // --- Stage 6: auto counter-evidence (decoupled, silent) -----------------
+    // A finished decision that shows only a wall of SUPPORTING sources reads as one-sided. As
+    // soon as the case completes we dispatch the existing decision-research counter_evidence pass
+    // (adversarial panel + refuting retrieval + re-advise) in SILENT/auto mode, so it appends the
+    // case-against WITHOUT yanking the leader's completed view back into a running state. Fully
+    // fenced: any failure here never touches the verdicts or the recommendation.
+    try {
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      const baseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      if (serviceKey && baseUrl) {
+        await fetch(`${baseUrl}/functions/v1/decision-research`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${serviceKey}`,
+            apikey: serviceKey,
+          },
+          body: JSON.stringify({ case_id: caseId, mode: "counter_evidence", auto: true }),
+        });
+      }
+    } catch (ce) {
+      log.warn("auto counter-evidence dispatch failed", { userId, error: ce });
+    }
   } catch (e) {
     log.error("decision pipeline failed", { userId, error: e });
     await admin

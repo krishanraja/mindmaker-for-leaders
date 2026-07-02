@@ -86,10 +86,10 @@ async function insertEvidence(
 
 async function runResearch(
   admin: SupabaseClient,
-  params: { caseId: string; userId: string; mode: Mode; statement: string; claims: ClaimRow[] },
+  params: { caseId: string; userId: string; mode: Mode; statement: string; claims: ClaimRow[]; silent?: boolean },
   log: ReturnType<typeof createLogger>,
 ): Promise<void> {
-  const { caseId, userId, mode, statement, claims } = params;
+  const { caseId, userId, mode, statement, claims, silent } = params;
   const started = Date.now();
   try {
     const ctx = await getUserContext(admin, userId);
@@ -160,8 +160,11 @@ async function runResearch(
     }
 
     // Re-advise over the (possibly refreshed) claim set so the recommendation,
-    // counter-case, confidence and next checks reflect the new research.
-    await admin.from("decision_cases").update({ stage: "advising", updated_at: new Date().toISOString() }).eq("id", caseId);
+    // counter-case, confidence and next checks reflect the new research. In silent (auto) mode we
+    // never flip the visible stage, so the leader's completed view is not yanked back to "running".
+    if (!silent) {
+      await admin.from("decision_cases").update({ stage: "advising", updated_at: new Date().toISOString() }).eq("id", caseId);
+    }
     const verified = claims.map((c) => ({
       claim: { text: c.text, type: c.type, is_load_bearing: c.is_load_bearing, dimension: c.dimension ?? "capability" } as ExtractedClaim,
       verdict: { verdict: c.verdict, confidence: c.confidence, rationale: c.rationale ?? "" } as ClaimVerdict,
@@ -173,7 +176,9 @@ async function runResearch(
       counter_case: result.counter_case,
       validate_next: result.validate_next,
       confidence: result.confidence,
-      stage: "complete",
+      // Silent (auto) mode leaves the case at its existing "complete" stage; only interactive
+      // research re-asserts the terminal stage after its visible verifying -> advising churn.
+      ...(silent ? {} : { stage: "complete" }),
       last_verified_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }).eq("id", caseId);
@@ -188,8 +193,11 @@ async function runResearch(
     log.info("decision research complete", { mode, duration_ms: Date.now() - started });
   } catch (e) {
     log.error("decision research failed", { error: e });
-    // Never strand the case mid-research - return it to a readable complete state.
-    await admin.from("decision_cases").update({ stage: "complete", updated_at: new Date().toISOString() }).eq("id", caseId);
+    // Never strand the case mid-research - return it to a readable complete state. In silent mode
+    // the stage was never moved off "complete", so there is nothing to restore.
+    if (!silent) {
+      await admin.from("decision_cases").update({ stage: "complete", updated_at: new Date().toISOString() }).eq("id", caseId);
+    }
   }
 }
 
@@ -205,28 +213,45 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     if (!supabaseUrl.includes(EXPECTED_PROJECT_ID)) throw new Error("Database configuration error (unexpected project).");
 
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
-      auth: { persistSession: false },
-    });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    const userId = userData?.user?.id ?? null;
-    if (userErr || !userId) return json({ error: "Unauthorized" }, 401);
-
     const body = await req.json().catch(() => ({}));
     const caseId: string = (body.case_id ?? "").toString();
     const mode: Mode = MODES.includes(body.mode) ? body.mode : "research_more";
     if (!caseId) return json({ error: "case_id is required" }, 400);
 
+    // `auto` is the silent internal pass fired by the engine at completion (service-role only): it
+    // appends the case-against without flipping the visible stage. It is authorized by the service
+    // key, and its owner is taken from the case row (there is no user JWT on a background call).
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const auto = body.auto === true;
+    const isServiceCall = !!serviceKey && authHeader === `Bearer ${serviceKey}`;
+    if (auto && !isServiceCall) return json({ error: "Unauthorized" }, 401);
+
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    // Load + authorize the case; it must be the leader's own and finished.
+    let userId: string | null = null;
+    if (!auto) {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+        auth: { persistSession: false },
+      });
+      const { data: userData, error: userErr } = await userClient.auth.getUser();
+      userId = userData?.user?.id ?? null;
+      if (userErr || !userId) return json({ error: "Unauthorized" }, 401);
+    }
+
+    // Load + authorize the case; it must be finished (and, for a user call, the leader's own).
     const { data: caseRow } = await admin
       .from("decision_cases")
       .select("id, user_id, statement, reframed_statement, reframed, stage")
       .eq("id", caseId)
       .maybeSingle();
-    if (!caseRow || caseRow.user_id !== userId) return json({ error: "Not found" }, 404);
+    if (!caseRow) return json({ error: "Not found" }, 404);
+    if (auto) {
+      userId = caseRow.user_id;
+    } else if (caseRow.user_id !== userId) {
+      return json({ error: "Not found" }, 404);
+    }
+    if (!userId) return json({ error: "Unauthorized" }, 401);
     if (caseRow.stage !== "complete") return json({ error: "This decision is still being analysed. Try again in a moment." }, 409);
 
     const { data: claimRows } = await admin
@@ -239,14 +264,17 @@ serve(async (req) => {
 
     const statement = (caseRow.reframed ? caseRow.reframed_statement : null) || caseRow.statement;
 
-    // Flip to a running stage so the frontend's poll shows progress immediately.
-    await admin.from("decision_cases").update({ stage: "verifying", updated_at: new Date().toISOString() }).eq("id", caseId);
+    // Interactive research flips to a running stage so the frontend's poll shows progress; the
+    // silent auto pass never does, so the completed view stays put while counters land in the back.
+    if (!auto) {
+      await admin.from("decision_cases").update({ stage: "verifying", updated_at: new Date().toISOString() }).eq("id", caseId);
+    }
 
-    const work = runResearch(admin, { caseId, userId, mode, statement, claims }, log);
+    const work = runResearch(admin, { caseId, userId, mode, statement, claims, silent: auto }, log);
     if (typeof EdgeRuntime !== "undefined" && EdgeRuntime?.waitUntil) EdgeRuntime.waitUntil(work);
     else await work;
 
-    return json({ case_id: caseId, stage: "verifying", mode }, 202);
+    return json({ case_id: caseId, stage: auto ? "complete" : "verifying", mode }, 202);
   } catch (e) {
     log.error("decision-research handler error", { error: e });
     return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);

@@ -70,8 +70,9 @@ Return JSON exactly:
   "verdict": "supported | contested | unverified",
   "confidence": 0.0,
   "rationale": "one or two sentences referencing the evidence",
-  "evidence_stances": [ { "index": 0, "stance": "supports|refutes|neutral" } ]
-}`;
+  "evidence_stances": [ { "index": 0, "stance": "supports|refutes|neutral", "theme": "2-4 word category" } ]
+}
+For "theme": give each snippet a short 2-4 word category so snippets making the SAME kind of point share the exact same label (e.g. "Pricing benchmarks", "Independent cost tests", "Architecture efficiency"). Reuse a label verbatim across snippets that belong together; keep the set of distinct themes small (aim for 2-5).`;
 
   try {
     const raw = await adjudicateCall(ADJUDICATOR_SYSTEM, user);
@@ -79,7 +80,7 @@ Return JSON exactly:
       verdict: string;
       confidence: number;
       rationale: string;
-      evidence_stances?: Array<{ index: number; stance: string }>;
+      evidence_stances?: Array<{ index: number; stance: string; theme?: string }>;
     }>(raw);
 
     const validVerdicts = new Set(["supported", "contested", "unverified"]);
@@ -88,11 +89,16 @@ Return JSON exactly:
     confidence = Math.max(0, Math.min(1, confidence));
     if (verdict === "unverified") confidence = Math.min(confidence, 0.35);
 
-    // Apply per-evidence stances back onto the evidence rows.
+    // Apply per-evidence stances (and the grouping theme) back onto the evidence rows.
     for (const s of parsed.evidence_stances ?? []) {
       const e = evidence[s.index];
-      if (e && ["supports", "refutes", "neutral"].includes(s.stance)) {
+      if (!e) continue;
+      if (["supports", "refutes", "neutral"].includes(s.stance)) {
         e.stance = s.stance as Evidence["stance"];
+      }
+      if (typeof s.theme === "string") {
+        const theme = s.theme.trim().slice(0, 48);
+        if (theme) e.theme = theme;
       }
     }
 

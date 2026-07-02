@@ -180,6 +180,7 @@ export function buildEvidenceRow(
   reliability_tier: ReliabilityTier;
   published_at: string | null;
   evidence_score: number;
+  theme: string | null;
 } {
   return {
     claim_id: opts.claimId,
@@ -194,5 +195,6 @@ export function buildEvidenceRow(
     reliability_tier: tierForEvidence(e),
     published_at: e.published_at ?? null,
     evidence_score: scoreEvidence(e, opts.corroboration),
+    theme: e.theme ?? null,
   };
 }

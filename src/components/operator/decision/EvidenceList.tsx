@@ -16,13 +16,14 @@
  * row with no score simply has no ring (more honest than a half-score).
  */
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ChevronRight, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import type { DecisionEvidence } from '@/hooks/useDecisionEngine';
 import { cleanEvidenceText, firstClause, shortAge, sourceDomain } from './decisionParts';
+import { groupEvidence } from './evidenceGrouping';
 
 const TIER_LABEL: Record<string, string> = {
   primary: 'Primary source',
@@ -151,10 +152,36 @@ function EvidenceRow({ e }: { e: DecisionEvidence }) {
   );
 }
 
+/** One collapsible category inside a stance section: a labelled header + count, body folds open. */
+function CategoryBlock({ label, count, defaultOpen, children }: { label: string; count: number; defaultOpen: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-xl border border-border/70 bg-foreground/[0.015]">
+      <button
+        type="button"
+        onClick={() => { setOpen((o) => !o); haptics.light(); }}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2 px-2.5 py-2 text-left"
+      >
+        <ChevronRight className={cn('h-3.5 w-3.5 flex-none text-muted-foreground transition-transform', open && 'rotate-90 text-accent')} />
+        <span className="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-foreground/85">{label}</span>
+        <span className="flex-none rounded-full bg-foreground/[0.06] px-1.5 py-0.5 text-[9.5px] font-bold tabular-nums text-muted-foreground">{count}</span>
+      </button>
+      <div className={cn('grid transition-all duration-300 ease-out', open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
+        <div className="min-h-0 overflow-hidden">
+          <ul className="space-y-1.5 px-1.5 pb-2">{children}</ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function EvidenceList({ evidence, emptyMessage }: { evidence: DecisionEvidence[]; emptyMessage: string }) {
   if (evidence.length === 0) {
     return <p className="text-[11.5px] leading-relaxed text-muted-foreground">{emptyMessage}</p>;
   }
+  const hasSupports = evidence.some((e) => e.stance === 'supports');
+  const hasRefutes = evidence.some((e) => e.stance === 'refutes');
   return (
     <div className="space-y-3">
       {GROUPS.map((g) => {
@@ -162,18 +189,41 @@ export function EvidenceList({ evidence, emptyMessage }: { evidence: DecisionEvi
           .filter((e) => e.stance === g.key)
           .sort((a, b) => (b.evidence_score ?? 0) - (a.evidence_score ?? 0));
         if (rows.length === 0) return null;
+        // Nest a long section into collapsible categories (adjudicator theme, else client cluster);
+        // a short/non-consolidating section returns one unlabelled group and renders flat as before.
+        const groups = groupEvidence(rows);
+        const nested = groups.length > 1;
         return (
           <div key={g.key}>
             <p className="mb-1.5 flex items-center gap-1.5 text-[8.5px] font-bold uppercase tracking-wide text-muted-foreground">
               <span className={cn('h-[5px] w-[5px] rounded-full', g.dot)} aria-hidden />
               {g.header}
             </p>
-            <ul className="space-y-1.5">
-              {rows.map((e) => <EvidenceRow key={e.id} e={e} />)}
-            </ul>
+            {nested ? (
+              <div className="space-y-1.5">
+                {groups.map((grp, gi) => (
+                  <CategoryBlock key={`${g.key}:${grp.label}`} label={grp.label} count={grp.rows.length} defaultOpen={gi === 0}>
+                    {grp.rows.map((e) => <EvidenceRow key={e.id} e={e} />)}
+                  </CategoryBlock>
+                ))}
+              </div>
+            ) : (
+              <ul className="space-y-1.5">
+                {rows.map((e) => <EvidenceRow key={e.id} e={e} />)}
+              </ul>
+            )}
           </div>
         );
       })}
+
+      {/* Honest counter-balance: when a point has backing but nothing against it yet, say so - the
+          engine fires a counter-evidence pass at completion, so this fills in rather than staying blank. */}
+      {hasSupports && !hasRefutes && (
+        <p className="flex items-center gap-1.5 text-[10.5px] leading-snug text-muted-foreground/80">
+          <span className="h-[5px] w-[5px] flex-none rounded-full bg-rose-400/70" aria-hidden />
+          No counter-evidence has surfaced yet. I keep looking for the case against in the background.
+        </p>
+      )}
     </div>
   );
 }
