@@ -511,24 +511,41 @@ export function DecisionAnatomy({
     </div>
   );
 
-  // Mobile keeps just ONE closing move pinned ("Resolve and move on"), with the
-  // deeper research moves folded into a sheet behind "Dig deeper". This hands the
-  // ~130px the old three-row shelf ate back to the ladder, so the decision
-  // content owns the screen; every removed action is one tap away.
+  // Mobile shelf, three moves in a clear hierarchy without a two-line label anywhere:
+  //   - a row of TWO equal secondary actions (research + email this decision to yourself), each a
+  //     short one-word-plus label with a recognisable icon; and
+  //   - the ONE primary closing move ("Resolve and move on") full-width and emerald underneath.
+  // The email send is promoted out of the answer drawer to here so it is a first-class action;
+  // the deeper research moves stay folded behind "Dig deeper" (one tap to the actions sheet).
   const mobileShelf = (
-    <div className="flex shrink-0 items-stretch gap-2 pt-3">
-      <button
-        type="button"
-        onClick={() => { setActionsOpen(true); haptics.light(); }}
-        className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/60 px-3.5 py-3 text-[13px] font-bold text-foreground/85 transition-colors hover:border-accent/40 hover:text-foreground"
-      >
-        {engine.researching ? <Loader2 className="h-4 w-4 animate-spin text-accent" /> : <Microscope className="h-4 w-4 text-accent" />}
-        Dig deeper
-      </button>
+    <div className="flex shrink-0 flex-col gap-2 pt-3">
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => { setActionsOpen(true); haptics.light(); }}
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/60 px-3 py-3 text-[13px] font-bold text-foreground/85 transition-colors hover:border-accent/40 hover:text-foreground"
+        >
+          {engine.researching ? <Loader2 className="h-4 w-4 animate-spin text-accent" /> : <Microscope className="h-4 w-4 text-accent" />}
+          Dig deeper
+        </button>
+        <button
+          type="button"
+          onClick={() => { checklist.emailSummary(); haptics.light(); }}
+          disabled={checklist.emailing || checklist.emailSent}
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/60 px-3 py-3 text-[13px] font-bold text-foreground/85 transition-colors hover:border-accent/40 hover:text-foreground disabled:opacity-70"
+        >
+          {checklist.emailing
+            ? <Loader2 className="h-4 w-4 animate-spin text-accent" />
+            : checklist.emailSent
+              ? <Check className="h-4 w-4 text-accent" strokeWidth={3} />
+              : <Mail className="h-4 w-4 text-accent" />}
+          {checklist.emailSent ? 'Emailed' : checklist.emailing ? 'Sending' : 'Email me'}
+        </button>
+      </div>
       <button
         type="button"
         onClick={() => { onResolve(); haptics.light(); }}
-        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.08] px-3 py-3 text-[13px] font-bold text-accent transition-colors hover:bg-accent/[0.13]"
+        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.08] px-3 py-3 text-[13px] font-bold text-accent transition-colors hover:bg-accent/[0.13]"
       >
         <Check className="h-4 w-4" strokeWidth={3} />Resolve and move on
       </button>
