@@ -39,6 +39,11 @@ export interface Evidence {
   // NewsAPI `publishedAt`). null when unknown - the freshness score treats that as neutral,
   // never as stale. ISO-8601 string.
   published_at?: string | null;
+  // A short 2-4 word category label the adjudicator assigns so the UI can NEST many sources of
+  // the same kind under one heading (e.g. "Pricing benchmarks", "Independent cost tests") instead
+  // of a flat 30-40 card scroll. null when un-adjudicated (assumptions, research-mode gathers) -
+  // the client-side grouper falls back to token clustering for those rows.
+  theme?: string | null;
 }
 
 export interface ClaimVerdict {

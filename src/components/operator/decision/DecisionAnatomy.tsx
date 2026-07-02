@@ -27,13 +27,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ChevronDown, ChevronRight, Check, ShieldCheck, Search, Swords, Loader2,
-  Microscope, Plus, ArrowRightLeft,
+  Microscope, Plus, ArrowRightLeft, Mail,
 } from 'lucide-react';
 import type { ResearchMode, Dimension } from '@/hooks/useDecisionEngine';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import type { useDecisionEngine } from '@/hooks/useDecisionEngine';
+import { useDecisionChecklist, checkItemKey } from '@/hooks/useDecisionChecklist';
 import type { DecisionCaseSummary } from '@/hooks/useDecisionInbox';
 import { DecisionSpider } from './DecisionSpider';
 import { ForceDrawer } from './ForceDrawer';
@@ -79,13 +81,17 @@ function TrustGauge({ pct, compact }: { pct: number | null; compact: boolean }) 
 /* mind + what to check next. Shared by the desktop inline reveal and   */
 /* the mobile AnswerSheet so the long-form copy lives in one place.     */
 /* ------------------------------------------------------------------ */
+type Checklist = ReturnType<typeof useDecisionChecklist>;
+
 function AnswerBody({
-  answer, counter, validateNext, reframeNote,
+  answer, counter, validateNext, reframeNote, checklist, idPrefix,
 }: {
   answer: string | null;
   counter: string | null;
   validateNext: string[] | null;
   reframeNote: string | null;
+  checklist: Checklist;
+  idPrefix: string;
 }) {
   return (
     <div className="space-y-3 text-pretty">
@@ -108,14 +114,48 @@ function AnswerBody({
       )}
       {validateNext && validateNext.length > 0 && (
         <div>
-          <p className="text-[8.5px] font-bold uppercase tracking-wide text-muted-foreground">What to check next</p>
-          <ul className="mt-1.5 space-y-1.5">
-            {validateNext.map((n, i) => (
-              <li key={i} className="relative pl-4 text-[12px] leading-snug text-foreground/85">
-                <span className="absolute left-0 top-[7px] h-[5px] w-[5px] rounded-full bg-accent shadow-[0_0_6px_hsl(var(--accent))]" />{n}
-              </li>
-            ))}
+          {/* The next steps are an interactive, saved checklist: tick each off in place, or email
+              the whole thing to yourself as a chief-of-staff note. */}
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[8.5px] font-bold uppercase tracking-wide text-muted-foreground">What to check next</p>
+            <span className="text-[9px] font-semibold tabular-nums text-muted-foreground/80">
+              {checklist.doneCount} of {checklist.total} done
+            </span>
+          </div>
+          <ul className="mt-1.5 space-y-0.5">
+            {validateNext.map((n, i) => {
+              const done = checklist.checkState[checkItemKey(n)] ?? false;
+              const id = `${idPrefix}-chk-${i}`;
+              return (
+                <li key={i} className="flex items-start gap-2.5 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-foreground/[0.03]">
+                  <Checkbox
+                    id={id}
+                    checked={done}
+                    onCheckedChange={() => { checklist.toggle(n); haptics.light(); }}
+                    className="mt-[1px] h-4 w-4 flex-none border-accent/50 data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
+                  />
+                  <label
+                    htmlFor={id}
+                    className={cn('cursor-pointer text-[12px] leading-snug', done ? 'text-muted-foreground line-through' : 'text-foreground/85')}
+                  >
+                    {n}
+                  </label>
+                </li>
+              );
+            })}
           </ul>
+          <button
+            type="button"
+            onClick={() => { checklist.emailSummary(); haptics.light(); }}
+            disabled={checklist.emailing || checklist.emailSent}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/[0.06] px-3 py-2 text-[11.5px] font-semibold text-accent transition-colors hover:bg-accent/[0.1] disabled:opacity-60"
+          >
+            {checklist.emailing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+            {checklist.emailSent ? 'Sent - check your inbox' : checklist.emailing ? 'Sending...' : 'Email this to me'}
+          </button>
+          {checklist.emailError && (
+            <p className="mt-1 text-[10.5px] leading-snug text-rose-400/90">{checklist.emailError}</p>
+          )}
         </div>
       )}
     </div>
@@ -129,7 +169,7 @@ function AnswerBody({
 /* reveal did. Same gesture model as tapping a force (ForceDrawer).     */
 /* ------------------------------------------------------------------ */
 function AnswerSheet({
-  open, onOpenChange, statement, answer, counter, validateNext, reframeNote,
+  open, onOpenChange, statement, answer, counter, validateNext, reframeNote, checklist,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -138,6 +178,7 @@ function AnswerSheet({
   counter: string | null;
   validateNext: string[] | null;
   reframeNote: string | null;
+  checklist: Checklist;
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -145,7 +186,7 @@ function AnswerSheet({
         <span className="mx-auto mb-3 block h-1 w-9 rounded-full bg-border" aria-hidden />
         <SheetTitle className="text-[15px] font-bold leading-snug text-foreground text-balance">{statement}</SheetTitle>
         <div className="mt-3 pb-2">
-          <AnswerBody answer={answer} counter={counter} validateNext={validateNext} reframeNote={reframeNote} />
+          <AnswerBody answer={answer} counter={counter} validateNext={validateNext} reframeNote={reframeNote} checklist={checklist} idPrefix="sheet" />
         </div>
       </SheetContent>
     </Sheet>
@@ -158,7 +199,7 @@ function AnswerSheet({
 /* mobile hands the tap up to the parent, which opens the AnswerSheet.  */
 /* ------------------------------------------------------------------ */
 function Spine({
-  statement, answer, counter, validateNext, reframeNote, pct, open, onToggle, isDesktop,
+  statement, answer, counter, validateNext, reframeNote, pct, open, onToggle, isDesktop, checklist,
 }: {
   statement: string;
   answer: string | null;
@@ -169,6 +210,7 @@ function Spine({
   open: boolean;
   onToggle: () => void;
   isDesktop: boolean;
+  checklist: Checklist;
 }) {
   const showInline = open && isDesktop;
   return (
@@ -211,7 +253,7 @@ function Spine({
         <div className={cn('relative grid transition-all duration-300 ease-out', showInline ? 'mt-3 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
           <div className="min-h-0 overflow-hidden">
             <div className="max-h-[42vh] overflow-y-auto scrollbar-hide pr-1">
-              <AnswerBody answer={answer} counter={counter} validateNext={validateNext} reframeNote={reframeNote} />
+              <AnswerBody answer={answer} counter={counter} validateNext={validateNext} reframeNote={reframeNote} checklist={checklist} idPrefix="inline" />
             </div>
           </div>
         </div>
@@ -363,6 +405,10 @@ export function DecisionAnatomy({
   const evByClaim = (id: string) => evidence.filter((e) => e.claim_id === id);
   // The six fixed forces (with their claims + health), built from this decision's claims + labels.
   const spider = useMemo(() => buildSpider(claims, decisionCase?.force_labels), [claims, decisionCase?.force_labels]);
+  // Persisted tick-state + "email this to me" for the "what to check next" bullets. Instantiated
+  // once here (single source of truth) and threaded into both the desktop inline reveal and the
+  // mobile answer sheet so only one instance ever writes.
+  const checklist = useDecisionChecklist(caseId, decisionCase?.validate_next ?? []);
 
   if (!decisionCase) return null;
   const pct = decisionCase.confidence != null ? Math.round(decisionCase.confidence * 100) : null;
@@ -385,6 +431,7 @@ export function DecisionAnatomy({
       open={callOpen}
       onToggle={toggleSpine}
       isDesktop={isDesktop}
+      checklist={checklist}
     />
   );
 
@@ -399,6 +446,7 @@ export function DecisionAnatomy({
       counter={decisionCase.counter_case}
       validateNext={decisionCase.validate_next}
       reframeNote={reframeNote}
+      checklist={checklist}
     />
   );
 

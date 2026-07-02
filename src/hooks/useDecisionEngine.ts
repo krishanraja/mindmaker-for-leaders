@@ -89,9 +89,12 @@ export interface DecisionEvidence {
   //  - key_point: the one-line distillation shown by default (UI falls back to firstClause(excerpt)).
   //  - published_at: source publish date when the retriever surfaced one; feeds the freshness score.
   //  - evidence_score: the single 0-100 trust score (freshness + reliability + corroboration).
+  //  - theme: a short adjudicator-assigned category so the UI can NEST like sources under one
+  //    heading instead of a flat scroll (null on old rows / research gathers -> client grouper).
   key_point?: string | null;
   published_at?: string | null;
   evidence_score?: number | null;
+  theme?: string | null;
 }
 
 export interface DecisionTension {
@@ -123,9 +126,14 @@ export function useDecisionEngine() {
   // to a running stage server-side.
   const [pollNonce, setPollNonce] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Delayed re-reads that catch the silent counter-evidence pass the engine fires at completion
+  // (it lands a few seconds after the stage is already terminal, so the one-shot terminal load misses it).
+  const settleTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const clearSettle = () => { settleTimers.current.forEach(clearTimeout); settleTimers.current = []; };
 
   const reset = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
+    clearSettle();
     setCaseId(null);
     setDecisionCase(null);
     setClaims([]);
@@ -259,6 +267,25 @@ export function useDecisionEngine() {
         if (claimIds.length) {
           const { data: ev } = await db.from('decision_evidence').select('*').in('claim_id', claimIds);
           if (active && ev) setEvidence(ev as DecisionEvidence[]);
+
+          // On a clean finish the engine has fired a SILENT counter-evidence pass that appends the
+          // case-against WITHOUT moving the stage, so it lands after this terminal load. Re-pull the
+          // evidence (+ the possibly re-advised case/tensions) a couple of times so the counters show
+          // live in the same session; reopening the decision refetches anyway.
+          if (stage === 'complete') {
+            clearSettle();
+            settleTimers.current = [8000, 18000].map((ms) => setTimeout(async () => {
+              const [{ data: caseRow2 }, { data: ev2 }, { data: tn2 }] = await Promise.all([
+                db.from('decision_cases').select('*').eq('id', caseId).maybeSingle(),
+                db.from('decision_evidence').select('*').in('claim_id', claimIds),
+                db.from('decision_tensions').select('*').eq('decision_case_id', caseId),
+              ]);
+              if (!active) return;
+              if (caseRow2) setDecisionCase(caseRow2 as DecisionCase);
+              if (ev2) setEvidence(ev2 as DecisionEvidence[]);
+              if (tn2) setTensions(tn2 as DecisionTension[]);
+            }, ms));
+          }
         }
         return; // stop polling
       }
@@ -269,6 +296,7 @@ export function useDecisionEngine() {
     return () => {
       active = false;
       if (timer.current) clearTimeout(timer.current);
+      clearSettle();
     };
   }, [caseId, pollNonce]);
 
