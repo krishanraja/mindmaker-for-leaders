@@ -10,9 +10,14 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendEmail, getDefaultSender, getAppUrl } from "../_shared/email-utils.ts";
+import { sendEmail, getDefaultSender } from "../_shared/email-utils.ts";
 import { kitEmailShell } from "../_shared/kit-presets/email-shell.ts";
 import { createLogger } from "../_shared/logger.ts";
+
+// The button must always land on the live production app, not the marketing apex. Hardcode the
+// canonical CTRL host (same convention as the kit emails' KIT_URL) so an unset/misconfigured
+// APP_URL env can never point the leader at the wrong place.
+const DECISION_URL = "https://ctrl.themindmaker.ai/decision";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -139,7 +144,7 @@ Deno.serve(async (req) => {
       heading: decisionLine,
       bodyHtml: parts.join("\n"),
       buttonLabel: "Open in CTRL",
-      kitUrl: `${getAppUrl()}/decision`,
+      kitUrl: DECISION_URL,
       eyebrow: "CTRL - your chief of staff",
     });
 
