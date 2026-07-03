@@ -540,6 +540,8 @@ export function useCockpit(): {
       ownSignalCount: ownSignals,
       userState,
       posture,
+      leaderRole: roleSector.role,
+      leaderSector: roleSector.sector,
     };
   }, [cases, alerts, reactions, segments, briefedAt, liveHeadlines, dislikedCats, preferences, zeitgeist, serverPersonalized, needsProfile, roleSector]);
 

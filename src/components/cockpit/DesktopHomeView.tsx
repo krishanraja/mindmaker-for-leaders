@@ -43,6 +43,7 @@ export function DesktopHomeView({ banner, forceLoading }: { banner?: ReactNode; 
           else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');
         }}
         onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
+        onWeighCard={(prefill) => navigate('/decision', { state: { prefill } })}
         onProfileComplete={reload}
       />
     </DesktopShell>
