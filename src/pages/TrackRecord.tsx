@@ -4,10 +4,12 @@ import { DesktopShell } from '@/components/layout/DesktopShell';
 import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useDevice } from '@/hooks/useDevice';
 import { useTrackRecord } from '@/hooks/useTrackRecord';
+import { useCapabilitySignals } from '@/hooks/useCapabilitySignals';
 import { buildTrackRecordModel } from '@/components/track-record/trackRecordModel';
 import { TrackRecordView } from '@/components/track-record/TrackRecordView';
 import { TrackRecordSkeleton } from '@/components/track-record/TrackRecordSkeleton';
 import { ShareWinButton } from '@/components/share/ShareWinButton';
+import type { CapabilityNextMove } from '@/lib/capabilityLadder';
 
 // The chief-of-staff voice per state. Plain language: the questions you have
 // weighed and how they turned out. The cold copy frames the FUTURE value, never
@@ -39,6 +41,7 @@ export default function TrackRecordPage() {
   const { isMobile } = useDevice();
   const navigate = useNavigate();
   const { records, loading } = useTrackRecord();
+  const { capability } = useCapabilitySignals();
 
   const model = useMemo(() => buildTrackRecordModel(records), [records]);
   const voiceKey: VoiceKey = loading ? 'loading' : model.kind;
@@ -46,6 +49,11 @@ export default function TrackRecordPage() {
   // Open the decision weigher, optionally prefilled with a suggested question.
   const handleWeigh = (prefill?: string) =>
     navigate('/decision', prefill ? { state: { prefill } } : undefined);
+
+  // The ladder's one next move: route wherever the behaviour lives (weigh,
+  // verify facts, voice, context), carrying a prefill when it is a decision.
+  const handleCapabilityGo = (move: CapabilityNextMove) =>
+    navigate(move.route, move.prefill ? { state: { prefill: move.prefill } } : undefined);
 
   // The desktop Share action only appears once there is a real, earned record to share.
   const shareAction =
@@ -74,7 +82,13 @@ export default function TrackRecordPage() {
             {loading ? (
               <TrackRecordSkeleton desktop />
             ) : (
-              <TrackRecordView model={model} desktop onWeigh={handleWeigh} />
+              <TrackRecordView
+                model={model}
+                desktop
+                onWeigh={handleWeigh}
+                capability={capability}
+                onCapabilityGo={handleCapabilityGo}
+              />
             )}
           </div>
         </div>
@@ -90,7 +104,13 @@ export default function TrackRecordPage() {
         {loading ? (
           <TrackRecordSkeleton />
         ) : (
-          <TrackRecordView model={model} desktop={false} onWeigh={handleWeigh} />
+          <TrackRecordView
+            model={model}
+            desktop={false}
+            onWeigh={handleWeigh}
+            capability={capability}
+            onCapabilityGo={handleCapabilityGo}
+          />
         )}
       </div>
     </MobileFrame>
