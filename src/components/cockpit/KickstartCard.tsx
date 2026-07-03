@@ -37,7 +37,7 @@ export function KickstartCard({ card, variant = 'feed', onOpen }: KickstartCardP
         {/* eyebrow */}
         <span
           className={cn(
-            'inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-accent/35 bg-accent/12 font-gobold uppercase tracking-[0.07em] text-accent',
+            'inline-flex w-fit flex-none items-center gap-1.5 whitespace-nowrap rounded-full border border-accent/35 bg-accent/12 font-gobold uppercase tracking-[0.07em] text-accent',
             isLead ? 'px-3 py-1.5 text-[10px]' : 'px-2.5 py-1 text-[9.5px]',
           )}
         >
@@ -45,26 +45,37 @@ export function KickstartCard({ card, variant = 'feed', onOpen }: KickstartCardP
           {card.eyebrow}
         </span>
 
-        {/* the proposed decision */}
-        <button type="button" onClick={() => onOpen?.(card)} className="mt-3 block w-full text-left">
-          <h2
-            className={cn(
-              'm-0 text-balance font-extrabold tracking-[-0.02em] text-foreground',
-              isLead ? 'text-[30px] leading-[1.12]' : 'text-[22px] leading-[1.18]',
-            )}
-          >
-            {card.headline}
-          </h2>
-        </button>
+        {/* THE VARIABLE MIDDLE - the same uniform-height contract as CockpitHero:
+            variable text lives in a bounded, clipped block behind clamps, so the
+            card fills its wrapper's exact height and the CTA row never moves. */}
+        <div className="min-h-0 overflow-hidden">
+          {/* the proposed decision (clamped: next-move labels vary in length) */}
+          <button type="button" onClick={() => onOpen?.(card)} className="mt-3 block w-full text-left">
+            <h2
+              className={cn(
+                'm-0 line-clamp-3 text-balance font-extrabold tracking-[-0.02em] text-foreground',
+                isLead ? 'text-[30px] leading-[1.12]' : 'text-[22px] leading-[1.18]',
+              )}
+            >
+              {card.headline}
+            </h2>
+          </button>
 
-        {card.say && (
-          <p className={cn('text-[#c2cad6]', isLead ? 'mt-4 max-w-[56ch] text-[16px] leading-[1.55]' : 'mt-2.5 text-[13.5px] leading-[1.48]')}>
-            {card.say}
-          </p>
-        )}
+          {card.say && (
+            <p
+              className={cn(
+                'text-[#c2cad6]',
+                isLead ? 'mt-4 line-clamp-4 max-w-[56ch] text-[16px] leading-[1.55]' : 'mt-2.5 line-clamp-3 text-[13.5px] leading-[1.48]',
+              )}
+            >
+              {card.say}
+            </p>
+          )}
+        </div>
 
-        {/* primary action, pinned to the bottom of the card */}
-        <div className={cn('mt-auto flex items-center justify-between gap-3', isLead ? 'pt-[20px]' : 'pt-4')}>
+        {/* primary action, pinned to the bottom of the card (flex-none: it never
+            shrinks and never clips - the one row that must always be visible) */}
+        <div className={cn('mt-auto flex flex-none items-center justify-between gap-3', isLead ? 'pt-[20px]' : 'pt-4')}>
           <span className="min-w-0 flex-1 text-[11px] leading-snug text-muted-foreground">{deviceLine}</span>
           <button
             type="button"
