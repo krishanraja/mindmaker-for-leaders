@@ -9,11 +9,13 @@
 // what I'd do), a source + time meta row, and the heart/skip reactions that train
 // the feed (useCockpit.recordDeckReaction).
 //
-// The advisory line is DELIBERATELY un-clamped: no -webkit-line-clamp that could
-// cut its tail. The copy is short enough to read in full and wraps freely on
-// clean word boundaries (matches the approved prototype). The card body is a
-// flex column with min-h-0 so it shares the focus zone without ever overflowing
-// onto the peek or footer (the bug fix: one composed frame, no overlap).
+// UNIFORM-HEIGHT CONTRACT: the card fills whatever bounded height its wrapper
+// gives it (the mobile swipe track and the desktop rail both hand it an exact
+// height) and NEVER grows past it. All variable content (headline, why-it-
+// matters, the Take, benchmark + relevance chips) lives inside a bounded,
+// clipped middle block behind line-clamps; the meta + reactions row is
+// flex-none at the bottom, so the source + heart/skip are always visible at
+// the same place on every card. Predictability is the UX.
 
 import { X, Heart, BadgeCheck, Scale } from 'lucide-react';
 import { CategoryMotif } from './CategoryMotif';
@@ -31,9 +33,10 @@ function BenchmarkChip({ benchmark }: { benchmark: NewsBenchmark }) {
   if (benchmark.pricePer1m != null) bits.push(`$${benchmark.pricePer1m}/1M`);
   if (bits.length === 0) return null;
   return (
-    <div className="mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-lg border border-accent/25 bg-accent/[0.07] px-2.5 py-1.5">
+    <div className="mt-2.5 inline-flex w-fit max-w-full items-center gap-1.5 rounded-lg border border-accent/25 bg-accent/[0.07] px-2.5 py-1.5">
       <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2.2} />
-      <span className="text-[11px] leading-tight text-[#aeb6c2]">
+      {/* one predictable row: the chip never wraps into a second line */}
+      <span className="truncate text-[11px] leading-tight text-[#aeb6c2]">
         <span className="font-semibold text-foreground/90">Artificial Analysis</span>
         {' · '}
         {bits.join(' · ')}
@@ -75,8 +78,10 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantT
         'shadow-[0_30px_64px_-30px_rgba(0,0,0,0.95),0_0_0_1px_hsl(var(--accent)/0.28),inset_0_1px_0_rgba(255,255,255,0.025)]',
       )}
     >
-      {/* HERO BAND - pure motif art; chip + magnitude live in the body below */}
-      <div className={cn('ctrl-motif-band relative flex-none', isLead ? 'h-[42%] min-h-[170px]' : 'h-[128px]')}>
+      {/* HERO BAND - pure motif art; chip + magnitude live in the body below.
+          Feed: proportional to the card's bounded height (capped at the classic
+          128px) so short viewports keep room for the words, never the art. */}
+      <div className={cn('ctrl-motif-band relative flex-none', isLead ? 'h-[42%] min-h-[170px]' : 'h-[30%] min-h-[84px] max-h-[128px]')}>
         <CategoryMotif category={categoryId} />
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[46px]"
@@ -86,7 +91,7 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantT
 
       <div className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', isLead ? 'p-[24px_30px_26px]' : 'p-[16px_20px_17px]')}>
         {/* TOPLINE: category chip (left) + magnitude (right), clear of the motif */}
-        <div className={cn('flex min-h-[20px] items-center justify-between gap-2.5', isLead ? 'mb-3.5' : 'mb-3')}>
+        <div className={cn('flex min-h-[20px] flex-none items-center justify-between gap-2.5', isLead ? 'mb-3.5' : 'mb-3')}>
           <span
             className={cn(
               'whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 font-gobold uppercase tracking-[0.07em] text-accent',
@@ -125,64 +130,72 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantT
           )}
         </div>
 
-        {/* EDITORIAL HEADLINE. Hard-clamped to 3 lines: headlines are real
-            outlet titles (variable, sometimes very long), so the clamp is the
-            SYSTEM guarantee that a long headline can never push the body or meta
-            row off the card. The full title is on the linked article. */}
-        <button type="button" onClick={() => onOpen?.(card)} className="block w-full text-left">
-          <h2
-            className={cn(
-              'm-0 line-clamp-3 text-balance font-extrabold tracking-[-0.02em] text-foreground',
-              isLead ? 'text-[30px] leading-[1.12]' : 'text-[21px] leading-[1.18]',
-            )}
-          >
-            {card.headline}
-          </h2>
-        </button>
+        {/* THE VARIABLE MIDDLE - everything whose length varies lives inside
+            this bounded, clipped block. It shrinks (min-h-0) before the meta
+            row ever moves, so however much content a card carries, the card's
+            outer shape and its bottom row never change. */}
+        <div className="min-h-0 overflow-hidden">
+          {/* EDITORIAL HEADLINE. Hard-clamped to 3 lines: headlines are real
+              outlet titles (variable, sometimes very long), so the clamp is the
+              SYSTEM guarantee that a long headline can never push the body or meta
+              row off the card. The full title is on the linked article. */}
+          <button type="button" onClick={() => onOpen?.(card)} className="block w-full text-left">
+            <h2
+              className={cn(
+                'm-0 line-clamp-3 text-balance font-extrabold tracking-[-0.02em] text-foreground',
+                isLead ? 'text-[30px] leading-[1.12]' : 'text-[21px] leading-[1.18]',
+              )}
+            >
+              {card.headline}
+            </h2>
+          </button>
 
-        {/* THE "WHY IT MATTERS" LINE. Clamped to 2 lines: it is generated text,
-            so the clamp is the SYSTEM guarantee that an over-long line can never
-            overflow. The generator is also told to keep it to <=16 words. */}
-        {card.say && (
-          <p
-            className={cn(
-              'line-clamp-2 leading-[1.48] text-[#c2cad6]',
-              isLead ? 'mt-3.5 max-w-[54ch] text-[16px] leading-[1.55]' : 'mt-2.5 text-[13.5px]',
-            )}
-          >
-            {card.say}
-          </p>
-        )}
+          {/* THE "WHY IT MATTERS" LINE. Clamped to 2 lines: it is generated text,
+              so the clamp is the SYSTEM guarantee that an over-long line can never
+              overflow. The generator is also told to keep it to <=16 words. */}
+          {card.say && (
+            <p
+              className={cn(
+                'line-clamp-2 leading-[1.48] text-[#c2cad6]',
+                isLead ? 'mt-3.5 max-w-[54ch] text-[16px] leading-[1.55]' : 'mt-2.5 text-[13.5px]',
+              )}
+            >
+              {card.say}
+            </p>
+          )}
 
-        {/* THE TAKE: opinionated, lens-driven POV line. Present only when the
-            editorial lens is active server-side; otherwise the hero is unchanged. */}
-        {card.pov && (
-          <p
-            className={cn(
-              'border-l-2 border-accent/60 pl-3 leading-[1.5] text-foreground/90',
-              isLead ? 'mt-3.5 max-w-[54ch] text-[15px]' : 'mt-2.5 text-[13px]',
-            )}
-          >
-            <span className="mr-1.5 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">Take</span>
-            {card.pov}
-          </p>
-        )}
+          {/* THE TAKE: opinionated, lens-driven POV line. Present only when the
+              editorial lens is active server-side. Clamped (it is generated,
+              variable-length text): the biggest height wildcard on the card. */}
+          {card.pov && (
+            <p
+              className={cn(
+                'border-l-2 border-accent/60 pl-3 leading-[1.5] text-foreground/90',
+                isLead ? 'mt-3.5 line-clamp-4 max-w-[54ch] text-[15px]' : 'mt-2.5 line-clamp-3 text-[13px]',
+              )}
+            >
+              <span className="mr-1.5 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">Take</span>
+              {card.pov}
+            </p>
+          )}
 
-        {/* Independent benchmark cross-check (model-about news only). */}
-        {!isSignal && card.benchmark && <BenchmarkChip benchmark={card.benchmark} />}
+          {/* Independent benchmark cross-check (model-about news only). */}
+          {!isSignal && card.benchmark && <BenchmarkChip benchmark={card.benchmark} />}
 
-        {/* Quiet flag: this headline touches the decision you have pinned. */}
-        {!isSignal && relevantToPinnedDecision && (
-          <span className="mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
-            <Scale className="h-3 w-3" />
-            Relevant to your decision
-          </span>
-        )}
+          {/* Quiet flag: this headline touches the decision you have pinned. */}
+          {!isSignal && relevantToPinnedDecision && (
+            <span className="mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
+              <Scale className="h-3 w-3" />
+              Relevant to your decision
+            </span>
+          )}
+        </div>
 
-        {/* META + REACTIONS row, pinned to the card bottom (mt-auto). The
-            heart/skip train the feed; they sit with the source so the one card
-            stays self-contained. */}
-        <div className={cn('mt-auto flex items-center gap-3', isLead ? 'pt-[18px]' : 'pt-3')}>
+        {/* META + REACTIONS row, pinned to the card bottom (mt-auto, flex-none:
+            it never shrinks and never clips - the one row that must always be
+            visible). The heart/skip train the feed; they sit with the source so
+            the one card stays self-contained. */}
+        <div className={cn('mt-auto flex flex-none items-center gap-3', isLead ? 'pt-[18px]' : 'pt-3')}>
           <div className="flex min-w-0 flex-1 items-center gap-2 text-[11px] text-muted-foreground">
             {isSignal ? (
               <>

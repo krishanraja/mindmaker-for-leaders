@@ -22,7 +22,7 @@
 // The card body reuses CockpitHero (the shared headline-card primitive) so Home,
 // the rail tiles and the swipe feed are byte-for-byte the same instrument.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 import type { CockpitData, DeckCard, HomeState, UserPosture } from '@/types/cockpit';
@@ -171,6 +171,21 @@ function MobileHome({
   // the hint only earns its place when there is somewhere to swipe to.
   const showSwipeHint = !loading && !hasSwiped && deck.length > 1 && idx < deck.length - 1;
 
+  // Measure the feed zone so every card gets ONE exact height derived from the
+  // space actually available (uniform + always fits; predictability is the UX).
+  // useLayoutEffect measures before paint so there is no unmeasured flash, and
+  // the ResizeObserver keeps it honest across rotation / viewport chrome.
+  const zoneRef = useRef<HTMLDivElement>(null);
+  const [zoneH, setZoneH] = useState(0);
+  useLayoutEffect(() => {
+    const el = zoneRef.current;
+    if (!el) return;
+    setZoneH(el.clientHeight);
+    const ro = new ResizeObserver(() => setZoneH(el.clientHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* GREET + state-aware orientation (the shell stays put across states).
@@ -187,6 +202,7 @@ function MobileHome({
           progress rail + a one-time "swipe up" hint make the vertical gesture
           unmistakable (the dots used to imply a sideways swipe). */}
       <div
+        ref={zoneRef}
         className="relative mt-3 flex min-h-0 flex-1 flex-col overflow-hidden pr-3.5"
         onTouchStart={loading ? undefined : onTouchStart}
         onTouchEnd={loading ? undefined : onTouchEnd}
@@ -208,6 +224,7 @@ function MobileHome({
               <MobileSwipeTrack
                 deck={deck}
                 idx={idx}
+                zoneH={zoneH}
                 reduceMotion={!!reduceMotion}
                 onFocus={go}
                 onOpen={onOpenCard}
@@ -260,9 +277,21 @@ function MobileHome({
 
 // The swipe track: one card commands the view, the next peeks under it. The
 // whole track translates so the focused card sits at the top of the zone.
+//
+// UNIFORM-HEIGHT GUARANTEE: the focused card's wrapper gets an explicit pixel
+// height derived from the measured feed zone (zoneH - PEEK_ALLOWANCE), so every
+// card renders at exactly the same height and always fits the space available -
+// regardless of how much content it carries. The card's internals absorb the
+// variance (clamps + bounded middle); the card itself NEVER grows.
+// PEEK_ALLOWANCE keeps a consistent sliver of the next peek card visible below
+// (~42px of card top + the 14px track gap), preserving the swipe affordance.
+const PEEK_ALLOWANCE = 56;
+
 interface MobileSwipeTrackProps {
   deck: DeckCard[];
   idx: number;
+  /** Measured feed-zone height; 0 until the first layout measure lands. */
+  zoneH: number;
   reduceMotion: boolean;
   onFocus: (n: number) => void;
   onOpen: (card: DeckCard) => void;
@@ -270,11 +299,13 @@ interface MobileSwipeTrackProps {
   relevant: (card: DeckCard) => boolean;
 }
 
-function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact, relevant }: MobileSwipeTrackProps) {
+function MobileSwipeTrack({ deck, idx, zoneH, reduceMotion, onFocus, onOpen, onReact, relevant }: MobileSwipeTrackProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
+  const cardH = Math.max(0, zoneH - PEEK_ALLOWANCE);
 
-  // position the focused card at the top of the bounded zone.
+  // position the focused card at the top of the bounded zone. Re-runs when the
+  // zone (and therefore the card heights) resizes, so the pin stays exact.
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -282,7 +313,7 @@ function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact, r
     const el = cards[idx] as HTMLElement | undefined;
     if (!el) return;
     setOffset(-Math.max(0, el.offsetTop - 2));
-  }, [idx, deck]);
+  }, [idx, deck, cardH]);
 
   return (
     <>
@@ -292,6 +323,8 @@ function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact, r
         style={{
           transform: `translateY(${offset}px)`,
           transition: reduceMotion ? 'none' : 'transform .46s cubic-bezier(.22,1,.36,1)',
+          // hold the first frame until the zone is measured, never content-sized
+          visibility: cardH > 0 ? undefined : 'hidden',
         }}
       >
         {deck.map((card, i) => {
@@ -305,7 +338,8 @@ function MobileSwipeTrack({ deck, idx, reduceMotion, onFocus, onOpen, onReact, r
                 // peeks stay clearly legible (a visible deck below), just secondary.
                 focused ? '' : 'scale-[0.97] opacity-[0.72]',
               )}
-              style={{ minHeight: focused ? '0' : undefined }}
+              // the one exact height every focused card shares (see PEEK_ALLOWANCE)
+              style={focused ? { height: cardH > 0 ? cardH : undefined, minHeight: 0 } : undefined}
             >
               {focused ? (
                 card.kind === 'kickstart' ? (
@@ -425,7 +459,10 @@ function DesktopHome({
                 className="scrollbar-hide flex min-h-0 flex-1 gap-[18px] overflow-x-auto overflow-y-hidden pb-1"
               >
                 {deck.map((card, i) => (
-                  <div key={card.id} className={cn('flex flex-col', i === 0 ? 'w-[480px] shrink-0' : 'w-[330px] shrink-0')}>
+                  // h-full min-h-0 declares the uniform height bound explicitly
+                  // (was an items-stretch accident): every rail card fills the
+                  // rail's bounded height exactly, never its content's height.
+                  <div key={card.id} className={cn('flex h-full min-h-0 flex-col', i === 0 ? 'w-[480px] shrink-0' : 'w-[330px] shrink-0')}>
                     {card.kind === 'kickstart' ? (
                       <KickstartCard card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} />
                     ) : (
