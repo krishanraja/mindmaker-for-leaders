@@ -12,6 +12,7 @@ import { haptics } from '@/lib/haptics';
 interface VerificationCompletionScreenProps {
   verifiedCount: number;
   rejectedCount: number;
+  correctedCount?: number;
   totalUnverified: number;
   verifiedRate: number;
   onDone: () => void;
@@ -66,6 +67,7 @@ function ConfettiParticle({ index }: { index: number }) {
 export const VerificationCompletionScreen: React.FC<VerificationCompletionScreenProps> = ({
   verifiedCount,
   rejectedCount,
+  correctedCount = 0,
   totalUnverified,
   verifiedRate,
   onDone,
@@ -144,6 +146,14 @@ export const VerificationCompletionScreen: React.FC<VerificationCompletionScreen
         className="text-sm text-muted-foreground mb-8 max-w-xs"
       >
         {getMilestoneCopy(verifiedRate)}
+        {(correctedCount > 0 || rejectedCount > 0) && (
+          <>
+            {' '}
+            {correctedCount > 0
+              ? 'The ones you fixed are logged. Future reads start from your version, not my guess.'
+              : 'What you rejected is logged. I won\'t infer it again.'}
+          </>
+        )}
       </motion.p>
 
       {/* Buttons */}
