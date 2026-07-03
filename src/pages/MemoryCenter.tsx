@@ -83,8 +83,8 @@ function PatternRead({ pattern }: { pattern: UserPattern }) {
 export default function MemoryCenter() {
   const navigate = useNavigate();
   const { isMobile } = useDevice();
-  const { stats, facts, patterns, isLoading, verifyFact: verifyMemoryFact } = useMemoryWeb();
-  const { edges } = useMemoryEdges();
+  const { stats, facts, patterns, isLoading, refresh, verifyFact: verifyMemoryFact } = useMemoryWeb();
+  const { edges, strengthenFact, fixFact } = useMemoryEdges();
   const {
     isFlowOpen,
     pendingFacts,
@@ -125,12 +125,30 @@ export default function MemoryCenter() {
 
   const clearSelection = useCallback(() => { setSelectedBond(null); setSelectedPattern(null); }, []);
 
-  // Confirm = the one real backend action (verify the underlying fact). The
-  // canvas reflects the new confirmed state on the next refresh.
+  // Confirm = verify the underlying fact. The canvas reflects the new
+  // confirmed state on the next refresh.
   const handleConfirmBond = useCallback(async (factId: string) => {
     await verifyMemoryFact(factId);
     setSelectedBond((prev) => (prev ? { ...prev, confirmed: true } : prev));
   }, [verifyMemoryFact]);
+
+  // Strengthen = the leader vouches (strengthen_memory_fact RPC: confidence up,
+  // marked verified). Fix = the leader flags it wrong (fix_memory_fact RPC:
+  // disputed + dropped + edges deactivated, and the dispute feeds the
+  // correction loop so it is never re-inferred). Both were disabled buttons
+  // with a complete backend behind them until now.
+  const handleStrengthenBond = useCallback(async (factId: string) => {
+    await strengthenFact(factId);
+    await refresh();
+    setSelectedBond((prev) => (prev ? { ...prev, confirmed: true } : prev));
+  }, [strengthenFact, refresh]);
+
+  const handleFixBond = useCallback(async (factId: string) => {
+    await fixFact(factId);
+    await refresh();
+    // The fact left the current set; close its reader instead of showing a ghost.
+    setSelectedBond(null);
+  }, [fixFact, refresh]);
 
   // The gentle verify nudge: only shown when there is something to verify, and
   // the number is capped so it reads as a quiet invitation, never a guilt-list.
@@ -172,7 +190,13 @@ export default function MemoryCenter() {
   const reader = selectedPattern ? (
     <PatternRead pattern={selectedPattern} />
   ) : selectedBond ? (
-    <BondReader bond={selectedBond} variant={isMobile ? 'sheet' : 'rail'} onConfirm={handleConfirmBond} />
+    <BondReader
+      bond={selectedBond}
+      variant={isMobile ? 'sheet' : 'rail'}
+      onConfirm={handleConfirmBond}
+      onStrengthen={handleStrengthenBond}
+      onFix={handleFixBond}
+    />
   ) : null;
 
   // The Brain tab body: the centred canvas + the node reader. Desktop slides the
