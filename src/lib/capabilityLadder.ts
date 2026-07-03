@@ -26,6 +26,7 @@
  */
 
 import { pickStarterDecision } from '@/lib/starterDecisions';
+import type { DeckCard } from '@/types/cockpit';
 
 export interface CapabilitySignals {
   /** Role or industry facts exist (the brain knows who they are). */
@@ -193,4 +194,32 @@ export function postureForStage(
   dormant: boolean,
 ): 'guide' | 'partner' {
   return hasLiveBets && !dormant ? 'partner' : 'guide';
+}
+
+/**
+ * Home's kickstart slot, generalised into "the next move": when the ladder
+ * says the behaviour that compounds lives somewhere OTHER than the decision
+ * weigher, the existing kickstart card carries it there instead. Weigh-a-
+ * decision moves keep the original kickstart untouched (it already is that,
+ * role-tailored), and Home-routed moves are skipped (the leader is already
+ * here; inline onboarding / Tune own those). Pure: returns a new array only
+ * when it actually overrides.
+ */
+export function applyNextMoveToKickstart(deck: DeckCard[], capability: CapabilityRead | null): DeckCard[] {
+  if (!capability) return deck;
+  const { nextMove } = capability;
+  if (nextMove.route === '/decision' || nextMove.route === '/dashboard') return deck;
+  const i = deck.findIndex((c) => c.kind === 'kickstart');
+  if (i === -1) return deck;
+  const next: DeckCard = {
+    ...deck[i],
+    eyebrow: 'Your next move',
+    headline: nextMove.label,
+    say: capability.stageLine,
+    route: nextMove.route,
+    prefill: nextMove.prefill,
+  };
+  const out = deck.slice();
+  out[i] = next;
+  return out;
 }

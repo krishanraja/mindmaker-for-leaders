@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  applyNextMoveToKickstart,
   deriveCapability,
   deriveStage,
   deriveNextMove,
@@ -8,6 +9,7 @@ import {
   RICH_SCORED_CALLS,
   type CapabilitySignals,
 } from '@/lib/capabilityLadder';
+import type { DeckCard } from '@/types/cockpit';
 
 /**
  * The ladder is the leader's honest progression read, so its contract is:
@@ -125,6 +127,48 @@ describe('deriveCapability read', () => {
     const read = deriveCapability(CALIBRATING);
     const all = [read.stageLabel, read.stageLine, read.nextMove.label, ...read.evidence].join(' ');
     expect(all).not.toMatch(/[—–]/);
+  });
+});
+
+describe('applyNextMoveToKickstart', () => {
+  const kickstart: DeckCard = {
+    id: 'kickstart-decision',
+    kind: 'kickstart',
+    eyebrow: 'Start here',
+    headline: 'Where should AI take work off my team first?',
+    say: 'Weigh your first real decision.',
+    route: '/decision',
+    prefill: 'Where should AI take work off my team first?',
+  };
+  const news: DeckCard = { id: 'n1', kind: 'news', headline: 'A model shipped' } as DeckCard;
+
+  it('leaves the deck untouched when the next move is a decision weigh', () => {
+    const capability = deriveCapability({ ...CALIBRATING, bankedCallCount: 0 }); // next: own call -> /decision
+    const deck = [kickstart, news];
+    expect(applyNextMoveToKickstart(deck, capability)).toBe(deck);
+  });
+
+  it('leaves the deck untouched with no capability read or no kickstart', () => {
+    expect(applyNextMoveToKickstart([kickstart], null)).toEqual([kickstart]);
+    const capability = deriveCapability({ ...CALIBRATING, hasVoiceProfile: false }); // next: voice -> /context
+    const newsOnly = [news];
+    expect(applyNextMoveToKickstart(newsOnly, capability)).toBe(newsOnly);
+  });
+
+  it('carries an elsewhere-move onto the kickstart card without touching news', () => {
+    const capability = deriveCapability({ ...CALIBRATING, hasVoiceProfile: false }); // next: voice -> /context
+    const out = applyNextMoveToKickstart([kickstart, news], capability);
+    expect(out[0].kind).toBe('kickstart');
+    expect(out[0].route).toBe('/context');
+    expect(out[0].eyebrow).toBe('Your next move');
+    expect(out[0].headline).toMatch(/how you sound/i);
+    expect(out[1]).toBe(news);
+  });
+
+  it('never routes the card back to Home', () => {
+    const capability = deriveCapability(NONE); // next: introduce yourself -> /dashboard
+    const deck = [kickstart, news];
+    expect(applyNextMoveToKickstart(deck, capability)).toBe(deck);
   });
 });
 

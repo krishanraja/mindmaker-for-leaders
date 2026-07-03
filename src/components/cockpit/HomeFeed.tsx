@@ -22,7 +22,7 @@
 // The card body reuses CockpitHero (the shared headline-card primitive) so Home,
 // the rail tiles and the swipe feed are byte-for-byte the same instrument.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 import type { CockpitData, DeckCard, HomeState, UserPosture } from '@/types/cockpit';
@@ -34,6 +34,8 @@ import { InlineProfileSetup } from './onboarding/InlineProfileSetup';
 import { GlobeLoader } from '@/components/system/GlobeLoader';
 import { resolveNewsCategory } from '@/types/newsCategory';
 import { usePinnedDecision } from '@/hooks/usePinnedDecision';
+import { useCapabilitySignals } from '@/hooks/useCapabilitySignals';
+import { applyNextMoveToKickstart } from '@/lib/capabilityLadder';
 import { cn } from '@/lib/utils';
 
 // Quiet "relevant to your pinned decision" test for a news card. Signals (own
@@ -100,7 +102,16 @@ function framingFor(state: HomeState, posture: UserPosture, variant: 'mobile' | 
 }
 
 export function HomeFeed(props: HomeFeedProps) {
-  return props.variant === 'desktop' ? <DesktopHome {...props} /> : <MobileHome {...props} />;
+  // The kickstart slot doubles as the ladder's "next move": when the one
+  // behaviour that compounds lives somewhere other than the weigher (check
+  // facts, teach your voice, put context to work), the card carries it there.
+  // Cached + shared query; on any miss the deck renders exactly as before.
+  const { capability } = useCapabilitySignals();
+  const data = useMemo(() => {
+    const deck = applyNextMoveToKickstart(props.data.deck, capability);
+    return deck === props.data.deck ? props.data : { ...props.data, deck, capabilityStage: capability?.stage };
+  }, [props.data, capability]);
+  return props.variant === 'desktop' ? <DesktopHome {...props} data={data} /> : <MobileHome {...props} data={data} />;
 }
 
 /* ============================================================

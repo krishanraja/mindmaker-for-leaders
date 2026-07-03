@@ -147,4 +147,8 @@ export interface CockpitData {
   // prompt instead of headlines. `missingProfile` lists what is still needed.
   needsProfile?: boolean;
   missingProfile?: string[];
+  // The earned capability-ladder stage (src/lib/capabilityLadder.ts), stamped
+  // by surfaces that compose capability signals (HomeFeed today). Additive:
+  // absent wherever signals were not gathered.
+  capabilityStage?: 'orienting' | 'operating' | 'calibrating' | 'compounding';
 }
