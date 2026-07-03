@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
+
+// user_memory is not in the generated Supabase types; write through the
+// untyped client like useInlineProfile does.
+const db = supabase as unknown as SupabaseClient;
 
 /**
  * The warm-handoff consumer (CTRL side of the portfolio hive mind).
@@ -100,7 +105,7 @@ export function HandoffWelcome() {
     if (!user?.id) return;
     setSaving(true);
     try {
-      await supabase.from('user_memory').insert({
+      await db.from('user_memory').insert({
         user_id: user.id,
         fact_key: 'handoff_focus',
         fact_category: 'blocker',
