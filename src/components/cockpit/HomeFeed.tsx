@@ -27,6 +27,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 import type { CockpitData, DeckCard, HomeState, UserPosture } from '@/types/cockpit';
 import { CockpitHero } from './CockpitHero';
+import { CardReadSheet } from './CardReadSheet';
 import { KickstartCard } from './KickstartCard';
 import { CategoryMotif } from './CategoryMotif';
 import { TuneFeedButton } from './TuneFeedButton';
@@ -51,6 +52,8 @@ export interface HomeFeedProps {
   greeting: string; // "Good morning, Krish."
   onOpenCard: (card: DeckCard) => void;
   onReactDeck?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
+  /** Route into the decision weigher with a prefill (the read sheet's Weigh it). */
+  onWeighCard?: (prefill: string) => void;
   /** Re-pull the cockpit after the inline onboarding saves (clears the gate). */
   onProfileComplete?: () => void;
   /** desktop = the spacious rail; mobile = the swipe feed. */
@@ -111,7 +114,42 @@ export function HomeFeed(props: HomeFeedProps) {
     const deck = applyNextMoveToKickstart(props.data.deck, capability);
     return deck === props.data.deck ? props.data : { ...props.data, deck, capabilityStage: capability?.stage };
   }, [props.data, capability]);
-  return props.variant === 'desktop' ? <DesktopHome {...props} data={data} /> : <MobileHome {...props} data={data} />;
+
+  // THE READ LAYER: a news card opens the in-app read sheet (full summary,
+  // the Take, benchmark, the for-you read) instead of bouncing straight
+  // to the article. Kickstart/signal cards keep their in-app routing.
+  const [readCard, setReadCard] = useState<DeckCard | null>(null);
+  const relevant = useDeckRelevance();
+  const handleOpenCard = useCallback(
+    (card: DeckCard) => {
+      if (card.kind === 'news') setReadCard(card);
+      else props.onOpenCard(card);
+    },
+    [props.onOpenCard],
+  );
+
+  return (
+    <>
+      {props.variant === 'desktop' ? (
+        <DesktopHome {...props} data={data} onOpenCard={handleOpenCard} />
+      ) : (
+        <MobileHome {...props} data={data} onOpenCard={handleOpenCard} />
+      )}
+      <CardReadSheet
+        card={readCard}
+        onClose={() => setReadCard(null)}
+        leaderRole={data.leaderRole}
+        leaderSector={data.leaderSector}
+        relevantToPinnedDecision={readCard ? relevant(readCard) : false}
+        onWeigh={
+          props.onWeighCard
+            ? (prefill) => { setReadCard(null); props.onWeighCard?.(prefill); }
+            : undefined
+        }
+        onReact={props.onReactDeck}
+      />
+    </>
+  );
 }
 
 /* ============================================================
@@ -165,8 +203,6 @@ function MobileHome({
     if (e.deltaY > 0) go(idx + 1);
     else go(idx - 1);
   };
-
-  const relevant = useDeckRelevance();
 
   // the hint only earns its place when there is somewhere to swipe to.
   const showSwipeHint = !loading && !hasSwiped && deck.length > 1 && idx < deck.length - 1;
@@ -229,7 +265,6 @@ function MobileHome({
                 onFocus={go}
                 onOpen={onOpenCard}
                 onReact={onReactDeck}
-                relevant={relevant}
               />
               {/* vertical segmented progress rail, pinned to the right edge */}
               {deck.length > 1 && (
@@ -296,10 +331,9 @@ interface MobileSwipeTrackProps {
   onFocus: (n: number) => void;
   onOpen: (card: DeckCard) => void;
   onReact?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
-  relevant: (card: DeckCard) => boolean;
 }
 
-function MobileSwipeTrack({ deck, idx, zoneH, reduceMotion, onFocus, onOpen, onReact, relevant }: MobileSwipeTrackProps) {
+function MobileSwipeTrack({ deck, idx, zoneH, reduceMotion, onFocus, onOpen, onReact }: MobileSwipeTrackProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   const cardH = Math.max(0, zoneH - PEEK_ALLOWANCE);
@@ -345,7 +379,7 @@ function MobileSwipeTrack({ deck, idx, zoneH, reduceMotion, onFocus, onOpen, onR
                 card.kind === 'kickstart' ? (
                   <KickstartCard card={card} variant="feed" onOpen={onOpen} />
                 ) : (
-                  <CockpitHero card={card} variant="feed" onOpen={onOpen} onReact={onReact} relevantToPinnedDecision={relevant(card)} />
+                  <CockpitHero card={card} variant="feed" onOpen={onOpen} onReact={onReact} />
                 )
               ) : (
                 <PeekCard card={card} />
@@ -393,7 +427,6 @@ function DesktopHome({
   const onboard = useInlineOnboarding(data);
   const deck = data.deck;
   const railRef = useRef<HTMLDivElement>(null);
-  const relevant = useDeckRelevance();
   const scrollBy = (dx: number) => railRef.current?.scrollBy({ left: dx, behavior: 'smooth' });
 
   // The rail label stays stable across load. During loading it must NOT echo the
@@ -466,7 +499,7 @@ function DesktopHome({
                     {card.kind === 'kickstart' ? (
                       <KickstartCard card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} />
                     ) : (
-                      <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} relevantToPinnedDecision={relevant(card)} />
+                      <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} />
                     )}
                   </div>
                 ))}

@@ -61,6 +61,7 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
             else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');
           }}
           onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
+          onWeighCard={(prefill) => navigate('/decision', { state: { prefill } })}
           onProfileComplete={reload}
         />
       </div>

@@ -9,41 +9,21 @@
 // what I'd do), a source + time meta row, and the heart/skip reactions that train
 // the feed (useCockpit.recordDeckReaction).
 //
-// UNIFORM-HEIGHT CONTRACT: the card fills whatever bounded height its wrapper
-// gives it (the mobile swipe track and the desktop rail both hand it an exact
-// height) and NEVER grows past it. All variable content (headline, why-it-
-// matters, the Take, benchmark + relevance chips) lives inside a bounded,
-// clipped middle block behind line-clamps; the meta + reactions row is
-// flex-none at the bottom, so the source + heart/skip are always visible at
-// the same place on every card. Predictability is the UX.
+// GLANCE-ONLY CONTRACT: the card is the triage read - motif, category,
+// magnitude, a clamped headline + one clamped line, source, and heart/skip.
+// The DEPTH (full summary, the Take, benchmark, "for you") lives one tap away
+// in CardReadSheet, so nothing on the card ever needs to truncate mid-thought.
+// The card fills whatever bounded height its wrapper gives it (the mobile
+// swipe track and the desktop rail both hand it an exact height) and NEVER
+// grows past it; the meta + reactions row is flex-none at the bottom, always
+// visible at the same place on every card. Predictability is the UX.
 
-import { X, Heart, BadgeCheck, Scale } from 'lucide-react';
+import { X, Heart, ChevronRight } from 'lucide-react';
 import { CategoryMotif } from './CategoryMotif';
 import { AiTermHint } from '@/components/system/AiTermHint';
-import type { DeckCard, NewsBenchmark } from '@/types/cockpit';
+import type { DeckCard } from '@/types/cockpit';
 import { getNewsCategory, resolveNewsCategory } from '@/types/newsCategory';
 import { cn } from '@/lib/utils';
-
-// The independent benchmark cross-check on a model-about news card: a quiet
-// trust chip that validates the story with real Artificial Analysis numbers.
-function BenchmarkChip({ benchmark }: { benchmark: NewsBenchmark }) {
-  const bits: string[] = [];
-  if (benchmark.rank) bits.push(`#${benchmark.rank} by intelligence`);
-  if (benchmark.intelligenceIndex != null) bits.push(`index ${benchmark.intelligenceIndex}`);
-  if (benchmark.pricePer1m != null) bits.push(`$${benchmark.pricePer1m}/1M`);
-  if (bits.length === 0) return null;
-  return (
-    <div className="mt-2.5 inline-flex w-fit max-w-full items-center gap-1.5 rounded-lg border border-accent/25 bg-accent/[0.07] px-2.5 py-1.5">
-      <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2.2} />
-      {/* one predictable row: the chip never wraps into a second line */}
-      <span className="truncate text-[11px] leading-tight text-[#aeb6c2]">
-        <span className="font-semibold text-foreground/90">Artificial Analysis</span>
-        {' · '}
-        {bits.join(' · ')}
-      </span>
-    </div>
-  );
-}
 
 // A short descriptor for the magnitude stat (DeckCard carries only value+kind):
 // a sourced figure is a measured read of the world; a modelled one is flagged.
@@ -55,15 +35,13 @@ export interface CockpitHeroProps {
   card: DeckCard;
   /** lead = the wide desktop hero; feed = the mobile hero. Layout is identical. */
   variant?: 'feed' | 'lead';
-  /** open the item (e.g. a signal deep-links to its decision). */
+  /** open the item (news -> the read sheet; a signal deep-links to its decision). */
   onOpen?: (card: DeckCard) => void;
   /** the swipe-trained reactions; placed on the hero per the new design. */
   onReact?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
-  /** quiet flag when this headline touches the user's pinned decision. */
-  relevantToPinnedDecision?: boolean;
 }
 
-export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantToPinnedDecision }: CockpitHeroProps) {
+export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: CockpitHeroProps) {
   const isSignal = card.kind === 'signal';
   const isLead = variant === 'lead';
   // server-assigned category id wins; else classify the headline text.
@@ -79,9 +57,9 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantT
       )}
     >
       {/* HERO BAND - pure motif art; chip + magnitude live in the body below.
-          Feed: proportional to the card's bounded height (capped at the classic
-          128px) so short viewports keep room for the words, never the art. */}
-      <div className={cn('ctrl-motif-band relative flex-none', isLead ? 'h-[42%] min-h-[170px]' : 'h-[30%] min-h-[84px] max-h-[128px]')}>
+          Feed: proportional to the card's bounded height so the glance card
+          breathes now that the depth lives in the read sheet. */}
+      <div className={cn('ctrl-motif-band relative flex-none', isLead ? 'h-[42%] min-h-[170px]' : 'h-[34%] min-h-[96px] max-h-[160px]')}>
         <CategoryMotif category={categoryId} />
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[46px]"
@@ -152,7 +130,8 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantT
 
           {/* THE "WHY IT MATTERS" LINE. Clamped to 2 lines: it is generated text,
               so the clamp is the SYSTEM guarantee that an over-long line can never
-              overflow. The generator is also told to keep it to <=16 words. */}
+              overflow. The full line, the Take, the benchmark, and the for-you
+              read all live one tap away in CardReadSheet. */}
           {card.say && (
             <p
               className={cn(
@@ -162,32 +141,6 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantT
             >
               {card.say}
             </p>
-          )}
-
-          {/* THE TAKE: opinionated, lens-driven POV line. Present only when the
-              editorial lens is active server-side. Clamped (it is generated,
-              variable-length text): the biggest height wildcard on the card. */}
-          {card.pov && (
-            <p
-              className={cn(
-                'border-l-2 border-accent/60 pl-3 leading-[1.5] text-foreground/90',
-                isLead ? 'mt-3.5 line-clamp-4 max-w-[54ch] text-[15px]' : 'mt-2.5 line-clamp-3 text-[13px]',
-              )}
-            >
-              <span className="mr-1.5 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">Take</span>
-              {card.pov}
-            </p>
-          )}
-
-          {/* Independent benchmark cross-check (model-about news only). */}
-          {!isSignal && card.benchmark && <BenchmarkChip benchmark={card.benchmark} />}
-
-          {/* Quiet flag: this headline touches the decision you have pinned. */}
-          {!isSignal && relevantToPinnedDecision && (
-            <span className="mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
-              <Scale className="h-3 w-3" />
-              Relevant to your decision
-            </span>
           )}
         </div>
 
@@ -217,6 +170,19 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact, relevantT
               </>
             )}
           </div>
+          {/* the quiet read affordance: the depth is one tap away (whole card
+              body opens it too; this makes the door visible) */}
+          {!isSignal && onOpen && (
+            <button
+              type="button"
+              onClick={() => onOpen(card)}
+              aria-label="Read more"
+              className="flex shrink-0 items-center gap-0.5 text-[11px] font-bold text-accent transition-colors hover:brightness-110"
+            >
+              {card.pov ? 'The take' : 'More'}
+              <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.4} />
+            </button>
+          )}
           {onReact && (
             <div className="flex shrink-0 items-center gap-2">
               <button

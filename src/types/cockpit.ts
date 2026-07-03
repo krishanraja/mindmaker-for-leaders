@@ -151,4 +151,9 @@ export interface CockpitData {
   // by surfaces that compose capability signals (HomeFeed today). Additive:
   // absent wherever signals were not gathered.
   capabilityStage?: 'orienting' | 'operating' | 'calibrating' | 'compounding';
+  // The leader's known role/sector facts (from user_memory, already read by
+  // useCockpit for ranking). Additive; the read sheet's for-you fallback and
+  // display context use them.
+  leaderRole?: string | null;
+  leaderSector?: string | null;
 }
