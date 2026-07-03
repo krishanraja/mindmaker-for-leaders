@@ -141,3 +141,25 @@ And match the **device mindset**: mobile is on-the-go (a quick read, one call wo
 - **Re-engagement arms for everyone.** `send-reactivation-nudge` (daily cron) emails NEW (never-weighed) and DORMANT (>14d) leaders a single lifecycle nudge into a first/next decision, de-duped on `leader_notification_prefs.reactivation_nudge_sent_at` with a 30-day re-arm. It is deliberately NOT gated on the daily-briefing marketing opt-in - it is a one-off "you set this up, let's use it," which is what closes the trap.
 
 **Outcome.** A time-poor, tool-fatigued leader with zero context lands on one home, is asked one light thing at a time, and is handed one real decision to weigh - and if they drift, the system brings them back to exactly that. The legacy fork, the legacy dashboards, and the voice interview were deleted, not flagged off; there is one loop.
+
+---
+
+## 9. The capability ladder + the correction loop (the evidence-corpus sharpening)
+
+Status: founder-approved (2026-07-03, PR #321), grounded in the "How a Non-AI-Native Business Leader Becomes an AI-Native Operator" evidence corpus. The corpus's core finding: leaders stay for TRANSFORMATION (visibly moving from AI dabbler to AI-native operator through observable behaviours), not engagement; and the #1 failure of AI-assistant builds is memory - a correction that does not persist.
+
+**The capability ladder (progression is earned, never gamified).**
+- `src/lib/capabilityLadder.ts` (pure, unit-tested) derives where a leader is from behaviours CTRL already observes - facts checked, decisions weighed, commit-first calls, resolved outcomes, voice profile, skills built, live MCP pull. Four stages: getting oriented → operating → calibrating → compounding. Output = the stage, honest receipts (only what was actually done), and the ONE next move that compounds. Never points, streaks, or badges.
+- Signals come from `useCapabilitySignals` (one shared react-query fetch over existing owner-scoped tables; no new tracking). Surfaces: a quiet `CapabilityHeader` on the You surface (all three states; the cold promise state finally says where you are), and Home's kickstart slot carries the ladder's next move when it lives outside the weigher (`applyNextMoveToKickstart`).
+- The ladder ANSWERS a different question than the lifecycle spine (section 8): lifecycle = engagement recency (new/dormant/active/power), capability = earned behaviour. They intentionally coexist. `postureForStage` is exported behaviour-identical to today's posture rule as the seam for a later adoption.
+- **Three-doors drift, resolved:** the literal "three doors" row (sections 1/3) was superseded in the build by the news deck + the kickstart/next-move slot + the 3-tab nav. The INTENT (one browsable read + one guided action) now lives in the ladder-driven kickstart slot; do not re-add a door row.
+
+**The correction loop (a correction is a signal, not an overwrite).**
+- `verify_memory_fact` / `fix_memory_fact` log `user_corrected` / `user_rejected` / `user_disputed` events into `memory_events` with the prior value (migration `20260703090000`).
+- `extract-user-context` is correction-aware: recent corrections ride the extraction prompt, and `_shared/correction-guard.ts` deterministically drops re-extractions of ruled-out values and sends any other value on a corrected key back through verification. (This also closed a real bug: rejected facts left the dedup set via `is_current=false` and could silently re-insert.)
+- The verify swipe flow says it plainly: "I noted what I got wrong - I won't infer that again." Strengthen/Fix on the brain's bond reader are live (a Fix feeds this loop), and `memory-edges-derive` runs after each successful capture so the graph grows real connections.
+
+**The artifacts (what a leader carries out).**
+- Every completed weigh copies as a one-page decision memo (`decisionMemo.ts`: the call, the case against, the breakpoint, evidence with sources, validate-next) - board-ready, never fabricated.
+- "Your context file" (`my-ai-context.md`) is one click from the brain and /context - the single page that makes any AI session start already knowing the leader.
+- `BRIEFING_INCLUDE_DECISION_ALERTS` (Supabase secret, default off) can lead the briefing with open decision-watch alerts; "news stays news" is the default.
