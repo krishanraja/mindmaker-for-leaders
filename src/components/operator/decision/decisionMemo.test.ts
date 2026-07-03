@@ -156,6 +156,6 @@ describe('buildDecisionMemo', () => {
 
   it('contains no em dashes (house style)', () => {
     const memo = buildDecisionMemo(fullCase, claims, evidence, tensions, NOW);
-    expect(memo).not.toMatch(/[—–]/);
+    expect(memo).not.toMatch(/[\u2014\u2013]/);
   });
 });

@@ -126,7 +126,7 @@ describe('deriveCapability read', () => {
   it('contains no em dashes anywhere (house style)', () => {
     const read = deriveCapability(CALIBRATING);
     const all = [read.stageLabel, read.stageLine, read.nextMove.label, ...read.evidence].join(' ');
-    expect(all).not.toMatch(/[—–]/);
+    expect(all).not.toMatch(/[\u2014\u2013]/);
   });
 });
 
