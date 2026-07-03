@@ -34,6 +34,13 @@ import { loadBrainProfile, toLensSource as brainToLensSource } from "../_shared/
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
 import { extractSegmentMagnitude, type SegmentMagnitude } from "../_shared/briefing-magnitude.ts";
+import { prependDecisionAlerts } from "../_shared/decision-alerts.ts";
+
+// Flag: when true, open decision-watch alerts lead the briefing (one leading
+// DECISION ALERT segment + a spoken preamble) instead of living only in the
+// Decisions tab. Default off - "news stays news" - until flipped in secrets.
+const includeDecisionAlerts = () =>
+  (Deno.env.get("BRIEFING_INCLUDE_DECISION_ALERTS") ?? "false") === "true";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1657,14 +1664,23 @@ async function runV2Pipeline(args: V2PipelineArgs): Promise<Record<string, unkno
     return seg;
   });
 
-  // News stays news: the briefing is pure curated AI headlines. Decision-watch
-  // alerts live in the Decisions tab; a relevant headline is flagged there with
-  // a quiet "relevant to your decision" chip, never narrated into the audio.
+  // Default: news stays news - decision-watch alerts live in the Decisions
+  // tab. Behind BRIEFING_INCLUDE_DECISION_ALERTS, open alerts lead the
+  // briefing ("before today's news, a heads up from your decision watch")
+  // and are stamped surfaced_in_briefing_id. Never throws into the pipeline.
+  let v2Script = script;
+  let v2Segments = finalSegments;
+  if (includeDecisionAlerts()) {
+    const withAlerts = await prependDecisionAlerts(supabase, userId, briefingId, script, finalSegments);
+    v2Script = withAlerts.script;
+    v2Segments = withAlerts.segments;
+  }
+
   const { error: updateError } = await supabase
     .from("briefings")
     .update({
-      script_text: script,
-      segments: finalSegments,
+      script_text: v2Script,
+      segments: v2Segments,
       stage: "complete",
     })
     .eq("id", briefingId);
@@ -2221,13 +2237,22 @@ serve(async (req) => {
       throw new Error("Failed to generate briefing content");
     }
 
-    // 5. Update briefing with polished segments + script. News stays news -
-    // decision-watch alerts live in the Decisions tab, never in the audio.
+    // 5. Update briefing with polished segments + script. Default: news stays
+    // news - decision-watch alerts live in the Decisions tab. Behind
+    // BRIEFING_INCLUDE_DECISION_ALERTS, open alerts lead the audio.
+    let v1Script = script;
+    let v1Segments = segments;
+    if (includeDecisionAlerts()) {
+      const withAlerts = await prependDecisionAlerts(supabase, user.id, briefingId, script, segments);
+      v1Script = withAlerts.script;
+      v1Segments = withAlerts.segments;
+    }
+
     const { error: updateError } = await supabase
       .from("briefings")
       .update({
-        script_text: script,
-        segments: segments,
+        script_text: v1Script,
+        segments: v1Segments,
         news_sources: headlines,
         stage: "complete",
       })

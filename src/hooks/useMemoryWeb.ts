@@ -252,6 +252,12 @@ export function useMemoryWeb() {
         if (fnError) throw fnError;
         await refresh();
         const factCount = data?.stored_count ?? data?.pending_verifications?.length ?? 0;
+        if (factCount > 0) {
+          // Fire-and-forget: re-derive the fact-to-fact edges so the brain
+          // graph shows real connections after new facts land (idempotent
+          // server-side; replaces inferred edges, never touches user edges).
+          supabase.functions.invoke('memory-edges-derive', { body: {} }).catch(() => {});
+        }
         return { success: true, error: factCount === 0 ? 'No facts could be extracted. Try being more specific.' : undefined };
       } catch (err) {
         console.error('Failed to submit input:', err);

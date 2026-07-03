@@ -23,7 +23,7 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Check, AlertTriangle, Sparkles, Eye, ArrowLeft, ChevronRight, Loader2,
+  Check, AlertTriangle, Sparkles, Eye, ArrowLeft, ChevronRight, Loader2, Copy,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
@@ -32,6 +32,7 @@ import {
   type useDecisionEngine, type DecisionClaim, type DecisionEvidence,
 } from '@/hooks/useDecisionEngine';
 import { VERDICT_STYLE, deriveTruth, emptyEvidenceMessage } from './decisionParts';
+import { buildDecisionMemo } from './decisionMemo';
 import { EvidenceList } from './EvidenceList';
 
 type Engine = ReturnType<typeof useDecisionEngine>;
@@ -82,8 +83,9 @@ export function DecisionResultView({
   banking: boolean;
   isDesktop?: boolean;
 }) {
-  const { decisionCase, claims, evidence } = engine;
+  const { decisionCase, claims, evidence, tensions } = engine;
   const [openClaimId, setOpenClaimId] = useState<string | null>(null);
+  const [memoCopied, setMemoCopied] = useState(false);
 
   const { holds, breaks } = useMemo(
     () => deriveTruth(claims, decisionCase?.breakpoint_assumption_id ?? null, decisionCase?.counter_case ?? null),
@@ -181,6 +183,33 @@ export function DecisionResultView({
     </button>
   ) : null;
 
+  // The memo: the one-page artifact this weigh produced (the call, the case
+  // against, the breakpoint, the evidence). Copies as markdown for the board
+  // pack, the team thread, or any AI session.
+  const handleCopyMemo = async () => {
+    if (!decisionCase) return;
+    try {
+      await navigator.clipboard.writeText(buildDecisionMemo(decisionCase, claims, evidence, tensions));
+      setMemoCopied(true);
+      setTimeout(() => setMemoCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable; the button simply does not confirm */
+    }
+  };
+
+  const memoRow = (
+    <button
+      type="button"
+      onClick={handleCopyMemo}
+      className="flex w-full shrink-0 items-center justify-between rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5 text-left transition-colors hover:border-accent/30"
+    >
+      <span className="text-[11.5px] text-muted-foreground">
+        {memoCopied ? 'Copied. Paste it anywhere your team works.' : 'Copy the memo - a one-page version for your team or board pack'}
+      </span>
+      {memoCopied ? <Check className="h-3.5 w-3.5 text-accent" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+    </button>
+  );
+
   const Actions = (
     <div className="flex shrink-0 gap-2.5 pt-3">
       <button type="button" onClick={onBack} className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-border bg-secondary px-3 py-3 text-[13px] font-bold text-foreground/90 transition-colors hover:border-accent/30 hover:text-foreground">
@@ -203,6 +232,7 @@ export function DecisionResultView({
             {Call}
             {Watch}
             {claimsHint}
+            {memoRow}
           </div>
           <div className="flex min-h-0 flex-col gap-3 overflow-y-auto scrollbar-hide">
             {Truth}
@@ -223,6 +253,7 @@ export function DecisionResultView({
         {Truth}
         {Watch}
         {claimsHint}
+        {memoRow}
       </div>
       {Actions}
       <ClaimSheet claim={openClaim} evidence={openClaim ? evByClaim(openClaim.id) : []} onClose={() => setOpenClaimId(null)} />

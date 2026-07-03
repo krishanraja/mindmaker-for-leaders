@@ -40,6 +40,7 @@ import type { DecisionCaseSummary } from '@/hooks/useDecisionInbox';
 import { DecisionSpider } from './DecisionSpider';
 import { ForceDrawer } from './ForceDrawer';
 import { buildSpider } from './decisionSpiderModel';
+import { buildDecisionMemo } from './decisionMemo';
 
 type Engine = ReturnType<typeof useDecisionEngine>;
 
@@ -391,10 +392,11 @@ export function DecisionAnatomy({
   onResolve: () => void;
   isDesktop?: boolean;
 }) {
-  const { decisionCase, claims, evidence } = engine;
+  const { decisionCase, claims, evidence, tensions } = engine;
   const [selectedForce, setSelectedForce] = useState<Dimension | null>(null);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [memoCopied, setMemoCopied] = useState(false);
   // The full answer (behind the decision) starts open on desktop, closed on mobile.
   const [callOpen, setCallOpen] = useState(isDesktop);
 
@@ -466,6 +468,20 @@ export function DecisionAnatomy({
   );
 
   const onResearch = (mode: ResearchMode) => { engine.research(mode); haptics.light(); };
+
+  // Copy the one-page memo (the call, the case against, the breakpoint, the
+  // evidence) as markdown for the team thread or board pack.
+  const handleCopyMemo = async () => {
+    if (!decisionCase) return;
+    try {
+      await navigator.clipboard.writeText(buildDecisionMemo(decisionCase, claims, evidence, tensions));
+      setMemoCopied(true);
+      haptics.light();
+      setTimeout(() => setMemoCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable; the link simply does not confirm */
+    }
+  };
   const shelf = (
     <div className="flex shrink-0 flex-col gap-2 pt-3">
       {/* Make the decision actionable: three ways to take it further, then the
@@ -497,6 +513,11 @@ export function DecisionAnatomy({
         <button type="button" onClick={() => { onCompose(); haptics.light(); }}
           className="font-semibold transition-colors hover:text-foreground">
           Weigh a new one
+        </button>
+        <span aria-hidden className="text-muted-foreground/40">&middot;</span>
+        <button type="button" onClick={handleCopyMemo}
+          className={cn('font-semibold transition-colors hover:text-foreground', memoCopied && 'text-accent')}>
+          {memoCopied ? 'Memo copied' : 'Copy the memo'}
         </button>
         {cases.length > 1 && (
           <>

@@ -4,9 +4,9 @@
  * Swipe right to verify, left to reject, tap pencil to edit.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion';
-import { X, Check, Pencil, User, Building, Target, AlertTriangle, Settings, AlertCircle } from 'lucide-react';
+import { X, Check, Pencil, User, Building, Target, AlertTriangle, Settings, AlertCircle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import { VerificationCompletionScreen } from './VerificationCompletionScreen';
@@ -210,6 +210,7 @@ export const VerificationSwipeStack: React.FC<VerificationSwipeStackProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [verifiedCount, setVerifiedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
+  const [correctedCount, setCorrectedCount] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -217,6 +218,15 @@ export const VerificationSwipeStack: React.FC<VerificationSwipeStackProps> = ({
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | null>(null);
   const [isExiting, setIsExiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showLearnedNote, setShowLearnedNote] = useState(false);
+
+  // The correction-loop beat: a correction is a signal that persists, and the
+  // leader should see that land. Auto-dismisses; never blocks the flow.
+  useEffect(() => {
+    if (!showLearnedNote) return;
+    const timer = setTimeout(() => setShowLearnedNote(false), 2600);
+    return () => clearTimeout(timer);
+  }, [showLearnedNote]);
 
   const currentFact = facts[currentIndex];
   const nextFact = facts[currentIndex + 1];
@@ -297,6 +307,8 @@ export const VerificationSwipeStack: React.FC<VerificationSwipeStackProps> = ({
         setEditingId(null);
         setEditValue('');
         setVerifiedCount((prev) => prev + 1);
+        setCorrectedCount((prev) => prev + 1);
+        setShowLearnedNote(true);
         setExitDirection('right');
         setIsExiting(true);
         haptics.success();
@@ -322,6 +334,7 @@ export const VerificationSwipeStack: React.FC<VerificationSwipeStackProps> = ({
     setCurrentIndex(0);
     setVerifiedCount(0);
     setRejectedCount(0);
+    setCorrectedCount(0);
     setIsComplete(false);
     setExitDirection(null);
   }, [onContinue]);
@@ -349,6 +362,7 @@ export const VerificationSwipeStack: React.FC<VerificationSwipeStackProps> = ({
             <VerificationCompletionScreen
               verifiedCount={verifiedCount}
               rejectedCount={rejectedCount}
+              correctedCount={correctedCount}
               totalUnverified={remainingUnverified}
               verifiedRate={verifiedRate}
               onDone={onDismiss}
@@ -512,6 +526,23 @@ export const VerificationSwipeStack: React.FC<VerificationSwipeStackProps> = ({
                 <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                 <p className="text-sm text-destructive">{error}</p>
               </motion.button>
+            )}
+          </AnimatePresence>
+
+          {/* Learned banner - a correction just persisted as a signal */}
+          <AnimatePresence>
+            {showLearnedNote && !error && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute bottom-2 left-0 right-0 mx-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2 z-10 pointer-events-none"
+              >
+                <Sparkles className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <p className="text-sm text-emerald-500">
+                  Fixed. I noted what I got wrong - I won't infer that again.
+                </p>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>

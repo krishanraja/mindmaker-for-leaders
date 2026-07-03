@@ -5,6 +5,12 @@ import { fetchWithTimeout, ProviderUnavailableError } from '../_shared/with-time
 import { createLogger } from '../_shared/logger.ts';
 import { encryptFactContent } from '../_shared/memory-crypto.ts';
 import { resolveContradiction } from '../_shared/contradiction.ts';
+import {
+  applyCorrectionDamping,
+  buildCorrectionPromptBlock,
+  fetchRecentCorrections,
+  type CorrectionSignal,
+} from '../_shared/correction-guard.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -129,6 +135,18 @@ serve(async (req) => {
       );
     }
 
+    // === CORRECTION AWARENESS (non-blocking) ===
+    // Pull the leader's recent corrections/rejections/disputes so the
+    // extractor never re-infers a value they already ruled out. The prompt
+    // block is best-effort guidance; applyCorrectionDamping below is the
+    // deterministic guarantee.
+    let corrections: CorrectionSignal[] = [];
+    try {
+      corrections = await fetchRecentCorrections(supabase, userId);
+    } catch (correctionErr) {
+      log.warn('Correction fetch error (non-blocking)', { error: correctionErr });
+    }
+
     let openaiResponse: Response;
     try {
       openaiResponse = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
@@ -140,7 +158,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: 'gpt-4o',
           messages: [
-            { role: 'system', content: EXTRACTION_PROMPT },
+            { role: 'system', content: EXTRACTION_PROMPT + buildCorrectionPromptBlock(corrections) },
             { role: 'user', content: `Extract facts from this ${source_type === 'markdown' ? 'document' : 'transcript'}:\n\n"${transcript}"` },
           ],
           response_format: { type: 'json_object' },
@@ -436,6 +454,24 @@ Only flag TRUE contradictions where both facts cannot be simultaneously true. Do
         }
       } catch (contradictionError) {
         log.warn('Contradiction detection error (non-blocking)', { error: contradictionError });
+      }
+    }
+
+    // === CORRECTION DAMPING ===
+    // Hard pass: drop re-extractions of values the user corrected/rejected/
+    // disputed; damp + flag any other value arriving on a corrected key so it
+    // goes back through verification. Also prevents rejected facts (which
+    // leave the dedup set via is_current=false) from silently re-inserting.
+    if (extractedFacts.length > 0 && corrections.length > 0) {
+      try {
+        const damped = applyCorrectionDamping(extractedFacts, corrections);
+        if (damped.dropped.length > 0) {
+          log.info(`Correction guard dropped ${damped.dropped.length} fact(s)`, {
+            dropped: damped.dropped.map(d => `${d.fact_key}: ${d.reason}`).join('; ') });
+        }
+        extractedFacts = damped.kept;
+      } catch (dampErr) {
+        log.warn('Correction damping error (non-blocking)', { error: dampErr });
       }
     }
 

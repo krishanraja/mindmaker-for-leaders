@@ -19,8 +19,10 @@ import { ArrowRight, Scale, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import { AgedCallRow } from './AgedCallRow';
+import { CapabilityHeader } from './CapabilityHeader';
 import { CalibrationSparkline, ProofGlyph } from './trackRecordMotifs';
 import type { AgedOutcome, CalibrationRead, SharpenTrend, TrackRecordModel } from './trackRecordModel';
+import type { CapabilityNextMove, CapabilityRead } from '@/lib/capabilityLadder';
 
 // ---------------------------------------------------------------------------------------
 // COLD: the inviting promise. ONE centrepiece + a few questions worth weighing (each one
@@ -351,9 +353,12 @@ export interface TrackRecordViewProps {
   onWeigh?: (prefill?: string) => void;
   /** false renders at final state with no entrance motion (QC harness / static capture). */
   animated?: boolean;
+  /** The quiet progression header (capability ladder); absent renders exactly the pre-ladder view. */
+  capability?: CapabilityRead | null;
+  onCapabilityGo?: (move: CapabilityNextMove) => void;
 }
 
-export function TrackRecordView({ model, desktop, onWeigh, animated = true }: TrackRecordViewProps) {
+export function TrackRecordView({ model, desktop, onWeigh, animated = true, capability, onCapabilityGo }: TrackRecordViewProps) {
   // Outcome filter for the rich list (hooks must run before any early return).
   const [outcome, setOutcome] = useState<'all' | AgedOutcome>('all');
   const outcomeCounts = useMemo(() => {
@@ -366,8 +371,20 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
     [model.calls, outcome],
   );
 
+  // The quiet progression header: where the leader is on the ladder + the one
+  // next move. Rendered above every state; the cold PromiseState gains it too
+  // (it finally says where you are, not just what is coming).
+  const capabilityHeader = capability ? (
+    <CapabilityHeader capability={capability} onGo={onCapabilityGo} />
+  ) : null;
+
   if (model.kind === 'cold') {
-    return <PromiseState desktop={desktop} onWeigh={onWeigh} />;
+    return (
+      <div className={cn('flex min-h-0 flex-1 flex-col gap-3.5', desktop && 'mx-auto w-full max-w-[680px]')}>
+        {capabilityHeader}
+        <PromiseState desktop={desktop} onWeigh={onWeigh} />
+      </div>
+    );
   }
 
   if (model.kind === 'warm') {
@@ -376,6 +393,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
     const shown = model.calls.slice(0, desktop ? 6 : 3);
     return (
       <div className={cn('flex min-h-0 flex-1 flex-col gap-3.5', desktop && 'mx-auto w-full max-w-[680px]')}>
+        {capabilityHeader}
         <WarmCalibration calibration={model.calibration} freshDays={model.freshDays} />
         {shown.length > 0 && (
           <>
@@ -409,7 +427,10 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
     // Two-zone reading surface: calibration left, the filterable aged-calls scroll right.
     return (
       <div className="grid min-h-0 flex-1 grid-cols-[1.05fr_1fr] gap-6">
-        <div className="flex min-h-0 flex-col gap-4">{calibration}</div>
+        <div className="flex min-h-0 flex-col gap-4">
+          {capabilityHeader}
+          {calibration}
+        </div>
         <div className="flex min-h-0 flex-col gap-3">
           <SectionLabel count={model.calls.length}>How they turned out</SectionLabel>
           <OutcomeFilter counts={outcomeCounts} value={outcome} onChange={setOutcome} />
@@ -427,6 +448,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true }: Tr
   // Mobile rich: calibration hero, the outcome filter, then a tighter readable list.
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
+      {capabilityHeader}
       {calibration}
       <SectionLabel count={model.calls.length}>How your calls aged</SectionLabel>
       <OutcomeFilter counts={outcomeCounts} value={outcome} onChange={setOutcome} />
