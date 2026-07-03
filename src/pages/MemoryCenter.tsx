@@ -12,6 +12,7 @@ import { AddMemorySheet } from '@/components/memory/AddMemorySheet';
 import { PrivacyControlsPanel } from '@/components/memory/PrivacyControlsPanel';
 import { ExportImportPanel } from '@/components/memory/ExportImportPanel';
 import { VerificationSwipeStack } from '@/components/memory/VerificationSwipeStack';
+import { ContextFileButton } from '@/components/memory/ContextFileButton';
 import { LibraryTab } from '@/components/library/LibraryTab';
 import { useGeneratedArtifacts } from '@/hooks/useGeneratedArtifacts';
 import { useDevice } from '@/hooks/useDevice';
@@ -181,6 +182,7 @@ export default function MemoryCenter() {
             </span>
           </button>
         )}
+        <ContextFileButton variant="pill" />
       </div>
     ) : null;
 

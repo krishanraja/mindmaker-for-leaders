@@ -67,6 +67,7 @@ import { PLATFORM_GUIDES } from '@/lib/platform-guides';
 import { ModelRecommendationCard } from '@/components/export/ModelRecommendationCard';
 import { BroadcastBar } from '@/components/export/BroadcastBar';
 import { AutomatorFlow } from '@/components/automator/AutomatorFlow';
+import { ContextFileButton } from '@/components/memory/ContextFileButton';
 import type { ExportFormat, ExportUseCase } from '@/types/memory';
 import type { ExportRecommendation } from '@/types/edge';
 import type { SkillSeed } from '@/types/skill';
@@ -374,6 +375,10 @@ export default function ContextExport() {
           </div>
         </div>
       </div>
+
+      {/* Your context file: the one-page paste-anywhere export, promoted from
+          behind the wizard's Raw Markdown option to a first-class object. */}
+      <ContextFileButton variant="row" />
 
       {/* Secondary path behind ONE quiet disclosure, so Step 1 leads with a
           single primary action (the audit's "fewer doors"). */}
