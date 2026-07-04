@@ -8,7 +8,7 @@ Complete feature inventory.
 
 > **For sales/marketing AI agents**: pull feature mechanics from here, but the binding promise and hooks come from `AGENT_BRIEFING.md` (AI-native), not the older sales-anchor callouts below. Some sales anchors still carry the retired "decision speed / portable double" framing; prefer the AI-native frame.
 
-> **Curation system (2026-06-28, PRs #287, #293-296; LIVE)**: the Home daily read - news deck + Tune + role/business scoring + loading globe + audio Briefing - is ONE system over ONE brain. Canonical methodology + architecture: **`docs/CURATION-SYSTEM-SPEC.md`**. A chosen Tune lane DOMINATES the feed (uncapped), ordered by inferred role-archetype + industry fit, with a guaranteed on-topic floor of 3; Tune applies live; the Briefing covers the same pool. The three main areas' purpose/objectives/outcomes: `docs/CTRL-SYSTEM-SPEC.md` section 7.
+> **Curation system (2026-06-28, PRs #287, #293-296; LIVE)**: the Home daily read - news deck + Tune + role/business scoring + loading globe + audio Briefing - is ONE system over ONE brain. Canonical methodology + architecture: **`docs/CURATION-SYSTEM-SPEC.md`**. A chosen Tune lane DOMINATES the feed (uncapped), ordered by inferred role-archetype + industry fit, with a guaranteed on-topic floor of 3; Tune applies live; the Briefing covers the same pool. Tune is ONE door (2026-07-04): the `NewsPreferencesPanel` picker is shared by Home's "Tune feed" drawer and Settings → "Tune your feed", and carries the people/exclude watchlist (`briefing_interests`) that feeds the briefing lens; the old standalone `BriefingInterestsTab` was retired. The three main areas' purpose/objectives/outcomes: `docs/CTRL-SYSTEM-SPEC.md` section 7.
 
 > **Unified onboarding → decisions → engagement loop (2026-06-29, PR #298; LIVE)**: any mention below of "cockpit Home (behind `VITE_COCKPIT_ENABLED`)", the `Mobile/DesktopMemoryDashboard`, or the voice `OnboardingInterview` is HISTORICAL - the flag, the legacy dashboards, and the voice interview were DELETED. The cockpit is the one home; entry/re-entry adapts to the leader's lifecycle `userState` → `posture` (guide vs partner). Onboarding is lightweight + inline (`InlineProfileSetup`: industry/role → `user_memory` + interests via `SeedBeatsPrompt`); the guide posture leads Home with a `KickstartCard` (a role-tailored starter routed to `/decision` pre-filled); `send-reactivation-nudge` (daily cron) re-engages NEW (never-weighed) + DORMANT (>14d) leaders. Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.
 
@@ -1535,12 +1535,14 @@ Settings sheet (`src/components/settings/`) tabs in current order:
 
 1. **AccountTab** - name, email, password, sign-out, delete account (end-to-end)
 2. **WorkContextTab** - role, company, industry, company size (drives briefing seeds + AI context)
-3. **BriefingInterestsTab** - declare beats, entities, excludes (Briefing v2 lens inputs)
+3. **Tune your feed** (`NewsPreferencesPanel`) - the SINGLE door for feed/briefing tuning: priority lanes + scan bias (`news_preferences`) plus a people/companies-to-watch + never-show watchlist (`briefing_interests`). The exact same panel as Home's "Tune feed" drawer, so a tune shows everywhere. (Replaced the old standalone `BriefingInterestsTab`, retired 2026-07-04.)
 4. **BriefingDirectivesTab** - set briefing type defaults, voice, schedule
 5. **EdgeProTab** - Edge Pro subscription state, billing portal, capability list
 6. **PreferencesTab** - display/theme/audio preferences
 7. **PrivacyDataTab** - data retention, export, deletion, consent flags
 8. **ManifestoTab** - the founder's positioning (legible to users; explains what we're not)
+
+(The Track record row navigates to `/track-record`; the previously-dead Notifications row was removed. The daily-briefing email toggle lives in PreferencesTab.)
 
 **Sales Anchor - Settings**: "Every setting is a lever the leader controls - what gets stored, what gets killed, what gets generated. No mystery dial behind the scenes."
 

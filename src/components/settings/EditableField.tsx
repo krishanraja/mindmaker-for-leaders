@@ -49,9 +49,9 @@ export function EditableField({
     return (
       <div className="flex items-start justify-between py-2">
         <div className="flex-1">
-          <Label className="text-gray-400 text-sm">{label}</Label>
-          <p className="text-white mt-1">{value || <span className="text-gray-600">Not set</span>}</p>
-          {helpText && <p className="text-xs text-gray-500 mt-1">{helpText}</p>}
+          <Label className="text-muted-foreground text-sm">{label}</Label>
+          <p className="text-foreground mt-1">{value || <span className="text-muted-foreground/60">Not set</span>}</p>
+          {helpText && <p className="text-xs text-muted-foreground mt-1">{helpText}</p>}
         </div>
         <Button
           variant="ghost"
@@ -74,7 +74,6 @@ export function EditableField({
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           placeholder={placeholder}
-          className="bg-gray-900 border-gray-700"
         />
       )}
 
@@ -83,13 +82,13 @@ export function EditableField({
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           placeholder={placeholder}
-          className="bg-gray-900 border-gray-700 min-h-[100px]"
+          className="min-h-[100px]"
         />
       )}
 
       {type === 'select' && (
         <Select value={editValue} onValueChange={setEditValue}>
-          <SelectTrigger className="bg-gray-900 border-gray-700">
+          <SelectTrigger>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -102,14 +101,10 @@ export function EditableField({
         </Select>
       )}
 
-      {helpText && <p className="text-xs text-gray-500">{helpText}</p>}
+      {helpText && <p className="text-xs text-muted-foreground">{helpText}</p>}
 
       <div className="flex gap-2 pt-2">
-        <Button
-          size="sm"
-          onClick={handleSave}
-          className="bg-[#00D9B6] hover:bg-[#00C4A3] text-black"
-        >
+        <Button size="sm" onClick={handleSave}>
           <Check className="h-4 w-4 mr-1" />
           Save
         </Button>

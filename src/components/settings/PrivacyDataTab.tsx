@@ -4,7 +4,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Trash2, ShieldCheck, Brain } from 'lucide-react'
+import { Trash2, ShieldCheck, Brain, User, Building2, Target, Construction, Settings2, FileText } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
   FACT_CATEGORY_META,
@@ -140,21 +140,22 @@ export function PrivacyDataTab() {
     return buckets
   }, [facts])
 
-  const getCategoryIcon = (category: FactCategory) => {
-    const icons: Record<FactCategory, string> = {
-      identity: '👤',
-      business: '🏢',
-      objective: '🎯',
-      blocker: '🚧',
-      preference: '⚙️',
+  const CategoryIcon = ({ category }: { category: FactCategory }) => {
+    const icons: Record<FactCategory, typeof User> = {
+      identity: User,
+      business: Building2,
+      objective: Target,
+      blocker: Construction,
+      preference: Settings2,
     }
-    return icons[category] ?? '📝'
+    const Icon = icons[category] ?? FileText
+    return <Icon className="h-4 w-4 text-accent" />
   }
 
   return (
     <div className="space-y-6">
       {/* User Memory */}
-      <div className="bg-card p-6 rounded-lg border border-border">
+      <div className="bg-card p-6 rounded-2xl border border-border">
         <div className="flex items-start justify-between mb-2 gap-3">
           <div>
             <h3 className="text-lg font-semibold text-foreground">User Memory</h3>
@@ -180,7 +181,7 @@ export function PrivacyDataTab() {
               return (
                 <div key={cat} className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">{getCategoryIcon(cat)}</span>
+                    <CategoryIcon category={cat} />
                     <h4 className="text-sm font-semibold text-foreground">
                       {meta?.label ?? cat}
                     </h4>
@@ -210,7 +211,7 @@ export function PrivacyDataTab() {
                               {isVerified ? (
                                 <Badge
                                   variant="outline"
-                                  className="h-5 px-1.5 text-[10px] gap-1 border-emerald-500/40 text-emerald-600"
+                                  className="h-5 px-1.5 text-[10px] gap-1 border-accent/40 text-accent"
                                 >
                                   <ShieldCheck className="w-3 h-3" />
                                   Verified
@@ -218,7 +219,7 @@ export function PrivacyDataTab() {
                               ) : fact.verification_status === 'inferred' ? (
                                 <Badge
                                   variant="outline"
-                                  className="h-5 px-1.5 text-[10px] gap-1 border-amber-500/40 text-amber-600"
+                                  className="h-5 px-1.5 text-[10px] gap-1 border-amber-500/40 text-amber-500"
                                 >
                                   <Brain className="w-3 h-3" />
                                   Inferred
@@ -258,7 +259,7 @@ export function PrivacyDataTab() {
       </div>
 
       {/* Data Export */}
-      <div className="bg-card p-6 rounded-lg border border-border">
+      <div className="bg-card p-6 rounded-2xl border border-border">
         <h3 className="text-lg font-semibold mb-2 text-foreground">Data Export</h3>
         <p className="text-sm text-muted-foreground mb-4">
           Download all your profile and memory data in JSON format
@@ -269,7 +270,7 @@ export function PrivacyDataTab() {
       </div>
 
       {/* Account Deletion */}
-      <div className="bg-card p-6 rounded-lg border border-destructive/30">
+      <div className="bg-card p-6 rounded-2xl border border-destructive/30">
         <h3 className="text-lg font-semibold mb-2 text-destructive">Danger Zone</h3>
         <p className="text-sm text-muted-foreground mb-4">
           Permanently delete your account and all data. This action cannot be undone.

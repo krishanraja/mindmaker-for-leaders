@@ -61,7 +61,7 @@ export function BriefingDirectivesTab() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-card p-5">
+      <div className="rounded-2xl border border-border bg-card p-5">
         <h3 className="text-lg font-semibold">Your briefing rules</h3>
         <p className="text-sm text-muted-foreground mt-1">
           Tell me what every briefing should do or avoid, and I will follow it. I
@@ -84,7 +84,7 @@ export function BriefingDirectivesTab() {
           </span>
           <div className="flex items-center gap-3">
             {savedAt && !dirty && (
-              <span className="flex items-center gap-1 text-xs text-emerald-600">
+              <span className="flex items-center gap-1 text-xs text-accent">
                 <Check className="h-3.5 w-3.5" /> Saved
               </span>
             )}

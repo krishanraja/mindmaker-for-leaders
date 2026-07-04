@@ -5,7 +5,7 @@ import { PreferencesTab } from './PreferencesTab'
 import { EdgeProTab } from './EdgeProTab'
 import { ManifestoTab } from './ManifestoTab'
 import { BriefingDirectivesTab } from './BriefingDirectivesTab'
-import { BriefingInterestsTab } from './BriefingInterestsTab'
+import { NewsPreferencesPanel } from '@/components/cockpit/NewsPreferencesPanel'
 import type { SettingsSection } from '@/contexts/SettingsSheetContext'
 
 interface SettingsSectionViewProps {
@@ -22,7 +22,7 @@ export function SettingsSectionView({ section }: SettingsSectionViewProps) {
     case 'profile':
       return <WorkContextTab />
     case 'briefing-interests':
-      return <BriefingInterestsTab />
+      return <NewsPreferencesPanel showHeader={false} />
     case 'briefing':
       return <BriefingDirectivesTab />
     case 'privacy':

@@ -1,6 +1,8 @@
 /* eslint-disable react-refresh/only-export-components -- this file also exports the SETTINGS_SECTION_LABELS map */
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, User, UserCircle, Radio, Bell, Shield, Sliders, Zap, Scroll, TrendingUp } from 'lucide-react'
+import { User, UserCircle, Radio, Shield, Sliders, Palette, Zap, Scroll, TrendingUp } from 'lucide-react'
+import { SettingRow } from '@/components/system/surface'
+import { useSettingsSheet } from '@/contexts/SettingsSheetContext'
 import type { SettingsSection } from '@/contexts/SettingsSheetContext'
 
 interface SettingsRow {
@@ -15,11 +17,10 @@ const ROWS: SettingsRow[] = [
   { section: 'account', label: 'Account', description: 'Email, password, sign out', icon: User },
   { section: 'profile', label: 'Profile', description: 'Work context and background', icon: UserCircle },
   { route: '/track-record', label: 'Track record', description: 'How your judgment is holding up', icon: TrendingUp },
-  { section: 'briefing-interests', label: 'Interests', description: 'Beats, people, companies', icon: Scroll },
+  { section: 'briefing-interests', label: 'Tune your feed', description: 'What pops up in Home and your briefing', icon: Sliders },
   { section: 'briefing', label: 'Briefing rules', description: 'Voice directives for your daily brief', icon: Radio },
-  { section: 'notifications', label: 'Notifications', description: 'Delivery and quiet hours', icon: Bell },
   { section: 'privacy', label: 'Privacy & data', description: 'Export, retention, consent', icon: Shield },
-  { section: 'preferences', label: 'Preferences', description: 'Theme, units, appearance', icon: Sliders },
+  { section: 'preferences', label: 'Preferences', description: 'Theme, units, appearance', icon: Palette },
   { section: 'edge-pro', label: 'Edge Pro', description: 'Subscription and billing', icon: Zap },
   { section: 'manifesto', label: 'Manifesto', description: 'Your operating principles', icon: Scroll },
 ]
@@ -30,23 +31,27 @@ interface SettingsListProps {
 
 export function SettingsList({ onSelect }: SettingsListProps) {
   const navigate = useNavigate()
+  const { closeSheet } = useSettingsSheet()
+
   return (
-    <div className="divide-y divide-border">
-      {ROWS.map(({ section, route, label, description, icon: Icon }) => (
-        <button
+    <div className="flex flex-col gap-2 px-4 py-2">
+      {ROWS.map(({ section, route, label, description, icon }) => (
+        <SettingRow
           key={section ?? route}
-          onClick={() => (route ? navigate(route) : section && onSelect(section))}
-          className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[56px] hover:bg-muted/50 active:bg-muted transition-colors text-left"
-        >
-          <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
-            <Icon className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground">{label}</p>
-            <p className="text-xs text-muted-foreground truncate">{description}</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        </button>
+          icon={icon}
+          label={label}
+          description={description}
+          onClick={() => {
+            if (route) {
+              // Close the sheet FIRST so the destination page is actually visible
+              // (the drawer is a global overlay; without this it covers the route).
+              closeSheet()
+              navigate(route)
+            } else if (section) {
+              onSelect(section)
+            }
+          }}
+        />
       ))}
     </div>
   )
@@ -55,7 +60,7 @@ export function SettingsList({ onSelect }: SettingsListProps) {
 export const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
   account: 'Account',
   profile: 'Profile',
-  'briefing-interests': 'Interests',
+  'briefing-interests': 'Tune your feed',
   briefing: 'Briefing rules',
   notifications: 'Notifications',
   privacy: 'Privacy & data',

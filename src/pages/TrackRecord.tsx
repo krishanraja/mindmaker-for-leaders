@@ -4,6 +4,7 @@ import { DesktopShell } from '@/components/layout/DesktopShell';
 import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useDevice } from '@/hooks/useDevice';
 import { useTrackRecord } from '@/hooks/useTrackRecord';
+import { useDecisionActions } from '@/hooks/useDecisionActions';
 import { useCapabilitySignals } from '@/hooks/useCapabilitySignals';
 import { buildTrackRecordModel } from '@/components/track-record/trackRecordModel';
 import { TrackRecordView } from '@/components/track-record/TrackRecordView';
@@ -40,8 +41,9 @@ function PageHead({ voiceKey }: { voiceKey: VoiceKey }) {
 export default function TrackRecordPage() {
   const { isMobile } = useDevice();
   const navigate = useNavigate();
-  const { records, loading } = useTrackRecord();
+  const { records, loading, refetch } = useTrackRecord();
   const { capability } = useCapabilitySignals();
+  const { archive, archivingId } = useDecisionActions();
 
   const model = useMemo(() => buildTrackRecordModel(records), [records]);
   const voiceKey: VoiceKey = loading ? 'loading' : model.kind;
@@ -49,6 +51,19 @@ export default function TrackRecordPage() {
   // Open the decision weigher, optionally prefilled with a suggested question.
   const handleWeigh = (prefill?: string) =>
     navigate('/decision', prefill ? { state: { prefill } } : undefined);
+
+  // The active-decision control centre. Each action reuses an existing door:
+  // open + strengthen deep-link into the Decisions tab (PressureTestPanel honours
+  // openCaseId / strengthen); archive is the shared status='archived' write.
+  const decisionActions = useMemo(
+    () => ({
+      onOpen: (id: string) => navigate('/decision', { state: { openCaseId: id } }),
+      onStrengthen: (id: string) => navigate('/decision', { state: { openCaseId: id, strengthen: true } }),
+      onArchive: async (id: string) => { await archive(id); void refetch(); },
+      archivingId,
+    }),
+    [navigate, archive, refetch, archivingId],
+  );
 
   // The ladder's one next move: route wherever the behaviour lives (weigh,
   // verify facts, voice, context), carrying a prefill when it is a decision.
@@ -88,6 +103,7 @@ export default function TrackRecordPage() {
                 onWeigh={handleWeigh}
                 capability={capability}
                 onCapabilityGo={handleCapabilityGo}
+                decisionActions={decisionActions}
               />
             )}
           </div>
@@ -110,6 +126,7 @@ export default function TrackRecordPage() {
             onWeigh={handleWeigh}
             capability={capability}
             onCapabilityGo={handleCapabilityGo}
+            decisionActions={decisionActions}
           />
         )}
       </div>

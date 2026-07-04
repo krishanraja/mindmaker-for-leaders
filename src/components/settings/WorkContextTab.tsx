@@ -205,7 +205,7 @@ export function WorkContextTab() {
 
     return (
       <div className="space-y-6">
-        <div className="bg-card border border-border p-6 rounded-lg">
+        <div className="bg-card border border-border p-6 rounded-2xl">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
               <h3 className="text-lg font-semibold text-foreground">
@@ -237,7 +237,7 @@ export function WorkContextTab() {
           ([category, facts]) => {
             const meta = FACT_CATEGORY_META[category]
             return (
-              <div key={category} className="bg-card border border-border p-6 rounded-lg">
+              <div key={category} className="bg-card border border-border p-6 rounded-2xl">
                 <h4 className="text-base font-semibold text-foreground mb-3">
                   {meta?.label ?? category}
                 </h4>
@@ -257,7 +257,7 @@ export function WorkContextTab() {
                         variant="outline"
                         className={
                           fact.verification_status === 'verified'
-                            ? 'border-emerald-500/40 text-emerald-600 shrink-0'
+                            ? 'border-accent/40 text-accent shrink-0'
                             : 'border-border text-muted-foreground shrink-0'
                         }
                       >
@@ -291,7 +291,7 @@ export function WorkContextTab() {
   return (
     <div className="space-y-6">
       {/* Profile Completeness */}
-      <div className="bg-card border border-border p-6 rounded-lg">
+      <div className="bg-card border border-border p-6 rounded-2xl">
         <div className="flex items-start justify-between gap-3 mb-4">
           <h3 className="text-lg font-semibold text-foreground">Profile Completeness</h3>
           {memoryFacts.length > 0 && (
@@ -327,7 +327,7 @@ export function WorkContextTab() {
       </div>
 
       {/* Role & Company */}
-      <div className="bg-card border border-border p-6 rounded-lg space-y-4">
+      <div className="bg-card border border-border p-6 rounded-2xl space-y-4">
         <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
           Role & Company
         </h3>
@@ -388,7 +388,7 @@ export function WorkContextTab() {
       </div>
 
       {/* Strategic Context */}
-      <div className="bg-card border border-border p-6 rounded-lg space-y-4">
+      <div className="bg-card border border-border p-6 rounded-2xl space-y-4">
         <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
           Strategic Context
         </h3>

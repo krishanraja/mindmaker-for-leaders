@@ -23,7 +23,7 @@ export function KickstartCard({ card, variant = 'feed', onOpen }: KickstartCardP
   const cta = isLead ? 'Pressure-test this decision' : 'Weigh it';
   const deviceLine = isLead
     ? "You've got room to think - I'll decompose it, weigh the evidence, and show you where it holds."
-    : "A quick call now; I'll keep watching it for you after.";
+    : "A quick call now; I'll track it for you after.";
 
   return (
     <article

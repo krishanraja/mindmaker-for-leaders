@@ -35,7 +35,7 @@ export function AccountTab() {
   // in-app change-password flow when there's a working backend for it.
   return (
     <div className="space-y-6">
-      <div className="bg-card border border-border p-6 rounded-lg">
+      <div className="bg-card border border-border p-6 rounded-2xl">
         <h3 className="text-lg font-semibold text-foreground mb-4">Profile</h3>
         <div>
           <label className="text-sm text-muted-foreground">Email</label>
@@ -43,7 +43,7 @@ export function AccountTab() {
         </div>
       </div>
 
-      <div className="bg-card border border-border p-6 rounded-lg">
+      <div className="bg-card border border-border p-6 rounded-2xl">
         <h3 className="text-lg font-semibold text-foreground mb-1">Security &amp; compliance</h3>
         <p className="text-sm text-muted-foreground mb-4">
           See our SOC 2, HIPAA, GDPR, CCPA, and ISO 27001 controls, plus the
@@ -61,7 +61,7 @@ export function AccountTab() {
         </Button>
       </div>
 
-      <div className="bg-card border border-border p-6 rounded-lg">
+      <div className="bg-card border border-border p-6 rounded-2xl">
         <h3 className="text-lg font-semibold text-foreground mb-1">Replay setup tour</h3>
         <p className="text-sm text-muted-foreground mb-4">
           Show the welcome banner again on the dashboard so you can re-run the
@@ -89,7 +89,7 @@ export function AccountTab() {
         </Button>
       </div>
 
-      <div className="bg-card border border-border p-6 rounded-lg">
+      <div className="bg-card border border-border p-6 rounded-2xl">
         <h3 className="text-lg font-semibold text-foreground mb-1">Sign out</h3>
         <p className="text-sm text-muted-foreground mb-4">
           You&apos;ll need to sign in again to access your data on this device.
