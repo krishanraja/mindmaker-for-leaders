@@ -83,7 +83,6 @@ export function useEdgeSubscription() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, toast]);
 
   // Create a subscription checkout session
