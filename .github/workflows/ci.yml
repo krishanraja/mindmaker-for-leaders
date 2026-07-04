@@ -27,6 +27,20 @@ on:
     branches: [main]
 
 jobs:
+  standards:
+    name: standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Fast, dependency-free gate: no em dashes anywhere, all required tokens
+      # defined. Mirrors the prebuild guard so a violation fails the PR CHECK
+      # (blocking merge) instead of only failing the Vercel prebuild AFTER merge
+      # and stranding prod on the prior SHA. Make this a required status check.
+      - run: node standards/check-standards.mjs
+
   typecheck:
     name: typecheck
     runs-on: ubuntu-latest
