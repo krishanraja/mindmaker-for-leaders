@@ -250,8 +250,10 @@ export const router = createBrowserRouter([
     element: <LazyWrapper><Try /></LazyWrapper>,
   },
   {
-    // Public pricing surface so a willing buyer never has to hunt.
-    path: '/pricing',
+    // Interactive in-app upgrade surface (the static /pricing.html is the public
+    // SEO page via the vercel.json rewrite; /upgrade is the one with a live
+    // checkout button). A willing buyer never has to hunt.
+    path: '/upgrade',
     element: <LazyWrapper><Pricing /></LazyWrapper>,
   },
   {
