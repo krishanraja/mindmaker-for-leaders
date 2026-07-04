@@ -97,3 +97,36 @@ describe('isAiNativeDecision edge cases', () => {
     expect(isAiNativeDecision('Should we deploy a copilot inside the support tool?')).toBe(true);
   });
 });
+
+describe('human-agent false positives (the reframe under-trigger fix)', () => {
+  // Regression: the bare word "agent(s)" is a strong AI signal, but when it means
+  // PEOPLE ("support agents", "sales agents") it wrongly classified a general
+  // headcount decision as already-AI-native, so it skipped the reframe it needed
+  // (audit finding F4: "Should we hire two more support agents?" showed no reframe).
+  const humanAgentGeneral = [
+    'Should we hire two more support agents to handle ticket volume?',
+    'Do we need more customer service agents this quarter?',
+    'Should we bring on additional call center agents?',
+    'We are thinking about hiring more sales agents.',
+  ];
+  it.each(humanAgentGeneral)('treats human-agent decision as general, not AI-native: %s', (s) => {
+    expect(isAiNativeDecision(s)).toBe(false);
+    expect(classifyDecision(s).needsReframe).toBe(true);
+  });
+
+  it('the exact audit case reframes to the AI-native headcount lens', () => {
+    const c = classifyDecision('Should we hire two more support agents to handle ticket volume?');
+    expect(c.aiNative).toBe(false);
+    expect(c.needsReframe).toBe(true);
+    expect(c.templated).not.toBeNull();
+    expect(c.templated!.stage).toBe('orchestrate');
+    expect(isAiNativeDecision(c.templated!.reframed)).toBe(true);
+  });
+
+  it('still recognises genuine AI-agent decisions (no over-correction)', () => {
+    expect(isAiNativeDecision('Should we build an AI agent to handle tier-1 support?')).toBe(true);
+    expect(isAiNativeDecision('Should we stand up an agent to deflect support tickets?')).toBe(true);
+    expect(isAiNativeDecision('Should we deploy an autonomous agent for onboarding?')).toBe(true);
+    expect(isAiNativeDecision('Is our multi-agent orchestration reliable enough to ship?')).toBe(true);
+  });
+});

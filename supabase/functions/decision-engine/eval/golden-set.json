@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "app": "mm-ctrl",
+    "pipeline_under_test": "decision-engine (Stage 0 reframe -> decompose -> verify -> advise) and, by extension, the shared brain personalization",
+    "built_from": "canonical.md ICP (time-poor CEO/COO/founder making the AI-native version of their business) + docs/CTRL-SYSTEM-SPEC.md session-journey (cold/warm/rich)",
+    "scoring_axes": ["factual_accuracy_vs_profile", "personalization_specificity (swap-test: would a different profile change this materially? if not, score 1)", "actionability (ends in a move)", "voice_tier_fit"],
+    "recommendation": "commit this file to the repo and run the reframe+advise pipeline against it pre-release; assert each output scores >=3 on all four axes and that personalization_specificity swap-test passes."
+  },
+  "profiles": [
+    {
+      "id": "gp01-fintech-cfo-rich",
+      "persona": "CFO of a 200-person B2B fintech, rich brain (industry=fintech, role=CFO, goals=cut cost-to-serve, prior decisions logged)",
+      "range": "power user / rich profile",
+      "input_decision": "Should we hire two more support agents to handle ticket volume?",
+      "expected_output_characteristics": "Reframe to AI-native (agent owns tier-1 support before headcount); answer references cost-to-serve / unit economics (CFO lens); names a concrete pilot + a human checkpoint; not generic"
+    },
+    {
+      "id": "gp02-healthcare-coo-rich",
+      "persona": "COO of a healthcare services company, rich brain (industry=healthcare, role=COO, compliance-sensitive)",
+      "range": "power user / rich profile",
+      "input_decision": "Should we hire two more support agents to handle ticket volume?",
+      "expected_output_characteristics": "SAME input as gp01 but output must differ materially: healthcare/compliance framing (PHI, human sign-off, regulatory exposure) vs gp01's unit-economics framing. This pair is the personalization swap-test."
+    },
+    {
+      "id": "gp03-solo-founder-sparse",
+      "persona": "Solo technical founder, sparse brain (role only, no goals/decisions)",
+      "range": "novice / sparse profile",
+      "input_decision": "Should I build my own auth or use a provider?",
+      "expected_output_characteristics": "Reframe to AI-native leverage; honest that it knows little about them yet; still actionable; invites profile depth; does not fabricate context it lacks"
+    },
+    {
+      "id": "gp04-marketing-vp-mid",
+      "persona": "VP Marketing at a Series B SaaS, mid brain (industry=SaaS, role=VP Marketing, one goal)",
+      "range": "mid",
+      "input_decision": "Should we double down on SEO or shift budget to paid?",
+      "expected_output_characteristics": "Reframe to AI-native GTM (agent-run content/SEO ops); marketing lens; concrete test; not a generic SEO-vs-paid essay"
+    },
+    {
+      "id": "gp05-ecom-ceo-rich",
+      "persona": "CEO of a DTC e-commerce brand, rich brain (industry=ecommerce, role=CEO)",
+      "range": "power user",
+      "input_decision": "Should we open a second warehouse?",
+      "expected_output_characteristics": "Reframe: what should an agent/automation own in ops before capex; CEO lens; capital + risk; concrete next step"
+    },
+    {
+      "id": "gp06-agency-owner-mid",
+      "persona": "Owner of a 30-person creative agency, mid brain",
+      "range": "mid",
+      "input_decision": "Should we productize our retainer service?",
+      "expected_output_characteristics": "Reframe to AI-native productization (agent-delivered service tier); names a concrete first product; margin lens"
+    },
+    {
+      "id": "gp07-manufacturing-coo-sparse",
+      "persona": "COO of a mid-market manufacturer, sparse brain, low AI literacy",
+      "range": "novice",
+      "input_decision": "Everyone says we need an AI strategy. Where do we even start?",
+      "expected_output_characteristics": "Reframe to one concrete AI-native move (not a strategy deck); plain language, no jargon; a single first step; honest about knowing little"
+    },
+    {
+      "id": "gp08-nonprofit-ed-mid",
+      "persona": "Executive Director of a nonprofit, mid brain, budget-constrained",
+      "range": "mid",
+      "input_decision": "Should we invest in a new CRM?",
+      "expected_output_characteristics": "Reframe to AI-native donor ops; budget-sensitive; concrete low-cost first move; not a vendor pitch"
+    },
+    {
+      "id": "gp09-adversarial-empty-garbage",
+      "persona": "Empty brain, garbage/ambiguous input (adversarial)",
+      "range": "adversarial",
+      "input_decision": "asdf should we do the thing with the stuff",
+      "expected_output_characteristics": "Must NOT hallucinate a confident specific answer; should ask for clarification or reframe honestly with low confidence; must not fabricate profile context"
+    },
+    {
+      "id": "gp10-adversarial-offtopic-general",
+      "persona": "Rich brain, deliberately off-topic non-AI general-business input (adversarial)",
+      "range": "adversarial",
+      "input_decision": "Should I fire my co-founder?",
+      "expected_output_characteristics": "Per the AI-native lock, must REFRAME toward the AI-native version rather than give general HR/interpersonal advice, OR honestly decline as out of scope; must not give generic life advice dressed up"
+    }
+  ]
+}

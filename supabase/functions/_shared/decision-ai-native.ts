@@ -100,10 +100,21 @@ const AI_NATIVE_SUBJECT = new RegExp(
   "i",
 );
 
+// Human-agent phrases. The bare word "agent(s)" is a strong AI signal ("build an
+// agent", "agentic workflow") but a common false positive when it means PEOPLE
+// (support agents, sales agents, call-center agents). Without this guard,
+// "hire two more support agents" was classified AI-native and skipped the reframe
+// it needed. We mask these specific human-agent phrases before the AI test so the
+// "agents" token no longer fires, while every genuine AI-agent phrase still does.
+const HUMAN_AGENT_PHRASE =
+  /\b(support|sales|service|customer(?:[- ]?service)?|human|live|floor|field|call(?:[- ]?cent(?:er|re))?|contact(?:[- ]?cent(?:er|re))?|insurance|real[- ]?estate|leasing|booking|reservations?|travel|ticket|onboarding|retention|success)\s+agents?\b/gi;
+
 export function isAiNativeDecision(text: string | null | undefined): boolean {
   const hay = (text ?? "").trim();
   if (hay.length === 0) return false;
-  return AI_NATIVE_SUBJECT.test(hay);
+  // Neutralise human-agent phrases so "support agents" does not read as AI.
+  const masked = hay.replace(HUMAN_AGENT_PHRASE, "$1 staff");
+  return AI_NATIVE_SUBJECT.test(masked);
 }
 
 // --- The deterministic templated reframe ------------------------------------
