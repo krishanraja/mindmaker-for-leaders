@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
@@ -15,6 +15,7 @@ import {
   LogOut,
   User,
   History,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -73,6 +74,20 @@ function DesktopRail() {
   const displayName = resolveDisplayName(user);
   const firstName = displayName ?? 'You';
   const initials = firstName.slice(0, 2).toUpperCase();
+
+  // Radical focus: the default sidebar is the 3 primary tabs; the secondary
+  // surfaces sit behind a collapsed "More" (they are also all reachable via the
+  // command palette). Auto-open More when the leader is already on one of them so
+  // the active item is never hidden.
+  const onSecondary = secondaryNavItems.some((item) =>
+    item.search
+      ? location.pathname + location.search === item.path + item.search
+      : location.pathname === item.path && !location.search,
+  );
+  const [moreOpen, setMoreOpen] = useState(onSecondary);
+  useEffect(() => {
+    if (onSecondary) setMoreOpen(true);
+  }, [onSecondary]);
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-card/30 backdrop-blur-md border-r border-border/60 flex flex-col z-40">
@@ -151,11 +166,18 @@ function DesktopRail() {
           );
         })}
 
-        {/* SECONDARY surfaces (demoted out of the primary 4, still reachable). */}
-        <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-          More
-        </p>
-        {secondaryNavItems.map((item) => {
+        {/* SECONDARY surfaces (demoted out of the primary 3, still reachable):
+            collapsed by default so the sidebar stays focused. */}
+        <button
+          type="button"
+          onClick={() => setMoreOpen((v) => !v)}
+          aria-expanded={moreOpen}
+          className="w-full flex items-center justify-between px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+        >
+          <span>More</span>
+          <ChevronRight className={cn('h-3 w-3 transition-transform', moreOpen && 'rotate-90')} />
+        </button>
+        {moreOpen && secondaryNavItems.map((item) => {
           const Icon = item.icon;
           const fullPath = item.path + item.search;
           const isActive = item.search
@@ -216,7 +238,13 @@ function DesktopRail() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-foreground truncate">{firstName}</p>
-            <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
+            {/* Show the email only when we resolved a real name. A leader who
+                signed up with just an email (or a throwaway id-like address) sees
+                a clean "You", never a raw machine identifier under the avatar,
+                matching resolveDisplayName's greeting rule. */}
+            {displayName && (
+              <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
+            )}
           </div>
           <button
             type="button"

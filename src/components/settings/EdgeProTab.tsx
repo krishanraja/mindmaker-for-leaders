@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useEdgeSubscription } from '@/hooks/useEdgeSubscription'
 import { EDGE_PRO_PRICE_LONG } from '@/constants/billing'
+import { PLAN_MATRIX } from '@/constants/planMatrix'
 import {
   Loader2,
   Mail,
@@ -414,24 +415,7 @@ export function EdgeProTab() {
   )
 }
 
-interface MatrixRow {
-  label: string
-  free: string | true | false
-  pro: string | true | false
-}
-
-const MATRIX: MatrixRow[] = [
-  { label: 'Memory Web (read-write)', free: true, pro: true },
-  { label: 'Voice profile', free: true, pro: true },
-  { label: 'Automator skill builds + exports', free: true, pro: true },
-  { label: 'Daily personalised briefing', free: true, pro: true },
-  { label: 'Decision engine (weigh + verify)', free: '3 / month', pro: 'Unlimited' },
-  { label: 'Multi-model cross-examination of every decision', free: false, pro: true },
-  { label: 'Decision watch (alerts when the ground shifts)', free: false, pro: true },
-  { label: 'Edge artifacts (memos, docs, emails, agendas)', free: false, pro: true },
-  { label: 'Live MCP pull of your skills into any AI', free: false, pro: true },
-  { label: 'Email delivery of artifacts', free: false, pro: true },
-]
+const MATRIX = PLAN_MATRIX
 
 function PlanMatrix() {
   return (
