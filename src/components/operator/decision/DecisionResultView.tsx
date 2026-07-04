@@ -21,6 +21,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Check, AlertTriangle, Sparkles, Eye, ArrowLeft, ChevronRight, Loader2, Copy,
@@ -28,6 +29,8 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
+import { EDGE_PRO_PRICE_LABEL } from '@/constants/billing';
 import {
   type useDecisionEngine, type DecisionClaim, type DecisionEvidence,
 } from '@/hooks/useDecisionEngine';
@@ -86,6 +89,8 @@ export function DecisionResultView({
   const { decisionCase, claims, evidence, tensions } = engine;
   const [openClaimId, setOpenClaimId] = useState<string | null>(null);
   const [memoCopied, setMemoCopied] = useState(false);
+  const navigate = useNavigate();
+  const { hasAccess } = useEdgeSubscription();
 
   const { holds, breaks } = useMemo(
     () => deriveTruth(claims, decisionCase?.breakpoint_assumption_id ?? null, decisionCase?.counter_case ?? null),
@@ -210,6 +215,22 @@ export function DecisionResultView({
     </button>
   );
 
+  // Upgrade at the desire peak: a free leader who just got a real answer is the
+  // moment to offer unlimited weighs + the cross-examination. Quiet, never a wall,
+  // and only for non-Pro.
+  const upgradeNudge = !hasAccess ? (
+    <button
+      type="button"
+      onClick={() => navigate('/pricing')}
+      className="flex w-full shrink-0 items-center justify-between rounded-xl border border-accent/25 bg-accent/[0.06] px-3 py-2.5 text-left transition-colors hover:border-accent/50"
+    >
+      <span className="text-[11.5px] text-foreground/90">
+        Weigh without limits, and let a second model cross-examine every call. Edge Pro, {EDGE_PRO_PRICE_LABEL}.
+      </span>
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-accent" />
+    </button>
+  ) : null;
+
   const Actions = (
     <div className="flex shrink-0 gap-2.5 pt-3">
       <button type="button" onClick={onBack} className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-border bg-secondary px-3 py-3 text-[13px] font-bold text-foreground/90 transition-colors hover:border-accent/30 hover:text-foreground">
@@ -233,6 +254,7 @@ export function DecisionResultView({
             {Watch}
             {claimsHint}
             {memoRow}
+            {upgradeNudge}
           </div>
           <div className="flex min-h-0 flex-col gap-3 overflow-y-auto scrollbar-hide">
             {Truth}
@@ -254,6 +276,7 @@ export function DecisionResultView({
         {Watch}
         {claimsHint}
         {memoRow}
+        {upgradeNudge}
       </div>
       {Actions}
       <ClaimSheet claim={openClaim} evidence={openClaim ? evByClaim(openClaim.id) : []} onClose={() => setOpenClaimId(null)} />

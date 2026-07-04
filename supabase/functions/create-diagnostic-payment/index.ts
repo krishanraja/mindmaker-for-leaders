@@ -28,9 +28,14 @@ function sanitizeAttr(obj: Record<string, unknown>): Record<string, string> {
   return out;
 }
 
-const DIAGNOSTIC_PRICE_ID = "price_1TctCeHGqJqsGEJL1gQZsmQ9"; // $49 Full Diagnostic (provisioned 2026-05-30; replaces stale $15 price_1THBLw)
-const DEEP_CONTEXT_PRICE_ID = "price_1SojAqHGqJqsGEJLDEd6BqMG"; // $29 Deep Context (verified live in Stripe)
-const BUNDLE_PRICE_ID = "price_1SojArHGqJqsGEJLtmmGW7p3"; // $69 Bundle (verified live in Stripe)
+// Env-overridable so a price change does not require a code edit + redeploy. The
+// literals are the current live prices and stay as the fallback (behaviour is
+// identical when the env vars are unset). NOTE: this diagnostic flow is not
+// currently reachable from the app (the /diagnostic route redirects away and
+// usePayment has no live caller); if it is revived, set these as Supabase secrets.
+const DIAGNOSTIC_PRICE_ID = Deno.env.get("STRIPE_DIAGNOSTIC_PRICE_ID") ?? "price_1TctCeHGqJqsGEJL1gQZsmQ9"; // $49 Full Diagnostic
+const DEEP_CONTEXT_PRICE_ID = Deno.env.get("STRIPE_DEEP_CONTEXT_PRICE_ID") ?? "price_1SojAqHGqJqsGEJLDEd6BqMG"; // $29 Deep Context
+const BUNDLE_PRICE_ID = Deno.env.get("STRIPE_BUNDLE_PRICE_ID") ?? "price_1SojArHGqJqsGEJLtmmGW7p3"; // $69 Bundle
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
