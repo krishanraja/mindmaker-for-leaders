@@ -41,6 +41,22 @@ jobs:
       # and stranding prod on the prior SHA. Make this a required status check.
       - run: node standards/check-standards.mjs
 
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Vitest suite: pure helpers, the decision-engine AI-native classifier
+      # (incl. the human-agent reframe guard), and the no-em-dash output
+      # sanitizer. This is the automated half of the decision-engine eval gate
+      # (supabase/functions/decision-engine/eval/README.md).
+      - run: npx vitest run
+
   typecheck:
     name: typecheck
     runs-on: ubuntu-latest

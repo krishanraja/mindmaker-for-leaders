@@ -14,6 +14,7 @@
 // engine reasons on the reframed statement. Nothing is silently swapped.
 
 import { reason, parseLLMJson } from "./llm.ts";
+import { stripEmDashes } from "../_shared/sanitize.ts";
 import {
   classifyDecision,
   isAiNativeDecision,
@@ -121,7 +122,7 @@ Return JSON exactly:
     // Accept the LLM reframe only if it is non-empty and itself AI-native (the
     // LLM is not allowed to hand us back another general-business statement).
     if (candidate.length > 0 && isAiNativeDecision(candidate)) {
-      reframedStatement = candidate.slice(0, 600);
+      reframedStatement = stripEmDashes(candidate.slice(0, 600));
     }
     if (isLifecycle(parsed.lifecycle_stage)) lifecycle = parsed.lifecycle_stage;
   } catch (_e) {

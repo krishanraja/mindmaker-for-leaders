@@ -5,6 +5,7 @@
 
 import type { UserContext } from "../_shared/user-context.ts";
 import { reason, parseLLMJson } from "./llm.ts";
+import { stripEmDashes } from "../_shared/sanitize.ts";
 import type { AdviseResult, ClaimVerdict, ExtractedClaim } from "./types.ts";
 
 const SYSTEM = `You are the synthesis stage of CTRL's decision engine for senior leaders.
@@ -97,10 +98,12 @@ breakpoint_claim_index is the index of the single claim above whose failure most
   const raw = await reason(SYSTEM, user, 1800);
   const parsed = parseLLMJson<AdviseResult>(raw);
 
-  parsed.recommendation = (parsed.recommendation ?? "").slice(0, 1200) || "Insufficient verified evidence to recommend a direction with confidence.";
-  parsed.counter_case = (parsed.counter_case ?? "").slice(0, 1200) || "Not enough verified signal to construct a counter-case.";
+  // Hold model output to the same no-em-dash house rule the build gate enforces
+  // on source (the model does not always comply despite the prompt).
+  parsed.recommendation = stripEmDashes((parsed.recommendation ?? "").slice(0, 1200)) || "Insufficient verified evidence to recommend a direction with confidence.";
+  parsed.counter_case = stripEmDashes((parsed.counter_case ?? "").slice(0, 1200)) || "Not enough verified signal to construct a counter-case.";
   parsed.confidence = Math.max(0, Math.min(1, typeof parsed.confidence === "number" ? parsed.confidence : 0.3));
-  parsed.validate_next = (parsed.validate_next ?? []).filter((s) => typeof s === "string").map((s) => s.slice(0, 300)).slice(0, 6);
+  parsed.validate_next = (parsed.validate_next ?? []).filter((s) => typeof s === "string").map((s) => stripEmDashes(s.slice(0, 300))).slice(0, 6);
   if (typeof parsed.breakpoint_claim_index !== "number") parsed.breakpoint_claim_index = -1;
   return parsed;
 }
