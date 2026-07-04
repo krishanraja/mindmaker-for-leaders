@@ -124,14 +124,14 @@ function PaywallContent({
         </div>
         <div>
           <h3 className="text-lg font-bold text-foreground">
-            {isQuotaExhausted ? 'Free skill used this month' : 'Unlimited Automator skills + briefing + decision engine'}
+            {isQuotaExhausted ? 'Free runs used this month' : 'Unlimited weighs, cross-examined, plus Edge artifacts'}
           </h3>
           <p className="text-xs text-muted-foreground">
             {isQuotaExhausted
-              ? 'Your free Automator skill this month is built. Edge Pro unlocks unlimited.'
+              ? 'Your free runs this month are used. Edge Pro unlocks unlimited plus a multi-model cross-examination of every decision.'
               : capability
                 ? `Required for: ${capability}`
-                : 'Everything CTRL ships, no caps - $29/month.'}
+                : `Unlimited decisions, the live pull of your skills, and Edge artifacts. ${PRICE}.`}
           </p>
         </div>
       </div>

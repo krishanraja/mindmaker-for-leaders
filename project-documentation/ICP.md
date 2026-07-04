@@ -59,7 +59,7 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 8. Existing "personalized" feeds (Feedly, Techmeme, morning briefs) serve everyone the same stories with light reordering. The personalization is theatre.
 9. By the time a story is relevant, it's already late. Decision-relevant intel needs to surface in the same morning, anchored to a specific call on their desk.
 
-**Repetition Pain (CTRL Skill Builder solves this - Edge Pro)**
+**Repetition Pain (CTRL Skill Builder / Automator solves this, free for now)**
 10. Runs the same 3-5 workflows every week: Monday board update, Friday hiring sync, monthly investor update, RFP triage, weekly metrics review.
 11. Every iteration is re-typed from a blank prompt, even after building a rich Memory Web and exporting context. The repetition tax compounds.
 12. Has tried "save this prompt to a library" tools - dead context they have to remember to paste. Has tried generic macro / automation tools - they generate junk from any input because there's no triage gate.
@@ -189,4 +189,4 @@ When prospecting, scoring fit, or writing copy:
 - **Disqualifier**: Asks about Slack/email/calendar integration → not us.
 - **Deal-blocker**: Requires SOC 2 / vendor security review for an individual purchase → wrong motion (drive them to enterprise/Sprint).
 - **Channel sequencing**: LinkedIn DM → email → optional follow-up post that demonstrates the auditable-relevance angle (screenshot of "Anchored to:" chip).
-- **Pricing anchors to use in copy**: Free to start. $49 for the full Diagnostic. $29/month for Edge Pro. Bundle saves $10.
+- **Pricing anchors to use in copy**: Free to start (the daily briefing, the Automator, Memory, Voice, the Kit program, and 3 decision weighs a month are all free). $49/month for Edge Pro (the decision tier: unlimited weighs + cross-examination + decision watch + Edge artifacts + the live MCP pull of your skills). $49 for the full Diagnostic (one-time). Bundle saves $10.

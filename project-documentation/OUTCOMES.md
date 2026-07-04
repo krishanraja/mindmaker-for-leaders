@@ -2,7 +2,7 @@
 
 **Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
 
-> RECONCILIATION BANNER. Two corrections. (1) Positioning: outcomes now tie back to **building the AI-native version of your business** (a workflow handed to an agent, the autonomy line drawn, the AI-native version of an offer named), not "decision speed". (2) Honesty: the percentage metrics in this doc (for example "90%+ report better responses", "80%+ export to a second tool") are ASPIRATIONAL TARGETS, not measured results. Per the agent guardrails, do NOT quote them as proof in outbound. Use only the documented, grounded proof points (the kit flow exists and is live, Edge Pro is $29/month, the surfaces are no-scroll one-ask, the app is globally dark). TODO(founder): define the real AI-native success metrics and replace the placeholder percentages.
+> RECONCILIATION BANNER. Two corrections. (1) Positioning: outcomes now tie back to **building the AI-native version of your business** (a workflow handed to an agent, the autonomy line drawn, the AI-native version of an offer named), not "decision speed". (2) Honesty: the percentage metrics in this doc (for example "90%+ report better responses", "80%+ export to a second tool") are ASPIRATIONAL TARGETS, not measured results. Per the agent guardrails, do NOT quote them as proof in outbound. Use only the documented, grounded proof points (the kit flow exists and is live, Edge Pro is $49/month, the surfaces are no-scroll one-ask, the app is globally dark). TODO(founder): define the real AI-native success metrics and replace the placeholder percentages.
 
 Expected outcomes for CTRL users, reframed to the AI-native positioning. The North Star is the leader's business getting more AI-native, move by move.
 
@@ -111,7 +111,7 @@ Expected outcomes for CTRL users, reframed to the AI-native positioning. The Nor
 
 **Edge Pro Upgrade Path**
 - Used Edge to generate a board memo, strategy doc, or email in their own register.
-- ~25-30% of engaged users convert to Edge Pro at $29/month within 30 days.
+- ~25-30% of engaged users convert to Edge Pro at $49/month within 30 days.
 
 **First Agent Skill Shipped**
 - The leader has hit a pain-anchored zap (Edge `AutomatePainCard`, Memory blocker, Briefing `decision_trigger`) at least once and generated their first Agent Skill.
@@ -256,7 +256,7 @@ These outcomes attach to surfaces that shipped after the original 30/90-day fram
 
 **Revenue Indicators (for product/marketing)**
 - Free → $49 Diagnostic conversion: 5-10% in first 30 days
-- Free → $29/mo Edge Pro conversion: 15-25% by day 30 (higher among Memory Web active users)
+- Free → $49/mo Edge Pro conversion: 15-25% by day 30 (higher among Memory Web active users)
 - Bundle ($69) attach rate: ~30% of Diagnostic buyers
 - Net revenue retention on Edge Pro: target 110%+ via expansion to add-ons
 
@@ -282,7 +282,7 @@ Use these outcomes as proof points in copy:
 - **"Anchored to:" promise** - every Briefing segment can prove its relevance with a specific profile fact
 - **"Bans persist forever"** - semantic, not keyword; signature-keyed so feedback survives daily lens regeneration
 - **"3-minute audio briefing"** - concrete, time-boxed, measurable
-- **"Edge Pro $29/month"** - anchor pricing in copy; cheaper than a single coffee per week, cheaper than any AI tool subscription that already lives in the leader's stack
+- **"Edge Pro $49/month"** - anchor pricing in copy; the decision tier (unlimited weighs + cross-examination + decision watch), priced against a board-ready answer, not against the free daily habit
 - **Earliest "WOW" moment** - accept seed beats → first Briefing audio plays → leader says "this is actually about me" within first 24h
 - **Strongest retention signal** - first Bookmark tap; correlates with continued usage and Pro upgrade
 

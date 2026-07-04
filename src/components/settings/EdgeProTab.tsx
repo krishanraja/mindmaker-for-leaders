@@ -423,12 +423,14 @@ interface MatrixRow {
 const MATRIX: MatrixRow[] = [
   { label: 'Memory Web (read-write)', free: true, pro: true },
   { label: 'Voice profile', free: true, pro: true },
-  { label: 'Automator skill exports', free: '1 / month', pro: 'Unlimited' },
-  { label: 'Daily personalised briefing', free: false, pro: true },
-  { label: 'Decision engine (verify + cross-examine)', free: false, pro: true },
-  { label: 'Drafting + framework generation', free: false, pro: true },
+  { label: 'Automator skill builds + exports', free: true, pro: true },
+  { label: 'Daily personalised briefing', free: true, pro: true },
+  { label: 'Decision engine (weigh + verify)', free: '3 / month', pro: 'Unlimited' },
+  { label: 'Multi-model cross-examination of every decision', free: false, pro: true },
+  { label: 'Decision watch (alerts when the ground shifts)', free: false, pro: true },
+  { label: 'Edge artifacts (memos, docs, emails, agendas)', free: false, pro: true },
+  { label: 'Live MCP pull of your skills into any AI', free: false, pro: true },
   { label: 'Email delivery of artifacts', free: false, pro: true },
-  { label: 'Agent access via MCP', free: false, pro: true },
 ]
 
 function PlanMatrix() {
@@ -437,8 +439,10 @@ function PlanMatrix() {
       <div className="mb-3">
         <h3 className="text-lg font-semibold text-foreground">What you get</h3>
         <p className="text-xs text-muted-foreground">
-          Free includes Memory Web, Voice Profile, and 1 Automator skill per month. Edge Pro
-          ($29/mo) unlocks unlimited Automator skills plus the briefing and decision engine.
+          Free includes Memory Web, Voice Profile, unlimited Automator skills, the daily briefing,
+          and 3 decision weighs a month. Edge Pro ({EDGE_PRO_PRICE_LONG}) unlocks unlimited weighs,
+          a multi-model cross-examination of every decision, decision watch, Edge artifacts, and the
+          live pull of your skills into any AI.
         </p>
       </div>
       <div className="grid grid-cols-[1fr,auto,auto] gap-x-4 gap-y-1.5 text-sm">

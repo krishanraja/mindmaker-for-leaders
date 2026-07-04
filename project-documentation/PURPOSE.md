@@ -131,7 +131,7 @@ Use these (AI-native) when generating outbound, ad copy, or social posts:
 - **Autonomy-line hook**: "Map your org to the autonomy line: what an agent runs, what it assists on with your approval, what stays human, and where to start."
 - **Privacy hook**: "No integrations. No plugins. No enterprise security review. You talk to it; that is the whole connection."
 - **Kit hook**: "After the lesson, walk a kit: ship a build, take a workflow off your plate, map your agentic org, or make the AI know you."
-- **Pricing anchor (settled)**: Free to start (the kit side-door + Memory Web + the Automator build, free for now). Edge Pro is $29/month (briefings + Edge artifacts + live MCP pull of your built skills + decision engine). TODO(founder): confirm whether the $49 one-time diagnostic SKUs survive the repositioning before quoting them.
+- **Pricing anchor (settled)**: Free to start (the daily briefing + the Automator build + Memory Web + Voice + the Kit program + 3 decision weighs a month, all free). Edge Pro is $49/month, the decision tier: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch + Edge artifacts + drafting + email delivery + the live MCP pull of your built skills. The daily briefing is intentionally free, not an Edge Pro feature. TODO(founder): confirm whether the $49 one-time diagnostic SKUs survive the repositioning before quoting them.
 
 ## Measurement of Success
 

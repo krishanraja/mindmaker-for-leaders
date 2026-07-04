@@ -90,16 +90,16 @@ The AI-native long pitch is not yet written tight enough to ship in outbound. Us
 | Tier | Price | Grounded in code? |
 |---|---|---|
 | **Free / Core** | $0 | Yes (free tier is the kit side-door + Memory Web + the Automator build, which is free for now) |
-| **Edge Pro** | $29/month | Yes - canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 2900`), surfaced via `src/constants/billing.ts` |
+| **Edge Pro** | $49/month | Yes - canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`), surfaced via `src/constants/billing.ts` |
 | **Full Diagnostic** | $49 one-time | Wired in `create-diagnostic-payment` (a Stripe price id), but this is an old-positioning SKU |
 | **Deep Context Upgrade** | $29 one-time | Wired in `create-diagnostic-payment` |
 | **Diagnostic + Deep Context Bundle** | $69 one-time | Wired in `create-diagnostic-payment` / `create-stripe-prices` |
 
-**What is settled:** Edge Pro is $29/month. Building Automator skills is free for now (the Edge Pro gate was removed); Edge Pro gates the daily personalized briefing, the live MCP pull of your built skills (`list_skills` / `get_skill`), Edge artifacts, the decision engine, all briefing types, and email delivery. Pricing constants are canonical in `src/constants/billing.ts` + the shared edge-pricing module; the app reads them, so trust the code over any doc.
+**What is settled:** Edge Pro is $49/month. Free is a real daily instrument: Memory, Voice, the Kit program, unlimited Automator skill builds, the daily personalised briefing, and 3 decision weighs a month are all FREE. Edge Pro is the decision tier: it removes the 3-weighs cap (unlimited), adds a multi-model cross-examination of every decision, decision watch, Edge artifacts + drafting + email delivery, and the live MCP pull of your built skills into any AI (`list_skills` / `get_skill`). The daily briefing is intentionally free (the daily habit / on-ramp), not a paid feature. Pricing constants are canonical in `src/constants/billing.ts` + the shared edge-pricing module; the app reads them, so trust the code over any doc.
 
 **TODO(founder):** confirm whether the one-time Full Diagnostic ($49) / Deep Context ($29) / Bundle ($69) SKUs survive the AI-native repositioning, and confirm the Bootcamp/Portfolio engagement bands, before quoting them. They are real in the Stripe plumbing today but were defined under the old positioning.
 
-**Pricing guardrails:** Edge Pro is $29/month. Do not quote $9/month (legacy grandfathered price, never quoted publicly). No em dashes. No invented prices.
+**Pricing guardrails:** Edge Pro is $49/month. Do not quote $9/month (legacy grandfathered price, never quoted publicly). No em dashes. No invented prices.
 
 ---
 
@@ -161,7 +161,7 @@ https://ctrl.themindmaker.ai/auth?utm_source=email&utm_medium=outbound&utm_campa
 
 ### Forbidden
 - **No em dashes.** Use commas, colons, parentheses, or rewrite.
-- **No "$9/mo" for Edge Pro.** It is $29/month. Existing $9 subscribers are grandfathered but that figure is never quoted publicly.
+- **No "$9/mo" for Edge Pro.** It is $49/month. Existing $9 subscribers are grandfathered but that figure is never quoted publicly.
 - **No light-mode / "warm off-white" / Apple-quality visual claims.** CTRL is globally dark, instrument-grade (ctrl-ds palette, emerald `#00D9B6`, the BrandLockup).
 - **No general-business-advisor framing.** CTRL builds the AI-native version of the business; it reframes general calls, it does not answer them as general advice.
 - **No plugin/integration language.** CTRL is export-based and self-contained. Say "export to" / "works with", not "connects to" / "integrates with".

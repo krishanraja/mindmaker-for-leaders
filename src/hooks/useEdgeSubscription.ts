@@ -35,24 +35,54 @@ export function useEdgeSubscription() {
     refresh();
   }, [refresh]);
 
-  // Check for subscription success in URL params
+  // Check for subscription success in URL params.
+  //
+  // The webhook is the primary activation path, but it can be delayed or missed;
+  // relying on it alone once left paying leaders unentitled. So on the success
+  // redirect we ALSO confirm the session directly via verify-edge-subscription
+  // (webhook-independent, idempotent) and only celebrate once the entitlement is
+  // actually active. This mirrors the diagnostic's session-poll flow.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('subscription') === 'success') {
-      // Clean up URL
-      const url = new URL(window.location.href);
-      url.searchParams.delete('subscription');
-      url.searchParams.delete('session_id');
-      window.history.replaceState({}, '', url.toString());
+    if (params.get('subscription') !== 'success') return;
 
+    const sessionId = params.get('session_id');
+
+    // Clean up URL immediately so a refresh does not re-trigger.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('subscription');
+    url.searchParams.delete('session_id');
+    window.history.replaceState({}, '', url.toString());
+
+    let cancelled = false;
+
+    const activate = async () => {
+      // Try the fallback verify a few times (covers webhook race + slight delay).
+      for (let attempt = 0; attempt < 5 && !cancelled; attempt++) {
+        if (sessionId) {
+          try {
+            const { data } = await supabase.functions.invoke('verify-edge-subscription', {
+              body: { session_id: sessionId },
+            });
+            if (data?.active) break;
+          } catch {
+            // ignore and retry; the webhook may still land
+          }
+        }
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+      if (cancelled) return;
+      await refresh();
       toast({
-        title: 'Edge Pro Activated!',
+        title: 'Edge Pro activated',
         description: 'You now have full access to all Edge capabilities.',
       });
+    };
 
-      // Refresh subscription status
-      setTimeout(refresh, 1000);
-    }
+    activate();
+    return () => {
+      cancelled = true;
+    };
   }, [refresh, toast]);
 
   // Create a subscription checkout session

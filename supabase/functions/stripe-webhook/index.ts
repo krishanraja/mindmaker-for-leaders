@@ -12,7 +12,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { forwardToWarehouse, attrFromStripeMetadata } from "../_shared/attribution-emit.ts";
 
 const corsHeaders = {
@@ -65,7 +65,12 @@ serve(async (req) => {
 
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      // MUST be the async variant: Supabase's Deno runtime exposes Web Crypto as
+      // async-only, so the synchronous constructEvent throws "SubtleCryptoProvider
+      // cannot be used in a synchronous context" and every webhook silently fails
+      // (which is why no subscription ever activated before this fix). See
+      // https://github.com/stripe/stripe-node#webhook-signing (Deno note).
+      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     } catch (err) {
       console.error('❌ Webhook signature verification failed:', err);
       return new Response(
@@ -197,7 +202,7 @@ serve(async (req) => {
  * Handle checkout.session.completed event
  * Unlocks diagnostic when payment is successful
  */
-async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.Session) {
+async function handleCheckoutCompleted(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
   const assessmentId = session.metadata?.assessment_id;
   const userId = session.metadata?.user_id;
 
@@ -233,7 +238,7 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
  * Handle payment_intent.succeeded event
  * Alternative payment confirmation method
  */
-async function handlePaymentSucceeded(supabase: any, paymentIntent: Stripe.PaymentIntent) {
+async function handlePaymentSucceeded(supabase: SupabaseClient, paymentIntent: Stripe.PaymentIntent) {
   const assessmentId = paymentIntent.metadata?.assessment_id;
 
   if (!assessmentId) {
@@ -263,7 +268,7 @@ async function handlePaymentSucceeded(supabase: any, paymentIntent: Stripe.Payme
  * Handle payment_intent.payment_failed event
  * Log failed payments for analytics
  */
-async function handlePaymentFailed(supabase: any, paymentIntent: Stripe.PaymentIntent) {
+async function handlePaymentFailed(supabase: SupabaseClient, paymentIntent: Stripe.PaymentIntent) {
   const assessmentId = paymentIntent.metadata?.assessment_id;
 
   console.log(`❌ Payment failed for assessment: ${assessmentId || 'unknown'}`);
@@ -279,7 +284,7 @@ async function handlePaymentFailed(supabase: any, paymentIntent: Stripe.PaymentI
 /**
  * Handle Edge Pro subscription creation via checkout
  */
-async function handleEdgeSubscriptionCreated(supabase: any, session: Stripe.Checkout.Session) {
+async function handleEdgeSubscriptionCreated(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
   const userId = session.metadata?.user_id;
   if (!userId) {
     console.warn('⚠️ Edge subscription checkout missing user_id');
@@ -311,7 +316,7 @@ async function handleEdgeSubscriptionCreated(supabase: any, session: Stripe.Chec
 /**
  * Handle Edge Pro subscription updates (renewals, payment issues)
  */
-async function handleEdgeSubscriptionUpdated(supabase: any, subscription: Stripe.Subscription) {
+async function handleEdgeSubscriptionUpdated(supabase: SupabaseClient, subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.user_id;
   if (!userId) {
     console.warn('⚠️ Edge subscription update missing user_id');
@@ -352,7 +357,7 @@ async function handleEdgeSubscriptionUpdated(supabase: any, subscription: Stripe
 /**
  * Handle Edge Pro subscription deletion
  */
-async function handleEdgeSubscriptionDeleted(supabase: any, subscription: Stripe.Subscription) {
+async function handleEdgeSubscriptionDeleted(supabase: SupabaseClient, subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.user_id;
   if (!userId) {
     console.warn('⚠️ Edge subscription deletion missing user_id');
