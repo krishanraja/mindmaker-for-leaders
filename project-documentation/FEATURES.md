@@ -314,17 +314,21 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 - Feedback loops
 - Limited artifact previews (samples only)
 
-**Edge Pro** ($29/month, Stripe subscription):
-- Unlimited artifact generation
+**Edge Pro** ($49/month, Stripe subscription) - the decision tier:
+- **Unlimited decision weighs** (the free tier gives 3 weighs a month; Edge Pro removes the cap)
+- **A multi-model cross-examination of every decision** (a second, independent pass that argues against the first)
+- **Decision watch** (alerts when a load-bearing assumption weakens)
+- **Edge artifacts** (unlimited): board memos, strategy docs, emails, agendas
+- Drafting + framework generation
 - Email delivery via `deliver-edge-artifact`
 - All capability types
-- All 7 briefing types (incl. Boardroom Prep, Vendor Landscape, Competitive Intel, AI Model Landscape, Custom Voice)
+- **Live MCP pull of your built skills** into any AI (`mcp-context` `list_skills` / `get_skill`)
 - **Agent Skill Builder** (`generate-skill-export`): the Skill Builder. **NOTE (PR #204): the Skill Builder is now FREE for now - the Edge Pro gate was removed, so any authenticated user (including anonymous kit sessions) can build skills; it is no longer an Edge Pro entitlement.** As of the 2026-06-17 UX redesign (PR #199) the `/context` entry is the **Automator deliverable flow** - Suggestions (recurring deliverables mined from the brain) -> a recognition pick-cascade -> Skill ready (Run it now + Export as markdown + a "Your skills" library peek). It feeds the `generate-skill-export` pipeline and produces a Skill downloadable into `~/.claude/skills/`. Edge Pro still gates the live MCP skills pull (`mcp-context` `list_skills` / `get_skill`). See **Home / Decision Map / Automator UX Redesign** above.
 - Custom Voice Export (`generate-custom-export`)
 - Subscription management UI via `create-billing-portal-session`
 - Stripe webhook idempotency table (`stripe_events_processed`) prevents double-charges (Audit Week 1)
 
-**Sales Anchor - Edge Pro**: "$29/month. Less than a coffee a week. Generates board memos, strategy docs, and meeting agendas in your register, on demand. Skip the blank page entirely."
+**Sales Anchor - Edge Pro**: "$49/month. The decision tier. Unlimited decision weighs, a second model that cross-examines every call, and an alert when a load-bearing assumption weakens. Plus board memos, strategy docs, and meeting agendas in your register, on demand, and the live pull of your built skills into any AI."
 
 ---
 
@@ -791,7 +795,7 @@ The Kit Engine is the top of the funnel, not a paid surface in itself. It is fre
 free class  →  personal kit (free, anonymous)  →  Edge Pro / Workshop / Cohort
 ```
 
-The Edge Pro upsell ($29/month, canonical `_shared/edge-pricing.ts`) appears only **post-trust** - after the quota is hit, after the 30-day pass expires, or when a student tries to regenerate after expiry. It never gates what was already delivered: the pack the student earned in class stays theirs. The bridge card into `/dashboard` (shown after email capture) is the path from a single class kit into the full CTRL product.
+The Edge Pro upsell ($49/month, canonical `_shared/edge-pricing.ts`) appears only **post-trust** - after the quota is hit, after the 30-day pass expires, or when a student tries to regenerate after expiry. It never gates what was already delivered: the pack the student earned in class stays theirs. The bridge card into `/dashboard` (shown after email capture) is the path from a single class kit into the full CTRL product.
 
 **Sales Anchor - Kit Engine**: "Scan a QR on the way out of class. No login. Answer six questions. Walk out with a personalised pack you actually install, a 7-day plan to ship it, and nudges that stop the moment you do. The follow-up that replaces the Google Doc nobody opened."
 
@@ -1428,7 +1432,7 @@ AI-powered tools for day-to-day leadership decision-making, available after comp
 ### Payment Processing
 - Stripe integration (mindmaker_llc account), signature-verified webhooks, idempotent event processing
 - One-time payments: Full Diagnostic ($49), Deep Context Upgrade ($29), Diagnostic + Deep Context Bundle ($69)
-- Subscription: Edge Pro ($29/month)
+- Subscription: Edge Pro ($49/month)
 - Payment verification and receipt generation
 - UTM attribution stamped onto Stripe session metadata at checkout
 
@@ -1562,7 +1566,7 @@ A condensed list of one-liners pullable for outbound. Each tied to a real shippe
 - **Decision Advisor**: "Ask a hard question. Get an answer that already knows your context."
 - **Meeting Prep**: "Walk in briefed by an AI that knows your team, your priorities, and your last decision."
 - **Diagnostic**: "10 minutes. Six dimensions. The questions your board will ask you. $49."
-- **Edge Pro**: "$29/month. Less than a coffee. More leverage than your last consulting hour. Unlimited Agent Skills, all 7 briefing types, board memos in your register."
+- **Edge Pro**: "$49/month. The decision tier: unlimited decision weighs, a second model that cross-examines every call, and decision watch. Plus board memos and strategy docs in your register, and the live pull of your skills into any AI."
 - **Privacy**: "No Slack. No email. No calendar. You talk to it. That's the whole connection."
 - **Auditable AI**: "Every Briefing segment shows the profile fact that earned it the slot. No black box."
 - **Hardened production**: "6 audit weeks shipped. Stripe sig + idempotency. End-to-end deletion. Structured logging. E2E tests."

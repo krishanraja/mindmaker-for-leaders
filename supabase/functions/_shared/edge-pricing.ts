@@ -8,6 +8,6 @@
 // Plain TypeScript constants only - keep this file free of Deno or Node-only
 // imports so both runtimes can read it.
 
-export const EDGE_PRO_UNIT_AMOUNT_CENTS = 2900;
+export const EDGE_PRO_UNIT_AMOUNT_CENTS = 4900;
 export const EDGE_PRO_CURRENCY = "usd" as const;
 export const EDGE_PRO_INTERVAL = "month" as const;

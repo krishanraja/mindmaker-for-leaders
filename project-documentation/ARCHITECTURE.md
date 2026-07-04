@@ -1093,7 +1093,7 @@ Five new edge functions back the class follow-up portal. They reuse the proven a
 - `storage-utils.ts`: Supabase Storage helpers (`ctrl-briefings` bucket policy codified Audit Week 2)
 - `email-utils.ts`: Resend email sending
 - `validate-database.ts`: DB validation helpers
-- `edge-pricing.ts`: canonical Edge Pro price ($29/month), cross-imported by Deno edge runtime + Vite client
+- `edge-pricing.ts`: canonical Edge Pro price ($49/month), cross-imported by Deno edge runtime + Vite client
 - `kit-presets/`: Kit Engine class presets (Phase 11), cross-imported by `kit-compose` + Vite client the same way as `edge-pricing.ts`. The DB stores only `class_slug` + `preset_version`; preset content lives here. Ships with `vibe-coding` and `autonomous-business`.
 
 ---
@@ -1475,7 +1475,7 @@ A machine-readable JSON document served at this well-known path. It is the singl
     "full_diagnostic": "$49 one-time",
     "deep_context_upgrade": "$29 one-time",
     "diagnostic_deep_context_bundle": "$69 one-time",
-    "edge_pro": "$29/month",
+    "edge_pro": "$49/month",
     "bootcamp_teams": "$15K-$50K",
     "portfolio_partners": "$5K-$25K"
   },
@@ -1535,7 +1535,7 @@ The app shell sets `html` / `body` / `#root` to `overflow: hidden` (the no-scrol
 
 ### Entitlement
 
-Redeeming grants a 30-day pass + a 3-net-new-build quota on `kit_redemptions`, guarded by the atomic `redeem_kit_code` (row-locks the code against a simultaneous-class race; idempotent) and `consume_kit_skill` RPCs, both `SECURITY DEFINER` with no anon/authenticated execute grant. The Edge Pro upsell ($29/month, canonical `_shared/edge-pricing.ts`) shows only post-trust (quota hit, pass expiry, regenerate-after-expiry) and never gates what was already delivered.
+Redeeming grants a 30-day pass + a 3-net-new-build quota on `kit_redemptions`, guarded by the atomic `redeem_kit_code` (row-locks the code against a simultaneous-class race; idempotent) and `consume_kit_skill` RPCs, both `SECURITY DEFINER` with no anon/authenticated execute grant. The Edge Pro upsell ($49/month, canonical `_shared/edge-pricing.ts`) shows only post-trust (quota hit, pass expiry, regenerate-after-expiry) and never gates what was already delivered.
 
 ### Verification
 

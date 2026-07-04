@@ -514,7 +514,7 @@ The Phase 8 desktop redesign proved the `DesktopShell` pattern on the core surfa
 - 1 new e2e spec (`desktop-zero-scroll`) - total now 7
 - Counts at end of phase: 80 edge functions, 59 hooks, 110 migrations, 6 Vitest + 7 Playwright specs
 - Desktop is now uniformly viewport-pinned; no authenticated surface scrolls the window
-- Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change. (Historical note: Edge Pro moved to $29/month on 2026-05-30; existing $9 subscribers are grandfathered. All new checkouts are $29/mo.)
+- Edge Pro upsell strengthened materially: the same $9/month now includes unlimited Agent Skill Builder generation alongside the existing Edge artifacts + 7 briefing types + Custom Voice Export. No price change. (Historical note: Edge Pro moved to $29/month on 2026-05-30; existing $9 subscribers are grandfathered. All new checkouts are $29/mo. Later follow-on, 2026-07-04: Edge Pro moved to $49/month and the positioning shifted, the daily briefing is now free and Edge Pro is the decision tier; see DECISIONS_LOG.md Decision 60.)
 
 ---
 
@@ -543,7 +543,7 @@ The product already had the pieces to do better. The anonymous `/build` pipeline
 ### Key Decisions (see DECISIONS_LOG.md Decision 43)
 
 - ZIPs stored inline as base64 on the artifact row, not in a Storage bucket: object-level RLS on `storage.objects` can't be created via the Supabase Management API (the role doesn't own the relation), the artifacts are small, and the row persists for the life of the redemption so the pack stays downloadable forever. Same pattern as `free-skill-export`.
-- Edge Pro upsell ($29/month, canonical `_shared/edge-pricing.ts`) shown only post-trust (quota hit, pass expiry, regenerate-after-expiry); never gates what was already delivered.
+- Edge Pro upsell ($29/month, canonical `_shared/edge-pricing.ts`) shown only post-trust (quota hit, pass expiry, regenerate-after-expiry); never gates what was already delivered. (Follow-on, 2026-07-04: Edge Pro is now $49/month; see DECISIONS_LOG.md Decision 60.)
 - Backend deployed live and verified before the routes shipped, so go-live was a frontend merge rather than a big-bang flip.
 
 ### A Bug Found in Testing

@@ -65,7 +65,12 @@ serve(async (req) => {
 
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      // MUST be the async variant: Supabase's Deno runtime exposes Web Crypto as
+      // async-only, so the synchronous constructEvent throws "SubtleCryptoProvider
+      // cannot be used in a synchronous context" and every webhook silently fails
+      // (which is why no subscription ever activated before this fix). See
+      // https://github.com/stripe/stripe-node#webhook-signing (Deno note).
+      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     } catch (err) {
       console.error('❌ Webhook signature verification failed:', err);
       return new Response(
