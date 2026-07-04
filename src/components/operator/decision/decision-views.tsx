@@ -377,7 +377,7 @@ function CallPane({ decisionCase, isComplete }: { decisionCase: NonNullable<Retu
         <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
           <Eye className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
           <span className="text-pretty">
-            We keep watching: CTRL re-checks the claims this rests on and flags you if the evidence shifts. Last checked{' '}
+            Tracked: CTRL re-checks the claims this rests on and flags you if the evidence shifts. Last checked{' '}
             {formatDistanceToNow(new Date(decisionCase.last_verified_at), { addSuffix: true })}.
           </span>
         </div>

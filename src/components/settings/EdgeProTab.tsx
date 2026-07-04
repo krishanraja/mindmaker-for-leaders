@@ -17,6 +17,8 @@ import {
   ExternalLink,
   CheckCircle2,
   AlertTriangle,
+  Check,
+  Minus,
 } from 'lucide-react'
 
 const STATUS_LABEL: Record<string, { label: string; tone: 'ok' | 'warn' | 'muted' }> = {
@@ -192,7 +194,7 @@ export function EdgeProTab() {
       <PlanMatrix />
 
       {/* Subscription card */}
-      <div className="bg-card p-6 rounded-lg border border-border">
+      <div className="bg-card p-6 rounded-2xl border border-border">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-accent" />
@@ -203,9 +205,9 @@ export function EdgeProTab() {
               variant="outline"
               className={
                 statusMeta.tone === 'ok'
-                  ? 'border-emerald-500/40 text-emerald-600'
+                  ? 'border-accent/40 text-accent'
                   : statusMeta.tone === 'warn'
-                  ? 'border-amber-500/40 text-amber-600'
+                  ? 'border-amber-500/40 text-amber-500'
                   : 'border-border text-muted-foreground'
               }
             >
@@ -279,7 +281,7 @@ export function EdgeProTab() {
           </div>
         ) : status === 'past_due' ? (
           <div className="space-y-3">
-            <p className="text-sm text-amber-600">
+            <p className="text-sm text-amber-500">
               Your last payment failed. Update your card to keep Edge Pro active.
             </p>
             <Button
@@ -336,7 +338,7 @@ export function EdgeProTab() {
       </div>
 
       {/* Email delivery card */}
-      <div className="bg-card p-6 rounded-lg border border-border">
+      <div className="bg-card p-6 rounded-2xl border border-border">
         <div className="flex items-center gap-2 mb-2">
           <Mail className="h-5 w-5 text-accent" />
           <h3 className="text-lg font-semibold text-foreground">Email Delivery</h3>
@@ -404,7 +406,7 @@ export function EdgeProTab() {
 
       {/* Agent access (MCP) - only for active Edge Pro */}
       {status === 'active' && (
-        <div className="bg-card p-6 rounded-lg border border-border">
+        <div className="bg-card p-6 rounded-2xl border border-border">
           <McpTokensPanel />
         </div>
       )}
@@ -431,7 +433,7 @@ const MATRIX: MatrixRow[] = [
 
 function PlanMatrix() {
   return (
-    <div className="bg-card p-6 rounded-lg border border-border">
+    <div className="bg-card p-6 rounded-2xl border border-border">
       <div className="mb-3">
         <h3 className="text-lg font-semibold text-foreground">What you get</h3>
         <p className="text-xs text-muted-foreground">
@@ -452,8 +454,8 @@ function PlanMatrix() {
         {MATRIX.map((row) => (
           <div key={row.label} className="contents">
             <span className="text-foreground/90">{row.label}</span>
-            <span className="text-center text-muted-foreground">{renderCell(row.free)}</span>
-            <span className="text-center text-foreground">{renderCell(row.pro)}</span>
+            <span className="flex items-center justify-center text-muted-foreground">{renderCell(row.free, 'free')}</span>
+            <span className="flex items-center justify-center text-foreground">{renderCell(row.pro, 'pro')}</span>
           </div>
         ))}
       </div>
@@ -461,9 +463,11 @@ function PlanMatrix() {
   )
 }
 
-function renderCell(value: string | true | false): string {
-  if (value === true) return '✓'
-  if (value === false) return '-'
+function renderCell(value: string | true | false, tier: 'free' | 'pro'): React.ReactNode {
+  if (value === true) {
+    return <Check className={tier === 'pro' ? 'h-4 w-4 text-accent' : 'h-4 w-4 text-muted-foreground'} strokeWidth={2.6} />
+  }
+  if (value === false) return <Minus className="h-4 w-4 text-muted-foreground/50" strokeWidth={2.4} />
   return value
 }
 

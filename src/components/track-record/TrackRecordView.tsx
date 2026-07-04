@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Scale, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
-import { AgedCallRow } from './AgedCallRow';
+import { AgedCallRow, type DecisionCardActions } from './AgedCallRow';
 import { CapabilityHeader } from './CapabilityHeader';
 import { CalibrationSparkline, ProofGlyph } from './trackRecordMotifs';
 import type { AgedOutcome, CalibrationRead, SharpenTrend, TrackRecordModel } from './trackRecordModel';
@@ -151,7 +151,7 @@ function WarmCalibration({ calibration, freshDays }: { calibration: CalibrationR
         aria-hidden="true"
       />
       <div className="relative flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">How they are turning out</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Your track record</span>
         {fresh && <span className="text-[11px] font-medium text-muted-foreground/80">{fresh}</span>}
       </div>
 
@@ -184,8 +184,8 @@ function WarmCalibration({ calibration, freshDays }: { calibration: CalibrationR
         // without a deflating "0/N" hero, and point forward.
         <p className="relative mt-3.5 text-[14px] leading-relaxed text-[#c2cad6]">
           {calibration.scored === 1 ? 'Your first decision' : `Your first ${calibration.scored} decisions`} went the
-          other way to how you called {calibration.scored === 1 ? 'it' : 'them'}. <b className="font-bold text-accent">That is the point.</b> A few more play out
-          and the real pattern starts to show.
+          other way from how you called {calibration.scored === 1 ? 'it' : 'them'}. <b className="font-bold text-accent">Worth knowing.</b> A few more play out
+          and the real pattern shows.
         </p>
       )}
 
@@ -311,7 +311,7 @@ const OUTCOME_SEGMENTS: { key: 'all' | AgedOutcome; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'held', label: 'Worked out' },
   { key: 'broke', label: 'Fell short' },
-  { key: 'watch', label: 'Playing out' },
+  { key: 'watch', label: 'Active' },
 ];
 
 function OutcomeFilter({
@@ -356,9 +356,11 @@ export interface TrackRecordViewProps {
   /** The quiet progression header (capability ladder); absent renders exactly the pre-ladder view. */
   capability?: CapabilityRead | null;
   onCapabilityGo?: (move: CapabilityNextMove) => void;
+  /** When present, active-decision rows become a control centre (open/strengthen/archive). */
+  decisionActions?: DecisionCardActions;
 }
 
-export function TrackRecordView({ model, desktop, onWeigh, animated = true, capability, onCapabilityGo }: TrackRecordViewProps) {
+export function TrackRecordView({ model, desktop, onWeigh, animated = true, capability, onCapabilityGo, decisionActions }: TrackRecordViewProps) {
   // Outcome filter for the rich list (hooks must run before any early return).
   const [outcome, setOutcome] = useState<'all' | AgedOutcome>('all');
   const outcomeCounts = useMemo(() => {
@@ -397,10 +399,10 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true, capa
         <WarmCalibration calibration={model.calibration} freshDays={model.freshDays} />
         {shown.length > 0 && (
           <>
-            <SectionLabel>Still playing out</SectionLabel>
+            <SectionLabel>Active decisions</SectionLabel>
             <div className="flex min-h-0 flex-col gap-2.5">
               {shown.map((c, i) => (
-                <AgedCallRow key={c.id} call={c} index={i} animated={animated} />
+                <AgedCallRow key={c.id} call={c} index={i} animated={animated} actions={decisionActions} />
               ))}
             </div>
           </>
@@ -437,7 +439,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true, capa
           <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-hide pb-1">
             {richCalls.length === 0 && <p className="text-[12.5px] text-muted-foreground">None in this group.</p>}
             {richCalls.map((c, i) => (
-              <AgedCallRow key={c.id} call={c} index={i} animated={animated} />
+              <AgedCallRow key={c.id} call={c} index={i} animated={animated} actions={decisionActions} />
             ))}
           </div>
         </div>
@@ -455,7 +457,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true, capa
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-hide">
         {richCalls.length === 0 && <p className="text-[12.5px] text-muted-foreground">None in this group.</p>}
         {richCalls.map((c, i) => (
-          <AgedCallRow key={c.id} call={c} index={i} animated={animated} />
+          <AgedCallRow key={c.id} call={c} index={i} animated={animated} actions={decisionActions} />
         ))}
       </div>
     </div>

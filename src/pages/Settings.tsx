@@ -8,7 +8,7 @@ import { PreferencesTab } from '@/components/settings/PreferencesTab'
 import { EdgeProTab } from '@/components/settings/EdgeProTab'
 import { ManifestoTab } from '@/components/settings/ManifestoTab'
 import { BriefingDirectivesTab } from '@/components/settings/BriefingDirectivesTab'
-import { BriefingInterestsTab } from '@/components/settings/BriefingInterestsTab'
+import { NewsPreferencesPanel } from '@/components/cockpit/NewsPreferencesPanel'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { DesktopShell } from '@/components/layout/DesktopShell'
 import { useDevice } from '@/hooks/useDevice'
@@ -65,7 +65,7 @@ function SettingsTabs() {
 
       <TabsContent value="briefing" className={TAB_CONTENT_CLASS}>
         <StackedTab>
-          <BriefingInterestsTab />
+          <NewsPreferencesPanel />
           <BriefingDirectivesTab />
         </StackedTab>
       </TabsContent>

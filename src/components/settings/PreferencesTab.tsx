@@ -7,6 +7,7 @@ import { Moon, Sun } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useToast } from '@/hooks/use-toast'
+import { Surface } from '@/components/system/surface'
 
 export function PreferencesTab() {
   const { theme, setTheme } = useTheme()
@@ -51,12 +52,12 @@ export function PreferencesTab() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gray-900 p-6 rounded-lg">
-        <h3 className="text-lg font-semibold mb-4">Appearance</h3>
+    <div className="space-y-4">
+      <Surface className="p-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Appearance</h3>
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-gray-400 block mb-2">Theme</label>
+            <label className="text-sm text-muted-foreground block mb-2">Theme</label>
             <div className="flex gap-2">
               <Button
                 variant={theme === 'dark' ? 'default' : 'outline'}
@@ -77,14 +78,14 @@ export function PreferencesTab() {
             </div>
           </div>
         </div>
-      </div>
+      </Surface>
 
-      <div className="bg-gray-900 p-6 rounded-lg">
-        <h3 className="text-lg font-semibold mb-4">Notifications</h3>
+      <Surface className="p-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Notifications</h3>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <label className="text-sm font-medium block">Daily briefing email</label>
-            <p className="text-sm text-gray-400 mt-1">
+            <label className="text-sm font-medium block text-foreground">Daily briefing email</label>
+            <p className="text-sm text-muted-foreground mt-1">
               A short morning email with your briefing, tuned to your priorities.
             </p>
           </div>
@@ -95,7 +96,7 @@ export function PreferencesTab() {
             aria-label="Daily briefing email"
           />
         </div>
-      </div>
+      </Surface>
     </div>
   )
 }

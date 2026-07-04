@@ -17,7 +17,7 @@ import type { PlayedOut } from '@/types/track-record';
 const OUTCOMES: { key: PlayedOut; label: string; hint: string }[] = [
   { key: 'true', label: 'It worked out', hint: 'It went the way I read it' },
   { key: 'false', label: 'It fell short', hint: 'It did not go the way I read it' },
-  { key: 'too_early', label: 'Too early to tell', hint: 'Still playing out, but I am closing it for now' },
+  { key: 'too_early', label: 'Too early to tell', hint: 'Not clear yet, but I am closing it for now' },
 ];
 
 export function ResolveDecisionSheet({

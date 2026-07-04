@@ -24,8 +24,12 @@ export default function DecisionPage() {
   // A starter arrives either as router state (Home kickstart / Decision Map) or as
   // a ?prefill= query param (the reactivation-nudge email link, which can't set
   // router state). State wins; query param is the email fallback.
-  const prefill =
-    (location.state as { prefill?: string } | null)?.prefill ?? searchParams.get('prefill') ?? undefined;
+  const navState = location.state as { prefill?: string; openCaseId?: string; strengthen?: boolean } | null;
+  const prefill = navState?.prefill ?? searchParams.get('prefill') ?? undefined;
+  // A track-record "Active decision" card can deep-link a specific case open (and
+  // optionally kick a strengthen run) - the same door the Decisions tab already uses.
+  const openCaseId = navState?.openCaseId ?? undefined;
+  const strengthen = navState?.strengthen ?? false;
 
   if (!isMobile) {
     return (
@@ -33,7 +37,7 @@ export default function DecisionPage() {
         {/* fit-to-viewport: no page scroll; the panel fits + opens depth internally */}
         <div className="flex-1 min-h-0 flex flex-col">
           <div className="mx-auto w-full max-w-5xl flex-1 min-h-0 flex flex-col">
-            <PressureTestPanel initialStatement={prefill} />
+            <PressureTestPanel initialStatement={prefill} initialOpenCaseId={openCaseId} initialStrengthen={strengthen} />
           </div>
         </div>
       </DesktopShell>
@@ -43,7 +47,7 @@ export default function DecisionPage() {
   return (
     <MobileFrame padding="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
       <div className="mx-auto w-full max-w-3xl flex-1 min-h-0 flex flex-col">
-        <PressureTestPanel initialStatement={prefill} />
+        <PressureTestPanel initialStatement={prefill} initialOpenCaseId={openCaseId} initialStrengthen={strengthen} />
       </div>
     </MobileFrame>
   );

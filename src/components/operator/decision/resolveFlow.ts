@@ -31,7 +31,7 @@ export function resolvedMomentCopy(playedOut: PlayedOut, resolvedCount: number):
     ? 'A win on the record. I keep score on how your calls age.'
     : playedOut === 'false'
       ? 'Logged honestly. The record is what makes the next call sharper.'
-      : 'Parked for now. I keep watching how it ages.';
+      : 'Parked for now. I will flag it if the ground shifts.';
   return {
     headline: 'Closed. Into your history.',
     sub,

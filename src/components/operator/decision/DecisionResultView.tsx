@@ -166,7 +166,7 @@ export function DecisionResultView({
     <div className="flex shrink-0 items-start gap-2.5 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2.5">
       <Eye className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
       <p className="text-[11.5px] leading-snug text-foreground/90">
-        <span className="font-bold text-foreground">I'll keep an eye on this.</span> If something important changes, I'll re-check it and let you know. Last checked{' '}
+        <span className="font-bold text-foreground">This one is tracked.</span> If a load-bearing fact changes, I will re-check it and flag it. Last checked{' '}
         {formatDistanceToNow(new Date(decisionCase.last_verified_at), { addSuffix: true })}.
       </p>
     </div>

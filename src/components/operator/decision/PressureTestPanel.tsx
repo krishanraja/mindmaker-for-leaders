@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileHeaderSlot } from '@/contexts/MobileHeaderSlotContext';
@@ -9,8 +10,11 @@ import { useDecisionInbox } from '@/hooks/useDecisionInbox';
 import { usePinnedDecision } from '@/hooks/usePinnedDecision';
 import { useDecisionCall } from '@/hooks/useDecisionCall';
 import { useResolveDecision } from '@/hooks/useResolveDecision';
+import { useDecisionActions } from '@/hooks/useDecisionActions';
 import { useTrackRecord } from '@/hooks/useTrackRecord';
+import { useCapabilitySignals } from '@/hooks/useCapabilitySignals';
 import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
+import type { CapabilityNextMove } from '@/lib/capabilityLadder';
 import {
   DecisionCold, DecisionLoading, DecisionErrorView, UpgradeCard,
 } from '@/components/operator/decision/decision-views';
@@ -50,7 +54,17 @@ const TERMINAL_STATUSES = new Set(['decided', 'archived', 'superseded', 'reverse
  * actually turned out). Mobile is one thumb-first column in MobileFrame (no page
  * scroll); desktop is a calm two-zone command surface in DesktopShell.
  */
-export function PressureTestPanel({ initialStatement }: { initialStatement?: string } = {}) {
+export function PressureTestPanel({
+  initialStatement,
+  initialOpenCaseId,
+  initialStrengthen = false,
+}: {
+  initialStatement?: string;
+  /** Deep-link a specific case open (from a track-record "Active decision" card). */
+  initialOpenCaseId?: string;
+  /** After opening, kick the existing strengthen research door. */
+  initialStrengthen?: boolean;
+} = {}) {
   const isMobile = useIsMobile();
   const isDesktop = !isMobile;
   const [statement, setStatement] = useState(initialStatement ?? '');
@@ -60,7 +74,16 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   const { subscribe, isProcessing } = useEdgeSubscription();
   const { recordCall } = useDecisionCall();
   const { resolve, resolving } = useResolveDecision();
+  const { archive, archivingId } = useDecisionActions();
   const trackRecord = useTrackRecord();
+  const { capability } = useCapabilitySignals();
+  const navigate = useNavigate();
+
+  // When set to a case id, the pending-strengthen effect fires the existing
+  // research('strengthen') door once that case finishes loading. Serves both the
+  // deep-link (initialStrengthen) and the in-panel "Strengthen" card action.
+  const pendingStrengthenIdRef = useRef<string | null>(null);
+  const openHandledRef = useRef(false);
 
   // Only non-terminal cases belong in the active rotation (auto-load + switcher).
   // Resolved decisions still appear under History (driven by useTrackRecord).
@@ -136,6 +159,42 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   // From the anatomy's switcher / History: open another decision for review AND
   // make it the single pinned one (one decision in focus at a time).
   const switchTo = (id: string) => { setComposing(false); setJustRan(false); setResolvedMoment(null); setView('now'); engine.reset(); engine.load(id); void pin(id); inbox.refresh(); void refreshPinned(); };
+
+  // A track-record "Active decision" card deep-linked a case: open it (same door
+  // as the switcher) and, if asked, queue the strengthen run for when it loads.
+  useEffect(() => {
+    if (openHandledRef.current || !initialOpenCaseId || inbox.loading) return;
+    openHandledRef.current = true;
+    autoLoadedRef.current = true; // the deep-link owns the surface; block the auto-load race
+    if (initialStrengthen) pendingStrengthenIdRef.current = initialOpenCaseId;
+    switchTo(initialOpenCaseId);
+    // switchTo/engine are stable enough here; run once when the deep-link resolves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialOpenCaseId, initialStrengthen, inbox.loading]);
+
+  // Fire the existing strengthen research once the queued case has finished
+  // loading (its stage is complete). Reuses useDecisionEngine.research - no new door.
+  useEffect(() => {
+    const target = pendingStrengthenIdRef.current;
+    if (target && engine.isComplete && engine.decisionCase?.id === target) {
+      pendingStrengthenIdRef.current = null;
+      void engine.research('strengthen');
+    }
+  }, [engine.isComplete, engine.decisionCase?.id, engine]);
+
+  // The active-decision control centre for the History (track-record) list: open
+  // / strengthen / archive, each reusing an existing door.
+  const historyDecisionActions = {
+    onOpen: (id: string) => switchTo(id),
+    onStrengthen: (id: string) => { pendingStrengthenIdRef.current = id; switchTo(id); },
+    onArchive: async (id: string) => {
+      await archive(id);
+      void inbox.refresh();
+      void trackRecord.refetch();
+      void refreshPinned();
+    },
+    archivingId,
+  };
 
   const bankCall = async () => {
     const c = engine.decisionCase;
@@ -293,11 +352,17 @@ export function PressureTestPanel({ initialStatement }: { initialStatement?: str
   // ---- HISTORY surface: the Track Record, reused as-is -------------------------
   const trModel = useMemo(() => buildTrackRecordModel(trackRecord.records), [trackRecord.records]);
   const openFromHistory = (prefill?: string) => { setStatement(prefill ?? ''); setComposing(true); setResolvedMoment(null); setView('now'); haptics.light(); };
+  // A capability next-move that lives in this tab opens the weigher inline; anything
+  // else routes to its home. Keeps the You-tab analysis identical wherever it renders.
+  const onCapabilityGo = (move: CapabilityNextMove) => {
+    if (move.route === '/decision') { openFromHistory(move.prefill); return; }
+    navigate(move.route, move.prefill ? { state: { prefill: move.prefill } } : undefined);
+  };
   const historySurface = (
     <div className={cn('h-full min-h-0 overflow-y-auto scrollbar-hide', isDesktop ? '' : 'pb-2')}>
       {trackRecord.loading
         ? <TrackRecordSkeleton desktop={isDesktop} />
-        : <TrackRecordView model={trModel} desktop={isDesktop} onWeigh={openFromHistory} />}
+        : <TrackRecordView model={trModel} desktop={isDesktop} onWeigh={openFromHistory} decisionActions={historyDecisionActions} capability={capability} onCapabilityGo={onCapabilityGo} />}
     </div>
   );
 
