@@ -6,6 +6,29 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
+## [Unreleased] - 2026-07-04 - Settings audit: one-door tuning, decisions control-centre, design-system sweep
+
+> **Why.** The Settings surface had drifted from the rest of the app: an "amateur" design system next to the polished Home/Decisions language, a DUPLICATE briefing tuner (the Home "Tune what pops up" sheet wrote `news_preferences`; a separate Settings → Interests panel wrote `briefing_interests` — so tuning in one never showed in the other), a track-record row that navigated behind the still-open settings drawer, and cliché AI-speak ("Watching how it lands", "That is the point"). Fixed holistically against five principles — one door / one of everything, the polished card language everywhere, plain copy, solid pinned footers, interactions that actually work — never patched one-by-one.
+
+### Added
+- **Reusable feed/briefing tuning panel.** `src/components/cockpit/NewsPreferencesPanel.tsx` — the "Tune what pops up" picker body (priorities + scan bias + a people/companies + never-show watchlist), now the SINGLE door: wrapped by `NewsPreferencesSheet` (Home "Tune feed" drawer) and rendered directly in Settings → Interests (desktop Briefing tab + mobile section). The watchlist reuses `useBriefingInterests`/`briefing_interests`, so the server daily-briefing lens keeps its named-entity + exclude targeting.
+- **Active-decision control-centre.** `src/hooks/useDecisionActions.ts` (archive write, mirrors `useResolveDecision`) + Open / Strengthen / Archive on the active `AgedCallRow`, each wired to an EXISTING door (`useDecisionEngine.load`+pin via a `PressureTestPanel` `openCaseId`/`strengthen` deep-link honoured by `DecisionPage`; the existing `research('strengthen')`; a `status='archived'` update). No new features.
+- **Main-app design primitives.** `src/components/system/surface.tsx` — `Surface`, `Eyebrow`, `SettingRow`, and a SOLID `SheetFooterBar` (the counterpart to `kitPrimitives.tsx`, on the dark ctrl-ds tokens).
+
+### Changed
+- **One scoring system surfaced everywhere.** The capability analysis (`CapabilityHeader` / `capabilityLadder` / `useCapabilitySignals`) now also renders in the Decisions → History embed (was standalone-page only); no parallel scorer added.
+- **Track-record door fix.** `SettingsList` closes the settings sheet before navigating to `/track-record` (the global drawer used to cover the page); the row is now "Tune your feed" and uses the `SettingRow` primitive.
+- **Copy cull.** "Watching how it lands" → "Active decision"; "That is the point" / "How they are turning out" / "Still playing out" / "keep an eye" / "keep watching" rewritten plain across `AgedCallRow`, `TrackRecordView`, `DecisionResultView`, `resolveFlow`, `ResolveDecisionSheet`, `decision-views`, `KickstartCard`. Legal/honesty text untouched; no em dashes.
+- **Settings design sweep.** Solid pinned footers (the transparent `NewsPreferencesSheet` "Done" bar); off-token `emerald-600`/`amber-600` (dark-mode contrast bugs) → `text-accent`/`amber-500`; emoji (`PrivacyDataTab`) and `✓`/`-` glyphs (`EdgeProTab`) → lucide icons; raw greys + a hardcoded `#00D9B6` button (`EditableField`) → tokens; card radii unified to `rounded-2xl`.
+
+### Removed
+- **`BriefingInterestsTab`** (`src/components/settings/BriefingInterestsTab.tsx`) — the duplicate tuner, folded into `NewsPreferencesPanel`.
+- The dead **Notifications** settings row (it led to a no-op placeholder panel).
+
+**Verified:** typecheck 0 new errors, 337 unit tests pass, production build + prerender green, lint clean on touched files.
+
+---
+
 ## [Unreleased] - 2026-06-29 - Unified onboarding → decisions → engagement loop (PR #298)
 
 > **Why.** Entry and re-entry had drifted into patchwork: a legacy 40-minute voice onboarding gated behind a `VITE_COCKPIT_ENABLED` fork (with older Memory dashboards as the other branch), a loose onboarding→first-decision handoff, and a cold-start trap where re-engagement only armed for leaders who already had decisions AND opted into daily email. A leader who set CTRL up but never weighed a decision - or who lapsed - got zero pull-back. Resolved by adapting the whole experience to the leader's lifecycle state (and to the device mindset). Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.

@@ -96,8 +96,10 @@ Both compose the same terms (highest wins):
 - `fitLift` - **role/business fit** (section 3.4), a small within-group sharpener.
 - the spine (score or position), with original index as a stable tiebreak.
 
-### 3.3 Tune controls - `NewsPreferencesSheet` + `useNewsPreferences` + `news_preferences`
-Four real-world **priority groups** (`PRIORITY_GROUPS`, each → one or more of the nine categories) + three **scan bias** options. Stored in the owner-scoped `news_preferences` table (`boosted_categories text[]`, `bias`). `useNewsPreferences` is a **module-level shared store** (`useSyncExternalStore`): a save propagates to `useCockpit` instantly, so the cards re-rank the moment a pick is made. The sheet **applies every pick live** (no Save button - it sat below the fold; the footer is a pinned "Done" dismiss).
+### 3.3 Tune controls - `NewsPreferencesPanel` (one door) + `useNewsPreferences` + `news_preferences`
+Four real-world **priority groups** (`PRIORITY_GROUPS`, each → one or more of the nine categories) + three **scan bias** options. Stored in the owner-scoped `news_preferences` table (`boosted_categories text[]`, `bias`). `useNewsPreferences` is a **module-level shared store** (`useSyncExternalStore`): a save propagates to `useCockpit` instantly, so the cards re-rank the moment a pick is made. Every pick **applies live** (no Save button - it sat below the fold; the footer is a pinned, SOLID "Done" dismiss via `SheetFooterBar`).
+
+**One door (2026-07-04).** The picker body is `src/components/cockpit/NewsPreferencesPanel.tsx`; `NewsPreferencesSheet` is just the Home "Tune feed" drawer shell around it, and Settings → Interests ("Tune your feed") renders the **same** panel (desktop Briefing tab + mobile section). There is no longer a separate Settings tuner - the old `BriefingInterestsTab` was retired. The panel also carries a **watchlist** (people/companies to watch + never-show excludes) backed by `useBriefingInterests`/`briefing_interests`, so the named-entity + exclude inputs the nine lanes cannot express still reach the server briefing lens (§3.7 / `briefing-lens.ts loadInterests`). A tune made anywhere shows everywhere - the two surfaces are one control over one set of tables.
 
 ### 3.4 Role + business fit - `src/lib/roleArchetype.ts`
 Inferred from facts already held (no new questions, no LLM): the leader's **role/title** (identity facts) resolves to an **archetype** (founder, engineering, data/AI, product, marketing, sales, finance, operations, people, legal/risk; generalist default) with a considered per-category affinity for what that job actually watches; the **sector/industry** (business facts) adds a light secondary lift. `roleFitByCategory(role, industry)` returns a 0..1 suitability per category. `useCockpit` reads role/sector from `user_memory` and passes the fit into the ranker - so within a chosen lane a CFO's economics leads product, a CTO's tools lead model.
@@ -142,7 +144,7 @@ The v2 pipeline (lens → query planner → provider fan-out → dedupe+score �
 | One brain | `supabase/functions/_shared/brain-profile.ts` |
 | Shared pool (gather/cluster/score/cache) | `supabase/functions/live-headlines/index.ts`, `_shared/news-{sources,ai-native,cluster,synthesis}.ts`, `_shared/personalization-core.ts` |
 | Client orchestration | `src/hooks/useCockpit.ts` |
-| Tune store + UI | `src/hooks/useNewsPreferences.ts`, `src/components/cockpit/NewsPreferencesSheet.tsx`, `news_preferences` table |
+| Tune store + UI (one door) | `src/hooks/useNewsPreferences.ts`, `src/components/cockpit/NewsPreferencesPanel.tsx` (body, reused by Home `NewsPreferencesSheet` + Settings → Interests), `news_preferences` table; watchlist via `useBriefingInterests`/`briefing_interests` |
 | Ranker (lane/bias/fit) | `src/lib/newsPriority.ts` |
 | Role + business fit | `src/lib/roleArchetype.ts` |
 | Floor of 3 (reserve) | `src/components/cockpit/laneReserve.ts` |
