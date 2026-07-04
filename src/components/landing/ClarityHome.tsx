@@ -125,7 +125,7 @@ export function ClarityHome() {
           <Button size="lg" className="h-12 px-7 text-base" onClick={() => navigate('/auth')}>
             Start free <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
-          <Button size="lg" variant="ghost" className="h-12 px-7 text-base" onClick={() => navigate('/pricing')}>
+          <Button size="lg" variant="ghost" className="h-12 px-7 text-base" onClick={() => navigate('/upgrade')}>
             See pricing
           </Button>
         </div>

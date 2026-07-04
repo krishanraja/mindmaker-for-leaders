@@ -34,7 +34,7 @@ export default function AgentsPage() {
             context on every call - no pasting, never stale.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Button onClick={() => navigate('/pricing')}>
+            <Button onClick={() => navigate('/upgrade')}>
               Get Edge Pro <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
             <Button variant="secondary" onClick={() => navigate('/auth')}>Start free</Button>
@@ -112,7 +112,7 @@ export default function AgentsPage() {
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
             Available on Edge Pro. Mint a key, connect your agents, and stop re-explaining yourself.
           </p>
-          <Button className="mt-5" onClick={() => navigate('/pricing')}>
+          <Button className="mt-5" onClick={() => navigate('/upgrade')}>
             See pricing <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         </div>

@@ -221,7 +221,7 @@ export function DecisionResultView({
   const upgradeNudge = !hasAccess ? (
     <button
       type="button"
-      onClick={() => navigate('/pricing')}
+      onClick={() => navigate('/upgrade')}
       className="flex w-full shrink-0 items-center justify-between rounded-xl border border-accent/25 bg-accent/[0.06] px-3 py-2.5 text-left transition-colors hover:border-accent/50"
     >
       <span className="text-[11.5px] text-foreground/90">
