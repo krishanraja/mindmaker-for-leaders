@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-05 (verified current as a historical record; the two halves that post-date this timeline now also include the 2028 refactor, PR #298, PR #321, and the settings audit - see `CLAUDE.md` for the current state).
 
 > This is a historical record, kept on purpose. Early phases below describe positioning and visuals that are now RETIRED: the "Clarity for Leaders" tagline, the light/Apple-like design system (warm off-white, ink, Mint). Those are accurate as history but are not the current product. The current state is: globally DARK (the `ctrl-ds` instrument palette, emerald `#00D9B6`), and the LOCKED positioning is **building the AI-native version of your business** (locked 2026-06-19, after the latest phase recorded here). The two halves that post-date this timeline are the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
 

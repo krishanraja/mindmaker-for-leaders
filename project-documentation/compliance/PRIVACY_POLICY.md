@@ -1,7 +1,7 @@
 # CTRL Privacy Policy
 
 Effective date: 2026-06-02
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-05 (updated 2026-07-05)
 
 This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://ctrl.themindmaker.ai. CTRL is an executive leadership-clarity tool. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 
@@ -24,7 +24,7 @@ This policy covers personal data processed through the CTRL web application and 
 |----------|----------|--------|
 | Account identity | Email address, name, display name | You, at sign-up; Google OAuth if used |
 | Business / work context | Company, industry, company size, website, primary challenges, AI-readiness score, communication style, thinking style | You, during onboarding and use |
-| Memory Web facts | Thoughts and statements you voice that are extracted into structured facts (encrypted at rest with AES-256-GCM) | Derived from your inputs |
+| Memory Web facts | Thoughts and statements you voice that are extracted into structured facts (field-level AES-256-GCM encryption on the fact content, alongside a retained plaintext copy used for search/display) | Derived from your inputs |
 | Conversation / chat messages | Messages you send to and receive from CTRL's assistants | You, during use |
 | AI-literacy diagnostic / assessment responses | Answers to AI-fluency and leadership assessments | You, during assessments |
 | Kit builds / lesson-kit inputs | Org/team/workflow intake you provide when forking a lesson kit (boxes, pathway, profile, time sinks, guardrails, grind, what work involves, team maturity), stored in `kit_builds.intake` | You, during a kit build |
@@ -60,7 +60,7 @@ CTRL sends your inputs (chat, business context, assessment answers, briefing top
 
 ## 6. How we share your data
 
-We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, Apollo, Google (OAuth and Sheets), and Vercel.
+We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, NewsAPI.org, Exa, Artificial Analysis, Jina, Apollo, Google (OAuth and Sheets), and Vercel.
 
 ## 7. Voice and audio
 
@@ -111,7 +111,7 @@ CTRL is a business tool intended for adults and is not directed to children. We 
 
 ## 14. Security
 
-We apply technical and organizational measures including per-user Row-Level Security, AES-256-GCM encryption of Memory facts at rest, TLS in transit, provider-managed disk encryption, Stripe webhook signature verification, and rate limiting. See [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md). No system is perfectly secure; if a breach affects you, we will notify you as required by law (see [INCIDENT_RESPONSE_PLAN.md](./INCIDENT_RESPONSE_PLAN.md)).
+We apply technical and organizational measures including per-user Row-Level Security, field-level AES-256-GCM encryption of Memory fact content (alongside a retained plaintext copy used for search/display; full column-level at-rest encryption is a planned follow-up), TLS in transit, provider-managed disk encryption, Stripe webhook signature verification, and rate limiting. See [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md). No system is perfectly secure; if a breach affects you, we will notify you as required by law (see [INCIDENT_RESPONSE_PLAN.md](./INCIDENT_RESPONSE_PLAN.md)).
 
 ## 15. Changes to this policy
 

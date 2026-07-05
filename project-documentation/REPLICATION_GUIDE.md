@@ -2,9 +2,9 @@
 
 Step-by-step instructions to replicate CTRL from scratch.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-05.
 
-> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts are dated 2026-06-09 (a lower bound: ~80 edge functions, ~59 hooks, ~110 migrations, pgvector + pgcrypto + pg_cron); trust `CLAUDE.md` and the code for current totals. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222) that post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
+> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts re-verified 2026-07-05: 103 edge functions, 78 hooks, 147 migrations, pgvector + pgcrypto + pg_cron; trust `CLAUDE.md` and the code for current totals going forward. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212), the main-app polish (PRs #215-222), the 2028 refactor (PRs #234-241), and everything after that post-dates this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
 
 ---
 
@@ -16,6 +16,9 @@ Step-by-step instructions to replicate CTRL from scratch.
 - OpenAI API key (embeddings + fallback LLM + Whisper)
 - Vertex AI service account JSON (primary LLM)
 - Perplexity / Tavily / Brave API keys (briefing news providers - at least one required)
+- NewsAPI.org, Exa, and Artificial Analysis API keys (Home news feed `live-headlines` sources + model-benchmark enrichment; Brave is shared with the briefing pipeline)
+- Jina API key (`JINA_API_KEY`, company website content extraction for `enrich-company-context`)
+- Apollo API key (company enrichment)
 - ElevenLabs API key (briefing audio)
 - Resend API key (transactional email)
 - Stripe account + webhook secret (Edge Pro subscription + Diagnostic / Deep Context one-time)

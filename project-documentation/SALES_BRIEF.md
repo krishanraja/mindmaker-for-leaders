@@ -2,33 +2,29 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-05.
 
-> RECONCILIATION BANNER (read before using any line below). CTRL's positioning is now **building the AI-native version of your business**, NOT "decision speed / a portable AI double / the zero-context tax". Most of the prose below (the one-liner, the email angles, the decision-speed framing, the "Apple-like / white space" visual claims) is OFF-POSITIONING and was written for the prior product. It is kept here for the feature mechanics, which are still accurate, but you must NOT ship its hooks as-is. Lead with the AI-native positioning and the reframe rule from `AGENT_BRIEFING.md` (the current canonical sales entry point) and `docs/MAIN-APP-POLISH-SPEC.md` section 0. Visual fact: CTRL is globally DARK (ctrl-ds palette, emerald `#00D9B6`, the BrandLockup), never light / "Apple-white". Pricing fact: Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); the one-time diagnostic SKUs are flagged TODO(founder). TODO(founder): rewrite this brief's hooks, email angles, and one-liner to the AI-native positioning; until then prefer `AGENT_BRIEFING.md`.
+> CTRL's positioning is **building the AI-native version of your business** (locked 2026-06-19). This brief leads with that positioning; where a section describes a specific mechanic (Memory Web, the Briefing, the Automator), that mechanic is real and accurate, it just serves the AI-native promise rather than a standalone "decision speed" promise. Canonical positioning doc: `AGENT_BRIEFING.md` and `docs/MAIN-APP-POLISH-SPEC.md` section 0 - if this brief and those disagree, they win. Visual fact: CTRL is globally DARK (ctrl-ds palette, emerald `#00D9B6`, the BrandLockup), never light / "Apple-white". Pricing fact: Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); the one-time diagnostic SKUs are flagged TODO(founder).
 
 ---
 
 ## The One-Liner
 
-> Off-positioning (kept for reference). Do NOT use as-is. Use the AI-native one-liner in `AGENT_BRIEFING.md` section 1: "CTRL helps you build, orchestrate, productize, and take to market the AI-native version of your business."
-
-(Legacy) CTRL builds a portable AI double of you in 2 minutes. Every AI tool you use - ChatGPT, Claude, Gemini - instantly knows your context, your goals, and how you think. Plus a 3-minute daily audio briefing tuned to YOUR world. Plus a Skill Builder that turns one weekly workflow into a Claude Skill you drop into `~/.claude/skills/` and forget.
+CTRL helps you build, orchestrate, productize, and take to market the AI-native version of your business. Bring it a general-business call and it reframes it into the AI-native version - "should I hire a VP of Sales?" becomes "should an agent own part of that motion first, and what does the human role become?" - then works that, grounded in a portable Memory Web, a daily AI-native briefing, and an Automator that turns one weekly workflow into an installable agent skill.
 
 ---
 
 ## The Problem We Solve
 
-Leaders are slow with AI. Not because they lack tools. Because every tool lacks them.
+Most businesses are using AI without becoming AI-native. Leaders bolt AI onto the side of a business that still runs the old way - they buy a chat tool, put AI on a board deck, ask the team to "use AI more" - while the org, the product, and the go-to-market motion never actually change shape. AI-native competitors rebuild those same things around agents and move faster by default. CTRL's job is to pull every call toward the AI-native version instead of leaving it general.
 
-Open ChatGPT. Re-explain who you are. Re-explain what your company does. Re-explain the decision on your desk. Do it again in Claude. Again in Gemini. Again tomorrow. The AI never remembers. The output stays generic. The decision waits.
+Underneath that gap sit two everyday taxes CTRL's mechanics solve directly:
 
-This is the **zero-context tax**. Every leader pays it, multiple times per day, across every AI tool they touch. It turns AI - which should be a speed multiplier - into a speed drag.
+The **zero-context tax**: open ChatGPT, re-explain who you are and what's on your desk, do it again in Claude, again tomorrow. The AI never remembers; the output stays generic. CTRL's Memory Web pays this down in about two minutes and exports everywhere.
 
-The leaders who are actually faster with AI have figured out one thing: give the AI your context up front. But doing that manually across multiple tools takes hours of prompt engineering most leaders will never do.
+The **noise tax**: newsletters and feeds serve everyone the same stories, and leaders waste 30+ minutes a day skimming for the 2-3 that matter. CTRL's daily Briefing replaces that scroll with 3 minutes of audio anchored to the leader's real priorities.
 
-There's a second tax: the **noise tax**. Newsletters and feeds serve everyone the same stories. Leaders waste 30+ minutes a day skimming for the 2-3 stories that actually matter to their world. The personalization is theatre.
-
-**CTRL eliminates the zero-context tax in 2 minutes. And replaces 30 minutes of scrolling with 3 minutes of audio.**
+**Lead with the AI-native reframe. Use the zero-context and noise taxes as supporting proof that the mechanics underneath are real, not as the headline.**
 
 ---
 
@@ -216,7 +212,7 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 - **Self-contained** - no Slack/email/calendar access, no enterprise security review
 - **Encrypted at rest** (AES-256-GCM); user controls retention; data never trains any AI model
 - **Portable** - not locked to any AI provider or platform
-- **80 edge functions, 59 hooks, 110 migrations live** - this is not a prototype
+- **103 edge functions, 78 hooks, 147 migrations live** - this is not a prototype
 - **Audit weeks 1-6 shipped** (revenue path, data path, UX, reliability, observability, cleanup): timeouts + retries on external APIs, mandatory Stripe signature verification + idempotency, structured edge-function logger, e2e test contracts
 - **Built by Krish Raja** - operator experience: Microsoft (2010), MD at Captify ($0→$12M ARR), data revenue at Nine Entertainment ($9M→$61M). Now CEO of Mindmaker, running a multi-agent OS that automates the output of a 30-person team.
 - Context export produces richer, more structured prompts than most leaders write by hand in an hour
@@ -224,6 +220,8 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 ---
 
 ## Email Angle Ideas
+
+> Open with the AI-native reframe (see the One-Liner above). The angles below are supporting proof - the mechanics that make the AI-native promise real - not alternate leads.
 
 ### The "Decision Speed" Angle
 The leaders pulling ahead with AI aren't using better tools. They're deciding faster because their AI already knows their context. CTRL gives every AI tool you use your full context in one click. Faster input. Faster output. Faster decisions.

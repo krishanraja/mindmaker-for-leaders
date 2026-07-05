@@ -1,5 +1,7 @@
 # CTRL North Star
 
+**Last reconciled:** 2026-07-05 (verified current; no drift found against the code).
+
 ## The outcome
 
 CTRL exists to help a time-poor senior leader build, orchestrate, productize, and get to market the AI-native version of their business, acting as their AI-native chief of staff. See `docs/CTRL-SYSTEM-SPEC.md` and `docs/MAIN-APP-POLISH-SPEC.md`.

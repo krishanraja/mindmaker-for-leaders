@@ -1,6 +1,6 @@
 # CTRL Information Security Policy (ISMS-lite)
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-05
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 Applies to: CTRL (https://ctrl.themindmaker.ai), its codebase, Supabase backend (ref bkyuxvschuwngtcdhsyg), Vercel frontend, and all personnel/contractors with access.
 
@@ -20,7 +20,7 @@ Protect the confidentiality, integrity, and availability of CTRL and the persona
 
 | Class | Examples | Handling |
 |-------|----------|----------|
-| Sensitive personal | Memory Web facts, chat, assessments, transcripts | Encrypt (Memory facts AES-256-GCM at rest), owner-scoped RLS, never in logs |
+| Sensitive personal | Memory Web facts, chat, assessments, transcripts | Memory fact content gets field-level AES-256-GCM encryption alongside a retained plaintext copy (see s5); owner-scoped RLS; never in logs |
 | Personal | Account identity, business context, briefing preferences, billing metadata | Owner-scoped RLS, TLS, minimized in logs |
 | Secrets | API keys, service-role keys, signing secrets | Stored as platform secrets (Supabase/Vercel env), never committed, never logged |
 | Public | Marketing pages | No special handling |
@@ -30,7 +30,7 @@ No payment card numbers are stored (tokenized by Stripe). [IN PLACE]
 ## 4. Access control
 
 - Authentication via Supabase Auth. [IN PLACE]
-- Per-user Row-Level Security on all 108 public tables; profiles, unified_profiles, profile_insights, user_business_context, and chat_messages are owner-scoped or service-role-only after the May-June 2026 remediation. [IN PLACE]
+- Per-user Row-Level Security on all public tables as of the May-June 2026 remediation (108 tables at that time; the schema has grown since via the decision-engine, kit-engine, brain-engine, North Star, and reactivation-nudge migrations, and RLS coverage on those newer tables has not been re-audited against a fresh table count - flagged for a follow-up review, not asserted as covered). profiles, unified_profiles, profile_insights, user_business_context, and chat_messages are owner-scoped or service-role-only after the May-June 2026 remediation. [PARTIAL]
 - Service-role keys used only server-side in edge functions, never exposed to the client. [IN PLACE]
 - Least privilege for service credentials and operator access. [PARTIAL]
 - Enforced multi-factor authentication for users and for administrative access to Supabase/Vercel/Stripe. [PLANNED]
@@ -39,7 +39,7 @@ No payment card numbers are stored (tokenized by Stripe). [IN PLACE]
 
 ## 5. Cryptography
 
-- Memory Web facts encrypted at rest with AES-256-GCM. [IN PLACE]
+- Memory Web fact content (`fact_value`/`fact_context`) is field-level encrypted with AES-256-GCM (`_shared/memory-crypto.ts`). [PARTIAL] This is defense-in-depth, not full column-level at-rest encryption: the plaintext value is still stored alongside the ciphertext to support display and search. Removing the plaintext shadow is a planned follow-up.
 - TLS for all data in transit. [IN PLACE]
 - Supabase-managed disk encryption for the database. [IN PLACE]
 - Documented key-management and rotation procedure (encryption keys, API keys, service-role keys). [PARTIAL] Ad hoc rotation occurs; a documented schedule is [PLANNED].
@@ -57,7 +57,7 @@ No payment card numbers are stored (tokenized by Stripe). [IN PLACE]
 - Structured JSON edge-function logging; secrets excluded from logs. [IN PLACE]
 - Stripe webhook signature verification plus idempotency table. [IN PLACE]
 - Rate limiting on AI endpoints. [IN PLACE]
-- Comprehensive data-access audit log (data_audit_log) and AI-usage audit log (ai_usage_audit). [PLANNED / IN PROGRESS]
+- Data-access audit log (`data_audit_log`) and AI-usage audit log (`ai_usage_audit`), both from `20260602000000_create_audit_infrastructure.sql`. [PARTIAL] Live and written by `delete-account`/`cleanup-expired-data` (`data_audit_log`) and by `generate-skill-export`/`free-skill-export`/`kit-compose`/`extract-voice-profile` (`ai_usage_audit`); briefing, decision-engine, chat, and live-headlines do not yet write to either table.
 - Centralized log aggregation with retention and alerting. [PLANNED]
 
 ## 8. Vulnerability management

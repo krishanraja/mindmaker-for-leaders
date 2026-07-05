@@ -4,7 +4,7 @@
 
 This folder is the deeper source of truth for CTRL. The two highest-authority documents in the whole repo are the canonical product/build specs in `docs/`, and the top-level `README.md`. Where any file in this folder disagrees with them, the spec and the root README win.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-05 (documentation drift-reconciliation pass).
 
 ---
 
@@ -54,9 +54,13 @@ The product has two halves:
 
 ### Strategic foundation
 - [PURPOSE.md](./PURPOSE.md) - mission + problem statement
+- [NORTH_STAR.md](./NORTH_STAR.md) - the founder-signed moat metric (the flywheel) and how it's instrumented
 - [SPINE.md](./SPINE.md) - the cross-app MindmakerOS standards spine (CTRL is the reference implementation)
 - [CTRL-CORPUS.md](./CTRL-CORPUS.md) - the opinionated single source of truth for what CTRL must be
 - [CTRL-BUILD-ROADMAP.md](./CTRL-BUILD-ROADMAP.md) - the build plan toward the Corpus
+
+### Compliance and privacy
+- [compliance/README.md](./compliance/README.md) - the compliance documentation pack index (privacy policy, ROPA, subprocessors, retention, incident response, ISMS-lite policy, SOC 2 / ISO 27001 roadmap, control matrix)
 
 ### History (kept for the record)
 - [HISTORY.md](./HISTORY.md) - the build phases
@@ -81,7 +85,7 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 ---
 
-## Current State (reconciled 2026-06-21)
+## Current State (reconciled 2026-07-05)
 
 ### Product Positioning (LOCKED)
 - **What CTRL is**: the tool for building, orchestrating, productizing, and getting to market the AI-native version of your business.
@@ -100,14 +104,14 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 ### Active routes (source of truth: `src/router.tsx`)
 
-Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked).
+Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/upgrade` (interactive checkout; `/pricing` is a separate static SEO page served via a `vercel.json` rewrite, not this React route), `/preview` (dev/QC fixture harness, unlinked).
 
 Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`.
 
 Legacy redirects: `/today` `/pulse` `/voice` `/diagnostic` -> `/dashboard`; `/think` -> `/dashboard?view=edge`.
 
-### Repo counts
-For current edge-function / hook / migration / route counts, trust `CLAUDE.md` (kept current) and the code itself, not a frozen table here. As of the last `CLAUDE.md` snapshot (counts dated 2026-06-09, re-count pending): ~80 edge functions, ~59 custom hooks, ~110 migrations. Treat these as a lower bound. TODO(founder/dev): a fresh re-count after the kit + main-app-polish PRs.
+### Repo counts (re-verified 2026-07-05)
+103 edge functions, 78 custom hooks, 147 migrations, pgvector + pgcrypto + pg_cron extensions. For anything shipped after 2026-07-05, trust `CLAUDE.md` (kept current) and the code itself over this table.
 
 ### Tech Stack
 React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion; React Router 6 (`createBrowserRouter`, lazy); Tailwind + shadcn/ui (Radix), globally dark; React Context + TanStack Query; Supabase (PostgreSQL + Edge Functions, Deno); Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback; OpenAI Whisper / ElevenLabs; OpenAI `text-embedding-3-small` (pgvector); Supabase Auth / Stripe / Resend; Vitest + Playwright; Vercel + Supabase Cloud; Node `>=22 <24`. DB extensions: pgvector, pgcrypto, pg_cron.
@@ -128,3 +132,5 @@ The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amo
 - **Decision engine** - pressure-tests a decision (decompose, verify against live evidence, cross-examine, advise) with an honest AI-native reframe.
 - **Anchored to** - the phrase on every briefing segment naming the profile fact that earned its slot.
 - **Honest renderer** - the empty/cold-start state is intentional and welcoming, never faked; confidence tracks evidence.
+- **The flywheel / North Star** - the founder-signed moat metric (2026-07-04): leaders who both hold a real brain (>=5 current facts) AND weighed a decision in the last 7 days. See `NORTH_STAR.md`.
+- **Capability Ladder** - the earned, behaviour-derived progression (orienting / operating / calibrating / compounding) on `/track-record`, replacing 0/0/0 engagement scoreboards.

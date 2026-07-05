@@ -1,6 +1,6 @@
 # Data Subject Access Request (DSAR) Runbook
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-05
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Operational runbook for handling data-subject rights requests for CTRL: access, rectification, erasure, portability, restriction/objection, and CCPA opt-out. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 9.
@@ -40,7 +40,7 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 | Request type | Tooling / location | Notes |
 |--------------|--------------------|-------|
 | Access / Portability | `memory-export` edge function (JSON + markdown); `generate-custom-export` edge function | Produces user-scoped export of Memory and related data |
-| Memory data specifically | `memory-crud`, `memory-export`, `memory-settings` edge functions; Memory tables | Memory facts are AES-256-GCM encrypted at rest; export decrypts for the owner |
+| Memory data specifically | `memory-crud`, `memory-export`, `memory-settings` edge functions; Memory tables | Memory fact content is field-level AES-256-GCM encrypted (plaintext also retained for search/display); export returns the plaintext for the owner |
 | Profile / business context | profiles, unified_profiles, profile_insights, user_business_context (owner-scoped after May-June 2026 RLS remediation) | |
 | Conversations | chat_messages (owner-scoped) | |
 | Assessments / diagnostics | assessment/diagnostic tables | |

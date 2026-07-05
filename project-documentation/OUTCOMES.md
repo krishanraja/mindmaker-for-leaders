@@ -1,6 +1,6 @@
 # User Outcomes
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-05 (verified current; no drift found against the code).
 
 > RECONCILIATION BANNER. Two corrections. (1) Positioning: outcomes now tie back to **building the AI-native version of your business** (a workflow handed to an agent, the autonomy line drawn, the AI-native version of an offer named), not "decision speed". (2) Honesty: the percentage metrics in this doc (for example "90%+ report better responses", "80%+ export to a second tool") are ASPIRATIONAL TARGETS, not measured results. Per the agent guardrails, do NOT quote them as proof in outbound. Use only the documented, grounded proof points (the kit flow exists and is live, Edge Pro is $49/month, the surfaces are no-scroll one-ask, the app is globally dark). TODO(founder): define the real AI-native success metrics and replace the placeholder percentages.
 
@@ -277,7 +277,7 @@ These outcomes attach to surfaces that shipped after the original 30/90-day fram
 
 Use these outcomes as proof points in copy:
 
-- **"2 minutes to first export"** - verified by GuidedFirstExperience telemetry
+- **"2 minutes to first export"** - verified by inline-onboarding telemetry (`InlineProfileSetup`; the old `GuidedFirstExperience` flow this was originally measured on is deleted)
 - **"30+ minutes a day reclaimed"** - context-setup time + news scrolling time eliminated
 - **"Anchored to:" promise** - every Briefing segment can prove its relevance with a specific profile fact
 - **"Bans persist forever"** - semantic, not keyword; signature-keyed so feedback survives daily lens regeneration

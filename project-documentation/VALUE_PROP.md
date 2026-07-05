@@ -1,10 +1,10 @@
 # Value Propositions
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-05.
 
-> RECONCILIATION BANNER. CTRL's positioning is now **building the AI-native version of your business**, not "decision speed". The feature-level value props below (Memory Web, Briefing, the Automator, the Decision engine) are accurate as MECHANICS, but the binding promise is no longer "decide faster"; it is "make your business more AI-native". The product is globally DARK (not light). Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); building Automator skills is FREE for now. The one-time diagnostic SKUs ($49/$29/$69) are wired in Stripe but flagged TODO(founder) under the repositioning. Lead with the AI-native frame from `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`. TODO(founder): rewrite the binding promise and the audience value props to AI-native.
+> CTRL's positioning is **building the AI-native version of your business** (locked 2026-06-19), not "decision speed". The feature-level value props below (Memory Web, Briefing, the Automator, the Decision engine) are accurate as MECHANICS that serve the AI-native promise. The product is globally DARK (not light). Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); building Automator skills is FREE for now. The one-time diagnostic SKUs ($49/$29/$69) are wired in Stripe but flagged TODO(founder) under the repositioning. Canonical: `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`.
 
-Clear value propositions for each audience. The binding promise is: **build the AI-native version of your business** (reframe every call to its AI-native version, never stay general).
+Clear value propositions for each audience. The binding promise is: **build the AI-native version of your business** (reframe every call to its AI-native version, never stay general). Where a component value prop below still reads as a "decide faster" pitch, treat that as the supporting mechanic under the AI-native promise, not a competing headline.
 
 ---
 

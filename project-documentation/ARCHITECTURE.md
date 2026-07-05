@@ -2,7 +2,7 @@
 
 Complete system architecture and data flow documentation.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-05.
 
 > **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. General-business inputs are reframed into the AI-native lens. The canonical product/build specs are `docs/MAIN-APP-POLISH-SPEC.md` (the main app) and `docs/KIT-REDESIGN-SPEC.md` (the lesson kits); trust those + the root `README.md` + `CLAUDE.md` over this doc where they disagree. This file is technically current on the dark redesign, the brain engine, the routes, and the kit engine plumbing; the LATEST layer it predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing pipeline, the brain-canvas squash fix, and the no-scroll/one-ask sweep). For those, see the two specs and `CLAUDE.md`. The counts below are dated 2026-06-09 and are a lower bound pending re-count.
 
@@ -18,7 +18,11 @@ Complete system architecture and data flow documentation.
 >
 > **Unified onboarding → decisions → engagement loop (2026-06-29, PR #298; LIVE)**: the cockpit is now the ONE home and the `VITE_COCKPIT_ENABLED` flag is RETIRED, so any reference below to "cockpit Home (behind `VITE_COCKPIT_ENABLED`)", to `MobileMemoryDashboard` / `DesktopMemoryDashboard`, or to the voice `OnboardingInterview` is HISTORICAL - those were deleted. Entry/re-entry is now state-adaptive: `useCockpit` derives a `userState` (new/dormant/active/power) → a `posture` (`guide` vs `partner`) on `CockpitData`; onboarding is lightweight + inline (`InlineProfileSetup` writing industry/role to `user_memory` + interests via `SeedBeatsPrompt`); the guide posture leads Home with a `KickstartCard` routing a role-tailored starter (`src/lib/starterDecisions.ts`) into `/decision` pre-filled; and `send-reactivation-nudge` (daily cron) re-engages NEW and DORMANT leaders. `BottomNav` is the single 3-tab cockpit nav. Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.
 >
-> **Verified counts (as of 2026-06-09; not re-counted since the redesign)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop). Edge-function / hook / migration counts after the redesign, brain engine, and kit program are **verified counts pending re-count**.
+> **Verified counts (re-counted 2026-07-05)**: 103 edge functions, 78 hooks, 147 migrations, 8 Playwright e2e specs, 15 Vitest spec files (337 tests), pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop). The gap since the redesign/brain-engine/kit-program counts also includes the 2028 refactor (#234-241), the onboarding/decisions/engagement loop (#298), the North Star flywheel, and the settings-audit sweep.
+>
+> **North Star metric (2026-07-04)**: `north_star_flywheel` (view) + `north_star_daily` (table, RLS service-role only) + `snapshot_north_star()` + a daily `north-star-daily-snapshot` pg_cron track the founder-signed moat metric - leaders who both hold a real brain (>=5 current facts) and weighed a decision in the last 7 days. Migration `20260704120000_north_star_flywheel.sql`. See `NORTH_STAR.md`.
+>
+> **Pricing (2026-07-04)**: Edge Pro is now $49/month (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900` in `supabase/functions/_shared/edge-pricing.ts`), repositioned as "the decision tier"; the interactive checkout moved to `/upgrade` while `/pricing` became a static SEO page (`public/pricing.html`, rewritten via `vercel.json`) so the two no longer collide.
 >
 > **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) = 85, +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`) = 62, +4 migrations = 114, +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
 
@@ -66,9 +70,11 @@ The current visual system. Shipped live and prod-verified with screenshots.
 
 ## UX Redesign (2026-06-17, PRs #197-200)
 
+> **The Cockpit Home subsection immediately below is SUPERSEDED.** `CockpitHome.tsx`, `CockpitDeck.tsx`, `CockpitStreamRow.tsx`, and `VITE_COCKPIT_ENABLED` were all DELETED in the 2028 refactor (PR #237, 2026-06-22) and replaced by `HomeFeed.tsx` (mobile) + `DesktopHomeView.tsx` (desktop), which were themselves further evolved by the unified onboarding->decisions->engagement loop (PR #298, 2026-06-29) and the glance-only card pass (2026-07-01/02). See **Home (current architecture)** further down for the live implementation. The Decision Map and Automator subsections below are still accurate.
+
 The latest layer on top of the PR #186 redesign. Home, the Decision Map, and the Automator (the Skill Builder entry on `/context`) were rebuilt, plus a shared brand mark. All merged to main and prod-verified on `ctrl.themindmaker.ai`.
 
-### Cockpit Home (PR #197, merge 7b5f0ef)
+### Cockpit Home (PR #197, merge 7b5f0ef) - historical, see superseded note above
 
 The mobile cockpit Home (behind `VITE_COCKPIT_ENABLED`) was rebuilt. `CockpitHome.tsx` was rewritten.
 
@@ -77,6 +83,10 @@ The mobile cockpit Home (behind `VITE_COCKPIT_ENABLED`) was rebuilt. `CockpitHom
 - **The deck** mixes broad AI news (from the briefing pipeline's curated `briefings.segments`) and the leader's own signals (`decision_alerts` via `useDecisionInbox`). Swipe heart = more-like-this, skip = dismiss; it renders a peeking stack + dots.
 - **`useCockpit` (`src/hooks/useCockpit.ts`)** now also returns `recordDeckReaction` and assembles the deck by interleaving news segments + own-signal alerts, sliced to 5, with disliked categories down-weighted (no new backend table).
 - **Types (`src/types/cockpit.ts`):** new `DeckCard` / `DeckCardKind` types and a `deck` field on `CockpitData`.
+
+### Home (current architecture)
+
+`src/components/cockpit/HomeFeed.tsx` (mobile swipe-feed) + `DesktopHomeView.tsx` (desktop rail) are the live Home implementation, backed by a bundled `coldDeck.ts` fallback so Home is never empty. Content is the `live-headlines` 6-source cross-verification news pool (GDELT, HN Algolia, curated RSS, Brave, NewsAPI.org, Exa; Artificial Analysis model-benchmark enrichment) plus own-signal `decision_alerts`, ranked client-side by `newsPriority.ts` against the leader's tuned lanes (`NewsPreferencesPanel`, one door shared with Settings -> Interests) and role/industry fit (`roleArchetype.ts`), with a guaranteed on-topic floor (`laneReserve.ts`). `useCockpit` derives a lifecycle `userState`/`posture` that drives inline onboarding (`InlineProfileSetup`) and the `KickstartCard` starter-decision prompt for new/dormant leaders. Every card renders at one exact height; tapping opens a tap-to-read sheet with an LLM-personalized read.
 
 ### Brand lockup (PR #197; desktop placements PR #200, merge 387af84)
 
@@ -125,7 +135,7 @@ The Brain is CTRL's memory-as-a-graph layer: the leader's facts connected to eac
 **Migrations:** `20260615*_brain_*` and `20260616120000_memory_edges`.
 
 **Honest gaps (disclose, never hide):**
-- The **Strengthen / Fix actions on the brain canvas are UI-disabled** - the buttons exist but there is no backend RPC wired behind them yet.
+- **Strengthen / Fix are now LIVE** (PR #321, 2026-07-03) - the `BondReader` wires them to their backend RPCs; previously the buttons rendered with no RPC behind them.
 - **Brain edges are derived, not stored.** The edge graph is computed at read time, not persisted as rows. ("verified storage model pending re-check" if this changes.)
 - **Number-heroes fall back to words-led on thin current data.** When a leader does not yet have enough current data for a numeric hero stat, the UI falls back to a words-led presentation rather than showing a misleading number.
 
@@ -167,12 +177,11 @@ src/
 │   │       ├── ActionQueueSheet.tsx
 │   │       └── StrategicPulseSheet.tsx
 │   ├── memory-web/            # Memory Web dashboard (primary dashboard view)
-│   │   ├── MobileMemoryDashboard.tsx
-│   │   ├── DesktopMemoryDashboard.tsx
+│   │   ├── BrainGraph.tsx         # Fact-to-fact edge graph (replaces MobileMemoryDashboard.tsx/DesktopMemoryDashboard.tsx, both deleted)
+│   │   ├── BrainCanvas.tsx        # Hub-anchored, aspect-corrected four-world rope canvas
 │   │   ├── DesktopSidebar.tsx     # Primary desktop nav (Home, Edge, Memory Web, Export)
 │   │   ├── BottomNav.tsx          # Primary mobile nav (Home, Edge, Memory, Export)
 │   │   ├── AppHeader.tsx
-│   │   ├── GuidedFirstExperience.tsx  # Onboarding for new users
 │   │   ├── MemoryWebVisualization.tsx
 │   │   ├── MemoryHealthViz.tsx
 │   │   ├── MemoryPulseBar.tsx
@@ -183,9 +192,13 @@ src/
 │   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (free for now since PR #204; was Edge Pro gated) (v5.2)
 │   │   ├── VoiceStyleProfileSheet.tsx  # Captures the unified ctrl_voice_profile: 5 recognition picks OR a paste-extract power path (PR #204)
 │   │   └── GettingSmarterBanner.tsx
-│   ├── cockpit/               # Mobile cockpit Home (behind VITE_COCKPIT_ENABLED)
-│   │   ├── CockpitHome.tsx        # Rewritten Home: time-aware greeting + "worth a look" deck + 3 value actions (PR #197)
-│   │   └── CockpitDeck.tsx        # Swipeable "worth a look" deck (news segments + own-signal alerts), heart/skip, peeking stack + dots (PR #197)
+│   ├── cockpit/               # Home (current architecture; VITE_COCKPIT_ENABLED/CockpitHome/CockpitDeck all deleted, PR #237)
+│   │   ├── HomeFeed.tsx           # Mobile swipe-feed: live-headlines pool + own-signal alerts, glance-only cards + tap-to-read sheet
+│   │   ├── DesktopHomeView.tsx    # Desktop rail equivalent
+│   │   ├── coldDeck.ts            # Bundled generic AI-native headlines fallback so Home is never empty
+│   │   ├── KickstartCard.tsx      # Role-tailored starter decision for guide-posture (new/dormant) leaders
+│   │   ├── NewsPreferencesPanel.tsx   # Shared "Tune feed" picker body (also rendered in Settings -> Interests)
+│   │   └── onboarding/InlineProfileSetup.tsx  # Inline industry/role + interests capture for new leaders
 │   ├── automator/             # Automator: default Skill Builder flow on /context (PR #199)
 │   │   ├── AutomatorFlow.tsx      # Suggestions -> cascade -> skill-ready orchestrator
 │   │   ├── AutomatorSuggestions.tsx  # Brain-mined deliverable suggestions ("pulled from your brain" badge) + inline "Something else"
@@ -262,7 +275,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 59 custom hooks
+├── hooks/                     # 78 custom hooks (re-counted 2026-07-05)
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -400,21 +413,28 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/auth/callback` | AuthCallback | No | OAuth redirect handler |
 | `/booking` | Booking | No | External booking |
 | `/build` | BuildLap | No | Agent Skill Builder full-page flow |
-| `/dashboard` | Dashboard (Memory Web) | Yes | Default view - Memory Web with guided first experience |
+| `/try` | Try | No | Pre-login "watch it work" canned demo |
+| `/agents` | Agents | No | Agent-native marketing page (read-only Memory Web MCP offering) |
+| `/upgrade` | Pricing | No | Interactive in-app upgrade surface with a live Stripe checkout button (`/pricing` is a separate static SEO page served via a `vercel.json` rewrite to `public/pricing.html`, not this React route) |
+| `/preview` | Preview | No | Dev/QC fixture-render harness, unlinked |
+| `/dashboard` | Dashboard (Memory Web) | Yes | Default view - Memory Web / cockpit Home |
 | `/dashboard?view=edge` | Dashboard (Edge) | Yes | Edge leadership amplifier |
 | `/memory` | MemoryCenter | Yes | Detailed memory management |
-| `/context` | ContextExport | Yes | Export to AI tools |
+| `/context` | ContextExport | Yes | Export to AI tools + Automator |
 | `/briefing` | BriefingPage | Yes | Daily Briefing v2 |
 | `/decision` | DecisionPage | Yes | Decision Engine pressure-test (decompose → verify → cross-examine → advise) |
 | `/goals` | Goals | Yes | Horizon-grouped goal tracking |
+| `/track-record` | TrackRecord | Yes | Capability ladder + active-decision control centre |
+| `/decision-map` | DecisionMap | Yes | Pinned-decision hero + connector rail |
 | `/enrich` | EnrichPage | Yes | Inbound "borrow your own AI" enrichment loop |
 | `/settings` | Settings | Yes | User preferences |
 | `/compliance` | Compliance | Yes | Compliance / audit center |
 | `/profile` | Profile | Yes | User profile |
-| `/kit` | KitEntry | No | Class follow-up portal code entry (anonymous session) |
+| `/kit` | KitRedeem | No | Class follow-up portal code entry (anonymous session) |
 | `/kit/me` | KitHome | No | Kit + journey home (anonymous, upgrades on email capture) |
 | `/kit/me/intake` | KitIntake | No | 6-question intake (voice or taps) |
 | `/kit/reading/:pageId` | KitReading | No | Full-screen reader for a single artifact |
+| `/kit/pdf`, `/kit/pdf/:redemptionId` | KitPdf | No | Print-styled branded hero PDF, unlinked (opened by the reveal's "Download PDF") |
 
 The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
 
@@ -580,13 +600,13 @@ The shell exists to make the product feel like a desktop-native tool, not stretc
 
 ### Dashboard (`/dashboard`) - Main Hub
 
-The Dashboard is the primary authenticated view. It renders one of two views based on the `view` query parameter:
+The Dashboard is the primary authenticated view. `Dashboard.tsx` is cockpit-only (no legacy branch); it renders one of two views based on the `view` query parameter:
 
-**Default (Memory Web view):**
-- Desktop: `DesktopMemoryDashboard` with `DesktopSidebar` (264px fixed left)
-- Mobile: `MobileMemoryDashboard` with `BottomNav` (4 tabs) and `AppHeader`
-- First-time users see `GuidedFirstExperience` (3-question onboarding delivering first export in 2 minutes)
-- Returning users see Memory Web visualization, health metrics, recent facts feed, pattern insights
+**Default (Home / cockpit view):**
+- `HomeFeed.tsx` (mobile) / `DesktopHomeView.tsx` (desktop) - see **Home (current architecture)** above. `DesktopMemoryDashboard`, `MobileMemoryDashboard`, and `GuidedFirstExperience` are all deleted.
+- New/dormant leaders see inline onboarding (`InlineProfileSetup`) and a `KickstartCard` in the feed zone, not a gated 3-question flow.
+- Returning (active/power) leaders see the ranked live-headlines feed + their own decision signals.
+- Detailed Memory Web visualization, health metrics, and pattern insights live on `/memory` (`MemoryCenter`), not embedded in the Dashboard itself.
 
 **Edge view (`?view=edge`):**
 - Lazy-loaded `EdgeView` component
@@ -1096,6 +1116,25 @@ Five new edge functions back the class follow-up portal. They reuse the proven a
 - `edge-pricing.ts`: canonical Edge Pro price ($49/month), cross-imported by Deno edge runtime + Vite client
 - `kit-presets/`: Kit Engine class presets (Phase 11), cross-imported by `kit-compose` + Vite client the same way as `edge-pricing.ts`. The DB stores only `class_slug` + `preset_version`; preset content lives here. Ships with `vibe-coding` and `autonomous-business`.
 
+#### Decision Engine Subsystem (Phase 9, PRs #122/#124; reframe + eval gate, PRs #326-328)
+
+- **`decision-engine`**: orchestrates decompose -> verify -> cross-examine -> advise in the background via `EdgeRuntime.waitUntil`, advancing `decision_cases.stage` as each step lands. A Stage 0 reframe locks the statement to its AI-native version before decomposition. Claims naming a specific AI model are additionally verified against the Artificial Analysis benchmark index (`retrievers.ts` `searchArtificialAnalysis` + `matchAaModel`).
+- **`decision-watch`**: hourly pg_cron re-verification of load-bearing claims; raises idempotent `decision_alerts` on a verdict flip or confidence drop, surfaced in the Daily Briefing (flag `BRIEFING_INCLUDE_DECISION_ALERTS`).
+- **`decision-eval`**: admin-only single-claim calibration harness, wired into CI as a vitest gate.
+- **`decision-research`**, **`decision-reactions`**, **`operator-decision-advisor`**: supporting research/reaction/advisor endpoints.
+- **Tables:** `decision_cases`, `decision_claims`, `decision_evidence` (`retriever` CHECK includes `artificialanalysis`), `decision_tensions`, `decision_alerts`, `decision_events`, `decision_eval_cases` (all RLS owner-scoped).
+- **Hooks:** `useDecisionEngine`, `useDecisionInbox`, `useDecisionActions`, `useDecisionCall`.
+
+#### Home News Feed Subsystem (`live-headlines`)
+
+- **`live-headlines`**: gathers from six sources in parallel (`_shared/news-sources.ts` `gatherAll`) - GDELT, Hacker News Algolia, a curated RSS allowlist, Brave News, NewsAPI.org, and Exa - clusters near-duplicate headlines for a corroboration signal, ranks by corroboration x reputation-tier x freshness x engagement, and enriches model-name mentions with the Artificial Analysis benchmark index (`_shared/artificial-analysis.ts`). Cached once/day in `live_headlines_cache`; shared/generic, re-ranked client-side per leader by `src/lib/newsPriority.ts`.
+- **`live-headlines-prewarm`**: pg_cron job (10:30 UTC) that pre-warms the daily cache.
+
+#### Engagement + North Star Subsystem
+
+- **`send-reactivation-nudge`**: daily pg_cron (13:00 UTC) emailing NEW (never-weighed) and DORMANT (>14d) leaders back toward a first/next decision; de-duped via `leader_notification_prefs.reactivation_nudge_sent_at` (30-day re-arm).
+- **North Star**: `north_star_flywheel` (view) + `north_star_daily` (table) + `snapshot_north_star()` + a daily `north-star-daily-snapshot` pg_cron. Migration `20260704120000_north_star_flywheel.sql`.
+
 ---
 
 ## Data Flow
@@ -1400,7 +1439,7 @@ All user-facing tables have RLS policies:
 
 ### Memory Encryption
 
-- Content encrypted at rest using AES-256-GCM
+- Fact content gets field-level AES-256-GCM encryption (`_shared/memory-crypto.ts`); the plaintext `fact_value`/`fact_context` is still stored alongside the ciphertext for search/display, so this is defense-in-depth, not full column-level at-rest encryption (removing the plaintext shadow is a planned follow-up)
 - Encryption key in `MEMORY_ENCRYPTION_KEY` env var
 - Decryption only in edge functions, never client-side
 
@@ -1647,7 +1686,7 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
   "react-router-dom": "^6.26.2",
   "@supabase/supabase-js": "^2.50.3",
   "@tanstack/react-query": "^5.56.2",
-  "framer-motion": "^11.x",
+  "framer-motion": "^12.24.10",
   "tailwindcss": "^3.4.11",
   "lucide-react": "^0.462.0",
   "zod": "^3.23.8",

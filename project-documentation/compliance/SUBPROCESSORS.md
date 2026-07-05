@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-05
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).
@@ -10,7 +10,7 @@ DPA status legend:
 - Standard terms: we rely on the provider's published DPA / data terms incorporated by their standard terms of service, but we have not yet executed and filed a countersigned copy.
 - To confirm: relationship in use; DPA review/signature is an open action item.
 
-As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed DPAs and SCCs with all subprocessors is an in-progress action tracked in [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md). The table reflects current honest status, not an aspiration.
+As of 2026-07-05, none of the DPAs below are marked "Signed". Formalizing signed DPAs and SCCs with all subprocessors is an in-progress action tracked in [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md). The table reflects current honest status, not an aspiration.
 
 ## Register
 
@@ -26,13 +26,18 @@ As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed
 | Perplexity | Daily-briefing web search | Briefing topics/queries (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
 | Tavily | Daily-briefing web search/enrichment | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
 | Brave Search | Daily-briefing web search | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
-| Jina | Daily-briefing content retrieval/enrichment | Briefing topics/URLs | US | To confirm | SCCs (to confirm/sign) |
+| Jina | Company website content extraction (Reader API) for business-context enrichment | Company website URL | US | To confirm | SCCs (to confirm/sign) |
 | Apollo | Company enrichment | Company name/domain (business context) | US | To confirm | SCCs (to confirm/sign) |
+| NewsAPI.org | Home news-feed gathering (`live-headlines`) | Static AI-topic queries; no direct account identifiers | US | To confirm | SCCs (to confirm/sign) |
+| Exa | Home news-feed neural/semantic search (`live-headlines`) | Static AI-topic queries; no direct account identifiers | US | To confirm | SCCs (to confirm/sign) |
+| Artificial Analysis | Frontier-model benchmark index enriching the home news feed and decision-engine evidence | Model names / claim text; no direct account identifiers | US | To confirm | SCCs (to confirm/sign) |
 | Google (OAuth) | Sign-in / authentication | Email, name, OAuth identity | US | Standard terms | SCCs (to confirm/sign) |
 | Google Sheets | Operations sync | Minimized account/usage data | US | Standard terms | SCCs (to confirm/sign) |
 
 Notes:
-- Search/enrichment providers (Perplexity, Tavily, Brave, Jina) primarily receive briefing topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
+- Search/enrichment providers used by the daily briefing and decision engine (Perplexity, Tavily, Brave) primarily receive briefing topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
+- Jina receives only the company website URL being enriched for business-context enrichment, not briefing topics or search queries.
+- NewsAPI.org and Exa serve the shared, generic Home news feed (`live-headlines`); they receive static AI-topic queries, not per-user personal data. Artificial Analysis receives model names/claim text for benchmark lookups (Home feed enrichment and decision-engine evidence), not personal data. Listed here for completeness even though the personal-data footprint is minimal.
 - Apollo receives company-level data used for enrichment; treat as processing of business context.
 - Card data is never stored by Mindmaker; Stripe tokenizes it.
 

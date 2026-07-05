@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-05 (updated 2026-07-05)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://ctrl.themindmaker.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
@@ -43,7 +43,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Recipients/subprocessors: Supabase (US); OpenAI (embeddings text-embedding-3-small, US); primary LLM providers (US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: configurable via user_memory_settings.retention_days; enforced by cleanup-expired-data (pg_cron). Deleted on account deletion.
-- Security: AES-256-GCM encryption at rest, RLS owner-scoping, TLS.
+- Security: field-level AES-256-GCM encryption of fact content alongside a retained plaintext copy used for search/display (not full at-rest encryption; see [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) s5), RLS owner-scoping, TLS.
 
 ### D. Conversations / chat
 - Personal data: chat messages to and from CTRL assistants.
@@ -76,10 +76,19 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: briefing preferences, interests, account identity; briefing topics/queries sent to search providers.
 - Data subjects: registered users.
 - Lawful basis: contract (transactional delivery); consent (optional channels and marketing).
-- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search, Jina (web search/enrichment of briefing topics, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
+- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search (web search/enrichment of briefing topics, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: preferences for life of account; generated briefings per retention policy.
 - Security: RLS owner-scoping, TLS.
+
+### G2. Home news feed and decision-engine evidence
+- Personal data: none directly identifying; the feed is a shared, generic pool of AI-topic queries, and decision-engine evidence lookups use claim text derived from the user's decision (not raw account identity).
+- Data subjects: all users (the news pool is shared, not per-user; decision-engine evidence is per-case).
+- Lawful basis: legitimate interests (Art 6(1)(f)) - operating the Service.
+- Recipients/subprocessors: NewsAPI.org, Exa (news gathering, US); Artificial Analysis (model benchmark index, US); Jina (company website content extraction for business-context enrichment, US).
+- Transfers: EU/UK to US, SCCs (in progress).
+- Retention: the shared news pool is cached once/day (`live_headlines_cache`); decision-engine evidence retained with the decision case.
+- Security: RLS owner-scoping on decision-engine tables; the shared news cache is not user-scoped data.
 
 ### H. Voice capture and transcription
 - Personal data: voice audio, resulting transcripts.
@@ -114,7 +123,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Lawful basis: legitimate interests (Art 6(1)(f)).
 - Recipients/subprocessors: Supabase / Vercel (log surfaces, US).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: short operational windows; centralized aggregation in progress. Data-access audit log (data_audit_log) in progress.
+- Retention: short operational windows; centralized aggregation in progress. Data-access audit log (`data_audit_log`) is live for account deletion and expired-data cleanup; broader coverage (briefing, decision-engine, chat, live-headlines) is in progress.
 - Security: structured JSON logging with CI gate against console.log; no secrets in logs.
 
 ### L. Operations sync and product analytics
@@ -137,4 +146,4 @@ This record describes the processing activities Mindmaker carries out as control
 
 ## General security measures (all activities)
 
-Per-user Row-Level Security on all 108 public tables; AES-256-GCM encryption of Memory facts at rest; TLS in transit; provider-managed disk encryption; Stripe webhook verification and idempotency; rate limiting on AI endpoints; git-versioned migrations; structured logging with CI gate. Full detail and planned controls (audit logging, MFA, access reviews, pen test) in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) and [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
+Per-user Row-Level Security on all public tables as of the May-June 2026 remediation (108 tables at that time; the schema has since grown via the decision-engine, kit-engine, brain-engine, North Star, and reactivation-nudge migrations, and RLS coverage on those has not been re-audited against a fresh table count); field-level AES-256-GCM encryption of Memory fact content (alongside a retained plaintext copy, not full at-rest encryption); TLS in transit; provider-managed disk encryption; Stripe webhook verification and idempotency; rate limiting on AI endpoints; git-versioned migrations; structured logging with CI gate. Full detail and planned controls (audit logging, MFA, access reviews, pen test) in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) and [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).

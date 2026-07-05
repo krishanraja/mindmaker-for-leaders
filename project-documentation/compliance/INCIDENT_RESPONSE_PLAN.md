@@ -1,6 +1,6 @@
 # CTRL Incident Response Plan
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-05
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 How Mindmaker detects, responds to, and reports security incidents and personal-data breaches affecting CTRL. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 14 and [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md).
@@ -36,7 +36,7 @@ Current sources:
 - User and DSAR reports (a user reporting they can see another's data is an automatic escalation).
 - Code review and migration review surfacing RLS or access issues.
 
-In progress (improves detection): comprehensive data-access audit log (data_audit_log), AI-usage audit log (ai_usage_audit), centralized log aggregation, and alerting. Tracked in [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
+Live but partial: `data_audit_log` (account deletion, expired-data cleanup) and `ai_usage_audit` (skill-builder path) narrow today's forensic coverage; briefing, decision-engine, chat, and live-headlines are not yet instrumented. Centralized log aggregation and alerting remain in progress. Tracked in [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
 
 ## 4. Response workflow
 
@@ -55,7 +55,7 @@ In progress (improves detection): comprehensive data-access audit log (data_audi
 If a personal-data breach is likely to result in a risk to individuals' rights and freedoms, notify the relevant supervisory authority without undue delay and, where feasible, within 72 hours of becoming aware. The notice describes the nature of the breach, categories and approximate numbers of subjects/records, likely consequences, and measures taken. If the full picture is not yet known, notify in phases.
 
 ### GDPR Article 34 (data subjects)
-If the breach is likely to result in a high risk to individuals, notify affected data subjects without undue delay, in clear language, describing the breach, likely consequences, and steps taken and recommended. Notification may be avoided if data was rendered unintelligible (for example, strongly encrypted such as the AES-256-GCM Memory facts) or if subsequent measures eliminate the high risk.
+If the breach is likely to result in a high risk to individuals, notify affected data subjects without undue delay, in clear language, describing the breach, likely consequences, and steps taken and recommended. Notification may be avoided if data was rendered unintelligible to an unauthorized party (for example, strongly encrypted with no accessible plaintext). Note: Memory fact content is field-level AES-256-GCM encrypted, but a plaintext copy is retained alongside it for search/display (see [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) s5), so this exemption should not be assumed to apply to a Memory-table exposure without confirming the plaintext column was not also exposed.
 
 ### CCPA / CPRA
 California requires notifying affected California residents of a breach of unencrypted/unredacted personal information without unreasonable delay, and may require notifying the California Attorney General above statutory thresholds. Coordinate with the Privacy/Legal point.
@@ -77,9 +77,9 @@ This is a real, remediated incident, documented here as a reference example.
 - Detection: during the RLS hardening pass, a `USING(true)` Row-Level Security policy was identified on several tables (profiles, unified_profiles, profile_insights, user_business_context, chat_messages). `USING(true)` evaluates the read policy as always-true, meaning any authenticated user could read other users' rows in those tables: a cross-tenant data-access misconfiguration.
 - Severity: classified High (a clear path to exposure of profile and chat personal data across tenants).
 - Containment and eradication: the permissive policies were replaced so each table is now owner-scoped (rows restricted to `auth.uid()` ownership) or restricted to the service role where appropriate. Changes were delivered as git-versioned migrations and verified across the affected tables.
-- Impact assessment: reviewed available logs/usage for evidence of actual cross-tenant access. (At the time, comprehensive data-access audit logging, data_audit_log, was not yet in place, which limited forensic certainty; this directly motivated building it.)
+- Impact assessment: reviewed available logs/usage for evidence of actual cross-tenant access. (At the time, `data_audit_log` was not yet in place, which limited forensic certainty; this directly motivated building it. It now exists but is only wired for account deletion and expired-data cleanup, so a similar future incident on an uninstrumented table would face the same limitation.)
 - Notification: assessed against GDPR Art 33/34. Where evidence indicated the gap was found and closed without confirmed unauthorized access, the conclusion documented was no external notification required; had logs shown actual cross-tenant reads, an Art 33 authority notice within 72 hours and likely Art 34 subject notices would have followed.
-- Follow-ups: (1) audit all 108 public tables for any remaining permissive policies (completed as the broader hardening); (2) build data_audit_log to make future impact assessment evidence-based (in progress); (3) add RLS regression coverage so a permissive policy cannot ship again. See [CONTROL_MATRIX.md](./CONTROL_MATRIX.md) CC6.
+- Follow-ups: (1) audit all 108 public tables for any remaining permissive policies (completed as the broader hardening); (2) build data_audit_log to make future impact assessment evidence-based (shipped, but coverage is still partial - see s3); (3) add RLS regression coverage so a permissive policy cannot ship again. See [CONTROL_MATRIX.md](./CONTROL_MATRIX.md) CC6.
 
 ## 8. Logging incidents
 
