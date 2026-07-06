@@ -53,7 +53,13 @@ export interface CockpitBlocker {
 // kickstart = the guide-posture lead: a proposed first/next decision to weigh.
 //             Never a news headline; routes into the decision engine with a
 //             prefill. Rendered by KickstartCard, not CockpitHero.
-export type DeckCardKind = 'news' | 'signal' | 'kickstart';
+// trend   = a STRUCTURAL SHIFT: a pattern that recurs across many distinct
+//             stories over weeks (e.g. "the rise of the forward-deployed
+//             engineer"), framed as what it means for how your org may need to
+//             change. Not a single headline; grounded in dated evidence stories.
+//             Rendered by TrendCard; opens the read sheet like a news card, but
+//             its primary action weighs the org implication as a decision.
+export type DeckCardKind = 'news' | 'signal' | 'kickstart' | 'trend';
 
 // One of the nine locked AI-native news categories (src/types/newsCategory.ts).
 // When present + valid it drives the headline card's branded motif directly;
@@ -70,6 +76,16 @@ export interface NewsBenchmark {
   intelligenceIndex: number | null;
   pricePer1m: number | null;
   rank: number | null;
+}
+
+// One real, dated story that evidences a structural-shift (trend) card. Shown in
+// the read sheet as the honest grounding for why the shift is flagged - the
+// temporal analogue of a news card's cross-source corroboration.
+export interface TrendEvidence {
+  headline: string;
+  source: string | null;
+  url: string | null;
+  date: string | null; // the day CTRL saw the story ("YYYY-MM-DD")
 }
 
 export interface DeckCard {
@@ -101,6 +117,9 @@ export interface DeckCard {
   // independent Artificial Analysis benchmark cross-check, present only on news
   // cards that name a specific model it tracks (validates the story).
   benchmark?: NewsBenchmark | null;
+  // the dated stories a trend card is built from (kind === 'trend' only). The
+  // read sheet lists them as the honest "why I'm flagging this" grounding.
+  evidence?: TrendEvidence[] | null;
 }
 
 // The session-adaptive Home state, derived off REAL data volume (never faked):

@@ -29,6 +29,7 @@ import type { CockpitData, DeckCard, HomeState, UserPosture } from '@/types/cock
 import { CockpitHero } from './CockpitHero';
 import { CardReadSheet } from './CardReadSheet';
 import { KickstartCard } from './KickstartCard';
+import { TrendCard } from './TrendCard';
 import { CategoryMotif } from './CategoryMotif';
 import { TuneFeedButton } from './TuneFeedButton';
 import { InlineProfileSetup } from './onboarding/InlineProfileSetup';
@@ -115,17 +116,21 @@ export function HomeFeed(props: HomeFeedProps) {
     return deck === props.data.deck ? props.data : { ...props.data, deck, capabilityStage: capability?.stage };
   }, [props.data, capability]);
 
-  // THE READ LAYER: a news card opens the in-app read sheet (full summary,
-  // the Take, benchmark, the for-you read) instead of bouncing straight
-  // to the article. Kickstart/signal cards keep their in-app routing.
+  // THE READ LAYER: a news OR trend card opens the in-app read sheet (full
+  // summary, the Take/evidence, benchmark, the for-you read) instead of bouncing
+  // straight out. Kickstart/signal cards keep their in-app routing.
   const [readCard, setReadCard] = useState<DeckCard | null>(null);
   const relevant = useDeckRelevance();
+  // Destructure so the callback depends on the specific prop, not the whole
+  // props object (react-hooks/exhaustive-deps; CI lints changed lines at
+  // --max-warnings=0).
+  const { onOpenCard } = props;
   const handleOpenCard = useCallback(
     (card: DeckCard) => {
-      if (card.kind === 'news') setReadCard(card);
-      else props.onOpenCard(card);
+      if (card.kind === 'news' || card.kind === 'trend') setReadCard(card);
+      else onOpenCard(card);
     },
-    [props.onOpenCard],
+    [onOpenCard],
   );
 
   return (
@@ -378,6 +383,8 @@ function MobileSwipeTrack({ deck, idx, zoneH, reduceMotion, onFocus, onOpen, onR
               {focused ? (
                 card.kind === 'kickstart' ? (
                   <KickstartCard card={card} variant="feed" onOpen={onOpen} />
+                ) : card.kind === 'trend' ? (
+                  <TrendCard card={card} variant="feed" onOpen={onOpen} />
                 ) : (
                   <CockpitHero card={card} variant="feed" onOpen={onOpen} onReact={onReact} />
                 )
@@ -498,6 +505,8 @@ function DesktopHome({
                   <div key={card.id} className={cn('flex h-full min-h-0 flex-col', i === 0 ? 'w-[480px] shrink-0' : 'w-[330px] shrink-0')}>
                     {card.kind === 'kickstart' ? (
                       <KickstartCard card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} />
+                    ) : card.kind === 'trend' ? (
+                      <TrendCard card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} />
                     ) : (
                       <CockpitHero card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} onReact={i === 0 ? onReactDeck : undefined} />
                     )}

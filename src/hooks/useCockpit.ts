@@ -8,6 +8,7 @@ import { rankByPreferences, rankPersonalized } from '@/lib/newsPriority';
 import { isOffLensHeadline } from '@/lib/newsLens';
 import { markHomeReady } from '@/lib/bootGate';
 import { roleFitByCategory } from '@/lib/roleArchetype';
+import { pickTopTrend, trendToDeckCard, type TrendItem } from '@/lib/trendCard';
 import { COLD_DECK } from '@/components/cockpit/coldDeck';
 import { reserveForCategories } from '@/components/cockpit/laneReserve';
 import { cacheHeadlines } from '@/components/system/loadingLines';
@@ -142,6 +143,11 @@ export function useCockpit(): {
   // Categories the leader has recently disliked on the deck -> down-weighted out
   // of the news half (the swipe trains the feed). Best-effort; empty on error.
   const [dislikedCats, setDislikedCats] = useState<Set<string>>(new Set());
+  // The current STRUCTURAL SHIFTS (detect-trends): shared, generic industry
+  // patterns building over weeks. The most role-relevant one is surfaced as a
+  // single "shift" card. Best-effort + flag-gated server-side (empty when off),
+  // so Home reads exactly as before when there are no trends.
+  const [trends, setTrends] = useState<TrendItem[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -280,6 +286,24 @@ export function useCockpit(): {
     return () => {
       cancelled = true;
     };
+  }, [reloadKey]);
+
+  // The current structural shifts (detect-trends). A cheap read of the shared
+  // set; the client picks the most role-relevant one to surface. Best-effort:
+  // any failure (or the flag off) leaves trends empty and Home is unchanged.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('detect-trends');
+        if (cancelled || error) return;
+        const res = data as { trends?: TrendItem[] } | null;
+        if (Array.isArray(res?.trends)) setTrends(res.trends);
+      } catch {
+        /* keep empty -> no trend card */
+      }
+    })();
+    return () => { cancelled = true; };
   }, [reloadKey]);
 
   // The contextual Edge pain-card: the leader's highest-importance blocker (if any).
@@ -528,7 +552,15 @@ export function useCockpit(): {
             prefill: starter,
           }
         : null;
-    const deckOut = kickstart ? [kickstart, ...shown.slice(0, 7)] : shown.slice(0, 8);
+
+    // The Home "shift" card: the ONE structural shift most relevant to this
+    // leader's role/business, framed as what it means for how their org may need
+    // to change. It rides high in the deck (below any kickstart or the news
+    // spine) as a durable, weigh-forward lead - never below the profile gate.
+    const topTrend = needsProfile ? null : pickTopTrend(trends, fit);
+    const trendCard: DeckCard | null = topTrend ? trendToDeckCard(topTrend) : null;
+    const shownWithTrend = trendCard ? [trendCard, ...shown] : shown;
+    const deckOut = kickstart ? [kickstart, ...shownWithTrend.slice(0, 7)] : shownWithTrend.slice(0, 8);
 
     return {
       hero,
@@ -543,7 +575,7 @@ export function useCockpit(): {
       leaderRole: roleSector.role,
       leaderSector: roleSector.sector,
     };
-  }, [cases, alerts, reactions, segments, briefedAt, liveHeadlines, dislikedCats, preferences, zeitgeist, serverPersonalized, needsProfile, roleSector]);
+  }, [cases, alerts, reactions, segments, briefedAt, liveHeadlines, dislikedCats, preferences, zeitgeist, serverPersonalized, needsProfile, roleSector, trends]);
 
   // Hold the skeleton until BOTH the decision inbox and the first live-headlines
   // fetch have settled, so Home renders its real deck once instead of flashing
