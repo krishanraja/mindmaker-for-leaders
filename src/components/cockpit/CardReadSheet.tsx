@@ -63,11 +63,13 @@ export function CardReadSheet({
   onReact,
 }: CardReadSheetProps) {
   const open = card !== null;
+  const isTrend = card?.kind === 'trend';
   const categoryId = card ? resolveNewsCategory(card.category, `${card.headline} ${card.say ?? ''}`) : null;
   const category = categoryId ? getNewsCategory(categoryId) : null;
   // LLM-personalized (the story read through the leader's real brain context),
   // cached per card; silently falls back to the deterministic line on failure.
-  const forYou = useCardForYou(card, leaderRole, leaderSector);
+  // A trend card carries its own org implication (in `pov`), so it skips this.
+  const forYou = useCardForYou(isTrend ? null : card, leaderRole, leaderSector);
 
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -113,27 +115,66 @@ export function CardReadSheet({
               )}
             </div>
 
-            {/* THE TAKE - full, never clipped */}
+            {/* THE TAKE (news) / WHAT THIS MEANS FOR YOUR ORG (trend) - full,
+                never clipped. A trend carries its org implication here. */}
             {card.pov && (
               <p className="border-l-2 border-accent/60 pl-3 text-[13px] leading-[1.55] text-foreground/90">
-                <span className="mr-1.5 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">Take</span>
+                <span className="mr-1.5 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">
+                  {isTrend ? 'For your org' : 'Take'}
+                </span>
                 {card.pov}
               </p>
             )}
 
-            {/* FOR YOU - the story read through the leader's real brain context
-                (LLM, cached per card; deterministic fallback lands silently) */}
-            <div className="rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5">
-              <p className="mb-1 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">For you</p>
-              {forYou.loading ? (
-                <div className="space-y-1.5 py-0.5" aria-label="Reading this through what I know about you">
-                  <SkeletonBar className="h-3 w-full" />
-                  <SkeletonBar className="h-3 w-[78%]" />
+            {/* WHY I'M FLAGGING THIS (trend) - the real, dated stories the shift
+                is built from. The honest grounding: a shift is only surfaced when
+                it recurs across these. */}
+            {isTrend && card.evidence && card.evidence.length > 0 && (
+              <div>
+                <p className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">Why I'm flagging this</p>
+                <div className="space-y-1.5">
+                  {card.evidence.slice(0, 5).map((e, i) => {
+                    const meta = [e.source, e.date].filter(Boolean).join(' · ');
+                    const inner = (
+                      <>
+                        <span className="line-clamp-2 text-[12.5px] font-medium leading-snug text-foreground/85">{e.headline}</span>
+                        {meta && <span className="mt-0.5 block text-[10.5px] text-muted-foreground">{meta}</span>}
+                      </>
+                    );
+                    return e.url ? (
+                      <a
+                        key={i}
+                        href={e.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block rounded-lg border border-border bg-foreground/[0.02] px-3 py-2 transition-colors hover:border-accent/30"
+                      >
+                        {inner}
+                      </a>
+                    ) : (
+                      <div key={i} className="rounded-lg border border-border bg-foreground/[0.02] px-3 py-2">{inner}</div>
+                    );
+                  })}
                 </div>
-              ) : (
-                forYou.line && <p className="text-[12.5px] leading-[1.55] text-foreground/85">{forYou.line}</p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* FOR YOU - the story read through the leader's real brain context
+                (LLM, cached per card; deterministic fallback lands silently).
+                Trend cards carry their own org implication above, so skip it. */}
+            {!isTrend && (
+              <div className="rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5">
+                <p className="mb-1 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-accent">For you</p>
+                {forYou.loading ? (
+                  <div className="space-y-1.5 py-0.5" aria-label="Reading this through what I know about you">
+                    <SkeletonBar className="h-3 w-full" />
+                    <SkeletonBar className="h-3 w-[78%]" />
+                  </div>
+                ) : (
+                  forYou.line && <p className="text-[12.5px] leading-[1.55] text-foreground/85">{forYou.line}</p>
+                )}
+              </div>
+            )}
 
             {/* trust signals: benchmark cross-check + corroboration + decision relevance */}
             {card.benchmark && <BenchmarkRow benchmark={card.benchmark} />}
@@ -178,17 +219,19 @@ export function CardReadSheet({
               {onWeigh && (
                 <button
                   type="button"
-                  onClick={() => onWeigh(weighPrefillFor(card.headline))}
+                  onClick={() => onWeigh(isTrend && card.prefill ? card.prefill : weighPrefillFor(card.headline))}
                   className={cn(
-                    'inline-flex items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/[0.08] px-4 py-2.5 text-[13px] font-bold text-accent transition-colors hover:bg-accent/[0.14]',
-                    !card.url && 'flex-1',
+                    'inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-bold transition-colors',
+                    isTrend
+                      ? 'flex-1 bg-accent text-accent-foreground hover:brightness-110'
+                      : cn('border border-accent/30 bg-accent/[0.08] text-accent hover:bg-accent/[0.14]', !card.url && 'flex-1'),
                   )}
                 >
                   <Scale className="h-4 w-4" />
-                  Weigh it
+                  {isTrend ? 'Weigh what this means for your org' : 'Weigh it'}
                 </button>
               )}
-              {onReact && (
+              {onReact && !isTrend && (
                 <div className="ml-auto flex shrink-0 items-center gap-2">
                   <button
                     type="button"
