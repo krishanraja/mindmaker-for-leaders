@@ -121,12 +121,16 @@ export function HomeFeed(props: HomeFeedProps) {
   // straight out. Kickstart/signal cards keep their in-app routing.
   const [readCard, setReadCard] = useState<DeckCard | null>(null);
   const relevant = useDeckRelevance();
+  // Destructure so the callback depends on the specific prop, not the whole
+  // props object (react-hooks/exhaustive-deps; CI lints changed lines at
+  // --max-warnings=0).
+  const { onOpenCard } = props;
   const handleOpenCard = useCallback(
     (card: DeckCard) => {
       if (card.kind === 'news' || card.kind === 'trend') setReadCard(card);
-      else props.onOpenCard(card);
+      else onOpenCard(card);
     },
-    [props.onOpenCard],
+    [onOpenCard],
   );
 
   return (
