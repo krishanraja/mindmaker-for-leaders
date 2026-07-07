@@ -10,6 +10,13 @@
 let ready = false;
 const listeners = new Set<() => void>();
 
+/** True once Home's first data has settled this session (survives route
+    unmount/remount - module singleton). Used to show the branded GlobeLoader
+    ONLY on the genuine first entry; returns to Home render instantly / quiet. */
+export function isHomeReady(): boolean {
+  return ready;
+}
+
 /** Home's first data has settled (success OR failure). Idempotent. */
 export function markHomeReady(): void {
   if (ready) return;

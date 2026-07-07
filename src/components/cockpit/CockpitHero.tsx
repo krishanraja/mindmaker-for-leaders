@@ -50,10 +50,15 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
 
   return (
     <article
+      // The WHOLE card is one tap target (the read layer opens on any tap that is
+      // not a reaction / chip). Keyboard access stays on the headline button.
+      onClick={() => onOpen?.(card)}
       className={cn(
-        'relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-accent/30',
-        'bg-[linear-gradient(180deg,#101620_0%,#0a0e12_100%)]',
-        'shadow-[0_30px_64px_-30px_rgba(0,0,0,0.95),0_0_0_1px_hsl(var(--accent)/0.28),inset_0_1px_0_rgba(255,255,255,0.025)]',
+        'group relative flex min-h-0 flex-1 cursor-pointer flex-col overflow-hidden rounded-[22px] border border-accent/20',
+        // FRESH NEWS = a neutral cool-graphite surface (kept visually distinct
+        // from the emerald-tinted "shift" card, so ongoing vs breaking reads at a glance).
+        'bg-[linear-gradient(180deg,#0f141c_0%,#0a0e12_100%)]',
+        'shadow-[0_30px_64px_-30px_rgba(0,0,0,0.95),0_0_0_1px_hsl(var(--accent)/0.16),inset_0_1px_0_rgba(255,255,255,0.025)]',
       )}
     >
       {/* HERO BAND - pure motif art; chip + magnitude live in the body below.
@@ -71,6 +76,7 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
         {/* TOPLINE: category chip (left) + magnitude (right), clear of the motif */}
         <div className={cn('flex min-h-[20px] flex-none items-center justify-between gap-2.5', isLead ? 'mb-3.5' : 'mb-3')}>
           <span
+            onClick={(e) => e.stopPropagation()}
             className={cn(
               'whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 font-gobold uppercase tracking-[0.07em] text-accent',
               isLead ? 'px-3 py-1.5 text-[10px]' : 'px-2.5 py-1 text-[9.5px]',
@@ -117,7 +123,15 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
               outlet titles (variable, sometimes very long), so the clamp is the
               SYSTEM guarantee that a long headline can never push the body or meta
               row off the card. The full title is on the linked article. */}
-          <button type="button" onClick={() => onOpen?.(card)} className="block w-full text-left">
+          {/* The headline is the keyboard-accessible open control; the whole card
+              also opens on tap (article onClick). stopPropagation avoids a
+              double-open when both fire. */}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpen?.(card); }}
+            aria-label={`Read: ${card.headline}`}
+            className="block w-full text-left"
+          >
             <h2
               className={cn(
                 'm-0 line-clamp-3 text-balance font-extrabold tracking-[-0.02em] text-foreground',
@@ -170,24 +184,19 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
               </>
             )}
           </div>
-          {/* the quiet read affordance: the depth is one tap away (whole card
-              body opens it too; this makes the door visible) */}
+          {/* ONE consistent read affordance (identical on the news + shift card):
+              the whole card taps to open; this quiet "Read" makes the door visible. */}
           {!isSignal && onOpen && (
-            <button
-              type="button"
-              onClick={() => onOpen(card)}
-              aria-label="Read more"
-              className="flex shrink-0 items-center gap-0.5 text-[11px] font-bold text-accent transition-colors hover:brightness-110"
-            >
-              {card.pov ? 'The take' : 'More'}
+            <span className="flex shrink-0 items-center gap-0.5 text-[11px] font-bold text-accent transition-colors group-hover:brightness-110">
+              Read
               <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.4} />
-            </button>
+            </span>
           )}
           {onReact && (
             <div className="flex shrink-0 items-center gap-2">
               <button
                 type="button"
-                onClick={() => onReact(card, 'dislike')}
+                onClick={(e) => { e.stopPropagation(); onReact(card, 'dislike'); }}
                 aria-label="Less like this"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-[#0c1116] text-muted-foreground transition-colors hover:text-foreground"
               >
@@ -195,7 +204,7 @@ export function CockpitHero({ card, variant = 'feed', onOpen, onReact }: Cockpit
               </button>
               <button
                 type="button"
-                onClick={() => onReact(card, 'like')}
+                onClick={(e) => { e.stopPropagation(); onReact(card, 'like'); }}
                 aria-label="More like this"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-accent/40 bg-accent/[0.08] text-accent transition-colors hover:bg-accent/15"
               >

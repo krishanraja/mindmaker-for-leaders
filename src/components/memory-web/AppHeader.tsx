@@ -5,6 +5,7 @@ import { BrandLockup } from '@/components/landing/BrandLockup';
 import { useSettingsSheet } from '@/contexts/SettingsSheetContext';
 import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
 import { TuneFeedButton } from '@/components/cockpit/TuneFeedButton';
+import { TrackRecordHeaderButton } from '@/components/track-record/TrackRecordHeaderButton';
 
 interface AppHeaderProps {
   /**
@@ -33,6 +34,9 @@ export function AppHeader({ onAdd, onExport, center }: AppHeaderProps) {
   const { openSheet } = useSettingsSheet();
   const location = useLocation();
   const isHome = location.pathname === '/dashboard' && !location.search;
+  // The track-record ring lives on the Decisions tab only (that is the surface
+  // whose prime real estate it freed).
+  const isDecision = location.pathname === '/decision';
 
   return (
     <header className="flex-shrink-0 flex items-center justify-between px-5 pt-4 pb-2">
@@ -48,6 +52,7 @@ export function AppHeader({ onAdd, onExport, center }: AppHeaderProps) {
             reads as its own surface (Play lives on Home, not on Memory/Decisions). */}
         {isHome && <TuneFeedButton compact />}
         {isHome && <BriefingHeaderButton />}
+        {isDecision && <TrackRecordHeaderButton />}
         {onExport && (
           <button
             onClick={onExport}

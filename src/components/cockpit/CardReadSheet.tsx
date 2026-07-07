@@ -12,7 +12,7 @@
  * sm:mx-auto sm:max-w-lg. Every section renders only real data; absent
  * fields are skipped, never faked.
  */
-import { X, Heart, BadgeCheck, Scale, ArrowUpRight, Users } from 'lucide-react';
+import { BadgeCheck, Scale, ArrowUpRight, Users } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { AiTermHint } from '@/components/system/AiTermHint';
 import { SkeletonBar } from '@/components/system/SkeletonCard';
@@ -49,8 +49,6 @@ export interface CardReadSheetProps {
   relevantToPinnedDecision?: boolean;
   /** route into the decision weigher with a prefill. */
   onWeigh?: (prefill: string) => void;
-  /** the swipe-trained reactions; reacting closes the sheet. */
-  onReact?: (card: DeckCard, reaction: 'like' | 'dislike') => void;
 }
 
 export function CardReadSheet({
@@ -60,7 +58,6 @@ export function CardReadSheet({
   leaderSector,
   relevantToPinnedDecision,
   onWeigh,
-  onReact,
 }: CardReadSheetProps) {
   const open = card !== null;
   const isTrend = card?.kind === 'trend';
@@ -203,17 +200,18 @@ export function CardReadSheet({
               </p>
             )}
 
-            {/* the ways out: read the article / weigh it / react */}
-            <div className="flex items-center gap-2.5 pt-1">
+            {/* The two ways out - each a single-line, equal-width button (reactions
+                live on the card, not here, so this row never crowds or wraps). */}
+            <div className="flex items-stretch gap-2.5 pt-1">
               {card.url && (
                 <a
                   href={card.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-accent px-4 py-2.5 text-[13px] font-bold text-accent-foreground transition hover:brightness-110"
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-accent px-4 py-2.5 text-[13px] font-bold text-accent-foreground transition hover:brightness-110"
                 >
                   Read the article
-                  <ArrowUpRight className="h-4 w-4" />
+                  <ArrowUpRight className="h-4 w-4 shrink-0" />
                 </a>
               )}
               {onWeigh && (
@@ -221,35 +219,17 @@ export function CardReadSheet({
                   type="button"
                   onClick={() => onWeigh(isTrend && card.prefill ? card.prefill : weighPrefillFor(card.headline))}
                   className={cn(
-                    'inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-bold transition-colors',
-                    isTrend
-                      ? 'flex-1 bg-accent text-accent-foreground hover:brightness-110'
-                      : cn('border border-accent/30 bg-accent/[0.08] text-accent hover:bg-accent/[0.14]', !card.url && 'flex-1'),
+                    'inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-[13px] font-bold transition-colors',
+                    // Without an article link, the decision button becomes the single
+                    // primary; alongside one, it is the quieter outline secondary.
+                    card.url
+                      ? 'border border-accent/30 bg-accent/[0.08] text-accent hover:bg-accent/[0.14]'
+                      : 'bg-accent text-accent-foreground hover:brightness-110',
                   )}
                 >
-                  <Scale className="h-4 w-4" />
-                  {isTrend ? 'Weigh what this means for your org' : 'Weigh it'}
+                  <Scale className="h-4 w-4 shrink-0" />
+                  {isTrend ? 'Think through what this means for you' : 'Think it through'}
                 </button>
-              )}
-              {onReact && !isTrend && (
-                <div className="ml-auto flex shrink-0 items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { onReact(card, 'dislike'); onClose(); }}
-                    aria-label="Less like this"
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-[#0c1116] text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <X className="h-[18px] w-[18px]" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { onReact(card, 'like'); onClose(); }}
-                    aria-label="More like this"
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-accent/40 bg-accent/[0.08] text-accent transition-colors hover:bg-accent/15"
-                  >
-                    <Heart className="h-[18px] w-[18px] fill-current" />
-                  </button>
-                </div>
               )}
             </div>
           </div>
