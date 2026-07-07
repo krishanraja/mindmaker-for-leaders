@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react'
 import { RequireAuth } from '@/components/auth/RequireAuth'
 import { AuthedLayoutRoute } from '@/components/layout/AuthedLayoutRoute'
 import { BrandSplashVisual } from '@/components/ui/splash-screen'
+import { FF } from '@/lib/flags'
 
 const CHUNK_RELOAD_KEY = 'chunk_reload'
 
@@ -130,6 +131,7 @@ const DecisionMap = lazyWithRetry(() => import('@/pages/DecisionMap'))
 const Preview = lazyWithRetry(() => import('@/pages/Preview'))
 const Agents = lazyWithRetry(() => import('@/pages/Agents'))
 const Try = lazyWithRetry(() => import('@/pages/Try'))
+const CaptureLanding = lazyWithRetry(() => import('@/pages/CaptureLanding'))
 const Pricing = lazyWithRetry(() => import('@/pages/Pricing'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
@@ -208,6 +210,17 @@ function LazyWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingPage />}>{children}</Suspense>
 }
 
+/**
+ * Gate for the /download public capture page. Checked at render time (not at
+ * router-construction time) so a ?ff_capture=1 override on THIS navigation is
+ * honored even when the route is reached via client-side routing rather than
+ * a fresh page load. Flag off degrades to the app's standard not-found page,
+ * same as any other unrecognized path.
+ */
+function CaptureLandingGate() {
+  return FF.publicCapture() ? <CaptureLanding /> : <NotFound />
+}
+
 export const router = createBrowserRouter([
   // Public routes
   {
@@ -248,6 +261,11 @@ export const router = createBrowserRouter([
     // Pre-login magic moment (public): a canned but real-shaped pressure-test demo.
     path: '/try',
     element: <LazyWrapper><Try /></LazyWrapper>,
+  },
+  {
+    // Public email-capture landing page (behind FF.publicCapture).
+    path: '/download',
+    element: <LazyWrapper><CaptureLandingGate /></LazyWrapper>,
   },
   {
     // Interactive in-app upgrade surface (the static /pricing.html is the public

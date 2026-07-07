@@ -24,7 +24,8 @@ export interface AttributionEvent {
     | "kit_capsule_pasted"
     | "kit_artifact_downloaded"
     | "kit_shipped"
-    | "kit_email_captured";
+    | "kit_email_captured"
+    | "capture_submitted";
   occurred_at?: string;
   anonymous_id?: string;
   user_id?: string;
