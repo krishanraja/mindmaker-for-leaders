@@ -15,13 +15,14 @@
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Scale, TrendingUp } from 'lucide-react';
+import { ArrowRight, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/lib/haptics';
 import { AgedCallRow, type DecisionCardActions } from './AgedCallRow';
 import { CapabilityHeader } from './CapabilityHeader';
-import { CalibrationSparkline, ProofGlyph } from './trackRecordMotifs';
-import type { AgedOutcome, CalibrationRead, SharpenTrend, TrackRecordModel } from './trackRecordModel';
+import { WarmCalibration, RichCalibration } from './CalibrationSummary';
+import { ProofGlyph } from './trackRecordMotifs';
+import type { AgedOutcome, TrackRecordModel } from './trackRecordModel';
 import type { CapabilityNextMove, CapabilityRead } from '@/lib/capabilityLadder';
 
 // ---------------------------------------------------------------------------------------
@@ -116,182 +117,6 @@ function PromiseState({ desktop, onWeigh }: { desktop: boolean; onWeigh?: (prefi
 }
 
 // ---------------------------------------------------------------------------------------
-// The calibration card (centre of warm + rich). In warm it is an n/N first read; in rich
-// it is a hero hit-rate with an honest trend strip + the "gut beat the data" insight.
-// ---------------------------------------------------------------------------------------
-
-function freshnessLabel(freshDays: number | null): string | null {
-  if (freshDays === null) return null;
-  if (freshDays === 0) return 'updated today';
-  if (freshDays === 1) return 'last call yesterday';
-  return `last call ${freshDays}d ago`;
-}
-
-function WarmCalibration({ calibration, freshDays }: { calibration: CalibrationRead; freshDays: number | null }) {
-  const fresh = freshnessLabel(freshDays);
-  // Three honest warm sub-states, none of which is ever a zero-scoreboard (spec s4):
-  //  - readRight:  read >= 1  -> the positive n/N hero ("3/4 calls read right").
-  //  - firstMiss:  scored >= 1 but read === 0 -> the pattern has not landed your way YET.
-  //                We never lead a brand-new leader with a stark "0/N" hero; we frame it as
-  //                early and forward-looking, honestly (the calls are still listed below).
-  //  - awaiting:   scored === 0 -> banked, but no gut-vs-ground signal to score yet.
-  const mode: 'readRight' | 'firstMiss' | 'awaiting' =
-    calibration.read > 0 ? 'readRight' : calibration.scored > 0 ? 'firstMiss' : 'awaiting';
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="relative overflow-hidden rounded-[22px] border border-accent/30 bg-[linear-gradient(180deg,#101620,#0a0e12)] px-5 pb-[18px] pt-5"
-      style={{ boxShadow: '0 30px 64px -34px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.025)' }}
-    >
-      <span
-        className="pointer-events-none absolute inset-0"
-        style={{ background: 'radial-gradient(120% 90% at 88% -20%, hsl(var(--accent)/0.12), transparent 55%)' }}
-        aria-hidden="true"
-      />
-      <div className="relative flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Your track record</span>
-        {fresh && <span className="text-[11px] font-medium text-muted-foreground/80">{fresh}</span>}
-      </div>
-
-      {mode === 'readRight' && (
-        <>
-          <div className="relative mt-3.5 flex items-baseline gap-3.5">
-            <span
-              className="text-[62px] font-bold leading-[0.86] tracking-tighter text-[#aef6ea] [font-variant-numeric:tabular-nums]"
-              style={{ textShadow: '0 0 30px hsl(var(--accent)/0.5)' }}
-            >
-              {calibration.read}
-              <span className="text-[0.42em] font-semibold text-muted-foreground">/{calibration.scored}</span>
-            </span>
-            <span className="flex flex-col gap-0.5 pb-1.5">
-              <span className="text-[13px] font-bold text-foreground">turned out as you called</span>
-              <span className="max-w-[18ch] text-[11.5px] leading-snug text-muted-foreground">
-                These went the way you decided they would.
-              </span>
-            </span>
-          </div>
-          <p className="relative mt-3.5 text-[13px] leading-relaxed text-[#c2cad6]">
-            Early days, but it is honest. <b className="font-bold text-accent">One more decision plays out</b> and I can
-            start showing whether you are getting sharper.
-          </p>
-        </>
-      )}
-
-      {mode === 'firstMiss' && (
-        // No fabricated upside. We acknowledge the first one went the other way, plainly and
-        // without a deflating "0/N" hero, and point forward.
-        <p className="relative mt-3.5 text-[14px] leading-relaxed text-[#c2cad6]">
-          {calibration.scored === 1 ? 'Your first decision' : `Your first ${calibration.scored} decisions`} went the
-          other way from how you called {calibration.scored === 1 ? 'it' : 'them'}. <b className="font-bold text-accent">Worth knowing.</b> A few more play out
-          and the real pattern shows.
-        </p>
-      )}
-
-      {mode === 'awaiting' && (
-        // Banked decisions exist but none has played out enough to judge yet.
-        <p className="relative mt-3.5 text-[14px] leading-relaxed text-[#c2cad6]">
-          Your first decisions are saved here. As they play out, I will start showing how your calls turn out.
-        </p>
-      )}
-    </motion.div>
-  );
-}
-
-function RichCalibration({
-  calibration,
-  trend,
-  freshDays,
-  insight,
-  desktop,
-}: {
-  calibration: CalibrationRead;
-  trend: SharpenTrend;
-  freshDays: number | null;
-  insight: string | null;
-  desktop: boolean;
-}) {
-  const fresh = freshnessLabel(freshDays);
-  const showTrend =
-    trend.direction !== null && trend.earlierRate !== null && trend.recentRate !== null && trend.series.length >= 2;
-  const trendLabel =
-    trend.direction === 'up' ? 'Sharper' : trend.direction === 'down' ? 'Slipped' : 'Holding steady';
-  const trendTone =
-    trend.direction === 'up' ? 'text-accent' : trend.direction === 'down' ? 'text-amber-500' : 'text-muted-foreground';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={cn(
-        'relative overflow-hidden rounded-[22px] border border-accent/30 bg-[linear-gradient(180deg,#101620,#0a0e12)]',
-        desktop ? 'px-[30px] pb-[26px] pt-7' : 'px-5 pb-[18px] pt-5',
-      )}
-      style={{ boxShadow: '0 30px 64px -34px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.025)' }}
-    >
-      <span
-        className="pointer-events-none absolute inset-0"
-        style={{ background: 'radial-gradient(120% 90% at 88% -20%, hsl(var(--accent)/0.12), transparent 55%)' }}
-        aria-hidden="true"
-      />
-      <div className="relative flex items-center justify-between">
-        <span className={cn('font-bold uppercase tracking-[0.12em] text-muted-foreground', desktop ? 'text-[11px]' : 'text-[10px]')}>
-          Across {calibration.scored} {calibration.scored === 1 ? 'decision' : 'decisions'} that played out
-        </span>
-        {fresh && <span className="text-[11px] font-medium text-muted-foreground/80">{fresh}</span>}
-      </div>
-
-      <div className="relative mt-3.5 flex items-baseline gap-3.5">
-        <span
-          className={cn(
-            'font-bold leading-[0.86] tracking-tighter text-[#aef6ea] [font-variant-numeric:tabular-nums]',
-            desktop ? 'text-[84px]' : 'text-[62px]',
-          )}
-          style={{ textShadow: '0 0 30px hsl(var(--accent)/0.5)' }}
-        >
-          {calibration.pct}
-          <span className="text-[0.4em] font-bold text-accent">%</span>
-        </span>
-        <span className="flex flex-col gap-0.5 pb-1.5">
-          <span className="text-[13px] font-bold text-foreground">turned out as you called</span>
-          <span className="max-w-[20ch] text-[11.5px] leading-snug text-muted-foreground">
-            {calibration.read} of {calibration.scored} went the way you decided they would.
-          </span>
-        </span>
-      </div>
-
-      {showTrend && (
-        <div className={cn('relative flex items-center gap-3.5', desktop ? 'mt-5' : 'mt-4')}>
-          <div className={cn('flex-1', desktop ? 'h-[72px]' : 'h-[54px]')}>
-            <CalibrationSparkline points={trend.series} />
-          </div>
-          <div className="flex-none text-right">
-            <span className={cn('inline-flex items-center gap-1.5 text-[12.5px] font-bold', trendTone)}>
-              <TrendingUp
-                className={cn('h-3.5 w-3.5', trend.direction === 'down' && 'rotate-180', trend.direction === 'flat' && 'rotate-90')}
-              />
-              {trendLabel}
-            </span>
-            <span className="mt-1 block whitespace-nowrap text-[11px] text-muted-foreground">
-              {Math.round((trend.earlierRate ?? 0) * 100)}% then to {Math.round((trend.recentRate ?? 0) * 100)}% now
-            </span>
-          </div>
-        </div>
-      )}
-
-      {insight && (
-        <p className={cn('relative leading-relaxed text-[#c2cad6]', desktop ? 'mt-5 max-w-[42ch] text-[14.5px]' : 'mt-4 text-[13px]')}>
-          <span className="font-bold text-accent">Where you called it right: </span>
-          {insight}
-        </p>
-      )}
-    </motion.div>
-  );
-}
-
-// ---------------------------------------------------------------------------------------
 // Section label (the .slab) + the aged-calls list.
 // ---------------------------------------------------------------------------------------
 
@@ -358,9 +183,18 @@ export interface TrackRecordViewProps {
   onCapabilityGo?: (move: CapabilityNextMove) => void;
   /** When present, active-decision rows become a control centre (open/strengthen/archive). */
   decisionActions?: DecisionCardActions;
+  /**
+   * 'full' (default) = the standalone You surface: capability header + the
+   * calibration hero + the calls list.
+   * 'list' = the Decisions -> History embed: the calls list ONLY. The reflective
+   * read (capability stage + calibration) lives in the track-record drawer, so
+   * the Decisions tab leads with the actual decisions, not a summary card.
+   */
+  variant?: 'full' | 'list';
 }
 
-export function TrackRecordView({ model, desktop, onWeigh, animated = true, capability, onCapabilityGo, decisionActions }: TrackRecordViewProps) {
+export function TrackRecordView({ model, desktop, onWeigh, animated = true, capability, onCapabilityGo, decisionActions, variant = 'full' }: TrackRecordViewProps) {
+  const listOnly = variant === 'list';
   // Outcome filter for the rich list (hooks must run before any early return).
   const [outcome, setOutcome] = useState<'all' | AgedOutcome>('all');
   const outcomeCounts = useMemo(() => {
@@ -374,9 +208,9 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true, capa
   );
 
   // The quiet progression header: where the leader is on the ladder + the one
-  // next move. Rendered above every state; the cold PromiseState gains it too
-  // (it finally says where you are, not just what is coming).
-  const capabilityHeader = capability ? (
+  // next move. Rendered above every state on the FULL surface; in list mode it is
+  // suppressed (it moves into the track-record drawer).
+  const capabilityHeader = capability && !listOnly ? (
     <CapabilityHeader capability={capability} onGo={onCapabilityGo} />
   ) : null;
 
@@ -396,7 +230,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true, capa
     return (
       <div className={cn('flex min-h-0 flex-1 flex-col gap-3.5', desktop && 'mx-auto w-full max-w-[680px]')}>
         {capabilityHeader}
-        <WarmCalibration calibration={model.calibration} freshDays={model.freshDays} />
+        {!listOnly && <WarmCalibration calibration={model.calibration} freshDays={model.freshDays} />}
         {shown.length > 0 && (
           <>
             <SectionLabel>Active decisions</SectionLabel>
@@ -426,6 +260,22 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true, capa
   );
 
   if (desktop) {
+    // List-only (Decisions History embed): a single calls column, no calibration
+    // zone (that lives in the drawer). Otherwise the two-zone reading surface.
+    if (listOnly) {
+      return (
+        <div className="mx-auto flex min-h-0 w-full max-w-[680px] flex-1 flex-col gap-3">
+          <SectionLabel count={model.calls.length}>How they turned out</SectionLabel>
+          <OutcomeFilter counts={outcomeCounts} value={outcome} onChange={setOutcome} />
+          <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-hide pb-1">
+            {richCalls.length === 0 && <p className="text-[12.5px] text-muted-foreground">None in this group.</p>}
+            {richCalls.map((c, i) => (
+              <AgedCallRow key={c.id} call={c} index={i} animated={animated} actions={decisionActions} />
+            ))}
+          </div>
+        </div>
+      );
+    }
     // Two-zone reading surface: calibration left, the filterable aged-calls scroll right.
     return (
       <div className="grid min-h-0 flex-1 grid-cols-[1.05fr_1fr] gap-6">
@@ -451,7 +301,7 @@ export function TrackRecordView({ model, desktop, onWeigh, animated = true, capa
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       {capabilityHeader}
-      {calibration}
+      {!listOnly && calibration}
       <SectionLabel count={model.calls.length}>How your calls aged</SectionLabel>
       <OutcomeFilter counts={outcomeCounts} value={outcome} onChange={setOutcome} />
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-hide">

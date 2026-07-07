@@ -24,6 +24,7 @@ import { BrandLockup } from '@/components/landing/BrandLockup';
 import { CommandPaletteTrigger } from './CommandPalette';
 import { PageTransition } from './PageTransition';
 import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
+import { TrackRecordHeaderButton } from '@/components/track-record/TrackRecordHeaderButton';
 import { useBriefingContext } from '@/contexts/BriefingContext';
 
 // The audio mini-player floats `fixed` near the bottom; reserve its height on the
@@ -273,6 +274,7 @@ function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
   // Home the top bar carries only that page's own actions; the briefing stays
   // reachable from Home and the "Briefing" rail item.
   const isHome = location.pathname === '/dashboard' && !location.search;
+  const isDecision = location.pathname === '/decision';
   return (
     <header className="h-14 flex-shrink-0 flex items-center gap-4 px-6 border-b border-border/60 bg-background/80 backdrop-blur-md z-30">
       <div className="min-w-0 flex-1 flex items-center gap-4">
@@ -297,6 +299,8 @@ function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
       <div className="flex items-center gap-2 flex-shrink-0">
         {/* Your audio digest lives on Home (matches the mobile header). */}
         {isHome && <BriefingHeaderButton />}
+        {/* The track-record ring lives on the Decisions tab (matches mobile). */}
+        {isDecision && <TrackRecordHeaderButton />}
         {actions}
       </div>
     </header>

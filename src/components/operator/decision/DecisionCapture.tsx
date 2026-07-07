@@ -194,7 +194,7 @@ export function DecisionCapture({
               : 'cursor-not-allowed border border-border bg-secondary text-muted-foreground/50',
           )}
         >
-          {starting ? 'Weighing...' : 'Weigh it'}
+          {starting ? 'Thinking it through...' : 'Think it through'}
           {!starting && <ArrowRight className="h-4 w-4" />}
         </button>
       </div>

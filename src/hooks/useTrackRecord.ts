@@ -7,14 +7,21 @@ import type { PlayedOut, TrackRecordRow } from '@/types/track-record';
 // The generated types don't yet include the brain RPCs; cast for the rpc calls.
 const db = supabase as unknown as SupabaseClient;
 
+// Session-scoped cache (module singleton, keyed by user) so a second mount of the
+// track record (e.g. the Decisions tab AND its track-record header button on the
+// same screen) paints instantly and does not double-fetch. Cleared on reload.
+let trackRecordCache: { userId: string; records: TrackRecordRow[] } | null = null;
+
 export function useTrackRecord() {
   const { user } = useAuth();
-  const [records, setRecords] = useState<TrackRecordRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheHit = trackRecordCache && user?.id ? trackRecordCache.userId === user.id : false;
+  const [records, setRecords] = useState<TrackRecordRow[]>(() => (cacheHit ? trackRecordCache!.records : []));
+  const [loading, setLoading] = useState(!cacheHit);
   const [error, setError] = useState<Error | null>(null);
 
   const refetch = useCallback(async () => {
     if (!user?.id) {
+      trackRecordCache = null;
       setRecords([]);
       setLoading(false);
       return;
@@ -22,7 +29,9 @@ export function useTrackRecord() {
     try {
       const { data, error: fetchError } = await db.rpc('get_track_record', { p_user_id: user.id });
       if (fetchError) throw fetchError;
-      setRecords((data as TrackRecordRow[]) ?? []);
+      const rows = (data as TrackRecordRow[]) ?? [];
+      trackRecordCache = { userId: user.id, records: rows };
+      setRecords(rows);
       setError(null);
     } catch (err) {
       console.error('Error fetching track record:', err);

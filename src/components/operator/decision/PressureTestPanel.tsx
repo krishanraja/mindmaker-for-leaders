@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileHeaderSlot } from '@/contexts/MobileHeaderSlotContext';
@@ -12,9 +11,7 @@ import { useDecisionCall } from '@/hooks/useDecisionCall';
 import { useResolveDecision } from '@/hooks/useResolveDecision';
 import { useDecisionActions } from '@/hooks/useDecisionActions';
 import { useTrackRecord } from '@/hooks/useTrackRecord';
-import { useCapabilitySignals } from '@/hooks/useCapabilitySignals';
 import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
-import type { CapabilityNextMove } from '@/lib/capabilityLadder';
 import {
   DecisionCold, DecisionLoading, DecisionErrorView, UpgradeCard,
 } from '@/components/operator/decision/decision-views';
@@ -76,8 +73,6 @@ export function PressureTestPanel({
   const { resolve, resolving } = useResolveDecision();
   const { archive, archivingId } = useDecisionActions();
   const trackRecord = useTrackRecord();
-  const { capability } = useCapabilitySignals();
-  const navigate = useNavigate();
 
   // When set to a case id, the pending-strengthen effect fires the existing
   // research('strengthen') door once that case finishes loading. Serves both the
@@ -352,17 +347,11 @@ export function PressureTestPanel({
   // ---- HISTORY surface: the Track Record, reused as-is -------------------------
   const trModel = useMemo(() => buildTrackRecordModel(trackRecord.records), [trackRecord.records]);
   const openFromHistory = (prefill?: string) => { setStatement(prefill ?? ''); setComposing(true); setResolvedMoment(null); setView('now'); haptics.light(); };
-  // A capability next-move that lives in this tab opens the weigher inline; anything
-  // else routes to its home. Keeps the You-tab analysis identical wherever it renders.
-  const onCapabilityGo = (move: CapabilityNextMove) => {
-    if (move.route === '/decision') { openFromHistory(move.prefill); return; }
-    navigate(move.route, move.prefill ? { state: { prefill: move.prefill } } : undefined);
-  };
   const historySurface = (
     <div className={cn('h-full min-h-0 overflow-y-auto scrollbar-hide', isDesktop ? '' : 'pb-2')}>
       {trackRecord.loading
         ? <TrackRecordSkeleton desktop={isDesktop} />
-        : <TrackRecordView model={trModel} desktop={isDesktop} onWeigh={openFromHistory} decisionActions={historyDecisionActions} capability={capability} onCapabilityGo={onCapabilityGo} />}
+        : <TrackRecordView model={trModel} desktop={isDesktop} onWeigh={openFromHistory} decisionActions={historyDecisionActions} variant="list" />}
     </div>
   );
 

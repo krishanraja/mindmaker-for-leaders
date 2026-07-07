@@ -20,7 +20,7 @@ export interface KickstartCardProps {
 
 export function KickstartCard({ card, variant = 'feed', onOpen }: KickstartCardProps) {
   const isLead = variant === 'lead';
-  const cta = isLead ? 'Pressure-test this decision' : 'Weigh it';
+  const cta = isLead ? 'Think this decision through' : 'Think it through';
   const deviceLine = isLead
     ? "You've got room to think - I'll decompose it, weigh the evidence, and show you where it holds."
     : "A quick call now; I'll track it for you after.";

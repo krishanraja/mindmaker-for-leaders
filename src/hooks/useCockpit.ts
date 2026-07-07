@@ -98,6 +98,26 @@ function stateFromAlertKind(kind: string | undefined): BetState {
   return 'countered';
 }
 
+// Session-scoped cache (module singleton, survives route unmount/remount) of the
+// slow brain/network reads. Returning to Home then paints today's deck INSTANTLY
+// and refreshes quietly in the background, instead of resetting to a loading
+// state and re-running the branded GlobeLoader every visit. `headlinesLoaded`
+// mirrors `headlinesSettled` - once true this session, Home never re-loads from
+// scratch. Cleared on a full page reload (auth change), which is the right scope.
+interface CockpitCache {
+  liveHeadlines: LiveHeadline[];
+  serverPersonalized: boolean;
+  needsProfile: boolean;
+  missingProfile: string[];
+  headlinesLoaded: boolean;
+  trends: TrendItem[];
+  segments: BriefingSeg[];
+  briefedAt: number | null;
+  dislikedCats: string[];
+  roleSector: { role: string | null; sector: string | null };
+}
+const cockpitCache: Partial<CockpitCache> = {};
+
 /**
  * The mobile cockpit's data: the bets board (decision cases) + the day's hero
  * (the strongest open watch-alert). The hero leads with WORDS until the
@@ -123,31 +143,31 @@ export function useCockpit(): {
   const zeitgeist = usePortfolioPulse();
   const [reactions, setReactions] = useState<ClaimReaction[]>([]);
   const [topBlocker, setTopBlocker] = useState<CockpitBlocker | null>(null);
-  const [segments, setSegments] = useState<BriefingSeg[]>([]);
+  const [segments, setSegments] = useState<BriefingSeg[]>(() => cockpitCache.segments ?? []);
   // When the leader's latest briefing was generated (ms epoch) - a dormancy
   // signal. null = no briefing on record.
-  const [briefedAt, setBriefedAt] = useState<number | null>(null);
-  const [liveHeadlines, setLiveHeadlines] = useState<LiveHeadline[]>([]);
+  const [briefedAt, setBriefedAt] = useState<number | null>(() => cockpitCache.briefedAt ?? null);
+  const [liveHeadlines, setLiveHeadlines] = useState<LiveHeadline[]>(() => cockpitCache.liveHeadlines ?? []);
   // Whether the live-headlines fetch has settled (resolved OR errored). We keep
   // the skeleton up until it has, so Home does not flash the bundled cold deck
   // first and then swap to the real live cards (the "flashes content then
   // reloads" glitch). The cold deck remains the fallback only when the fetch
   // genuinely fails.
-  const [headlinesSettled, setHeadlinesSettled] = useState(false);
+  const [headlinesSettled, setHeadlinesSettled] = useState(() => cockpitCache.headlinesLoaded ?? false);
   // Whether the server already personalized the feed (scored it against the
   // brain). When true the client must NOT re-rank - the order is authoritative.
-  const [serverPersonalized, setServerPersonalized] = useState(false);
+  const [serverPersonalized, setServerPersonalized] = useState(() => cockpitCache.serverPersonalized ?? false);
   // Profile gate: the server asked the leader to complete their brain first.
-  const [needsProfile, setNeedsProfile] = useState(false);
-  const [missingProfile, setMissingProfile] = useState<string[]>([]);
+  const [needsProfile, setNeedsProfile] = useState(() => cockpitCache.needsProfile ?? false);
+  const [missingProfile, setMissingProfile] = useState<string[]>(() => cockpitCache.missingProfile ?? []);
   // Categories the leader has recently disliked on the deck -> down-weighted out
   // of the news half (the swipe trains the feed). Best-effort; empty on error.
-  const [dislikedCats, setDislikedCats] = useState<Set<string>>(new Set());
+  const [dislikedCats, setDislikedCats] = useState<Set<string>>(() => new Set(cockpitCache.dislikedCats ?? []));
   // The current STRUCTURAL SHIFTS (detect-trends): shared, generic industry
   // patterns building over weeks. The most role-relevant one is surfaced as a
   // single "shift" card. Best-effort + flag-gated server-side (empty when off),
   // so Home reads exactly as before when there are no trends.
-  const [trends, setTrends] = useState<TrendItem[]>([]);
+  const [trends, setTrends] = useState<TrendItem[]>(() => cockpitCache.trends ?? []);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +190,7 @@ export function useCockpit(): {
           if (p.reaction === 'dislike' && p.category) dis.add(p.category);
         } catch { /* skip malformed */ }
       }
+      cockpitCache.dislikedCats = [...dis];
       setDislikedCats(dis);
     })();
     return () => { cancelled = true; };
@@ -178,7 +199,7 @@ export function useCockpit(): {
   // The leader's role + sector, inferred from facts they already gave us (never
   // re-asked), so the feed can score lanes by suitability to THEIR job/business
   // (src/lib/roleArchetype.ts). Best-effort; neutral fit on any miss.
-  const [roleSector, setRoleSector] = useState<{ role: string | null; sector: string | null }>({ role: null, sector: null });
+  const [roleSector, setRoleSector] = useState<{ role: string | null; sector: string | null }>(() => cockpitCache.roleSector ?? { role: null, sector: null });
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -201,7 +222,7 @@ export function useCockpit(): {
         if (!role && (l.includes('role') || l.includes('title') || f.fact_category === 'identity')) role = v;
         if (!sector && (l.includes('sector') || l.includes('industry') || f.fact_category === 'business')) sector = v;
       }
-      if (!cancelled) setRoleSector({ role, sector });
+      if (!cancelled) { cockpitCache.roleSector = { role, sector }; setRoleSector({ role, sector }); }
     })();
     return () => { cancelled = true; };
   }, [reloadKey]);
@@ -236,9 +257,13 @@ export function useCockpit(): {
         .limit(1);
       if (cancelled || error) return;
       const row = (data as { segments?: BriefingSeg[] | null; created_at?: string | null }[] | null)?.[0];
-      setSegments(Array.isArray(row?.segments) ? row!.segments!.slice(0, 4) : []);
+      const nextSegments = Array.isArray(row?.segments) ? row!.segments!.slice(0, 4) : [];
       const ts = row?.created_at ? Date.parse(row.created_at) : NaN;
-      setBriefedAt(Number.isNaN(ts) ? null : ts);
+      const nextBriefedAt = Number.isNaN(ts) ? null : ts;
+      cockpitCache.segments = nextSegments;
+      cockpitCache.briefedAt = nextBriefedAt;
+      setSegments(nextSegments);
+      setBriefedAt(nextBriefedAt);
     })();
     return () => {
       cancelled = true;
@@ -260,14 +285,22 @@ export function useCockpit(): {
           if (res?.status === 'needs_profile') {
             // Below the profile gate: Home will prompt to unlock instead of
             // showing headlines. Keep the deck empty.
+            const missing = Array.isArray(res.missing) ? res.missing : [];
+            cockpitCache.needsProfile = true;
+            cockpitCache.missingProfile = missing;
+            cockpitCache.liveHeadlines = [];
             setNeedsProfile(true);
-            setMissingProfile(Array.isArray(res.missing) ? res.missing : []);
+            setMissingProfile(missing);
             setLiveHeadlines([]);
           } else {
+            const personalized = res?.personalized === true;
+            cockpitCache.needsProfile = false;
+            cockpitCache.serverPersonalized = personalized;
             setNeedsProfile(false);
-            setServerPersonalized(res?.personalized === true);
+            setServerPersonalized(personalized);
             const cards = res?.cards;
             if (Array.isArray(cards)) {
+              cockpitCache.liveHeadlines = cards;
               setLiveHeadlines(cards);
               // Stash the real headlines so the NEXT load's GlobeLoader can
               // preview them in its rotation (loadingLines.ts).
@@ -279,8 +312,13 @@ export function useCockpit(): {
         /* keep empty -> the cold-deck fallback renders */
       } finally {
         // Settled (success OR failure): release the skeleton. On failure the
-        // cold-deck fallback renders, so Home is still never blank.
-        if (!cancelled) setHeadlinesSettled(true);
+        // cold-deck fallback renders, so Home is still never blank. The cache
+        // flag makes every later mount this session start already-settled, so
+        // the branded globe never re-runs on a return to Home.
+        if (!cancelled) {
+          cockpitCache.headlinesLoaded = true;
+          setHeadlinesSettled(true);
+        }
       }
     })();
     return () => {
@@ -298,7 +336,7 @@ export function useCockpit(): {
         const { data, error } = await supabase.functions.invoke('detect-trends');
         if (cancelled || error) return;
         const res = data as { trends?: TrendItem[] } | null;
-        if (Array.isArray(res?.trends)) setTrends(res.trends);
+        if (Array.isArray(res?.trends)) { cockpitCache.trends = res.trends; setTrends(res.trends); }
       } catch {
         /* keep empty -> no trend card */
       }

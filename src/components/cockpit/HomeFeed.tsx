@@ -34,6 +34,8 @@ import { CategoryMotif } from './CategoryMotif';
 import { TuneFeedButton } from './TuneFeedButton';
 import { InlineProfileSetup } from './onboarding/InlineProfileSetup';
 import { GlobeLoader } from '@/components/system/GlobeLoader';
+import { SkeletonCard } from '@/components/system/SkeletonCard';
+import { isHomeReady } from '@/lib/bootGate';
 import { resolveNewsCategory } from '@/types/newsCategory';
 import { usePinnedDecision } from '@/hooks/usePinnedDecision';
 import { useCapabilitySignals } from '@/hooks/useCapabilitySignals';
@@ -151,7 +153,6 @@ export function HomeFeed(props: HomeFeedProps) {
             ? (prefill) => { setReadCard(null); props.onWeighCard?.(prefill); }
             : undefined
         }
-        onReact={props.onReactDeck}
       />
     </>
   );
@@ -170,6 +171,12 @@ function MobileHome({
 }: HomeFeedProps) {
   const onboard = useInlineOnboarding(data);
   const deck = data.deck;
+  // The branded GlobeLoader is the FIRST-ENTRY experience only. Snapshot at mount
+  // whether Home has ever loaded this session; a return visit (Home -> Decisions
+  // -> Home) renders the quiet in-shell skeleton instead, matching how landing on
+  // Decisions/Memory feels. With the useCockpit cache warm, `loading` is already
+  // false on return, so usually neither shows.
+  const [firstLoad] = useState(() => !isHomeReady());
   const [idx, setIdx] = useState(0);
   // one-time "swipe up" hint: shown until the leader makes their first vertical
   // move, so the gesture is taught once and never nags.
@@ -308,8 +315,13 @@ function MobileHome({
             </>
           ))}
         <AnimatePresence>
-          {loading && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
+          {loading && firstLoad && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
         </AnimatePresence>
+        {loading && !firstLoad && (
+          <div className="absolute inset-0 z-[5] flex flex-col">
+            <SkeletonCard variant="feed" className="min-h-0 flex-1" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -433,6 +445,9 @@ function DesktopHome({
 }: HomeFeedProps) {
   const onboard = useInlineOnboarding(data);
   const deck = data.deck;
+  // Globe is the first-entry experience only (see MobileHome); returns render the
+  // quiet skeleton rail instead.
+  const [firstLoad] = useState(() => !isHomeReady());
   const railRef = useRef<HTMLDivElement>(null);
   const scrollBy = (dx: number) => railRef.current?.scrollBy({ left: dx, behavior: 'smooth' });
 
@@ -517,8 +532,15 @@ function DesktopHome({
             </>
           ))}
         <AnimatePresence>
-          {loading && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
+          {loading && firstLoad && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
         </AnimatePresence>
+        {loading && !firstLoad && (
+          <div className="absolute inset-0 z-[5] flex gap-[18px] overflow-hidden">
+            <SkeletonCard variant="lead" className="h-full w-[480px] shrink-0" />
+            <SkeletonCard variant="feed" className="h-full w-[330px] shrink-0" />
+            <SkeletonCard variant="feed" className="h-full w-[330px] shrink-0" />
+          </div>
+        )}
       </div>
     </div>
   );

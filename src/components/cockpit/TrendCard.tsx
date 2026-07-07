@@ -12,7 +12,7 @@
 // read sheet where the dated evidence + the "weigh what this means for your org"
 // CTA live. Depth is one tap away, same as a news card.
 
-import { TrendingUp, ArrowRight } from 'lucide-react';
+import { TrendingUp, ChevronRight } from 'lucide-react';
 import { CategoryMotif } from './CategoryMotif';
 import { AiTermHint } from '@/components/system/AiTermHint';
 import type { DeckCard } from '@/types/cockpit';
@@ -34,10 +34,15 @@ export function TrendCard({ card, variant = 'feed', onOpen }: TrendCardProps) {
 
   return (
     <article
+      // Same whole-card tap model as the news card (the read sheet opens on tap);
+      // keyboard access stays on the headline button.
+      onClick={() => onOpen?.(card)}
       className={cn(
-        'relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-accent/40',
-        'bg-[linear-gradient(180deg,#121a17_0%,#0a0e12_100%)]',
-        'shadow-[0_30px_64px_-30px_rgba(0,0,0,0.95),0_0_0_1px_hsl(var(--accent)/0.34),inset_0_1px_0_rgba(255,255,255,0.03)]',
+        'group relative flex min-h-0 flex-1 cursor-pointer flex-col overflow-hidden rounded-[22px] border border-accent/55',
+        // AN ONGOING SHIFT = a clearly emerald-tinted surface with a soft edge
+        // glow, so a CTRL-flagged structural pattern reads distinct from fresh news.
+        'bg-[linear-gradient(180deg,#0e2019_0%,#0a120e_100%)]',
+        'shadow-[0_30px_64px_-30px_rgba(0,0,0,0.95),0_0_0_1px_hsl(var(--accent)/0.45),0_0_44px_-14px_hsl(var(--accent)/0.5),inset_0_1px_0_rgba(255,255,255,0.04)]',
       )}
     >
       {/* HERO BAND - the category motif keeps the shift in the feed's visual world. */}
@@ -70,7 +75,12 @@ export function TrendCard({ card, variant = 'feed', onOpen }: TrendCardProps) {
 
         {/* THE VARIABLE MIDDLE - bounded + clipped so the bottom row never moves. */}
         <div className="min-h-0 overflow-hidden">
-          <button type="button" onClick={() => onOpen?.(card)} className="block w-full text-left">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpen?.(card); }}
+            aria-label={`Read: ${card.headline}`}
+            className="block w-full text-left"
+          >
             <h2
               className={cn(
                 'm-0 line-clamp-3 text-balance font-extrabold tracking-[-0.02em] text-foreground',
@@ -95,7 +105,9 @@ export function TrendCard({ card, variant = 'feed', onOpen }: TrendCardProps) {
         {/* META (lane + span) + the weigh-forward primary action, pinned to bottom. */}
         <div className={cn('mt-auto flex flex-none items-center gap-3', isLead ? 'pt-[18px]' : 'pt-3')}>
           <div className="flex min-w-0 flex-1 items-center gap-2 text-[11px] text-muted-foreground">
-            <AiTermHint term={category.label} meaning={category.meaning} className="truncate font-semibold text-[#aab2c0]" />
+            <span onClick={(e) => e.stopPropagation()} className="min-w-0 truncate">
+              <AiTermHint term={category.label} meaning={category.meaning} className="truncate font-semibold text-[#aab2c0]" />
+            </span>
             {card.timeAgo && (
               <>
                 <span className="text-[#3a4150]">&middot;</span>
@@ -103,17 +115,12 @@ export function TrendCard({ card, variant = 'feed', onOpen }: TrendCardProps) {
               </>
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => onOpen?.(card)}
-            className={cn(
-              'inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-accent font-bold text-accent-foreground transition hover:brightness-110',
-              isLead ? 'px-5 py-2.5 text-[14px]' : 'px-3.5 py-2 text-[12.5px]',
-            )}
-          >
-            See what's shifting
-            <ArrowRight className="h-4 w-4" />
-          </button>
+          {/* Same quiet "Read" affordance as the news card - one consistent door;
+              the whole card taps to open the shift's evidence + the decision action. */}
+          <span className="flex shrink-0 items-center gap-0.5 text-[11px] font-bold text-accent transition-colors group-hover:brightness-110">
+            Read
+            <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.4} />
+          </span>
         </div>
       </div>
     </article>
