@@ -40,4 +40,6 @@ export const FF = {
   briefingStream: () => flag('stream'),
   /** Unauthenticated landing voice/text demo (?ff_voicedemo=1). */
   landingVoiceDemo: () => flag('voicedemo'),
+  /** Public email-capture landing page at /download (?ff_capture=1). */
+  publicCapture: () => flag('capture'),
 };

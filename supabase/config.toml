@@ -77,6 +77,11 @@ verify_jwt = false
 [functions.track-event]
 verify_jwt = false
 
+# Public email capture on the /download starter-kit landing page. No session
+# exists yet for a cold visitor, so this must accept unauthenticated calls.
+[functions.capture-lead]
+verify_jwt = false
+
 # === DECISION ENGINE ===
 # Internal: invoked server-to-server with the service-role key (pipeline self-call
 # + backfill). Guards on the service key itself, so JWT verification is off.

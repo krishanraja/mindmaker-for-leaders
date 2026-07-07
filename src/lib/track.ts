@@ -12,7 +12,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getAttribution } from "@/lib/attribution";
 
-export type LifecycleEvent = "landed" | "signed_up" | "activated";
+export type LifecycleEvent = "landed" | "signed_up" | "activated" | "capture_submitted";
 
 export type KitLifecycleEvent =
   | "kit_redeemed"

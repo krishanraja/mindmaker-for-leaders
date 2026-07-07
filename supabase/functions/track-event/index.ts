@@ -60,6 +60,8 @@ const CLIENT_EVENTS = new Set([
   "kit_artifact_downloaded",
   "kit_shipped",
   "kit_email_captured",
+  // Public /download starter-kit capture page.
+  "capture_submitted",
 ]);
 
 serve(async (req) => {
