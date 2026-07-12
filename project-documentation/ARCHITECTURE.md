@@ -170,23 +170,22 @@ src/
 │   │       ├── PriorityCardStack.tsx
 │   │       ├── ActionQueueSheet.tsx
 │   │       └── StrategicPulseSheet.tsx
-│   ├── memory-web/            # DELETED as of the CTRL 2028 refactor (PR #237): MobileMemoryDashboard.tsx /
-│   │   │                      # DesktopMemoryDashboard.tsx no longer exist; Home is now src/components/cockpit/
-│   │   │                      # HomeFeed.tsx (mobile) + DesktopHomeView.tsx (desktop). Remaining live files here:
+│   ├── memory-web/            # Re-verified 2026-07-12 against the actual directory listing - most of the old
+│   │   │                      # Memory Web dashboard file list below was WRONG (files deleted, not just the
+│   │   │                      # MobileMemoryDashboard/DesktopMemoryDashboard pair): MemoryHealthViz.tsx,
+│   │   │                      # MemoryPulseBar.tsx, CategoryChart.tsx, IntelligencePanel.tsx, RecentFactsFeed.tsx,
+│   │   │                      # SkillExportCard.tsx, GettingSmarterBanner.tsx, GuidedFirstExperience.tsx, and
+│   │   │                      # VoiceStyleProfileSheet.tsx (moved to components/edge/, see below) no longer exist
+│   │   │                      # anywhere in src/. The actual current contents of this directory are:
 │   │   ├── DesktopSidebar.tsx     # Brand mark + legacy sidebar chrome (primary nav now lives in layout/DesktopShell.tsx: 3 tabs Home/Decisions/Memory)
 │   │   ├── BottomNav.tsx          # Primary mobile nav - 3 tabs (Home, Decisions, Memory), NOT 4 (verified 2026-07-12)
 │   │   ├── AppHeader.tsx
-│   │   ├── GuidedFirstExperience.tsx  # Onboarding for new users
 │   │   ├── MemoryWebVisualization.tsx
-│   │   ├── MemoryHealthViz.tsx
-│   │   ├── MemoryPulseBar.tsx
-│   │   ├── CategoryChart.tsx
-│   │   ├── IntelligencePanel.tsx
-│   │   ├── RecentFactsFeed.tsx
 │   │   ├── PatternInsightCard.tsx
-│   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (free for now since PR #204; was Edge Pro gated) (v5.2)
-│   │   ├── VoiceStyleProfileSheet.tsx  # Captures the unified ctrl_voice_profile: 5 recognition picks OR a paste-extract power path (PR #204)
-│   │   └── GettingSmarterBanner.tsx
+│   │   ├── BrainGraph.tsx / BrainCanvas.tsx / brainGraphModel.ts (in lib)  # Brain four-world canvas, centered/aspect-corrected (PR #240) - see Brain Engine section
+│   │   ├── BondReader.tsx         # Tapped-node bond reader; bottom drawer on mobile, right rail on desktop (PR #240)
+│   │   ├── BetsRail.tsx
+│   │   └── DesktopSignalHero.tsx
 │   ├── cockpit/               # The one Home (VITE_COCKPIT_ENABLED flag retired - this is the only Home now)
 │   │   ├── HomeFeed.tsx           # Mobile Home: browsable headline swipe-feed + the 3 doors (PR #237; replaced CockpitHome.tsx/CockpitDeck.tsx, both DELETED)
 │   │   ├── DesktopHomeView.tsx    # Desktop Home: browsable headline rail + the 3 doors (PR #237)
@@ -215,7 +214,8 @@ src/
 │   │   ├── SkillCaptureSheet.tsx  # DEAD CODE (PR #199): voice/text capture, no longer imported; superseded by the Automator flow
 │   │   ├── SkillPreviewSheet.tsx  # DEAD CODE (PR #199): skill preview + ZIP download, no longer imported; superseded by AutomatorSkillReady
 │   │   ├── SkillQualityGate.tsx   # Quality checklist display (v5.2)
-│   │   └── SkillInstallGuide.tsx  # Per-tool install instructions (Claude Code / Claude.ai / Cursor) (v5.2)
+│   │   ├── SkillInstallGuide.tsx  # Per-tool install instructions (Claude Code / Claude.ai / Cursor) (v5.2)
+│   │   └── VoiceStyleProfileSheet.tsx  # Corrected location 2026-07-12 (doc previously placed this under memory-web/): captures the unified ctrl_voice_profile via 5 recognition picks OR a paste-extract power path (PR #204)
 │   ├── action/                # Weekly action components
 │   ├── ai-chat/               # AI chat components
 │   ├── analytics/             # Analytics components
@@ -1594,18 +1594,21 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
 
 ### Environment Variables
 
-**Frontend (Vercel)**:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+**Corrected 2026-07-12 against the live `.env.example`** (previously stale: listed `GOOGLE_SERVICE_ACCOUNT_KEY`, which does not exist in code - `ai-generate/index.ts` reads `GEMINI_SERVICE_ACCOUNT_KEY` - and was missing most provider keys added since). Full reference: `.env.example` at repo root.
+
+**Frontend (Vercel, `VITE_*`)**:
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
 
 **Backend (Supabase Secrets)**:
-- `OPENAI_API_KEY`
-- `GOOGLE_SERVICE_ACCOUNT_KEY` (Vertex AI)
-- `MEMORY_ENCRYPTION_KEY`
-- `RESEND_API_KEY`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `GOOGLE_SHEETS_CREDENTIALS`
+- Supabase runtime: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- Stripe: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_EDGE_PRO_PRICE_ID`
+- AI / LLM: `OPENAI_API_KEY`, `OPENAI_TRANSCRIPTION_MODEL`, `GEMINI_API_KEY`, `GEMINI_SERVICE_ACCOUNT_KEY` (Vertex AI service account JSON), `PERPLEXITY_API_KEY`, `ARTIFICIALANALYSIS_API_KEY`, `ELEVENLABS_API_KEY`
+- Search / enrichment: `BRAVE_SEARCH_API`, `TAVILY_API_KEY`, `JINA_API_KEY`, `APOLLO_API_KEY`
+- Google OAuth / Sheets: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_CREDENTIALS`, `GOOGLE_SHEETS_SPREADSHEET_ID`
+- Email: `RESEND_API_KEY`, `SEND_CONFIRMATION_EMAIL_HOOK_SECRET`
+- Encryption: `MEMORY_ENCRYPTION_KEY`, `TOKEN_ENCRYPTION_KEY`
+- App URLs: `APP_URL`, `PUBLIC_SITE_URL`
+- Feature flags / tuning: `MODEL_ROUTING_ENABLED`, `BRIEFING_DEDUPE_THRESHOLD`, `BRIEFING_EXCLUDE_THRESHOLD`, `BRIEFING_MIN_RELEVANCE`, plus Supabase-secret-only flags noted elsewhere in this doc (`BRIEFING_V2_ENABLED_DEFAULT`, `BRIEFING_USE_BRAIN_PROFILE`, `BRIEFING_SOURCE_SHARED_POOL`, `BRIEFING_INCLUDE_DECISION_ALERTS`)
 
 ---
 
