@@ -2,7 +2,7 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-12 (drift pass: refreshed stale repo-scale counts; added the /upgrade checkout URL).
 
 > RECONCILIATION BANNER (read before using any line below). CTRL's positioning is now **building the AI-native version of your business**, NOT "decision speed / a portable AI double / the zero-context tax". Most of the prose below (the one-liner, the email angles, the decision-speed framing, the "Apple-like / white space" visual claims) is OFF-POSITIONING and was written for the prior product. It is kept here for the feature mechanics, which are still accurate, but you must NOT ship its hooks as-is. Lead with the AI-native positioning and the reframe rule from `AGENT_BRIEFING.md` (the current canonical sales entry point) and `docs/MAIN-APP-POLISH-SPEC.md` section 0. Visual fact: CTRL is globally DARK (ctrl-ds palette, emerald `#00D9B6`, the BrandLockup), never light / "Apple-white". Pricing fact: Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); the one-time diagnostic SKUs are flagged TODO(founder). TODO(founder): rewrite this brief's hooks, email angles, and one-liner to the AI-native positioning; until then prefer `AGENT_BRIEFING.md`.
 
@@ -216,7 +216,7 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 - **Self-contained** - no Slack/email/calendar access, no enterprise security review
 - **Encrypted at rest** (AES-256-GCM); user controls retention; data never trains any AI model
 - **Portable** - not locked to any AI provider or platform
-- **80 edge functions, 59 hooks, 110 migrations live** - this is not a prototype
+- **104 edge functions, 78 hooks, 148 migrations live** - this is not a prototype
 - **Audit weeks 1-6 shipped** (revenue path, data path, UX, reliability, observability, cleanup): timeouts + retries on external APIs, mandatory Stripe signature verification + idempotency, structured edge-function logger, e2e test contracts
 - **Built by Krish Raja** - operator experience: Microsoft (2010), MD at Captify ($0→$12M ARR), data revenue at Nine Entertainment ($9M→$61M). Now CEO of Mindmaker, running a multi-agent OS that automates the output of a 30-person team.
 - Context export produces richer, more structured prompts than most leaders write by hand in an hour
@@ -313,6 +313,7 @@ Download the ZIP from the preview sheet. The bundle includes a `03-install-guide
 
 - **Product**: ctrl.themindmaker.ai
 - **Booking**: Calendly integration for strategy calls (linked in product footer)
+- **Upgrade / checkout**: ctrl.themindmaker.ai/upgrade (interactive Edge Pro pricing page with live checkout; the static /pricing page is SEO-only, added July 2026 PR #331)
 
 ---
 

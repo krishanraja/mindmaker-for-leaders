@@ -1,7 +1,7 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-12 (drift pass: added the /upgrade CTA; the interactive pricing/checkout page moved off the static /pricing SEO page per PR #331).
 **Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, the root `README.md`. Trust those over this file where they disagree.
 
 > Reconciliation note: CTRL's positioning moved from "clarity / portable AI double for leaders" to **building the AI-native version of your business.** This briefing has been reframed to the AI-native lens. The product mechanics are real and in the code; the FRAMING is what changed. Where a precise AI-native ICP / message / price was not yet settled, it is flagged `TODO(founder)` instead of invented. The old runtime endpoint `https://ctrl.themindmaker.ai/.well-known/product.json` (dated 2026-05-30) still carries the OLD positioning, so do NOT treat it as authoritative for positioning until it is regenerated. TODO(founder): regenerate `/.well-known/product.json` to the AI-native positioning.
@@ -129,6 +129,9 @@ TODO(founder): expand the objection set to the AI-native buyer once the ICP is c
 | **Product home** | https://ctrl.themindmaker.ai |
 | **Book a strategy call** | https://ctrl.themindmaker.ai/booking |
 | **Kit redemption** | https://ctrl.themindmaker.ai/kit |
+| **Upgrade to Edge Pro (interactive checkout)** | https://ctrl.themindmaker.ai/upgrade |
+
+Note: `/pricing` is a static SEO page (not the checkout flow); the interactive pricing page with the live checkout button is `/upgrade` (added July 2026, PR #331). Use `/upgrade` in outbound CTAs.
 
 Production URL is **https://ctrl.themindmaker.ai** (never `leaders.themindmaker.ai`).
 
