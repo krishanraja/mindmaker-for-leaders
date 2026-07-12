@@ -1518,6 +1518,8 @@ The CTRL landing page (`/`) and any other public routes are pre-rendered at buil
 The Kit Engine is CTRL's class follow-up portal. It is a standalone, forced-dark, mobile-first surface (same `ctrl-ds` dark instrument palette as the rest of the app) that lives **outside** the authed app shell on four public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`). It is also a bridge into the full CTRL app: intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` after email capture.
 
 > **Updated 2026-06-17:** the kit program has since grown to **four kits** (Agentic Org Chart added, all three prior kits retrofit to fork + pick-cascade) and PR #193 fixed a latent cascade bug plus added an honesty floor. The current 4-kit program is documented in the **Kit Engine (4-kit program)** section below; the description here covers the original Phase 11 portal architecture, which still holds.
+>
+> **Updated 2026-07-12:** the portal has since gained a fifth pair of public routes, `/kit/pdf` and `/kit/pdf/:redemptionId` (print-styled branded hero PDF, unlinked, opened from the reveal wizard's "Download PDF"). See the routes table earlier in this doc.
 
 ### Anon-first identity
 

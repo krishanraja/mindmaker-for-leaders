@@ -32,7 +32,7 @@ Complete feature inventory.
 - **Brand redesign shipped LIVE** (PR #186, merge 1c01db5, 2026-06-16): globally forced dark, `ctrl-ds` instrument palette, emerald `#00D9B6`, the emerald `ctrl.` wordmark; rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. See **Redesign** below.
 - **Desktop UI redesign shipped** (PR #104, Phase 8; extended through Phase 10, PR #130-#139): every authenticated surface now wears the same `DesktopShell` (sticky top bar with page eyebrow + title + actions, optional right rail, Cmd/Ctrl+K Command Palette), viewport-pinned so the window never scrolls. No more stretched mobile markup on desktop.
 - **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
-- **Tests**: 6 Vitest unit/shared + 7 Playwright e2e in `src/__tests__/e2e/` (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency, desktop-zero-scroll)
+- **Tests**: 29 Vitest unit/shared specs + 8 Playwright e2e specs in `src/__tests__/e2e/` (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency, desktop-zero-scroll, kit-redeem-journey); see `ARCHITECTURE.md`'s Testing section for the current file-by-file breakdown
 
 ---
 
