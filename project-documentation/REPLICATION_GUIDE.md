@@ -2,9 +2,9 @@
 
 Step-by-step instructions to replicate CTRL from scratch.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-12 (documentation-drift reconciliation pass).
 
-> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts are dated 2026-06-09 (a lower bound: ~80 edge functions, ~59 hooks, ~110 migrations, pgvector + pgcrypto + pg_cron); trust `CLAUDE.md` and the code for current totals. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222) that post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
+> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts are dated 2026-07-12 (a lower bound: 104 edge functions, 78 hooks, 148 migrations, pgvector + pgcrypto + pg_cron); trust `CLAUDE.md` and the code for current totals. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222) that post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
 
 ---
 
@@ -76,10 +76,9 @@ supabase init
 
 # Link to remote project
 supabase link --project-ref YOUR_PROJECT_REF
-
-# Apply migrations
-supabase db push
 ```
+
+> Do NOT use `supabase db push` on the canonical CTRL instance (`bkyuxvschuwngtcdhsyg`) - the local migration history is out of sync with remote. Per `CLAUDE.md`, apply migrations by running the SQL directly against the Supabase Management API (`POST /v1/projects/{ref}/database/query`) instead. `supabase db push` may still be viable for a genuinely fresh, never-linked project.
 
 **Create `.env`**:
 ```
@@ -243,9 +242,9 @@ supabase functions serve
 
 ## Step 12: Deploy
 
-**Frontend** (Lovable Cloud):
+**Frontend** (Vercel):
 ```bash
-git push origin main  # Auto-deploys
+git push origin main  # Auto-deploys to Vercel
 ```
 
 **Edge Functions**:
@@ -254,9 +253,7 @@ supabase functions deploy --project-ref YOUR_REF
 ```
 
 **Database**:
-```bash
-supabase db push --project-ref YOUR_REF
-```
+Do NOT use `supabase db push --project-ref YOUR_REF` against the canonical instance (migration history drift - see Step 3 note). Apply SQL via the Supabase Management API instead, as documented in `CLAUDE.md`.
 
 ---
 

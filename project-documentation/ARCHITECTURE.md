@@ -170,11 +170,11 @@ src/
 │   │       ├── PriorityCardStack.tsx
 │   │       ├── ActionQueueSheet.tsx
 │   │       └── StrategicPulseSheet.tsx
-│   ├── memory-web/            # Memory Web dashboard (primary dashboard view)
-│   │   ├── MobileMemoryDashboard.tsx
-│   │   ├── DesktopMemoryDashboard.tsx
-│   │   ├── DesktopSidebar.tsx     # Primary desktop nav (Home, Edge, Memory Web, Export)
-│   │   ├── BottomNav.tsx          # Primary mobile nav (Home, Edge, Memory, Export)
+│   ├── memory-web/            # DELETED as of the CTRL 2028 refactor (PR #237): MobileMemoryDashboard.tsx /
+│   │   │                      # DesktopMemoryDashboard.tsx no longer exist; Home is now src/components/cockpit/
+│   │   │                      # HomeFeed.tsx (mobile) + DesktopHomeView.tsx (desktop). Remaining live files here:
+│   │   ├── DesktopSidebar.tsx     # Brand mark + legacy sidebar chrome (primary nav now lives in layout/DesktopShell.tsx: 3 tabs Home/Decisions/Memory)
+│   │   ├── BottomNav.tsx          # Primary mobile nav - 3 tabs (Home, Decisions, Memory), NOT 4 (verified 2026-07-12)
 │   │   ├── AppHeader.tsx
 │   │   ├── GuidedFirstExperience.tsx  # Onboarding for new users
 │   │   ├── MemoryWebVisualization.tsx
@@ -187,9 +187,11 @@ src/
 │   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (free for now since PR #204; was Edge Pro gated) (v5.2)
 │   │   ├── VoiceStyleProfileSheet.tsx  # Captures the unified ctrl_voice_profile: 5 recognition picks OR a paste-extract power path (PR #204)
 │   │   └── GettingSmarterBanner.tsx
-│   ├── cockpit/               # Mobile cockpit Home (behind VITE_COCKPIT_ENABLED)
-│   │   ├── CockpitHome.tsx        # Rewritten Home: time-aware greeting + "worth a look" deck + 3 value actions (PR #197)
-│   │   └── CockpitDeck.tsx        # Swipeable "worth a look" deck (news segments + own-signal alerts), heart/skip, peeking stack + dots (PR #197)
+│   ├── cockpit/               # The one Home (VITE_COCKPIT_ENABLED flag retired - this is the only Home now)
+│   │   ├── HomeFeed.tsx           # Mobile Home: browsable headline swipe-feed + the 3 doors (PR #237; replaced CockpitHome.tsx/CockpitDeck.tsx, both DELETED)
+│   │   ├── DesktopHomeView.tsx    # Desktop Home: browsable headline rail + the 3 doors (PR #237)
+│   │   ├── onboarding/InlineProfileSetup.tsx  # Lightweight inline onboarding (industry/role -> user_memory + interests), replaces the deleted voice OnboardingInterview
+│   │   └── KickstartCard.tsx      # Guide-posture Home lead: a role-tailored starter decision routed into /decision prefilled
 │   ├── automator/             # Automator: default Skill Builder flow on /context (PR #199)
 │   │   ├── AutomatorFlow.tsx      # Suggestions -> cascade -> skill-ready orchestrator
 │   │   ├── AutomatorSuggestions.tsx  # Brain-mined deliverable suggestions ("pulled from your brain" badge) + inline "Something else"
@@ -404,6 +406,11 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/auth/callback` | AuthCallback | No | OAuth redirect handler |
 | `/booking` | Booking | No | External booking |
 | `/build` | BuildLap | No | Agent Skill Builder full-page flow |
+| `/preview` | Preview | No | Dev/QC fixture-render harness; unlinked, public only so it can be screenshot without auth |
+| `/agents` | Agents | No | Agent-native marketing page: the read-only Memory Web MCP offering |
+| `/try` | Try | No | Pre-login canned demo (a real-shaped pressure-test, not live data) |
+| `/download` | CaptureLanding (gated by `FF.publicCapture`) | No | Public email-capture landing page (PR #333); flag off falls through to NotFound |
+| `/upgrade` | Pricing | No | Interactive in-app upgrade surface with a live checkout button (PR #331). The static `/pricing.html` SEO page is separate, served via a `vercel.json` rewrite - not part of the React router |
 | `/dashboard` | Dashboard (Memory Web) | Yes | Default view - Memory Web with guided first experience |
 | `/dashboard?view=edge` | Dashboard (Edge) | Yes | Edge leadership amplifier |
 | `/memory` | MemoryCenter | Yes | Detailed memory management |
@@ -411,16 +418,19 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/briefing` | BriefingPage | Yes | Daily Briefing v2 |
 | `/decision` | DecisionPage | Yes | Decision Engine pressure-test (decompose → verify → cross-examine → advise) |
 | `/goals` | Goals | Yes | Horizon-grouped goal tracking |
+| `/track-record` | TrackRecord | Yes | Track record / capability ladder; also embedded as a Now\|History toggle inside the Decisions tab |
+| `/decision-map` | DecisionMap | Yes | Pinned-decision hero + connector rail of considerations |
 | `/enrich` | EnrichPage | Yes | Inbound "borrow your own AI" enrichment loop |
 | `/settings` | Settings | Yes | User preferences |
 | `/compliance` | Compliance | Yes | Compliance / audit center |
 | `/profile` | Profile | Yes | User profile |
-| `/kit` | KitEntry | No | Class follow-up portal code entry (anonymous session) |
+| `/kit` | KitRedeem | No | Class follow-up portal code entry (anonymous session) |
 | `/kit/me` | KitHome | No | Kit + journey home (anonymous, upgrades on email capture) |
 | `/kit/me/intake` | KitIntake | No | 6-question intake (voice or taps) |
 | `/kit/reading/:pageId` | KitReading | No | Full-screen reader for a single artifact |
+| `/kit/pdf`, `/kit/pdf/:redemptionId` | KitPdf | No | Print-styled branded hero PDF; unlinked, opened by the reveal wizard's "Download PDF"; resolves the current redemption when no id is given |
 
-The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
+The `/kit*` routes are the Kit Engine portal (Phase 11, now 4 kits - see the Kit Engine sections below). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
 
 **Legacy Redirects (all redirect to `/dashboard`):**
 
@@ -435,9 +445,9 @@ The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outsid
 
 All active pages are lazy-loaded with `React.lazy()` and wrapped in `<Suspense>` boundaries.
 
-**Navigation:**
-- **Desktop**: Fixed left sidebar (264px) - `memory-web/DesktopSidebar.tsx` with the emerald `ctrl.` wordmark, 4 nav items (Home, Edge, Memory Web, Export to AI), settings, sign out, user footer + keyboard hints (v5.2)
-- **Mobile**: Bottom nav bar - `memory-web/BottomNav.tsx` with 4 tabs (Home, Edge, Memory, Export)
+**Navigation (updated 2026-07-12 - the nav was consolidated to 3 tabs; the old 4-item Home/Edge/Memory/Export list is gone):**
+- **Desktop**: `src/components/layout/DesktopShell.tsx` renders the primary spine - **3 tabs: Home (`/dashboard`), Decisions (`/decision`), Memory (`/memory`)**, each with a keyboard shortcut (H/D/B) and shared `layoutId` active-nav glow. Track Record is folded into the Decisions tab (a Now\|History toggle) rather than being its own primary tab. Edge, Briefing, Track record (deep link), Export, Goals, and Decision Map are demoted to a secondary nav list, still fully routed but one level down; Profile/Compliance/Settings sit under an account menu. `memory-web/DesktopSidebar.tsx` and the old `BrandLockup`-in-sidebar description still apply for the brand mark.
+- **Mobile**: `src/components/memory-web/BottomNav.tsx` - the **same 3 tabs** (Home / Decisions / Memory), matching desktop 1:1 per `docs/CTRL-SYSTEM-SPEC.md` section 1. This `BottomNav` is the single cockpit nav; the legacy 6-tab fork and the `VITE_COCKPIT_ENABLED` flag that used to gate it were retired.
 
 ### Desktop Shell (v5.2)
 

@@ -2,9 +2,9 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-12 (documentation-drift reconciliation pass).
 
-> **Status**: This is a developer bug/pain log dated 2026-04-26. Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath." It predates the dark redesign (PR #186), the brain engine, the kit redesign, and the main-app polish, so for current known issues also read `CLAUDE.md` (the live architecture quick-reference, which lists the honest residual gaps). Note: where this doc lists "light mode color system" in an AVOID list, that is correct guidance; the app is globally dark.
+> **Status**: This is a developer bug/pain log dated 2026-04-26. Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath." It predates the dark redesign (PR #186), the brain engine, the kit redesign, the main-app polish, the CTRL 2028 refactor, and the Settings audit / one-door dedup (2026-07-04), so for current known issues also read `CLAUDE.md` (the live architecture quick-reference, which lists the honest residual gaps and current counts). Note: where this doc lists "light mode color system" in an AVOID list, that is correct guidance; the app is globally dark.
 
 ---
 
@@ -288,14 +288,14 @@ Use this checklist when implementing new features to ensure V3 standards are met
 ### Issue 23: Memory Table Not Found
 **Symptom**: Memory Center shows "Failed to load memories" error
 **Root Cause**: Database migrations not applied to Supabase instance
-**Solution**: Run migrations via Supabase CLI: `supabase db push`
-**Status**: ⚠️ Requires migration deployment
+**Solution**: The local migration history is out of sync with remote, so `supabase db push` is no longer the workflow (it is now avoided project-wide, see `CLAUDE.md`). Apply the missing SQL directly via the Supabase Management API (`POST /v1/projects/bkyuxvschuwngtcdhsyg/database/query`) using `CREATE TABLE IF NOT EXISTS` for idempotency.
+**Status**: ⚠️ Requires migration deployment (procedure corrected 2026-07-12)
 
 ### Issue 24: Memory Settings Not Loading
 **Symptom**: Privacy tab shows error loading settings
 **Root Cause**: `user_memory_settings` table doesn't exist
-**Solution**: Apply `20260125000000_memory_privacy_settings.sql` migration
-**Status**: ⚠️ Requires migration deployment
+**Solution**: Apply `20260125000000_memory_privacy_settings.sql` via the Supabase Management API (not `supabase db push`; see Issue 23 and `CLAUDE.md`'s Supabase Deployment section).
+**Status**: ⚠️ Requires migration deployment (procedure corrected 2026-07-12)
 
 ### Memory Center Patterns
 
@@ -400,10 +400,10 @@ Before shipping:
 **Root Cause (most common)**: User has not declared any `briefing_interests`, AND the inferred profile from voice sessions is shallow or generic (typical pattern: "grow the business", "hire a team"). The v2 lens has nothing specific to anchor against.
 **Diagnosis**: Call `briefing-diagnose` from the browser console. Check `profile.interests` (empty?), `lens[0..2]` (generic goals?), and `last_briefing.segments[*].matched_profile_fact` (is it tied to anything specific?).
 **Solution**:
-  1. Get the user to Settings → Interests and declare 3-5 beats + 3-5 entities + 1-2 excludes (fastest fix).
+  1. Get the user to Settings → "Tune your feed" (formerly a standalone Interests tab, folded into `NewsPreferencesPanel` by the 2026-07-04 Settings audit) and declare 3-5 beats + 3-5 entities + 1-2 excludes (fastest fix).
   2. Or: have them accept the `SeedBeatsPrompt` on the dashboard (industry-aware one-tap seeds).
   3. Regenerate the briefing with force=true (`Refresh stories` on the card). The new lens will include the declared interests at weight 1.0.
-**Status**: ✅ Resolved via Interests feature + SeedBeatsPrompt (PR #87, PR #88).
+**Status**: ✅ Resolved via Interests feature + SeedBeatsPrompt (PR #87, PR #88). Note: the standalone `BriefingInterestsTab` component referenced by earlier drafts of this doc was deleted in the 2026-07-04 Settings audit; the same watchlist now lives inside `NewsPreferencesPanel`/`NewsPreferencesSheet`.
 
 ### Issue 32: User Can't Find the Interests UI After v2 Ship
 **Symptom**: User was told "go to Interests" but doesn't see the tab.
