@@ -346,11 +346,9 @@ The Dashboard is the main authenticated hub, rendering either the **Memory Web**
 
 ### Navigation (verified against code 2026-07-12)
 
-**Desktop** (`memory-web/DesktopSidebar.tsx`):
-- Fixed left sidebar (264px)
+**Desktop, corrected 2026-07-12 - `memory-web/DesktopSidebar.tsx` (6 nav items: Home, Edge, Memory Web, Goals, Export, Briefing) is DEAD CODE**: nothing outside `src/components/memory-web/` imports it (verified via repo-wide grep), so it does not render on the live app. The actual live desktop nav is `src/components/layout/DesktopShell.tsx`'s `primaryNavItems` - the same **3-tab primary spine** as mobile (Home, Decisions, Memory), with Edge/Export/Goals/Briefing/Settings/Profile/Compliance demoted to a secondary "More"/account area (still routed, not removed):
+- Fixed left rail
 - Brand lockup (Mindmaker icon + `ctrl-logo`), which replaced the generated "ctrl." text in the 2026-06-17 follow-ups (PR #200). The old green Mindmaker logo is long gone.
-- 6 nav items: Home, Edge, Memory Web, Goals, Export, Briefing
-- Profile, Compliance, Settings + Sign Out at bottom
 
 **Mobile** (`memory-web/BottomNav.tsx`):
 - Fixed bottom nav bar, now **3 tabs**: Home, Decisions, Memory (the legacy 4-tab Home/Edge/Memory/Export fork and the `VITE_COCKPIT_ENABLED` flag were retired; Briefing dissolves into Home and Edge/automate is contextual)
@@ -359,19 +357,19 @@ The Dashboard is the main authenticated hub, rendering either the **Memory Web**
 
 > **Home is now the CTRL 2028 `HomeFeed`** (`src/components/cockpit/HomeFeed.tsx` + `DesktopHomeView.tsx`, PR #237), not the PR #197 swipeable "worth a look" deck described lower in this doc (that deck and the `VITE_COCKPIT_ENABLED` flag were deleted). Home is one browsable headline set - mobile thumb-first swipe feed, desktop horizontal rail - plus 3 fixed doors (Briefing/Weigh/Build), session-adaptive but never empty. See the CTRL 2028 refactor banner at the top of this doc and `docs/CTRL-SYSTEM-SPEC.md` section 6.
 
-### Memory Web View (Default)
+### Memory Web View (Default) [DEAD REFERENCE - flagged 2026-07-12: all three components named below (`DesktopMemoryDashboard.tsx`, `MobileMemoryDashboard.tsx`, `GuidedFirstExperience.tsx`) no longer exist anywhere in `src/`, deleted by the CTRL 2028 refactor (PR #237) and the unified onboarding->decisions->engagement loop (PR #298). The Home default view today is `HomeFeed.tsx` (mobile) / `DesktopHomeView.tsx` (desktop) per the banner at the top of this doc; new-user onboarding is now the inline `InlineProfileSetup.tsx`, not a separate `GuidedFirstExperience` gate. Kept below only as a historical record of the pre-#237 shape.]
 
-**Desktop** (`DesktopMemoryDashboard.tsx`):
+**Desktop (historical, deleted)** (`DesktopMemoryDashboard.tsx`):
 - Sidebar + main content area (max-w-4xl)
 - Memory Web visualization, health metrics, category chart
 - Intelligence panel, recent facts feed, pattern insights
 
-**Mobile** (`MobileMemoryDashboard.tsx`):
+**Mobile (historical, deleted)** (`MobileMemoryDashboard.tsx`):
 - Full viewport height
 - Scrollable content area
 - Voice-first interaction via floating action button
 
-**Guided First Experience** (`GuidedFirstExperience.tsx`):
+**Guided First Experience (historical, deleted)** (`GuidedFirstExperience.tsx`):
 - Shown to new users (no existing memory facts)
 - 3-question onboarding flow
 - Delivers first context export in 2 minutes
