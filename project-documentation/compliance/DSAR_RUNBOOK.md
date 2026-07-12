@@ -1,6 +1,6 @@
 # Data Subject Access Request (DSAR) Runbook
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-12 (updated 2026-07-12)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Operational runbook for handling data-subject rights requests for CTRL: access, rectification, erasure, portability, restriction/objection, and CCPA opt-out. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 9.
@@ -47,7 +47,7 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 | Briefing preferences | briefing preference/interest tables | |
 | Billing | Stripe customer record + local subscription status | Card data lives only in Stripe |
 | Consent history | consent_audit table; `upsert-sharing-consent`; notification prefs via `upsert-notification-prefs` | |
-| Erasure | `delete-account` edge function (cascading) | Removes user data across tables |
+| Erasure | `delete-account` edge function (cascading) | Removes user data across tables; `kit_builds` is a known gap not yet covered (see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)) - for a kit-building user, manually confirm/delete this table until the code is fixed |
 | Retention settings | `user_memory_settings.retention_days`; enforced by `cleanup-expired-data` (pg_cron) | |
 
 ## 5. Fulfillment steps by request type
@@ -68,7 +68,7 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 ### Erasure
 1. Verify identity.
 2. Use the in-app account deletion or invoke `delete-account` (cascading).
-3. Confirm Stripe-side handling (cancel subscription; financial records retained where legally required, then deleted).
+3. Confirm Stripe-side handling: `delete-account` removes local subscription records but does not itself call the Stripe API to cancel the live subscription (verified by code review, 2026-07-12), so the handler must manually cancel the Stripe subscription as part of fulfillment; financial records retained where legally required, then deleted. (Flagged for founder/legal confirm on whether this manual step should instead be automated.)
 4. Note that backups expire on their own cycle (see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)); deleted data is purged from primary stores immediately and ages out of backups.
 5. Confirm to the user and log.
 

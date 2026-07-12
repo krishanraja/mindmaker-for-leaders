@@ -268,7 +268,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 59 custom hooks
+├── hooks/                     # 78 custom hooks (verified 2026-07-12 via `ls src/hooks | wc -l`); list below is illustrative, not exhaustive
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -594,35 +594,32 @@ The shell exists to make the product feel like a desktop-native tool, not stretc
 
 ### Dashboard (`/dashboard`) - Main Hub
 
-The Dashboard is the primary authenticated view. It renders one of two views based on the `view` query parameter:
+**Updated 2026-07-12 (was stale - described components deleted by PR #237):** the Dashboard still renders one of two views based on the `view` query parameter, but the default view's components changed.
 
-**Default (Memory Web view):**
-- Desktop: `DesktopMemoryDashboard` with `DesktopSidebar` (264px fixed left)
-- Mobile: `MobileMemoryDashboard` with `BottomNav` (4 tabs) and `AppHeader`
-- First-time users see `GuidedFirstExperience` (3-question onboarding delivering first export in 2 minutes)
-- Returning users see Memory Web visualization, health metrics, recent facts feed, pattern insights
+**Default (Home, `CockpitData`-driven):**
+- Desktop: `DesktopHomeView.tsx` (`src/components/cockpit/`) - browsable headline rail + the 3 doors (briefing/decide/build), NOT `DesktopMemoryDashboard` (deleted)
+- Mobile: `HomeFeed.tsx` (`src/components/cockpit/`) with the 3-tab `BottomNav` and `AppHeader`, NOT `MobileMemoryDashboard` (deleted)
+- New/dormant leaders (lifecycle `userState`, `guide` posture) see `InlineProfileSetup` (industry/role/interests inline, not a separate onboarding gate) and a `KickstartCard` leading with a role-tailored starter decision
+- Active/power leaders (`partner` posture) see the ranked headline stream + own-signal decision alerts woven in, plus a capability-ladder-aware next move
 
 **Edge view (`?view=edge`):**
 - Lazy-loaded `EdgeView` component
-- Same sidebar/nav shell as Memory Web
 - Shows leadership profile: strengths (interactive pills), weaknesses, intelligence gaps
 - Pro tier paywall for premium artifact generation (board memos, strategy docs, emails)
 - Feedback loops for strength/weakness confirmation
+- Left deliberately as-is through the CTRL 2028 refactor (its `data-edge-scroll` reveal/capture wiring is load-bearing; flagged not forced, per `CLAUDE.md`)
 
-**Desktop Layout:**
+**Desktop Layout (current - 3-tab primary spine, not the old 4-item list):**
 ```
-┌──────────┬──────────────────────┐
-│ Sidebar  │                      │
-│ (264px)  │   Main Content       │
-│          │   (max-w-4xl)        │
-│ Home     │                      │
-│ Edge     │                      │
-│ Memory   │                      │
-│ Export   │                      │
-│          │                      │
-│ Settings │                      │
-│ Sign Out │                      │
-└──────────┴──────────────────────┘
+┌───────────┬──────────────────────┐
+│ Rail      │                      │
+│           │   Main Content       │
+│ Home      │   (max-w-4xl)        │
+│ Decisions │                      │
+│ Memory    │                      │
+│           │                      │
+│ (Account) │                      │
+└───────────┴──────────────────────┘
 ```
 
 **Mobile Layout:**
@@ -634,7 +631,7 @@ The Dashboard is the primary authenticated view. It renders one of two views bas
 │ Content (scroll)│
 │                 │
 ├─────────────────┤
-│ BottomNav (4)   │
+│ BottomNav (3)   │
 └─────────────────┘
 ```
 
@@ -956,7 +953,7 @@ kit_nudges                              -- day-3 / day-7 send-dedupe ledger
 
 **Location**: `supabase/functions/`
 
-**Total**: 85 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry. PR #204 added one function (`extract-voice-profile`: paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text) and redeployed `generate-skill-export` (prompt tightened) and `mcp-context` (gained `list_skills` + `get_skill`) to prod (`bkyuxvschuwngtcdhsyg`); no DB migrations were needed.
+**Total**: 104 edge functions in `supabase/functions/` (verified 2026-07-12 via `ls supabase/functions | wc -l`, excluding `_shared/`) plus a `_shared/` module directory. The catalog below (numbered 1-65-ish, through the Kit Engine subsystem) predates a further ~39 functions shipped since - notably `decision-reactions`, `decision-research`, `capture-lead`, `card-for-you`, `aa-assessment-enrich`, `aa-model-recommend`, `aa-tts-monitor`, `cleanup-expired-data`, `detect-trends`, `free-skill-export`, `generate-custom-export`, `generate-team-instructions`, `ingest-training-material`, `portfolio-pulse`, `resolve-handoff`, `send-decision-summary`, `send-edge-test-email`, `suggest-bets`, `swap-profile-data`, `synthesize-interview-audio`, `delete-account`, `onboarding-interview` - not individually documented below; treat the numbered list as illustrative of the function catalog's shape, not exhaustive, and `ls supabase/functions/` as ground truth. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry. PR #204 added one function (`extract-voice-profile`: paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text) and redeployed `generate-skill-export` (prompt tightened) and `mcp-context` (gained `list_skills` + `get_skill`) to prod (`bkyuxvschuwngtcdhsyg`); no DB migrations were needed.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)
@@ -1588,8 +1585,8 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
 
 ### Backend
 
-**Edge Functions**: Deployed via Supabase CLI
-**Database Migrations**: `supabase/migrations/`, applied via `supabase db push`
+**Edge Functions**: Deployed via Supabase CLI (`supabase functions deploy <function-name>`)
+**Database Migrations**: `supabase/migrations/` (148 migrations as of 2026-07-12). **Corrected 2026-07-12: do NOT use `supabase db push`** - the local migration history is out of sync with remote. Migrations are applied by running SQL directly via the Supabase Management API (`POST https://api.supabase.com/v1/projects/{ref}/database/query`); see `CLAUDE.md` for the exact invocation pattern.
 
 ### Environment Variables
 
@@ -1612,15 +1609,9 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
 
 ### Current State
 
-**Vitest** (`vitest.config.ts`): 6 unit/shared specs:
-- `src/__tests__/api.test.ts`
-- `src/__tests__/authMachine.test.ts`
-- `src/__tests__/renderMarkdown.test.ts`
-- `src/__tests__/training.test.ts`
-- `src/__tests__/HeroSection.video.test.tsx`
-- `supabase/functions/_shared/with-timeout.test.ts`
+**Vitest** (`vitest.config.ts`): the `include` pattern covers `src/**/*.{test,spec}.*`, `supabase/functions/_shared/**/*.{test,spec}.*`, and `supabase/functions/decision-engine/**/*.{test,spec}.*` (pure/Deno-import-free helpers only). **29 non-e2e spec files as of 2026-07-12** (up from the earlier 6) - notable additions beyond the original core specs (`api.test.ts`, `authMachine.test.ts`, `renderMarkdown.test.ts`, `training.test.ts`, `HeroSection.video.test.tsx`, `_shared/with-timeout.test.ts`) include `capabilityLadder.test.ts`, `cardForYou.test.ts`, `newsPriority.test.ts`, `roleArchetype.test.ts`, `starterDecisions.test.ts`, `trendCard.test.ts`, and multiple `_shared/*.test.ts` (e.g. `news-cluster.test.ts`) plus a `decision-engine` reliability-scoring spec. `CLAUDE.md`'s per-PR notes (e.g. "337 unit tests pass") count individual test cases, not files - the two numbers are not directly comparable.
 
-**Playwright** (`playwright.config.ts`, `testDir: src/__tests__/e2e`): 7 e2e specs:
+**Playwright** (`playwright.config.ts`, `testDir: src/__tests__/e2e`): **8 e2e specs as of 2026-07-12** (the original 7 plus `kit-redeem-journey.spec.ts`):
 - `src/__tests__/e2e/auth-journeys.spec.ts`
 - `src/__tests__/e2e/briefing-journey.spec.ts`
 - `src/__tests__/e2e/briefing-rate-limits.spec.ts`
@@ -1628,11 +1619,13 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
 - `src/__tests__/e2e/account-deletion.spec.ts`
 - `src/__tests__/e2e/stripe-webhook-idempotency.spec.ts`
 - `src/__tests__/e2e/desktop-zero-scroll.spec.ts` (Phase 10: asserts the desktop shell never scrolls the window)
+- `src/__tests__/e2e/kit-redeem-journey.spec.ts` (Kit Engine: redeem -> intake -> compose -> ship, verified live against prod)
 
-**CI gates** (`.github/workflows/ci.yml`): three blocking checks per PR:
+**CI gates** (`.github/workflows/ci.yml`): per `CLAUDE.md`, PR #326 added a "standards CI" job on top of the original three blocking checks per PR:
 1. Typecheck (`tsc --noEmit`)
 2. Full Vite build
 3. ESLint on PR diff (~1600 pre-existing warnings accepted as technical debt; new lint regressions blocked)
+4. Standards CI job (PR #326) - not independently verified in this pass; see the workflow file for current gate contents
 
 
 **Manual Testing Checklist**:
@@ -1661,7 +1654,7 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
   "react-router-dom": "^6.26.2",
   "@supabase/supabase-js": "^2.50.3",
   "@tanstack/react-query": "^5.56.2",
-  "framer-motion": "^11.x",
+  "framer-motion": "^12.24.10",
   "tailwindcss": "^3.4.11",
   "lucide-react": "^0.462.0",
   "zod": "^3.23.8",

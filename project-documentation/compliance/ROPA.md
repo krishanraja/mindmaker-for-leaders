@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-12 (updated 2026-07-12)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://ctrl.themindmaker.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
@@ -76,7 +76,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: briefing preferences, interests, account identity; briefing topics/queries sent to search providers.
 - Data subjects: registered users.
 - Lawful basis: contract (transactional delivery); consent (optional channels and marketing).
-- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search, Jina (web search/enrichment of briefing topics, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
+- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa (web search/enrichment of briefing and Home-feed topics, US); Artificial Analysis (AI model benchmark enrichment, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: preferences for life of account; generated briefings per retention policy.
 - Security: RLS owner-scoping, TLS.

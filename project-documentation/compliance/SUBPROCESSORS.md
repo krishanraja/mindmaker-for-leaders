@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-12 (updated 2026-07-12)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).
@@ -25,16 +25,21 @@ As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed
 | Resend | Transactional and notification email | Email address, name, message content | US | To confirm | SCCs (to confirm/sign) |
 | Perplexity | Daily-briefing web search | Briefing topics/queries (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
 | Tavily | Daily-briefing web search/enrichment | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
-| Brave Search | Daily-briefing web search | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
+| Brave Search | Daily-briefing web search; Home feed news gathering; decision-evidence web search | Briefing topics/queries; decision-claim search queries | US | To confirm | SCCs (to confirm/sign) |
+| NewsAPI.org | Home feed news gathering; decision-evidence search | Search queries (AI-native news topics; decision-claim text) | US | To confirm | SCCs (to confirm/sign) |
+| Exa | Home feed news gathering (neural/semantic search); decision-evidence search | Search queries (AI-native news topics; decision-claim text) | US | To confirm | SCCs (to confirm/sign) |
+| Artificial Analysis | AI model benchmark data enrichment for the Home feed and decision-engine evidence (read-only public benchmark index) | Model names referenced in headlines/claims (query only; no account identity sent) | US | To confirm | SCCs (to confirm/sign) |
 | Jina | Daily-briefing content retrieval/enrichment | Briefing topics/URLs | US | To confirm | SCCs (to confirm/sign) |
 | Apollo | Company enrichment | Company name/domain (business context) | US | To confirm | SCCs (to confirm/sign) |
 | Google (OAuth) | Sign-in / authentication | Email, name, OAuth identity | US | Standard terms | SCCs (to confirm/sign) |
 | Google Sheets | Operations sync | Minimized account/usage data | US | Standard terms | SCCs (to confirm/sign) |
 
 Notes:
-- Search/enrichment providers (Perplexity, Tavily, Brave, Jina) primarily receive briefing topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
+- Search/enrichment providers (Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa) primarily receive briefing/decision topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them or where a query is derived from your decision statement; they are treated as subprocessors.
+- GDELT and Hacker News (Algolia) are additional Home feed news sources that require no API key and are not sent any user data (open/public read-only queries); they are not treated as subprocessors of personal data.
 - Apollo receives company-level data used for enrichment; treat as processing of business context.
 - Card data is never stored by Mindmaker; Stripe tokenizes it.
+- Code review (2026-07-12) also found BuiltWith, Tranco, and People Data Labs (PDL) called from the decision-engine's evidence retrievers (company tech-stack, domain-rank, and company-enrichment lookups keyed off decision-claim text/company name/domain). These are not yet in this register. Needs founder/legal confirm: whether these integrations are actively enabled in production (they are key-gated and may be dormant) and, if so, add them here with DPA status.
 
 ## How we notify customers of changes
 

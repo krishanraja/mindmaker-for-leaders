@@ -214,11 +214,11 @@ The intelligence layer wins only if these hold, in roughly this order of leverag
 10. **The four pillars are wired into one closed loop** - owned context → methodology → synthesis/verification → self-correction → back into owned context. The win condition is not any one pillar; it is **the circle closed, visibly and honestly, so the layer compounds.** That closed loop is the thing no prompt-wrapper reaches - and it is, as of 2026-06-17, built **and wired** (brain engine #153-164, limits phases #187-189). The loop that plugging-in completed is now running.
 
 **Honest residual gaps (always disclosed, never hidden):**
-- The brain canvas **Strengthen/Fix actions are UI-disabled** - the buttons are present but have no backend RPC yet.
-- **Brain edges are derived, not stored** - the fact-to-fact graph is computed rather than persisted.
-- **Number-heroes fall back to words-led** for thin current data (honest degradation, per Law 1, not invented filler).
-- **Residual green** remains in `index.html` OG/theme-color meta, the `tokens.css` `--mint` alias, and `EdgeOnboarding`/`SampleResultsDialog` - the forced-dark emerald brand is global, but these specific tokens/surfaces still carry the old green.
-- The formal **ECE < 0.1 calibration gate** is not yet enforced in CI, and **full legacy-stack retirement** is not yet complete (both tracked in the Build Roadmap's remaining tail).
+- ~~The brain canvas Strengthen/Fix actions are UI-disabled~~ - **RESOLVED 2026-07-12**: PR #321 (2026-07-03) shipped the backend RPCs; Strengthen/Fix are now live on `BondReader`.
+- ~~Brain edges are derived, not stored~~ - **RESOLVED 2026-07-12**: as of PR #321, `memory-edges-derive` is called after every capture and persists rows into `memory_edges`.
+- **Number-heroes fall back to words-led** for thin current data (honest degradation, per Law 1, not invented filler). Still true as of 2026-07-12 (not independently re-verified this pass).
+- **Residual green** remains in `index.html` OG/theme-color meta, the `tokens.css` `--mint` alias, and `EdgeOnboarding`/`SampleResultsDialog` - the forced-dark emerald brand is global, but these specific tokens/surfaces still carry the old green. Not independently re-verified this pass.
+- The formal **ECE < 0.1 calibration gate** is not yet enforced in CI. Partial progress since: PR #328 (2026-07-04) added a decision-engine eval CI gate (vitest: the AI-native classifier, the human-agent reframe guard, and the no-em-dash output sanitizer) - this is real CI coverage of the decision engine, but it is not the same thing as the confidence-calibration (ECE) check described here, which remains open. **Full legacy-stack retirement** is not yet confirmed complete (tracked in the Build Roadmap's remaining tail; not independently re-verified this pass).
 - Pre-#193 `kit_builds.intake` rows are **truncated and untrustworthy** (the cascade bug dropped the back half of every build); historical kit data should not be trusted.
 
 ---
@@ -230,7 +230,7 @@ These were parked to keep the Corpus at altitude. They have since been decided a
 - **Rebuild vs overhaul - DECIDED & SHIPPED.** A clean-room frontend rebuild on the existing Supabase backend, with a backend-consolidation pass and deletion of the dead code. The engines - and the moat - survived; the surfacing was reborn, and the cut wires of §13 were closed. This shipped as the dark instrument redesign, PR #186 (merge `1c01db5`, 2026-06-16), prod-verified with screenshots.
 - **The exact decision-type sub-scopes** inside (a)-(c) - settled as the decision intake was built into the redesigned decision spine (#186).
 - **Voice** - the product mines each leader's voice from real writing with `confident | guessing` flags (Identity, #186); neutral chrome carries user-voiced outputs.
-- **Commercial:** the wedge that's paid for, the freemium vs cohort split, and pricing remain the live commercial decisions - the kit program (#190-193) is the cohort-facing wedge in practice.
+- **Commercial:** the wedge that's paid for, the freemium vs cohort split, and pricing - the kit program (#190-193) is the cohort-facing wedge in practice. Pricing itself is now DECIDED (Decision 60, 2026-07-04, and repaired/finalized in code by PR #327, 2026-07-04): the daily briefing, Automator, Memory, Voice, and Kit program are free; Edge Pro is $49/month and is positioned as the decision tier (unlimited weighs, cross-examination, decision watch, Edge artifacts, live MCP skill pull). See `DECISIONS_LOG.md` Decision 60 and `docs/PRICING.md`.
 - **Phasing:** the first cut shipped per the Build Roadmap; the team / agentic-org-chart layer entered scope as the Agentic Org Chart kit (#190/#191, #193).
 
 ---

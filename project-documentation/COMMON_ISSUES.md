@@ -224,6 +224,8 @@ The following failure points have been identified and guarded in `pipelineGuards
 
 Use this checklist when implementing new features to ensure V3 standards are met.
 
+> **2026-07-12 note**: The "Content Pages" sub-checklist below (Today/Voice/Pulse) references pages that no longer exist - `/today`, `/voice`, and `/pulse` are now legacy redirects to `/dashboard` (`src/router.tsx`), and no corresponding page components remain in `src/pages`. Treat those three checkbox items as historical.
+
 ### Design System Setup
 - [ ] Using light mode color system
 - [ ] All CSS variables defined (colors, shadows, spacing)
@@ -347,6 +349,8 @@ Before shipping:
 
 ## Missions System Issues (Feb 2026)
 
+> **2026-07-12 note**: `src/hooks/useMissions.ts` still exists but is not imported anywhere in `src/` as of this reconciliation pass - the Missions/First Moves UI does not appear to be wired into any current route (it predates the CTRL 2028 refactor's Home/Decisions/Brain/You surfaces and the `/goals` page). Treat Issues 25-26 as historical/likely-dormant rather than an active troubleshooting path; verify the feature is still reachable before applying these fixes.
+
 ### Issue 25: First Moves Not Displaying
 **Symptom**: Assessment completes but no First Moves shown on results page
 **Root Cause**: `leader_first_moves` table migration not applied or `ai-generate` not returning first moves in response
@@ -362,6 +366,8 @@ Before shipping:
 ---
 
 ## Progress Tracking Issues (Feb 2026)
+
+> **2026-07-12 note**: The `compute-drift` and `batch-compute-drift` edge functions still exist in `supabase/functions/`, but no page under `src/pages` currently reads a drift score (no `/progress` route exists in `src/router.tsx`). This section may describe a dormant backend-only feature; verify current UI wiring before treating this as an active user-facing bug.
 
 ### Issue 27: Drift Score Calculation
 **Symptom**: Drift score shows unexpected values or NaN
@@ -412,7 +418,7 @@ Before shipping:
   1. Check `ctrl.themindmaker.ai` main bundle hash (`curl -s ... | grep 'assets/index-'`). Compare to latest Vercel deployment output. Mismatch = stale.
   2. Force a redeploy via Vercel API (`POST /v13/deployments` with `forceNew=1` and the main sha).
   3. User hard-refresh (Cmd+Shift+R) or incognito window.
-  4. Confirm the `Interests` tab sits at position 3 in Settings (after Account + Work).
+  4. **Updated 2026-07-12**: there is no longer a standalone "Interests" tab at a fixed position. The 2026-07-04 Settings audit collapsed Settings into grouped sections and renamed the row "Tune your feed" (`SettingsList.tsx`, section id `briefing-interests`), rendering the shared `NewsPreferencesPanel` (same picker used by the Home drawer). Point the user at that row instead of "Interests."
 **Status**: ⚠️ Monitor - CDN cache behaviour is the recurring culprit.
 
 ### Issue 33: `generate-briefing` Throws "Lens Empty" on New Users

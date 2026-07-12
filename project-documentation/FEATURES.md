@@ -12,17 +12,21 @@ Complete feature inventory.
 
 > **Unified onboarding → decisions → engagement loop (2026-06-29, PR #298; LIVE)**: any mention below of "cockpit Home (behind `VITE_COCKPIT_ENABLED`)", the `Mobile/DesktopMemoryDashboard`, or the voice `OnboardingInterview` is HISTORICAL - the flag, the legacy dashboards, and the voice interview were DELETED. The cockpit is the one home; entry/re-entry adapts to the leader's lifecycle `userState` → `posture` (guide vs partner). Onboarding is lightweight + inline (`InlineProfileSetup`: industry/role → `user_memory` + interests via `SeedBeatsPrompt`); the guide posture leads Home with a `KickstartCard` (a role-tailored starter routed to `/decision` pre-filled); `send-reactivation-nudge` (daily cron) re-engages NEW (never-weighed) + DORMANT (>14d) leaders. Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.
 
+> **CTRL 2028 radical-focus refactor (2026-06-22, PRs #234-241; LIVE) - supersedes the "Home / Decision Map / Automator UX Redesign" section below in places:** Home, Decisions, Brain, and the shell were rebuilt again after PRs #197-200. The swipeable "worth a look" deck (`CockpitDeck`/`CockpitHome`/`CockpitStreamRow`) described below was **deleted**; Home is now `src/components/cockpit/HomeFeed.tsx` + `DesktopHomeView.tsx` - one browsable headline set (mobile thumb-first swipe feed / desktop horizontal rail, never a single committed hero) plus 3 fixed doors (Briefing/Weigh/Build), session-adaptive (cold/warm/rich) but never empty (bundled `coldDeck.ts`). Decisions is now `src/components/operator/decision/Decision{Board,Capture,Orb,Running,ResultView}.tsx` (one calm board + one fast-capture input with embedded mic, a branded orb during the run). Brain is `src/components/memory-web/BrainGraph.tsx` (centered, aspect-corrected canvas). The bottom nav is a 3-tab `Home / Decisions / Memory` (`src/components/memory-web/BottomNav.tsx`; the old 4-tab `Home/Edge/Memory/Export` mobile nav described in **Unified Dashboard** below is stale). `DecisionMap.tsx` (the pinned-decision "where it stands" page, `/decision-map`) still exists separately and its description below is still accurate. Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 6, and root `CLAUDE.md`.
+
+> **Not yet documented below (July 2026, PRs #326-334):** an Edge Pro money-path repair reconfirmed pricing at **$49/month** (PR #327; the audit-history table's "$29/month" entry further down is a historical record, now stale); a decision-engine reframe-banner + sanitized-output fix (PR #328); a collapsible desktop sidebar + a new static SEO page at `/pricing` split from a new interactive `/upgrade` checkout page (PR #329, #331); a North Star flywheel metric instrumentation pass (PR #330); a Home "shift" card for structural news trends (PR #332); a feature-flagged public email-capture page at `/download` (PR #333); Home card/loading + Decisions-tab UX fixes (PR #334). None of these are elaborated below; see `CLAUDE.md` for current detail.
+
 > **Current brand (2026-06-16, PR #186):** CTRL is **globally forced dark** on the `ctrl-ds` instrument palette, emerald `#00D9B6` accent, and the emerald `ctrl.` wordmark replacing the old green Mindmaker logo. It is NOT light-mode, NOT warm off-white, NOT white cards, NOT the green logo. Any older "white card / off-white / green logo" phrasing in this doc is stale and corrected inline. See **Redesign** and **Brain Engine** below.
 
 ---
 
-## Repo at a glance (counts verified 2026-06-09; not re-counted since)
+## Repo at a glance (counts verified 2026-07-12)
 
-> **Updated 2026-06-17.** The brand redesign (PR #186), Brain engine (PRs #153-164, #187-189), and 4-kit program (PRs #190-#193) all shipped after these counts were last taken. Treat the edge-function / hook / migration totals below as **verified counts pending re-count**.
+> **Updated 2026-07-12.** Re-counted directly against the repo (`supabase/functions/*` excluding `_shared`, `src/hooks/*.ts(x)`, `supabase/migrations/*.sql`). Prior snapshot (2026-06-09) is superseded.
 
-- **80 Supabase edge functions** (Deno runtime; count as of 2026-06-09, re-count pending), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules; latest added: `extract-voice-profile` (PR #204)
-- **59 React hooks** under `src/hooks/` (count as of 2026-06-09; added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
-- **110 PostgreSQL migrations** applied to remote (count as of 2026-06-09; added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening; later additions include `20260615*_brain_*` and `20260616120000_memory_edges`)
+- **104 Supabase edge functions** (Deno runtime), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules; latest additions include `extract-voice-profile` and `send-reactivation-nudge`
+- **78 React hooks** under `src/hooks/`
+- **148 PostgreSQL migrations** applied to remote
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Brand redesign shipped LIVE** (PR #186, merge 1c01db5, 2026-06-16): globally forced dark, `ctrl-ds` instrument palette, emerald `#00D9B6`, the emerald `ctrl.` wordmark; rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. See **Redesign** below.
@@ -55,7 +59,9 @@ The current look and feel of CTRL. Shipped to `main` (merge 1c01db5) and prod-ve
 
 The latest layer on top of the PR #186 brand redesign. A founder review of live prod found three surfaces that looked finished but did not feel right: Home did not say "I'm back", its "strongest signal" hero was cryptic and the AI-bets read as a wall of sameness; the Decision Map read as unrelated cards with a "something wrong?" drawer popping on every scroll; and the Automator suggested a vague, uncodifiable "Hiring Challenge". A mock-driven rebuild locked all three to the `ctrl-ds` design floor and shipped them to `main`, prod-verified by screenshot at `ctrl.themindmaker.ai`.
 
-### Home (PR #197, merge 7b5f0ef)
+### Home (PR #197, merge 7b5f0ef) [SUPERSEDED - see the CTRL 2028 refactor banner at the top of this doc]
+
+> This subsection describes the PR #197 swipeable deck. It was replaced by the CTRL 2028 `HomeFeed.tsx` rebuild (PR #237) and the `VITE_COCKPIT_ENABLED` flag itself was later deleted - kept below for history only.
 
 The mobile cockpit Home, behind `VITE_COCKPIT_ENABLED`.
 
@@ -336,20 +342,20 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 
 The Dashboard is the main authenticated hub, rendering either the **Memory Web** view (default) or the **Edge** view (`?view=edge`).
 
-### Navigation
+### Navigation (verified against code 2026-07-12)
 
 **Desktop** (`memory-web/DesktopSidebar.tsx`):
 - Fixed left sidebar (264px)
 - Brand lockup (Mindmaker icon + `ctrl-logo`), which replaced the generated "ctrl." text in the 2026-06-17 follow-ups (PR #200). The old green Mindmaker logo is long gone.
-- 4 nav items: Home, Edge, Memory Web, Export to AI
-- Settings + Sign Out at bottom
+- 6 nav items: Home, Edge, Memory Web, Goals, Export, Briefing
+- Profile, Compliance, Settings + Sign Out at bottom
 
 **Mobile** (`memory-web/BottomNav.tsx`):
-- Fixed bottom nav bar with 4 tabs: Home, Edge, Memory, Export
+- Fixed bottom nav bar, now **3 tabs**: Home, Decisions, Memory (the legacy 4-tab Home/Edge/Memory/Export fork and the `VITE_COCKPIT_ENABLED` flag were retired; Briefing dissolves into Home and Edge/automate is contextual)
 - AppHeader at top (brand lockup, not the generated "ctrl." text, since PR #197)
 - Backdrop blur effect
 
-> **Home is now the cockpit deck (PR #197, merge 7b5f0ef, behind `VITE_COCKPIT_ENABLED`).** The Home tab no longer shows the old "strongest signal" hero or the wall of AI-bets (bets moved to the Decisions case-picker). It now shows a plain time-aware greeting, the swipeable "worth a look" deck (broad AI news from the briefing pipeline's curated segments mixed with the leader's own `decision_alerts`; swipe heart = more-like-this, skip = dismiss; peeking card stack + dots; deck like/dislike persists and trains the feed per PR #200), and 3 value actions (Play my briefing -> `/briefing`, Run a decision -> `/decision`, Build a skill -> `/context`). Full detail in **Home / Decision Map / Automator UX Redesign** above.
+> **Home is now the CTRL 2028 `HomeFeed`** (`src/components/cockpit/HomeFeed.tsx` + `DesktopHomeView.tsx`, PR #237), not the PR #197 swipeable "worth a look" deck described lower in this doc (that deck and the `VITE_COCKPIT_ENABLED` flag were deleted). Home is one browsable headline set - mobile thumb-first swipe feed, desktop horizontal rail - plus 3 fixed doors (Briefing/Weigh/Build), session-adaptive but never empty. See the CTRL 2028 refactor banner at the top of this doc and `docs/CTRL-SYSTEM-SPEC.md` section 6.
 
 ### Memory Web View (Default)
 
@@ -520,7 +526,7 @@ Voice-first context extraction system that builds a persistent knowledge base ab
 
 The headline differentiator: export your Memory Web as formatted context to any AI tool. One click to make ChatGPT, Claude, Gemini, Cursor, or any LLM instantly personalized.
 
-**Page**: `/context-export` (auth required)
+**Page**: `/context` (auth required; corrected 2026-07-12 - `/context-export` is not a route. This format/use-case export matrix is a secondary path on the same `ContextExport.tsx` page whose default surface is the Automator skill-build flow described in **Agent Skill Builder** below; it renders when the Automator's triage decides the input isn't a repeatable skill, or via the format picker directly)
 
 ### Export Formats (6)
 
@@ -1521,7 +1527,7 @@ CTRL shipped six thematic audit weeks closing technical debt and hardening the p
 | 4 (PR #99) | **Reliability** | Timeouts + retries on all external APIs (`with-timeout` utility, tested); audio failure UX; onboarding stall recovery |
 | 5 (PR #97) | **Observability** | Structured edge-function JSON logger (`_shared/logger.ts`); CI gate against `console.log` regressions; tests for `with-timeout` |
 | 6 (PR #98, #100, #101) | **Cleanup** | P2 backlog closure; stale-incomplete recovery; e2e contract starter (auth, briefing, account-deletion, stripe-idempotency, sparse-profile, briefing-rate-limits); AI response cache; lint cleanup |
-| 2026-05-30 rebuild | **Pricing + Security + Attribution + Public Surface** | Edge Pro repriced to $29/month (from $9); Full Diagnostic confirmed at $49; RLS fixes on `leader_missions`, `leader_check_ins`, `leader_progress_snapshots`, `tts_config`; `resend-webhook` signature verification; UTM attribution emit path wired (dormant until env set); `/.well-known/product.json` product-truth endpoint live; public-surface prerender added for SEO and agent-readability |
+| 2026-05-30 rebuild | **Pricing + Security + Attribution + Public Surface** | Edge Pro repriced to $29/month (from $9) at the time; Full Diagnostic confirmed at $49; RLS fixes on `leader_missions`, `leader_check_ins`, `leader_progress_snapshots`, `tts_config`; `resend-webhook` signature verification; UTM attribution emit path wired (dormant until env set); `/.well-known/product.json` product-truth endpoint live; public-surface prerender added for SEO and agent-readability. **Superseded 2026-07 (PR #327):** Edge Pro is now **$49/month** (canonical `supabase/functions/_shared/edge-pricing.ts`, verified 2026-07-12), matching the Diagnostic price. |
 
 ### Verifiable proof points for buyers
 

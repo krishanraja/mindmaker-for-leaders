@@ -1,6 +1,8 @@
 # CTRL - Build Roadmap
 
 > **RECONCILIATION BANNER (2026-06-21).** This roadmap is a dated build record (state as of 2026-06-17). Phases 0 to 4 shipped against the prior "clarity engine" positioning and the dark redesign. It predates the LOCKED AI-native positioning (2026-06-19) and the two halves that shipped after: the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Read it as a historical route, not the current plan. The current product/build truth is `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, and `CLAUDE.md`. TODO(founder): decide whether this roadmap is retired or rewritten to the AI-native build sequence.
+>
+> **Re-verified 2026-07-12.** This roadmap remains further out of date than the banner above implies: several more phases have shipped since 2026-06-17 (the CTRL 2028 refactor PRs #234-241, the evidence-corpus sharpening PR #321, the settings/design-system sweep, and the July 2026 PRs #326-334 - see `CLAUDE.md` and `HISTORY.md` for the fuller record). Two items in this doc's own "Remaining" tail below are now DONE and corrected inline: the brain canvas Strengthen/Fix actions (PR #321) and brain edges being derived-not-stored (PR #321, edges are now persisted). The rest of the "Remaining" tail was not independently re-verified this pass beyond what's noted inline.
 
 > The Corpus is the destination; this is the route. Sequenced by **value and proof**, not by feature list. Decision (D3): a clean-room **frontend rebuild on the existing Supabase backend**, learn-loop first. The moat and engines survive; the surfacing is reborn; the cut wires get closed.
 
@@ -64,13 +66,13 @@
 
 ## Remaining *(genuinely outstanding, demoted from the phases above)*
 The destination is substantially built. These are the honest open items:
-- **The formal ECE < 0.1 calibration gate** is not yet enforced in CI - the verification engine carries confidence, but the hard "when it says 80%, it's right ~80%" gate is not yet a passing CI check.
-- **Full legacy-stack retirement** - the clean-room rebuild collapsed the surfacing and most of the duplication, but final retirement of the old stack is not yet complete.
-- **Methodology-everywhere** - confidence-band + counter-case discipline reaches the major surfaces; spreading it to *every* surface is ongoing.
-- **Brain canvas Strengthen/Fix actions** are UI-disabled pending their backend RPC.
-- **Brain edges are derived, not stored** - the fact-to-fact graph is computed rather than persisted.
-- **Number-heroes fall back to words-led** for thin current data (honest degradation, not a defect).
-- **Residual green** remains in `index.html` OG/theme-color meta, the `tokens.css` `--mint` alias, and `EdgeOnboarding`/`SampleResultsDialog` - the forced-dark emerald brand is global, but these specific tokens/surfaces still carry the old green.
+- **The formal ECE < 0.1 calibration gate** is not yet enforced in CI - the verification engine carries confidence, but the hard "when it says 80%, it's right ~80%" gate is not yet a passing CI check. *Update 2026-07-12: PR #328 (2026-07-04) added a decision-engine eval CI gate (vitest: AI-native classifier, human-agent reframe guard, no-em-dash sanitizer) - real CI coverage of the decision engine, but not the same as this confidence-calibration check, which is still open.*
+- **Full legacy-stack retirement** - the clean-room rebuild collapsed the surfacing and most of the duplication, but final retirement of the old stack is not yet complete. Not independently re-verified 2026-07-12.
+- **Methodology-everywhere** - confidence-band + counter-case discipline reaches the major surfaces; spreading it to *every* surface is ongoing. Not independently re-verified 2026-07-12.
+- ~~**Brain canvas Strengthen/Fix actions** are UI-disabled pending their backend RPC.~~ **DONE as of PR #321 (2026-07-03)** - the backend RPCs shipped and Strengthen/Fix are live on `BondReader`.
+- ~~**Brain edges are derived, not stored**~~ **DONE as of PR #321 (2026-07-03)** - `memory-edges-derive` now has a caller (fired after every capture in `useMemoryWeb.submitInput`) and persists rows into `memory_edges`.
+- **Number-heroes fall back to words-led** for thin current data (honest degradation, not a defect). Not independently re-verified 2026-07-12.
+- **Residual green** remains in `index.html` OG/theme-color meta, the `tokens.css` `--mint` alias, and `EdgeOnboarding`/`SampleResultsDialog` - the forced-dark emerald brand is global, but these specific tokens/surfaces still carry the old green. Not independently re-verified 2026-07-12.
 - **Pre-#193 `kit_builds.intake` data is truncated** and should not be trusted (the cascade bug dropped the back half of every build before #193).
 
 ---

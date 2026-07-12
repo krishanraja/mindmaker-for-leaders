@@ -289,9 +289,10 @@ supabase/migrations/20260418000000_briefing_v2_pgvector_schema.sql   -- schema_v
 supabase/migrations/20260419000000_briefing_interests.sql            -- user-declared beats/entities/excludes
 supabase/migrations/20260419000001_industry_beat_library.sql         -- cold-start seeds (11 industries)
 supabase/migrations/20260419000002_briefing_lens_feedback.sql        -- persistent negative feedback
-supabase/migrations/20260419000003_briefing_aggregate_feedback_cron.sql  -- plpgsql aggregator + pg_cron schedule
 ```
 All migrations are idempotent (`IF NOT EXISTS`, `ON CONFLICT DO UPDATE`).
+
+> Note (2026-07-12): `20260419000003_briefing_aggregate_feedback_cron.sql` is no longer present in `supabase/migrations/` and the `briefing-aggregate-feedback-nightly` pg_cron job referenced in step 6 below could not be verified against current migrations. The `briefing-aggregate-feedback` edge function itself still exists; if you need the nightly aggregation cron, check `pg_cron`'s live schedule (`SELECT * FROM cron.job`) on the target project rather than relying on this file path.
 
 **3. Deploy briefing edge functions**
 ```bash
