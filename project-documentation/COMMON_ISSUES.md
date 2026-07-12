@@ -388,7 +388,7 @@ Before shipping:
 ### Issue 29: Vertex AI Authentication Failure
 **Symptom**: AI generation falls back to OpenAI consistently
 **Root Cause**: Google service account key expired or misconfigured
-**Solution**: Verify `GOOGLE_SERVICE_ACCOUNT_KEY` in Supabase secrets, check OAuth token caching
+**Solution**: Verify `GEMINI_SERVICE_ACCOUNT_KEY` in Supabase secrets (corrected 2026-07-12; `ai-generate/index.ts` reads `GEMINI_SERVICE_ACCOUNT_KEY`, not `GOOGLE_SERVICE_ACCOUNT_KEY`), check OAuth token caching
 **Status**: ⚠️ Monitor
 
 ### Issue 30: AI Cache Stale Content

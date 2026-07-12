@@ -1,7 +1,7 @@
 # CTRL Privacy Policy
 
 Effective date: 2026-06-02
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-12 (updated 2026-07-12)
 
 This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://ctrl.themindmaker.ai. CTRL is an executive leadership-clarity tool. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 

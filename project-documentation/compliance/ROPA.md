@@ -132,7 +132,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Lawful basis: contract (Art 6(1)(b)).
 - Recipients/subprocessors: Supabase (US); LLM providers for composition (see Activity E).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: life of account; deleted on account deletion (confirm delete-account cascade covers `kit_builds`, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)).
+- Retention: life of account; deletion on account deletion is intended but code review (2026-07-12) confirmed `delete-account` does not currently cover `kit_builds` - a confirmed open gap, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md).
 - Security: RLS owner-scoping, TLS. Note: kit_builds.intake rows created before PR #193 are truncated (the back half of the cascade was not captured); fully captured thereafter.
 
 ## General security measures (all activities)
