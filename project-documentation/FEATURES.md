@@ -242,7 +242,9 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 - **Weaknesses** to cover (with AI-generated artifacts)
 - **Intelligence gaps** to fill (guided resolution prompts)
 
-### Components (11 files in `src/components/edge/`)
+### Components (11 files in `src/components/edge/`) [PARTIALLY DEAD - flagged 2026-07-12]
+
+> File-search verified 2026-07-12: `EdgeProfileCard.tsx`, `StrengthPill.tsx`, `GapPill.tsx`, and `SmartProbeCard.tsx` no longer exist in `src/components/edge/`. `EdgeView.tsx`, `EdgePaywall.tsx`, `DraftSheet.tsx`, and `ArtifactPreview.tsx` still do. Recommend a follow-up pass to re-derive this component list from the current directory rather than editing piecemeal here.
 
 **EdgeView** (`EdgeView.tsx`) - Main view orchestrator
 - Loads edge profile via `useEdge` hook
@@ -383,7 +385,7 @@ Shows the Edge leadership amplifier (see Edge section above for details).
 
 The following components still exist but are now part of legacy dashboard views or used in specific contexts:
 
-**Mobile Dashboard Experience
+**Mobile Dashboard Experience [DEAD REFERENCE - flagged 2026-07-12: `MobileDashboard.tsx` no longer exists; `/dashboard` mobile is now `HomeFeed.tsx` per the CTRL 2028 banner at the top of this doc]
 
 ### Dashboard Page (`/dashboard`)
 
@@ -434,7 +436,7 @@ The following pages still exist as files but now redirect to `/dashboard`:
 - Used in desktop dashboard grid
 - Weekly focus action + daily reflection prompts
 
-**StrategicPulse** (`pulse/StrategicPulse.tsx`)
+**StrategicPulse** (`pulse/StrategicPulse.tsx`) [DEAD REFERENCE - flagged 2026-07-12: file no longer exists]
 - Strategic pulse summary (baseline, tensions, risks)
 - Integrated into mobile dashboard sheets
 
@@ -689,7 +691,7 @@ RLS: owner-read, owner-insert. Indexed on `user_id` and `created_at DESC`.
 - `useVoiceProfile` (PR #204): CRUD for the unified `ctrl_voice_profile` fact (save enum bug fixed: `verification_status` 'confirmed' -> 'verified', which had been silently 400-ing).
 
 **Components** (`src/components/edge/` + `src/components/memory-web/` + `src/components/automator/` + `src/components/kit/`):
-- `SkillExportCard`: entry-point card on `/context`
+- `SkillExportCard`: entry-point card on `/context` [DEAD REFERENCE - flagged 2026-07-12: file no longer exists in `src/components/`]
 - `VoiceStyleProfileSheet`: captures the unified voice profile (5 recognition picks OR paste-extract power path) (PR #204)
 - `AutomatorScaffold`: desktop two-pane "your skill is taking shape" builder beside the flow; mobile unchanged (PR #204)
 - `KitVoiceProfileCard`: per-kit voice carry-over copy (PR #204)
@@ -973,7 +975,9 @@ The briefing pipeline ships with concrete reliability primitives:
 
 ---
 
-## Guided First Experience (Onboarding)
+## Guided First Experience (Onboarding) [DEAD REFERENCE - flagged 2026-07-12]
+
+> `GuidedFirstExperience.tsx` no longer exists in the repo (verified via file search 2026-07-12). Onboarding is now the lightweight inline flow (`src/components/cockpit/onboarding/InlineProfileSetup.tsx` + `useInlineProfile.ts`, PR #298) described in the "Unified onboarding -> decisions -> engagement loop" banner at the top of this doc. Recommend merging this section's still-relevant framing into that banner and removing the component-level detail below, which describes a deleted flow.
 
 ### Overview
 

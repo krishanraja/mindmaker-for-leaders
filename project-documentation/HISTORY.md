@@ -747,6 +747,28 @@ Typecheck/build green, 225 unit tests pass. Backend (column migration, `send-rea
 
 ---
 
+## Phase 18: Deploy Unblock, Money-Path Repair, Growth Surfaces (PRs #326-334, 2026-07-04 to 2026-07-07)
+
+> Recorded 2026-07-12 as part of a documentation drift-check pass; these nine PRs had merged without a HISTORY.md entry. Note: other undocumented phases also merged before this window (the CTRL 2028 refactor #234-241, the evidence-corpus sharpening #321, the settings/design-system sweep) - see `CLAUDE.md` for those; backfilling them was out of scope for this pass, which covers only #326-334 per the founder's request.
+
+Nine PRs, mostly small and sequential, closing out the immediate post-launch punch list:
+
+- **#326 - Deploy unblock** (`fix/deploy-unblock-standards`): unblocked prod deploy, removed em dashes from `CHANGELOG`, added a `standards` CI job.
+- **#327 - Edge Pro money-path repair** (`fix/money-path-reposition-49`): repaired the Edge Pro subscription money path and repriced/repositioned it to $49/month as the decision tier, finishing the change recorded in `DECISIONS_LOG.md` Decision 60.
+- **#328 - Decision-engine reframe + eval gate** (`fix/reframe-sanitize-eval`): made the reframe surface consistently, sanitized decision-engine output, and added a vitest job wiring the decision-engine eval gate (AI-native classifier, human-agent reframe guard, no-em-dash sanitizer) into CI.
+- **#329 - Craft + growth pass** (`fix/craft-growth`): cleaned the sidebar footer, added a collapsible desktop nav, shipped the static `/pricing` SEO page, added a decision-peak upgrade CTA.
+- **#330 - North Star instrumentation** (`feat/north-star`): instrumented the flywheel metric (context in -> judgment out -> recurring usage).
+- **#331 - Pricing page split** (`fix/pricing-static-vs-upgrade`): corrected the static `/pricing` SEO page to $49 + the decision-tier repositioning, and moved the interactive checkout page to `/upgrade`.
+- **#332 - Home "shift" card** (`claude/news-trend-surfacing-idwafk`): surfaces structural shifts (trends) as a Home "shift" card.
+- **#333 - Public `/download` page**: added a feature-flagged public email-capture page at `/download`.
+- **#334 - Home/Decisions UX fixes**: Home card, loading, and Decisions-tab UX fixes.
+
+### Outcome
+
+Edge Pro's $49/month decision-tier pricing (Decision 60) is now consistent everywhere it's quoted (Stripe, `/pricing`, `/upgrade`, `docs/PRICING.md`); the decision engine has its first CI eval gate; and `/pricing` (static SEO) and `/upgrade` (interactive checkout) are now two distinct routes, split by #331. `/download` (public email-capture, feature-flagged) is new in this phase via #333. Two other public routes, `/agents` (agent-native marketing page) and `/try` (pre-login demo), also postdate the 2026-06-21 reconciliation but shipped earlier (PR #285), not in this phase - noted here so the route list stays accurate even though their own phase isn't backfilled.
+
+---
+
 ## Post-Mortems
 
 ### Post-Mortem: The Redesign Trust Breach (Phase 12)

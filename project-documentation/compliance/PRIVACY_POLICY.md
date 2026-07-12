@@ -60,7 +60,7 @@ CTRL sends your inputs (chat, business context, assessment answers, briefing top
 
 ## 6. How we share your data
 
-We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, Apollo, Google (OAuth and Sheets), and Vercel.
+We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, NewsAPI.org, Exa, Artificial Analysis, Jina, Apollo, Google (OAuth and Sheets), and Vercel.
 
 ## 7. Voice and audio
 

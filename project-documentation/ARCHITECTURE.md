@@ -337,36 +337,38 @@ src/
 │   └── supabase/
 │       ├── client.ts          # Supabase client
 │       └── types.ts           # Generated DB types (READ-ONLY)
-├── pages/                     # 29 page files (many legacy, now redirected to /dashboard)
+├── pages/                     # 24 top-level page files + 5 under pages/kit/ = 29 (re-verified 2026-07-12; composition
+│   │                          # changed significantly - the legacy pages below were DELETED, not just redirected:
+│   │                          # Diagnostic.tsx, Voice.tsx, Pulse.tsx, Today.tsx, Think.tsx, WeeklyCheckin.tsx,
+│   │                          # MissionCheckIn.tsx, MissionHistory.tsx, Progress.tsx, Baseline.tsx,
+│   │                          # DecisionCapture.tsx, PromptCoach.tsx no longer exist in src/pages/ - the
+│   │                          # `/today` `/pulse` `/voice` `/diagnostic` `/think` routes in router.tsx are plain
+│   │                          # <Navigate> redirects with no page component behind them at all.
 │   ├── Landing.tsx            # Landing page (/)
 │   ├── Auth.tsx               # Authentication (/auth)
 │   ├── AuthCallback.tsx       # OAuth callback (/auth/callback)
-│   ├── Dashboard.tsx          # **Main hub** (/dashboard) - renders Memory Web or Edge view
+│   ├── Dashboard.tsx          # **Main hub** (/dashboard) - renders Home (cockpit) or Edge view
 │   ├── MemoryCenter.tsx       # Memory Center (/memory)
 │   ├── ContextExport.tsx      # Context Export (/context)
 │   ├── BriefingPage.tsx       # Daily Briefing v2 (/briefing)
 │   ├── DecisionPage.tsx       # Decision Engine pressure-test (/decision)
 │   ├── Goals.tsx              # Goals tracking (/goals)
+│   ├── TrackRecord.tsx        # Track record / capability ladder (/track-record)
+│   ├── DecisionMap.tsx        # Pinned-decision hero + connector rail (/decision-map)
 │   ├── EnrichPage.tsx         # Inbound Enrich loop (/enrich)
 │   ├── BuildLap.tsx           # Agent Skill Builder full-page flow (/build)
 │   ├── Settings.tsx           # User settings (/settings)
 │   ├── Compliance.tsx         # Compliance center (/compliance)
 │   ├── Profile.tsx            # User profile (/profile)
 │   ├── Booking.tsx            # Workshop booking (/booking)
-│   ├── Diagnostic.tsx         # Assessment flow (legacy, redirects to /dashboard)
-│   ├── Voice.tsx              # Voice recording (legacy, redirects to /dashboard)
-│   ├── Pulse.tsx              # Strategic pulse (legacy, redirects to /dashboard)
-│   ├── Today.tsx              # Today page (legacy, redirects to /dashboard)
-│   ├── Think.tsx              # Think page (legacy, redirects to /dashboard?view=edge)
-│   ├── WeeklyCheckin.tsx      # Weekly check-in
-│   ├── MissionCheckIn.tsx     # Mission check-in
-│   ├── MissionHistory.tsx     # Mission history
-│   ├── Progress.tsx           # Progress tracking
-│   ├── Baseline.tsx           # Baseline assessment
-│   ├── DecisionCapture.tsx    # Decision capture
-│   ├── PromptCoach.tsx        # Prompt coaching
-│   ├── Timeline.tsx           # Assessment timeline
-│   └── NotFound.tsx           # 404 page
+│   ├── Preview.tsx            # Dev/QC fixture-render harness (/preview, unlinked)
+│   ├── Agents.tsx             # Agent-native marketing page (/agents)
+│   ├── Try.tsx                # Pre-login canned demo (/try)
+│   ├── CaptureLanding.tsx     # Public email-capture landing (/download, behind FF.publicCapture)
+│   ├── Pricing.tsx            # Interactive upgrade/checkout page (/upgrade)
+│   ├── Timeline.tsx           # Assessment timeline (present in src/pages/ but not currently routed in router.tsx)
+│   ├── NotFound.tsx           # 404 page
+│   └── kit/                   # Kit.tsx pages: KitRedeem, KitHome, KitIntake, KitReading, KitPdf
 ├── styles/                    # Design tokens & styles
 ├── __tests__/                 # Test files
 └── index.css                  # Design system
