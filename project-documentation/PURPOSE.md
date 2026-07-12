@@ -1,6 +1,8 @@
 # Purpose
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-12 (drift-check pass; no positioning changes found, see note below).
+
+> Verified 2026-07-12: the AI-native positioning, the two halves (kits + main app), and the pricing anchor below all still match the live code (`supabase/functions/_shared/edge-pricing.ts` `EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`; Decision 60 in `DECISIONS_LOG.md`). New public surfaces shipped since the last pass - `/agents` (agent-native marketing page), `/try` (pre-login demo), `/download` (email-capture), `/upgrade` (interactive pricing, split from the static `/pricing` SEO page) - are not yet reflected in this doc's positioning language; none of them change the positioning itself, only the surface count, so they are not detailed here (see `CLAUDE.md` and `HISTORY.md` Phase 18 for the fuller list).
 
 > Reconciliation note: this doc was written for the prior "decision-speed / portable AI double / zero-context tax" positioning. The current LOCKED positioning is **building the AI-native version of your business** (see `docs/MAIN-APP-POLISH-SPEC.md` section 0, and the root `README.md`). The product mechanics described below (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the kits) are real and in the code; the FRAMING has moved to AI-native. The "What CTRL Is" and "Core Problem" sections have been reframed. Some downstream audience/measurement sections still carry the old decision-speed language; read them through the AI-native lens and treat any undecided AI-native specifics as `TODO(founder)`.
 
@@ -131,7 +133,7 @@ Use these (AI-native) when generating outbound, ad copy, or social posts:
 - **Autonomy-line hook**: "Map your org to the autonomy line: what an agent runs, what it assists on with your approval, what stays human, and where to start."
 - **Privacy hook**: "No integrations. No plugins. No enterprise security review. You talk to it; that is the whole connection."
 - **Kit hook**: "After the lesson, walk a kit: ship a build, take a workflow off your plate, map your agentic org, or make the AI know you."
-- **Pricing anchor (settled)**: Free to start (the daily briefing + the Automator build + Memory Web + Voice + the Kit program + 3 decision weighs a month, all free). Edge Pro is $49/month, the decision tier: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch + Edge artifacts + drafting + email delivery + the live MCP pull of your built skills. The daily briefing is intentionally free, not an Edge Pro feature. TODO(founder): confirm whether the $49 one-time diagnostic SKUs survive the repositioning before quoting them.
+- **Pricing anchor (settled)**: Free to start (the daily briefing + the Automator build + Memory Web + Voice + the Kit program + 3 decision weighs a month, all free). Edge Pro is $49/month, the decision tier: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch + Edge artifacts + drafting + email delivery + the live MCP pull of your built skills. The daily briefing is intentionally free, not an Edge Pro feature. Verified 2026-07-12: the older one-time diagnostic SKUs (Full Diagnostic $49 / Deep Context $29 / Bundle $69) still exist in code (`create-diagnostic-payment`) as a separate, older checkout path; they are not part of the canonical subscription pricing surface (`docs/PRICING.md`, `/pricing`, `/upgrade`). TODO(founder): confirm whether they should still be marketed anywhere or are dead code pending removal.
 
 ## Measurement of Success
 

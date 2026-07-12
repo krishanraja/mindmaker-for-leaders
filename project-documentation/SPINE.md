@@ -3,6 +3,8 @@
 Status: foundation authored 2026-05-30 from mm-ctrl (the most documented app). Unify the SYSTEM, never the SKIN. Each app themes these tokens differently and keeps its own palette, typography personality, motion flavor, voice, and density.
 
 > Reconciliation note (2026-06-21): the token-contract structure below is still correct. CTRL's own live SKIN is now the globally dark `ctrl-ds` instrument palette (emerald `#00D9B6`), not a light/"mint" skin; any "mint palette" reference below means CTRL's accent, which is now emerald. The live tokens are in the code (`src/styles/tokens.css`, `index.css`).
+>
+> Re-verified 2026-07-12: no drift found. This is a cross-app contract document (tokens, motion, RLS/AI conventions, floors, attribution) and none of the CTRL-side product/pricing/route changes from June-July 2026 (kit redesign, main-app polish, CTRL 2028 refactor, Edge Pro reprice, `/agents`/`/try`/`/download`/`/upgrade`) touch the contract it describes.
 
 This document is the contract the other five apps (onalert, gutted, merciless, fractionl-circle, fractionl-pulse) import or mirror. CTRL is the reference implementation.
 
