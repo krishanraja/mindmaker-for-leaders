@@ -4,7 +4,7 @@
 
 This folder is the deeper source of truth for CTRL. The two highest-authority documents in the whole repo are the canonical product/build specs in `docs/`, and the top-level `README.md`. Where any file in this folder disagrees with them, the spec and the root README win.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-12 (drift-reconciliation pass; supersedes the 2026-06-21 AI-native pass, which is preserved below where still accurate).
 
 ---
 
@@ -81,7 +81,9 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 ---
 
-## Current State (reconciled 2026-06-21)
+## Current State (reconciled 2026-07-12)
+
+Nine merged PRs from July 2026 (#326-334: deploy-unblock CI work, the Edge Pro money-path repair and $49 reprice, a decision-engine eval CI gate, the sidebar/nav cleanup, the North Star flywheel metric, the `/pricing`-vs-`/upgrade` split, the Home "shift" trend card, the new `/download` capture page, and Home/Decisions UX fixes) were undocumented anywhere in this folder before this pass. They are now logged in [HISTORY.md](./HISTORY.md) (Phase 18) and [DECISIONS_LOG.md](./DECISIONS_LOG.md) (Decision 61). PR #321 (2026-07-03) resolved two items [CTRL-CORPUS.md](./CTRL-CORPUS.md) and [CTRL-BUILD-ROADMAP.md](./CTRL-BUILD-ROADMAP.md) still listed as open (the brain canvas Strengthen/Fix RPCs are now live; brain edges are persisted, not just derived) - both docs are updated.
 
 ### Product Positioning (LOCKED)
 - **What CTRL is**: the tool for building, orchestrating, productizing, and getting to market the AI-native version of your business.
@@ -100,14 +102,14 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 ### Active routes (source of truth: `src/router.tsx`)
 
-Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked).
+Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/download` (public email-capture landing, behind `FF.publicCapture`, added PR #333), `/upgrade` (interactive pricing/checkout page, added PR #331; the static SEO page at `/pricing` is a separate `vercel.json` rewrite, not this route), `/preview` (dev/QC fixture harness, unlinked).
 
-Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`.
+Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`. Primary nav (desktop sidebar and mobile bottom nav) is now 3 tabs (Home / Decisions / Memory), not 4 - the rest live under More/Account.
 
 Legacy redirects: `/today` `/pulse` `/voice` `/diagnostic` -> `/dashboard`; `/think` -> `/dashboard?view=edge`.
 
 ### Repo counts
-For current edge-function / hook / migration / route counts, trust `CLAUDE.md` (kept current) and the code itself, not a frozen table here. As of the last `CLAUDE.md` snapshot (counts dated 2026-06-09, re-count pending): ~80 edge functions, ~59 custom hooks, ~110 migrations. Treat these as a lower bound. TODO(founder/dev): a fresh re-count after the kit + main-app-polish PRs.
+Re-counted directly against the code on 2026-07-12: **104 edge functions**, **78 custom hooks**, **148 migrations**. (Superseded the prior ~80/~59/~110 figures, which were an unremeasured 2026-06-09 snapshot.) Treat these as current as of this date; re-count against `supabase/functions/`, `src/hooks/`, and `supabase/migrations/` directly for anything time-sensitive.
 
 ### Tech Stack
 React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion; React Router 6 (`createBrowserRouter`, lazy); Tailwind + shadcn/ui (Radix), globally dark; React Context + TanStack Query; Supabase (PostgreSQL + Edge Functions, Deno); Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback; OpenAI Whisper / ElevenLabs; OpenAI `text-embedding-3-small` (pgvector); Supabase Auth / Stripe / Resend; Vitest + Playwright; Vercel + Supabase Cloud; Node `>=22 <24`. DB extensions: pgvector, pgcrypto, pg_cron.
