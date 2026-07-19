@@ -1,6 +1,8 @@
 # CTRL - Build Roadmap
 
-> **RECONCILIATION BANNER (2026-06-21).** This roadmap is a dated build record (state as of 2026-06-17). Phases 0 to 4 shipped against the prior "clarity engine" positioning and the dark redesign. It predates the LOCKED AI-native positioning (2026-06-19) and the two halves that shipped after: the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Read it as a historical route, not the current plan. The current product/build truth is `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, and `CLAUDE.md`. TODO(founder): decide whether this roadmap is retired or rewritten to the AI-native build sequence.
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
+
+> **RECONCILIATION BANNER (2026-06-21, refreshed 2026-07-19).** This roadmap is a dated build record (state as of 2026-06-17). Phases 0 to 4 shipped against the prior "clarity engine" positioning and the dark redesign. It predates the LOCKED AI-native positioning (2026-06-19) and the several halves that shipped after: the kit redesign (PRs #206-212), the main-app polish (PRs #215-222), the CTRL System / coherence campaign and 2028 radical-focus refactor (PRs #228-241), the onboarding->decisions->engagement loop (PR #298), and the evidence-corpus sharpening (PR #321, 2026-07-03) - the last of which closed one item this roadmap had listed as outstanding (Strengthen/Fix, see the Remaining section below, updated 2026-07-19). Read it as a historical route, not the current plan. The current product/build truth is `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, `docs/CTRL-SYSTEM-SPEC.md`, and `CLAUDE.md`. TODO(founder): decide whether this roadmap is retired or rewritten to the AI-native build sequence.
 
 > The Corpus is the destination; this is the route. Sequenced by **value and proof**, not by feature list. Decision (D3): a clean-room **frontend rebuild on the existing Supabase backend**, learn-loop first. The moat and engines survive; the surfacing is reborn; the cut wires get closed.
 
@@ -37,7 +39,7 @@
 **Work:** the mobile morning - digest → one choice → bank (pre-rendered, no Generate button, data-realist); **one** Memory surface (capture/verify/edit/view unified) with the **web itself as the editable object**; **Identity** as a first-class object (Role/Voice/Standards/Never-rules; voice mined from pasted writing, `confident|guessing` flags).
 **Ships:** the daily loop; the editable digital brain; the owned identity layer.
 **Proof:** a leader takes one real step in <5 min one-handed; a memory is edited in exactly one place; identity drives outputs.
-**Shipped status:** the mobile cockpit (digest → one choice → bank), the unified brain four-world rope canvas as the editable object, and the first-class Identity layer all landed in PR #186. *Residual: the brain canvas Strengthen/Fix actions are UI-disabled pending backend RPC; brain edges are derived, not stored.*
+**Shipped status:** the mobile cockpit (digest → one choice → bank), the unified brain four-world rope canvas as the editable object, and the first-class Identity layer all landed in PR #186. *Residual: brain edges are derived, not stored. (The Strengthen/Fix residual noted here as of 2026-06-17 SHIPPED 2026-07-03, PR #321 - see Phase 4 and Remaining below.)*
 
 ## Phase 3 - The engine surfaces *(sharper decisions · honest magic, on)* - **SHIPPED** (limits phases #187-189; kit program #190-193)
 **Goal:** turn the differentiated results on and surface their receipts.
@@ -51,7 +53,7 @@
 **Work:** `correction_log` + `correction_rules`; the forced footer (LOG root cause → PROPOSE class-killing rule → WRITE BACK on approval); the 4× recurrence guard; rules write back into identity never-rules, memory, and every export.
 **Ships:** the rule library you watch grow; "the same mistake doesn't survive four occurrences."
 **Proof:** a thumbs-down becomes a kept, class-killing rule with an audit trail; recurrence is caught.
-**Shipped status:** the self-correction primitive landed in the brain engine (#153-164) with its `brain_adapt` migrations - the deck's keystone now exists, governed by Law 1. *Residual: the brain canvas Strengthen/Fix actions surfacing this loop are UI-disabled pending their backend RPC.*
+**Shipped status:** the self-correction primitive landed in the brain engine (#153-164) with its `brain_adapt` migrations - the deck's keystone now exists, governed by Law 1. **UPDATE (2026-07-03, PR #321):** the brain canvas Strengthen/Fix actions surfacing this loop are now LIVE - `MemoryCenter.tsx` wires `onStrengthen`/`onFix` to the real `strengthen_memory_fact` / `fix_memory_fact` RPCs (previously the buttons were present but unwired). Corrections also now log auditable `user_corrected`/`user_rejected`/`user_disputed` events to `memory_events`, and `memory-edges-derive` finally has a caller.
 
 ## Phase 5 - Trust at scale *(calibration · honesty rails · consolidation tail)* - **PARTLY SHIPPED**
 **Goal:** make it trustworthy and close the circle.
@@ -62,15 +64,15 @@
 
 ---
 
-## Remaining *(genuinely outstanding, demoted from the phases above)*
+## Remaining *(genuinely outstanding, demoted from the phases above; refreshed 2026-07-19)*
 The destination is substantially built. These are the honest open items:
-- **The formal ECE < 0.1 calibration gate** is not yet enforced in CI - the verification engine carries confidence, but the hard "when it says 80%, it's right ~80%" gate is not yet a passing CI check.
+- **The formal ECE < 0.1 calibration gate** is not yet enforced in CI - `.github/workflows/ci.yml` has standards/test/typecheck/build/lint jobs (a decision-engine eval vitest job was added 2026-07-04, PR #328), but no dedicated calibration/ECE gate. The verification engine carries confidence; the hard "when it says 80%, it's right ~80%" check is not yet a passing CI gate.
 - **Full legacy-stack retirement** - the clean-room rebuild collapsed the surfacing and most of the duplication, but final retirement of the old stack is not yet complete.
 - **Methodology-everywhere** - confidence-band + counter-case discipline reaches the major surfaces; spreading it to *every* surface is ongoing.
-- **Brain canvas Strengthen/Fix actions** are UI-disabled pending their backend RPC.
-- **Brain edges are derived, not stored** - the fact-to-fact graph is computed rather than persisted.
-- **Number-heroes fall back to words-led** for thin current data (honest degradation, not a defect).
-- **Residual green** remains in `index.html` OG/theme-color meta, the `tokens.css` `--mint` alias, and `EdgeOnboarding`/`SampleResultsDialog` - the forced-dark emerald brand is global, but these specific tokens/surfaces still carry the old green.
+- ~~Brain canvas Strengthen/Fix actions are UI-disabled pending their backend RPC.~~ **SHIPPED 2026-07-03 (PR #321, evidence-corpus sharpening):** `MemoryCenter.tsx` now wires `onStrengthen`/`onFix` on the brain's `BondReader` to the real `strengthen_memory_fact` / `fix_memory_fact` RPCs. Verified in code (2026-07-19 reconciliation pass).
+- **Brain edges are derived, not stored** - the fact-to-fact graph is computed rather than persisted. Still true as of 2026-07-19.
+- **Number-heroes fall back to words-led** for thin current data (honest degradation, not a defect). Still true as of 2026-07-19.
+- **Residual green** - as of 2026-07-19, `index.html`'s `theme-color`/`msapplication-TileColor` meta now read `#00D9B6` (emerald, not old green), and no hardcoded green hex/literal was found in `EdgeOnboarding` or `SampleResultsDialog` (grep-verified). The `tokens.css` `--mint` alias variable still exists by that name but its value is the same emerald `171 100% 43%` (`#00D9B6`), not a different green. This item appears substantially resolved; TODO(founder): confirm no old-green literal survives anywhere else before retiring this line entirely.
 - **Pre-#193 `kit_builds.intake` data is truncated** and should not be trusted (the cascade bug dropped the back half of every build before #193).
 
 ---

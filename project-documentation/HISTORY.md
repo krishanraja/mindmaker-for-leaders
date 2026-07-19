@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 
 > This is a historical record, kept on purpose. Early phases below describe positioning and visuals that are now RETIRED: the "Clarity for Leaders" tagline, the light/Apple-like design system (warm off-white, ink, Mint). Those are accurate as history but are not the current product. The current state is: globally DARK (the `ctrl-ds` instrument palette, emerald `#00D9B6`), and the LOCKED positioning is **building the AI-native version of your business** (locked 2026-06-19, after the latest phase recorded here). The two halves that post-date this timeline are the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
 
@@ -743,6 +743,93 @@ Adapt the whole experience to the leader's lifecycle state, and match the device
 
 ### Verification
 Typecheck/build green, 225 unit tests pass. Backend (column migration, `send-reactivation-nudge`, cron) shipped to prod ahead of the frontend merge (additive, no dependency) and dry-run verified. A **live authed Playwright walk on desktop, tablet, and mobile separately**, as a brand-new cold user, confirmed the loop end to end: cockpit cold-start → inline onboarding (industry/role/interests) → feed settles with the kickstart leading → CTA → `/decision` prefilled, with device-context copy. No functional defects.
+
+---
+
+## Phase 18: Evidence-Corpus Sharpening (PR #321, 2026-07-03)
+
+### Context
+Grounded in the "AI-Native Operator" evidence corpus (canonical: `docs/CTRL-SYSTEM-SPEC.md` section 9). Four gaps had accumulated inside the existing shell: the brain canvas's Strengthen/Fix buttons were UI-disabled over backend RPCs that already worked but had no caller; a correction (thumbs-down, "that's not me") never wrote an auditable event, so the extractor could re-infer a value the leader had just rejected; a completed decision weigh produced no portable takeaway; the context export lived as a buried wizard option; and the app had no honest measure of a leader's growing skill that wasn't a vanity metric.
+
+### What Shipped
+1. **The correction loop is real.** `verify_memory_fact` / `fix_memory_fact` log `user_corrected` / `user_rejected` / `user_disputed` events to `memory_events` with the prior value (migration `20260703090000`). `extract-user-context` (v45) is correction-aware via `_shared/correction-guard.ts` (a deterministic damping pass drops re-extraction of ruled-out values; also fixed a bug where rejected facts re-inserted because `is_current=false` had left the dedup set). `memory-edges-derive` finally has a caller (fired after each successful capture in `useMemoryWeb.submitInput`), and the brain canvas Strengthen/Fix actions went live.
+2. **Decision memo.** Every completed weigh copies as a board-ready one-page markdown memo (`decisionMemo.ts`, pure + tested); no options section is fabricated since the engine stores no alternatives.
+3. **Context file first-class.** A `ContextFileButton` one-clicks `my-ai-context.md` from MemoryCenter's meta line and from Step 1 of `/context`, no longer buried in the wizard's Raw Markdown option.
+4. **Capability ladder.** `src/lib/capabilityLadder.ts` (pure + tested) derives an earned 4-stage progression (orienting/operating/calibrating/compounding) from observed behaviour only, never XP or streaks; `CapabilityHeader` tops the You surface; Home's kickstart slot carries the ladder's next move when it lives outside the weigher.
+
+New flag: `BRIEFING_INCLUDE_DECISION_ALERTS` (Supabase secret, default OFF) wires the previously-dormant `prependDecisionAlerts` into both briefing pipelines (`generate-briefing` v75 deployed).
+
+### Verification
+Live. Pure helpers unit-tested; migration applied to prod.
+
+---
+
+## Phase 19: Settings Audit - One-Door Dedup + Design-System Sweep (PR #325, 2026-07-04)
+
+### Context
+The Settings surface had drifted across five prior audit passes: feed/briefing tuning was split across two different tables (`news_preferences` lanes+bias in the Home drawer vs a standalone `BriefingInterestsTab` over `briefing_interests`), the track-record "watch" cards read as inert observation with no action, the track-record settings row navigated to a page the global sheet then covered, cliche AI-speak had crept into track-record and decision copy, and the visual language (colors, radii, footers) had gone amateur in places.
+
+### What Shipped
+- **One door for feed/briefing tuning.** `NewsPreferencesSheet` split into a reusable `NewsPreferencesPanel` rendered by both the Home drawer and Settings -> Interests; the people/companies watchlist folded in; the standalone `BriefingInterestsTab` deleted.
+- **Active-decision control-centre.** Track-record "watch" cards (`AgedCallRow`) now read "Active decision" with Open / Strengthen / Archive, wired through a shared `useDecisionActions` to existing doors (no new features).
+- **Track-record door fix.** The settings row now closes the global sheet before navigating to `/track-record`.
+- **Copy cull.** Cliche phrasing ("Watching how it lands", "keep an eye/keep watching", etc.) rewritten plain across track-record + decision surfaces.
+- **Design sweep.** New primitives `src/components/system/surface.tsx` (`Surface`/`Eyebrow`/`SettingRow`/solid `SheetFooterBar`); off-token colors, emoji, and inconsistent glyphs replaced with tokens/lucide icons; card radii unified to `rounded-2xl`.
+
+### Verification
+Typecheck 0 new errors, 337 unit tests pass, build + prerender green, lint clean on touched files.
+
+---
+
+## Phase 20: Money-Path Repair + Decision-Engine Audit Fixes + Craft/Growth Audit (PRs #327-329, 2026-07-04)
+
+### Context
+A same-day audit sweep across billing, the decision engine, and craft/growth surfaces.
+
+### What Shipped
+- **PR #327 - money-path repair.** `fix(billing): repair Edge Pro money path, reprice to $49, reposition as the decision tier` - the code-level implementation of Decision 60 above (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`).
+- **PR #328 - decision-engine audit fixes.** An audit found the AI-native classifier read the bare word "agent(s)" as a strong AI signal, so "should we hire two more support agents?" was wrongly classified AI-native and skipped its needed reframe. `_shared/decision-ai-native.ts` now masks human-agent phrases (support/sales/service/call-center/etc. + "agents") before the AI test runs. New `_shared/sanitize.ts` (`stripEmDashes`) runs every user-facing model-generated decision-engine string through it before storage or display - the no-em-dash house rule had only ever been enforced on source code, never on LLM output. The decision-engine eval gate is now wired into CI as a new vitest job (`.github/workflows/ci.yml`).
+- **PR #329 - craft+growth audit.** The desktop sidebar footer no longer prints a raw email/id for name-less accounts (a clean generic "You" instead - this resolves the "open MINOR non-blocker nit" flagged in the 2026-06-22 CTRL 2028 refactor's residual-nits list, see Phase 17's predecessor work). The desktop sidebar's secondary surfaces collapsed behind a "More" toggle. A first `/pricing` page and a decision-peak upgrade CTA shipped.
+
+### Verification
+Live. `decision-ai-native.test.ts` covers the human-agent false-positive fix.
+
+---
+
+## Phase 21: North Star Flywheel Metric (PR #330, 2026-07-04, founder-signed)
+
+Instrumented the internal moat metric: **flywheel leaders (this week)** = leaders who both hold a real brain (5+ current facts in `user_memory`) and weighed a decision in the last 7 days. Full detail in `project-documentation/NORTH_STAR.md` (canonical). Migration `20260704120000_north_star_flywheel.sql` adds the `north_star_flywheel` view, the `north_star_daily` trend table, `snapshot_north_star()`, and a daily 06:00 UTC pg_cron job.
+
+---
+
+## Phase 22: Pricing Surface Split - Static /pricing, Interactive /upgrade (PR #331, 2026-07-04)
+
+### Context
+Live verification immediately after Phase 20's PR #329 shipped the first `/pricing` page caught that `vercel.json` rewrites `/pricing` to a static `public/pricing.html`, which shadowed the new React pricing route entirely AND was still showing stale $29 / "all 7 briefing types" copy across its title, meta, JSON-LD, and cards - directly contradicting the $49 reposition already decided (Decision 60).
+
+### What Shipped
+`public/pricing.html` rewritten to the two-tier $49 positioning (Free is a real daily instrument; Edge Pro is the decision tier), including meta and JSON-LD. The interactive React pricing page (live Stripe subscribe button) moved to `/upgrade` so it is not shadowed by the rewrite; the decision-peak nudge and the landing/agents CTAs now point at `/upgrade`. `/pricing` stays the static SEO surface for hard loads and crawlers.
+
+### Verification
+Build + typecheck + lint + standards green.
+
+---
+
+## Phase 23: Home "Shift" Cards + Public /download Lead-Capture + Home/Decisions UX Fixes (PRs #331-334, 2026-07-06/07)
+
+### What Shipped
+- **Home shift cards** (PR #331-332, 2026-07-06): a distinct "shift" card type surfaces structural AI trends alongside news cards, with its own read-sheet framing ("Think through what this means for you"); new `TrendCard` component.
+- **Public `/download` route** (PR #333, 2026-07-07): a feature-flagged, no-auth email-capture landing page for a "CTRL starter kit" lead magnet, backed by a new public no-auth edge function `capture-lead`.
+- **Home cards + Decisions-tab UX fixes** (PR #334, 2026-07-07): the Home news/shift card tap target unified to one consistent "Read" affordance; the "Weigh it" decision CTA renamed to "Think it through" across the read sheet, the Home kickstart card, and the decision-capture input (continuing the plain-language cleanup started in PRs #261-264).
+
+### Verification
+Live. `capture-lead` deployed; `DecisionCapture.tsx` / `KickstartCard.tsx` / `CardReadSheet.tsx` carry the renamed CTA.
+
+---
+
+## Phase 24: PostHog Product Analytics (branch-local, 2026-07-18, not yet merged)
+
+`posthog-js` loaded via a CDN script tag in `index.html` (no new npm dependency), tagging events `product=mm_ctrl`. This is a local commit on the working branch (`chore(analytics): add PostHog product analytics`) and has not yet merged to main - recorded here as recently shipped work-in-progress, not settled history. TODO(founder): confirm merge status before treating as live.
 
 ---
 

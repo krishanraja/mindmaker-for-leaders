@@ -544,5 +544,5 @@ This is core to vibe coding.
 
 ---
 
-*Last Updated: 2026-05-13*
+*Last Updated: 2026-07-19 (routine reconciliation pass - reviewed in full against the current codebase and CLAUDE.md; content verified still valid as generic process doctrine, no substantive changes made)*
 *Version: 1.2.0 (post Phase 8 - Agent Skill Builder + desktop UI redesign)*

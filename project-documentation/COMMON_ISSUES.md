@@ -2,9 +2,9 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 
-> **Status**: This is a developer bug/pain log dated 2026-04-26. Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath." It predates the dark redesign (PR #186), the brain engine, the kit redesign, and the main-app polish, so for current known issues also read `CLAUDE.md` (the live architecture quick-reference, which lists the honest residual gaps). Note: where this doc lists "light mode color system" in an AVOID list, that is correct guidance; the app is globally dark.
+> **Status**: This is a developer bug/pain log dated 2026-04-26. Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup; those entries predate the dark redesign (PR #186), the brain engine, the kit redesign, and the main-app polish. A July 2026 trust + craft audit pass added three more entries at the very bottom (Issues 42-44), which are current as of this reconciliation. For current known issues also read `CLAUDE.md` (the live architecture quick-reference, which lists the honest residual gaps). Note: where this doc lists "light mode color system" in an AVOID list, that is correct guidance; the app is globally dark.
 
 ---
 
@@ -477,3 +477,29 @@ Before shipping:
 **Root Cause**: ElevenLabs synthesis is fire-and-forget from `generate-briefing` to `synthesize-briefing`. The frontend polls every 3s. Audio Failure UX (Audit Week 4) ensures segments + script render even if synthesis ultimately fails.
 **Solution**: User can read segments immediately. Audio appears when synthesis completes. If `audio_url` stays null after a minute, check `synthesize-briefing` logs.
 **Status**: ✅ Resolved (Audit Week 4 audio failure UX).
+
+---
+
+## July 2026 Trust + Craft Audit Fixes
+
+A follow-up audit pass (early July 2026) found and fixed three more issues; logging them here since two are recurring-pattern classes worth watching for, not just one-off bugs.
+
+### Issue 42: Decision-Engine Reframe Under-Triggered on Human-Agent Phrases
+**Symptom**: A statement like "hire two more support agents" skipped the AI-native reframe it needed - the classifier treated it as already AI-native.
+**Root Cause**: The AI-native classifier in `supabase/functions/_shared/decision-ai-native.ts` (used by `decision-engine/reframe.ts`) counted the bare word "agent(s)" as an AI signal, so any statement mentioning human agents (support agents, sales agents) was mistaken for an AI-native decision.
+**Solution**: Added a human-agent-phrase guard that masks phrases like "support agents" / "sales agents" before the AI-native test, while genuine AI-agent phrasing ("build an AI agent", "agentic orchestration") still passes. Pinned by a new eval gate (`supabase/functions/decision-engine/eval/golden-set.json` + CI vitest job) so a regression fails CI.
+**Prevention**: Any future keyword-based classifier (AI-native detection, category tagging, etc.) should be checked for bare-word false positives on terms that have both an AI meaning and an ordinary-English meaning ("agent", "model", "assistant" are the obvious risk words).
+**Status**: ✅ Resolved (commit `4d3abf6`, merged via PR #328).
+
+### Issue 43: Desktop Sidebar Footer Showed Raw Email/ID for Name-Less Accounts
+**Symptom**: A leader who signed up with just an email (no resolvable display name) saw their raw email or a machine-looking id under the avatar in the desktop sidebar footer, instead of a clean generic label.
+**Root Cause**: `DesktopShell.tsx` printed `user?.email` unconditionally in the footer, independent of whether `resolveDisplayName` had actually resolved a real name.
+**Solution**: The email now only renders when `resolveDisplayName(user)` returns a real name; a name-less account reads as a clean "You", matching the greeting rule used elsewhere.
+**Status**: ✅ Resolved (commit `9e4507c`, merged via PR #329). This closes the "desktop sidebar account footer still prints the raw email/id" nit noted in the 2026-06-22 CTRL 2028 refactor.
+
+### Issue 44: Static SEO Pages Can Silently Drift From the Live Pricing Constant
+**Symptom**: `/pricing` was serving stale $29 copy ("all 7 briefing types") while the live in-app price was $49, discovered via live verification rather than a build failure.
+**Root Cause**: `vercel.json` rewrites `/pricing` to a static `public/pricing.html` file, which shadows the React pricing route. Static HTML has no import of the shared plan/price constants, so it can drift silently when pricing changes - unlike React pages, which read from `src/constants/planMatrix.ts` / `src/constants/billing.ts` and can't drift without a compile-time reference update.
+**Solution**: `public/pricing.html` rewritten to match the current $49 two-tier positioning (copy, meta, JSON-LD). The interactive React page (live subscribe button) moved to `/upgrade` so it's no longer shadowed by the rewrite; `/pricing` stays a static SEO surface for crawlers and hard loads.
+**Prevention**: Any `vercel.json` (or similar) rewrite to a static HTML/asset file is a spot that bypasses the shared-constants safety net. Whenever pricing, plan names, or feature lists change, explicitly check for static HTML surfaces (`public/*.html`) that mirror React copy and won't get flagged by a normal code review of the React changes.
+**Status**: ✅ Resolved (commit `190abb7`, merged via PR #331). Logged as a pattern to watch for future pricing/positioning changes.

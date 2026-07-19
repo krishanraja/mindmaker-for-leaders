@@ -2,9 +2,9 @@
 
 Step-by-step instructions to replicate CTRL from scratch.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 
-> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts are dated 2026-06-09 (a lower bound: ~80 edge functions, ~59 hooks, ~110 migrations, pgvector + pgcrypto + pg_cron); trust `CLAUDE.md` and the code for current totals. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222) that post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
+> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts verified 2026-07-19: 104 edge functions, 78 hooks, 148 migrations, pgvector + pgcrypto + pg_cron; these will keep drifting, so trust `CLAUDE.md` and the code for current totals rather than this line. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212), the main-app polish (PRs #215-222), and everything shipped since (see `CLAUDE.md`'s architecture quick-reference for the running list) that post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
 
 ---
 
@@ -16,6 +16,8 @@ Step-by-step instructions to replicate CTRL from scratch.
 - OpenAI API key (embeddings + fallback LLM + Whisper)
 - Vertex AI service account JSON (primary LLM)
 - Perplexity / Tavily / Brave API keys (briefing news providers - at least one required)
+- NewsAPI.org key (`NEWSAPI_KEY`) and Exa API key (`EXA_API_KEY`) - additional Home "worth a look" / live-headlines source providers (see `_shared/news-sources.ts`); not strictly required to boot the app but needed for full live-headlines source coverage
+- Artificial Analysis API key (`ARTIFICIALANALYSIS_API_KEY`) - frontier-model benchmark enrichment used to validate news + decision-engine model claims
 - ElevenLabs API key (briefing audio)
 - Resend API key (transactional email)
 - Stripe account + webhook secret (Edge Pro subscription + Diagnostic / Deep Context one-time)
@@ -243,9 +245,9 @@ supabase functions serve
 
 ## Step 12: Deploy
 
-**Frontend** (Lovable Cloud):
+**Frontend** (Vercel, confirmed current hosting per root `README.md`; this guide previously said "Lovable Cloud", which is stale):
 ```bash
-git push origin main  # Auto-deploys
+git push origin main  # Auto-deploys to Vercel on push to main
 ```
 
 **Edge Functions**:
@@ -308,6 +310,7 @@ supabase functions deploy \
 - `OPENAI_API_KEY` - embeddings + curation LLM
 - `PERPLEXITY_API_KEY`, `TAVILY_API_KEY`, `BRAVE_SEARCH_API` - at least one required; more = better recall
 - `ELEVENLABS_API_KEY` - audio synthesis
+- Not in the original v2 pipeline but now load-bearing for the Home live-headlines feed that the briefing's shared pool draws from (see `CLAUDE.md` "Home live-headlines pipeline"): `ARTIFICIALANALYSIS_API_KEY` (already in `.env.example`), plus `NEWSAPI_KEY` and `EXA_API_KEY` (referenced in `supabase/functions/_shared/news-sources.ts` and `live-headlines/index.ts` but currently missing from `.env.example` - worth adding there). All three were confirmed present in Supabase secrets as of the 2026-06-28 shared-pool work.
 
 **5. Optional env vars**
 - `BRIEFING_V2_ENABLED_DEFAULT=true` - flip every user to v2. Leave unset (false) to roll out per-user via `user_memory.briefing_v2_enabled`.

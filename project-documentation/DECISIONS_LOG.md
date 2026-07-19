@@ -468,3 +468,73 @@ Key architectural and product decisions with rationale.
 **Rationale**: The daily briefing, the Automator, Memory, and Voice are the daily habit and the on-ramp, so a leader should feel CTRL working for them every day without paying. Edge Pro earns its price on the one surface where depth compounds and general tools cannot follow: the decision engine. Pricing against that value ($49/month) rather than against the habit, while giving every leader a real taste of the engine (3 full weighs a month), is the honest demonstration that the paid depth is real. This SUPERSEDES the $29/month figure and the "Edge Pro gates the daily briefing / all briefing types" framing from Decision 42 (2026-05-30); the briefing is now free.
 **Trade-off**: A higher monthly price against a narrower, deeper promise (the decision engine) vs a lower price that bundled the now-free briefing. Existing $9 and $29 subscribers are grandfathered; the $9 figure is never quoted publicly.
 **Outcome**: ✅ Canonical in code (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`) and in `docs/PRICING.md`; forward-facing docs swept to $49/month and the decision-tier positioning.
+
+## Decision 61: Evidence-Corpus Sharpening - Correction Loop, Decision Memo, Context File, Capability Ladder (PR #321, 2026-07-03)
+**Date**: 2026-07-03
+**Decision**: Four moves grounded in the "AI-Native Operator" evidence corpus, all inside the existing shell (canonical: `docs/CTRL-SYSTEM-SPEC.md` section 9). (1) The correction loop is real: `verify_memory_fact`/`fix_memory_fact` log `user_corrected`/`user_rejected`/`user_disputed` events to `memory_events` with the prior value; `extract-user-context` becomes correction-aware via `_shared/correction-guard.ts` (a damping pass stops re-extracting ruled-out values); the brain's Strengthen/Fix actions go live on top of RPCs that already existed but had no caller. (2) Every completed decision weigh copies as a board-ready one-page markdown memo (no fabricated options section). (3) The context file (`my-ai-context.md`) becomes a one-click pill on MemoryCenter and Step 1 of `/context`, not a buried wizard option. (4) A capability ladder (`src/lib/capabilityLadder.ts`) derives an earned 4-stage progression (orienting/operating/calibrating/compounding) from observed behaviour only, never XP or streaks.
+**Rationale**: The brain canvas Strengthen/Fix buttons had been UI-disabled over complete backend RPCs for months (a residual gap this Corpus itself had flagged); the correction loop existed in the UI but never wrote back an auditable event; a completed decision weigh had no portable takeaway; the context export was buried; and the app had no honest measure of a leader's growing skill with the product that wasn't a vanity metric. Fixing all four inside the existing shell (no new surfaces) closes real gaps the prior reconciliation passes had already named.
+**Trade-off**: A new `memory_events` write path + a damping pass in the extractor, plus a new pure `capabilityLadder` module, vs a correction loop and a progression signal that are both actually true instead of performed.
+**Outcome**: ✅ Live. `memory-edges-derive` now has a caller (fired after each successful capture in `useMemoryWeb.submitInput`); `decisionMemo.ts` and `capabilityLadder.ts` are pure and unit-tested. Flag `BRIEFING_INCLUDE_DECISION_ALERTS` (default OFF) wires the previously-dormant `prependDecisionAlerts` into both briefing pipelines.
+
+## Decision 62: Settings Audit - One Door for Feed/Briefing Tuning, Decisions Control-Centre, Design-System Sweep (PR #325, 2026-07-04)
+**Date**: 2026-07-04
+**Decision**: Fix five drifted things on Settings against five principles (one door, polished card language, plain copy, solid footers, working interactions). Split `NewsPreferencesSheet` into a reusable `NewsPreferencesPanel` rendered both by the Home drawer and directly in Settings -> Interests, so a tune in one place shows everywhere (previously two separate tables/UIs - `news_preferences` lanes+bias vs a standalone `BriefingInterestsTab` over `briefing_interests` - could silently disagree). Fold the people/companies watchlist into that same panel and delete the standalone `BriefingInterestsTab`. Rewire the track-record "watch" cards to a real active-decision control-centre (Open/Strengthen/Archive via `useDecisionActions`, no new features, all existing doors). Fix the track-record settings row covering the page with the global drawer. Cull cliche AI-speak copy across track-record + decision surfaces. Introduce `src/components/system/surface.tsx` (`Surface`/`Eyebrow`/`SettingRow`/`SheetFooterBar`) and sweep off-token colors, emoji, and inconsistent card radii.
+**Rationale**: A tune in Settings and a tune on Home could drift because they wrote to different tables; the track-record "watch" cards read as inert observation with no action; the track-record settings row navigated to a page that the global sheet then covered; and the Settings surface had accumulated an amateur, inconsistent design language across five separate audits.
+**Trade-off**: A shared `NewsPreferencesPanel` component plus a `useDecisionActions` hook to introduce vs one door for feed tuning and real actions on watch cards, at the cost of retiring `BriefingInterestsTab` entirely.
+**Outcome**: ✅ Live. Typecheck 0 new errors, 337 unit tests pass, build + prerender green, lint clean on touched files.
+
+## Decision 63: Decision-Engine Audit Fixes - Reframe Under-Trigger Guard, Runtime Dash Sanitizer, Eval Gate in CI (PR #328, 2026-07-04)
+**Date**: 2026-07-04
+**Decision**: Fix a reframe under-trigger bug found in audit: the AI-native classifier read the bare word "agent(s)" as a strong AI signal, so a decision like "should we hire two more support agents?" was wrongly classified AI-native and skipped the reframe it needed. `supabase/functions/_shared/decision-ai-native.ts` now masks a set of human-agent phrases (support/sales/service/call-center/etc. + "agents") before the AI test runs. Add `supabase/functions/_shared/sanitize.ts` (`stripEmDashes`) and run every user-facing model-generated decision-engine string through it before storage or display; the house no-em-dash rule was previously enforced only on source code (`standards/check-standards.mjs`), never on LLM output. Wire the decision-engine eval gate into CI as a new vitest job.
+**Rationale**: A silent misclassification meant a human-hiring decision was answered as general business advice with no AI-native reframe, which is exactly the drift the product exists to prevent, and it was invisible because nothing errored. The em-dash house rule existed only as a source-code lint, so generated copy could still ship a dash the codebase itself would reject. Running the eval gate in CI (not just on demand) catches decision-engine regressions before merge instead of after.
+**Trade-off**: A regex guard that has to be maintained as new human-agent phrases surface, plus a runtime sanitizer pass on every generated string, vs an AI-native classifier and dash rule that are actually enforced everywhere they claim to be.
+**Outcome**: ✅ Live. `decision-ai-native.test.ts` covers the human-agent false-positive fix; `.github/workflows/ci.yml` runs the new vitest job.
+
+## Decision 64: Craft+Growth Audit Fixes - Clean Sidebar Footer, Collapsible Desktop Nav, /pricing Page, Decision-Peak Upgrade CTA (PR #329, 2026-07-04)
+**Date**: 2026-07-04
+**Decision**: Stop the desktop sidebar footer printing a raw email or user id for name-less accounts; it now shows a clean generic "You" (`DesktopShell.tsx`). Collapse the desktop sidebar's secondary surfaces behind a "More" toggle so the default view shows only the primary tabs. Add a first `/pricing` page. Add a decision-peak upgrade CTA (surfaced at the moment a leader hits real depth in a weigh).
+**Rationale**: The raw-email/id footer was an open minor nit flagged in an earlier redesign pass (the 2026-06-22 radical-focus refactor's "open MINOR non-blocker nits" list) and never fixed; it now is. A sidebar that shows every surface by default competes with the "radical focus" principle the rest of the app had already adopted; collapsing the secondary surfaces behind "More" matches the rest of the shell. A pricing page and an upgrade nudge at the moment of real decision depth are both growth-surface gaps the audit closed.
+**Trade-off**: A "More" toggle to maintain plus a display-name fallback path vs a sidebar that matches the rest of the app's focus principle and no leaked machine identifiers.
+**Outcome**: ✅ Live. Resolves the raw-email/id sidebar footer nit called out as open in the 2026-06-22 CTRL 2028 refactor.
+
+## Decision 65: North Star Flywheel Metric - Context In, Judgment Out, Recurring (PR #330, 2026-07-04, founder-signed)
+**Date**: 2026-07-04
+**Decision**: Instrument one internal moat metric: **flywheel leaders (this week)** = leaders who BOTH hold a real brain (5+ current facts in `user_memory`) AND weighed at least one decision in the last 7 days. Full detail, instrumentation, and the read-it-now SQL live in `project-documentation/NORTH_STAR.md`; this entry is a pointer, not a duplicate.
+**Rationale**: Either half alone (a rich brain that never drives a decision, or a decision with no brain behind it) is not the product working; both together, week over week, is the compounding loop CTRL is built to prove.
+**Trade-off**: N/A - see `NORTH_STAR.md`.
+**Outcome**: ✅ Live. Migration `20260704120000_north_star_flywheel.sql`: `north_star_flywheel` view, `north_star_daily` table, `snapshot_north_star()` function, and a daily 06:00 UTC pg_cron job.
+
+## Decision 66: Pricing Surface Split - Static /pricing for SEO, Interactive /upgrade for Checkout (PR #331, 2026-07-04)
+**Date**: 2026-07-04
+**Decision**: Keep `/pricing` as a static SEO page (`public/pricing.html`) for crawlers and hard loads; move the interactive React pricing page with the live Stripe subscribe button to `/upgrade`, and point the decision-peak nudge plus the landing/agents CTAs at `/upgrade`.
+**Rationale**: A live-verification pass (immediately after PR #329 shipped the first `/pricing` page) caught that `vercel.json` rewrites `/pricing` to the static file, which shadowed the new React route AND was still showing stale $29/"all 7 briefing types" copy across its title, meta, and JSON-LD, directly contradicting Decision 60's $49 reposition. Splitting the static SEO surface from the interactive checkout surface fixes both the shadowing bug and the stale copy in one move.
+**Trade-off**: Two pricing surfaces to keep in sync (a static HTML file and a React route) vs a crawler-friendly SEO page that cannot be shadowed by the live subscribe flow.
+**Outcome**: ✅ Live. `public/pricing.html` rewritten to the two-tier $49 positioning (meta + JSON-LD included); build/typecheck/lint/standards green.
+
+## Decision 67: Home "Shift" Cards Surface Structural AI Trends Alongside News (PRs #331-332, 2026-07-06)
+**Date**: 2026-07-06
+**Decision**: Add a distinct "shift" card type to the Home feed for structural trends (durable, slower-moving AI-native shifts) rendered alongside the existing news cards, with its own read-sheet framing ("Think through what this means for you" vs "Think it through" on a news card).
+**Rationale**: Not every AI-native signal worth a leader's attention is a headline; some of the highest-value context is a slower structural shift (a pricing-model change across a category, a capability curve bending) that a pure news feed under-weights. Giving it its own card type keeps that signal legible instead of forcing it into a news-shaped box.
+**Trade-off**: A second card type + read-sheet framing to maintain vs a feed that carries both fast news and slow structural trends without conflating them.
+**Outcome**: ✅ Live. `TrendCard` component; `newsCategory.ts` / `cockpit.ts` / `briefing.ts` types extended.
+
+## Decision 68: Public /download Lead-Capture Route Behind a Feature Flag (PR #333, 2026-07-07)
+**Date**: 2026-07-07
+**Decision**: Add a new public, no-auth route `/download` (feature-flagged) as an email-capture landing page for a "CTRL starter kit" lead magnet, backed by a new public no-auth edge function `capture-lead`.
+**Rationale**: A dedicated, flaggable capture surface lets growth run a lead-magnet experiment without touching any authed surface or risking the core product experience, and keeps the capture path server-side rather than a client-only form.
+**Trade-off**: A new public route + edge function to maintain vs a testable acquisition surface that can be flagged off without a deploy.
+**Outcome**: ✅ Live, feature-flagged. `supabase/functions/capture-lead` deployed.
+
+## Decision 69: Home Cards Get One Consistent "Read" Tap Target; Decision CTA Renamed to "Think It Through" Everywhere (PR #334, 2026-07-07)
+**Date**: 2026-07-07
+**Decision**: Unify the Home news/shift card tap target to one consistent "Read" affordance (previously inconsistent across card types). Rename the "Weigh it" decision CTA to "Think it through" across the read sheet, the Home kickstart card, and the decision-capture input.
+**Rationale**: Inconsistent tap targets across card types made Home feel less like one system; "Weigh it" was app jargon in the same family the plain-language cleanup (PRs #261-264) had already renamed elsewhere, so it was brought in line with that same plain-language rule.
+**Trade-off**: A copy/UX pass across three surfaces vs one predictable interaction pattern and consistent, plain-language decision-engine framing everywhere it appears.
+**Outcome**: ✅ Live. `DecisionCapture.tsx`, `KickstartCard.tsx`, `CardReadSheet.tsx` all carry "Think it through" / "Think this decision through".
+
+## Decision 70: PostHog Product Analytics (branch-local, 2026-07-18, not yet merged)
+**Date**: 2026-07-18
+**Decision**: Load `posthog-js` via a CDN script tag in `index.html` (no new npm dependency), tagging events `product=mm_ctrl`.
+**Rationale**: A lightweight, no-build-dependency way to get product analytics running without adding `posthog-js` to the bundle or the dependency graph.
+**Trade-off**: A CDN script tag (one more third-party network call, no bundler-level tree-shaking or typing) vs zero new dependency footprint and a fast add.
+**Outcome**: ⏳ In progress. This is a local commit on the working branch (`chore(analytics): add PostHog product analytics`, 2026-07-18); it has not yet merged to main. TODO(founder): confirm before treating this as settled/live.

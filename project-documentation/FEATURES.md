@@ -26,13 +26,11 @@ Complete feature inventory.
 
 ---
 
-## Repo at a glance (counts verified 2026-06-09; not re-counted since)
+## Repo at a glance (counts as of 2026-07-19)
 
-> **Updated 2026-06-17.** The brand redesign (PR #186), Brain engine (PRs #153-164, #187-189), and 4-kit program (PRs #190-#193) all shipped after these counts were last taken. Treat the edge-function / hook / migration totals below as **verified counts pending re-count**.
-
-- **80 Supabase edge functions** (Deno runtime; count as of 2026-06-09, re-count pending), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules; latest added: `extract-voice-profile` (PR #204)
-- **59 React hooks** under `src/hooks/` (count as of 2026-06-09; added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
-- **110 PostgreSQL migrations** applied to remote (count as of 2026-06-09; added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening; later additions include `20260615*_brain_*` and `20260616120000_memory_edges`)
+- **104 Supabase edge functions** (Deno runtime; excludes `_shared/`), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), the Kit Engine, and the `track-event` attribution proxy, plus shared modules
+- **78 React hooks** under `src/hooks/` (`.ts`/`.tsx`)
+- **148 PostgreSQL migrations** applied to remote, including `20260704120000_north_star_flywheel.sql` (the North Star flywheel metric - see below)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Brand redesign shipped LIVE** (PR #186, merge 1c01db5, 2026-06-16): globally forced dark, `ctrl-ds` instrument palette, emerald `#00D9B6`, the emerald `ctrl.` wordmark; rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. See **Redesign** below.
@@ -230,6 +228,8 @@ CTRL's memory rendered as a connected graph: the leader's facts wired to each ot
 - **Full Diagnostic** ($49 one-time): full tensions/risks/scenarios, complete prompt library (3-8 categories), priority ranking, downloadable reports.
 - **Deep Context Upgrade** ($29 one-time): enhanced company context enrichment.
 - **Full Diagnostic + Deep Context Bundle** ($69 one-time, saves $10): both above. Default upsell.
+
+> TODO(founder): the three diagnostic SKUs above are still wired in Stripe, but whether they're still actively sold/promoted (vs. Edge Pro being the primary paid surface) is unconfirmed as of this pass - verify before quoting to a buyer.
 
 **Sales Anchor - Diagnostic**: "10 minutes. Six dimensions. The provocation report your board will ask you about. $49 (cheaper than the slide deck a consultant would write to ask you the same questions)."
 
@@ -1451,6 +1451,7 @@ AI-powered tools for day-to-day leadership decision-making, available after comp
 - Cohort comparison (by role, industry, company size)
 - Quarterly index snapshots
 - Momentum tracking
+- **Product analytics (2026-07-18, shipped on a local branch as commit `43ecd6c`, not yet merged to main)**: PostHog (`posthog-js`) loaded via a CDN `<script>` tag directly in `index.html` (no new npm dependency, no build-pipeline change), initialized with a shared PostHog project's publishable client key, tagging every event `product=mm_ctrl` so the control center can separate ventures on one PostHog project.
 
 ### Export & Sharing
 - PDF export of diagnostic results
