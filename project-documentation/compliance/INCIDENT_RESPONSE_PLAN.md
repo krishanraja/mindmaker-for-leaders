@@ -1,6 +1,6 @@
 # CTRL Incident Response Plan
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-19
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 How Mindmaker detects, responds to, and reports security incidents and personal-data breaches affecting CTRL. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 14 and [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md).
@@ -36,7 +36,7 @@ Current sources:
 - User and DSAR reports (a user reporting they can see another's data is an automatic escalation).
 - Code review and migration review surfacing RLS or access issues.
 
-In progress (improves detection): comprehensive data-access audit log (data_audit_log), AI-usage audit log (ai_usage_audit), centralized log aggregation, and alerting. Tracked in [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
+In progress (improves detection): the data_audit_log and ai_usage_audit tables exist with owner-scoped RLS, but only a handful of functions write to them today; widening that coverage to comprehensive data-access and AI-usage logging, plus centralized log aggregation and alerting, is tracked in [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
 
 ## 4. Response workflow
 

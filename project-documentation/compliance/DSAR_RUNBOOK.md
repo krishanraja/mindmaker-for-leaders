@@ -69,8 +69,9 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 1. Verify identity.
 2. Use the in-app account deletion or invoke `delete-account` (cascading).
 3. Confirm Stripe-side handling (cancel subscription; financial records retained where legally required, then deleted).
-4. Note that backups expire on their own cycle (see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)); deleted data is purged from primary stores immediately and ages out of backups.
-5. Confirm to the user and log.
+4. Known gap (code-reviewed 2026-07-19, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)): `delete-account` does not currently delete `kit_builds` rows. If the requester has ever forked a lesson kit (`/kit`), manually delete their `kit_builds` rows as part of fulfillment and note this in the log (Section 7) until the code is fixed.
+5. Note that backups expire on their own cycle (see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)); deleted data is purged from primary stores immediately and ages out of backups.
+6. Confirm to the user and log.
 
 ### Restriction / Objection
 1. Verify identity.
