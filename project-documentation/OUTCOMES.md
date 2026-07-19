@@ -1,6 +1,6 @@
 # User Outcomes
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 
 > RECONCILIATION BANNER. Two corrections. (1) Positioning: outcomes now tie back to **building the AI-native version of your business** (a workflow handed to an agent, the autonomy line drawn, the AI-native version of an offer named), not "decision speed". (2) Honesty: the percentage metrics in this doc (for example "90%+ report better responses", "80%+ export to a second tool") are ASPIRATIONAL TARGETS, not measured results. Per the agent guardrails, do NOT quote them as proof in outbound. Use only the documented, grounded proof points (the kit flow exists and is live, Edge Pro is $49/month, the surfaces are no-scroll one-ask, the app is globally dark). TODO(founder): define the real AI-native success metrics and replace the placeholder percentages.
 

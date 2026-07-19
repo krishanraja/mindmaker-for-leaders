@@ -1,7 +1,7 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 **Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, the root `README.md`. Trust those over this file where they disagree.
 
 > Reconciliation note: CTRL's positioning moved from "clarity / portable AI double for leaders" to **building the AI-native version of your business.** This briefing has been reframed to the AI-native lens. The product mechanics are real and in the code; the FRAMING is what changed. Where a precise AI-native ICP / message / price was not yet settled, it is flagged `TODO(founder)` instead of invented. The old runtime endpoint `https://ctrl.themindmaker.ai/.well-known/product.json` (dated 2026-05-30) still carries the OLD positioning, so do NOT treat it as authoritative for positioning until it is regenerated. TODO(founder): regenerate `/.well-known/product.json` to the AI-native positioning.
@@ -129,8 +129,14 @@ TODO(founder): expand the objection set to the AI-native buyer once the ICP is c
 | **Product home** | https://ctrl.themindmaker.ai |
 | **Book a strategy call** | https://ctrl.themindmaker.ai/booking |
 | **Kit redemption** | https://ctrl.themindmaker.ai/kit |
+| **Edge Pro upgrade (live checkout)** | https://ctrl.themindmaker.ai/upgrade |
+| **Pricing (public info page, no checkout)** | https://ctrl.themindmaker.ai/pricing |
 
 Production URL is **https://ctrl.themindmaker.ai** (never `leaders.themindmaker.ai`).
+
+**Pricing surface (2026-07-04):** `/pricing` is a static, SEO-facing marketing page with correct $49/month two-tier copy but no live subscribe button. `/upgrade` is the interactive page with the actual Stripe checkout (`useEdgeSubscription().subscribe()`). When telling a leader how to actually subscribe to Edge Pro, send them to `/upgrade`, not `/pricing`.
+
+**New top-of-funnel page (2026-07-07):** `/download` is a one-screen, email-capture landing page offering the CTRL starter kit to a cold visitor. It is feature-flagged (`FF.publicCapture`, default off unless enabled) so treat it as an available-but-not-guaranteed capability, not a standing funnel step, unless you have confirmed it is live.
 
 ---
 
@@ -174,3 +180,12 @@ https://ctrl.themindmaker.ai/auth?utm_source=email&utm_medium=outbound&utm_campa
 - Use **"green / amber / red autonomy line"** for the Agentic Org Chart kit.
 - Keep sentences short. Active voice. No hype, no FOMO.
 - Pricing claims must match section 5; when in doubt, trust the code (`edge-pricing.ts` / `billing.ts`).
+- Route someone who wants to actually subscribe to Edge Pro to `/upgrade` (live checkout). `/pricing` is informational only.
+
+---
+
+## 10. Internal note: what "the product working" means (not a customer claim)
+
+Founder-signed (2026-07-04) internal instrumentation, source `NORTH_STAR.md`: the one metric that proves CTRL is working is the **flywheel** - a leader who both (a) holds a real brain (5+ current facts in Memory) and (b) weighed at least one decision in the last 7 days. Context in, judgment out, recurring. Neither half alone counts: a rich brain nobody acts on is a filing cabinet; a decision with no context behind it is a generic answer.
+
+This is internal product-truth, not a sales line. There is **no disclosed user count, revenue figure, or adoption percentage** anywhere in the codebase or docs. Do not construct or imply an adoption/traction number in outbound copy; if a claim needs one, flag it `TODO(founder)` rather than inventing it.

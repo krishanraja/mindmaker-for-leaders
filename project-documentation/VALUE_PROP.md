@@ -1,6 +1,6 @@
 # Value Propositions
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 
 > RECONCILIATION BANNER. CTRL's positioning is now **building the AI-native version of your business**, not "decision speed". The feature-level value props below (Memory Web, Briefing, the Automator, the Decision engine) are accurate as MECHANICS, but the binding promise is no longer "decide faster"; it is "make your business more AI-native". The product is globally DARK (not light). Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); building Automator skills is FREE for now. The one-time diagnostic SKUs ($49/$29/$69) are wired in Stripe but flagged TODO(founder) under the repositioning. Lead with the AI-native frame from `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`. TODO(founder): rewrite the binding promise and the audience value props to AI-native.
 

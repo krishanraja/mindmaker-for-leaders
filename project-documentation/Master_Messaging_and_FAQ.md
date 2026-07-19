@@ -1,7 +1,7 @@
 # CTRL & Mindmaker Master Messaging & FAQ
 *Product marketing, sales, content, and outbound reference*
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 
 > RECONCILIATION BANNER. The Mindmaker founder narrative, the enterprise-buyer pain, the Builder Economy theme, and the Sprint description are all still accurate and largely ON-positioning (the "AI-native competitors move faster by default" and "everyone will build" themes align with the current CTRL positioning). The one correction: the CTRL product description in PART 3 below was written as "a portable AI memory web / context layer". CTRL's positioning is now **building the AI-native version of your business** (the memory web is the substrate, not the headline). The pricing table (PART 5) is accurate: Edge Pro $49/month (the decision tier), the daily briefing and Automator builds free; the one-time diagnostic SKUs are flagged TODO(founder) under the repositioning. Canonical: `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`.
 
@@ -64,7 +64,7 @@ We give CTRL away free for the core experience (Memory Web, Context Export, basi
 
 **The CTRL stack at a glance (today):**
 - React 18 + TypeScript + Vite + Tailwind + shadcn/ui front-end. Desktop ships a unified desktop-native shell (sticky top bar + optional right rail + Cmd/Ctrl+K Command Palette) instead of stretched mobile markup.
-- Supabase backend: PostgreSQL with pgvector + pgcrypto + pg_cron, **80 edge functions** (Deno, incl. `generate-skill-export` and the `decision-engine` trio), **59 React hooks**, **110 migrations** applied
+- Supabase backend: PostgreSQL with pgvector + pgcrypto + pg_cron, **104 edge functions** (Deno, incl. `generate-skill-export` and the `decision-engine` trio), **78 React hooks**, **148 migrations** applied
 - AI: Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback, OpenAI Whisper for voice, ElevenLabs for audio, OpenAI `text-embedding-3-small` for the briefing pipeline
 - Payments: Stripe (signature-verified, idempotent webhooks)
 - Email: Resend

@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 
 > This is a decision record kept on purpose. Architectural decisions below remain accurate. Two product decisions are now SUPERSEDED by later ones: any early decision framing CTRL as "Clarity for Leaders / decision speed" is superseded by the LOCKED AI-native positioning (2026-06-19: build/orchestrate/productize/go-to-market the AI-native version of your business), and any decision specifying the light/Apple design system is superseded by the globally dark `ctrl-ds` instrument palette (PR #186). Canonical current sources: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
 
