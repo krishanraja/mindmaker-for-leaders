@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-19
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).
@@ -10,7 +10,9 @@ DPA status legend:
 - Standard terms: we rely on the provider's published DPA / data terms incorporated by their standard terms of service, but we have not yet executed and filed a countersigned copy.
 - To confirm: relationship in use; DPA review/signature is an open action item.
 
-As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed DPAs and SCCs with all subprocessors is an in-progress action tracked in [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md). The table reflects current honest status, not an aspiration.
+As of 2026-07-19, none of the DPAs below are marked "Signed". Formalizing signed DPAs and SCCs with all subprocessors is an in-progress action tracked in [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md). The table reflects current honest status, not an aspiration.
+
+This review (2026-07-19) reconciled the register against the actual API keys and outbound integrations referenced in `supabase/functions/` and `index.html`. Twelve rows were added that were in code but missing from the register (see the "Added 2026-07-19" note on each); the Perplexity, Brave Search, and NewsAPI.org rows were also widened to reflect that the Decision Engine (not just the Daily Briefing) now calls them. Nothing was removed; no existing DPA status was upgraded.
 
 ## Register
 
