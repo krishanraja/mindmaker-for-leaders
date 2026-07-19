@@ -1,6 +1,6 @@
 # CTRL Data Retention Policy
 
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-19 (updated 2026-07-19)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Defines how long CTRL keeps each category of personal data and how it is deleted. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 12 and [ROPA.md](./ROPA.md).
@@ -20,7 +20,7 @@ Defines how long CTRL keeps each category of personal data and how it is deleted
 | Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` (pg_cron) enforces per-user retention window; `delete-account` cascade on closure |
 | Conversation / chat messages | Life of account (subject to any configured retention) | `delete-account` cascade; retention cleanup where applicable |
 | Assessment / diagnostic responses | Life of account | `delete-account` cascade |
-| Kit builds / lesson-kit inputs (`kit_builds.intake`) | Life of account | `delete-account` cascade (confirm cascade covers `kit_builds`, flagged for review) |
+| Kit builds / lesson-kit inputs (`kit_builds.intake`) | Life of account | Intended: `delete-account` cascade. CONFIRMED GAP (code-reviewed 2026-07-19): `kit_builds` is not among `delete-account`'s explicit per-table deletes or its comprehensive `sweepTables` list, so lesson-kit intake currently survives an account deletion. This needs a code fix (add `kit_builds` to the delete-account sweep), tracked as an open action below, not merely "to confirm." |
 | Daily-briefing preferences and interests | Life of account | `delete-account` cascade |
 | Generated briefings | Rolling window per briefing settings; not retained indefinitely | Scheduled cleanup / superseded by new briefings |
 | Voice transcripts | Treated as user content; life of account or per Memory retention if stored as Memory | `delete-account` cascade; retention cleanup where applicable |
@@ -34,7 +34,7 @@ Where a row says "in progress," see [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_R
 
 ## Deletion mechanisms in detail
 
-- Account deletion: `delete-account` edge function performs a cascading delete of the user's records across CTRL tables. Triggered by the user in-app or by an operator fulfilling an erasure DSAR (see [DSAR_RUNBOOK.md](./DSAR_RUNBOOK.md)).
+- Account deletion: `delete-account` edge function performs a cascading delete of the user's records across CTRL tables. Triggered by the user in-app or by an operator fulfilling an erasure DSAR (see [DSAR_RUNBOOK.md](./DSAR_RUNBOOK.md)). Known gap (see the Kit builds row above): `kit_builds` is not currently covered, so an erasure request for a user who forked a lesson kit is not fully complete today; until the code is fixed, an operator fulfilling an erasure DSAR should manually delete the requester's `kit_builds` rows and note this in the DSAR log.
 - Scheduled retention enforcement: `cleanup-expired-data` runs on pg_cron and removes Memory data older than the user's `user_memory_settings.retention_days` and other time-bound records.
 - Stripe: subscription objects are canceled; card data is never stored by Mindmaker (tokenized by Stripe).
 

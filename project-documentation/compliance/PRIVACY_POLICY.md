@@ -1,7 +1,7 @@
 # CTRL Privacy Policy
 
 Effective date: 2026-06-02
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-19 (updated 2026-07-19)
 
 This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://ctrl.themindmaker.ai. CTRL is an executive leadership-clarity tool. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 
@@ -56,11 +56,11 @@ Where we rely on consent, you may withdraw it at any time (see Section 9) withou
 
 ## 5. Special note on AI processing
 
-CTRL sends your inputs (chat, business context, assessment answers, briefing topics, and voice transcripts) to third-party AI providers to generate responses, transcriptions, and embeddings (see [SUBPROCESSORS.md](./SUBPROCESSORS.md)). We instruct these providers to act as processors on our behalf. We do not use your content to train our own foundation models. Provider-side training is governed by each provider's terms; we rely on their enterprise/API terms, which generally exclude API content from model training. Confirming and documenting this contractually with each provider via a signed DPA is an in-progress action (see [SUBPROCESSORS.md](./SUBPROCESSORS.md) and [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md)).
+CTRL sends your inputs (chat, business context, assessment answers, briefing topics, decision statements, and voice transcripts) to third-party AI providers to generate responses, transcriptions, embeddings, and (for a decision you weigh) independent verification and cross-examination of the claims in it (see [SUBPROCESSORS.md](./SUBPROCESSORS.md)). This includes Google Cloud Vertex AI/Gemini and OpenAI (general use), and Anthropic and xAI (decision weighing/verification). We instruct these providers to act as processors on our behalf. We do not use your content to train our own foundation models. Provider-side training is governed by each provider's terms; we rely on their enterprise/API terms, which generally exclude API content from model training. Confirming and documenting this contractually with each provider via a signed DPA is an in-progress action (see [SUBPROCESSORS.md](./SUBPROCESSORS.md) and [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md)).
 
 ## 6. How we share your data
 
-We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, Apollo, Google (OAuth and Sheets), and Vercel.
+We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), Anthropic, xAI, ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Exa, NewsAPI.org, Artificial Analysis, BuiltWith, Tranco, PDL (People Data Labs), Jina, Apollo, Google (OAuth and Sheets), PostHog, and Vercel.
 
 ## 7. Voice and audio
 
@@ -99,7 +99,7 @@ Mindmaker does not sell personal information and does not share it for cross-con
 
 ## 11. Cookies and similar technologies
 
-CTRL uses strictly necessary cookies and local/session storage to keep you signed in and to operate the application (for example, authentication tokens managed by Supabase Auth). We do not use third-party advertising cookies. To the extent any non-essential analytics are used, they are limited to first-party, minimized usage events under our legitimate interest in improving the Service, and we will surface consent controls where required by law.
+CTRL uses strictly necessary cookies and local/session storage to keep you signed in and to operate the application (for example, authentication tokens managed by Supabase Auth). We do not use third-party advertising cookies. We use PostHog, a third-party product analytics provider, to understand how CTRL is used (page views and navigation); see [SUBPROCESSORS.md](./SUBPROCESSORS.md) for what is shared. This analytics use is under our legitimate interest in improving the Service, and we will surface consent controls where required by law.
 
 ## 12. Data retention
 

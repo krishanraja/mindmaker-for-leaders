@@ -1,6 +1,6 @@
 # CTRL Information Security Policy (ISMS-lite)
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-19
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 Applies to: CTRL (https://ctrl.themindmaker.ai), its codebase, Supabase backend (ref bkyuxvschuwngtcdhsyg), Vercel frontend, and all personnel/contractors with access.
 
@@ -57,7 +57,7 @@ No payment card numbers are stored (tokenized by Stripe). [IN PLACE]
 - Structured JSON edge-function logging; secrets excluded from logs. [IN PLACE]
 - Stripe webhook signature verification plus idempotency table. [IN PLACE]
 - Rate limiting on AI endpoints. [IN PLACE]
-- Comprehensive data-access audit log (data_audit_log) and AI-usage audit log (ai_usage_audit). [PLANNED / IN PROGRESS]
+- Comprehensive data-access audit log (data_audit_log) and AI-usage audit log (ai_usage_audit). [PARTIAL] The tables and owner-scoped RLS exist and a handful of functions write to them (delete-account, cleanup-expired-data for data_audit_log; generate-skill-export, free-skill-export, kit-compose, extract-voice-profile for ai_usage_audit); comprehensive coverage across all data-access and AI-call paths is [PLANNED / IN PROGRESS].
 - Centralized log aggregation with retention and alerting. [PLANNED]
 
 ## 8. Vulnerability management

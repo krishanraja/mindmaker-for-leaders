@@ -46,9 +46,12 @@ This review (2026-07-19) reconciled the register against the actual API keys and
 | PostHog | Client-side product analytics, added [2026-07-19] (`index.html`); a shared cross-venture PostHog project, events tagged with the `product: 'mm_ctrl'` super-property | Page URLs/paths, device and browser metadata, IP address (used transiently for geolocation), timestamps. `person_profiles` is configured `identified_only`; the codebase does not currently call `posthog.identify()`, so tracking is presently anonymous/session-level, but the capability to attach an identified profile exists if `identify()` is added later | US (PostHog US Cloud: us.i.posthog.com / us-assets.i.posthog.com) | To confirm | SCCs (to confirm/sign) |
 
 Notes:
-- Search/enrichment providers (Perplexity, Tavily, Brave, Jina) primarily receive briefing topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
-- Apollo receives company-level data used for enrichment; treat as processing of business context.
+- Search/enrichment providers (Perplexity, Tavily, Brave, Exa, NewsAPI.org, Jina) primarily receive briefing topics/queries or decision-statement text rather than direct account identifiers, but that text can be personal where you have personalized your interests or written a decision statement about your business; they are treated as subprocessors.
+- Apollo, BuiltWith, PDL, and Tranco receive company/domain-level data used for enrichment; treat as processing of business context, not direct identity.
+- Artificial Analysis, GDELT, Hacker News (Algolia), and the curated RSS allowlist are listed for transparency even though our current integration sends them no personal data (a generic fixed query or a locally-matched benchmark index); if that changes (e.g. a personalized query is ever added), this row must be revisited and Section 6 of the Privacy Policy updated.
+- PostHog is a new addition (product analytics) and has not yet had a legal/DPA review; see the Open actions below.
 - Card data is never stored by Mindmaker; Stripe tokenizes it.
+- Fireflies was evaluated for this review and is NOT included: `body.source` on the Decision Engine intake accepts the literal string `"fireflies"` as one of four source labels (`advisor`, `capture`, `voice`, `fireflies`), but there is no Fireflies API key, no outbound call to a Fireflies endpoint, and no other integration with Fireflies the company anywhere in the codebase. It is a label only; add a row here if a real Fireflies integration is ever built.
 
 ## How we notify customers of changes
 
@@ -60,7 +63,9 @@ Notes:
 ## Open actions (human/legal)
 
 - Execute and file signed DPAs and SCCs with each subprocessor above.
-- Capture, for each AI provider, written confirmation that API content is excluded from model training.
+- Capture, for each AI provider, written confirmation that API content is excluded from model training. This now includes Anthropic and xAI in addition to Google/OpenAI.
 - Record each provider's sub-subprocessor list and security posture (e.g., the provider's own SOC 2 report) as vendor evidence.
+- PostHog (added 2026-07-19): review and sign/accept its DPA, confirm data-retention settings on the PostHog project (`phc_uNKPzXzC9QCgkZo2VcTmpwVTNuKtZpghXdeuA5ciBBaz`), and decide whether `person_profiles: 'identified_only'` combined with any future `posthog.identify()` call requires an update to the cookie/analytics disclosure in [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 11. This is founder/legal confirmation, not something resolvable from code alone.
+- Confirm Artificial Analysis, GDELT, Hacker News (Algolia), and Tranco's own hosting locations and terms of use for a business/commercial (not purely research) integration; several are academic/community services without a standard commercial DPA.
 
 See [CONTROL_MATRIX.md](./CONTROL_MATRIX.md) (CC9 / vendor management) for status tracking.

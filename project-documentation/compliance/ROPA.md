@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-19 (updated 2026-07-19)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://ctrl.themindmaker.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
@@ -118,13 +118,13 @@ This record describes the processing activities Mindmaker carries out as control
 - Security: structured JSON logging with CI gate against console.log; no secrets in logs.
 
 ### L. Operations sync and product analytics
-- Personal data: minimized account and usage data; ops sync to Google Sheets.
-- Data subjects: registered users.
+- Personal data: minimized account and usage data (ops sync to Google Sheets); page URLs/paths, device/browser metadata, IP address, and timestamps (product analytics via PostHog, added 2026-07-19).
+- Data subjects: registered users; site visitors generally (PostHog pageview/pageleave tracking runs before login too).
 - Lawful basis: legitimate interests (Art 6(1)(f)).
-- Recipients/subprocessors: Google Sheets (ops sync, US); Supabase (US).
+- Recipients/subprocessors: Google Sheets (ops sync, US); PostHog (product analytics, US); Supabase (US).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: minimized; reviewed periodically.
-- Security: scoped service credentials, TLS.
+- Retention: minimized; reviewed periodically. PostHog's own data-retention setting has not yet been confirmed (see [SUBPROCESSORS.md](./SUBPROCESSORS.md) open actions).
+- Security: scoped service credentials, TLS; PostHog `person_profiles` set to `identified_only` (no persistent identified profile unless the app later calls `identify()`, which it does not today).
 
 ### M. Lesson-kit builds
 - Personal data: org/team/workflow intake provided when forking a lesson kit (boxes, pathway, profile, time sinks, guardrails, grind, what work involves, team maturity), stored in `kit_builds.intake`.
@@ -132,8 +132,17 @@ This record describes the processing activities Mindmaker carries out as control
 - Lawful basis: contract (Art 6(1)(b)).
 - Recipients/subprocessors: Supabase (US); LLM providers for composition (see Activity E).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: life of account; deleted on account deletion (confirm delete-account cascade covers `kit_builds`, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)).
+- Retention: life of account; intended deletion on account deletion, but this is a CONFIRMED GAP as of 2026-07-19: `delete-account` does not currently delete `kit_builds` rows (see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)).
 - Security: RLS owner-scoping, TLS. Note: kit_builds.intake rows created before PR #193 are truncated (the back half of the cascade was not captured); fully captured thereafter.
+
+### N. Decision Engine (weighing/pressure-testing a business decision)
+- Personal data: the decision statement or business case text you submit, and the claims/evidence derived from it.
+- Data subjects: registered users.
+- Lawful basis: contract (Art 6(1)(b)).
+- Recipients/subprocessors: Anthropic Claude (primary reasoning/cross-examine, US), OpenAI GPT-4o (fallback reasoning, US), Google Gemini and xAI Grok (additional cross-examine panel judges, US); Perplexity, Exa, Brave Search, NewsAPI.org (evidence/web search on the claim text, US); BuiltWith, Tranco, PDL (company/domain enrichment when a business or domain is named in the claim, US/EU); Artificial Analysis (model-benchmark validation of AI-capability claims, matched locally, no user content sent, US); Supabase (US).
+- Transfers: EU/UK to US (and to Tranco in the EU), SCCs (in progress); see [SUBPROCESSORS.md](./SUBPROCESSORS.md).
+- Retention: `decision_cases`/`decision_claims`/`decision_evidence`/`decision_tensions`/`decision_alerts`/`decision_events` for life of account; deleted on account deletion (these tables are in `delete-account`'s `sweepTables` list).
+- Security: RLS owner-scoping, TLS, rate limiting on AI endpoints.
 
 ## General security measures (all activities)
 

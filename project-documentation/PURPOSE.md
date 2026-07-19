@@ -1,6 +1,6 @@
 # Purpose
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-19 (routine reconciliation pass).
 
 > Reconciliation note: this doc was written for the prior "decision-speed / portable AI double / zero-context tax" positioning. The current LOCKED positioning is **building the AI-native version of your business** (see `docs/MAIN-APP-POLISH-SPEC.md` section 0, and the root `README.md`). The product mechanics described below (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the kits) are real and in the code; the FRAMING has moved to AI-native. The "What CTRL Is" and "Core Problem" sections have been reframed. Some downstream audience/measurement sections still carry the old decision-speed language; read them through the AI-native lens and treat any undecided AI-native specifics as `TODO(founder)`.
 
