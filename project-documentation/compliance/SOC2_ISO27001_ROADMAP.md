@@ -1,6 +1,6 @@
 # SOC 2 and ISO/IEC 27001:2022 Roadmap
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-19
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 A realistic path for CTRL to a SOC 2 report and, if pursued, an ISO/IEC 27001:2022 certificate. CTRL holds neither today. This roadmap is honest about what code can deliver and what requires human, vendor, or legal action.
@@ -31,7 +31,7 @@ ISO adds management-system clauses (4-10): scope, leadership, planning, internal
 
 ### Phase 1 - Remediate the known gaps (weeks 2-12)
 Close the [PLANNED]/[PARTIAL] items in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) and [CONTROL_MATRIX.md](./CONTROL_MATRIX.md):
-- Ship data_audit_log and ai_usage_audit (in progress).
+- Widen data_audit_log and ai_usage_audit write coverage to every data-access and AI-call path (the tables, RLS, and a handful of writers already exist; in progress).
 - Enforce MFA (users + admin consoles).
 - Stronger password policy + HaveIBeenPwned check.
 - Centralized log aggregation with retention and alerting.

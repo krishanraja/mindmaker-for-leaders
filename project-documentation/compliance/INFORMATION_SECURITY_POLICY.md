@@ -67,7 +67,7 @@ No payment card numbers are stored (tokenized by Stripe). [IN PLACE]
 
 ## 9. Vendor / subprocessor management
 
-- Subprocessors are inventoried in [SUBPROCESSORS.md](./SUBPROCESSORS.md). [IN PLACE]
+- Subprocessors are inventoried in [SUBPROCESSORS.md](./SUBPROCESSORS.md), reconciled against the codebase's actual API keys and integrations on 2026-07-19. [IN PLACE]
 - Signed DPAs and SCCs with all subprocessors, plus collection of vendor security evidence (their SOC 2 reports), confirmation that AI providers exclude API content from training. [PLANNED]
 
 ## 10. Business continuity, backup, and disaster recovery
