@@ -1,10 +1,10 @@
 # User Outcomes
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass; see correction below).
 
-> RECONCILIATION BANNER. Two corrections. (1) Positioning: outcomes now tie back to **building the AI-native version of your business** (a workflow handed to an agent, the autonomy line drawn, the AI-native version of an offer named), not "decision speed". (2) Honesty: the percentage metrics in this doc (for example "90%+ report better responses", "80%+ export to a second tool") are ASPIRATIONAL TARGETS, not measured results. Per the agent guardrails, do NOT quote them as proof in outbound. Use only the documented, grounded proof points (the kit flow exists and is live, Edge Pro is $49/month, the surfaces are no-scroll one-ask, the app is globally dark). TODO(founder): define the real AI-native success metrics and replace the placeholder percentages.
+> RECONCILIATION BANNER. Three corrections. (1) Positioning: outcomes now tie back to **building the AI-native version of your business** (a workflow handed to an agent, the autonomy line drawn, the AI-native version of an offer named), not "decision speed". (2) Honesty: the percentage metrics in this doc (for example "90%+ report better responses", "80%+ export to a second tool") are ASPIRATIONAL TARGETS, not measured results. Per the agent guardrails, do NOT quote them as proof in outbound. Use only the documented, grounded proof points (the kit flow exists and is live, Edge Pro is $49/month, the surfaces are no-scroll one-ask, the app is globally dark). TODO(founder): define the real AI-native success metrics and replace the placeholder percentages. (3) North Star correction (2026-07-26): this file's line below calling AI-native progress "the North Star" predates the actual, founder-signed North Star metric. CTRL's North Star is now the instrumented **flywheel** (context in, judgment out, recurring): a leader who both holds a real brain (5+ current facts) and weighs a decision in the same week. See `NORTH_STAR.md` for the definition and how it's measured; "getting more AI-native, move by move" is the qualitative story the metric is meant to prove, not a separate North Star.
 
-Expected outcomes for CTRL users, reframed to the AI-native positioning. The North Star is the leader's business getting more AI-native, move by move.
+Expected outcomes for CTRL users, reframed to the AI-native positioning. The North Star metric is the flywheel (see `NORTH_STAR.md`); AI-native progress, move by move, is the story that metric tells.
 
 ---
 

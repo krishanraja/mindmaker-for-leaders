@@ -2,6 +2,8 @@
 
 > **PERMANENT PROJECT KNOWLEDGE** - These instructions define how the AI assistant must behave for this project. Reference this document for all development decisions.
 
+> **Drift note (2026-07-26):** this doc is dated 2026-05-13 ("Version 1.2.0, post Phase 8") and predates Phases 9-17+ (Decision Engine, Brain Engine, the kit program, three redesign waves, the correction loop, North Star). The engineering principles below (systems-thinking, anti-fragile returns, no-silent-breakage, diagnostic protocol) still hold and were not rewritten. Two load-bearing, CI-enforced house conventions from `CLAUDE.md` are NOT yet reflected here and should be treated as binding alongside this file: **no em dashes in any copy** (enforced by a standards CI job and a sanitizer on LLM-generated output) and **plain language, never app jargon** (a leader should never have to learn CTRL's own vocabulary). The folder-structure list in this doc (`/components /lib /hooks /utils /types /contexts /pages /integrations`) is also thinner than the real, much deeper `src/` tree; treat it as illustrative, not literal.
+
 ---
 
 ## 0. PURPOSE

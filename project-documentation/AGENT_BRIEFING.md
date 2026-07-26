@@ -1,10 +1,10 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass: added the diagnostic-SKU unreachability caveat and the `/pricing` + `/upgrade` links).
 **Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, the root `README.md`. Trust those over this file where they disagree.
 
-> Reconciliation note: CTRL's positioning moved from "clarity / portable AI double for leaders" to **building the AI-native version of your business.** This briefing has been reframed to the AI-native lens. The product mechanics are real and in the code; the FRAMING is what changed. Where a precise AI-native ICP / message / price was not yet settled, it is flagged `TODO(founder)` instead of invented. The old runtime endpoint `https://ctrl.themindmaker.ai/.well-known/product.json` (dated 2026-05-30) still carries the OLD positioning, so do NOT treat it as authoritative for positioning until it is regenerated. TODO(founder): regenerate `/.well-known/product.json` to the AI-native positioning.
+> Reconciliation note: CTRL's positioning moved from "clarity / portable AI double for leaders" to **building the AI-native version of your business.** This briefing has been reframed to the AI-native lens. The product mechanics are real and in the code; the FRAMING is what changed. Where a precise AI-native ICP / message / price was not yet settled, it is flagged `TODO(founder)` instead of invented. The runtime endpoint `https://ctrl.themindmaker.ai/.well-known/product.json` was regenerated 2026-07-26 to the AI-native positioning and the $49/mo pricing; TODO(founder): confirm the exact final public tagline/one-liner wording there (it currently carries a working version, flagged as such in the file's own `positioning_note` field).
 
 ---
 
@@ -91,13 +91,13 @@ The AI-native long pitch is not yet written tight enough to ship in outbound. Us
 |---|---|---|
 | **Free / Core** | $0 | Yes (free tier is the kit side-door + Memory Web + the Automator build, which is free for now) |
 | **Edge Pro** | $49/month | Yes - canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`), surfaced via `src/constants/billing.ts` |
-| **Full Diagnostic** | $49 one-time | Wired in `create-diagnostic-payment` (a Stripe price id), but this is an old-positioning SKU |
-| **Deep Context Upgrade** | $29 one-time | Wired in `create-diagnostic-payment` |
-| **Diagnostic + Deep Context Bundle** | $69 one-time | Wired in `create-diagnostic-payment` / `create-stripe-prices` |
+| **Full Diagnostic** | $49 one-time | Wired in `create-diagnostic-payment`, but NOT reachable from any live route today (`/diagnostic` redirects to `/dashboard`; no UI calls this flow) - do not offer as a checkout link |
+| **Deep Context Upgrade** | $29 one-time | Same as above: wired in Stripe, not reachable in the live app |
+| **Diagnostic + Deep Context Bundle** | $69 one-time | Same as above: wired in Stripe, not reachable in the live app |
 
 **What is settled:** Edge Pro is $49/month. Free is a real daily instrument: Memory, Voice, the Kit program, unlimited Automator skill builds, the daily personalised briefing, and 3 decision weighs a month are all FREE. Edge Pro is the decision tier: it removes the 3-weighs cap (unlimited), adds a multi-model cross-examination of every decision, decision watch, Edge artifacts + drafting + email delivery, and the live MCP pull of your built skills into any AI (`list_skills` / `get_skill`). The daily briefing is intentionally free (the daily habit / on-ramp), not a paid feature. Pricing constants are canonical in `src/constants/billing.ts` + the shared edge-pricing module; the app reads them, so trust the code over any doc.
 
-**TODO(founder):** confirm whether the one-time Full Diagnostic ($49) / Deep Context ($29) / Bundle ($69) SKUs survive the AI-native repositioning, and confirm the Bootcamp/Portfolio engagement bands, before quoting them. They are real in the Stripe plumbing today but were defined under the old positioning.
+**TODO(founder):** confirm whether the one-time Full Diagnostic ($49) / Deep Context ($29) / Bundle ($69) SKUs survive the AI-native repositioning, and confirm the Bootcamp/Portfolio engagement bands, before quoting them. They are real in the Stripe plumbing today but are not currently reachable from any live route, and were defined under the old positioning - do not offer them as checkout links.
 
 **Pricing guardrails:** Edge Pro is $49/month. Do not quote $9/month (legacy grandfathered price, never quoted publicly). No em dashes. No invented prices.
 
@@ -127,6 +127,8 @@ TODO(founder): expand the objection set to the AI-native buyer once the ICP is c
 |---|---|
 | **Sign up / log in** | https://ctrl.themindmaker.ai/auth |
 | **Product home** | https://ctrl.themindmaker.ai |
+| **Pricing (static SEO page, for hard loads/crawlers)** | https://ctrl.themindmaker.ai/pricing |
+| **Upgrade to Edge Pro (interactive, live subscribe button)** | https://ctrl.themindmaker.ai/upgrade |
 | **Book a strategy call** | https://ctrl.themindmaker.ai/booking |
 | **Kit redemption** | https://ctrl.themindmaker.ai/kit |
 

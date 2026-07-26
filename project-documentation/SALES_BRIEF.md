@@ -2,7 +2,7 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass: fixed the free-tier row, which contradicted `docs/PRICING.md`; flagged the diagnostic SKUs as unreachable in the live app; added `/pricing` + `/upgrade`).
 
 > RECONCILIATION BANNER (read before using any line below). CTRL's positioning is now **building the AI-native version of your business**, NOT "decision speed / a portable AI double / the zero-context tax". Most of the prose below (the one-liner, the email angles, the decision-speed framing, the "Apple-like / white space" visual claims) is OFF-POSITIONING and was written for the prior product. It is kept here for the feature mechanics, which are still accurate, but you must NOT ship its hooks as-is. Lead with the AI-native positioning and the reframe rule from `AGENT_BRIEFING.md` (the current canonical sales entry point) and `docs/MAIN-APP-POLISH-SPEC.md` section 0. Visual fact: CTRL is globally DARK (ctrl-ds palette, emerald `#00D9B6`, the BrandLockup), never light / "Apple-white". Pricing fact: Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); the one-time diagnostic SKUs are flagged TODO(founder). TODO(founder): rewrite this brief's hooks, email angles, and one-liner to the AI-native positioning; until then prefer `AGENT_BRIEFING.md`.
 
@@ -197,11 +197,11 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 
 | Tier | Price | What you get |
 |------|-------|--------------|
-| **Free / Core** | $0 | Memory Web, Context Export, Onboarding, Daily Briefing (basic), Decision Advisor, Meeting Prep, Prompt Coach, Edge profile preview |
-| **Full Diagnostic** | $49 one-time | Full tensions/risks/scenarios, complete thinking tools library |
-| **Deep Context Upgrade** | $29 one-time | Enhanced company-context enrichment |
-| **Diagnostic + Deep Context Bundle** | $69 one-time | Both above. Saves $10. The default upsell. |
-| **Edge Pro** | $49/month | Unlimited decision weighs + multi-model cross-examination + decision watch, unlimited Edge artifacts, drafting, email delivery, the live MCP pull of your built skills, Custom Voice Export |
+| **Free / Core** | $0 | Memory Web (read-write), Voice Profile capture, the full Kit program, unlimited Automator skill builds + exports, the daily personalised Briefing, and 3 decision weighs/month (per `docs/PRICING.md`, the canonical plan matrix - this replaces the older "Decision Advisor / Meeting Prep / Prompt Coach preview" description, which undersold the free tier and omitted its actual cap) |
+| **Full Diagnostic** | $49 one-time | Wired in Stripe, but NOT currently reachable from any live route (`/diagnostic` redirects to `/dashboard`) - do not offer as a checkout link |
+| **Deep Context Upgrade** | $29 one-time | Same as above: wired in Stripe, not reachable in the live app |
+| **Diagnostic + Deep Context Bundle** | $69 one-time | Same as above: wired in Stripe, not reachable in the live app |
+| **Edge Pro** | $49/month | Unlimited decision weighs + multi-model cross-examination + decision watch, unlimited Edge artifacts, drafting, email delivery, the live MCP pull of your built skills, Custom Voice Export. Live checkout: `/upgrade`; static SEO pricing page: `/pricing`. |
 | **Bootcamp** (Teams) | $15K-$50K | 4-hour exec sprint + pilot charter |
 | **Portfolio** (Partners) | $5K-$25K | Heatmap + offer pack |
 
@@ -312,6 +312,8 @@ Download the ZIP from the preview sheet. The bundle includes a `03-install-guide
 ## Key URLs
 
 - **Product**: ctrl.themindmaker.ai
+- **Pricing (static SEO page)**: ctrl.themindmaker.ai/pricing
+- **Upgrade to Edge Pro (live checkout)**: ctrl.themindmaker.ai/upgrade
 - **Booking**: Calendly integration for strategy calls (linked in product footer)
 
 ---

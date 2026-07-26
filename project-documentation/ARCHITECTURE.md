@@ -2,9 +2,11 @@
 
 Complete system architecture and data flow documentation.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass: re-counted edge functions/hooks/migrations, fixed dead component/page references, and added the note below for everything shipped after 2026-06-21).
 
-> **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. General-business inputs are reframed into the AI-native lens. The canonical product/build specs are `docs/MAIN-APP-POLISH-SPEC.md` (the main app) and `docs/KIT-REDESIGN-SPEC.md` (the lesson kits); trust those + the root `README.md` + `CLAUDE.md` over this doc where they disagree. This file is technically current on the dark redesign, the brain engine, the routes, and the kit engine plumbing; the LATEST layer it predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing pipeline, the brain-canvas squash fix, and the no-scroll/one-ask sweep). For those, see the two specs and `CLAUDE.md`. The counts below are dated 2026-06-09 and are a lower bound pending re-count.
+> **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. General-business inputs are reframed into the AI-native lens. The canonical product/build specs are `docs/MAIN-APP-POLISH-SPEC.md` (the main app) and `docs/KIT-REDESIGN-SPEC.md` (the lesson kits); trust those + the root `README.md` + `CLAUDE.md` over this doc where they disagree. This file is technically current on the dark redesign, the brain engine, the routes, and the kit engine plumbing; the LATEST layer it predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing pipeline, the brain-canvas squash fix, and the no-scroll/one-ask sweep). For those, see the two specs and `CLAUDE.md`. The counts below have been re-counted as of 2026-07-26 (see next note).
+
+> **Post-2026-06-21 layers this doc still narrates only in outline (full detail in `CLAUDE.md`'s Architecture Quick Reference):** the CTRL 2028 radical-focus refactor (PRs #234-241) replaced `CockpitHome.tsx`/`CockpitDeck.tsx` with `HomeFeed.tsx` + `DesktopHomeView.tsx` and deleted the `VITE_COCKPIT_ENABLED` fork entirely (both `CockpitDeck` and the flag are gone, not just superseded); the unified onboarding->decisions->engagement loop (PR #298); evidence-corpus sharpening (PR #321: real correction loop, decision memo, live MCP-gated brain actions, capability ladder); the settings audit / one-door tuning (PR #325); the Decisions tab rebuilt as a radial force spider (PR replacing the claim "ladder"); the Edge Pro money-path repair + $49/decision-tier reposition (PRs #326-327); the decision-engine reframe/sanitize/eval-gate hardening (PR #328); the North Star flywheel instrumentation (PR #330, see `NORTH_STAR.md`); the craft+growth pass adding the static `/pricing` page + collapsible desktop nav (PR #329), later corrected and split so `/pricing` is the static SEO page and `/upgrade` is the live checkout (PR #331); news "shift"/trend cards (PR #332); the `/download` public capture page (PR #333); Home card glance/tap-to-read rework (PRs #322-324, #334); and PostHog product analytics (added directly to `index.html`, 2026-07-18).
 
 > **Curation system (2026-06-28, PRs #287, #293-296; LIVE)**: the Home news deck, the Tune controls, the role/business scoring, the loading globe, and the audio Briefing are ONE system over ONE brain. Canonical, crystal-clear methodology + architecture: **`docs/CURATION-SYSTEM-SPEC.md`** (read it before any Home-feed / Tune / briefing-curation work). Headline mechanics: a chosen Tune lane DOMINATES the feed (`newsPriority.ts` `BOOST_BLOCK`, uncapped) ordered by role-archetype + industry fit (`roleArchetype.ts`, inferred from facts already held, no new questions), with a guaranteed on-topic floor of 3 (`laneReserve.ts`); Tune applies live (shared `useNewsPreferences` store); and the Briefing draws from the same `live_headlines_cache` pool + carries the tuning into its lens (flags `BRIEFING_V2_ENABLED_DEFAULT` / `BRIEFING_USE_BRAIN_PROFILE` / `BRIEFING_SOURCE_SHARED_POOL` all ON). The three main areas' purpose/objectives/outcomes live in `docs/CTRL-SYSTEM-SPEC.md` section 7.
 >
@@ -18,9 +20,11 @@ Complete system architecture and data flow documentation.
 >
 > **Unified onboarding → decisions → engagement loop (2026-06-29, PR #298; LIVE)**: the cockpit is now the ONE home and the `VITE_COCKPIT_ENABLED` flag is RETIRED, so any reference below to "cockpit Home (behind `VITE_COCKPIT_ENABLED`)", to `MobileMemoryDashboard` / `DesktopMemoryDashboard`, or to the voice `OnboardingInterview` is HISTORICAL - those were deleted. Entry/re-entry is now state-adaptive: `useCockpit` derives a `userState` (new/dormant/active/power) → a `posture` (`guide` vs `partner`) on `CockpitData`; onboarding is lightweight + inline (`InlineProfileSetup` writing industry/role to `user_memory` + interests via `SeedBeatsPrompt`); the guide posture leads Home with a `KickstartCard` routing a role-tailored starter (`src/lib/starterDecisions.ts`) into `/decision` pre-filled; and `send-reactivation-nudge` (daily cron) re-engages NEW and DORMANT leaders. `BottomNav` is the single 3-tab cockpit nav. Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.
 >
-> **Verified counts (as of 2026-06-09; not re-counted since the redesign)**: 80 edge functions, 59 hooks, 110 migrations, 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop). Edge-function / hook / migration counts after the redesign, brain engine, and kit program are **verified counts pending re-count**.
+> **Verified counts (as of 2026-06-09)**: 7 e2e specs, 6 vitest specs, pgvector + pgcrypto + pg_cron extensions enabled, 6 audit-week tracks shipped (revenue path, data path, UX, reliability, observability, cleanup), Phase 8 shipped (Skill Builder + desktop UI redesign + pain-anchored entry points), Phase 9 shipped (Decision Engine + flag-gated Briefing streaming + cross-tenant RLS hardening), Phase 10 shipped (every authenticated surface unified onto `DesktopShell`, viewport-pinned zero-scroll, Goals + Enrich loop).
 >
-> **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) = 85, +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`) = 62, +4 migrations = 114, +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
+> **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`), +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`), +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
+>
+> **Re-counted 2026-07-26 (current totals, supersede every earlier count in this file): 104 edge functions** in `supabase/functions/` (excluding `_shared/`), **148 PostgreSQL migrations** in `supabase/migrations/`, **77 custom hooks** in `src/hooks/`. These are live counts, not a lower bound; re-count directly from the repo rather than trusting any older figure in this document.
 
 ---
 
@@ -183,9 +187,9 @@ src/
 │   │   ├── SkillExportCard.tsx    # /context Step 1 entry-point card for the Skill Builder (free for now since PR #204; was Edge Pro gated) (v5.2)
 │   │   ├── VoiceStyleProfileSheet.tsx  # Captures the unified ctrl_voice_profile: 5 recognition picks OR a paste-extract power path (PR #204)
 │   │   └── GettingSmarterBanner.tsx
-│   ├── cockpit/               # Mobile cockpit Home (behind VITE_COCKPIT_ENABLED)
-│   │   ├── CockpitHome.tsx        # Rewritten Home: time-aware greeting + "worth a look" deck + 3 value actions (PR #197)
-│   │   └── CockpitDeck.tsx        # Swipeable "worth a look" deck (news segments + own-signal alerts), heart/skip, peeking stack + dots (PR #197)
+│   ├── cockpit/               # Home feed (the one Home for mobile + desktop; VITE_COCKPIT_ENABLED flag was retired)
+│   │   ├── HomeFeed.tsx            # Home model: browsable headlines + own-signal alerts + 3 doors, replaces the deleted CockpitHome/CockpitDeck (CTRL 2028 refactor, PRs #234-241)
+│   │   └── DesktopHomeView.tsx     # Desktop rail rendering of the same Home model
 │   ├── automator/             # Automator: default Skill Builder flow on /context (PR #199)
 │   │   ├── AutomatorFlow.tsx      # Suggestions -> cascade -> skill-ready orchestrator
 │   │   ├── AutomatorSuggestions.tsx  # Brain-mined deliverable suggestions ("pulled from your brain" badge) + inline "Something else"
@@ -262,7 +266,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 59 custom hooks
+├── hooks/                     # 77 custom hooks (re-counted 2026-07-26)
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -331,15 +335,17 @@ src/
 │   └── supabase/
 │       ├── client.ts          # Supabase client
 │       └── types.ts           # Generated DB types (READ-ONLY)
-├── pages/                     # 29 page files (many legacy, now redirected to /dashboard)
+├── pages/                     # current as of 2026-07-26; the legacy pages this tree used to list (Diagnostic/Voice/Pulse/Today/Think/WeeklyCheckin/MissionCheckIn/MissionHistory/Progress/Baseline/DecisionCapture/PromptCoach/Timeline) no longer exist as page files - the corresponding legacy routes are plain <Navigate> redirects with no backing component
 │   ├── Landing.tsx            # Landing page (/)
 │   ├── Auth.tsx               # Authentication (/auth)
 │   ├── AuthCallback.tsx       # OAuth callback (/auth/callback)
-│   ├── Dashboard.tsx          # **Main hub** (/dashboard) - renders Memory Web or Edge view
+│   ├── Dashboard.tsx          # **Main hub** (/dashboard) - cockpit-only Home
 │   ├── MemoryCenter.tsx       # Memory Center (/memory)
-│   ├── ContextExport.tsx      # Context Export (/context)
+│   ├── ContextExport.tsx      # Context Export / Automator (/context)
 │   ├── BriefingPage.tsx       # Daily Briefing v2 (/briefing)
 │   ├── DecisionPage.tsx       # Decision Engine pressure-test (/decision)
+│   ├── DecisionMap.tsx        # Decision Map (/decision-map)
+│   ├── TrackRecord.tsx        # Track record / capability ladder (/track-record)
 │   ├── Goals.tsx              # Goals tracking (/goals)
 │   ├── EnrichPage.tsx         # Inbound Enrich loop (/enrich)
 │   ├── BuildLap.tsx           # Agent Skill Builder full-page flow (/build)
@@ -347,19 +353,11 @@ src/
 │   ├── Compliance.tsx         # Compliance center (/compliance)
 │   ├── Profile.tsx            # User profile (/profile)
 │   ├── Booking.tsx            # Workshop booking (/booking)
-│   ├── Diagnostic.tsx         # Assessment flow (legacy, redirects to /dashboard)
-│   ├── Voice.tsx              # Voice recording (legacy, redirects to /dashboard)
-│   ├── Pulse.tsx              # Strategic pulse (legacy, redirects to /dashboard)
-│   ├── Today.tsx              # Today page (legacy, redirects to /dashboard)
-│   ├── Think.tsx              # Think page (legacy, redirects to /dashboard?view=edge)
-│   ├── WeeklyCheckin.tsx      # Weekly check-in
-│   ├── MissionCheckIn.tsx     # Mission check-in
-│   ├── MissionHistory.tsx     # Mission history
-│   ├── Progress.tsx           # Progress tracking
-│   ├── Baseline.tsx           # Baseline assessment
-│   ├── DecisionCapture.tsx    # Decision capture
-│   ├── PromptCoach.tsx        # Prompt coaching
-│   ├── Timeline.tsx           # Assessment timeline
+│   ├── Pricing.tsx            # Interactive Edge Pro checkout (/upgrade); static SEO twin served at /pricing via a vercel.json rewrite to public/pricing.html
+│   ├── Agents.tsx             # Public /agents surface
+│   ├── Try.tsx                # Public /try surface
+│   ├── CaptureLanding.tsx     # Feature-flagged public email-capture page (/download)
+│   ├── Preview.tsx            # Dev/QC fixture harness (/preview, unlinked)
 │   └── NotFound.tsx           # 404 page
 ├── styles/                    # Design tokens & styles
 ├── __tests__/                 # Test files
@@ -407,14 +405,23 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/briefing` | BriefingPage | Yes | Daily Briefing v2 |
 | `/decision` | DecisionPage | Yes | Decision Engine pressure-test (decompose → verify → cross-examine → advise) |
 | `/goals` | Goals | Yes | Horizon-grouped goal tracking |
+| `/track-record` | TrackRecord | Yes | Track record + earned capability ladder |
+| `/decision-map` | DecisionMap | Yes | One pinned-decision hero + connector rail |
 | `/enrich` | EnrichPage | Yes | Inbound "borrow your own AI" enrichment loop |
 | `/settings` | Settings | Yes | User preferences |
 | `/compliance` | Compliance | Yes | Compliance / audit center |
 | `/profile` | Profile | Yes | User profile |
+| `/preview` | Preview | No | Dev/QC fixture harness, unlinked |
+| `/agents` | Agents | No | Public surface |
+| `/try` | Try | No | Public surface |
+| `/download` | CaptureLanding | No | Feature-flagged (`FF.publicCapture`) public email-capture page; degrades to `NotFound` when the flag is off |
+| `/upgrade` | Pricing | No | Interactive Edge Pro checkout (live subscribe button) |
+| `/pricing` | (static `public/pricing.html`) | No | Static SEO pricing page, served via a `vercel.json` rewrite, not a React route |
 | `/kit` | KitEntry | No | Class follow-up portal code entry (anonymous session) |
 | `/kit/me` | KitHome | No | Kit + journey home (anonymous, upgrades on email capture) |
 | `/kit/me/intake` | KitIntake | No | 6-question intake (voice or taps) |
 | `/kit/reading/:pageId` | KitReading | No | Full-screen reader for a single artifact |
+| `/kit/pdf`, `/kit/pdf/:redemptionId` | KitPdf | No | Print-styled branded hero PDF route per kit |
 
 The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
 
@@ -425,7 +432,7 @@ The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outsid
 | `/today` | `/dashboard` |
 | `/pulse` | `/dashboard` |
 | `/voice` | `/dashboard` |
-| `/diagnostic` | `/dashboard` |
+| `/diagnostic` | `/dashboard` (the diagnostic assessment flow it used to serve, and the one-time Full Diagnostic/Deep Context/Bundle Stripe SKUs it led to, are not reachable from any live route today) |
 | `/think` | `/dashboard?view=edge` |
 | `*` | `/` |
 
@@ -942,7 +949,7 @@ kit_nudges                              -- day-3 / day-7 send-dedupe ledger
 
 **Location**: `supabase/functions/`
 
-**Total**: 85 edge functions in `supabase/functions/` plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry. PR #204 added one function (`extract-voice-profile`: paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text) and redeployed `generate-skill-export` (prompt tightened) and `mcp-context` (gained `list_skills` + `get_skill`) to prod (`bkyuxvschuwngtcdhsyg`); no DB migrations were needed.
+**Total**: 104 edge functions in `supabase/functions/` (re-counted 2026-07-26) plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry. PR #204 added one function (`extract-voice-profile`: paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text) and redeployed `generate-skill-export` (prompt tightened) and `mcp-context` (gained `list_skills` + `get_skill`) to prod (`bkyuxvschuwngtcdhsyg`); no DB migrations were needed.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)

@@ -4,7 +4,7 @@
 
 This folder is the deeper source of truth for CTRL. The two highest-authority documents in the whole repo are the canonical product/build specs in `docs/`, and the top-level `README.md`. Where any file in this folder disagrees with them, the spec and the root README win.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass); **drift-checked 2026-07-26** (counts re-verified, pricing/route/compliance drift fixed across the folder - see `HISTORY.md` Phase 18 and `DECISIONS_LOG.md` Decisions 61-68 for what shipped since the last full pass).
 
 ---
 
@@ -100,20 +100,20 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 ### Active routes (source of truth: `src/router.tsx`)
 
-Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked).
+Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked), `/upgrade` (interactive Edge Pro checkout), `/pricing` (static SEO page, served via a `vercel.json` rewrite, not a React route), `/download` (feature-flagged public email-capture page, off by default).
 
 Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`.
 
 Legacy redirects: `/today` `/pulse` `/voice` `/diagnostic` -> `/dashboard`; `/think` -> `/dashboard?view=edge`.
 
 ### Repo counts
-For current edge-function / hook / migration / route counts, trust `CLAUDE.md` (kept current) and the code itself, not a frozen table here. As of the last `CLAUDE.md` snapshot (counts dated 2026-06-09, re-count pending): ~80 edge functions, ~59 custom hooks, ~110 migrations. Treat these as a lower bound. TODO(founder/dev): a fresh re-count after the kit + main-app-polish PRs.
+Re-counted directly from the repo on 2026-07-26: **104 edge functions** (`supabase/functions/`, excluding `_shared/`), **77 custom hooks** (`src/hooks/`), **148 PostgreSQL migrations** (`supabase/migrations/`). These are live counts, not a lower bound. Always prefer re-counting from the repo over trusting any frozen figure, here or elsewhere - counts drift quickly given the pace of shipping.
 
 ### Tech Stack
 React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion; React Router 6 (`createBrowserRouter`, lazy); Tailwind + shadcn/ui (Radix), globally dark; React Context + TanStack Query; Supabase (PostgreSQL + Edge Functions, Deno); Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback; OpenAI Whisper / ElevenLabs; OpenAI `text-embedding-3-small` (pgvector); Supabase Auth / Stripe / Resend; Vitest + Playwright; Vercel + Supabase Cloud; Node `>=22 <24`. DB extensions: pgvector, pgcrypto, pg_cron.
 
 ### Pricing
-The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amount is canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`, i.e. `$49/mo`) and surfaced via `src/constants/billing.ts`. Edge Pro is the decision tier (unlimited decision weighs + cross-examination + decision watch + Edge artifacts + the live MCP pull of your skills); the daily briefing, the Automator, Memory, and Voice are free. The app reads the code, so trust the code over any doc. There is also a paid AI-literacy diagnostic and a deep-context upgrade still wired in the Stripe edge functions (`create-diagnostic-payment`: Full Diagnostic $49, Deep Context $29, Bundle $69). TODO(founder): confirm whether those one-time diagnostic SKUs survive the AI-native repositioning, and the full price list, before any sales doc quotes exact numbers.
+The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amount is canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`, i.e. `$49/mo`) and surfaced via `src/constants/billing.ts`. Edge Pro is the decision tier (unlimited decision weighs + cross-examination + decision watch + Edge artifacts + the live MCP pull of your skills); the daily briefing, the Automator, Memory, and Voice are free. The app reads the code, so trust the code over any doc. There is also a paid AI-literacy diagnostic and a deep-context upgrade still wired in the Stripe edge functions (`create-diagnostic-payment`: Full Diagnostic $49, Deep Context $29, Bundle $69), but confirmed (2026-07-26) NOT reachable from any live route today (`/diagnostic` redirects to `/dashboard`; no UI calls this flow) - do not offer these as checkout links. TODO(founder): confirm whether those one-time diagnostic SKUs survive the AI-native repositioning, and the full price list, before any sales doc quotes exact numbers.
 
 ---
 
