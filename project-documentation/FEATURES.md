@@ -2,33 +2,29 @@
 
 Complete feature inventory.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02 (full reconciliation pass; closes out the 2026-06-16 through 2026-06-21 banner debt into body prose and adds everything shipped 2026-06-22 through 2026-08-01).
 
-> **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. The feature mechanics below are accurate; read them through that lens. Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`. The LATEST layer this doc predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing, the brain-canvas fix, the no-scroll/one-ask sweep). For those, trust the two specs and `CLAUDE.md`.
+> **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. The feature mechanics below are accurate; read them through that lens. Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, `docs/CTRL-SYSTEM-SPEC.md`, `docs/CURATION-SYSTEM-SPEC.md`, `project-documentation/NORTH_STAR.md`, root `README.md`.
 
 > **For sales/marketing AI agents**: pull feature mechanics from here, but the binding promise and hooks come from `AGENT_BRIEFING.md` (AI-native), not the older sales-anchor callouts below. Some sales anchors still carry the retired "decision speed / portable double" framing; prefer the AI-native frame.
 
-> **Curation system (2026-06-28, PRs #287, #293-296; LIVE)**: the Home daily read - news deck + Tune + role/business scoring + loading globe + audio Briefing - is ONE system over ONE brain. Canonical methodology + architecture: **`docs/CURATION-SYSTEM-SPEC.md`**. A chosen Tune lane DOMINATES the feed (uncapped), ordered by inferred role-archetype + industry fit, with a guaranteed on-topic floor of 3; Tune applies live; the Briefing covers the same pool. Tune is ONE door (2026-07-04): the `NewsPreferencesPanel` picker is shared by Home's "Tune feed" drawer and Settings → "Tune your feed", and carries the people/exclude watchlist (`briefing_interests`) that feeds the briefing lens; the old standalone `BriefingInterestsTab` was retired. The three main areas' purpose/objectives/outcomes: `docs/CTRL-SYSTEM-SPEC.md` section 7.
+> **North Star (2026-07-04, PR #330, founder-signed):** the single product-health number is **"flywheel leaders"** - leaders who both hold a real brain (>=5 current `user_memory` facts) AND weighed a decision in the last 7 days. Canonical doc: `project-documentation/NORTH_STAR.md` (not edited by this pass; read it for the metric definition and the migration `20260704120000_north_star_flywheel.sql` that instruments it). Any product-health/KPI discussion elsewhere in this doc should defer to that number rather than inventing a different one.
 
-> **Unified onboarding → decisions → engagement loop (2026-06-29, PR #298; LIVE)**: any mention below of "cockpit Home (behind `VITE_COCKPIT_ENABLED`)", the `Mobile/DesktopMemoryDashboard`, or the voice `OnboardingInterview` is HISTORICAL - the flag, the legacy dashboards, and the voice interview were DELETED. The cockpit is the one home; entry/re-entry adapts to the leader's lifecycle `userState` → `posture` (guide vs partner). Onboarding is lightweight + inline (`InlineProfileSetup`: industry/role → `user_memory` + interests via `SeedBeatsPrompt`); the guide posture leads Home with a `KickstartCard` (a role-tailored starter routed to `/decision` pre-filled); `send-reactivation-nudge` (daily cron) re-engages NEW (never-weighed) + DORMANT (>14d) leaders. Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 8.
-
-> **Current brand (2026-06-16, PR #186):** CTRL is **globally forced dark** on the `ctrl-ds` instrument palette, emerald `#00D9B6` accent, and the emerald `ctrl.` wordmark replacing the old green Mindmaker logo. It is NOT light-mode, NOT warm off-white, NOT white cards, NOT the green logo. Any older "white card / off-white / green logo" phrasing in this doc is stale and corrected inline. See **Redesign** and **Brain Engine** below.
+> **Open TODO(founder) items surfaced by this pass:** (1) the Missions / Progress / Weekly Check-ins systems below have no page or route left in `src/pages/` or `src/router.tsx` - the tables, hooks, and edge functions are still live in the codebase but unreachable from the app; confirm whether this is an intentional deprecation or an accidental page removal. (2) `kit_builds.intake` rows written before PR #193 remain truncated (unchanged from the prior reconciliation; still true).
 
 ---
 
-## Repo at a glance (counts verified 2026-06-09; not re-counted since)
+## Repo at a glance (counts verified 2026-08-02, direct filesystem count)
 
-> **Updated 2026-06-17.** The brand redesign (PR #186), Brain engine (PRs #153-164, #187-189), and 4-kit program (PRs #190-#193) all shipped after these counts were last taken. Treat the edge-function / hook / migration totals below as **verified counts pending re-count**.
-
-- **80 Supabase edge functions** (Deno runtime; count as of 2026-06-09, re-count pending), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules; latest added: `extract-voice-profile` (PR #204)
-- **59 React hooks** under `src/hooks/` (count as of 2026-06-09; added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
-- **110 PostgreSQL migrations** applied to remote (count as of 2026-06-09; added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening; later additions include `20260615*_brain_*` and `20260616120000_memory_edges`)
+- **104 Supabase edge functions** (Deno runtime, excluding `_shared/`; counted directly from `supabase/functions/` on 2026-08-02), spanning briefing, memory, decision engine, AI generation, billing, diagnostic, email/notifications, enrichment, and the Kit Engine, plus shared modules
+- **78 React hooks** under `src/hooks/` (counted directly on 2026-08-02)
+- **148 PostgreSQL migrations** in `supabase/migrations/` (counted directly on 2026-08-02)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Brand redesign shipped LIVE** (PR #186, merge 1c01db5, 2026-06-16): globally forced dark, `ctrl-ds` instrument palette, emerald `#00D9B6`, the emerald `ctrl.` wordmark; rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. See **Redesign** below.
 - **Desktop UI redesign shipped** (PR #104, Phase 8; extended through Phase 10, PR #130-#139): every authenticated surface now wears the same `DesktopShell` (sticky top bar with page eyebrow + title + actions, optional right rail, Cmd/Ctrl+K Command Palette), viewport-pinned so the window never scrolls. No more stretched mobile markup on desktop.
-- **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff
-- **Tests**: 6 Vitest unit/shared + 7 Playwright e2e in `src/__tests__/e2e/` (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency, desktop-zero-scroll)
+- **CI gates blocking on PRs**: typecheck (tsc --noEmit), full Vite build, ESLint on PR diff, and (since PR #327-ish, `4e78f2c`) a Vitest job that wires in the decision-engine eval gate
+- **Tests**: 29 Vitest unit/shared spec files (counted directly on 2026-08-02, up from the 6 last counted 2026-06-21; the growth is mostly decision-engine pure-model tests) + 8 Playwright e2e specs in `src/__tests__/e2e/` (auth-journeys, briefing-journey, briefing-rate-limits, sparse-profile, account-deletion, stripe-webhook-idempotency, desktop-zero-scroll, kit-redeem-journey)
 
 ---
 
@@ -51,28 +47,50 @@ The current look and feel of CTRL. Shipped to `main` (merge 1c01db5) and prod-ve
 
 ---
 
-## Home / Decision Map / Automator UX Redesign (shipped LIVE 2026-06-17, PRs #197-200)
+## Home: the unified 2028 cockpit (current model; supersedes the 2026-06-17 redesign below)
 
-The latest layer on top of the PR #186 brand redesign. A founder review of live prod found three surfaces that looked finished but did not feel right: Home did not say "I'm back", its "strongest signal" hero was cryptic and the AI-bets read as a wall of sameness; the Decision Map read as unrelated cards with a "something wrong?" drawer popping on every scroll; and the Automator suggested a vague, uncodifiable "Hiring Challenge". A mock-driven rebuild locked all three to the `ctrl-ds` design floor and shipped them to `main`, prod-verified by screenshot at `ctrl.themindmaker.ai`.
+Home (`/dashboard`) is now ONE state-adaptive surface, not a fork. The `VITE_COCKPIT_ENABLED` flag, the legacy `Mobile/DesktopMemoryDashboard`, and the swipeable `CockpitDeck` described in the "2026-06-17 redesign" subsection below were all **deleted** in the "radical focus" refactor (PRs #234-241, 2026-06-22) and the follow-on onboarding/decisions/engagement loop (PR #298, 2026-06-29). `src/pages/Dashboard.tsx` renders exactly one thing per device: mobile gets `CockpitView` (`src/components/cockpit/CockpitView.tsx`), desktop gets `DesktopHomeView.tsx`; `?view=edge` still renders the Edge leadership amplifier on the same shell.
 
-### Home (PR #197, merge 7b5f0ef)
+**Lifecycle-adaptive posture:** `useCockpit` derives a `userState` (new / dormant / active / power, off real timestamps + a 14-day dormancy window) and maps it to a `posture` on `CockpitData`:
+- **`guide`** - for NEW leaders, DORMANT leaders, or anyone with no live decision. Home leads with guidance and a kickstart.
+- **`partner`** - for active leaders. Home leads with decisiveness and evidence.
 
-The mobile cockpit Home, behind `VITE_COCKPIT_ENABLED`.
+**Onboarding is now lightweight and inline**, not a gate. `InlineProfileSetup` (`src/components/cockpit/onboarding/InlineProfileSetup.tsx`, driven by `useInlineProfile`) captures industry + role straight to `user_memory`, plus interests via the reused `SeedBeatsPrompt`, rendered directly inside the Home feed zone (`HomeFeed`) for NEW leaders. The old 40-minute voice `OnboardingInterview` and its supporting `onboarding/steps/*` were deleted.
 
-**Removed:** the cryptic "strongest signal" hero and the wall of identical AI-bets. Bets no longer live on Home; they moved into the Decisions case-picker.
+**The feed:** `HomeFeed.tsx` (mobile) / `DesktopHomeView.tsx` (desktop) render the browsable headline stream - `CockpitHero` shows the top-ranked card, `CockpitStreamRow`/the desktop rail shows the rest, and a bundled `coldDeck.ts` of generic AI-native headlines guarantees Home is never empty even before any personalization exists. Own-signal `decision_alerts` are woven into the same ranked stream (deduped one-per-decision, labelled "Your decision", never a generic news-category chip). Cards are glance-only with a tap-to-read sheet (`CardReadSheet.tsx`) that gives an LLM-personalized read of the story; every card renders at one exact height. Home also surfaces structural **"shift" cards** (`TrendCard.tsx`) - trend detection alongside the headlines, not just individual stories.
 
-**New:**
-- A plain, time-aware greeting (no cryptic hero).
-- The swipeable **"worth a look" deck** - a mix of broad AI news (drawn from the briefing pipeline's curated segments) and the leader's own signals (`decision_alerts`). Swipe heart = "more like this", swipe skip = dismiss. A peeking card stack with dots shows what is behind the current card.
-- **3 value actions:** Play my briefing (-> `/briefing`), Run a decision (-> `/decision`), Build a skill (-> `/context`).
-- Plain language throughout (e.g. "We found developments you might want to look at").
-- A new brand lockup (Mindmaker icon + `ctrl-logo`) replaced the generated "ctrl." text in the header.
+**Kickstart:** in the `guide` posture, Home leads with a `KickstartCard` (`src/components/cockpit/KickstartCard.tsx`) - a real, role-tailored starter decision (`src/lib/starterDecisions.ts`) routed to `/decision` with the statement pre-filled (`DeckCard.route`/`prefill`; `DecisionPage` also reads `?prefill=` for the reactivation-nudge email link, which cannot set router state).
+
+**Re-engagement:** `supabase/functions/send-reactivation-nudge` (daily `pg_cron`, 13:00 UTC, `verify_jwt=false`) emails NEW (never-weighed) and DORMANT (lapsed >14 days) leaders, de-duped on `leader_notification_prefs.reactivation_nudge_sent_at` (30-day re-arm), batch-capped, lifecycle-driven (separate from the `daily_briefing` opt-in).
+
+**Value actions and brand:** the 3 value actions (Play my briefing -> `/briefing`, Run a decision -> `/decision`, Build a skill -> `/context`) and the `BrandLockup` (Mindmaker icon + `ctrl-logo.png` wordmark) persist from the earlier redesign, described below.
+
+Canonical: `docs/CTRL-SYSTEM-SPEC.md` sections 6 and 8.
+
+---
+
+## Home / Decision Map / Automator UX Redesign (shipped LIVE 2026-06-17, PRs #197-200; Home subsection superseded above)
+
+The latest layer on top of the PR #186 brand redesign at the time it shipped. A founder review of live prod found three surfaces that looked finished but did not feel right: Home did not say "I'm back", its "strongest signal" hero was cryptic and the AI-bets read as a wall of sameness; the Decision Map read as unrelated cards with a "something wrong?" drawer popping on every scroll; and the Automator suggested a vague, uncodifiable "Hiring Challenge". A mock-driven rebuild locked all three to the `ctrl-ds` design floor and shipped them to `main`, prod-verified by screenshot at `ctrl.themindmaker.ai`.
+
+### Home (PR #197, merge 7b5f0ef) - HISTORICAL, see the section above for the current model
+
+The mobile cockpit Home, at the time behind `VITE_COCKPIT_ENABLED` (flag since deleted).
+
+**Removed at the time:** the cryptic "strongest signal" hero and the wall of identical AI-bets. Bets no longer live on Home; they moved into the Decisions case-picker.
+
+**Shipped at the time (superseded by the "radical focus" Home rebuild above):**
+- A plain, time-aware greeting (no cryptic hero) - still true today.
+- The swipeable **"worth a look" deck** (`CockpitDeck`) - since DELETED and replaced by the browsable `HomeFeed`/`DesktopHomeView` stream described above.
+- **3 value actions:** Play my briefing (-> `/briefing`), Run a decision (-> `/decision`), Build a skill (-> `/context`) - still true today.
+- Plain language throughout (e.g. "We found developments you might want to look at") - still true today.
+- A new brand lockup (Mindmaker icon + `ctrl-logo`) replaced the generated "ctrl." text in the header - still true today.
 
 ### Decision Map (PR #198, merge 33fb818)
 
-**One pinned decision** (star eyebrow + statement + a DESCRIPTIVE "where it stands" status derived from the tally, e.g. Holding / Checking / Contested - never a recommendation), with a "Change" affordance to swap which decision is pinned. Considerations sit on a connector **rail**; evidence is one tap deeper (StoneRead).
+`/decision-map` remains a live route, distinct from `/decision` (the decision-weighing engine, rebuilt separately - see **Decision Engine** below). **One pinned decision** (star eyebrow + statement + a DESCRIPTIVE "where it stands" status derived from the tally, e.g. Holding / Checking / Contested - never a recommendation), with a "Change" affordance to swap which decision is pinned. Considerations sit on a connector **rail** (`ConsiderationStone`); evidence is one tap deeper (`StoneRead`/`StoneDeeper`).
 
-The long-press "something wrong?" scroll-popup was **killed**; in its place a quiet "Flag it" lives inside the opened stone and in the footer. Empty state: role / sector-seeded starter decisions, one tap to Decide prefilled.
+The long-press "something wrong?" scroll-popup was **killed**; in its place a quiet "Flag it" lives inside the opened stone and in the footer. Empty state: role / sector-seeded starter decisions (`starterDecisionsFor`), one tap to Decide prefilled.
 
 ### Automator (PR #199, merge 24f7d15)
 
@@ -88,37 +106,38 @@ The Automator feeds the `generate-skill-export` pipeline (see the intake + harne
 
 ### Follow-ups (PR #200, merge 387af84)
 
-- Desktop brand lockup placements.
-- Deck like / dislike now **persists and trains the feed**: a swipe down-weights that news category in future decks, stored in the feedback table (no new migration).
+- Desktop brand lockup placements - still true today.
+- Deck like / dislike persisted and trained the feed at the time. The swipeable deck itself is gone (see the Home section above), but the reaction plumbing survives: `useCockpit.recordDeckReaction` is still the entry point, now called from the hero card, and the curation system (`docs/CURATION-SYSTEM-SPEC.md`) is the current, much more developed version of "the feed learns from you" (Tune lanes, role fit, guaranteed floor - see the **Curation system** note in the header banners of this doc).
 
 **Honest residuals (disclose, don't hide):**
-- The old `SkillCaptureSheet` / `SkillPreviewSheet` are now dead code.
+- The old `SkillCaptureSheet` / `SkillPreviewSheet` are still dead code (unimported).
 - "Run it now" downloads the skill; there is no in-app skill-runner yet.
-- The deck's news half depends on a briefing existing; with no briefing the deck shows a calm caught-up state.
+- Home no longer depends on a briefing existing for content (`coldDeck.ts` guarantees a non-empty feed); the news-briefing dependency described here at the time no longer applies.
 
-**Sales Anchor - Home / Decision Map / Automator**: "Open CTRL and it feels like coming back to your desk: a plain greeting, a deck of what's worth a look, and one tap to your briefing, a decision, or a new skill. The decision you care about is pinned with where it stands, not a verdict. And one recurring deliverable becomes a skill you own."
+**Sales Anchor - Home / Decision Map / Automator**: "Open CTRL and it feels like coming back to your desk: a plain greeting, a feed of what's worth a look, and one tap to your briefing, a decision, or a new skill. The decision you care about is pinned with where it stands, not a verdict. And one recurring deliverable becomes a skill you own."
 
 ---
 
-## Brain Engine (PRs #153-164; "limits" phases #187-189)
+## Brain Engine (PRs #153-164; "limits" phases #187-189; brain graph rebuilt PR #240; correction loop PR #321)
 
 CTRL's memory rendered as a connected graph: the leader's facts wired to each other, with reaction signals, evidence tiers, and a track record.
 
 **What shipped:**
-- **Fact-to-fact edge graph** - facts connected by edges, rendered as the four-world rope canvas.
-- **Strengthen / Fix RPCs** - backend RPCs to strengthen or fix a fact / edge.
+- **Fact-to-fact edge graph** - facts connected by edges, rendered by `BrainGraph.tsx` + `BrainCanvas.tsx` (rebuilt PR #240 on `brainGraphModel.ts` `computeViewBox`: hub-anchored, aspect-corrected to the live canvas ratio every render, fixing the earlier upper-left-clustering squash).
+- **Strengthen / Fix RPCs are LIVE (PR #321, 2026-07-03)** - `strengthen_memory_fact` (bumps confidence + marks verified) and `fix_memory_fact` (disputes the fact and drops its links) are real backend RPCs, wired end-to-end through `BondReader.tsx` (`onStrengthen`/`onFix` props) from `MemoryCenter.tsx` (`handleStrengthenBond`/`handleFixBond`). These were UI-disabled buttons before PR #321; they are not anymore.
+- **Real correction loop (PR #321)** - `verify_memory_fact` / `fix_memory_fact` log `user_corrected` / `user_rejected` / `user_disputed` events to `memory_events` with the prior value (migration `20260703090000`). `extract-user-context` (v45) is correction-aware via `_shared/correction-guard.ts`: corrections ride the extraction prompt, and a deterministic damping pass drops re-extraction of a value the leader already ruled out (this also fixed a bug where a rejected fact could silently re-insert because `is_current=false` left it in the dedup set). The verify swipe flow (`VerificationSwipeStack.tsx`) shows a "Fixed. I noted what I got wrong - I won't infer that again." confirmation beat.
+- **`memory-edges-derive` now has a caller** - previously a dormant edge function, it now fires after each successful capture in `useMemoryWeb.submitInput`.
 - **Reliable reaction numbers** - reaction counts on facts now computed reliably.
 - **Evidence tiers** - each fact carries an evidence tier.
 - **Track-record depth** - the brain shows the track record behind a fact over time.
 
-**Migrations:** `20260615*_brain_*`, `20260616120000_memory_edges`.
+**Migrations:** `20260615*_brain_*`, `20260616120000_memory_edges`, `20260703090000` (correction events).
 
 **Honest gaps (disclose, never hide):**
-- **Strengthen / Fix canvas actions are UI-disabled** - the buttons render but no backend RPC is wired behind them yet.
 - **Brain edges are derived, not stored** - the graph is computed at read time, not persisted as rows.
 - **Number-heroes fall back to words-led on thin current data** - when there is not enough current data for a numeric hero stat, the UI shows a words-led presentation instead of a misleading number.
 
-**Sales Anchor - Brain**: "Your context isn't a list, it's a wired map. See which of your facts hold each other up, and which are running on thin evidence."
+**Sales Anchor - Brain**: "Your context isn't a list, it's a wired map. See which of your facts hold each other up, and which are running on thin evidence. Tell it what it got wrong and it stops inferring that again."
 
 ---
 
@@ -334,113 +353,36 @@ Edge analyzes everything CTRL knows about a leader and surfaces:
 
 ## Unified Dashboard (`/dashboard`)
 
-The Dashboard is the main authenticated hub, rendering either the **Memory Web** view (default) or the **Edge** view (`?view=edge`).
+The Dashboard is the main authenticated hub. `src/pages/Dashboard.tsx` renders exactly one of two views based on the `view` query parameter: the cockpit **Home** (default) or the **Edge** view (`?view=edge`). There is no third "Memory Web dashboard" view anymore - see the **Home: the unified 2028 cockpit** section above for the current model. Memory itself lives at the dedicated `/memory` page (**Memory Center**, below).
 
 ### Navigation
 
-**Desktop** (`memory-web/DesktopSidebar.tsx`):
-- Fixed left sidebar (264px)
-- Brand lockup (Mindmaker icon + `ctrl-logo`), which replaced the generated "ctrl." text in the 2026-06-17 follow-ups (PR #200). The old green Mindmaker logo is long gone.
-- 4 nav items: Home, Edge, Memory Web, Export to AI
-- Settings + Sign Out at bottom
+**Desktop** (`src/components/layout/DesktopShell.tsx`, the current live nav; craft+growth polish PR #329, 2026-07-04):
+- A dense collapsible rail (220px), brand lockup at top
+- **Primary spine, 3 items** (deliberately matches mobile's 3-tab order): Home, Decisions, Memory. Track record is folded into Decisions as a Now|History toggle rather than being a 4th primary tab.
+- **Secondary items** (one click away via a "More" disclosure, not removed, just demoted): Edge, Briefing, Track record (kept as its own route for deep links even though it also lives inside Decisions), Export, Goals, Decision Map.
+- **Account items**: Profile, Compliance, Settings.
+- `memory-web/DesktopSidebar.tsx` (the older fixed 264px sidebar with 4 items: Home, Edge, Memory Web, Export to AI) is **dead code** - not imported by any live page; `DesktopShell`'s rail above is what actually renders.
 
 **Mobile** (`memory-web/BottomNav.tsx`):
-- Fixed bottom nav bar with 4 tabs: Home, Edge, Memory, Export
-- AppHeader at top (brand lockup, not the generated "ctrl." text, since PR #197)
+- The single 3-tab cockpit nav: Home, Decisions, Memory (same order/icons as desktop's primary spine, per `docs/CTRL-SYSTEM-SPEC.md`). The legacy 6-tab fork and the `VITE_COCKPIT_ENABLED` flag it depended on were both retired.
+- AppHeader at top (brand lockup)
 - Backdrop blur effect
-
-> **Home is now the cockpit deck (PR #197, merge 7b5f0ef, behind `VITE_COCKPIT_ENABLED`).** The Home tab no longer shows the old "strongest signal" hero or the wall of AI-bets (bets moved to the Decisions case-picker). It now shows a plain time-aware greeting, the swipeable "worth a look" deck (broad AI news from the briefing pipeline's curated segments mixed with the leader's own `decision_alerts`; swipe heart = more-like-this, skip = dismiss; peeking card stack + dots; deck like/dislike persists and trains the feed per PR #200), and 3 value actions (Play my briefing -> `/briefing`, Run a decision -> `/decision`, Build a skill -> `/context`). Full detail in **Home / Decision Map / Automator UX Redesign** above.
-
-### Memory Web View (Default)
-
-**Desktop** (`DesktopMemoryDashboard.tsx`):
-- Sidebar + main content area (max-w-4xl)
-- Memory Web visualization, health metrics, category chart
-- Intelligence panel, recent facts feed, pattern insights
-
-**Mobile** (`MobileMemoryDashboard.tsx`):
-- Full viewport height
-- Scrollable content area
-- Voice-first interaction via floating action button
-
-**Guided First Experience** (`GuidedFirstExperience.tsx`):
-- Shown to new users (no existing memory facts)
-- 3-question onboarding flow
-- Delivers first context export in 2 minutes
-- Voice or text input
 
 ### Edge View
 
-Shows the Edge leadership amplifier (see Edge section above for details).
+Shows the Edge leadership amplifier (see **Edge: Leadership Amplifier** above for details). Same shell (mobile: `AppHeader` + `BottomNav`; desktop: `DesktopShell`).
 
-### Legacy Dashboard Components
+### Dead code still in the tree (not imported anywhere; disclose, don't hide)
 
-The following components still exist but are now part of legacy dashboard views or used in specific contexts:
+`src/components/dashboard/mobile/` (`MobileDashboard.tsx`, `HeroStatusCard.tsx`, `PriorityCardStack.tsx`, `VoiceButton.tsx`, `Sheet.tsx`, `ActionQueueSheet.tsx`, `StrategicPulseSheet.tsx`) and `src/components/dashboard/desktop/` (`DesktopDashboard.tsx`, `Sidebar.tsx`, `Panel.tsx`) are pre-Memory-Web dashboard components with no remaining import into any live page or route - verified by grep, not asserted. `dashboard/WeeklyActionCard.tsx` / `dashboard/DailyProvocationCard.tsx` and `pulse/StrategicPulse.tsx` are similarly unreferenced outside their own subtree. None of these render on `ctrl.themindmaker.ai` today. `GuidedFirstExperience.tsx` (the old 3-question onboarding component referenced in earlier versions of this doc) no longer exists in the repo at all - it was removed, not just orphaned; onboarding today is `InlineProfileSetup` (see the Home section above).
 
-**Mobile Dashboard Experience
-
-### Dashboard Page (`/dashboard`)
-
-**Mobile Layout** (`MobileDashboard.tsx`)
-- Full viewport height (no-scroll)
-- Fixed header with user name
-- Scrollable content area
-- Fixed bottom navigation
-- Floating voice button
-
-**Hero Status Card** (`HeroStatusCard.tsx`)
-- Current tier display
-- Percentile ranking
-- Quick stats overview
-- Visual tier indicator
-
-**Priority Card Stack** (`PriorityCardStack.tsx`)
-- Top priorities from tensions
-- Swipeable card interface
-- Action-oriented content
-- Links to detailed views
-
-**Bottom Navigation** (`BottomNav.tsx`)
-- 4 navigation items
-- Fixed bottom position
-- Active state indicators
-- Backdrop blur effect
-
-**Voice Button** (`VoiceButton.tsx`)
-- Floating action button
-- Positioned above bottom nav
-- Quick access to voice input
-- Animated state changes
-
-**Legacy Pages (Now Redirected to Dashboard):**
-
-The following pages still exist as files but now redirect to `/dashboard`:
-
-- `/today` → `/dashboard` (was daily focus view with Weekly Action + Daily Provocation)
-- `/voice` → `/dashboard` (was standalone voice recorder)
-- `/pulse` → `/dashboard` (was strategic pulse dashboard)
-- `/diagnostic` → `/dashboard` (was assessment entry point)
-- `/think` → `/dashboard?view=edge` (redirects to Edge view)
-
-**Legacy Components (still used in dashboard context):**
-
-**WeeklyActionCard / DailyProvocationCard** (`dashboard/WeeklyActionCard.tsx`, `dashboard/DailyProvocationCard.tsx`)
-- Used in desktop dashboard grid
-- Weekly focus action + daily reflection prompts
-
-**StrategicPulse** (`pulse/StrategicPulse.tsx`)
-- Strategic pulse summary (baseline, tensions, risks)
-- Integrated into mobile dashboard sheets
-
-### Sheet Component (`Sheet.tsx`)
-
-**Specifications**
-- Bottom sheet pattern
-- Three height variants: small (40vh), medium (60vh), large (85vh)
-- Backdrop with blur
-- Spring animation physics
-- Drag handle indicator
-- Rounded top corners
+**Legacy redirect routes (still live, in `src/router.tsx`):**
+- `/today` → `/dashboard`
+- `/voice` → `/dashboard`
+- `/pulse` → `/dashboard`
+- `/diagnostic` → `/dashboard`
+- `/think` → `/dashboard?view=edge`
 
 ---
 
@@ -461,17 +403,22 @@ Voice-first context extraction system that builds a persistent knowledge base ab
 - Facts categorised: identity, business, objective, blocker, preference
 - Confidence scoring (0-1) on each extracted fact
 
-**Fact Verification** (`FactVerificationCard.tsx`)
+**Fact Verification** (`FactVerificationCard.tsx`, `VerificationSwipeStack.tsx`, `VerificationBanner.tsx`, `VerificationCompletionScreen.tsx`)
 - Facts displayed with confidence indicators
 - User can verify, correct, or reject each fact
 - Verification statuses: inferred, verified, corrected, rejected
 - Sources tracked: voice, form, linkedin, calendar, enrichment
+- **Real correction loop (PR #321, 2026-07-03):** verifying/correcting/rejecting a fact logs a `user_corrected` / `user_rejected` / `user_disputed` event to `memory_events` with the prior value, so the correction is not just a status flip - it changes what the AI infers next. `extract-user-context` reads this via `_shared/correction-guard.ts` and will not silently re-extract a value the leader already ruled out. The swipe flow surfaces a plain confirmation: "Fixed. I noted what I got wrong - I won't infer that again."
+- **Strengthen / Fix on the brain graph are the same mechanism, live** - see **Brain Engine** above (`strengthen_memory_fact` / `fix_memory_fact`, wired through `BondReader.tsx`).
 
 **Memory Management** (`MemoryList.tsx`, `MemoryItemCard.tsx`, `MemoryPill.tsx`)
 - Browse all stored memory facts
 - Add facts manually via `AddMemorySheet.tsx`
 - View detail via `MemoryDetailSheet.tsx`
 - Delete or modify facts
+
+**Context file, one click** (`ContextFileButton.tsx`, PR #321)
+- One-clicks `my-ai-context.md` via `useMemoryExport`. Was previously buried inside the Context Export wizard as a "Raw Markdown" option; now a first-class pill on the Memory Center's meta line and a row on `/context` Step 1.
 
 **Privacy Controls** (`PrivacyControlsPanel.tsx`)
 - Enable/disable memory collection
@@ -502,11 +449,12 @@ Voice-first context extraction system that builds a persistent knowledge base ab
 - `extract-user-context`: AI fact extraction from voice
 - `enrich-company-context`: Company context enrichment
 
-### Components (11 files)
+### Components (`src/components/memory/`, 13 files + `index.ts`, counted 2026-08-02)
 - `MemoryList.tsx`, `AddMemorySheet.tsx`, `MemoryDetailSheet.tsx`
 - `MemoryItemCard.tsx`, `MemoryPill.tsx`, `FactVerificationCard.tsx`
-- `VoiceMemoryCapture.tsx`, `PrivacyControlsPanel.tsx`, `ExportImportPanel.tsx`
-- `MemoryErrorBoundary.tsx`
+- `PrivacyControlsPanel.tsx`, `ExportImportPanel.tsx`, `MemoryErrorBoundary.tsx`
+- `ContextFileButton.tsx` (PR #321)
+- `VerificationSwipeStack.tsx`, `VerificationBanner.tsx`, `VerificationCompletionScreen.tsx` (the current verify flow; `VoiceMemoryCapture.tsx` referenced by earlier drafts of this doc is not present in the current tree - TODO(founder): confirm whether voice capture now lives elsewhere, e.g. folded into the global capture flow)
 
 ### Hooks
 - `useMemoryQueries.ts`: React Query integration for memory CRUD
@@ -711,7 +659,7 @@ This replaces the static Google Docs follow-up that every class used to send. Th
 
 The engine is also the front door to the full CTRL app. Intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` once they hand over an email.
 
-Shipped as PR #141 (branch `claude/kit-engine`), 2026-06-10, with two presets. It has since grown into a **4-kit program** (see "The 4-Kit Program" below) and survived a major intake-cascade bug fix in PR #193.
+Shipped as PR #141 (branch `claude/kit-engine`), 2026-06-10, with two presets. It grew to four documented kits and survived a major intake-cascade bug fix in PR #193; a 5th preset exists in the current codebase - see "The Kit Program" below.
 
 > **DATA TRUST WARNING (2026-06-17):** any `kit_builds.intake` row written **before PR #193** (merge 090dda2, 2026-06-17) is **TRUNCATED and untrustworthy.** A latent cascade bug silently dropped the back half of every kit's pick-cascade for all users since launch, so those rows never captured the later intake steps (for the org-chart kit: `guardrails`, `grind`, `involves`, `maturity` were never recorded). Do not use pre-#193 kit intake data for analysis or personalisation backfills.
 
@@ -744,14 +692,16 @@ One engine, many class presets. A preset is the only thing that differs between 
 - The database stores only `class_slug` + `preset_version`. The preset content lives in code.
 - **Adding a new class is not new code.** It's a new preset folder, a registry entry, and one `kit_codes` row.
 
-### The 4-Kit Program (2026-06-16/17)
+### The Kit Program (documented as 4 kits through 2026-06-17; a 5th preset exists in code, found in this pass)
 
-The engine now ships **four kits**, all on the fork + pick-cascade + live-picks-board model:
+The engine shipped **four kits** on the fork + pick-cascade + live-picks-board model:
 
 1. **Vibe Coding Field Kit** (`vibe-coding`) - original.
 2. **Autonomous Business Pack** (`autonomous-business`) - original.
 3. **Memory & Identity Prompt Pack** (`memory-identity`, code MEMORY-JUN26) - original.
 4. **Agentic Org Chart** kit - added in PRs #190 / #191. Composes an org chart of agent-led vs human-led boxes from the student's intake cascade.
+
+**Not previously documented: a 5th preset, "Build Your AI Chief of Staff" (`chief-of-staff`), exists in `supabase/functions/_shared/kit-presets/chief-of-staff/` and is registered in the preset index.** Unlike the other four (which each build an artifact), this one is a diagnostic: a linear one-chip-per-screen intake feeds a deterministic scorer (`scoring.ts`) that recommends one of seven "rungs" for building a personal AI chief of staff, with the LLM only warming up prose, not the recommendation logic itself. It has its own unit tests. TODO(founder): confirm whether this preset is live (has a redeemable `kit_codes` row) or shipped-in-code-but-not-yet-launched.
 
 **Parity retrofit (PR #192):** all three pre-existing kits were brought up to the model the org-chart kit introduced:
 - **Fork** - a kit forks per student.
@@ -967,13 +917,11 @@ The briefing pipeline ships with concrete reliability primitives:
 
 ---
 
-## Guided First Experience (Onboarding)
+## Guided First Experience (Onboarding) - RETIRED, replaced by InlineProfileSetup
 
-### Overview
+> **STATUS (verified 2026-08-02):** `GuidedFirstExperience.tsx` no longer exists anywhere in the repo, and `src/components/onboarding/` now contains only `Coachmark.tsx` - the 8-step voice-question flow described below was deleted as part of the unified onboarding -> decisions -> engagement loop (PR #298, 2026-06-29; see the **Home: the unified 2028 cockpit** section above). Onboarding today is `InlineProfileSetup` (industry + role captured direct to `user_memory`, plus interests via `SeedBeatsPrompt`), rendered inline inside the Home feed for new leaders - not a separate gated flow, and not voice-only. The description below is kept for historical reference only; do not present it as current.
 
-Builds a leader's "digital double" in approximately 3 minutes through 3 guided voice questions. Designed to deliver immediate value. The user has an exportable AI context before reaching the dashboard.
-
-### Flow
+### Flow (historical)
 
 1. **Welcome** - "Let's build your AI double" (icon + CTA)
 2. **Intro** - Shows 3 pillars: Memory Web, 10X Skills Map, Master Prompts
@@ -984,7 +932,7 @@ Builds a leader's "digital double" in approximately 3 minutes through 3 guided v
 7. **Value Moment** - "Your AI double knows X things about you" + live preview of exportable context + copy to clipboard
 8. **Complete** - "Your digital clone is live", redirects to Dashboard
 
-### Key Design Decisions
+### Key Design Decisions (historical)
 
 - Voice-first with text alternatives on every question
 - Animated waveform during recording
@@ -993,17 +941,15 @@ Builds a leader's "digital double" in approximately 3 minutes through 3 guided v
 - Fact verification step lets user accept/reject extracted facts
 - Value moment shows actual exportable context, proving immediate value
 
-### Components
-- `GuidedFirstExperience.tsx` (orchestrator)
-- `src/components/onboarding/` (step components)
-
 ---
 
 ## Pattern Detection & 10X Skills
 
+> **STATUS (verified 2026-08-02):** the "Strengths to 10X" / "Blind Spots" card labels described below no longer appear anywhere in the current UI (verified by grep). The backing table (`user_patterns`) and edge function (`detect-patterns`) are still live and still read/written by `useMemoryWeb.ts` (patterns feed into an internal health-score calculation), but the dedicated 3-column dashboard display described below does not currently render on any page. TODO(founder): confirm whether patterns are meant to resurface elsewhere (e.g. folded into the Brain graph or Track Record) or this is now backend-only signal.
+
 ### Overview
 
-AI analyzes the Memory Web to surface patterns: strengths to amplify, blind spots to address, and behavioral preferences. Displayed on the dashboard.
+AI analyzes the Memory Web to surface patterns: strengths to amplify, blind spots to address, and behavioral preferences. Historically displayed on the dashboard in a dedicated card layout (see status note above for current reality).
 
 ### Pattern Types
 
@@ -1032,63 +978,83 @@ AI analyzes the Memory Web to surface patterns: strengths to amplify, blind spot
 
 ---
 
-## Decision Tracking
+## Decision Engine: weighing a decision (`/decision`)
 
-### Overview
+The flagship decision-support surface, not documented in earlier versions of this file even though it is one of the app's 3 primary desktop/mobile nav tabs. Reached from Home's "Run a decision" action, a `KickstartCard`, the Decision Map's "Decide" prefill, or directly at `/decision`.
 
-Tracks decisions captured through the Decision Advisor tool, maintaining a history of choices with active/superseded status.
+### The pipeline
+
+POST a statement -> `decision-engine` runs it through a background pipeline (`EdgeRuntime.waitUntil`) while the frontend polls `decision_cases` + `decision_claims` + `decision_tensions` every 2s until the stage is terminal:
+
+1. **Reframe (Stage 0, PR #216, hardened PR #328)** - classifies whether the statement is already AI-native; if it is general business, reframes it into the AI-native version of the SAME decision (LLM-driven, with a deterministic `templatedReframe` fallback so nothing silently passes through unreframed). Both the original statement and the reframe are carried; the UI surfaces the reframe as a quiet banner only when a reframe actually happened. As of PR #328 the reframe is surfaced consistently and the pipeline's text output is sanitized (`_shared/sanitize.ts` `stripEmDashes`, among other cleanups).
+2. **Decompose** - breaks the statement into claims tagged to one of six AI-native "forces" (Dimension).
+3. **Verify** - web-grounded evidence retrieval per claim, plus an Artificial Analysis retriever (`retrievers.ts` `searchArtificialAnalysis`) that attaches real model-benchmark standing as primary-tier evidence when a claim names a specific model.
+4. **Cross-examine** - a second, independent pass that argues against the first.
+5. **Advise** - the final call: verdict, confidence, where it holds, where it breaks, a watch line, and a "what to check next" list.
+
+**Reliability (PR #328, 2026-07-04):** an eval gate (`supabase/functions/decision-engine/eval/`, golden-set-driven) is wired into CI via a Vitest job (`4e78f2c`) that runs the sanitizer + reframe-consistency checks on every PR, alongside the existing typecheck/build/lint gates.
+
+### The UI (rebuilt as a "radial force spider", PRs #308-320, late June/early July 2026)
+
+`src/components/operator/decision/` (orchestrated by `PressureTestPanel.tsx`):
+- **`DecisionCapture.tsx`** - the cold-start ask: one calm text field with ghost-text example copy, a mic affordance embedded in the field footer (not a separate button) that records + transcribes + appends, and a single "Weigh it" CTA.
+- **`DecisionOrb.tsx`** - the branded "pressure-testing" running state: concentric counter-rotating rings around a breathing core (not a generic spinner).
+- **`DecisionBoard.tsx`** - the warm state: live pressure-tests as calm cards (a Ready card shows its trust read; an in-flight one shows a working pill + a quiet status line) above a fast-capture bar.
+- **`DecisionSpider.tsx`** / **`decisionSpiderModel.ts`** - the same six AI-native forces spider out around the decision at FIXED positions every time (so the shape is learnable), each captioned with THIS decision's specific concern (from the engine's `force_labels`) and colour-coded by health (green holds / amber shaky / grey only-you-can-call). Centering math is ported from the brain graph's `computeViewBox`.
+- **`DecisionResultView.tsx`** - the call, one screen: a verdict pill + trust read + trust bar, a two-column "where it HOLDS" (emerald) / "where it BREAKS" (amber) derived honestly from the real claim verdicts (never fabricated), a watch line, and two actions (open Decisions / bank this call). Full depth (every claim + its evidence) is one tap away in a sheet so the main screen never grows past the viewport.
+- **`EvidenceList.tsx`** - the shared "what this is based on" renderer: AI-only evidence, ONE line per source (not a raw article dump), grouped into "supports" / "counters" / "context", each row carrying a single 0-100 trust ring (freshness + reliability + corroboration, server-scored). Tap to interrogate: fuller excerpt, score breakdown, link out. Evidence can be nested/countered.
+- **`DecisionAnatomy.tsx`** - the deeper research actions sheet, entered via **"Dig deeper"** (renamed from the earlier "Take it further" copy).
+- **`decisionMemo.ts`** (PR #321) - every completed weigh copies as a board-ready one-page markdown memo (pure + unit-tested); quiet Copy rows on `DecisionResultView` and `DecisionAnatomy`. Honest by construction: no options/alternatives section is fabricated, since the engine stores no alternatives.
+- **`useDecisionChecklist.ts`** + `send-decision-summary` edge function - the "what to check next" bullets get persisted tick-state (keyed by normalized bullet text, so a tick survives a re-advise that keeps the same string) and an "email this to me" action that sends a branded checklist email pointing at `https://ctrl.themindmaker.ai/decision`.
+- **`resolveFlow.ts`** / **`DecisionResolvedMoment.tsx`** / **`ResolveDecisionSheet.tsx`** - an honest resolve/closure flow: marking a decision resolved writes a `PlayedOut` outcome, closure copy is keyed to how it played out (win / logged honestly / parked), and a resolved decision stays closed across navigation (the next-active-case picker explicitly excludes the just-resolved id, even against a stale pre-refresh list).
 
 ### Data Architecture
 
-**Tables Used**
-- `user_decisions`: Decision records with status (active, superseded), content, and timestamps
+**Tables** (all RLS owner-scoped): `decision_cases` (carries `reframed`/`reframed_statement`/`reframe_note`/`lifecycle_stage` alongside the original `statement`), `decision_claims`, `decision_evidence` (`retriever` CHECK includes `artificialanalysis`), `decision_tensions`, `decision_alerts`, `decision_events`, `decision_eval_cases`, `decision_check_items` (the persisted checklist tick-state), `decision_user_calls`.
 
-**Hooks**
-- `useDecisions.ts`: Decision CRUD and history queries
+**Edge Functions:** `decision-engine` (the pipeline above), `decision-watch` (hourly `pg_cron` WATCH loop that re-verifies load-bearing claims and raises idempotent `decision_alerts`), `decision-eval` (admin-only single-claim calibration harness), `decision-reactions`, `decision-research`, `send-decision-summary` (the checklist email).
+
+**Hooks:** `useDecisionEngine` (run + poll), `useDecisionInbox` (case list + open alerts), `useDecisionCall`, `useDecisionActions` (open/strengthen/archive an active case from the Track Record surface - see **Capability & Track Record** below), `useDecisionChecklist`, `useResolveDecision`, `usePinnedDecision`.
+
+**Sales Anchor - Decision Engine**: "Ask a hard question. Watch it get decomposed into the forces that actually determine it, verified against real evidence (including live model-benchmark data when a claim names a model), and cross-examined by a second pass that argues against the first. Get a call with where it holds and where it breaks, a checklist of what to verify next, and a board-ready memo you can copy in one tap."
 
 ---
 
-## Memory Web Dashboard
+## Capability Ladder & Track Record (`/track-record`, PR #321 for the ladder)
 
-### Overview
+The "You" surface. Two related but distinct things live here:
 
-The central hub showing the leader's AI double health, Memory Web coverage, patterns, and facts.
+**Track Record** (`src/components/track-record/`, `useTrackRecord.ts`) - the leader's decision history: `TrackRecordView.tsx`, `AgedCallRow.tsx` (per the settings audit, PR set 2026-07-04, these rows now read "Active decision" with real Open / Strengthen / Archive actions wired through `useDecisionActions` to existing doors - open deep-links `PressureTestPanel` via `openCaseId`, strengthen re-runs `research('strengthen')`, archive writes `status='archived'` mirroring `useResolveDecision`; none of the three is a new feature, they reuse existing plumbing), `CalibrationSummary.tsx`, `DecisionCard.tsx`. The old 0/0/0 scoreboards were removed: cold state is a promise, warm state is an honest first pattern (never a deflating "0/N"), rich state is an earned calibration record - all derived from real data.
 
-### Dashboard Components
+**Capability Ladder** (`src/lib/capabilityLadder.ts`, PR #321, pure + unit-tested) - derives an EARNED 4-stage progression from observed behaviour only, never XP or streaks:
+1. **orienting** - still learning who the leader is, or no real decision weighed yet
+2. **operating** - real decisions are going through the engine
+3. **calibrating** - the leader records how calls played out, so judgment is being scored against reality
+4. **compounding** - the track record shows a defensible pattern AND context works outside CTRL (a built skill or a live agent connection)
 
-**AI Double Health Card**
-- Animated health score percentage
-- Stats: Total facts, Verified count, Patterns count, Decisions count
-- Progress bar visualization
-- "Getting Smarter" progress indicators
+Surfaced via `useCapabilitySignals` (shared react-query, no new tracking infrastructure) and `CapabilityHeader.tsx`, which tops the You/Track Record surface. When the ladder's next move lives outside the weigher, it feeds Home's kickstart slot (`applyNextMoveToKickstart`). `postureForStage` is a behaviour-identical seam that could later drive `useCockpit`'s guide/partner posture directly from capability stage rather than lifecycle recency; today the two intentionally coexist (lifecycle `userState` = engagement recency, capability stage = earned behaviour).
 
-**Memory Web Coverage**
-- Breakdown by category: Identity, Business, Goals, Challenges, Preferences
-- Horizontal bar charts with counts per category
-- Visual indicators for coverage gaps
+**Data:** derived from `decision_cases` / `decision_check_items` / `user_memory` / `ctrl_voice_profile` / MCP-connection facts already described elsewhere in this doc - no new tables.
 
-**Skills & Patterns (3-column layout)**
-- Strengths to 10X (with confidence scores)
-- Blind Spots (with confidence scores)
-- Behaviors & Preferences
+**Sales Anchor - Track Record**: "CTRL doesn't hand you a badge for logging in. It watches whether your calls actually held up, and tells you honestly which stage of AI-native operating you're actually in."
 
-**Memory Web Facts Grid**
-- 2-column grid, up to 12 facts displayed
-- Each fact: label, value, category badge, temperature badge (hot/warm/cold), verification status
-- Expandable for context and confidence
-- "View all X facts" link
+---
 
-**Voice Input Bar**
-- Mic button with live recording indicator
-- Text input: "Add to your digital clone - narrate anything about your work, goals, or challenges..."
-- Persistent on dashboard for continuous Memory Web building
+## Legacy Decision Tracking (`user_decisions`, `useDecisions.ts`)
 
-**Quick Export**
-- Dashboard header shortcut to copy Claude export to clipboard
+A separate, much simpler decision-logging table that predates the Decision Engine above. `useDecisions.ts` still exists in `src/hooks/` and `user_decisions` still exists as a table (status: active, superseded), but `useDecisions` is not imported by any component in the current tree (verified by grep) - it is dead code, not a live surface. The decision-weighing surface for a leader today is the Decision Engine (`/decision`) above.
+
+---
+
+## Memory Web Dashboard (RETIRED - kept here only so a stale claim isn't repeated elsewhere)
+
+Earlier versions of this doc described a separate "AI Double Health Card" / animated health score / "Getting Smarter" dashboard as the `/memory` hub. That component set does not exist in the current `src/pages/MemoryCenter.tsx` (verified by grep - no health score, no "Getting Smarter" copy, no `GettingSmarterBanner` import). The current Memory Center is the fact list + verification + Brain graph surfaces described in **Memory Center** and **Brain Engine** above. This section is intentionally left empty of feature claims rather than guessing what replaced the removed visuals; TODO(founder) if a health-score-style summary is wanted back.
 
 ---
 
 ## Missions System (First Moves)
+
+> **STATUS (verified 2026-08-02): no route or page currently mounts this UI.** `FirstMoveSelector.tsx`, `MissionsDashboard.tsx`, `MissionCheckIn.tsx`, and `MissionHistory.tsx` do not exist anywhere in `src/pages/` or `src/components/missions/` today, and `src/router.tsx` has no route for them. The `leader_missions` / `leader_check_ins` tables, `useMissions.ts` / `useCheckIns.ts` hooks, and the `send-mission-check-in` edge function are all still present and technically live, but unreachable from the app. TODO(founder): confirm whether this is an intentional deprecation (the feature description below is retained for historical reference) or a page that was removed by accident.
 
 ### Overview
 
@@ -1134,6 +1100,8 @@ After completing the diagnostic, leaders receive 3 prioritised "First Moves" - c
 
 ## Progress Tracking
 
+> **STATUS (verified 2026-08-02): no route or page currently mounts this UI.** `Progress.tsx` and `Baseline.tsx` do not exist in `src/pages/` today, and there is no route for them in `src/router.tsx`. The `leader_progress_snapshots` table and the `generate-progress-snapshot` / `compute-drift` / `batch-compute-drift` / `update-adoption-momentum` edge functions are still present and technically live, but unreachable from the app. TODO(founder): confirm intentional deprecation vs. accidental page removal (same open question as Missions System above).
+
 ### Overview
 
 Tracks leader progress over time through periodic snapshots and drift detection, measuring how AI literacy evolves after the initial diagnostic.
@@ -1173,6 +1141,8 @@ Tracks leader progress over time through periodic snapshots and drift detection,
 
 ## Weekly Check-ins
 
+> **STATUS (verified 2026-08-02): no route or page currently mounts this UI.** `WeeklyCheckin.tsx` does not exist in `src/pages/` today, and `/check-in` is not a route in `src/router.tsx`. `submit-weekly-checkin`, `send-weekly-checkin-reminder`, and `generate-weekly-prescription` edge functions are still present and technically live, but unreachable from the app. TODO(founder): same open question as Missions System / Progress Tracking above.
+
 ### Overview
 
 Structured weekly reflections that help leaders maintain engagement with their AI literacy development.
@@ -1204,6 +1174,8 @@ Structured weekly reflections that help leaders maintain engagement with their A
 
 AI-powered tools for day-to-day leadership decision-making, available after completing the diagnostic.
 
+> **STATUS (verified 2026-08-02):** the edge functions below all still exist and are deployed, but `PromptCoach.tsx` and the old `DecisionCapture.tsx` operator pages no longer exist in `src/pages/`, none of these functions has a route in `src/router.tsx`, and their only frontend caller (`MeetingPrepTab.tsx`, plus the `get-daily-prompt` / `get-or-generate-weekly-action` wrappers in `src/lib/api.ts`) is itself unimported by any live component (confirmed by grep - the only references left are in `src/__tests__/api.test.ts`). `operator-decision-advisor` predates and is distinct from the Decision Engine documented above (`/decision`), which is the live decision-support surface. This entire section is orphaned backend code, not a reachable feature. TODO(founder): confirm intentional deprecation vs. planned-but-unfinished re-integration.
+
 ### Features
 
 **Decision Advisor** (`operator-decision-advisor`)
@@ -1215,7 +1187,7 @@ AI-powered tools for day-to-day leadership decision-making, available after comp
 - AI-generated meeting preparation content
 - Tailored to user's context and objectives
 
-**Prompt Coach** (`prompt-coach`, `PromptCoach.tsx` page)
+**Prompt Coach** (`prompt-coach`)
 - Interactive prompt coaching
 - Teaches effective AI prompting techniques
 
@@ -1432,15 +1404,19 @@ AI-powered tools for day-to-day leadership decision-making, available after comp
 ### Payment Processing
 - Stripe integration (mindmaker_llc account), signature-verified webhooks, idempotent event processing
 - One-time payments: Full Diagnostic ($49), Deep Context Upgrade ($29), Diagnostic + Deep Context Bundle ($69)
-- Subscription: Edge Pro ($49/month)
+- Subscription: Edge Pro ($49/month) - canonical single source of truth is `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`), cross-imported by both the Deno edge runtime and the Vite client so pricing can never drift between frontend and backend
 - Payment verification and receipt generation
 - UTM attribution stamped onto Stripe session metadata at checkout
+- **Upgrade routing is split (PR #331, 2026-07-04):** `/upgrade` (`src/pages/Pricing.tsx`) is the interactive in-app React page with a live checkout button, reached from in-app CTAs (e.g. the decision-peak upgrade prompt added in PR #329). `/pricing` is a separate static SEO landing page (`public/pricing.html`) that `vercel.json` rewrites requests to; it is kept in sync with `/upgrade`'s pricing manually, not generated from the same source, so a drift check is a manual step, not automated.
+- **KNOWN STALE, found during this pass:** `public/.well-known/product.json` - the machine-readable "ground truth" endpoint `AI agents are told to fetch for pricing (see ARCHITECTURE.md "Runtime Product-Truth Source") - still lists Edge Pro at $29/mo, not the current $49/mo. This is a live production file, not just a doc; it was not fixed by this pass since this pass is scoped to FEATURES.md/ARCHITECTURE.md only. TODO(founder): update it.
 
 ### Analytics & Benchmarking
 - Anonymised aggregate scoring (AI Leadership Index)
 - Cohort comparison (by role, industry, company size)
 - Quarterly index snapshots
 - Momentum tracking
+- **Product analytics (2026-07-18, `43ecd6c`):** PostHog, added as a plain inline `<script>` in `index.html` (no npm dependency), tagging every event with `product: 'mm_ctrl'` so it shares a PostHog project across the wider Mindmaker product surface without collisions.
+- **North Star metric (PR #330, 2026-07-04):** the product-health number leadership actually watches is "flywheel leaders" (>=5 current `user_memory` facts AND a decision weighed in the last 7 days), instrumented by migration `20260704120000_north_star_flywheel.sql`. Canonical: `project-documentation/NORTH_STAR.md`.
 
 ### Export & Sharing
 - PDF export of diagnostic results
@@ -1559,12 +1535,13 @@ A condensed list of one-liners pullable for outbound. Each tied to a real shippe
 - **Memory Web**: "Talk for two minutes. Get a portable AI double that works in every AI tool."
 - **Context Export**: "One click. ChatGPT, Claude, Gemini, Cursor, Claude Code. All of them. Yours."
 - **Skill Builder (Agent Skill Builder)**: "Describe one weekly workflow out loud. CTRL hands you a Claude Skill that auto-triggers whenever your team's language matches. Permanent leverage from two minutes of speaking."
-- **Home / Decision Map / Automator (PRs #197-200)**: "Open CTRL and it feels like coming back to your desk: a plain greeting, a deck of what's worth a look, one tap to your briefing, a decision, or a new skill. The decision you care about is pinned with where it stands, not a verdict."
+- **Home / Decision Engine / Automator**: "Open CTRL and it feels like coming back to your desk: a plain greeting, a feed of what's worth a look, one tap to your briefing, a decision, or a new skill. Weigh a decision and watch it decomposed into the forces that actually determine it, verified and cross-examined, with a memo you can copy straight to your board."
+- **Decision Engine**: "Ask a hard question. Get a call with where it holds and where it breaks, backed by real evidence, not a black box."
 - **Kit Engine**: "Scan a QR after class. No login. Six questions. A personalised pack you install, a 7-day plan to ship it, and nudges that stop when you do."
 - **Daily Briefing v2**: "Three minutes of audio. Every story anchored to a specific priority on your desk. No mystery algorithm."
 - **Edge - Sharpen/Cover**: "Your strengths systemized. Your weaknesses covered. Board memos and strategy docs in your register, on demand."
-- **Decision Advisor**: "Ask a hard question. Get an answer that already knows your context."
-- **Meeting Prep**: "Walk in briefed by an AI that knows your team, your priorities, and your last decision."
+- ~~**Decision Advisor**: "Ask a hard question. Get an answer that already knows your context."~~ (the underlying `operator-decision-advisor` tool is orphaned backend code as of 2026-08-02 - see **Operator Tools** status note above; use the **Decision Engine** anchor instead)
+- ~~**Meeting Prep**: "Walk in briefed by an AI that knows your team, your priorities, and your last decision."~~ (the underlying `generate-meeting-prep` function is orphaned backend code as of 2026-08-02 - see **Operator Tools** status note above; do not use this anchor until it is reconnected to a live surface)
 - **Diagnostic**: "10 minutes. Six dimensions. The questions your board will ask you. $49."
 - **Edge Pro**: "$49/month. The decision tier: unlimited decision weighs, a second model that cross-examines every call, and decision watch. Plus board memos and strategy docs in your register, and the live pull of your skills into any AI."
 - **Privacy**: "No Slack. No email. No calendar. You talk to it. That's the whole connection."

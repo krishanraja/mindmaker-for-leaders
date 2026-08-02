@@ -1,8 +1,8 @@
 # Ideal Customer Profile
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02.
 
-> RECONCILIATION BANNER. The firmographics below (senior leaders, 50 to 5,000-person companies, already using AI) are a reasonable carry-over frame, but the PAIN sections are written for the old "zero-context tax / decision-speed / information-overload" positioning. CTRL now sells **building the AI-native version of your business**. Lead with the AI-native fit signals: "I know my business needs to become AI-native and do not know where to start", "I want an agent to own part of a workflow but cannot see which part is safe to hand off", "I am trying to figure out the AI-native version of what we sell". TODO(founder): confirm whether the AI-native positioning narrows or shifts the ICP before this doc's pain/trigger lists are used in outbound. Do not invent a new ICP; use this frame + the AI-native signals.
+> RECONCILIATION BANNER. The firmographics below (senior leaders, 50 to 5,000-person companies, already using AI) are a reasonable carry-over frame and are unchanged this pass. The Pain Points, Jobs to Be Done, and Buying Triggers sections have been rewritten below to lead with the AI-native fit signals (build/orchestrate/productize/go-to-market, the reframe rule, the autonomy line) instead of the retired "decision-speed / zero-context tax" framing; the Information Overload (Briefing) and Repetition (Automator) pain sections are kept because those mechanics are still real and unchanged. Two corrections folded in below: (1) the "first session" language no longer describes a voice onboarding - see PR #298 - onboarding is now a ~20-second tap-based industry/role/interests setup; (2) references to the standalone "Decision Advisor" / "Meeting Prep" / "Prompt Coach" tools are replaced with the current single decision engine ("weigh it") and Edge artifacts, which is what those names now map to in the product. TODO(founder), scoped: confirm whether the AI-native positioning narrows or shifts the ICP itself (for example toward leaders actively trying to make their business AI-native, versus the broader "senior leader already using AI" frame below); until then, do not narrow the ICP in outbound beyond what is written here.
 
 ---
 
@@ -46,12 +46,12 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 
 ### Pain Points
 
-**Decision Speed Pain (Primary - CTRL solves this)**
-1. Every AI conversation starts from zero. They re-explain who they are, what they do, and what matters, every single time.
-2. AI gives generic advice because it has no context. The output reads like it was written for anyone. It was.
-3. They use multiple AI tools. Context does not travel between them. Switching from ChatGPT to Claude means starting over.
-4. Custom instructions and system prompts exist, but maintaining them is tedious, manual, and never complete enough.
-5. They know AI should be making them faster. Instead, it is making them slower, because the setup cost erases the speed gain.
+**AI-Native Transformation Pain (Primary - CTRL solves this)**
+1. They know their business needs to become AI-native and do not know where to start; AI sits on a board deck, not in the org chart, the product, or the go-to-market motion.
+2. They cannot see which parts of a workflow are safe to hand to an agent, where the human checkpoint belongs, and what the human role becomes once it does.
+3. They are trying to figure out the AI-native version of what they sell, and every general-business framework they reach for (a strategy deck, a consultant, a generic AI course) answers the question as general business, with no AI-native angle.
+4. Every AI conversation still starts from zero: they re-explain who they are, what they do, and what matters, every time, and across every tool they switch between.
+5. They suspect competitors who are rebuilding around agents are pulling ahead by default, and they cannot yet name the specific moves that would close the gap.
 
 **Information Overload Pain (CTRL Daily Briefing solves this)**
 6. Subscribed to 5+ newsletters. Skim two, skip three. Still feel like they're missing things.
@@ -66,20 +66,20 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 13. Wants permanent agent infrastructure they own (an installable Claude Skill in `~/.claude/skills/`), not a saved prompt or a brittle no-code automation. Pain signal: "I've explained this exact format to Claude 12 times this quarter."
 
 **Strategic Pain (Secondary - compounds over time)**
-10. Cannot distinguish real AI value from vendor theatre in proposals and pitches.
-11. Unable to challenge technical teams credibly on AI decisions.
-12. Feels pressure to "do something with AI" without a clear framework for what is worth doing.
-13. Suspects competitors are building AI advantages they cannot see.
-14. Making AI decisions without AI literacy. The equivalent of approving a budget in a language they do not speak.
+14. Cannot distinguish real AI value from vendor theatre in proposals and pitches.
+15. Unable to challenge technical teams credibly on AI decisions.
+16. Feels pressure to "do something with AI" without a clear framework for what is worth doing, or which decision to make AI-native first.
+17. Suspects competitors are building AI-native advantages they cannot see.
+18. Making AI decisions without AI literacy. The equivalent of approving a budget in a language they do not speak.
 
 ---
 
 ### Jobs to Be Done
 
-**Immediate (First 2 Minutes)**
-- Build a portable AI double from voice input. No typing, no forms, no prompt engineering.
-- Export that context to ChatGPT, Claude, Gemini, or Cursor in one click.
-- Experience the difference between generic AI and AI that knows them. Immediately.
+**Immediate (First Session, roughly 20 seconds to set up)**
+- Set the AI-native lens with three taps: industry, role, a few interests to watch. No typing, no forms, no voice required.
+- Land on a role-tailored starter decision (a real "weigh it" call, not a demo) so the first session ends with an actual decision in motion, not just a profile.
+- Start building the Memory Web from there through natural voice or text conversation, deepening over time rather than gating the first session.
 
 **Day 1 (Briefing kicks in)**
 - Accept industry-aware seed beats with one tap. Get a relevant briefing on day one, not week three.
@@ -88,7 +88,7 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 
 **Week 1 (Speed Compounds)**
 - Stop re-explaining context in every AI conversation. Permanently.
-- Get decision support and meeting prep that already knows their priorities, their team, their constraints.
+- Weigh a real decision through the engine: reframed to its AI-native version, decomposed, verified against evidence, cross-examined, closed with a decision memo.
 - Use AI as a thinking partner that is actually informed, not a blank-slate chatbot.
 - Generate a board memo or strategy doc on demand from the Edge view, in their own register.
 
@@ -107,12 +107,12 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 
 ### Buying Triggers
 
-**Decision-speed triggers (highest intent)**
-- Just spent 10 minutes re-explaining their role and priorities to ChatGPT before getting a mediocre answer. Thought: "There has to be a better way."
+**AI-native triggers (highest intent)**
+- Watched a competitor rebuild a workflow around an agent and felt the gap personally: "they are building with AI, we are just buying it."
+- Cannot answer, in the moment, which part of a workflow is safe to hand to an agent versus keep human. Asked the question out loud and had no framework to answer it.
+- Just spent 10 minutes re-explaining their role and priorities to ChatGPT before getting a mediocre, generic answer. Thought: "There has to be a better way."
 - Switched from ChatGPT to Claude and lost all their context. Felt the friction of starting over.
-- Got AI advice on a real decision and immediately knew the output was generic. It did not account for anything specific to their situation.
 - Watched a peer or direct report get dramatically better AI output and asked how.
-- Realized they are spending more time setting up AI conversations than they save from the output.
 
 **Information-overload triggers (high intent)**
 - Cancelled three newsletters in the last month. Still drowning.
@@ -137,7 +137,7 @@ This is the buyer the product is designed for, the persona sales/marketing AI ag
 
 **Month 1**
 - Uses CTRL context across 3+ AI tools as standard workflow
-- Decision Advisor or Meeting Prep used for a real decision, not a test
+- Weighed a real decision through the engine, not a test run
 - Reports saving 5-10 minutes per AI conversation in context setup alone
 - Briefing is now the morning ritual; story-level Bans + Bookmarks have visibly tightened the feed
 - Generated a board memo or strategy doc via Edge (Pro) and shipped a version of it

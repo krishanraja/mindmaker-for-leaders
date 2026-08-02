@@ -1,10 +1,10 @@
 # Value Propositions
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02.
 
-> RECONCILIATION BANNER. CTRL's positioning is now **building the AI-native version of your business**, not "decision speed". The feature-level value props below (Memory Web, Briefing, the Automator, the Decision engine) are accurate as MECHANICS, but the binding promise is no longer "decide faster"; it is "make your business more AI-native". The product is globally DARK (not light). Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); building Automator skills is FREE for now. The one-time diagnostic SKUs ($49/$29/$69) are wired in Stripe but flagged TODO(founder) under the repositioning. Lead with the AI-native frame from `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`. TODO(founder): rewrite the binding promise and the audience value props to AI-native.
+> RECONCILIATION BANNER. The 2026-06-21 repositioning is confirmed current: **building the AI-native version of your business**, not "decision speed". This pass folded that correction into the body instead of leaving it as a banner over stale prose: the Leaders audience section's binding promise, Flywheel description, and Component Value Props were rewritten below. Two further corrections grounded in the code: (1) "Decision Advisor", "Meeting Prep", "Prompt Coach", "10X Skills & Patterns", "Stream of Consciousness", and "AI Literacy Diagnostic" are retired as standalone named tools (none exist in `src/` any more; `/diagnostic` is a bare redirect to `/dashboard`, and `MeetingPrepTab.tsx` / `PromptLibraryV2.tsx` are unimported dead code) - they were consolidated into the single decision engine (`/decision`, "weigh it") and Edge artifacts, and the component list below reflects that. (2) The Teams/Partners sections and the "Unified Positioning" binding-promise language were still "decision speed"; reframed to AI-native below (Bootcamp/Portfolio pricing bands and scope are unchanged, still TODO(founder) per section 5 of `AGENT_BRIEFING.md`). The product is globally DARK (not light). Edge Pro is $49/month (the decision tier; the daily briefing is free); building Automator skills is free for now.
 
-Clear value propositions for each audience. The binding promise is: **build the AI-native version of your business** (reframe every call to its AI-native version, never stay general).
+Clear value propositions for each audience. The binding promise is: **build the AI-native version of your business** (reframe every call to its AI-native version, never stay general; the decision engine, the Memory Web substrate, and the Automator are how that happens day to day).
 
 ---
 
@@ -12,21 +12,21 @@ Clear value propositions for each audience. The binding promise is: **build the 
 
 ### Core Value Proposition
 
-**For**: Senior leaders who use AI daily but lose time because every AI conversation starts from zero
+**For**: Senior leaders who need to make their business AI-native and do not know where to start
 
-**Who**: Are making dozens of decisions per week and cannot afford to re-explain their world to AI every single time
+**Who**: Already use AI daily but are bolting it onto a business that still runs the old way, and cannot yet see which workflows an agent should own, what their AI-native offer looks like, or how a specific call on their desk should change
 
-**CTRL**: Is a portable AI context platform with a daily evidence-based intelligence Briefing and a voice-to-Agent-Skill builder
+**CTRL**: Is the instrument that reframes a leader's real decisions to their AI-native version and grounds them in evidence, built on a portable Memory Web substrate, a daily AI-native intelligence Briefing, and a voice-to-Agent-Skill builder
 
-**That**: Builds your AI double from two minutes of natural conversation, exports your full context to any AI tool, delivers 3 minutes of audio every morning anchored to your real priorities, and turns the workflows you already repeat every week into downloadable Claude Skills - so every interaction starts from depth, not from scratch
+**That**: Takes any general-business call ("should I hire a VP of Sales?") and reframes it into the AI-native version ("should an agent own part of that motion first?"), pressure-tests it against live evidence, and hands back a board-ready decision memo; builds your context once from voice or text and exports it to any AI tool; delivers 3 minutes of audio every morning anchored to your real priorities, filtered to nine AI-native categories; and turns a workflow you already repeat every week into a downloadable, installable Claude Skill
 
-**Unlike**: Custom GPTs (locked to one platform), manual system prompts (hours of work), AI courses (theory, not speed), news feeds (everyone gets the same stories), or generic macro / automation tools (no triage gate - they happily generate junk skills from any input)
+**Unlike**: General business advisors and strategy decks (answer the general question, never the AI-native one), Custom GPTs (locked to one platform), manual system prompts (hours of work), news feeds (everyone gets the same stories), or generic macro / automation tools (no triage gate - they happily generate junk skills from any input)
 
-**We**: Give you a portable AI double that makes ChatGPT, Claude, Gemini, and every other tool instantly yours, plus built-in thinking tools, a daily audio briefing that already knows your world, and a Skill Builder that converts one weekly workflow into permanent agent infrastructure you own
+**We**: Give you a decision engine that never lets a call stay general, a portable AI double that makes ChatGPT, Claude, Gemini, and every other tool instantly yours, a daily audio briefing filtered to what changes how you build/run an AI-native business, and a Skill Builder that converts one weekly workflow into permanent agent infrastructure you own
 
 ### The Flywheel
 
-The more you use CTRL, the richer your Memory Web becomes. The richer your Memory Web, the sharper every AI tool gets you to a decision and the more relevant your daily Briefing. The more relevant the Briefing, the more you bookmark and ban - which makes tomorrow's lens sharper still. Decision speed compounds. This is not incremental improvement. It is a structural advantage.
+The North Star (see `NORTH_STAR.md`, founder-signed 2026-07-04) is the flywheel: a leader who both holds a real brain (5+ current facts in Memory) and has weighed a decision in the last 7 days, in the same week. The more you tell CTRL, the richer the Memory Web; the richer the Memory Web, the sharper the reframe and the weigh; the sharper the weigh, the more reason to come back and tell it more. Either half alone is not the product working: a rich brain that never drives a decision is a filing cabinet, and a decision with no brain behind it is a generic answer. This is not incremental improvement. It is a structural advantage that compounds week over week.
 
 ### Component Value Props
 
@@ -38,7 +38,7 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 **Context Export (the killer feature)**
 - "One click. Every AI tool you use knows who you are."
 - Works across ChatGPT, Claude, Gemini, Cursor, Claude Code, raw markdown.
-- Optimized for 6 use cases: meetings, decisions, email, strategy, code, general advisor.
+- Optimized per use case (`ExportUseCase` in `src/types/memory.ts`): general, meeting, decision, code, email, strategy, delegation, board, plus more specialised Edge presets. TODO(founder)/tech-debt note: the "6 use cases" figure quoted under the prior positioning is stale (the type now lists more); do not quote a specific count without re-checking the code.
 - This is the moment generic AI becomes your AI.
 
 **Daily Briefing - evidence-based, not engagement-based**
@@ -68,26 +68,11 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 - Quality gate (17/17) enforces 5+ trigger phrases, push language, third-person voice, body under 500 lines, imperative voice, required sections including a `## Learning loop`, valid name format, no fabricated voice samples, plus an advisory `body.voiceLockSurfaced` check. Skills you can actually deploy, not drafts you have to clean up.
 - Five archetypes covered: decision-framework, voice-lock, reporting-engine, tool-integration, getting-started.
 
-**Decision Advisor**
-- "Ask a hard question. Get an answer that knows your context."
-- No setup. No preamble. It reads your Memory Web and meets you where you are.
-- Faster from question to clarity than any conversation with a blank AI.
-
-**Meeting Prep**
-- "Walk into every meeting already briefed, by AI that knows your priorities."
-- Contextual briefs generated from your Memory Web in seconds.
-
-**Prompt Coach**
-- "Stop guessing what to type. CTRL makes your AI prompts sharp."
-- Turns vague questions into precise, context-rich prompts automatically.
-
-**10X Skills & Patterns**
-- "AI surfaces your strengths to amplify and your blind spots to close."
-- Pattern detection from your Memory Web data, not generic assessments.
-
-**AI Literacy Diagnostic**
-- "Know where you stand in 10 minutes. Not 10 hours of courses."
-- Surfaces tensions, risk signals, and organizational scenarios specific to you.
+**Decision Engine (the weigh)**
+- "One field. Talk it out or type it. CTRL reframes it, pressure-tests it, and shows you where it holds and where it breaks."
+- No explainer wall, no setup: a single fast-capture input ("Weigh it", mic embedded) starts the pipeline - reframe to the AI-native version, decompose into claims, verify against live evidence, cross-examine.
+- The result is a radial evidence spider (the decision at the centre, six AI-native forces spidering out, colour-coded by whether they hold up), one-line scored sources you can "Dig deeper" into for nested/countered evidence, and a board-ready one-page decision memo you copy out.
+- Faster from question to a defensible answer than any conversation with a blank AI, and auditable the way the Briefing is: every claim shows its evidence, not just a verdict.
 
 ### Differentiation Matrix
 
@@ -95,9 +80,9 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 |-------------|----------------|----------------------|
 | **ChatGPT Custom Instructions** | Manual context writing, locked to OpenAI, static | Auto-extracted context, portable to any AI, living |
 | **Claude Projects** | Document upload for one workspace | Living Memory Web that works everywhere |
-| **Writing System Prompts by Hand** | Hours of prompt engineering per tool | 2 minutes of talking. Structure extracted automatically. Works across all tools. |
+| **Writing System Prompts by Hand** | Hours of prompt engineering per tool | Talk naturally, structure extracted automatically. Works across all tools. |
 | **Custom GPTs** | One-off bots for specific tasks | Universal context that accelerates every AI interaction |
-| **AI Training Courses** | Hours of education before any value | Immediate infrastructure. 2 minutes to first export. |
+| **AI Training Courses** | Hours of education before any value | A live decision engine and a Memory Web from the first session, not a syllabus. |
 | **AI Consultants** | $15K+ engagement, creates dependency | Self-serve. Leader owns their data. No dependency. No delay. |
 | **AI Context Tools (Notion AI, Mem, Rewind)** | Connect to Slack, email, calendar - require enterprise approvals, read your whole computer | Self-contained. You talk to it. No integrations. No permissions. No IT review. |
 | **Morning Briefs (Axios, Morning Brew, Techmeme, Feedly)** | Same stories for everyone, light algorithmic reorder | Custom lens per user per briefing type per day. Every segment shows the specific profile fact it was anchored to. |
@@ -200,28 +185,29 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 
 ### What Binds All Three
 
-**Problem**: Leaders use AI but every conversation starts from zero. This kills decision speed. The repetitive workflows leaders run every week (board updates, hiring syncs, RFP triage) are re-typed from scratch every time. Teams can't align on AI decisions. Portfolios lack visibility into where velocity is being lost.
+**Problem**: Most businesses use AI without becoming AI-native. Leaders bolt AI onto a business that still runs the old way; general-business calls get answered as general business with no AI-native angle; the repetitive workflows leaders run every week (board updates, hiring syncs, RFP triage) are re-typed from scratch every time; teams can't align on AI decisions; portfolios lack visibility into where AI-native transformation is stalling.
 
-**Solution**: CTRL provides portable AI context (Memory Web + Export), evidence-based daily intelligence (Briefing v2), a leadership amplifier (Edge), an Agent Skill Builder (voice-to-Claude-Skill), and structured thinking tools that eliminate the zero-context tax and accelerate the path from question to decision.
+**Solution**: CTRL provides a decision engine that reframes every call to its AI-native version and grounds it in evidence, a portable AI context substrate (Memory Web + Export), an AI-native daily intelligence Briefing, and an Agent Skill Builder (voice-to-Claude-Skill) that turns a workflow into agent infrastructure the leader owns.
 
-**Differentiation**: We don't teach AI. We don't implement AI. We make every AI tool a leader already uses dramatically faster to value by automating context - and we prove the relevance with auditable anchors.
+**Differentiation**: We don't teach AI. We don't implement AI. We are the instrument that pulls every real decision toward its AI-native version and proves the reframe with evidence, not a vendor pitch.
 
-**Outcome**: Faster decisions. Sharper AI output. Less waste. More control. Compounding advantage over time.
+**Outcome**: The AI-native version of the business, one decision at a time. Sharper AI output. Less waste. More control. A compounding advantage that the flywheel metric (Memory + weighed decisions, same week) makes measurable.
 
 ### What Varies By Audience
 
 | Dimension | Leaders | Teams | Partners |
 |-----------|---------|-------|----------|
-| **Primary Need** | Decision speed via portable AI context + auditable daily briefing | Team alignment on AI decisions | Portfolio-wide decision velocity visibility |
-| **Time to Value** | 2 minutes | 4 hours | 2 weeks |
-| **Key Output** | Memory Web + Exports + Briefing | Pilot charter | Heatmap + offer pack |
-| **Core Action** | Talk, export, decide faster | Workshop, align, commit | Assess, prioritize, intervene |
+| **Primary Need** | Build the AI-native version of the business, one decision at a time, on a portable AI context substrate | Team alignment on AI-native decisions | Portfolio-wide visibility into AI-native transformation |
+| **Time to Value** | Minutes (profile setup) to first weighed decision | 4 hours | 2 weeks |
+| **Key Output** | Memory Web + Exports + Briefing + weighed decisions | Pilot charter | Heatmap + offer pack |
+| **Core Action** | Tell it your world, weigh a decision, build the substrate | Workshop, align, commit | Assess, prioritize, intervene |
 | **Buyer** | Self-funded | Exec team sponsor | Partner/firm |
-| **Price Point** | Free / $49 Diagnostic / $49/mo Edge Pro / $69 bundle | $15K-$50K | $5K-$25K |
+| **Price Point** | Free / $49/mo Edge Pro (decision tier); one-time diagnostic SKUs TODO(founder), see Pricing table below | $15K-$50K | $5K-$25K |
 
 ### Shared Anti-Positioning
 
 **We Are Not**:
+- A general business advisor
 - AI implementation consultants
 - Tool vendors or resellers
 - Generic executive education
@@ -229,12 +215,12 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 - A news aggregator that ranks by engagement
 
 **We Are**:
-- The decision-speed layer for leaders who use AI
+- The instrument for building the AI-native version of your business, one decision at a time
 - Portable AI context infrastructure that works everywhere
 - Self-contained - no integrations, no plugins, no enterprise security reviews
 - Voice-first, zero-learning-curve, executive-grade
-- Auditable: every recommendation, every Briefing segment, can be traced to a specific profile fact
-- Focused on one thing: leaders deciding faster with AI
+- Auditable: every decision claim and every Briefing segment can be traced to specific evidence or a specific profile fact
+- Focused on one thing: pulling every real decision toward its AI-native version
 
 ---
 
@@ -242,13 +228,12 @@ The more you use CTRL, the richer your Memory Web becomes. The richer your Memor
 
 | SKU | Price | What's included | Best for |
 |-----|-------|-----------------|----------|
-| **Free / Core** | $0 | Memory Web (read-write), **Voice Profile capture**, Context Export (all 6 tools), Onboarding, basic Daily Briefing, Decision Advisor, Meeting Prep, Prompt Coach, Edge profile (preview), Kit access, **Automator skill builds + exports (free for now, no quota)**. Kit side-door students from `/kit` graduate here. | Every new leader. The "land" in land-and-expand. |
-| **Full Diagnostic** | $49 one-time | Complete tensions, risk signals, org scenarios, full thinking tools library | Leaders who want a one-shot deep audit |
-| **Deep Context Upgrade** | $29 one-time | Enhanced company-context enrichment for sharper AI output | Leaders pre-meeting prep / strategy sprints |
-| **Diagnostic + Deep Context Bundle** | $69 one-time | Both above. Saves $10 vs buying separately. | Default upsell once Memory Web is built |
-| **Edge Pro** | $49/month | The **decision engine**: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch, plus the **live MCP pull of your built skills (`list_skills` / `get_skill`)**, unlimited Edge artifacts (board memos, strategy docs, emails, agendas), drafting, email delivery, Custom Voice Export, MCP agent access. (The daily briefing is free, not gated here.) | Leaders who treat AI as part of their weekly cadence |
+| **Free / Core** | $0 | Memory Web (read-write), **Voice Profile capture**, Context Export (all 6 tools), the decision engine (3 weighs/month), Edge profile (preview), Kit access, daily personalised Briefing, **Automator skill builds + exports (free for now, no quota)**. Kit side-door students from `/kit` graduate here. | Every new leader. The "land" in land-and-expand. |
+| **Edge Pro** | $49/month | The **decision tier**: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch, plus the **live MCP pull of your built skills (`list_skills` / `get_skill`)**, unlimited Edge artifacts (board memos, strategy docs, emails, agendas), drafting, email delivery, Custom Voice Export, MCP agent access. (The daily briefing is free, not gated here.) | Leaders who treat the decision engine as part of their weekly cadence |
 | **Bootcamp** | $15K-$50K | 4-hour executive sprint + pilot charter + provocation report | Exec teams |
 | **Portfolio** | $5K-$25K | Heatmap + offer pack across portfolio companies | VCs / PE / consultants |
+
+**One-time diagnostic SKUs, TODO(founder)**: Full Diagnostic ($49), Deep Context Upgrade ($29), and the Bundle ($69) are still wired in Stripe (`create-diagnostic-payment`), but `/diagnostic` in the app is currently a bare redirect to `/dashboard` with no purchase UI behind it, so there is no live path for a leader to buy these today. Do not lead with them in outbound until a founder confirms whether the UI returns or the SKUs are retired.
 
 ---
 
@@ -265,4 +250,4 @@ Pick the right hook for the audience and channel:
 - **For builder/operator audiences**: "Built by Krish Raja - 16 years monetizing emerging tech, $0 → $12M ARR at Captify, $9M → $61M data revenue at Nine. The tool he wished existed when running real P&Ls."
 - **For Claude / Cursor / Claude Code power users**: "CTRL is the first tool that turns your weekly leader workflows into agentskills.io-compliant Skills you drop into `~/.claude/skills/`. Two minutes of voice. Permanent leverage. Triage gate refuses to generate junk."
 - **For "automation fatigue" audiences**: "Most automation tools generate something whether your input was a real workflow or not. CTRL's Four Honest Tests triage gate refuses to generate a skill from a fact, a tone preference, or a writing style. The respect for your time is the product."
-- **CTA progression**: Free signup (or Kit redemption → side-door upgrade) → Voice Profile → free Automator skill (no quota) → seed beats accepted → first Briefing (free) → first decision weigh (3 free/month) → Diagnostic upsell → Edge Pro upsell (unlimited decision weighs + cross-examination + decision watch + live MCP skills pull + Edge artifacts + Custom Voice Export).
+- **CTA progression**: Free signup (or Kit redemption → side-door upgrade) → ~20-second profile setup (industry, role, interests) → role-tailored starter decision → seed beats accepted → first Briefing (free) → first decision weigh (3 free/month) → free Automator skill (no quota) → Edge Pro upsell (unlimited decision weighs + cross-examination + decision watch + live MCP skills pull + Edge artifacts + Custom Voice Export). The one-time Diagnostic SKUs are not currently in this path (see TODO above).

@@ -2,9 +2,9 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02 (previously 2026-06-21, AI-native reconciliation pass).
 
-> **Status**: This is a developer bug/pain log dated 2026-04-26. Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath." It predates the dark redesign (PR #186), the brain engine, the kit redesign, and the main-app polish, so for current known issues also read `CLAUDE.md` (the live architecture quick-reference, which lists the honest residual gaps). Note: where this doc lists "light mode color system" in an AVOID list, that is correct guidance; the app is globally dark.
+> **Status**: This is a developer bug/pain log dated 2026-04-26. Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath." It predates the dark redesign (PR #186), the brain engine, the kit redesign, and the main-app polish, so for current known issues also read `CLAUDE.md` (the live architecture quick-reference, which lists the honest residual gaps). Checked 2026-08-02 against `CLAUDE.md`'s "honest residual gaps": the brain canvas Strengthen/Fix actions this file never actually listed as a gap went LIVE in PR #321 (2026-07-03) - nothing to correct there. Two items below ARE now stale and are called out inline where they occur: (1) the "V3 Implementation Checklist" (~line 227) still checklists "Using light mode color system" and "Test both light and dark mode" as things to verify - the app has run globally forced dark with no light fallback since PR #186 (2026-06-16, see `DECISIONS_LOG.md` Decision 44); read those two checklist lines as retired. (2) Issue 24's suggested fix (`supabase db push`) is no longer valid guidance - `CLAUDE.md` now documents that the local migration history is out of sync with remote and directs migrations through the Supabase Management API instead; see the correction inline at Issue 24.
 
 ---
 
@@ -225,7 +225,7 @@ The following failure points have been identified and guarded in `pipelineGuards
 Use this checklist when implementing new features to ensure V3 standards are met.
 
 ### Design System Setup
-- [ ] Using light mode color system
+- [ ] ~~Using light mode color system~~ RETIRED 2026-08-02: the app has run globally forced dark, no light fallback, since PR #186 (2026-06-16). See `DECISIONS_LOG.md` Decision 44.
 - [ ] All CSS variables defined (colors, shadows, spacing)
 - [ ] Typography scale correct
 - [ ] Border radius system followed
@@ -288,7 +288,7 @@ Use this checklist when implementing new features to ensure V3 standards are met
 ### Issue 23: Memory Table Not Found
 **Symptom**: Memory Center shows "Failed to load memories" error
 **Root Cause**: Database migrations not applied to Supabase instance
-**Solution**: Run migrations via Supabase CLI: `supabase db push`
+**Solution**: ~~Run migrations via Supabase CLI: `supabase db push`~~ CORRECTED 2026-08-02: do NOT use `supabase db push` (the local migration history is out of sync with remote per `CLAUDE.md`). Apply the missing table/columns via the Supabase Management API instead (see `CLAUDE.md` "Supabase Deployment" for the current SQL-via-API workflow).
 **Status**: ⚠️ Requires migration deployment
 
 ### Issue 24: Memory Settings Not Loading
@@ -321,7 +321,7 @@ Use this checklist when implementing new features to ensure V3 standards are met
 ## Prevention Checklist
 
 Before shipping:
-- [ ] Test both light and dark mode
+- [ ] ~~Test both light and dark mode~~ RETIRED 2026-08-02: there is no light mode; the app is forced dark only (PR #186). Test dark mode only.
 - [ ] Test mobile, tablet, desktop
 - [ ] Verify null guards on all data paths
 - [ ] Check `assessmentId` flows through pipeline

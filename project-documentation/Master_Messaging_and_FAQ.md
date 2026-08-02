@@ -1,9 +1,9 @@
 # CTRL & Mindmaker Master Messaging & FAQ
 *Product marketing, sales, content, and outbound reference*
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02.
 
-> RECONCILIATION BANNER. The Mindmaker founder narrative, the enterprise-buyer pain, the Builder Economy theme, and the Sprint description are all still accurate and largely ON-positioning (the "AI-native competitors move faster by default" and "everyone will build" themes align with the current CTRL positioning). The one correction: the CTRL product description in PART 3 below was written as "a portable AI memory web / context layer". CTRL's positioning is now **building the AI-native version of your business** (the memory web is the substrate, not the headline). The pricing table (PART 5) is accurate: Edge Pro $49/month (the decision tier), the daily briefing and Automator builds free; the one-time diagnostic SKUs are flagged TODO(founder) under the repositioning. Canonical: `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`.
+> RECONCILIATION BANNER. The Mindmaker founder narrative, the enterprise-buyer pain, the Builder Economy theme, and the Sprint description remain accurate and on-positioning (the "AI-native competitors move faster by default" and "everyone will build" themes align with the current CTRL positioning); no changes needed there this pass. The PART 3 CTRL product description already leads with **building the AI-native version of your business** (confirmed against `AGENT_BRIEFING.md` and the code) rather than "a portable memory web," so it was left as-is. Verified this pass: the PART 6 FAQ's Edge Pro pricing history ("$49/month, moved from $29 on 2026-07-04; the earlier move from $9 to $29 was 2026-05-30") matches `git log` on `supabase/functions/_shared/edge-pricing.ts` exactly - keep this history line, it is grounded, not invented. The one-time diagnostic SKUs remain flagged TODO(founder) (PART 5); added evidence this pass: `/diagnostic` in the app is a bare redirect to `/dashboard` with no purchase UI, so there is currently no live path to buy them. "Four Honest Tests" (PART 6) is confirmed current in code, not "Three." Canonical: `AGENT_BRIEFING.md` + `docs/CTRL-SYSTEM-SPEC.md` + `docs/PRICING.md`.
 
 ---
 
@@ -103,6 +103,8 @@ One decision. One trade-off analysis. One commitment. Working systems and a 90-d
 | Mindmaker Portfolio Engagement | $5K-$25K | VC / PE / consulting partners |
 
 Full plan matrix: see `docs/PRICING.md` and the `PlanMatrix` block in the Edge Pro settings tab.
+
+TODO(founder): confirm whether Full Diagnostic / Deep Context / Bundle survive the AI-native repositioning. They are wired in Stripe (`create-diagnostic-payment`) but `/diagnostic` in `src/router.tsx` is currently a bare redirect to `/dashboard` - there is no live in-app purchase path for them today.
 
 ---
 

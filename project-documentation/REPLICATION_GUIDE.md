@@ -2,9 +2,9 @@
 
 Step-by-step instructions to replicate CTRL from scratch.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02.
 
-> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts are dated 2026-06-09 (a lower bound: ~80 edge functions, ~59 hooks, ~110 migrations, pgvector + pgcrypto + pg_cron); trust `CLAUDE.md` and the code for current totals. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222) that post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
+> This is a technical setup guide (env, Supabase, Stripe, deploy). The infrastructure steps (Supabase init, Tailwind/dark tokens, secrets, deploy) are still valid. Counts are dated 2026-06-09 (a lower bound: ~80 edge functions, ~59 hooks, ~110 migrations, pgvector + pgcrypto + pg_cron); trust `CLAUDE.md` and the code for current totals. **Caveat added 2026-08-02**: Steps 6-8 ("Core Files", "Build UI Components", "Edge Functions") scaffold the ORIGINAL leadership-assessment MVP (`UnifiedAssessment`, `LeadershipBenchmarkV2`, `create-leader-assessment`, etc.) - most of those exact component names no longer exist in `src/` (CTRL's current surfaces are Home/cockpit, the decision engine, Memory Web, Briefing, Automator, per `AGENT_BRIEFING.md` section 3). Treat Steps 6-8 as historical scaffolding illustrating the pattern (Vite + Supabase + edge functions), not a checklist for today's CTRL; a reader who wants the current 80-function surface should read `ARCHITECTURE.md` and `supabase/functions/` directly, not rebuild from these steps. This guide gets you to a runnable instance; full feature parity also requires the kit redesign (PRs #206-212), the main-app polish (PRs #215-222), the CTRL 2028 refactor (PRs #234-241), and the onboarding/decisions/engagement loop (PR #298) that all post-date this guide. The product is globally dark and AI-native positioned; see the root `README.md` + `docs/CTRL-SYSTEM-SPEC.md`.
 
 ---
 

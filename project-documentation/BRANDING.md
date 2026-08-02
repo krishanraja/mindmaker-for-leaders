@@ -1,8 +1,8 @@
 # Branding
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02.
 
-> RECONCILIATION BANNER. The voice mechanics here (short sentences, active voice, second person, no hype, no FOMO, no emojis, no em dashes) are still correct and useful. But two things in this doc are OFF and corrected below: (1) the positioning is now **building the AI-native version of your business**, not "decision speed / clarity for leaders / portable AI double"; lead with the AI-native frame and the reframe rule. (2) The visual brand is globally DARK (the ctrl-ds instrument palette, emerald `#00D9B6`, the BrandLockup), NOT light / "white backgrounds / generous white space / Mint sparingly on white". The "Visual Brand Elements" section below is corrected to the dark system; the canonical visual reference is `project-documentation/DESIGN_SYSTEM.md` and the code. TODO(founder): lock the AI-native messaging pillars and word-choices (the decision-speed pillars below are placeholders).
+> RECONCILIATION BANNER. The voice mechanics here (short sentences, active voice, second person, no hype, no FOMO, no emojis, no em dashes) are still correct and useful. Two corrections carried from 2026-06-21 and confirmed still in force: (1) the positioning is **building the AI-native version of your business**, not "decision speed / clarity for leaders / portable AI double"; lead with the AI-native frame and the reframe rule (Messaging Pillars 1-4 below are already written to this frame). (2) The visual brand is globally DARK (the ctrl-ds instrument palette, emerald `#00D9B6`, the BrandLockup), NOT light. The "Visual Brand Elements" section below was already corrected to the dark system in the 2026-06-21 pass; this pass fixed a dangling cross-reference in that same banner: **`project-documentation/DESIGN_SYSTEM.md` no longer exists at that path** (it was moved to `project-documentation/_archive/DESIGN_SYSTEM.md` and describes the retired light system - do not use its values). The canonical visual reference is the live code (`src/styles/tokens.css`, `index.css`) plus `project-documentation/SPINE.md` (the cross-app token contract), which is what the "Visual Brand Elements" section already pointed to; only this banner had the stale path. This pass also rewrote the remaining decision-speed-era illustrative examples (Headlines, CTAs, Email subject lines, Social Media Voice) to AI-native ones. TODO(founder), scoped: these remain illustrative examples of the PATTERN, not locked campaign copy - a founder should still sign off on the exact public headline/subject-line/tagline before it ships (see `AGENT_BRIEFING.md` section 1 for the same open item on the public one-liner).
 
 ---
 
@@ -63,20 +63,20 @@
 ## Copy Guidelines
 
 ### Headlines
-- **Start with speed** - "Make sharper decisions in half the time"
-- **Be specific** - "2 minutes" not "quick setup"
-- **Use verbs** - "Decide", "Export", "Build", not "Transformation"
+- **Start with the AI-native reframe** - "Stop asking the general question. Ask the AI-native one."
+- **Be specific** - name the move ("draw the autonomy line") not the abstraction ("digital transformation")
+- **Use verbs** - "Build", "Reframe", "Weigh", "Export", not "Transformation"
 - **Avoid buzzwords** - No "synergy", "paradigm", "holistic", "leverage"
 
 ### Body Copy
 - **Short sentences** - 15 words max where possible.
 - **Active voice** - "You export your context" not "Context is exported"
-- **Concrete outcomes** - "Save 10 minutes per AI conversation" not "Increase efficiency"
+- **Concrete outcomes** - name the specific reframe or artifact ("a decision memo, not a general opinion") not "increase efficiency"
 - **Second person** - "You", "Your". Never "One" or "Organizations".
 
 ### CTAs
 - **Action-oriented** - "Build Your AI Double" not "Learn More"
-- **Speed-focused** - "Start in 2 Minutes" not "Get Started"
+- **Reframe-focused** - "Weigh Your First AI-Native Decision" not "Get Started"
 - **Specific** - "Export to ChatGPT Now" not "Try It"
 
 ---
@@ -146,7 +146,7 @@ With CTRL: [What changes - fast, personalized, portable]
 **Memory Web** - Not "knowledge base", "context store", "profile"
 **Context Export** - Not "integration", "sync", "connection"
 **Voice Input** - Not "voice note", "recording", "dictation"
-**Decision Advisor** - Not "chatbot", "recommendation engine"
+**Decision Engine** (or "weigh it") - Not "chatbot", "Decision Advisor", "recommendation engine"
 **Self-Contained** - Not "standalone app", "offline tool", "isolated"
 
 ---
@@ -154,8 +154,8 @@ With CTRL: [What changes - fast, personalized, portable]
 ## Email/Communication Style
 
 ### Subject Lines
-- Speed + Specificity: "Your AI double is ready - export to Claude now"
-- Outcome-focused: "3 decisions, half the time"
+- AI-native + Specificity: "Your first weighed decision is ready to read"
+- Outcome-focused: "Reframed, verified, closed with a memo"
 - No clickbait: No "You won't believe...", "The secret to..."
 - No FOMO: No "Last chance", "Only X spots"
 
@@ -163,7 +163,7 @@ With CTRL: [What changes - fast, personalized, portable]
 ```
 [Name],
 
-[One sentence: the speed problem or the outcome]
+[One sentence: the AI-native gap or the reframe]
 
 [2-3 short paragraphs: what CTRL does, why it matters now, proof]
 
@@ -183,13 +183,13 @@ ctrl.themindmaker.ai
 
 ## Social Media Voice
 
-**LinkedIn:** Professional, operator perspective, decision-speed insights
+**LinkedIn:** Professional, operator perspective, AI-native transformation insights
 **Twitter:** Punchy, data-driven, contrarian takes on AI adoption
 **Email:** Personal, direct, one clear action
 
 ### Post Structure
 ```
-[Hook - a decision-speed insight or counterintuitive truth]
+[Hook - an AI-native reframe or a counterintuitive truth]
 
 [Context - 2-3 sentences max]
 

@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-08-02 (updated 2026-08-02)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).
@@ -10,7 +10,7 @@ DPA status legend:
 - Standard terms: we rely on the provider's published DPA / data terms incorporated by their standard terms of service, but we have not yet executed and filed a countersigned copy.
 - To confirm: relationship in use; DPA review/signature is an open action item.
 
-As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed DPAs and SCCs with all subprocessors is an in-progress action tracked in [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md). The table reflects current honest status, not an aspiration.
+As of 2026-08-02, none of the DPAs below are marked "Signed". Formalizing signed DPAs and SCCs with all subprocessors is an in-progress action tracked in [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md). The table reflects current honest status, not an aspiration.
 
 ## Register
 
@@ -20,20 +20,27 @@ As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed
 | Vercel | Frontend hosting and CDN | Account identity, request metadata | US | To confirm | SCCs (to confirm/sign) |
 | Google Cloud (Vertex AI / Gemini 2.0 Flash) | Primary LLM generation | Business context, chat, assessments, briefing topics, transcripts | US | Standard terms | SCCs (to confirm/sign) |
 | OpenAI | Fallback LLM, Whisper transcription, text-embedding-3-small embeddings | Chat, business context, assessments, voice audio/transcripts, text for embeddings | US | Standard terms | SCCs (to confirm/sign) |
+| Anthropic (Claude) | LLM generation for the decision engine, bet suggestions, and memory-edge derivation | Decision statements/claims, business context, memory facts sent for LLM processing | US | Standard terms | SCCs (to confirm/sign) |
 | ElevenLabs | Briefing text-to-speech audio | Briefing text derived from interests/preferences | US | To confirm | SCCs (to confirm/sign) |
 | Stripe | Payment processing and subscriptions | Billing identity, Stripe customer ID, subscription status (card data tokenized by Stripe) | US | Standard terms | SCCs (to confirm/sign) |
 | Resend | Transactional and notification email | Email address, name, message content | US | To confirm | SCCs (to confirm/sign) |
 | Perplexity | Daily-briefing web search | Briefing topics/queries (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
 | Tavily | Daily-briefing web search/enrichment | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
-| Brave Search | Daily-briefing web search | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
+| Brave Search | Daily-briefing web search; Home feed news gathering | Briefing/feed topics and queries | US | To confirm | SCCs (to confirm/sign) |
+| NewsAPI.org | Home feed news gathering (mainstream aggregator breadth) | Feed/query parameters (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
+| Exa | Home feed news gathering (neural/semantic search) | Feed/query parameters (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
+| Artificial Analysis | Evidence retriever for the decision engine (validates model-capability/cost claims against benchmark data); enriches Home news cards with model benchmark standing | Claim text / model names drawn from user decisions and briefing content | US | To confirm | SCCs (to confirm/sign) |
 | Jina | Daily-briefing content retrieval/enrichment | Briefing topics/URLs | US | To confirm | SCCs (to confirm/sign) |
 | Apollo | Company enrichment | Company name/domain (business context) | US | To confirm | SCCs (to confirm/sign) |
 | Google (OAuth) | Sign-in / authentication | Email, name, OAuth identity | US | Standard terms | SCCs (to confirm/sign) |
 | Google Sheets | Operations sync | Minimized account/usage data | US | Standard terms | SCCs (to confirm/sign) |
+| PostHog | Client-side product analytics (pageviews, pageleaves, custom events) | Usage/event data; `person_profiles: identified_only` means events can be tied to an identified logged-in user, not only anonymous aggregate | US | To confirm | SCCs (to confirm/sign) |
 
 Notes:
-- Search/enrichment providers (Perplexity, Tavily, Brave, Jina) primarily receive briefing topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
+- Search/enrichment providers (Perplexity, Tavily, Brave, NewsAPI.org, Exa, Jina) primarily receive briefing/feed topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
+- Artificial Analysis receives claim text and model names extracted from decision statements and briefing content as part of evidence retrieval/enrichment, not direct account identifiers; treated as a subprocessor per this register's convention for other search/retrieval providers.
 - Apollo receives company-level data used for enrichment; treat as processing of business context.
+- PostHog was added to the production app on 2026-07-18 (inline script in `index.html`, no npm dependency) and had not previously been added to this register; see [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 11 for the corrected (present-tense) analytics disclosure this drove.
 - Card data is never stored by Mindmaker; Stripe tokenizes it.
 
 ## How we notify customers of changes

@@ -1,6 +1,6 @@
 # SOC 2 and ISO/IEC 27001:2022 Roadmap
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-08-02 (updated 2026-08-02)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 A realistic path for CTRL to a SOC 2 report and, if pursued, an ISO/IEC 27001:2022 certificate. CTRL holds neither today. This roadmap is honest about what code can deliver and what requires human, vendor, or legal action.
@@ -31,12 +31,15 @@ ISO adds management-system clauses (4-10): scope, leadership, planning, internal
 
 ### Phase 1 - Remediate the known gaps (weeks 2-12)
 Close the [PLANNED]/[PARTIAL] items in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) and [CONTROL_MATRIX.md](./CONTROL_MATRIX.md):
-- Ship data_audit_log and ai_usage_audit (in progress).
+- Broaden data_audit_log and ai_usage_audit coverage (schema shipped and both tables are live for a narrow set of flows; comprehensive coverage across all data-access and AI-call paths is in progress).
 - Enforce MFA (users + admin consoles).
 - Stronger password policy + HaveIBeenPwned check.
+- Add a CI gate that fails on `console.log` usage in edge functions, and finish rolling out the shared structured-logging helper to the remaining functions that still call `console.log`/`console.error`/`console.warn` directly.
 - Centralized log aggregation with retention and alerting.
 - SAST/SCA/secret-scanning in CI; RLS regression tests.
 - Documented key rotation, access-review cadence, backup retention + tested restore (RTO/RPO).
+- Remove the Memory-fact plaintext shadow so the AES-256-GCM ciphertext is the sole readable-at-rest copy (currently defense-in-depth only; see [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) Section 5).
+- Fix the confirmed `kit_builds` gap in the `delete-account` cascade (see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)).
 
 ### Phase 2 - SOC 2 Type I (weeks 8-16)
 - Controls designed and evidenced as of a point in time.
@@ -61,7 +64,7 @@ This pack already provides several. Full set typically includes: Information Sec
 
 ## Controls to implement (beyond policies)
 
-See [CONTROL_MATRIX.md](./CONTROL_MATRIX.md) for the authoritative status. Priorities: audit logging (data_audit_log, ai_usage_audit), MFA, log aggregation + alerting, CI security scanning, RLS regression tests, formal access reviews, tested DR restore, signed DPAs/SCCs, penetration test.
+See [CONTROL_MATRIX.md](./CONTROL_MATRIX.md) for the authoritative status. Priorities: broaden audit logging (data_audit_log, ai_usage_audit, both live but narrow today), MFA, a console.log CI gate, log aggregation + alerting, CI security scanning, RLS regression tests, formal access reviews, tested DR restore, signed DPAs/SCCs (now against a longer subprocessor list, see [SUBPROCESSORS.md](./SUBPROCESSORS.md)), penetration test.
 
 ## Evidence collection
 

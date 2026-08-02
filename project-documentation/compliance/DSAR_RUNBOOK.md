@@ -1,6 +1,6 @@
 # Data Subject Access Request (DSAR) Runbook
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-08-02 (updated 2026-08-02)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Operational runbook for handling data-subject rights requests for CTRL: access, rectification, erasure, portability, restriction/objection, and CCPA opt-out. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 9.
@@ -40,14 +40,14 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 | Request type | Tooling / location | Notes |
 |--------------|--------------------|-------|
 | Access / Portability | `memory-export` edge function (JSON + markdown); `generate-custom-export` edge function | Produces user-scoped export of Memory and related data |
-| Memory data specifically | `memory-crud`, `memory-export`, `memory-settings` edge functions; Memory tables | Memory facts are AES-256-GCM encrypted at rest; export decrypts for the owner |
+| Memory data specifically | `memory-crud`, `memory-export`, `memory-settings` edge functions; Memory tables | Each fact also carries an AES-256-GCM encrypted copy as defense-in-depth; export and other reads currently use the plaintext `fact_value`/`fact_context` columns directly (no decryption step involved), so treat Memory facts as protected by access control (owner-scoped RLS) rather than as unreadable-without-the-key |
 | Profile / business context | profiles, unified_profiles, profile_insights, user_business_context (owner-scoped after May-June 2026 RLS remediation) | |
 | Conversations | chat_messages (owner-scoped) | |
 | Assessments / diagnostics | assessment/diagnostic tables | |
 | Briefing preferences | briefing preference/interest tables | |
 | Billing | Stripe customer record + local subscription status | Card data lives only in Stripe |
 | Consent history | consent_audit table; `upsert-sharing-consent`; notification prefs via `upsert-notification-prefs` | |
-| Erasure | `delete-account` edge function (cascading) | Removes user data across tables |
+| Erasure | `delete-account` edge function (cascading) | Removes user data across tables, with one known confirmed gap: `kit_builds` (lesson-kit intake) is not currently covered, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md) |
 | Retention settings | `user_memory_settings.retention_days`; enforced by `cleanup-expired-data` (pg_cron) | |
 
 ## 5. Fulfillment steps by request type

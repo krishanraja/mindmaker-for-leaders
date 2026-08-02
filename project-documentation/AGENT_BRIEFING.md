@@ -1,10 +1,12 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
-**Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, the root `README.md`. Trust those over this file where they disagree.
+**Last reconciled:** 2026-08-02.
+**Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, `docs/CTRL-SYSTEM-SPEC.md`, `docs/PRICING.md`, the root `README.md`. Trust those over this file where they disagree.
 
-> Reconciliation note: CTRL's positioning moved from "clarity / portable AI double for leaders" to **building the AI-native version of your business.** This briefing has been reframed to the AI-native lens. The product mechanics are real and in the code; the FRAMING is what changed. Where a precise AI-native ICP / message / price was not yet settled, it is flagged `TODO(founder)` instead of invented. The old runtime endpoint `https://ctrl.themindmaker.ai/.well-known/product.json` (dated 2026-05-30) still carries the OLD positioning, so do NOT treat it as authoritative for positioning until it is regenerated. TODO(founder): regenerate `/.well-known/product.json` to the AI-native positioning.
+> Reconciliation note (2026-08-02 pass): the 2026-06-21 repositioning (AI-native, dark ctrl-ds, Edge Pro $49/month) is confirmed still current and is folded into the sections below, not just asserted in this banner. What changed this pass: the decision engine section now reflects the rebuilt Decisions tab (radial evidence spider, one-line scored evidence, decision memo); the onboarding language elsewhere in this doc family that described a "3-question voice onboarding" has been corrected (see `docs/CTRL-SYSTEM-SPEC.md` and PR #298 - onboarding is now a ~20-second tap-based industry/role/interests setup, not a voice flow, followed by a role-tailored starter decision). TODO(founder) items below are unchanged in kind (final one-liner, ICP narrowing) but are scoped, not vague repeats.
+>
+> `https://ctrl.themindmaker.ai/.well-known/product.json` still carries OLD positioning (dated 2026-05-30: tagline "Clarity for leaders...", Edge Pro listed at $29/mo). A local copy lives in this repo at `public/.well-known/product.json` and is the same stale file (confirmed 2026-08-02) - it is served verbatim to that URL, so fixing the live endpoint means editing that repo file, not just this doc. That edit is source code (a `public/` asset), out of scope for this docs-only pass. TODO(founder): regenerate `public/.well-known/product.json` to the AI-native positioning + $49/mo pricing; until then this file is not authoritative for positioning.
 
 ---
 
@@ -65,7 +67,7 @@ Each kit is strictly sequential (one action per screen), no-scroll on mobile, a 
 Every authenticated surface is no-scroll on all devices, one ask per screen, AI-native:
 - **Home / cockpit** - a daily deck of "worth a look" headlines, AI-native only.
 - **News deck** - nine AI-native news categories (model & capability, AI economics, tools & vendors, orchestration & agent reliability, AI-native product & GTM, governance, security & agent risk, org & talent, proof & adoption), each with a branded SVG motif. The briefing pipeline filters out anything not about deploying/building/selling AI, and tags every story.
-- **Decision engine** (`/decision`) - pressure-tests a decision (decompose, verify against live evidence, cross-examine, advise) with an honest AI-native reframe banner.
+- **Decision engine** (`/decision`) - one fast-capture field ("Weigh it", mic embedded) replaces an explainer wall; pressure-tests the decision (reframe to its AI-native version, decompose into claims, verify against live evidence, cross-examine, advise) and shows the result as a radial evidence spider with one-line scored sources ("Dig deeper" unfolds nested/countered evidence). Every completed weigh produces a board-ready one-page decision memo (copy-ready markdown). Resolving a decision (it held up / it did not) is a quiet, honest closure step, not a scoreboard reset.
 - **Brain / Memory Web** (`/memory`) - the leader's context as a four-world rope canvas that fills the frame, with zoom; the substrate that makes any AI know the business.
 - **Daily Briefing** (`/briefing`) - a short audio read of the AI world, tuned to the leader's chosen AI-native categories.
 - **Context Export + Automator** (`/context`) - context portable into ChatGPT, Claude, Gemini, Cursor, Claude Code, or raw markdown; plus the Automator, which turns something the leader does every week into an agentskills.io-compliant skill.
@@ -97,7 +99,7 @@ The AI-native long pitch is not yet written tight enough to ship in outbound. Us
 
 **What is settled:** Edge Pro is $49/month. Free is a real daily instrument: Memory, Voice, the Kit program, unlimited Automator skill builds, the daily personalised briefing, and 3 decision weighs a month are all FREE. Edge Pro is the decision tier: it removes the 3-weighs cap (unlimited), adds a multi-model cross-examination of every decision, decision watch, Edge artifacts + drafting + email delivery, and the live MCP pull of your built skills into any AI (`list_skills` / `get_skill`). The daily briefing is intentionally free (the daily habit / on-ramp), not a paid feature. Pricing constants are canonical in `src/constants/billing.ts` + the shared edge-pricing module; the app reads them, so trust the code over any doc.
 
-**TODO(founder):** confirm whether the one-time Full Diagnostic ($49) / Deep Context ($29) / Bundle ($69) SKUs survive the AI-native repositioning, and confirm the Bootcamp/Portfolio engagement bands, before quoting them. They are real in the Stripe plumbing today but were defined under the old positioning.
+**TODO(founder):** confirm whether the one-time Full Diagnostic ($49) / Deep Context ($29) / Bundle ($69) SKUs survive the AI-native repositioning, and confirm the Bootcamp/Portfolio engagement bands, before quoting them. They are real in the Stripe plumbing (`create-diagnostic-payment`, `verify-diagnostic-payment`) today but were defined under the old positioning, AND `/diagnostic` in `src/router.tsx` is currently a bare redirect to `/dashboard` with no purchase UI behind it (the `usePayment` hook that would drive that checkout is unused elsewhere in the app). Do not link to these SKUs in outbound until a founder confirms whether that UI is coming back or the SKUs are being retired.
 
 **Pricing guardrails:** Edge Pro is $49/month. Do not quote $9/month (legacy grandfathered price, never quoted publicly). No em dashes. No invented prices.
 

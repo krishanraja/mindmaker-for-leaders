@@ -4,7 +4,9 @@
 
 This folder is the deeper source of truth for CTRL. The two highest-authority documents in the whole repo are the canonical product/build specs in `docs/`, and the top-level `README.md`. Where any file in this folder disagrees with them, the spec and the root README win.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02 (full reconciliation pass across every file in this folder, closing out the 2026-06-16 through 2026-06-21 banner debt into body prose and adding everything shipped 2026-06-22 through 2026-07-18).
+
+> **Known live-production inconsistency (flag for the founder, out of this pass's docs-only scope):** `public/.well-known/product.json` - the machine-readable endpoint this folder tells AI agents to trust over static docs - is itself stale. It still quotes Edge Pro at $29/mo (dated 2026-05-30) against the real, current $49/mo in `supabase/functions/_shared/edge-pricing.ts`. Regenerate it before pointing any agent at it for pricing.
 
 ---
 
@@ -41,6 +43,7 @@ The product has two halves:
 5. [OUTCOMES.md](./OUTCOMES.md) - stage-by-stage outcomes
 6. [Master_Messaging_and_FAQ.md](./Master_Messaging_and_FAQ.md) - founder narrative + master FAQ
 7. [BRANDING.md](./BRANDING.md) - voice, tone, vocabulary
+8. [NORTH_STAR.md](./NORTH_STAR.md) - the one product-health number ("flywheel leaders") and what it means
 
 ### For developers (start here)
 1. [root `CLAUDE.md`](../CLAUDE.md) - workflow + the current architecture quick-reference
@@ -50,7 +53,13 @@ The product has two halves:
 5. Design tokens: the live dark `ctrl-ds` tokens are in the code (`src/styles/tokens.css`, `index.css`) and the cross-app contract is in [SPINE.md](./SPINE.md). (The old light [DESIGN_SYSTEM.md](./_archive/DESIGN_SYSTEM.md) is archived.)
 6. [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - rebuild instructions
 7. [DECISIONS_LOG.md](./DECISIONS_LOG.md) - architectural + product decisions
-8. [MASTER_INSTRUCTIONS.md](./MASTER_INSTRUCTIONS.md) - engineering principles + AI behavior
+8. [MASTER_INSTRUCTIONS.md](./MASTER_INSTRUCTIONS.md) - generic engineering/AI-behavior boilerplate, not CTRL-specific. Flagged MERGE/DELETE in the 2026-08-02 pass (zero CTRL content, and its generic migration guidance conflicts with `CLAUDE.md`'s repo-specific rule). Kept pending founder confirmation; prefer `CLAUDE.md` for actual workflow.
+
+### Compliance (privacy, security, DSAR)
+- [compliance/README.md](./compliance/README.md) - the pack's honest-posture statement and index
+- [compliance/PRIVACY_POLICY.md](./compliance/PRIVACY_POLICY.md), [compliance/SUBPROCESSORS.md](./compliance/SUBPROCESSORS.md), [compliance/ROPA.md](./compliance/ROPA.md), [compliance/DATA_RETENTION_POLICY.md](./compliance/DATA_RETENTION_POLICY.md)
+- [compliance/CONTROL_MATRIX.md](./compliance/CONTROL_MATRIX.md), [compliance/INFORMATION_SECURITY_POLICY.md](./compliance/INFORMATION_SECURITY_POLICY.md), [compliance/INCIDENT_RESPONSE_PLAN.md](./compliance/INCIDENT_RESPONSE_PLAN.md), [compliance/SOC2_ISO27001_ROADMAP.md](./compliance/SOC2_ISO27001_ROADMAP.md), [compliance/DSAR_RUNBOOK.md](./compliance/DSAR_RUNBOOK.md)
+- This is a gap analysis, not a conformance claim: CTRL holds no SOC 2 report or ISO 27001 certificate today. The 2026-08-02 pass found and fixed a real compliance gap: `SUBPROCESSORS.md` was missing five live subprocessors (Anthropic, NewsAPI.org, Exa, Artificial Analysis, PostHog), and several "IN PLACE" claims (log redaction CI, at-rest encryption as a breach-notification safe harbor) were downgraded to PARTIAL against code evidence. See `compliance/README.md` for the current honest posture.
 
 ### Strategic foundation
 - [PURPOSE.md](./PURPOSE.md) - mission + problem statement
@@ -81,7 +90,7 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 ---
 
-## Current State (reconciled 2026-06-21)
+## Current State (reconciled 2026-08-02)
 
 ### Product Positioning (LOCKED)
 - **What CTRL is**: the tool for building, orchestrating, productizing, and getting to market the AI-native version of your business.
@@ -100,20 +109,22 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 ### Active routes (source of truth: `src/router.tsx`)
 
-Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked).
+Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/download` (flag-gated public email-capture page), `/upgrade` (the interactive React pricing page with the live Stripe subscribe button), `/preview` (dev/QC fixture harness, unlinked).
+
+`/pricing` is a separate static SEO page (`public/pricing.html`) that `vercel.json` rewrites to, kept in sync with `/upgrade` manually rather than routed through React - it exists for crawlers and hard loads, not for the checkout flow.
 
 Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`.
 
 Legacy redirects: `/today` `/pulse` `/voice` `/diagnostic` -> `/dashboard`; `/think` -> `/dashboard?view=edge`.
 
-### Repo counts
-For current edge-function / hook / migration / route counts, trust `CLAUDE.md` (kept current) and the code itself, not a frozen table here. As of the last `CLAUDE.md` snapshot (counts dated 2026-06-09, re-count pending): ~80 edge functions, ~59 custom hooks, ~110 migrations. Treat these as a lower bound. TODO(founder/dev): a fresh re-count after the kit + main-app-polish PRs.
+### Repo counts (counted directly from the filesystem, 2026-08-02)
+**104 Supabase edge functions** (excluding `_shared/`), **78 React hooks** under `src/hooks/`, **148 PostgreSQL migrations**. These are direct counts, not estimates; trust them and the code over any older figure elsewhere. DB extensions: pgvector, pgcrypto, pg_cron.
 
 ### Tech Stack
-React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion; React Router 6 (`createBrowserRouter`, lazy); Tailwind + shadcn/ui (Radix), globally dark; React Context + TanStack Query; Supabase (PostgreSQL + Edge Functions, Deno); Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback; OpenAI Whisper / ElevenLabs; OpenAI `text-embedding-3-small` (pgvector); Supabase Auth / Stripe / Resend; Vitest + Playwright; Vercel + Supabase Cloud; Node `>=22 <24`. DB extensions: pgvector, pgcrypto, pg_cron.
+React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion; React Router 6 (`createBrowserRouter`, lazy); Tailwind + shadcn/ui (Radix), globally dark; React Context + TanStack Query; Supabase (PostgreSQL + Edge Functions, Deno); Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback, Anthropic Claude (decision engine, memory-edge derivation); OpenAI Whisper / ElevenLabs; OpenAI `text-embedding-3-small` (pgvector); news/evidence retrieval via Brave, NewsAPI.org, Exa, GDELT, Hacker News Algolia, and Artificial Analysis (model benchmark ground truth); Supabase Auth / Stripe / Resend; PostHog (client-side product analytics, added 2026-07-18); Vitest (29 unit specs) + Playwright (8 e2e specs); Vercel + Supabase Cloud; Node `>=22 <24`.
 
 ### Pricing
-The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amount is canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`, i.e. `$49/mo`) and surfaced via `src/constants/billing.ts`. Edge Pro is the decision tier (unlimited decision weighs + cross-examination + decision watch + Edge artifacts + the live MCP pull of your skills); the daily briefing, the Automator, Memory, and Voice are free. The app reads the code, so trust the code over any doc. There is also a paid AI-literacy diagnostic and a deep-context upgrade still wired in the Stripe edge functions (`create-diagnostic-payment`: Full Diagnostic $49, Deep Context $29, Bundle $69). TODO(founder): confirm whether those one-time diagnostic SKUs survive the AI-native repositioning, and the full price list, before any sales doc quotes exact numbers.
+The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amount is canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`, i.e. `$49/mo`) and surfaced via `src/constants/billing.ts`. Edge Pro is the decision tier (unlimited decision weighs + cross-examination + decision watch + Edge artifacts + the live MCP pull of your skills); the daily briefing, the Automator, Memory, and Voice are free. The app reads the code, so trust the code over any doc - and note `public/.well-known/product.json` is currently NOT trustworthy for this (see the banner at the top of this file). There is also a paid AI-literacy diagnostic and a deep-context upgrade still wired in the Stripe edge functions (`create-diagnostic-payment`: Full Diagnostic $49, Deep Context $29, Bundle $69), but `/diagnostic` is now a bare redirect to `/dashboard` with no purchase UI reachable from it. TODO(founder): confirm whether those one-time diagnostic SKUs survive the AI-native repositioning, and the full price list, before any sales doc quotes exact numbers.
 
 ---
 
@@ -125,6 +136,7 @@ The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amo
 - **The autonomy line** (Agentic Org Chart) - green (AI runs it) / amber (AI assists, you approve the handoff) / red (you only), plus the handoffs and a ranked place to start.
 - **Memory Web / Brain** - the leader's context as a four-world rope canvas; the substrate that makes any AI know the business.
 - **Automator / Skill Builder** - the `/context` flow that turns a recurring deliverable into an agentskills.io-compliant skill. Building skills is free for now (the Edge Pro gate was removed).
-- **Decision engine** - pressure-tests a decision (decompose, verify against live evidence, cross-examine, advise) with an honest AI-native reframe.
+- **Decision engine** - pressure-tests a decision (reframe, decompose, verify against live evidence, cross-examine, advise) with an honest AI-native reframe; rebuilt as a "radial force spider" UI (PRs #308-320) with an honest resolve/closure flow and a board-ready one-page decision memo on every completed weigh.
+- **The flywheel** - the North Star metric: leaders who both hold a real brain (5+ current `user_memory` facts) AND weighed a decision in the last 7 days, in the same week. See [NORTH_STAR.md](./NORTH_STAR.md).
 - **Anchored to** - the phrase on every briefing segment naming the profile fact that earned its slot.
 - **Honest renderer** - the empty/cold-start state is intentional and welcoming, never faked; confidence tracks evidence.

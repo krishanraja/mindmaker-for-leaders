@@ -1,8 +1,8 @@
 # User Outcomes
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02.
 
-> RECONCILIATION BANNER. Two corrections. (1) Positioning: outcomes now tie back to **building the AI-native version of your business** (a workflow handed to an agent, the autonomy line drawn, the AI-native version of an offer named), not "decision speed". (2) Honesty: the percentage metrics in this doc (for example "90%+ report better responses", "80%+ export to a second tool") are ASPIRATIONAL TARGETS, not measured results. Per the agent guardrails, do NOT quote them as proof in outbound. Use only the documented, grounded proof points (the kit flow exists and is live, Edge Pro is $49/month, the surfaces are no-scroll one-ask, the app is globally dark). TODO(founder): define the real AI-native success metrics and replace the placeholder percentages.
+> RECONCILIATION BANNER. Three corrections, all still in force. (1) Positioning: outcomes tie back to **building the AI-native version of your business** (a workflow handed to an agent, the autonomy line drawn, the AI-native version of an offer named), not "decision speed". (2) Honesty, unchanged discipline: the percentage metrics in this doc (for example "90%+ report better responses", "80%+ export to a second tool") remain ASPIRATIONAL TARGETS, not measured results, and are NOT loosened or resolved this pass - do not quote them as proof in outbound. The one number that IS measured and real is the North Star flywheel (`NORTH_STAR.md`, founder-signed 2026-07-04): a leader who holds a real brain (5+ current facts) AND weighed a decision in the last 7 days, same week; cite the flywheel CONCEPT, never a specific percentage of leaders hitting it (that number is not published here). (3) 2026-08-02 fix: the "First Session" outcomes described the retired voice onboarding ("3 guided voice questions"); corrected below to the current ~20-second tap-based profile setup + starter decision (PR #298), and "Decision Advisor or Meeting Prep" (retired standalone tools) is replaced with "weighed a decision through the engine." TODO(founder): define the real AI-native success metrics and replace the placeholder percentages.
 
 Expected outcomes for CTRL users, reframed to the AI-native positioning. The North Star is the leader's business getting more AI-native, move by move.
 
@@ -10,25 +10,25 @@ Expected outcomes for CTRL users, reframed to the AI-native positioning. The Nor
 
 ## Leader Outcomes
 
-### Immediate Outcomes (First Session - 2 Minutes)
+### Immediate Outcomes (First Session - roughly 20 seconds to a live feed, then a starter decision)
 
-**Portable AI Double Created**
-- AI double built from 3 guided voice questions. No typing. No forms.
-- Context exported to at least one AI tool (ChatGPT, Claude, Gemini, Cursor, Claude Code).
-- Leader experiences personalized AI output for the first time and immediately feels the gap from what they had before.
+**AI-Native Lens Set, First Decision in Motion**
+- Industry, role, and a few interests picked in a few taps. No typing required, no voice required, no forms.
+- A role-tailored starter decision is waiting (or the leader brings their own) - the first session ends with a decision moving through the engine, not just a profile filled in.
+- Memory Web building begins from here through natural voice or text conversation, deepening over time rather than gating the first session.
 
-**Decision Speed Unlocked**
-- The next AI conversation starts with context, not a blank page.
-- First real decision gets sharper input because the AI knows their role, priorities, and constraints.
-- The cost of switching between AI tools drops to zero.
+**The Reframe, Felt Once**
+- The first weighed decision comes back reframed to its AI-native version, not answered as general business.
+- Context exported to at least one AI tool (ChatGPT, Claude, Gemini, Cursor, Claude Code) starts compounding from session one.
+- The cost of switching between AI tools drops toward zero as the Memory Web grows.
 
 **Cognitive Shift**
-- "I just talked for two minutes and now Claude knows my entire world."
-- "Why was I typing system prompts by hand?"
+- "It asked two questions and already had a real decision waiting for me."
+- "It didn't answer my question, it reframed it, and the reframe was the useful part."
 - "This is what AI was supposed to feel like."
 
-**Measurable:**
-- 100% have exportable context within 2 minutes
+**Measurable (aspirational targets, not measured - see banner):**
+- 100% land on a starter decision or their own within the first session
 - 90%+ report noticeably better AI responses after first export
 - 80%+ export to a second AI tool within 24 hours
 
@@ -49,10 +49,10 @@ Expected outcomes for CTRL users, reframed to the AI-native positioning. The Nor
 
 ### 7-Day Outcomes
 
-**Decision Speed Compounding**
+**The Reframe Compounding**
 - AI conversations that used to take 10 minutes of setup now take zero.
-- Decision Advisor or Meeting Prep used for at least one real decision, not a test.
-- Leader starts reaching for AI first when facing a complex decision, because the output is actually useful now.
+- Weighed at least one real decision through the engine (not the starter demo), reframed to its AI-native version and closed with a memo.
+- Leader starts reaching for the decision engine first on a complex call, because the reframe and the evidence are actually useful now.
 
 **Memory Web Growth**
 - Added voice input beyond initial onboarding. Context is deepening.
@@ -73,14 +73,14 @@ Expected outcomes for CTRL users, reframed to the AI-native positioning. The Nor
 
 **What Leaders Say:**
 - "I used to dread switching to a new AI tool. Now I just export and go."
-- "My meeting prep brief knew things about my team dynamics that I forgot to mention."
-- "I made a hiring decision faster this week because the Decision Advisor already knew my team structure."
+- "It reframed my hiring question before I'd finished typing it, and the reframe was the right question."
+- "I made a hiring decision faster this week because the engine already knew my team structure."
 - "The Briefing showed me a competitor move that I would have missed for two days. That alone is worth it."
 
-**Measurable:**
-- 70%+ have used built-in AI tools (Decision Advisor, Meeting Prep, Prompt Coach)
+**Measurable (aspirational targets, not measured - see banner):**
+- 70%+ have weighed at least one real decision through the engine
 - 60%+ exported to 2+ platforms
-- 50%+ added voice input beyond onboarding
+- 50%+ added voice input beyond onboarding (Memory Web conversations, decision capture, or the Automator)
 - 40%+ report making at least one decision faster due to CTRL context
 - 80%+ of new users accept at least 3 seed beats within first dashboard session
 
@@ -88,15 +88,15 @@ Expected outcomes for CTRL users, reframed to the AI-native positioning. The Nor
 
 ### 30-Day Outcomes
 
-**Decision Speed as Standard**
+**The AI-Native Version as Standard**
 - Every AI tool the leader uses is personalized. Generic AI interactions are gone.
 - Time saved: 5-10 minutes of context setup eliminated per AI conversation.
-- AI is now a genuine thinking partner: informed, specific, and fast.
+- The decision engine is now a genuine thinking partner: reframes, verifies, and closes with a memo.
 
 **Decision Quality Improvement**
-- Decision Advisor used for real strategic decisions: hiring, investment, priority calls.
-- Meeting Prep generating contextual briefs that surface relevant history and stakeholder dynamics.
-- Decisions are faster and sharper. The leader can articulate why.
+- The decision engine used for real strategic decisions: hiring, investment, priority calls, each reframed to its AI-native version before being weighed.
+- Edge artifacts (board memos, strategy docs, meeting agendas) generated from the Memory Web, surfacing relevant history and stakeholder dynamics.
+- Decisions are faster and sharper. The leader can point to the memo and say why.
 
 **Briefing Learning Loop Activated**
 - Feedback loop activating: 3+ thumbs-downs on generic topics automatically promote to persistent `-0.4` weight deltas (via the nightly `sp_aggregate_briefing_feedback` job at 03:07 UTC). Topics start disappearing even without explicit Bans.
@@ -116,7 +116,7 @@ Expected outcomes for CTRL users, reframed to the AI-native positioning. The Nor
 **First Agent Skill Shipped**
 - The leader has hit a pain-anchored zap (Edge `AutomatePainCard`, Memory blocker, Briefing `decision_trigger`) at least once and generated their first Agent Skill.
 - ZIP downloaded and installed into Claude Code / Claude.ai / Cursor - they paste a test prompt and watch the skill auto-trigger. That moment ("the skill just fired in my Claude with my voice") is the second "aha" after the first Context Export.
-- The Three Honest Tests gate routed at least one input to Memory Web or Custom Instructions instead of generating a junk skill - they learn to trust the triage, not work around it.
+- The Four Honest Tests gate routed at least one input to Memory Web, Custom Instructions, or a voice-lock skill instead of generating a junk skill - they learn to trust the triage, not work around it.
 - ~15-20% of Edge Pro users have at least one shipped skill within 30 days of subscribing.
 
 **What Leaders Say:**
@@ -181,9 +181,23 @@ These outcomes attach to surfaces that shipped after the original 30/90-day fram
 - Reaction numbers on the canvas are reliable post-#187-189, so the leader can trust the counts they see rather than guessing.
 
 **Honest caveats (disclose, never hide):**
-- The canvas **Strengthen / Fix actions are UI-disabled** - the buttons exist but no backend RPC is wired yet, so they do not change anything. Do not promise the leader they can act on the graph from the canvas today.
 - Brain **edges are derived, not stored**, so the map is recomputed rather than a persisted record.
 - **Number-heroes fall back to a words-led display** when the current data is thin, so a leader early in their Memory Web will see prose where a richer profile would show numbers.
+
+**2026-08-02 correction: Strengthen / Fix are now LIVE.** The prior caveat here said these buttons were UI-disabled with no backend RPC. That is no longer true (evidence-corpus sharpening, PR #321, confirmed in `src/pages/MemoryCenter.tsx` -> `BondReader.tsx`): Strengthen calls `strengthen_memory_fact` (bumps confidence, marks verified) and Fix calls `fix_memory_fact` (disputes it), both logging `user_corrected` / `user_rejected` / `user_disputed` events to `memory_events` with the prior value. `extract-user-context` is correction-aware, so a rejected fact does not silently re-extract. A leader can now act on the graph from the canvas.
+
+### Capability Ladder (You tab, PR #321)
+
+**An earned progression, not a scoreboard**
+- The old 0/0/0-style scoreboard framing is gone. `src/lib/capabilityLadder.ts` derives one of four stages purely from observed behaviour (facts verified, decisions weighed, calls banked, outcomes recorded, a skill built, a live agent connection): orienting -> operating -> calibrating -> compounding.
+- The You surface always names the ONE next behaviour that moves the leader to the next stage, never a raw count or a percentage-to-goal.
+- This is the honest replacement for any old outcome language that described track record as a deflating "0/N" score; do not use scoreboard framing when describing the You tab.
+
+### Unified onboarding -> decisions -> engagement loop (branch `claude/onboarding-decisions-engagement`, 2026-06-29)
+
+**The first session ends with a decision in motion, and the loop does not go cold**
+- Onboarding is now the ~20-second tap-based profile setup (industry, role, interests) described earlier in this doc, not a voice interview; it leads straight into a role-tailored `KickstartCard` starter decision.
+- `send-reactivation-nudge` (daily pg_cron, cron-verified live) emails leaders who have never weighed a decision or have gone dormant 14+ days, so the loop re-arms itself instead of leaving a leader stranded after onboarding. This is a real, shipped mechanic, safe to cite as such (not aspirational), though its open/click/reactivation rates are not published here and should not be invented.
 
 ### Kit Program (`/kit`; PRs #190-193)
 
@@ -211,13 +225,13 @@ These outcomes attach to surfaces that shipped after the original 30/90-day fram
 ### Qualitative Indicators (What Leaders Actually Say)
 
 **Speed and Context**
-- "I talked for two minutes and now every AI tool knows me."
+- "It knew my industry and role before I typed a word, and by the end of the week every AI tool I use knew me too."
 - "I exported to Claude and it was like briefing a new advisor who already read my entire file."
 - "I stopped writing system prompts. CTRL does it better and keeps it current."
 - "My AI conversations went from generic to genuinely useful overnight."
 
 **Decisions and Judgment**
-- "I made a better call on that acquisition because the Decision Advisor already knew our risk profile."
+- "I made a better call on that acquisition because the engine already knew our risk profile and reframed the question before I answered it."
 - "I can now challenge AI proposals without faking it."
 - "We stopped a bad AI project early. That alone paid for a year of CTRL."
 - "I know which questions to ask. That changed everything."
@@ -277,8 +291,8 @@ These outcomes attach to surfaces that shipped after the original 30/90-day fram
 
 Use these outcomes as proof points in copy:
 
-- **"2 minutes to first export"** - verified by GuidedFirstExperience telemetry
-- **"30+ minutes a day reclaimed"** - context-setup time + news scrolling time eliminated
+- **"A decision in motion from session one"** - the tap-based profile setup lands on a real starter decision, not just a filled-in profile (`GuidedFirstExperience`, the component this claim was previously attributed to, no longer exists in `src/`; do not cite it)
+- **"30+ minutes a day reclaimed"** - context-setup time + news scrolling time eliminated (aspirational target, not a measured figure - see banner)
 - **"Anchored to:" promise** - every Briefing segment can prove its relevance with a specific profile fact
 - **"Bans persist forever"** - semantic, not keyword; signature-keyed so feedback survives daily lens regeneration
 - **"3-minute audio briefing"** - concrete, time-boxed, measurable

@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-08-02 (updated 2026-08-02)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://ctrl.themindmaker.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
@@ -40,10 +40,10 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: structured facts extracted from user-voiced thoughts.
 - Data subjects: registered users.
 - Lawful basis: contract (Art 6(1)(b)); consent for optional memory features.
-- Recipients/subprocessors: Supabase (US); OpenAI (embeddings text-embedding-3-small, US); primary LLM providers (US).
+- Recipients/subprocessors: Supabase (US); OpenAI (embeddings text-embedding-3-small, US); Anthropic (memory-edge derivation, US); primary LLM providers (US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: configurable via user_memory_settings.retention_days; enforced by cleanup-expired-data (pg_cron). Deleted on account deletion.
-- Security: AES-256-GCM encryption at rest, RLS owner-scoping, TLS.
+- Security: RLS owner-scoping, TLS, provider disk encryption. Each fact also gets a parallel AES-256-GCM encrypted copy (defense-in-depth); the plaintext `fact_value`/`fact_context` columns remain the copy actually read for display, search, and AI context, so this is not full at-rest encryption of Memory content today (see [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) Section 5).
 
 ### D. Conversations / chat
 - Personal data: chat messages to and from CTRL assistants.
@@ -58,7 +58,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: business context, chat, assessment answers, briefing topics, voice transcripts.
 - Data subjects: registered users.
 - Lawful basis: contract (Art 6(1)(b)).
-- Recipients/subprocessors: Google Cloud Vertex AI / Gemini 2.0 Flash (primary LLM, US); OpenAI (fallback LLM, Whisper transcription, embeddings, US); ElevenLabs (briefing TTS, US).
+- Recipients/subprocessors: Google Cloud Vertex AI / Gemini 2.0 Flash (primary LLM, US); OpenAI (fallback LLM, Whisper transcription, embeddings, US); Anthropic (decision-engine and bet-suggestion LLM calls, US); Artificial Analysis (evidence retriever validating model-capability/cost claims in decisions and briefings, US); ElevenLabs (briefing TTS, US).
 - Transfers: EU/UK to US, SCCs/DPAs (in progress).
 - Retention: providers process transiently per their API terms; we retain outputs (responses, transcripts) per their data category.
 - Security: TLS, rate limiting on AI endpoints, structured edge-function logging (AI-usage audit log ai_usage_audit in progress).
@@ -76,7 +76,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: briefing preferences, interests, account identity; briefing topics/queries sent to search providers.
 - Data subjects: registered users.
 - Lawful basis: contract (transactional delivery); consent (optional channels and marketing).
-- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search, Jina (web search/enrichment of briefing topics, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
+- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search, NewsAPI.org, Exa, Jina (web search/enrichment of briefing and Home-feed topics, US); Artificial Analysis (model-benchmark enrichment of news cards, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: preferences for life of account; generated briefings per retention policy.
 - Security: RLS owner-scoping, TLS.
@@ -114,16 +114,17 @@ This record describes the processing activities Mindmaker carries out as control
 - Lawful basis: legitimate interests (Art 6(1)(f)).
 - Recipients/subprocessors: Supabase / Vercel (log surfaces, US).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: short operational windows; centralized aggregation in progress. Data-access audit log (data_audit_log) in progress.
-- Security: structured JSON logging with CI gate against console.log; no secrets in logs.
+- Retention: short operational windows; centralized aggregation in progress. `data_audit_log` exists and is written on account deletion and scheduled retention cleanup; broader data-access logging across other write/read paths is in progress.
+- Security: a shared structured-logging helper (`_shared/logger.ts`) exists and is used by many edge functions, but adoption is partial (`console.log`/`console.error`/`console.warn` calls remain in roughly 90 of ~200 edge-function files as of this review) and CI does not currently gate on `console.log` usage (the CI standards check enforces the no-em-dash rule and required CSS tokens only); no secrets in logs by convention, not by an automated check.
 
 ### L. Operations sync and product analytics
-- Personal data: minimized account and usage data; ops sync to Google Sheets.
-- Data subjects: registered users.
+This activity covers two distinct recipients that were previously conflated under one description; both are real and both are named here explicitly.
+- Personal data: (i) minimized account/usage data synced for internal operations; (ii) pageview, pageleave, and custom usage-event data captured client-side for product analytics. PostHog is configured `person_profiles: identified_only`, so analytics events for a signed-in user can be tied to that identified account, not only aggregated anonymously.
+- Data subjects: registered users (and, for analytics pageviews, visitors generally).
 - Lawful basis: legitimate interests (Art 6(1)(f)).
-- Recipients/subprocessors: Google Sheets (ops sync, US); Supabase (US).
+- Recipients/subprocessors: Google Sheets (internal ops sync, US); PostHog (product analytics, US, added 2026-07-18); Supabase (US).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: minimized; reviewed periodically.
+- Retention: minimized; reviewed periodically; PostHog's own data retention is per PostHog's standard terms (to confirm).
 - Security: scoped service credentials, TLS.
 
 ### M. Lesson-kit builds
@@ -132,9 +133,9 @@ This record describes the processing activities Mindmaker carries out as control
 - Lawful basis: contract (Art 6(1)(b)).
 - Recipients/subprocessors: Supabase (US); LLM providers for composition (see Activity E).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: life of account; deleted on account deletion (confirm delete-account cascade covers `kit_builds`, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)).
+- Retention: life of account in principle, but confirmed as a gap: `kit_builds` is NOT included in the `delete-account` edge function's explicit table list or its comprehensive sweep list as of this review, so kit build/intake rows currently survive account deletion. Tracked as an open remediation item, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md).
 - Security: RLS owner-scoping, TLS. Note: kit_builds.intake rows created before PR #193 are truncated (the back half of the cascade was not captured); fully captured thereafter.
 
 ## General security measures (all activities)
 
-Per-user Row-Level Security on all 108 public tables; AES-256-GCM encryption of Memory facts at rest; TLS in transit; provider-managed disk encryption; Stripe webhook verification and idempotency; rate limiting on AI endpoints; git-versioned migrations; structured logging with CI gate. Full detail and planned controls (audit logging, MFA, access reviews, pen test) in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) and [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
+Per-user Row-Level Security on all public tables (~108); an AES-256-GCM encrypted copy of each Memory fact as defense-in-depth (the plaintext copy remains readable for display/search, see Activity C); TLS in transit; provider-managed disk encryption; Stripe webhook verification and idempotency; rate limiting on AI endpoints; git-versioned migrations; partial structured logging (no CI enforcement yet). data_audit_log and ai_usage_audit tables exist and are written for a narrow set of flows (account deletion, retention cleanup, and select skill-export/kit paths); comprehensive data-access and AI-usage logging across all paths is still in progress. Full detail and planned controls (audit logging, MFA, access reviews, pen test) in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) and [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).

@@ -1,8 +1,8 @@
 # Purpose
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02.
 
-> Reconciliation note: this doc was written for the prior "decision-speed / portable AI double / zero-context tax" positioning. The current LOCKED positioning is **building the AI-native version of your business** (see `docs/MAIN-APP-POLISH-SPEC.md` section 0, and the root `README.md`). The product mechanics described below (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the kits) are real and in the code; the FRAMING has moved to AI-native. The "What CTRL Is" and "Core Problem" sections have been reframed. Some downstream audience/measurement sections still carry the old decision-speed language; read them through the AI-native lens and treat any undecided AI-native specifics as `TODO(founder)`.
+> Reconciliation note: the "What CTRL Is" and "Core Problem Statement" sections below were already rewritten to the LOCKED positioning (**building the AI-native version of your business**, see `docs/CTRL-SYSTEM-SPEC.md` and the root `README.md`) in the 2026-06-21 pass and are confirmed still current this pass - no stale "decision-speed" prose survives in them. What changed this pass: the Decision engine bullet under "It is" was tightened to name the current mechanic (fast capture, radial evidence spider, decision memo); "Strategic Positioning" and "Measurement of Success" below still use general decision-speed-adjacent phrasing ("decision speed increases", "decision cycle time improvement") - these describe a real effect of the reframe (a grounded, evidence-backed answer arrives faster than a general one), not the abstract "decide faster" positioning that was retired, so they were left as directionally accurate rather than rewritten wholesale. TODO(founder): the exact public hook lines and tagline (see the "Sales & Marketing Anchors" section below) remain unlocked.
 
 ---
 
@@ -16,7 +16,7 @@ It **is**:
 - A pair of guided lesson kits and a daily instrument that move a leader through the AI-native lifecycle: build (with AI), orchestrate (the agentic org + the autonomy line), productize (the AI-native version of the offer), go-to-market (how the AI offer reaches customers), on the Memory & Identity substrate.
 - The four lesson kits (`/kit`): Vibe Coding (a solution), Autonomous Business (a process), Agentic Org Chart (the company), Memory & Identity (the person).
 - A news deck of AI-native categories, filtered and tagged so only what changes how you build/run an AI-native business reaches you.
-- A decision engine that reframes any call to its AI-native version, then grounds it in evidence and shows where it holds and where it breaks.
+- A decision engine that reframes any call to its AI-native version, then grounds it in evidence: one fast-capture field starts the pipeline, the result is a radial evidence spider showing where the call holds and where it breaks, and every completed weigh closes with a board-ready decision memo.
 - A Brain / Memory Web: the leader's context as a four-world rope canvas, the substrate that makes any AI know the business.
 - A Context Export + Automator: context portable into any LLM, plus a builder that turns one weekly workflow into an installable agent skill.
 - Self-contained - no integrations with Slack, email, calendar, or any other tool. Your context comes from what you choose to share, nothing else.
@@ -131,7 +131,7 @@ Use these (AI-native) when generating outbound, ad copy, or social posts:
 - **Autonomy-line hook**: "Map your org to the autonomy line: what an agent runs, what it assists on with your approval, what stays human, and where to start."
 - **Privacy hook**: "No integrations. No plugins. No enterprise security review. You talk to it; that is the whole connection."
 - **Kit hook**: "After the lesson, walk a kit: ship a build, take a workflow off your plate, map your agentic org, or make the AI know you."
-- **Pricing anchor (settled)**: Free to start (the daily briefing + the Automator build + Memory Web + Voice + the Kit program + 3 decision weighs a month, all free). Edge Pro is $49/month, the decision tier: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch + Edge artifacts + drafting + email delivery + the live MCP pull of your built skills. The daily briefing is intentionally free, not an Edge Pro feature. TODO(founder): confirm whether the $49 one-time diagnostic SKUs survive the repositioning before quoting them.
+- **Pricing anchor (settled)**: Free to start (the daily briefing + the Automator build + Memory Web + Voice + the Kit program + 3 decision weighs a month, all free). Edge Pro is $49/month, the decision tier: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch + Edge artifacts + drafting + email delivery + the live MCP pull of your built skills. The daily briefing is intentionally free, not an Edge Pro feature. TODO(founder): confirm whether the $49 one-time diagnostic SKUs survive the repositioning before quoting them - `/diagnostic` is currently a bare redirect to `/dashboard` with no purchase UI behind it, so there is no live path to buy them today.
 
 ## Measurement of Success
 

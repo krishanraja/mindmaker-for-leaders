@@ -1,6 +1,6 @@
 # CTRL Information Security Policy (ISMS-lite)
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-08-02 (updated 2026-08-02)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 Applies to: CTRL (https://ctrl.themindmaker.ai), its codebase, Supabase backend (ref bkyuxvschuwngtcdhsyg), Vercel frontend, and all personnel/contractors with access.
 
@@ -20,7 +20,7 @@ Protect the confidentiality, integrity, and availability of CTRL and the persona
 
 | Class | Examples | Handling |
 |-------|----------|----------|
-| Sensitive personal | Memory Web facts, chat, assessments, transcripts | Encrypt (Memory facts AES-256-GCM at rest), owner-scoped RLS, never in logs |
+| Sensitive personal | Memory Web facts, chat, assessments, transcripts | Memory facts: AES-256-GCM encrypted copy stored as defense-in-depth (the plaintext copy remains the one read for display/search/AI context, see Section 5); owner-scoped RLS, never in logs |
 | Personal | Account identity, business context, briefing preferences, billing metadata | Owner-scoped RLS, TLS, minimized in logs |
 | Secrets | API keys, service-role keys, signing secrets | Stored as platform secrets (Supabase/Vercel env), never committed, never logged |
 | Public | Marketing pages | No special handling |
@@ -39,25 +39,25 @@ No payment card numbers are stored (tokenized by Stripe). [IN PLACE]
 
 ## 5. Cryptography
 
-- Memory Web facts encrypted at rest with AES-256-GCM. [IN PLACE]
+- Application-layer AES-256-GCM encryption of Memory facts. [PARTIAL] Every Memory fact write also produces an AES-256-GCM ciphertext (`encrypted_content`, via `_shared/memory-crypto.ts`), but this is defense-in-depth on a duplicate field, not full at-rest encryption of the fact: the plaintext `fact_value`/`fact_context` columns are stored in the same row and are what memory-crud, memory-export, and the AI context builder actually read. Removing the plaintext shadow so the ciphertext is the sole readable-at-rest copy is a noted, not-yet-scheduled follow-up.
 - TLS for all data in transit. [IN PLACE]
-- Supabase-managed disk encryption for the database. [IN PLACE]
+- Supabase-managed disk encryption for the database (covers Memory facts and everything else, independent of the point above). [IN PLACE]
 - Documented key-management and rotation procedure (encryption keys, API keys, service-role keys). [PARTIAL] Ad hoc rotation occurs; a documented schedule is [PLANNED].
 
 ## 6. Change management and secure SDLC
 
 - All database schema changes are git-versioned migrations. [IN PLACE]
-- Structured JSON logging in edge functions with a CI gate that fails builds containing console.log. [IN PLACE]
+- Structured JSON logging in edge functions via a shared `_shared/logger.ts` helper. [PARTIAL] Adoption is uneven (`console.log`/`console.error`/`console.warn` calls remain in roughly 90 of ~200 edge-function files as of this review); a CI gate that fails builds containing `console.log` does NOT currently exist (the CI standards check, `standards/check-standards.mjs`, enforces only the no-em-dash rule and required CSS design tokens). Adding a `console.log` CI gate is [PLANNED].
 - Code review before merge; RLS and access changes reviewed with extra care. [PARTIAL]
 - Automated security scanning in CI (SAST, dependency/SCA, secret scanning). [PLANNED]
 - RLS regression tests so a permissive policy (for example a `USING(true)`) cannot ship again. [PLANNED]
 
 ## 7. Logging and monitoring
 
-- Structured JSON edge-function logging; secrets excluded from logs. [IN PLACE]
+- Structured JSON edge-function logging; secrets excluded from logs. [PARTIAL] See Section 6; the practice exists and is followed in many functions but is not universal and is not CI-enforced.
 - Stripe webhook signature verification plus idempotency table. [IN PLACE]
 - Rate limiting on AI endpoints. [IN PLACE]
-- Comprehensive data-access audit log (data_audit_log) and AI-usage audit log (ai_usage_audit). [PLANNED / IN PROGRESS]
+- Data-access audit log (`data_audit_log`) and AI-usage audit log (`ai_usage_audit`). [PARTIAL] Both tables exist in production (migrations `20260602000000_create_audit_infrastructure.sql`, `20260605130000_ai_usage_cost.sql`) with owner-scoped read RLS and service-role-only writes. Live coverage is narrow: `data_audit_log` is written by `delete-account` and `cleanup-expired-data` only; `ai_usage_audit` is written by `_shared/ai-usage.ts` `recordAiUsage()`, called from `generate-skill-export`, `free-skill-export`, `kit-compose`, and `extract-voice-profile` only (roughly 4 of ~104 edge functions). Comprehensive coverage across all data-access and AI-call paths (chat, decision-engine, briefing generation, etc.) remains [IN PROGRESS].
 - Centralized log aggregation with retention and alerting. [PLANNED]
 
 ## 8. Vulnerability management

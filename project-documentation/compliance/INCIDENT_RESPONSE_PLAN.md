@@ -1,6 +1,6 @@
 # CTRL Incident Response Plan
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-08-02 (updated 2026-08-02)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 How Mindmaker detects, responds to, and reports security incidents and personal-data breaches affecting CTRL. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 14 and [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md).
@@ -30,13 +30,14 @@ External help (legal counsel, a forensics/DFIR contractor) is engaged for High/C
 ## 3. Detection
 
 Current sources:
-- Structured JSON edge-function logs (CI gate prevents console.log) reviewed when investigating issues.
+- Structured JSON edge-function logs, reviewed when investigating issues. Adoption of the shared logger is partial (not yet CI-enforced; see [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) Section 6), so log quality/coverage varies by function.
 - Stripe webhook signature/idempotency failures.
 - Rate-limit triggers on AI endpoints.
 - User and DSAR reports (a user reporting they can see another's data is an automatic escalation).
 - Code review and migration review surfacing RLS or access issues.
+- `data_audit_log` rows for account-deletion and retention-cleanup events (narrow coverage; not a general data-access log yet).
 
-In progress (improves detection): comprehensive data-access audit log (data_audit_log), AI-usage audit log (ai_usage_audit), centralized log aggregation, and alerting. Tracked in [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
+In progress (improves detection): comprehensive data-access audit log (data_audit_log) beyond its current narrow coverage, comprehensive AI-usage audit log (ai_usage_audit) beyond its current narrow coverage, a CI gate for console.log usage, centralized log aggregation, and alerting. Tracked in [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
 
 ## 4. Response workflow
 
@@ -55,7 +56,7 @@ In progress (improves detection): comprehensive data-access audit log (data_audi
 If a personal-data breach is likely to result in a risk to individuals' rights and freedoms, notify the relevant supervisory authority without undue delay and, where feasible, within 72 hours of becoming aware. The notice describes the nature of the breach, categories and approximate numbers of subjects/records, likely consequences, and measures taken. If the full picture is not yet known, notify in phases.
 
 ### GDPR Article 34 (data subjects)
-If the breach is likely to result in a high risk to individuals, notify affected data subjects without undue delay, in clear language, describing the breach, likely consequences, and steps taken and recommended. Notification may be avoided if data was rendered unintelligible (for example, strongly encrypted such as the AES-256-GCM Memory facts) or if subsequent measures eliminate the high risk.
+If the breach is likely to result in a high risk to individuals, notify affected data subjects without undue delay, in clear language, describing the breach, likely consequences, and steps taken and recommended. Notification may be avoided if data was rendered unintelligible to the attacker (for example, strongly encrypted with no key compromise) or if subsequent measures eliminate the high risk. Caution: Memory facts are NOT a clean example of this today. Each fact has a parallel AES-256-GCM ciphertext column, but the plaintext `fact_value`/`fact_context` columns are also stored in the same table and are what the application actually reads; a database-level exposure would very likely expose the plaintext, not just the ciphertext. Do not treat "Memory facts are encrypted" as a basis to skip Article 34 notification for a Memory-data breach until the plaintext shadow is removed (see [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) Section 5); assess each incident on the actual data exposed.
 
 ### CCPA / CPRA
 California requires notifying affected California residents of a breach of unencrypted/unredacted personal information without unreasonable delay, and may require notifying the California Attorney General above statutory thresholds. Coordinate with the Privacy/Legal point.
@@ -79,7 +80,7 @@ This is a real, remediated incident, documented here as a reference example.
 - Containment and eradication: the permissive policies were replaced so each table is now owner-scoped (rows restricted to `auth.uid()` ownership) or restricted to the service role where appropriate. Changes were delivered as git-versioned migrations and verified across the affected tables.
 - Impact assessment: reviewed available logs/usage for evidence of actual cross-tenant access. (At the time, comprehensive data-access audit logging, data_audit_log, was not yet in place, which limited forensic certainty; this directly motivated building it.)
 - Notification: assessed against GDPR Art 33/34. Where evidence indicated the gap was found and closed without confirmed unauthorized access, the conclusion documented was no external notification required; had logs shown actual cross-tenant reads, an Art 33 authority notice within 72 hours and likely Art 34 subject notices would have followed.
-- Follow-ups: (1) audit all 108 public tables for any remaining permissive policies (completed as the broader hardening); (2) build data_audit_log to make future impact assessment evidence-based (in progress); (3) add RLS regression coverage so a permissive policy cannot ship again. See [CONTROL_MATRIX.md](./CONTROL_MATRIX.md) CC6.
+- Follow-ups: (1) audit public tables for any remaining permissive policies (completed as the broader hardening; note some system/cache tables like `ai_response_cache` and `stripe_events_processed` intentionally keep a `USING(true)` policy scoped explicitly `TO service_role`, which is not a gap); (2) build data_audit_log to make future impact assessment evidence-based (schema shipped and the table is now written on account deletion and retention cleanup; broader coverage across other data-access paths remains in progress); (3) add RLS regression coverage so a permissive policy cannot ship again (still open). See [CONTROL_MATRIX.md](./CONTROL_MATRIX.md) CC6.
 
 ## 8. Logging incidents
 

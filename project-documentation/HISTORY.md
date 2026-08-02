@@ -2,9 +2,11 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-08-02 (previously 2026-06-21, AI-native reconciliation pass).
 
-> This is a historical record, kept on purpose. Early phases below describe positioning and visuals that are now RETIRED: the "Clarity for Leaders" tagline, the light/Apple-like design system (warm off-white, ink, Mint). Those are accurate as history but are not the current product. The current state is: globally DARK (the `ctrl-ds` instrument palette, emerald `#00D9B6`), and the LOCKED positioning is **building the AI-native version of your business** (locked 2026-06-19, after the latest phase recorded here). The two halves that post-date this timeline are the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
+> This is a historical record, kept on purpose. Early phases below describe positioning and visuals that are now RETIRED: the "Clarity for Leaders" tagline, the light/Apple-like design system (warm off-white, ink, Mint). Those are accurate as history but are not the current product. The current state is: globally DARK (the `ctrl-ds` instrument palette, emerald `#00D9B6`), and the LOCKED positioning is **building the AI-native version of your business** (locked 2026-06-19, after the latest phase recorded here). The two halves that post-date the earliest phases are the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222).
+>
+> Phase 17 below (PR #298, 2026-06-29) is the most recent phase written up in this timeline's detailed narrative style. Verified against code/git log 2026-08-02: substantial work has shipped since Phase 17 that is NOT narrated here as its own phase (this file stays a lean pointer, not a running changelog) - the Decisions tab rebuilt as a radial force spider (PRs #308-320), the evidence-corpus sharpening (PR #321, 2026-07-03: real correction loop, decision memo, capability ladder, brain canvas Strengthen/Fix went live), a Settings/design-system audit (2026-07-04), Edge Pro repriced to $49/month and repositioned as the decision tier (PRs #326-327), a founder-signed North Star flywheel metric (PR #330, 2026-07-04), and a further Home rebuild (glance-only cards, tap-to-read sheets, trend "shift" cards, a `/download` capture page - PRs #322-334). Canonical current sources for all of the above: `docs/CTRL-SYSTEM-SPEC.md`, `project-documentation/NORTH_STAR.md`, `project-documentation/DECISIONS_LOG.md`, `CHANGELOG.md` (which carries the detailed entry-by-entry record going forward), and root `README.md`.
 
 ---
 
