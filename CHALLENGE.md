@@ -3,7 +3,13 @@
 **Against:** CTRL Harness Chain build specification, revision 3 (2026-08-04)
 **Phase:** -1, per the spec's own section 0.6
 **Date:** 2026-08-04
-**Status:** awaiting Krish's ruling. Everything accepted here is locked. Everything declined is logged here and never raised again.
+**Status:** RULED, 2026-08-04. Krish: "ok, I concur." All 23 challenges accepted, with the recommended option wherever alternatives were offered. Everything below is locked per spec 0.6 and is not relitigated.
+
+**Ruling record (2026-08-04):**
+- CH-01 through CH-23: accepted (recommended option where marked).
+- CH-21 offered two coherent options with no recommendation; resolved as **session-first as specced, drip kept as the 6.3 fallback**, because the reveal beats and the item-30 number are the product moments. The drip inverts only if session completion fails in practice (the falsification test in CH-21 stands).
+- CH-23's skills home: the five ctrl-* skills are committed to the repo under `skills/` as the versioned canonical copy (the runtime skills directory is ephemeral in remote sessions); registry lives beside them.
+- Reserved calls (section 4): 1 = yes, demote the trait model to labelled-cosmetic cold start. 2 and 3 = resolved by CH-20 and CH-07 (one door; org layer cut). 4 = the chain lives in the app; the kit remains the wedge. 5 = pricing position 2 locked, PRICING.md is canon.
 
 ## How this was produced
 
@@ -17,29 +23,29 @@ Each challenge ends with a single decision. The summary table is the ruling surf
 
 | ID | Challenge (one line) | Lens | Changes | Ruling |
 |---|---|---|---|---|
-| CH-01 | The ledger has no writer; DELIVER does not unblock LEARN | strat+creat+hol | Ph 4, 6, 8 | |
-| CH-02 | Live-pull update claim is false; router+leaves cannot be served over get_skill | holistic | Ph 6 | |
-| CH-03 | Discrimination test is a global switch with no machinery; NaN cascade; item-14 beat unavailable ~half the time | technical | Ph 1, 2, 3 | |
-| CH-04 | Grade-vector clustering is undefined at this n | technical | Ph 3 | |
-| CH-05 | Section 3 SQL: situated promotion is an unaudited UPDATE; role criteria invisible; orgs cannot bootstrap | technical | Ph 1 | |
-| CH-06 | New tables break account deletion and sit outside the live GDPR boundary | holistic | Ph 0, 1 | |
-| CH-07 | Phase 7 builds multi-tenancy for zero tenants; if kept, org evidence cannot resolve for members | strat+hol | Ph 1, 7 | |
-| CH-08 | Item-20 rubric reveal contaminates a third of the held-out grades | creative | Ph 2 | |
-| CH-09 | Manipulation check is a leading question with coin-flip power; pair-split is the free instrument | tech+creat | Ph 2 | |
-| CH-10 | Constructs can only originate as stage-1 LLM guesses; a why line has nowhere to become a new construct | creative | Ph 2 | |
-| CH-11 | The peer item class names a corpus that does not exist and has no consent path | creative | Ph 2 | |
-| CH-12 | The median-user risk is measurable inside the instrument for three items | strategic | Ph 2, 3, 5 | |
-| CH-13 | The fuzzy floors reject the spec's own founding quote | technical | Ph 1, 3 | |
-| CH-14 | Provider routing does not exist; the fallback makes Gemini judge its own output | technical | Ph 0, 4 | |
-| CH-15 | The revision loop has no bound, cannot pass its own gate, and has no run state to poll | technical | Ph 0, 1, 2, 4 | |
-| CH-16 | Blocking slop checks deadlock against the package's own verbatim exemplars | holistic | Ph 3 | |
-| CH-17 | Run the whole chain by hand once, before any code | strategic | new Ph 0.5 | |
-| CH-18 | The sort-vs-skill fork is testable for one migration; test it before Phase 6 | strategic | Ph 3, 6 | |
-| CH-19 | The pricing boundary was already decided, in a doc the spec does not cite | strategic | Ph 0, 6 | |
-| CH-20 | The kit door destroys the graded corpus; graduation is wired to the wrong door | strat+hol | Ph 0, 2 | |
-| CH-21 | The drip should be the default shape and the session the accelerator | creative | Ph 2 | |
-| CH-22 | Cold start and the 90-day interval both have concrete answers in existing assets | technical | Ph 2, 5 | |
-| CH-23 | The operator-drift gap has already fired: ctrl-capture still says Stage 8 | holistic | Ph 0, 5 | |
+| CH-01 | The ledger has no writer; DELIVER does not unblock LEARN | strat+creat+hol | Ph 4, 6, 8 | accepted |
+| CH-02 | Live-pull update claim is false; router+leaves cannot be served over get_skill | holistic | Ph 6 | accepted |
+| CH-03 | Discrimination test is a global switch with no machinery; NaN cascade; item-14 beat unavailable ~half the time | technical | Ph 1, 2, 3 | accepted |
+| CH-04 | Grade-vector clustering is undefined at this n | technical | Ph 3 | accepted |
+| CH-05 | Section 3 SQL: situated promotion is an unaudited UPDATE; role criteria invisible; orgs cannot bootstrap | technical | Ph 1 | accepted |
+| CH-06 | New tables break account deletion and sit outside the live GDPR boundary | holistic | Ph 0, 1 | accepted |
+| CH-07 | Phase 7 builds multi-tenancy for zero tenants; if kept, org evidence cannot resolve for members | strat+hol | Ph 1, 7 | accepted |
+| CH-08 | Item-20 rubric reveal contaminates a third of the held-out grades | creative | Ph 2 | accepted |
+| CH-09 | Manipulation check is a leading question with coin-flip power; pair-split is the free instrument | tech+creat | Ph 2 | accepted |
+| CH-10 | Constructs can only originate as stage-1 LLM guesses; a why line has nowhere to become a new construct | creative | Ph 2 | accepted |
+| CH-11 | The peer item class names a corpus that does not exist and has no consent path | creative | Ph 2 | accepted |
+| CH-12 | The median-user risk is measurable inside the instrument for three items | strategic | Ph 2, 3, 5 | accepted |
+| CH-13 | The fuzzy floors reject the spec's own founding quote | technical | Ph 1, 3 | accepted |
+| CH-14 | Provider routing does not exist; the fallback makes Gemini judge its own output | technical | Ph 0, 4 | accepted |
+| CH-15 | The revision loop has no bound, cannot pass its own gate, and has no run state to poll | technical | Ph 0, 1, 2, 4 | accepted |
+| CH-16 | Blocking slop checks deadlock against the package's own verbatim exemplars | holistic | Ph 3 | accepted |
+| CH-17 | Run the whole chain by hand once, before any code | strategic | new Ph 0.5 | accepted |
+| CH-18 | The sort-vs-skill fork is testable for one migration; test it before Phase 6 | strategic | Ph 3, 6 | accepted |
+| CH-19 | The pricing boundary was already decided, in a doc the spec does not cite | strategic | Ph 0, 6 | accepted |
+| CH-20 | The kit door destroys the graded corpus; graduation is wired to the wrong door | strat+hol | Ph 0, 2 | accepted |
+| CH-21 | The drip should be the default shape and the session the accelerator | creative | Ph 2 | accepted |
+| CH-22 | Cold start and the 90-day interval both have concrete answers in existing assets | technical | Ph 2, 5 | accepted |
+| CH-23 | The operator-drift gap has already fired: ctrl-capture still says Stage 8 | holistic | Ph 0, 5 | accepted |
 
 ---
 
