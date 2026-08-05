@@ -24,6 +24,10 @@ import { buildSkillSystemPrompt, buildSkillUserPrompt } from "./prompt.ts";
 import { runQualityGate, type SkillData } from "./quality-gate.ts";
 import { buildSkillZip } from "./zip.ts";
 import { recordAiUsage, checkDailySoftCap } from "../_shared/ai-usage.ts";
+import { parseUnpointedImperatives, type ProvenanceOptions } from "../_shared/provenance-checks.ts";
+import { createLogger } from "../_shared/logger.ts";
+
+const log = createLogger("generate-skill-export");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -121,6 +125,9 @@ Deno.serve(async (req) => {
       format: "markdown",
       useCase: "general",
       maxTokens: 3000,
+      // The generator sees where each fact came from, so a rule it writes can
+      // point back at it rather than read as invented.
+      withProvenance: true,
     });
 
     // Fire-and-forget reliance signal on the facts that shipped into the
@@ -243,6 +250,46 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Harness-chain rows this leader already holds. Empty is the normal state
+    // for anyone who has not run the chain yet; a failed read leaves the sets
+    // undefined so the prov.* checks report an honest skip instead of a pass.
+    let provenance: ProvenanceOptions | undefined;
+    try {
+      const [criteriaRes, evidenceRes] = await Promise.all([
+        serviceClient
+          .from("criteria")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("is_current", true)
+          .eq("disc_verdict", "keep"),
+        serviceClient
+          .from("evidence")
+          .select("id, situated, quote")
+          .eq("user_id", user.id)
+          .limit(500),
+      ]);
+      if (criteriaRes.error) throw criteriaRes.error;
+      if (evidenceRes.error) throw evidenceRes.error;
+      const evidenceRows = (evidenceRes.data ?? []) as Array<{
+        id: string;
+        situated: boolean | null;
+        quote: string | null;
+      }>;
+      provenance = {
+        knownCriterionIds: (criteriaRes.data ?? []).map((r: { id: string }) => r.id),
+        knownEvidenceIds: evidenceRows.map((r) => r.id),
+        situatedEvidenceIds: evidenceRows.filter((r) => r.situated).map((r) => r.id),
+        evidenceQuotes: evidenceRows
+          .map((r) => r.quote)
+          .filter((q): q is string => typeof q === "string" && q.length > 0),
+      };
+    } catch (err) {
+      log.warn("provenance sets unavailable, prov.* checks will skip", {
+        userId: user.id,
+        error: err,
+      });
+    }
+
     const skillData: SkillData = {
       name: skill.name,
       description: skill.description,
@@ -251,9 +298,22 @@ Deno.serve(async (req) => {
       test_prompts: skill.test_prompts || [],
       archetype: skill.archetype,
       voice_profile_present: voiceProfileContext.length > 0,
+      provenance,
     };
 
     const qualityGate = runQualityGate(skillData);
+
+    // Phase 1 baseline metric: how many rules this package states without
+    // pointing at what they came from. Advisory, logged every run so the later
+    // phases have a number to move.
+    const baselineUnresolvedClaims = parseUnpointedImperatives(
+      qualityGate.checks.find((c) => c.id === "prov.everyRuleCited")?.detail,
+    ) ?? 0;
+    log.info("provenance baseline", {
+      userId: user.id,
+      unpointed_imperatives: baselineUnresolvedClaims,
+      skill_name: skill.name,
+    });
 
     // Hard-fail only on the name format check - everything else is advisory
     // and shown to the user so they can decide whether to regenerate.
@@ -357,6 +417,7 @@ Deno.serve(async (req) => {
         archetype: skill.archetype || null,
       },
       quality_gate: qualityGate,
+      baseline_unresolved_claims: baselineUnresolvedClaims,
       zip_base64: zipResult.base64,
       zip_filename: `${skill.name}.zip`,
       zip_byte_length: zipResult.byteLength,

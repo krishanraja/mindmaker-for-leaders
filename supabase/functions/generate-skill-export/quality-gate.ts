@@ -12,6 +12,11 @@
  * round-tripping a regenerate and gives us a stable training signal.
  */
 
+import {
+  runProvenanceChecks,
+  type ProvenanceOptions,
+} from "../_shared/provenance-checks.ts";
+
 export interface SkillData {
   name: string;
   description: string;
@@ -25,6 +30,12 @@ export interface SkillData {
    * section is required.
    */
   voice_profile_present?: boolean;
+  /**
+   * Harness-chain rows this user already holds. Absent sets make the matching
+   * prov.* check report an honest skip rather than a fake pass; the quotes are
+   * masked out of the body before any check reads it (CH-16).
+   */
+  provenance?: ProvenanceOptions;
 }
 
 export interface QualityCheck {
@@ -195,6 +206,11 @@ export function runQualityGate(skill: SkillData): QualityGateResult {
     passed: tp.length === 3 && tp.every((t) => t.trim().length > 10),
     detail: `${tp.length} test prompts`,
   });
+
+  // -------- Provenance checks (Phase 1, all advisory) ------------------
+  // Where did each rule come from. Nothing here blocks: Phase 1 only measures
+  // the baseline, and prov.everyRuleCited's detail carries the number.
+  checks.push(...runProvenanceChecks(body, skill.provenance ?? {}));
 
   // -------- Summary ---------------------------------------------------
   const passedCount = checks.filter((c) => c.passed).length;

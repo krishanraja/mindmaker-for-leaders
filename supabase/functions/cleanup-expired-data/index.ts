@@ -48,7 +48,21 @@ serve(async (req) => {
       ? { error: cacheError.message }
       : { cleaned: cacheCount || 0 };
 
-    // 3. Log cleanup to audit
+    // 3. Redact expired evidence. Never deleted: a shipped provenance pointer
+    //    must still resolve, to a truthful redacted state rather than a hole
+    //    (CH-06). Emptying the quote is what removes the third party's words.
+    const { data: redacted, error: redactError } = await supabase
+      .from('evidence')
+      .update({ quote: '', redacted_at: new Date().toISOString() })
+      .lt('retention_expires_at', new Date().toISOString())
+      .is('redacted_at', null)
+      .select('id');
+
+    results.redacted_evidence = redactError
+      ? { error: redactError.message }
+      : { redacted: redacted?.length || 0 };
+
+    // 4. Log cleanup to audit
     await supabase.from('data_audit_log').insert({
       action_type: 'DELETE',
       table_name: 'RETENTION_CLEANUP',

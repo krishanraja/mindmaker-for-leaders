@@ -162,12 +162,16 @@ serve(async (req) => {
     // are the evidence of the erasure itself, retained under Art. 17(3)(b).
     const sweepTables = [
       'ai_insights_generated', 'booking_requests', 'briefing_lens_feedback',
-      'chat_messages', 'conversion_analytics', 'decision_alerts', 'decision_cases',
+      'chat_messages', 'constructs', 'conversion_analytics', 'criteria',
+      'decision_alerts', 'decision_cases',
       'decision_claims', 'decision_events', 'decision_evidence', 'decision_tensions',
       'edge_actions', 'edge_feedback', 'edge_profiles', 'edge_subscriptions',
-      'engagement_analytics', 'fact_extraction_log', 'feedback', 'generated_artifacts',
-      'index_participant_data', 'lead_qualification_scores', 'lead_qualifications',
-      'llm_call_log', 'prompt_library_profiles', 'roi_actuals', 'skill_exports',
+      'engagement_analytics', 'evidence', 'evidence_sources',
+      'fact_extraction_log', 'feedback', 'generated_artifacts',
+      'harness_runs', 'index_participant_data', 'ledger',
+      'lead_qualification_scores', 'lead_qualifications',
+      'llm_call_log', 'prompt_library_profiles', 'proposals', 'roi_actuals',
+      'skill_exports', 'skill_provenance', 'sort_grades', 'sort_items',
       'training_material', 'user_briefing_directives', 'user_business_context',
       'user_memory_budget', 'user_roles', 'velocity_events',
     ];

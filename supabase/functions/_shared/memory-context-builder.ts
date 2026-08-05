@@ -6,6 +6,13 @@ export interface MemoryContextOptions {
   includeWarm?: boolean;
   topicFilter?: string;
   maxTokens?: number;
+  /**
+   * Render each fact with where it came from (capture date, source type, and
+   * the original snippet). Off by default: every existing caller's output stays
+   * byte-identical. Only the universal markdown artefact carries the suffix;
+   * the model-native formats are untouched.
+   */
+  withProvenance?: boolean;
   format?: "markdown" | "chatgpt" | "claude" | "gemini" | "cursor" | "claude-code";
   useCase?: "general" | "meeting" | "decision" | "code" | "email" | "strategy" | "delegation" | "board" | "edge"
     | "writing_persona" | "strength_framework" | "delegation_playbook" | "strategic_advisor" | "decision_journal";
@@ -46,6 +53,10 @@ interface Fact {
   verification_status: string;
   confidence_score: number;
   created_at: string;
+  /** Original snippet the fact was extracted from. Rendered only under withProvenance. */
+  fact_context?: string | null;
+  /** How the fact arrived (voice, capture, manual, system...). */
+  source_type?: string | null;
 }
 
 interface Pattern {
@@ -117,28 +128,55 @@ function formatVoiceProfileSection(fact: Fact): string {
   }
 }
 
+/** Max characters of the original snippet rendered under a fact. */
+const PROVENANCE_CONTEXT_CHARS = 140;
+
+/**
+ * One fact as a markdown bullet. With provenance on it carries when the fact
+ * was noted, how it arrived, and the snippet it came from, so a reader can see
+ * the source of every line rather than take it on trust. With provenance off
+ * the output is byte-identical to the plain bullet it has always been.
+ */
+function renderFact(fact: Fact, withProvenance: boolean): string {
+  const bullet = `- ${fact.fact_value}`;
+  if (!withProvenance) return bullet;
+
+  const noted = (fact.created_at || "").slice(0, 10);
+  const source = (fact.source_type || "").trim();
+  const suffix = noted ? ` [noted ${noted}${source ? `, ${source}` : ""}]` : "";
+
+  const rawContext = (fact.fact_context || "").replace(/\s+/g, " ").trim();
+  if (!rawContext) return `${bullet}${suffix}`;
+  const snippet = rawContext.length > PROVENANCE_CONTEXT_CHARS
+    ? `${rawContext.slice(0, PROVENANCE_CONTEXT_CHARS - 3)}...`
+    : rawContext;
+  return `${bullet}${suffix}\n  context: "${snippet}"`;
+}
+
 function buildMarkdownContext(
   facts: Fact[],
   patterns: Pattern[],
   decisions: Decision[],
   userName: string | null,
+  withProvenance = false,
 ): string {
   const sections: string[] = [];
   const grouped = groupFactsByCategory(facts);
+  const renderFacts = (rows: Fact[]) => rows.map(f => renderFact(f, withProvenance)).join("\n");
 
   // Identity
   if (grouped.identity?.length) {
-    sections.push(`## About ${userName || "Me"}\n${grouped.identity.map(f => `- ${f.fact_value}`).join("\n")}`);
+    sections.push(`## About ${userName || "Me"}\n${renderFacts(grouped.identity)}`);
   }
 
   // Business
   if (grouped.business?.length) {
-    sections.push(`## Business Context\n${grouped.business.map(f => `- ${f.fact_value}`).join("\n")}`);
+    sections.push(`## Business Context\n${renderFacts(grouped.business)}`);
   }
 
   // Objectives
   if (grouped.objective?.length) {
-    sections.push(`## Current Priorities\n${grouped.objective.map(f => `- ${f.fact_value}`).join("\n")}`);
+    sections.push(`## Current Priorities\n${renderFacts(grouped.objective)}`);
   }
 
   // Decisions
@@ -160,12 +198,12 @@ function buildMarkdownContext(
 
   // Blockers
   if (grouped.blocker?.length) {
-    sections.push(`## Blockers & Constraints\n${grouped.blocker.map(f => `- ${f.fact_value}`).join("\n")}`);
+    sections.push(`## Blockers & Constraints\n${renderFacts(grouped.blocker)}`);
   }
 
   // Preferences
   if (grouped.preference?.length) {
-    sections.push(`## Preferences\n${grouped.preference.map(f => `- ${f.fact_value}`).join("\n")}`);
+    sections.push(`## Preferences\n${renderFacts(grouped.preference)}`);
   }
 
   const voiceFact = findVoiceProfileFact(facts);
@@ -556,12 +594,13 @@ export async function buildMemoryContext(
     maxTokens = 4000,
     format = "markdown",
     useCase = "general",
+    withProvenance = false,
   } = options;
 
   // Fetch hot facts (always)
   const { data: hotFacts } = await supabase
     .from("user_memory")
-    .select("id, fact_category, fact_label, fact_value, fact_key, fact_subtype, temperature, verification_status, confidence_score, created_at")
+    .select("id, fact_category, fact_label, fact_value, fact_key, fact_subtype, temperature, verification_status, confidence_score, created_at, fact_context, source_type")
     .eq("user_id", userId)
     .eq("is_current", true)
     .is("archived_at", null)
@@ -574,7 +613,7 @@ export async function buildMemoryContext(
   if (includeWarm) {
     const { data } = await supabase
       .from("user_memory")
-      .select("id, fact_category, fact_label, fact_value, fact_key, fact_subtype, temperature, verification_status, confidence_score, created_at")
+      .select("id, fact_category, fact_label, fact_value, fact_key, fact_subtype, temperature, verification_status, confidence_score, created_at, fact_context, source_type")
       .eq("user_id", userId)
       .eq("is_current", true)
       .is("archived_at", null)
@@ -619,7 +658,7 @@ export async function buildMemoryContext(
   let finalFacts = filtered.facts;
 
   // Build markdown (universal base)
-  let markdown = buildMarkdownContext(filtered.facts, filtered.patterns, filtered.decisions, userName);
+  let markdown = buildMarkdownContext(filtered.facts, filtered.patterns, filtered.decisions, userName, withProvenance);
   let sections = buildSections(filtered.facts, filtered.patterns, filtered.decisions, userName);
 
   // Enforce token budget - trim warm facts first
@@ -628,7 +667,7 @@ export async function buildMemoryContext(
     const reducedWarm = warmFacts.slice(0, Math.floor(warmFacts.length / 2));
     const reducedFacts = [...(hotFacts || []) as Fact[], ...reducedWarm];
     const reducedFiltered = filterByUseCase(reducedFacts, filtered.patterns, filtered.decisions, useCase);
-    markdown = buildMarkdownContext(reducedFiltered.facts, reducedFiltered.patterns, reducedFiltered.decisions, userName);
+    markdown = buildMarkdownContext(reducedFiltered.facts, reducedFiltered.patterns, reducedFiltered.decisions, userName, withProvenance);
     sections = buildSections(reducedFiltered.facts, reducedFiltered.patterns, reducedFiltered.decisions, userName);
     tokenCount = estimateTokens(markdown);
     finalFacts = reducedFiltered.facts; // trim path shipped instead of the full set
