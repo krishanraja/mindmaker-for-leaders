@@ -41,13 +41,12 @@ The `fact_value` JSON object carries these keys. Types in `src/types/voiceProfil
 ## Consumption pipeline
 
 1. `useVoiceProfile.save(profile)` upserts the single `ctrl_voice_profile` fact on the client.
-2. `buildMemoryContext(supabase, userId, ...)` in `supabase/functions/_shared/memory-context-builder.ts` reads the `ctrl_voice_profile` fact from `user_memory` and returns:
-   - `voiceProfile: string` - a `## Voice & Style Profile` markdown block
-   - `voiceProfileRecord: VoiceProfile` - the same data as a typed object (see `src/types/voiceProfile.ts`)
-   The voice section is NOT injected into the main `context` string by default; only callers that opt in receive it (preserves token budget for briefing and other unrelated callers).
-3. `generate-skill-export/index.ts` passes the markdown block into `buildSkillUserPrompt({ voiceProfile, ... })` as the `VOICE_PROFILE` field.
+2. `buildMemoryContext(supabase, userId, ...)` in `supabase/functions/_shared/memory-context-builder.ts` reads the `ctrl_voice_profile` fact from `user_memory` and appends it to the markdown context as a `## Voice profile (self-identified)` section (`formatVoiceProfileSection`, line 94; the fallback heading is `## Voice profile` when the JSON will not parse). There is no separate voice field on the result: `MemoryContextResult` is `{ context, tokenCount, factCount, patternCount, decisionCount, lastUpdated, artefacts?, touchedFactIds? }` and nothing else. There is no opt-in either: the section is appended to the context unconditionally (lines 171-176), so every caller pays the tokens. The only things that drop it are a `useCase` filter that excludes `preference` facts (meeting, strategy, delegation, board, decision_journal) and the token-budget trim.
+3. `generate-skill-export/index.ts` scrapes that section back out of the context string with `/## Voice profile[\s\S]*?(?=\n## |\n*$)/` (line 157) and passes the match into `buildSkillUserPrompt({ voiceProfileContext, ... })` as the `VOICE_PROFILE` field. The section also stays in `memoryContext`.
 4. The prompt (`prompt.ts`) requires the body to include a `## Voice and tone` section when `VOICE_PROFILE` is non-empty, and the references array to include a structured 8-dimension `voice-profile.md` companion file. It forbids fabricated voice samples: reproduce the leader's real sample verbatim, otherwise describe the register, never invent a quote.
-5. `quality-gate.ts` runs the full gate (17/17, including a required `## Learning loop` section) plus an advisory `body.voiceLockSurfaced` check that flags (but does not block) skills that should have surfaced voice rules but did not.
+5. `quality-gate.ts` runs the full gate (17 checks, including a required `## Learning loop` section) plus the `body.voiceLockSurfaced` check. That check is live, not aspirational: `index.ts` builds `skillData` with `voice_profile_present` (true when the scraped block was non-empty) and the model's `archetype`, so the gate knows when a `## Voice and tone` section was expected and reports its absence. It stays advisory: the export still ships, and the UI can offer a regenerate.
+
+> Coupling warning: the heading emitted at `memory-context-builder.ts:94` and the scrape regex at `generate-skill-export/index.ts:157` are load-bearing for each other. Rename the heading on its own and skill builds silently lose their voice block with no error anywhere. Change the two together.
 
 ## Voice-lock triage
 
@@ -72,6 +71,6 @@ Kit students enter via `/kit?code=...`, which auto-creates an anonymous Supabase
 | `src/components/edge/VoiceStyleProfileSheet.tsx` | The five-pick recognition sheet plus the paste-extract power path |
 | `src/components/kit/KitVoiceProfileCard.tsx` | Kit entry point that triggers the sheet |
 | `supabase/functions/extract-voice-profile/index.ts` | Derives the 8 dimensions from pasted real writing in one LLM pass |
-| `supabase/functions/_shared/memory-context-builder.ts` | Adds `voiceProfile` + `voiceProfileRecord` to `MemoryContextResult` |
+| `supabase/functions/_shared/memory-context-builder.ts` | Appends the `## Voice profile (self-identified)` section to `context` (heading coupled to the skill-export scrape regex) |
 | `supabase/functions/generate-skill-export/prompt.ts` | Four Honest Tests + `## Voice and tone` requirement + structured `voice-profile.md` + no-fabricated-samples rule |
-| `supabase/functions/generate-skill-export/quality-gate.ts` | Full 17/17 gate (incl. required `## Learning loop`) + `body.voiceLockSurfaced` advisory check |
+| `supabase/functions/generate-skill-export/quality-gate.ts` | Full 17-check gate (incl. required `## Learning loop`) + the live `body.voiceLockSurfaced` advisory check |

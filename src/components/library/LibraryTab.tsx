@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useGeneratedArtifacts } from "@/hooks/useGeneratedArtifacts";
 import { renderMarkdown } from "@/lib/renderMarkdown";
@@ -56,7 +57,7 @@ export function LibraryTab() {
 
   const hasSkills = useMemo(() => artifacts.some((a) => a.kind === "skill"), [artifacts]);
 
-  const handleDownload = (artifact: GeneratedArtifact) => {
+  const downloadMarkdown = (artifact: GeneratedArtifact) => {
     const blob = new Blob([artifact.body], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -67,6 +68,36 @@ export function LibraryTab() {
     a.remove();
     URL.revokeObjectURL(url);
     toast({ title: `Downloaded "${artifact.name}.md"` });
+  };
+
+  // Skills built after the skill-packages bucket landed carry a zip_path, so
+  // the download hands back the installable package rather than the raw
+  // markdown. Anything without a stored package (or a signing failure) falls
+  // back to markdown so the button always does something.
+  const handleDownload = async (artifact: GeneratedArtifact) => {
+    const zipPath = artifact.metadata?.zip_path;
+    if (typeof zipPath === "string" && zipPath.length > 0) {
+      try {
+        // The anchor's download attribute is ignored cross-origin, so the
+        // filename has to ride on the signed URL itself.
+        const { data, error } = await supabase.storage
+          .from("skill-packages")
+          .createSignedUrl(zipPath, 300, { download: `${artifact.name}.zip` });
+        if (!error && data?.signedUrl) {
+          const a = document.createElement("a");
+          a.href = data.signedUrl;
+          a.download = `${artifact.name}.zip`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          toast({ title: `Downloaded "${artifact.name}.zip"` });
+          return;
+        }
+      } catch (err) {
+        console.warn("LibraryTab: signed ZIP url failed", err);
+      }
+    }
+    downloadMarkdown(artifact);
   };
 
   // Group by kind (newest-first within each group) so the leader sees
@@ -202,9 +233,9 @@ export function LibraryTab() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDownload(artifact);
+                          void handleDownload(artifact);
                         }}
-                        aria-label="Download markdown"
+                        aria-label="Download"
                         className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                       >
                         <Download className="w-3.5 h-3.5" />

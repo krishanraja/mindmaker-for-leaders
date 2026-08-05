@@ -182,6 +182,10 @@ Deno.serve(async (req) => {
       body: skill.body,
       references: skill.references || [],
       test_prompts: skill.test_prompts || [],
+      archetype: skill.archetype,
+      // The free lap carries no memory context, so no voice profile ever
+      // rides in; the voice-lock check still fires on archetype.
+      voice_profile_present: false,
     };
 
     const qualityGate = runQualityGate(skillData);
@@ -205,20 +209,61 @@ Deno.serve(async (req) => {
     // Persist the kit when we have a user id (anonymous included) so it survives
     // the account upgrade. Best-effort; the user still gets their download.
     if (userId) {
-      const { error: insErr } = await serviceClient.from("skill_exports").insert({
-        user_id: userId,
-        skill_name: skill.name,
-        description: skill.description,
-        transcript,
-        triage_result: "skill",
-        body_content: skill.body,
-        references_json: skill.references || [],
-        test_prompts: skill.test_prompts || [],
-        quality_gate: qualityGate as unknown as Record<string, unknown>,
-        archetype: skill.archetype || null,
-        version: 1,
-      });
+      // Storage first, so the artefact outlives the response (same fix as
+      // generate-skill-export; before this the ZIP was unrecoverable once
+      // the response state unmounted).
+      const zipPath = `${userId}/${crypto.randomUUID()}-${skill.name}.zip`;
+      const { error: uploadError } = await serviceClient.storage
+        .from("skill-packages")
+        .upload(zipPath, zipResult.bytes, {
+          contentType: "application/zip",
+          upsert: true,
+        });
+      if (uploadError) log.warn("skill-packages upload failed (non-fatal)", { userId, error: uploadError });
+      const storedZipPath = uploadError ? null : zipPath;
+
+      const { data: insertRow, error: insErr } = await serviceClient
+        .from("skill_exports")
+        .insert({
+          user_id: userId,
+          skill_name: skill.name,
+          description: skill.description,
+          transcript,
+          triage_result: "skill",
+          body_content: skill.body,
+          references_json: skill.references || [],
+          test_prompts: skill.test_prompts || [],
+          quality_gate: qualityGate as unknown as Record<string, unknown>,
+          archetype: skill.archetype || null,
+          version: 1,
+          zip_path: storedZipPath,
+        })
+        .select("id")
+        .single();
       if (insErr) log.warn("skill_exports insert failed (non-fatal)", { userId, error: insErr });
+
+      // Also write the unified library row. Without this, /build skills were
+      // invisible to the Library and to mcp-context list_skills forever
+      // (spec 4.8 / Phase 0 item 13).
+      const { error: artifactErr } = await serviceClient
+        .from("generated_artifacts")
+        .insert({
+          user_id: userId,
+          kind: "skill",
+          name: skill.name,
+          body: skill.body,
+          metadata: {
+            archetype: skill.archetype || null,
+            zip_filename: `${skill.name}.zip`,
+            zip_path: storedZipPath,
+            skill_export_id: insertRow?.id || null,
+            test_prompts: skill.test_prompts || [],
+            provider: providerFromModel(aiResponse.model),
+            model: aiResponse.model,
+            source: "free-skill-export",
+          },
+        });
+      if (artifactErr) log.warn("generated_artifacts insert failed (non-fatal)", { userId, error: artifactErr });
     }
 
     return jsonResponse({

@@ -166,14 +166,20 @@ Deno.serve(async (req) => {
       sentenceLength: coerce("sentenceLength", raw.sentenceLength),
       firstPerson: coerce("firstPerson", raw.firstPerson),
       punctuationStyle: coerce("punctuationStyle", raw.punctuationStyle),
-      hardRules: rules.length > 0 ? rules : ["Always sound like me, never a generic AI tone."],
+      // An empty list is the honest result when extraction finds no rule the
+      // leader actually evidenced. Never substitute an invented rule here: it
+      // gets stored as a verified leader preference downstream.
+      hardRules: rules,
       // Hand back a trimmed sample so the leader can choose to keep it as the
       // ground-truth voice reference (overrides all inferred signal).
       sampleVoice: text.slice(0, 600),
       source: "context" as const,
     };
 
-    return jsonResponse({ success: true, profile });
+    // The full pasted sample rides back too, so the caller can persist the
+    // leader's real writing as evidence rather than discarding all but the
+    // 600-character sampleVoice.
+    return jsonResponse({ success: true, profile, source_text: text.slice(0, 12000) });
   } catch (error) {
     log.error("voice profile extraction failed", { error });
     return jsonResponse(

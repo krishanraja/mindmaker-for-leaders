@@ -5,6 +5,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
+import { fetchWithTimeout } from './with-timeout.ts';
 
 export interface OpenAIRequest {
   messages: Array<{ role: string; content: string }>;
@@ -181,8 +182,12 @@ export async function callOpenAI(
     ...(request.response_format && { response_format: request.response_format }),
   };
   
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  // Bounds time-to-headers only; the timer clears once the response starts,
+  // so streaming bodies are unaffected.
+  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
+    provider: 'openai',
+    timeoutMs: 90_000,
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',
@@ -236,8 +241,12 @@ export async function* streamOpenAI(
     stream: true,
   };
   
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  // Bounds time-to-headers only; the timer clears once the response starts,
+  // so streaming bodies are unaffected.
+  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
+    provider: 'openai',
+    timeoutMs: 90_000,
     headers: {
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',

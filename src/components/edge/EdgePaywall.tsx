@@ -10,7 +10,8 @@ import {
   FileText,
   X,
   Sparkles,
-  Newspaper,
+  Radar,
+  Plug,
   Brain,
 } from 'lucide-react';
 import {
@@ -83,20 +84,26 @@ function findSampleKey(capability?: string): string | null {
   return 'strategy_doc'; // default fallback
 }
 
+// Pro-only lines only. Anything free (briefing, Automator, Memory, Voice)
+// belongs in FREE_INCLUDED; src/constants/planMatrix.ts and docs/PRICING.md
+// are the source of truth for which side a capability sits on.
 const BENEFITS = [
-  { icon: Sparkles, text: 'Unlimited Automator skills (free is 1 per month)' },
-  { icon: Newspaper, text: 'Daily personalised briefing' },
-  { icon: Brain, text: 'Decision engine - claim verification + cross-examination' },
+  { icon: Brain, text: 'Unlimited decision weighs (free is 3 a month)' },
+  { icon: Sparkles, text: 'Multi-model cross-examination of every decision' },
+  { icon: Radar, text: 'Decision watch: an alert when a load-bearing assumption weakens' },
+  { icon: Plug, text: 'Live MCP pull of your skills into any AI' },
   { icon: PenTool, text: 'Unlimited drafting: emails, memos, strategy docs' },
-  { icon: Mail, text: 'Email delivery of generated artifacts' },
   { icon: Layers, text: 'Framework generation from your strengths' },
-  { icon: FileText, text: 'All artifact types: agendas, templates, board memos' },
+  { icon: FileText, text: 'Edge artifacts: agendas, templates, board memos' },
+  { icon: Mail, text: 'Email delivery of generated artifacts' },
 ];
 
 const FREE_INCLUDED = [
   'Read-write Memory Web',
   'Voice profile',
-  '1 Automator skill / month',
+  'Automator skill builds and exports, unlimited',
+  'Daily personalised briefing',
+  '3 decision weighs a month',
 ];
 
 const PRICE = EDGE_PRO_PRICE_LABEL;
@@ -124,11 +131,11 @@ function PaywallContent({
         </div>
         <div>
           <h3 className="text-lg font-bold text-foreground">
-            {isQuotaExhausted ? 'Free runs used this month' : 'Unlimited weighs, cross-examined, plus Edge artifacts'}
+            {isQuotaExhausted ? 'Your free weighs this month are used' : 'Unlimited weighs, cross-examined, plus Edge artifacts'}
           </h3>
           <p className="text-xs text-muted-foreground">
             {isQuotaExhausted
-              ? 'Your free runs this month are used. Edge Pro unlocks unlimited plus a multi-model cross-examination of every decision.'
+              ? 'Free covers 3 decision weighs a month. Edge Pro removes the cap and adds a multi-model cross-examination of every decision.'
               : capability
                 ? `Required for: ${capability}`
                 : `Unlimited decisions, the live pull of your skills, and Edge artifacts. ${PRICE}.`}

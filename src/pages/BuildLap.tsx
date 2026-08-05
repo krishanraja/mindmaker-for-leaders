@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CtrlLogo } from '@/components/landing/CtrlLogo';
+import { SkillInstallGuide } from '@/components/edge/SkillInstallGuide';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -232,6 +233,12 @@ export default function BuildLap() {
                       Download {zipFilename ?? 'kit'}
                     </Button>
                   </div>
+
+                  {/* The download is only half the win; without the install path
+                      the ZIP sits in a downloads folder unused. */}
+                  <SkillInstallGuide
+                    skillName={(zipFilename ?? skillData.name).replace(/\.zip$/i, '')}
+                  />
 
                   {isAuthenticated && !isAnonymous ? (
                     <div className="flex flex-col sm:flex-row gap-2">

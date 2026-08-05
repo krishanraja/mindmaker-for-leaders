@@ -6,14 +6,13 @@
  * orphaned, and added Storage purge for the user's audio briefings.
  *
  * This spec covers:
- *   1. Successful deletion returns 200 with `success: true`.
+ *   1. Successful deletion returns 200 with `success: true` and an empty
+ *      `errors` array. A populated `errors` array means a table (or the
+ *      auth user) survived, which is a failed erasure, not a warning.
  *   2. After deletion, querying any of the user's tables as the same
  *      session (now invalidated) returns no rows.
  *   3. The user's storage prefix in `ctrl-briefings` and `documents` is
  *      empty.
- *
- * Skipped until the auth seed creates a deletable test user with
- * pre-seeded data (assessment, briefings, audio object, etc.).
  */
 
 import { test, expect } from '@playwright/test';
@@ -25,6 +24,10 @@ const TEST_DELETABLE_USER_ID = process.env.E2E_DELETABLE_USER_ID;
 const TEST_USER_EMAIL = process.env.E2E_DELETABLE_USER_EMAIL;
 const TEST_USER_PASSWORD = process.env.E2E_DELETABLE_USER_PASSWORD;
 
+// Needs a live Supabase stack plus a pre-seeded throwaway user; set
+// E2E_SUPABASE_URL, E2E_SUPABASE_SERVICE_ROLE_KEY, E2E_DELETABLE_USER_ID,
+// E2E_DELETABLE_USER_EMAIL and E2E_DELETABLE_USER_PASSWORD, then drop the
+// .skip to run it.
 test.describe.skip('Account deletion - full erasure', () => {
   test('Deletes DB rows AND storage objects for a seeded user', async ({ page }) => {
     if (!SUPABASE_URL || !SERVICE_ROLE_KEY || !TEST_DELETABLE_USER_ID) {
@@ -43,7 +46,17 @@ test.describe.skip('Account deletion - full erasure', () => {
     await page.goto('/dashboard?section=privacy');
     await page.click('button:has-text("Delete account")');
     await page.fill('input[placeholder*="email"]', TEST_USER_EMAIL!);
+    const deletionResponse = page.waitForResponse((r) =>
+      r.url().includes('/functions/v1/delete-account'),
+    );
     await page.click('button:has-text("Delete forever")');
+
+    // The function returns success:true even when individual table or auth
+    // deletes failed, listing them in `errors`. Partial erasure fails here.
+    const deletionBody = await (await deletionResponse).json();
+    expect(deletionBody.error, 'delete-account error field').toBeFalsy();
+    expect(deletionBody.errors ?? [], 'per-table deletion errors').toEqual([]);
+    expect(deletionBody.success, 'delete-account success flag').toBe(true);
 
     // Verify with service-role client that nothing remains.
     const admin = createClient(SUPABASE_URL!, SERVICE_ROLE_KEY!, {

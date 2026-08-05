@@ -2,9 +2,10 @@
  * generate-skill-export
  *
  * Voice-to-Agent-Skill pipeline. The leader describes a repetitive workflow,
- * we run a Three Honest Tests triage gate, generate an agentskills.io-
- * compliant skill via the LLM, validate it through the quality gate, and
- * package it as a ZIP the client can drop into ~/.claude/skills/.
+ * we run a bounded-trigger check plus Four Honest Tests triage gate, generate
+ * an agentskills.io-compliant skill via the LLM, validate it through the
+ * quality gate, and package it as a ZIP the client can drop into
+ * ~/.claude/skills/.
  *
  * Triage failures (Memory Web facts, Custom Instructions, saved styles) are
  * still recorded in skill_exports with triage_result set accordingly, so the
@@ -248,6 +249,8 @@ Deno.serve(async (req) => {
       body: skill.body,
       references: skill.references || [],
       test_prompts: skill.test_prompts || [],
+      archetype: skill.archetype,
+      voice_profile_present: voiceProfileContext.length > 0,
     };
 
     const qualityGate = runQualityGate(skillData);
@@ -272,9 +275,24 @@ Deno.serve(async (req) => {
       client: user.email || undefined,
     });
 
-    // Persist the export record. zip_path is left null for now - we return
-    // the ZIP inline as base64 and let the client trigger the download. We
-    // can wire Storage uploads later if we want shareable links.
+    // Persist the package in Storage FIRST, so the artefact survives the
+    // response unmounting. Before this, the installable ZIP existed only in
+    // the generation response: closing the tab lost it forever (live data
+    // loss, spec 4.8a / Phase 0 item 11). Non-fatal on failure - the inline
+    // base64 download still works for this session.
+    const zipPath = `${user.id}/${crypto.randomUUID()}-${skill.name}.zip`;
+    const { error: uploadError } = await serviceClient.storage
+      .from("skill-packages")
+      .upload(zipPath, zipResult.bytes, {
+        contentType: "application/zip",
+        upsert: true,
+      });
+    if (uploadError) {
+      console.warn("generate-skill-export: skill-packages upload failed", uploadError);
+    }
+    const storedZipPath = uploadError ? null : zipPath;
+
+    // Persist the export record with the Storage path.
     const { data: insertRow } = await serviceClient
       .from("skill_exports")
       .insert({
@@ -289,6 +307,7 @@ Deno.serve(async (req) => {
         quality_gate: qualityGate as unknown as Record<string, unknown>,
         archetype: skill.archetype || null,
         version: 1,
+        zip_path: storedZipPath,
       })
       .select("id, created_at")
       .single();
@@ -307,8 +326,14 @@ Deno.serve(async (req) => {
         metadata: {
           archetype: skill.archetype || null,
           zip_filename: `${skill.name}.zip`,
+          zip_path: storedZipPath,
           skill_export_id: insertRow?.id || null,
           test_prompts: skill.test_prompts || [],
+          // Which provider actually generated this artefact. The critique
+          // stage's "different provider on Signature" rule checks against
+          // this recorded fact, not an assumption (CH-14).
+          provider: providerFromModel(aiResponse.model),
+          model: aiResponse.model,
         },
       });
     if (artifactInsertError) {

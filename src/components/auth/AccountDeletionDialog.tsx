@@ -22,6 +22,12 @@ interface AccountDeletionDialogProps {
 }
 
 /**
+ * Raised when delete-account reports per-table failures. Its message is the
+ * only server-derived text shown to the user; everything else stays generic.
+ */
+class PartialDeletionError extends Error {}
+
+/**
  * Account Deletion Dialog
  * 
  * GDPR-compliant account deletion with:
@@ -106,6 +112,14 @@ export const AccountDeletionDialog: React.FC<AccountDeletionDialogProps> = ({ ch
 
       if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
+      // The function reports per-table (and auth-user) failures in `errors`
+      // while still returning success:true. A partial erasure is not a
+      // deletion, so it must never reach the done step.
+      if (Array.isArray(data?.errors) && data.errors.length > 0) {
+        throw new PartialDeletionError(
+          `Some of your data could not be fully deleted. Please contact support so we can finish it. First error: ${String(data.errors[0])}`,
+        );
+      }
 
       // Clear local storage
       clearPersistedAssessmentId();
@@ -124,7 +138,11 @@ export const AccountDeletionDialog: React.FC<AccountDeletionDialogProps> = ({ ch
 
     } catch (err) {
       console.error('Deletion failed:', err);
-      setError('Failed to delete account. Please contact support.');
+      setError(
+        err instanceof PartialDeletionError
+          ? err.message
+          : 'Failed to delete account. Please contact support.',
+      );
       setStep('confirm');
     } finally {
       setIsDeleting(false);
