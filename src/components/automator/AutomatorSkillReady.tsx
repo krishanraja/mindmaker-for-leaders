@@ -1,15 +1,16 @@
 import { motion } from "framer-motion";
 import {
+  AlertTriangle,
   ArrowRight,
   Check,
   Download,
   FileText,
-  Play,
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SkillInstallGuide } from "@/components/edge/SkillInstallGuide";
 import type { BuiltYourWayChip } from "./automatorModel";
-import type { SkillData } from "@/types/skill";
+import type { SkillData, SkillQualityGate } from "@/types/skill";
 
 /**
  * AutomatorSkillReady - screen 3 of the Build-a-skill flow.
@@ -37,6 +38,12 @@ interface AutomatorSkillReadyProps {
   whatItDoes: string;
   /** The library peek - the new skill is always first (isNew). */
   library: LibraryPeekItem[];
+  /**
+   * The quality gate computed at generation. Advisory findings render as a
+   * quiet list so the leader can decide whether to rebuild; it was previously
+   * computed, persisted, returned, and never shown.
+   */
+  qualityGate?: SkillQualityGate | null;
   onRun: () => void;
   onExport: () => void;
   onSeeAll: () => void;
@@ -49,12 +56,14 @@ export function AutomatorSkillReady({
   chips,
   whatItDoes,
   library,
+  qualityGate,
   onRun,
-  onExport,
+  onExport: _onExport,
   onSeeAll,
   onBuildAnother,
   animated = true,
 }: AutomatorSkillReadyProps) {
+  const advisories = (qualityGate?.checks ?? []).filter((c) => !c.passed);
   // Friendly display name: the generated skill name is lowercase-hyphenated, so
   // present the candidate's words where we have them (passed via whatItDoes is
   // the verb; the name shown here is the skill.name humanised).
@@ -117,28 +126,44 @@ export function AutomatorSkillReady({
         )}
       </div>
 
-      {/* Primary + secondary actions */}
-      <div className="flex flex-col gap-2.5">
-        <button
-          type="button"
-          onClick={onRun}
-          className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[13px] bg-accent text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
-        >
-          <Play className="h-[18px] w-[18px] fill-current" strokeWidth={0} />
-          Run it now
-        </button>
-        <button
-          type="button"
-          onClick={onExport}
-          className="inline-flex h-[48px] w-full items-center justify-center gap-2 rounded-[13px] border border-border bg-card text-[14px] font-semibold text-foreground transition-colors hover:bg-secondary"
-        >
-          <Download className="h-[17px] w-[17px]" />
-          Export as markdown
-          <span className="text-[10.5px] font-medium text-muted-foreground">
-            for ChatGPT, Claude, Cursor
-          </span>
-        </button>
-      </div>
+      {/* Advisory quality findings - honest, quiet, never blocking */}
+      {advisories.length > 0 && (
+        <div className="rounded-[14px] border border-amber-500/25 bg-amber-500/[0.05] p-3">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-500">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {advisories.length} thing{advisories.length === 1 ? "" : "s"} worth a look
+          </div>
+          <ul className="space-y-1">
+            {advisories.slice(0, 4).map((c) => (
+              <li key={c.id} className="text-[11.5px] leading-snug text-muted-foreground">
+                {c.label}
+                {c.detail ? <span className="text-muted-foreground/60"> - {c.detail}</span> : null}
+              </li>
+            ))}
+            {advisories.length > 4 && (
+              <li className="text-[11px] text-muted-foreground/60">
+                and {advisories.length - 4} more
+              </li>
+            )}
+          </ul>
+          <p className="mt-1.5 text-[10.5px] text-muted-foreground/60">
+            The skill still works. Rebuild if any of these matter to you.
+          </p>
+        </div>
+      )}
+
+      {/* One honest action: the skill is a download, not an in-app run. */}
+      <button
+        type="button"
+        onClick={onRun}
+        className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[13px] bg-accent text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
+      >
+        <Download className="h-[18px] w-[18px]" />
+        Download the skill (.zip)
+      </button>
+
+      {/* How to install - readable BEFORE downloading, no unzip required */}
+      <SkillInstallGuide skillName={skill.name} />
 
       {/* Saved to Your skills - library peek */}
       <div className="rounded-[16px] border border-border bg-card p-[15px]">

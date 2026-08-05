@@ -20,7 +20,7 @@ interface SkillInstallGuideProps {
   preferredTool?: "claude" | "chatgpt" | "claude-code" | "cursor" | "gemini" | "lovable" | "none";
 }
 
-const CLAUDE_SETTINGS_URL = "https://claude.ai/settings/capabilities";
+const CLAUDE_SETTINGS_URL = "https://claude.ai/settings/customize";
 
 type InstallPathId = "claude" | "claude-code" | "cursor";
 
@@ -106,13 +106,15 @@ function PathSteps({
         </div>
         <ol className="list-decimal list-inside space-y-1.5 text-sm text-foreground/80">
           <li>
-            Open Claude&apos;s Capabilities settings (button below) and turn on
-            <span className="font-medium"> Code execution and file creation</span>.
+            In Claude, open <span className="font-medium">Settings</span>, then{" "}
+            <span className="font-medium">Customize</span> (button below).
           </li>
           <li>
-            Scroll to <span className="font-medium">Skills</span>, click{" "}
-            <span className="font-medium">Upload skill</span>, and choose the
-            ZIP you just downloaded.
+            Go to <span className="font-medium">Skills</span>, click the{" "}
+            <span className="font-medium">+</span> button, choose{" "}
+            <span className="font-medium">Create skill</span>, then{" "}
+            <span className="font-medium">Upload a skill</span> and pick the ZIP
+            you just downloaded.
           </li>
           <li>
             Done - the skill triggers automatically when your prompt matches

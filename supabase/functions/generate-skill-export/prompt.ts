@@ -1,9 +1,9 @@
 /**
  * Skill Builder LLM extraction prompt.
  *
- * Encodes the Three Honest Tests triage gate, the description-first generation
- * rules from Krish's Skill-Building Best Practices PDF, and the agentskills.io
- * specification constraints. The model is forced into JSON mode by the caller;
+ * Encodes the bounded-trigger check plus the Four Honest Tests triage gate,
+ * the description-first generation rules from Krish's Skill-Building Best
+ * Practices PDF, and the agentskills.io specification constraints. The model is forced into JSON mode by the caller;
  * this prompt only describes the JSON shape and the rules that produce it.
  *
  * Two failure modes the prompt actively defends against:
@@ -80,7 +80,7 @@ export function buildSkillUserPrompt({
   }
 
   lines.push(
-    `Apply the Three Honest Tests, then generate the skill (or route to a different output type). Return ONLY the JSON object described in the system prompt.`,
+    `Apply the bounded-trigger check and the Four Honest Tests, then generate the skill (or route to a different output type). Return ONLY the JSON object described in the system prompt.`,
   );
 
   return lines.join("\n");

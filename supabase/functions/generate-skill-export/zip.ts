@@ -35,6 +35,8 @@ export interface BuildSkillZipInput {
 export interface BuildSkillZipResult {
   base64: string;
   byteLength: number;
+  /** Raw ZIP bytes, for Storage upload (skill-packages bucket). */
+  bytes: Uint8Array;
 }
 
 export async function buildSkillZip(input: BuildSkillZipInput): Promise<BuildSkillZipResult> {
@@ -81,6 +83,7 @@ export async function buildSkillZip(input: BuildSkillZipInput): Promise<BuildSki
   return {
     base64: encodeBase64(u8),
     byteLength: u8.byteLength,
+    bytes: u8,
   };
 }
 
