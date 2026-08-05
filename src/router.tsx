@@ -134,6 +134,10 @@ const Try = lazyWithRetry(() => import('@/pages/Try'))
 const CaptureLanding = lazyWithRetry(() => import('@/pages/CaptureLanding'))
 const Pricing = lazyWithRetry(() => import('@/pages/Pricing'))
 const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
+// The check (harness chain stage 2). URL-reachable only for now: which door it
+// sits behind is a later call, so it is deliberately absent from primary nav
+// and from the authed prefetch list.
+const SortPage = lazyWithRetry(() => import('@/pages/SortPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
 /**
@@ -340,6 +344,10 @@ export const router = createBrowserRouter([
       {
         path: '/enrich',
         element: <LazyWrapper><RequireAuth><EnrichPage /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/sort',
+        element: <LazyWrapper><RequireAuth><SortPage /></RequireAuth></LazyWrapper>,
       },
       {
         path: '/settings',
