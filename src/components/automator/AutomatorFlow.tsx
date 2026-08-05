@@ -185,11 +185,15 @@ export function AutomatorFlow({
 
   // Adopting an in-flow tone pick saves it as the leader's voice profile, so a
   // single warm/crisp/formal tap becomes the voice every future skill inherits.
+  // A profile that carries a real writing sample (paste-extracted, or captured
+  // in the voice sheet) is ground truth: a tone tap never overwrites it, it
+  // only shapes this build via picks.tone.
   const handleAdoptTone = useCallback(
     (toneId: string) => {
+      if (voiceProfile?.sampleVoice?.trim()) return;
       void saveProfile(toneToVoiceProfile(toneId, "context"));
     },
-    [saveProfile],
+    [saveProfile, voiceProfile],
   );
 
   const handleBack = useCallback(() => {
@@ -341,6 +345,7 @@ export function AutomatorFlow({
               chips={readyChips}
               whatItDoes={readySkill.description.split(".")[0] + "."}
               library={library}
+              qualityGate={skillExport.qualityGate}
               onRun={handleRun}
               onExport={handleExport}
               onSeeAll={handleSeeAll}

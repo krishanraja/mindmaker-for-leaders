@@ -88,9 +88,11 @@ const GET_SKILL_TOOL = {
   },
 };
 
-// The tools a token may use, by scope. 'briefing' is opt-in at mint time;
-// skills ride the base read scope (building skills is free, and the leader's
-// own agent pulling their own skills live is the core of the layered output).
+// Scopes decide WHICH tools a token may call: 'briefing' is opt-in at mint
+// time, skills ride the base read scope. Access itself is a separate gate -
+// authLeader requires an active Edge Pro subscription before any dispatch, so
+// every tool here is paid. Per docs/PRICING.md the live MCP pull is the paid
+// feature; building skills in CTRL stays free.
 function toolsFor(scopes: string[]) {
   const t = [CONTEXT_TOOL, LIST_SKILLS_TOOL, GET_SKILL_TOOL];
   if (scopes.includes("briefing")) t.push(BRIEFING_TOOL);

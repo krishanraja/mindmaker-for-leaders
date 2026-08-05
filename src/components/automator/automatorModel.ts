@@ -903,13 +903,16 @@ export function composeTranscript(
   picks: CascadePicks,
 ): string {
   const lines: string[] = [];
-  const title = candidate.title.replace(/^your\s+/i, "").trim() || candidate.title;
+  // Strip a leading "your"/"my" so the "my ${title}" template never doubles
+  // the possessive ("my my follow-up message").
+  const title = candidate.title.replace(/^(your|my)\s+/i, "").trim() || candidate.title;
 
   // Opening: what it is + that it recurs (REPEATABLE) + the trigger phrase.
+  // Every real chip shape gets a full sentence; the old regex only handled
+  // "repeats <adverb>" and emitted fragments like "several a week." for the
+  // other four chips.
   lines.push(
-    `I regularly produce my ${lowerFirst(title)}. ${candidate.frequencyChip
-      .replace(/^repeats\s+/i, "It repeats ")
-      .replace(/^/, (m) => m)}.`.replace("..", "."),
+    `I regularly produce my ${lowerFirst(title)}. ${frequencySentence(candidate.frequencyChip)}`,
   );
   lines.push(
     `I would kick this off by saying something like "draft my ${lowerFirst(
@@ -939,4 +942,19 @@ export function composeTranscript(
 
 function lowerFirst(s: string): string {
   return s.length > 0 ? s.charAt(0).toLowerCase() + s.slice(1) : s;
+}
+
+/**
+ * Turn a frequency chip into a complete sentence for the composed transcript.
+ * Known chip shapes across the codebase: "repeats", "repeats weekly",
+ * "repeats monthly", "several a week", "daily", "most days".
+ */
+export function frequencySentence(chip: string): string {
+  const c = (chip ?? "").trim().toLowerCase();
+  if (!c || c === "repeats" || c === "recurring" || c === "your call") {
+    return "It repeats regularly.";
+  }
+  if (c.startsWith("repeats ")) return `It repeats ${c.slice("repeats ".length)}.`;
+  if (c === "several a week") return "It comes up several times a week.";
+  return `It comes up ${c}.`;
 }

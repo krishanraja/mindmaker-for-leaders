@@ -143,11 +143,13 @@ export function runQualityGate(skill: SkillData): QualityGateResult {
 
   // Advisory: skills that document their own runs improve with use. Kit
   // skills force this via the seed; the gate verifies it survived generation.
+  // Anchored to a real heading like the other section checks - a passing
+  // mention of "learning loop" in prose is not a section.
   checks.push({
     id: "body.learningLoop",
-    label: "Learning loop block present",
-    passed: /learning loop|BUILD_LOG\.md|LESSONS\.md/i.test(body),
-    detail: "A learning loop section makes the skill log its runs and sharpen with use",
+    label: "Learning loop section present",
+    passed: /^##\s+Learning loop/im.test(body),
+    detail: "A ## Learning loop section makes the skill log its runs and sharpen with use",
   });
 
   // Advisory voice-lock check: when the request carried voice profile rows OR
@@ -260,7 +262,9 @@ function findBareMustNever(body: string): string | null {
   // sentence for a reasoning marker. If neither contains "because", "since",
   // "this is because", "the reason", or "otherwise", flag as bare.
   const reasoningMarkers = /\b(because|since|the reason|otherwise|so that|this is because)\b/i;
-  const regex = /[^.\n]*\b(MUST(?: NOT)?|NEVER|ALWAYS)\b[^.\n]*\.[^.\n]*\.?/g;
+  // Case-insensitive: the Automator's composed transcripts produce lowercase
+  // "must not" / "never" rules, and a bare rule is bare regardless of casing.
+  const regex = /[^.\n]*\b(MUST(?: NOT)?|NEVER|ALWAYS)\b[^.\n]*\.[^.\n]*\.?/gi;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(body)) !== null) {
     const span = match[0];

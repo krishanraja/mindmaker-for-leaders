@@ -125,6 +125,11 @@ function resolveValue(
   voiceProfile?: VoiceProfile | null,
 ): string | null {
   if (id === "tone") {
+    // Unanswered until the tone step is actually reached: the flow pre-fills
+    // picks.tone from the saved profile at that step, so pickedId doubles as
+    // the "has been asked" signal. Showing the saved summary earlier marked
+    // the row complete the moment the panel mounted.
+    if (!pickedId) return null;
     if (voiceProfile) return voiceProfileSummary(voiceProfile);
     const label = step?.options.find((o) => o.id === pickedId)?.label;
     return label ? label.toLowerCase() : null;
