@@ -3,7 +3,11 @@ export type ArtifactKind =
   | "draft"
   | "export"
   | "framework"
-  | "briefing_custom";
+  | "briefing_custom"
+  // The compiled standard (harness chain stage 3a, CH-18). One CHECK-constraint
+  // migration, no third artifact table: it rides the same row shape, the same
+  // RLS and the same Library as everything else.
+  | "standard";
 
 /**
  * A row from `public.generated_artifacts`. Created whenever an edge function
@@ -28,6 +32,7 @@ export const ARTIFACT_KIND_LABEL: Record<ArtifactKind, string> = {
   export: "Export",
   framework: "Framework",
   briefing_custom: "Custom briefing",
+  standard: "Standard",
 };
 
 export const ARTIFACT_KIND_PLURAL: Record<ArtifactKind, string> = {
@@ -36,4 +41,5 @@ export const ARTIFACT_KIND_PLURAL: Record<ArtifactKind, string> = {
   export: "Exports",
   framework: "Frameworks",
   briefing_custom: "Custom briefings",
+  standard: "Standards",
 };

@@ -62,6 +62,11 @@ const CLIENT_EVENTS = new Set([
   "kit_email_captured",
   // Public /download starter-kit capture page.
   "capture_submitted",
+  // Harness chain stage 3a (CH-18): engagement with the compiled standard.
+  // These two are the measurement that gates Phase 6, so they are events in
+  // their own right rather than a metadata flag on something else.
+  "standard_opened",
+  "standard_downloaded",
 ]);
 
 serve(async (req) => {
