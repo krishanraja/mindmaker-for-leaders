@@ -13,7 +13,10 @@
  */
 
 import {
+  maskQuotedSpans,
   runProvenanceChecks,
+  runProvenanceChecksOverFiles,
+  type ProvenanceFile,
   type ProvenanceOptions,
 } from "../_shared/provenance-checks.ts";
 
@@ -36,6 +39,14 @@ export interface SkillData {
    * masked out of the body before any check reads it (CH-16).
    */
   provenance?: ProvenanceOptions;
+  /**
+   * The gated files of a router-plus-leaves package. When present the prov.*
+   * checks read these instead of `body` alone, because from Phase 3b the rules
+   * live in leaves and a gate that only read the router would pass a package
+   * full of unpointed rules. Pass gatedFiles(pkg) from skill-package.ts, which
+   * already excludes exemplars/ and evals/ (CH-16).
+   */
+  packageFiles?: ProvenanceFile[];
 }
 
 export interface QualityCheck {
@@ -104,6 +115,17 @@ export function runQualityGate(skill: SkillData): QualityGateResult {
   const body = skill.body ?? "";
   const lineCount = body.split("\n").length;
 
+  // CH-16, and it is a rule not a convenience: NO GATE MUTATES A QUOTED SPAN.
+  // A slop check may only report, and it may only report about text that is not
+  // the person's own verbatim words. Every check below that pattern-matches for
+  // banned constructions reads maskedBody, where evidence quotes and fenced
+  // blocks labelled as evidence or target voice register are blanked to
+  // same-length spaces. Without this, a package that ships a leader's rejected
+  // work verbatim (which is exactly what makes exemplars useful) blocks on that
+  // same wording every single time, for every user, and regenerating cannot
+  // clear it because the offending text is required to be verbatim.
+  const maskedBody = maskQuotedSpans(body, skill.provenance?.evidenceQuotes ?? []);
+
   checks.push({
     id: "body.length",
     label: "Body under 500 lines",
@@ -111,7 +133,7 @@ export function runQualityGate(skill: SkillData): QualityGateResult {
     detail: `${lineCount}/500 lines`,
   });
 
-  const firstHedgeMatch = body.match(HEDGING_REGEX);
+  const firstHedgeMatch = maskedBody.match(HEDGING_REGEX);
   checks.push({
     id: "body.imperative",
     label: "Imperative voice",
@@ -144,7 +166,7 @@ export function runQualityGate(skill: SkillData): QualityGateResult {
     detail: "Body opening must use different language than the description",
   });
 
-  const bareRule = findBareMustNever(body);
+  const bareRule = findBareMustNever(maskedBody);
   checks.push({
     id: "body.bareRules",
     label: "MUST/NEVER rules include reasoning",
@@ -207,10 +229,17 @@ export function runQualityGate(skill: SkillData): QualityGateResult {
     detail: `${tp.length} test prompts`,
   });
 
-  // -------- Provenance checks (Phase 1, all advisory) ------------------
-  // Where did each rule come from. Nothing here blocks: Phase 1 only measures
-  // the baseline, and prov.everyRuleCited's detail carries the number.
-  checks.push(...runProvenanceChecks(body, skill.provenance ?? {}));
+  // -------- Provenance checks ------------------------------------------
+  // Where did each rule come from. This gate only REPORTS; whether a prov.*
+  // failure blocks is the caller's decision, because it depends on whether the
+  // caller supplied anything to point at. generate-skill-export supplies
+  // criteria and evidence and treats these as blocking; free-skill-export
+  // supplies neither and keeps them advisory.
+  checks.push(
+    ...(Array.isArray(skill.packageFiles) && skill.packageFiles.length > 0
+      ? runProvenanceChecksOverFiles(skill.packageFiles, skill.provenance ?? {})
+      : runProvenanceChecks(body, skill.provenance ?? {})),
+  );
 
   // -------- Summary ---------------------------------------------------
   const passedCount = checks.filter((c) => c.passed).length;

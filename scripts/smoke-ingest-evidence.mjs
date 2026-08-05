@@ -5,8 +5,13 @@
 //   source (checked by offset slice, not by trusting the function), no
 //   candidate has a contrast pole, every evidence row is situated with a
 //   situation string, and no candidate body is phrased as a rule.
-// Then generates a skill and records baseline_unresolved_claims, the number
-// the whole project exists to move.
+// Then generates a skill and reads TWO numbers off it, which must never be
+// confused for each other:
+//   baseline_unresolved_claims  what the GENERATOR left unsourced. Printed as
+//                               the quality reading, never asserted to be zero.
+//   unpointed_after_demotion    what SHIPPED, after stage 7a demoted the rest
+//                               to NOT ESTABLISHED. Asserted zero, because that
+//                               one is held by construction.
 //
 // Requires SUPABASE_ACCESS_TOKEN (sbp_) in env.
 
@@ -125,15 +130,86 @@ try {
     body: JSON.stringify({ transcript: "Every week I write the client update for the pilot engagement. I lead with what changed and what it moved, then the one decision I need from them. I keep it short. I would kick it off by saying draft my client update." }),
   });
   const genOut = await gen.json();
+
+  // TWO READINGS, and confusing them is how a repaired number gets mistaken for
+  // a good generator.
+  //   baseline_unresolved_claims  = what the GENERATOR left unsourced, before
+  //                                 stage 7a touched anything. Printed, never
+  //                                 asserted to be zero: it varies run to run
+  //                                 (6, then 1, then 4) because it measures
+  //                                 model compliance.
+  //   unpointed_after_demotion    = what SHIPPED. Asserted zero. This one is
+  //                                 held by construction, not by asking.
   const baseline = genOut?.baseline_unresolved_claims;
-  check("generate returns the provenance baseline", typeof baseline === "number", `baseline_unresolved_claims=${baseline}`);
+  const demoted = genOut?.demoted_claims;
+  const shipped = genOut?.unpointed_after_demotion;
+  const totalImperatives = genOut?.total_imperatives;
+  const pointed = totalImperatives - baseline;
+  check("generate returns the provenance number", typeof baseline === "number", `baseline_unresolved_claims=${baseline}`);
+  check("generate reports the demotion", typeof demoted === "number" && typeof shipped === "number",
+    `demoted_claims=${demoted} unpointed_after_demotion=${shipped}`);
   const provChecks = (genOut?.quality_gate?.checks || []).filter((c) => c.id.startsWith("prov."));
-  check("all three prov.* checks run and are advisory", provChecks.length === 3,
+  check("all three prov.* checks run", provChecks.length === 3,
     provChecks.map((c) => `${c.id}=${c.passed}`).join(" "));
 
-  console.log(`\n=== PHASE 1 BASELINE ===`);
-  console.log(`unpointed imperatives in a generated skill: ${baseline}`);
-  console.log(`This is the number Phase 3b must drive to zero.\n`);
+  // Phase 3b acceptance. Both halves matter and neither alone is a pass: zero
+  // unpointed rules in a package that still says something. A package that
+  // reached zero by emptying itself has failed, which is why the leaf content is
+  // asserted beside the number.
+  check("no rule in the SHIPPED package is unpointed", shipped === 0, `unpointed_after_demotion=${shipped}`);
+
+  // The accounting. Demoted plus pointed has to be every imperative the
+  // generator wrote, so a demotion can never quietly go missing between the two
+  // readings; and every unsourced rule is either demoted or still standing and
+  // counted, so none of them can vanish either.
+  check("demoted + pointed accounts for every imperative",
+    typeof totalImperatives === "number" && demoted + pointed === totalImperatives,
+    `${demoted} demoted + ${pointed} pointed = ${demoted + pointed}, total ${totalImperatives}`);
+  check("every unsourced rule is either demoted or still counted",
+    typeof baseline === "number" && demoted + shipped === baseline,
+    `${demoted} demoted + ${shipped} standing = ${demoted + shipped}, baseline ${baseline}`);
+
+  // And the shipped package still reports it as a pass, not just a low number.
+  const cited = provChecks.find((c) => c.id === "prov.everyRuleCited");
+  check("prov.everyRuleCited passes over the shipped package", cited?.passed === true,
+    cited?.detail || "check missing");
+
+  // The second half of the same contract, asserted rather than printed. A leaf
+  // that scopes itself at the top clears this honestly; a leaf that turns one
+  // client's remark into a standing rule still fails it, which is the finding
+  // the whole james-harrabin transcript above exists to provoke.
+  const situated = provChecks.find((c) => c.id === "prov.noSituatedGeneralisation");
+  check("no rule generalises a situated quote", situated?.passed === true,
+    situated?.detail || "check missing");
+
+  const files = genOut?.package_files || [];
+  check("the package is a router plus leaves", files.includes("SKILL.md") &&
+    files.some((f) => f.startsWith("rubric/")) && files.includes("rubric/general.md"),
+    files.join(", "));
+
+  const bodyLines = String(genOut?.skill?.body || "").split("\n").filter((l) => l.trim()).length;
+  check("the skill still says something", bodyLines >= 15, `${bodyLines} non-blank body lines`);
+
+  const passes = genOut?.provenance?.passes;
+  check("the gate settled inside the one allowed regeneration", passes >= 1 && passes <= 2,
+    `passes=${passes}, blocked=${genOut?.provenance?.blocked}`);
+
+  console.log(`\n=== PHASE 3b ===`);
+  console.log(`GENERATOR QUALITY (before any repair, varies run to run - do not read as the shipped number)`);
+  console.log(`  imperatives written:            ${totalImperatives}`);
+  console.log(`  baseline_unresolved_claims:     ${baseline}   (6, then 1, then 4 across three runs)`);
+  console.log(`SHIPPED PACKAGE (held by construction, not by asking)`);
+  console.log(`  demoted_claims:                 ${demoted}   (rewritten as NOT ESTABLISHED, never deleted)`);
+  console.log(`  unpointed_after_demotion:       ${shipped}   (must be 0)`);
+  console.log(`situated generalisations: ${situated?.passed ? 0 : "see detail"}  (${situated?.detail || "n/a"})`);
+  console.log(`package: ${files.join(", ")}`);
+  console.log(`passes: ${passes}, blocked: ${genOut?.provenance?.blocked}`);
+  if (genOut?.provenance?.message) console.log(`message: ${genOut.provenance.message}`);
+  if (genOut?.provenance?.violations?.length) {
+    console.log(`violations still standing:`);
+    for (const v of genOut.provenance.violations) console.log(`  - ${v}`);
+  }
+  console.log("");
 } finally {
   const del = await auth(`admin/users/${userId}`, { method: "DELETE" }, service);
   check("cleanup: account deleted (new tables in the sweep)", del.ok, `status=${del.status}`);

@@ -2,25 +2,49 @@
  * ZIP assembly for skill packages.
  *
  * Uses JSZip via esm.sh - same pattern as other esm.sh imports across the
- * edge function codebase. Output structure is the agentskills.io standard:
+ * edge function codebase. Output structure is spec 4.4, the router plus leaves:
  *
  *   <skill-name>.zip
  *     <skill-name>/
- *       SKILL.md
+ *       SKILL.md              router only, hard cap 80 lines
+ *       rubric/
+ *         core.md             always-on criteria
+ *         <surface>.md        the procedure and the per-surface criteria
+ *         general.md          the explicit fallback leaf
+ *       exemplars/
+ *         INDEX.md            contents
+ *         <n>.md              their own graded work, verbatim
  *       references/
- *         <ref>.md
+ *         company-context.md
+ *         voice-profile.md    only when a real profile exists
+ *       evals/
+ *         holdout.jsonl       the graded items held back from the build
  *       01-test-prompts.txt
  *       02-maintenance-card.txt
  *       03-install-guide.txt
  *
- * Critical detail: the ZIP must contain a SINGLE root folder named exactly
- * the same as the YAML `name` field. Files at the ZIP root, or a different
- * folder name, will fail validation by Claude.ai's skill uploader.
+ * The layout is built by buildSkillPackage in _shared/skill-package.ts, which is
+ * pure and unit tested. This file only writes those bytes into a ZIP, so the
+ * package shape can be reasoned about without a JSZip round trip.
+ *
+ * Critical detail unchanged from the flat layout: the ZIP must contain a SINGLE
+ * root folder named exactly the same as the YAML `name` field. Files at the ZIP
+ * root, or a different folder name, fail validation by Claude.ai's uploader.
  */
 
 import JSZip from "https://esm.sh/jszip@3.10.1";
 
-import { buildSkillMarkdown, buildTestPromptsFile, buildMaintenanceCard, buildInstallGuide } from "./templates.ts";
+import { buildTestPromptsFile, buildMaintenanceCard, buildInstallGuide } from "./templates.ts";
+import {
+  buildSkillPackage,
+  type BuildPackageInput,
+  type PackageCriterion,
+  type PackageEvidence,
+  type PackageExemplar,
+  type PackageHoldoutItem,
+  type PackageStatus,
+  type SkillPackage,
+} from "../_shared/skill-package.ts";
 
 export interface BuildSkillZipInput {
   name: string;
@@ -30,6 +54,20 @@ export interface BuildSkillZipInput {
   testPrompts: string[];
   archetype?: string;
   client?: string;
+  /** What this standard covers. Names the surface leaf; defaults off the name. */
+  surface?: string | null;
+  /** Compiled criteria, already carrying their short ids. */
+  criteria?: PackageCriterion[];
+  /** The evidence the body could cite, with the situations that scope the leaf. */
+  evidence?: PackageEvidence[];
+  /** Their own graded work, verbatim. */
+  exemplars?: PackageExemplar[];
+  /** The graded items held back from the build. */
+  holdout?: PackageHoldoutItem[];
+  status?: PackageStatus;
+  ownerLabel?: string | null;
+  builtFrom?: string | null;
+  baseline?: string | null;
 }
 
 export interface BuildSkillZipResult {
@@ -37,42 +75,62 @@ export interface BuildSkillZipResult {
   byteLength: number;
   /** Raw ZIP bytes, for Storage upload (skill-packages bucket). */
   bytes: Uint8Array;
+  /** The package that was written, so the caller can gate it and flatten it. */
+  pkg: SkillPackage;
+}
+
+/** The package shape, without the ZIP. Callers that gate before writing use this. */
+export function packageFromZipInput(input: BuildSkillZipInput): SkillPackage {
+  const packageInput: BuildPackageInput = {
+    name: input.name,
+    description: input.description,
+    body: input.body,
+    surface: input.surface,
+    references: input.references,
+    criteria: input.criteria,
+    evidence: input.evidence,
+    exemplars: input.exemplars,
+    holdout: input.holdout,
+    archetype: input.archetype,
+    client: input.client,
+    ownerLabel: input.ownerLabel,
+    status: input.status,
+    builtFrom: input.builtFrom,
+    baseline: input.baseline,
+  };
+  return buildSkillPackage(packageInput);
 }
 
 export async function buildSkillZip(input: BuildSkillZipInput): Promise<BuildSkillZipResult> {
+  return await buildSkillZipFromPackage(packageFromZipInput(input), input.testPrompts, input.name);
+}
+
+/**
+ * Write an already-built package. generate-skill-export builds the package once,
+ * runs the gate over it, regenerates if the gate blocks, and only then writes
+ * bytes; going back through buildSkillZip would rebuild it and risk the gated
+ * package and the shipped package being different files.
+ */
+export async function buildSkillZipFromPackage(
+  pkg: SkillPackage,
+  testPrompts: string[],
+  skillName?: string,
+): Promise<BuildSkillZipResult> {
+  const name = skillName || pkg.name;
   const zip = new JSZip();
-  const folder = zip.folder(input.name);
+  const folder = zip.folder(name);
   if (!folder) throw new Error("Failed to create skill folder in ZIP");
 
-  // SKILL.md - YAML frontmatter + body
-  folder.file(
-    "SKILL.md",
-    buildSkillMarkdown(
-      {
-        name: input.name,
-        description: input.description,
-        archetype: input.archetype,
-        client: input.client,
-        version: "1.0",
-      },
-      input.body,
-    ),
-  );
-
-  // references/<file>.md - load-on-demand context
-  if (input.references.length > 0) {
-    const refsFolder = folder.folder("references");
-    if (!refsFolder) throw new Error("Failed to create references folder in ZIP");
-    for (const ref of input.references) {
-      const cleaned = sanitizeFilename(ref.filename);
-      if (!cleaned) continue;
-      refsFolder.file(cleaned, ref.content);
-    }
+  for (const file of pkg.files) {
+    folder.file(file.path, file.content);
   }
 
-  folder.file("01-test-prompts.txt", buildTestPromptsFile(input.testPrompts, input.name));
-  folder.file("02-maintenance-card.txt", buildMaintenanceCard(input.name));
-  folder.file("03-install-guide.txt", buildInstallGuide(input.name));
+  // The three operator files keep their place at the package root. They are
+  // instructions about the package, not rules about the person, which is also
+  // why the provenance gate never reads them.
+  folder.file("01-test-prompts.txt", buildTestPromptsFile(testPrompts ?? [], name));
+  folder.file("02-maintenance-card.txt", buildMaintenanceCard(name));
+  folder.file("03-install-guide.txt", buildInstallGuide(name));
 
   const u8 = await zip.generateAsync({
     type: "uint8array",
@@ -84,21 +142,8 @@ export async function buildSkillZip(input: BuildSkillZipInput): Promise<BuildSki
     base64: encodeBase64(u8),
     byteLength: u8.byteLength,
     bytes: u8,
+    pkg,
   };
-}
-
-function sanitizeFilename(filename: string): string | null {
-  if (!filename || typeof filename !== "string") return null;
-  // Strip any path separators and parent-dir tokens; allow only one level.
-  const base = filename.replace(/^.*[\\/]/, "").trim();
-  if (!base || base.startsWith(".")) return null;
-  if (!/^[a-zA-Z0-9._-]+\.md$/.test(base)) {
-    // Force a .md extension and scrub.
-    const stem = base.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9._-]/g, "-");
-    if (!stem) return null;
-    return `${stem}.md`;
-  }
-  return base;
 }
 
 function encodeBase64(bytes: Uint8Array): string {

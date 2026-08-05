@@ -188,6 +188,15 @@ Deno.serve(async (req) => {
       voice_profile_present: false,
     };
 
+    // The three prov.* checks stay ADVISORY here, and this is deliberate rather
+    // than an oversight. Phase 3b makes them blocking in generate-skill-export
+    // because that function loads the leader's compiled criteria and their
+    // evidence and hands the model ids to cite. The free lap has neither: an
+    // anonymous visitor has no criteria, no evidence rows, and no chain history,
+    // so there is nothing any rule could point AT. A gate that cannot be
+    // satisfied must not block, because the only way to pass it would be to ship
+    // an empty skill, and an empty skill passing is worse than a flagged one.
+    // runQualityGate reports the findings either way, and the number is logged.
     const qualityGate = runQualityGate(skillData);
     const nameCheck = qualityGate.checks.find((c) => c.id === "package.nameFormat");
     if (nameCheck && !nameCheck.passed) {
