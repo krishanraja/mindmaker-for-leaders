@@ -7,6 +7,7 @@ import {
   Layers,
   FileText,
   Radio,
+  Scale,
   Trash2,
   Copy,
   Check,
@@ -32,6 +33,7 @@ const KIND_ICON: Record<ArtifactKind, React.ComponentType<{ className?: string }
   framework: Layers,
   export: FileText,
   briefing_custom: Radio,
+  standard: Scale,
 };
 
 const KIND_TONE: Record<ArtifactKind, string> = {
@@ -40,6 +42,7 @@ const KIND_TONE: Record<ArtifactKind, string> = {
   framework: "text-purple-500 bg-purple-500/10",
   export: "text-emerald-500 bg-emerald-500/10",
   briefing_custom: "text-blue-500 bg-blue-500/10",
+  standard: "text-accent bg-accent/10",
 };
 
 /**

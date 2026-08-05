@@ -12,7 +12,18 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getAttribution } from "@/lib/attribution";
 
-export type LifecycleEvent = "landed" | "signed_up" | "activated" | "capture_submitted";
+export type LifecycleEvent =
+  | "landed"
+  | "signed_up"
+  | "activated"
+  | "capture_submitted"
+  // Harness chain stage 3a (CH-18). The share of sort completers who open or
+  // download their compiled standard inside a week is the one number that
+  // decides whether the sort is the product or the skill is, and Phase 6's
+  // plugin and marketplace block is committed to the answer. It cannot be read
+  // unless these two fire.
+  | "standard_opened"
+  | "standard_downloaded";
 
 export type KitLifecycleEvent =
   | "kit_redeemed"
