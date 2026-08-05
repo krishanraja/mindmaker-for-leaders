@@ -1,25 +1,151 @@
+# CTRL (ctrl.themindmaker.ai)
+#
+# Posture: the PUBLIC surfaces are deliberately open to search AND to AI
+# crawlers (answer-engine optimisation). GPTBot, ClaudeBot and PerplexityBot
+# keep their explicit Allow: that is intentional, do not remove it.
+#
+# What is closed: the authenticated app routes (src/router.tsx, everything
+# under AuthedLayoutRoute + RequireAuth) plus /think (redirects into the authed
+# dashboard) and /preview (an unlinked dev/QC fixture harness). They render no
+# public content, they only bounce a crawler to the login screen, and they
+# should never appear in an index or an AI answer.
+#
+# robots.txt groups do not inherit, so the Disallow list is repeated per group.
+
 User-agent: Googlebot
 Allow: /
+Disallow: /dashboard
+Disallow: /memory
+Disallow: /context
+Disallow: /briefing
+Disallow: /decision
+Disallow: /decision-map
+Disallow: /goals
+Disallow: /track-record
+Disallow: /enrich
+Disallow: /settings
+Disallow: /compliance
+Disallow: /profile
+Disallow: /think
+Disallow: /preview
 
 User-agent: Bingbot
 Allow: /
+Disallow: /dashboard
+Disallow: /memory
+Disallow: /context
+Disallow: /briefing
+Disallow: /decision
+Disallow: /decision-map
+Disallow: /goals
+Disallow: /track-record
+Disallow: /enrich
+Disallow: /settings
+Disallow: /compliance
+Disallow: /profile
+Disallow: /think
+Disallow: /preview
 
 User-agent: Twitterbot
 Allow: /
+Disallow: /dashboard
+Disallow: /memory
+Disallow: /context
+Disallow: /briefing
+Disallow: /decision
+Disallow: /decision-map
+Disallow: /goals
+Disallow: /track-record
+Disallow: /enrich
+Disallow: /settings
+Disallow: /compliance
+Disallow: /profile
+Disallow: /think
+Disallow: /preview
 
 User-agent: facebookexternalhit
 Allow: /
+Disallow: /dashboard
+Disallow: /memory
+Disallow: /context
+Disallow: /briefing
+Disallow: /decision
+Disallow: /decision-map
+Disallow: /goals
+Disallow: /track-record
+Disallow: /enrich
+Disallow: /settings
+Disallow: /compliance
+Disallow: /profile
+Disallow: /think
+Disallow: /preview
 
 User-agent: GPTBot
 Allow: /
+Disallow: /dashboard
+Disallow: /memory
+Disallow: /context
+Disallow: /briefing
+Disallow: /decision
+Disallow: /decision-map
+Disallow: /goals
+Disallow: /track-record
+Disallow: /enrich
+Disallow: /settings
+Disallow: /compliance
+Disallow: /profile
+Disallow: /think
+Disallow: /preview
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /dashboard
+Disallow: /memory
+Disallow: /context
+Disallow: /briefing
+Disallow: /decision
+Disallow: /decision-map
+Disallow: /goals
+Disallow: /track-record
+Disallow: /enrich
+Disallow: /settings
+Disallow: /compliance
+Disallow: /profile
+Disallow: /think
+Disallow: /preview
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /dashboard
+Disallow: /memory
+Disallow: /context
+Disallow: /briefing
+Disallow: /decision
+Disallow: /decision-map
+Disallow: /goals
+Disallow: /track-record
+Disallow: /enrich
+Disallow: /settings
+Disallow: /compliance
+Disallow: /profile
+Disallow: /think
+Disallow: /preview
 
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /memory
+Disallow: /context
+Disallow: /briefing
+Disallow: /decision
+Disallow: /decision-map
+Disallow: /goals
+Disallow: /track-record
+Disallow: /enrich
+Disallow: /settings
+Disallow: /compliance
+Disallow: /profile
+Disallow: /think
+Disallow: /preview
 
 Sitemap: https://ctrl.themindmaker.ai/sitemap.xml

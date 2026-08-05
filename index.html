@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-    <title>CTRL: Clarity for Leaders</title>
-    <meta name="description" content="Build your portable AI double in 2 minutes. No integrations, no plugins; just your voice. Every AI tool you use instantly knows your context and thinking style." />
+    <title>CTRL: Your AI-native chief of staff</title>
+    <meta name="description" content="Your AI-native chief of staff. Weigh a real decision against live evidence, and carry one portable memory into every AI you use. No integrations, no plugins. Just your voice." />
 
     <!-- Favicon - Complete cross-browser and device support -->
     <!-- PNG favicons for modern browsers - properly sized square icons -->
@@ -45,8 +45,8 @@
     <meta name="author" content="CTRL" />
 
     <!-- Open Graph / Social Shares - ABSOLUTE URLs required for social platforms -->
-    <meta property="og:title" content="CTRL: Clarity for Leaders" />
-    <meta property="og:description" content="Build your portable AI double in 2 minutes. No integrations, no plugins; just your voice. Every AI tool you use instantly knows your context and thinking style." />
+    <meta property="og:title" content="CTRL: Your AI-native chief of staff" />
+    <meta property="og:description" content="Weigh the calls only you can make against live evidence, and carry one portable memory into every AI you use. No integrations, no plugins. Just your voice." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://ctrl.themindmaker.ai" />
     <meta property="og:image" content="https://ctrl.themindmaker.ai/og-ctrl.png" />
@@ -54,18 +54,18 @@
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="CTRL: Clarity for Leaders" />
-    <meta property="og:site_name" content="CTRL for Leaders" />
+    <meta property="og:image:alt" content="CTRL: Your AI-native chief of staff" />
+    <meta property="og:site_name" content="CTRL by Mindmaker" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@mindmaker" />
     <meta name="twitter:creator" content="@mindmaker" />
-    <meta name="twitter:title" content="CTRL: Clarity for Leaders" />
-    <meta name="twitter:description" content="Build your portable AI double in 2 minutes. No integrations, no plugins; just your voice. Every AI tool you use instantly knows your context and thinking style." />
+    <meta name="twitter:title" content="CTRL: Your AI-native chief of staff" />
+    <meta name="twitter:description" content="Weigh the calls only you can make against live evidence, and carry one portable memory into every AI you use. No integrations, no plugins. Just your voice." />
     <meta name="twitter:image" content="https://ctrl.themindmaker.ai/og-ctrl.png" />
-    <meta name="twitter:image:alt" content="CTRL: Clarity for Leaders" />
+    <meta name="twitter:image:alt" content="CTRL: Your AI-native chief of staff" />
 
     <!-- LinkedIn (uses Open Graph, but explicit tags help) -->
     <meta property="og:image:url" content="https://ctrl.themindmaker.ai/og-ctrl.png" />
@@ -86,7 +86,12 @@
           "name": "CTRL",
           "url": "https://ctrl.themindmaker.ai",
           "logo": "https://ctrl.themindmaker.ai/mindmaker-full-logo.png",
-          "parentOrganization": { "@type": "Organization", "name": "Mindmaker", "url": "https://themindmaker.ai" }
+          "parentOrganization": { "@type": "Organization", "name": "Mindmaker", "url": "https://themindmaker.ai" },
+          "founder": {
+            "@type": "Person",
+            "name": "Krish Raja",
+            "sameAs": ["https://www.linkedin.com/in/krish-raja/"]
+          }
         },
         {
           "@type": "SoftwareApplication",
@@ -95,22 +100,27 @@
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web, iOS, Android",
           "url": "https://ctrl.themindmaker.ai",
-          "description": "Portable AI-context platform for senior leaders. Build a Memory Web (your encrypted AI double) in 2 minutes of voice, export your context into any LLM with one click, and get a 3-minute daily audio briefing anchored to your real priorities.",
+          "description": "An AI-native chief of staff for founders and small-team CEOs. Weigh a real decision against live evidence, keep one portable memory of you that every AI tool can read, and get a daily read anchored to your real priorities.",
           "publisher": { "@id": "https://ctrl.themindmaker.ai/#org" },
           "offers": [
-            { "@type": "Offer", "name": "Free / Core", "price": "0", "priceCurrency": "USD", "category": "free" },
-            { "@type": "Offer", "name": "Full Diagnostic", "price": "49", "priceCurrency": "USD", "category": "one-time" },
-            { "@type": "Offer", "name": "Deep Context Upgrade", "price": "29", "priceCurrency": "USD", "category": "one-time" },
-            { "@type": "Offer", "name": "Diagnostic + Deep Context Bundle", "price": "69", "priceCurrency": "USD", "category": "one-time" },
-            { "@type": "Offer", "name": "Edge Pro", "price": "29", "priceCurrency": "USD", "category": "subscription" }
+            { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD", "category": "free" },
+            {
+              "@type": "Offer",
+              "name": "Edge Pro",
+              "price": "49",
+              "priceCurrency": "USD",
+              "category": "subscription",
+              "priceSpecification": { "@type": "UnitPriceSpecification", "price": "49", "priceCurrency": "USD", "unitText": "MONTH" }
+            }
           ]
         },
         {
           "@type": "FAQPage",
           "mainEntity": [
-            { "@type": "Question", "name": "What is CTRL?", "acceptedAnswer": { "@type": "Answer", "text": "CTRL builds a portable AI double of you in about 2 minutes of voice, so every AI tool you use (ChatGPT, Claude, Gemini, Cursor) instantly knows your context, goals, and thinking style. It also delivers a 3-minute daily audio briefing anchored to your real priorities." } },
-            { "@type": "Question", "name": "How is CTRL different from ChatGPT memory?", "acceptedAnswer": { "@type": "Answer", "text": "ChatGPT memory is locked to ChatGPT. CTRL is portable across ChatGPT, Claude, Gemini, Cursor, and Claude Code, and it is structured and evidence-backed." } },
-            { "@type": "Question", "name": "How much does CTRL cost?", "acceptedAnswer": { "@type": "Answer", "text": "The core is free. Full Diagnostic is $49 one-time, Deep Context is $29, the bundle is $69, and Edge Pro is $29 per month." } }
+            { "@type": "Question", "name": "What is CTRL?", "acceptedAnswer": { "@type": "Answer", "text": "CTRL is your AI-native chief of staff. It pressure-tests a real decision against live evidence, keeps one portable memory of you that every AI tool you use (ChatGPT, Claude, Gemini, Cursor, Claude Code) can read, and gives you a daily read anchored to your real priorities." } },
+            { "@type": "Question", "name": "Who is CTRL for?", "acceptedAnswer": { "@type": "Answer", "text": "AI-native founders and small-team CEOs: operators building the AI-native version of their business who already use AI daily but get generic output, and have no time to chase evidence for the calls that matter." } },
+            { "@type": "Question", "name": "How is CTRL different from ChatGPT memory?", "acceptedAnswer": { "@type": "Answer", "text": "ChatGPT memory is locked to ChatGPT. CTRL is portable across ChatGPT, Claude, Gemini, Cursor, and Claude Code, it is structured and evidence-backed, and your own agents can pull it live over a read-only MCP server." } },
+            { "@type": "Question", "name": "How much does CTRL cost?", "acceptedAnswer": { "@type": "Answer", "text": "Two tiers. Free is $0 and includes Memory, voice profile, the Kit program, the Automator, the daily briefing, and 3 decision weighs a month. Edge Pro is $49 per month and adds unlimited weighs, multi-model cross-examination, decision watch, Edge artifacts, drafting, email delivery, and the live MCP pull." } }
           ]
         }
       ]
@@ -165,39 +175,36 @@
            Visually hidden; humans see only the dark splash above. The React app
            replaces this on mount. Pricing mirrors /.well-known/product.json. -->
       <main class="ctrl-seo">
-        <h1>CTRL: Clarity for leaders. Build your portable AI double in 2 minutes.</h1>
-        <p>Talk for 2 minutes. CTRL builds a Memory Web (your encrypted AI double) so every AI tool you use, ChatGPT, Claude, Gemini, Cursor, and Claude Code, instantly knows your context, goals, and thinking style. One click exports that context into any LLM, and each morning you get a 3-minute audio briefing anchored to your real priorities.</p>
-        <p><a href="/auth">Build your AI double free</a> or <a href="/booking">book a walkthrough</a>.</p>
+        <h1>CTRL: your AI-native chief of staff.</h1>
+        <p>CTRL pressure-tests the calls only you can make against live evidence, keeps one portable memory of you that every AI tool you use (ChatGPT, Claude, Gemini, Cursor, and Claude Code) can read, and gives you a daily read anchored to your real priorities. No integrations, no plugins. Just your voice.</p>
+        <p><a href="/auth">Start free</a> or <a href="/pricing">see pricing</a>.</p>
 
         <h2>Who it is for</h2>
-        <p>Senior leaders (C-suite, VP, Founder) at companies of 50 to 5,000 people who already use AI daily but keep getting generic output.</p>
+        <p>AI-native founders and small-team CEOs: operators building the AI-native version of their business, who already use AI daily but keep getting generic output, and have no time to chase evidence for the calls that matter.</p>
 
         <h2>The one magic moment</h2>
-        <p>The first time you paste your structured context into ChatGPT or Claude and get a response that is unmistakably about you, not generic advice. That is the moment generic AI becomes your AI.</p>
+        <p>The first weigh. You hand CTRL a real call, it reframes it into the AI-native version of that call, breaks it into the claims it rests on, checks the load-bearing ones against live evidence, and hands back where the call holds, where it breaks, and the part only you can decide.</p>
 
         <h2>What you get</h2>
         <ul>
-          <li>Memory Web: a structured, encrypted AI double from 2 minutes of voice.</li>
-          <li>Context Export: one click into any LLM.</li>
-          <li>Daily Briefing: a 3-minute evidence-based audio briefing.</li>
-          <li>Edge Pro: turn a weekly workflow into a Claude Skill that auto-triggers forever.</li>
+          <li>Decisions: weigh a real call, verified against live evidence. It clarifies; it never recommends from a thin signal.</li>
+          <li>Memory: a structured, portable context every AI tool can read, exported in one click or pulled live by your own agents.</li>
+          <li>A daily read anchored to your real priorities, with the evidence trail for every item.</li>
+          <li>The Automator: turn something you do over and over into an installable skill for your own AI.</li>
         </ul>
 
         <h2>Pricing</h2>
         <ul>
-          <li>Free / Core: $0</li>
-          <li>Full Diagnostic: $49 one-time</li>
-          <li>Deep Context Upgrade: $29 one-time</li>
-          <li>Diagnostic + Deep Context Bundle: $69 one-time</li>
-          <li>Edge Pro: $29 / month</li>
+          <li>Free: $0. Memory, voice profile, the Kit program, the Automator, the daily briefing, and 3 decision weighs a month.</li>
+          <li>Edge Pro: $49 / month. Unlimited weighs, multi-model cross-examination, decision watch, Edge artifacts, drafting, email delivery, and the live MCP pull.</li>
         </ul>
       </main>
     </div>
     <noscript>
       <main class="ctrl-noscript">
-        <h1>CTRL: Clarity for leaders</h1>
-        <p>CTRL builds your portable AI double in about 2 minutes of voice, so every AI tool you use (ChatGPT, Claude, Gemini, Cursor) instantly knows your context, goals, and thinking style.</p>
-        <p><a href="/auth">Build your AI double free</a> or <a href="/booking">book a walkthrough</a>.</p>
+        <h1>CTRL: your AI-native chief of staff</h1>
+        <p>CTRL weighs the calls only you can make against live evidence, and carries one portable memory of you into every AI tool you use (ChatGPT, Claude, Gemini, Cursor, and Claude Code).</p>
+        <p><a href="/auth">Start free</a> or <a href="/pricing">see pricing</a>.</p>
       </main>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>

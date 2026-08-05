@@ -27,7 +27,7 @@ export default function Landing() {
 
   // Redirect authenticated users SYNCHRONOUSLY during render. The old
   // effect-based navigate let <ClarityHome /> paint for one frame first, which
-  // is the "CTRL · Clarity for leaders" ghost-flash users saw on load.
+  // is the marketing-hero ghost-flash users saw on load.
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />
   }

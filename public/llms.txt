@@ -1,28 +1,45 @@
-# CTRL — Clarity for Leaders
+# CTRL: your AI-native chief of staff
 
-> CTRL is an AI decision-clarity product for senior leaders. It builds a portable "AI double" of you so every AI tool knows your context, pressure-tests your real decisions against live evidence, and — newest — exposes your live Memory Web to your OWN AI agents via a read-only MCP server. Your agents act on who you are *right now*, not a pasted snapshot that goes stale the moment the tab closes.
+> CTRL is an AI-native chief of staff for founders and small-team CEOs. It pressure-tests the calls only you can make against live evidence, keeps one portable memory of you that every AI tool can read, and gives you a daily read anchored to what actually matters. Your context is not a snapshot you paste and forget: your own agents can pull it live over a read-only MCP server, so they act on who you are *right now*.
 
-## What it does
-- **Memory Web** — your structured operating context (identity, company, objectives, blockers, confirmed patterns), ranked by importance and kept fresh; contradictions are resolved at write-time and stale facts age out.
-- **Context Export** — one-click copy / Markdown export of your context, formatted for ChatGPT, Claude, Gemini, Cursor, and Claude Code.
-- **Decision engine** — pressure-test a real decision: it decomposes the bet into considerations, verifies the load-bearing claims against the web, and surfaces where *only you* can decide (it clarifies; it never recommends from a thin signal).
-- **Daily Briefing** — a ~3-minute audio read anchored to your real priorities.
-- **Agent-native (Edge Pro)** — a read-only Model Context Protocol (MCP) server so your own agents pull your live, brain-ranked context on every call. An opt-in scope also exposes today's briefing as a structured feed.
+CTRL is only ever about building, orchestrating, productizing and getting to market the AI-native version of your business. It reframes general inputs into that lens; it is not a general business advisor.
+
+## The three areas, on one substrate
+- **Home**: an AI-native curated read. The industry headlines worth a look, cross-verified across sources, plus three doors (your daily briefing, weigh a decision, build a skill).
+- **Decisions**: weigh and pressure-test a real call. CTRL reframes it into the AI-native version of that call, decomposes it into the claims it rests on, verifies the load-bearing ones against live evidence, and shows where it holds, where it breaks, and where *only you* can decide. It clarifies; it never recommends from a thin signal.
+- **Brain / Memory**: portable context. A structured, ranked memory of who you are and how you think, kept fresh, contradictions resolved at write time, stale facts aged out.
+
+Four tabs: Home, Decisions, Brain, You.
+
+## What you get
+- **Memory Web** and **context export**: one click into ChatGPT, Claude, Gemini, Cursor and Claude Code, or a `my-ai-context.md` file.
+- **Voice profile**: eight dimensions of how you actually write, so generated output sounds like you.
+- **Automator**: turns something you do over and over into an installable skill for your own AI.
+- **Daily briefing**: a short read anchored to your real priorities, with the evidence trail for every item.
+- **Decision engine**: reframe, decompose, verify, advise.
+- **Agent-native (Edge Pro)**: a read-only Model Context Protocol (MCP) server so your own agents pull your live context and your built skills on every call.
+
+## Pricing
+Two tiers, nothing else.
+- **Free, $0**: Memory Web, context export, voice profile, the Kit program, unlimited Automator skill builds, the daily personalised briefing, and 3 decision weighs a month. A real daily instrument, not a trial.
+- **Edge Pro, $49 / month**: the decision tier. Unlimited weighs, a multi-model cross-examination of every decision, decision watch (alerts when a load-bearing assumption weakens), Edge artifacts (memos, docs, emails, agendas), drafting, email delivery, and the live MCP pull of your context and skills into any AI.
+
+There is no one-time diagnostic, no deep-context upgrade and no bundle, and no advisory, bootcamp or consulting engagement. Any other price list for CTRL is dead.
 
 ## For AI agents
 - **MCP server** (read-only, per-leader API key, requires Edge Pro):
   `https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/mcp-context`
   - Transport: Streamable HTTP (MCP spec 2025-06-18), stateless JSON responses.
-  - Tools: `get_leader_context` (the leader's live operating context), `get_todays_briefing` (opt-in scope).
-  - Auth: a per-leader key the leader mints in **Settings → Edge Pro** and passes as a bearer token. Read-only; revocable anytime.
+  - Tools: `get_leader_context`, `get_todays_briefing` (opt-in scope), `list_skills`, `get_skill`.
+  - Auth: a per-leader key the leader mints in **Settings, Edge Pro** and passes as a bearer token. Read-only; revocable anytime.
 - **Machine-readable product facts:** `https://ctrl.themindmaker.ai/.well-known/product.json`
 
 ## Key links
 - Home: https://ctrl.themindmaker.ai/
 - Pricing: https://ctrl.themindmaker.ai/pricing
-- Book a call: https://ctrl.themindmaker.ai/booking
+- Agent-native: https://ctrl.themindmaker.ai/agents
 
-## Who it's for
-Senior individual leaders — C-suite, VPs, founders — at 50–5,000-person companies who already use AI daily but get generic output. Not for individual contributors with no team, students, or people wanting a generic chatbot.
+## Who it is for
+AI-native founders and small-team CEOs: operators who are building the AI-native version of their business, already use AI daily but get generic output, and have no time and no staff to chase evidence for the calls that matter. Not for people who want a generic chatbot, and not for anyone shopping for consulting.
 
 Built by Mindmaker. Production: https://ctrl.themindmaker.ai
