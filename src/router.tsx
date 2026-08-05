@@ -138,6 +138,11 @@ const EnrichPage = lazyWithRetry(() => import('@/pages/EnrichPage'))
 // sits behind is a later call, so it is deliberately absent from primary nav
 // and from the authed prefetch list.
 const SortPage = lazyWithRetry(() => import('@/pages/SortPage'))
+// The review (harness chain stages 5 to 7), and the only writer the observation
+// ledger has. URL-reachable only for now, same call as the check above: which
+// door it sits behind is a later decision, and it stays out of primary nav and
+// out of the authed prefetch list until that decision is made.
+const ReviewPage = lazyWithRetry(() => import('@/pages/ReviewPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
 /**
@@ -348,6 +353,10 @@ export const router = createBrowserRouter([
       {
         path: '/sort',
         element: <LazyWrapper><RequireAuth><SortPage /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/review',
+        element: <LazyWrapper><RequireAuth><ReviewPage /></RequireAuth></LazyWrapper>,
       },
       {
         path: '/settings',
