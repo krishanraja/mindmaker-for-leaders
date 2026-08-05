@@ -21,6 +21,7 @@ import { PersonalMapCard } from "@/components/kit/PersonalMapCard";
 import { SevenDayPlan } from "@/components/kit/SevenDayPlan";
 import { ShipSection } from "@/components/kit/ShipSection";
 import { SendPackCard } from "@/components/kit/SendPackCard";
+import { EdgeProCard } from "@/components/kit/EdgeProCard";
 import { KitVoiceProfileCard } from "@/components/kit/KitVoiceProfileCard";
 
 /**
@@ -36,7 +37,8 @@ import { KitVoiceProfileCard } from "@/components/kit/KitVoiceProfileCard";
  *              clean one-screen list; desktop also keeps it in the right pane.
  *   voice   -> "Make it sound like you" (KitVoiceProfileCard). Primary opens the
  *              voice sheet (does something other than proceed), so it earns a skip.
- *   keepit  -> Email by default (SendPackCard), profile a quiet one-time upsell.
+ *   keepit  -> Email by default (SendPackCard, waitlist inside it), with the
+ *              Edge Pro door beside it so a graduate can actually subscribe.
  *   plan    -> the 7-day plan checklist (SevenDayPlan).
  *   ship    -> the calm celebratory "I shipped it" screen (ShipSection).
  *
@@ -78,7 +80,10 @@ export interface KitRevealWizardProps {
   onTune: () => void;
   /** The pass-expiry footer line (surfaced quietly on keep-it). */
   passFooter: string;
-  /** When the pass is expired/forced, the quiet upgrade slot under keep-it. */
+  /**
+   * The expiry/quota upgrade card. When present it REPLACES the keep-it step's
+   * standing Edge Pro door rather than sitting beside it.
+   */
   edgeProSlot?: React.ReactNode;
 }
 
@@ -481,8 +486,21 @@ function KeepItScreen({
         />
       </div>
 
-      {/* The pass-expiry upgrade, surfaced quietly here (not a competing card). */}
-      {edgeProSlot && <div className="mt-3">{edgeProSlot}</div>}
+      {/*
+        The paid door, on the happy path (CH-19).
+
+        Before this, Edge Pro appeared only when a pass expired or a build quota
+        ran out, so a graduate who finished the whole kit and wanted more had
+        nowhere to go: the terminal card offered a waitlist and nothing else.
+        The waitlist is untouched and stays inside SendPackCard as the secondary
+        move; this is the door beside it.
+
+        When KitHome is already forcing the expiry/quota card, that one wins:
+        two Edge Pro cards on one screen is a worse answer than none.
+      */}
+      <div className="mt-3">
+        {edgeProSlot ?? <EdgeProCard variant="graduate" />}
+      </div>
 
       <div className="mt-5 flex items-center gap-3">
         <KitBack onClick={onBack} />

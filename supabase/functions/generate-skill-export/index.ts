@@ -103,6 +103,7 @@ import {
   loadPointerTargets,
   persistCitedSpans,
 } from "./provenance.ts";
+import { loadReleaseContext } from "./release.ts";
 import { createLogger } from "../_shared/logger.ts";
 
 const log = createLogger("generate-skill-export");
@@ -260,6 +261,16 @@ Deno.serve(async (req) => {
       });
     const gradedWork = await loadGradedWork(serviceClient, user.id);
 
+    // What this package is compiled from, and what (if anything) was actually
+    // measured about those rules. Read once, before the generation loop, and
+    // used in two places that must never disagree: the status in the package's
+    // own frontmatter, and the release block on the artefact row.
+    const releaseContext = await loadReleaseContext(
+      serviceClient,
+      user.id,
+      targets?.surface ?? null,
+    );
+
     let parsed: SkillJson | null = null;
     let pkg: SkillPackage | null = null;
     let qualityGate: ReturnType<typeof runQualityGate> | null = null;
@@ -398,7 +409,11 @@ Deno.serve(async (req) => {
         evidence: targets?.packageEvidence ?? [],
         exemplars: gradedWork.exemplars,
         holdout: gradedWork.holdout,
-        status: (targets?.packageCriteria.length ?? 0) > 0 ? "provisional" : "draft",
+        // From releaseVerdict, never from the existence of a rubric. A package
+        // whose criteria have never been measured is a Draft even though the
+        // criteria are real, because "compiled" and "shown to work" are two
+        // different claims and only one of them was earned.
+        status: releaseContext.release.label,
       };
       pkg = packageFromZipInput(zipInput);
 
@@ -667,6 +682,20 @@ Deno.serve(async (req) => {
           total_imperatives: totalImperatives,
           demoted_claims: demotedClaims,
           unpointed_after_demotion: unpointedAfterDemotion,
+          // CH-02. Which version of the leader's standard this body was
+          // rendered from, and when. Without the pair, a pull cannot tell a
+          // current package from one the standard has moved past, and would go
+          // on serving the old one silently.
+          surface: targets?.surface ?? null,
+          criteria_version: releaseContext.criteriaVersion,
+          rendered_at: releaseContext.renderedAt,
+          // The label the delivery screen shows, and the numbers under it, with
+          // their provenance attached. Re-derived on read; never trusted raw.
+          release: {
+            label: releaseContext.release.label,
+            reason: releaseContext.release.reason,
+            numbers: releaseContext.release.numbers,
+          },
         },
       })
       .select("id")
@@ -731,6 +760,16 @@ Deno.serve(async (req) => {
         archetype: skill.archetype || null,
       },
       quality_gate: qualityGate,
+      // What the delivery screen is allowed to say about this package: the
+      // label, the sentence behind it, and the numbers with their provenance.
+      // Sent with the response so the payoff screen needs no second read.
+      release: {
+        label: releaseContext.release.label,
+        reason: releaseContext.release.reason,
+        numbers: releaseContext.release.numbers,
+        criteria_version: releaseContext.criteriaVersion,
+        rendered_at: releaseContext.renderedAt,
+      },
       // The generator's reading, before any repair. Never recomputed.
       baseline_unresolved_claims: baselineUnresolvedClaims,
       // The denominator that reading came out of, so demoted + pointed can be

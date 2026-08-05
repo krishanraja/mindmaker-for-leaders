@@ -270,6 +270,13 @@ Deno.serve(async (req) => {
             provider: providerFromModel(aiResponse.model),
             model: aiResponse.model,
             source: "free-skill-export",
+            // CH-02. A free build has no compiled standard behind it, so the
+            // version it was rendered against is 0 and the pull can say "there
+            // is nothing to be out of date with" instead of "I cannot tell".
+            // Recording the pair costs two fields and closes that gap.
+            surface: null,
+            criteria_version: 0,
+            rendered_at: new Date().toISOString(),
           },
         });
       if (artifactErr) log.warn("generated_artifacts insert failed (non-fatal)", { userId, error: artifactErr });

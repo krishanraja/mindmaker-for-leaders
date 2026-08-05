@@ -69,10 +69,27 @@ export interface SkillQualityGate {
   summary: { passed: number; total: number };
 }
 
+/**
+ * What the delivery screen may say about the built package: the label from
+ * releaseVerdict, the sentence behind it, and the numbers with the provenance
+ * that says what they were measured on. Absent from older responses, and from
+ * `free-skill-export`, which is the honest state for a build with no compiled
+ * standard behind it. The shape is read (and re-derived) by
+ * `_shared/skill-release.ts`.
+ */
+export interface SkillReleaseBlock {
+  label: "draft" | "provisional" | "verified";
+  reason: string;
+  numbers: Record<string, unknown> | null;
+  criteria_version?: number;
+  rendered_at?: string;
+}
+
 export interface SkillExportSuccess {
   triage: SkillTriage;
   skill: SkillData;
   quality_gate: SkillQualityGate;
+  release?: SkillReleaseBlock | null;
   zip_base64: string;
   zip_filename: string;
   zip_byte_length: number;
