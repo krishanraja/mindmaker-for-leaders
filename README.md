@@ -49,7 +49,6 @@ Every authenticated surface is no-scroll on all devices, one ask per screen, and
 |---|---|---|
 | `/` | Landing | No |
 | `/auth`, `/auth/callback` | Auth (Email + Google OAuth) | No |
-| `/booking` | Booking | No |
 | `/build` | Skill Builder (full-page) | No |
 | `/try` | Public "watch it work" demo | No |
 | `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`) | The lesson-kit program | No (anonymous session) |

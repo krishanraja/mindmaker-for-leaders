@@ -100,7 +100,7 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 ### Active routes (source of truth: `src/router.tsx`)
 
-Public: `/`, `/auth`, `/auth/callback`, `/booking`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked).
+Public: `/`, `/auth`, `/auth/callback`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked).
 
 Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`.
 

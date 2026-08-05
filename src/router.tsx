@@ -116,7 +116,6 @@ const ContextExport = lazyWithRetry(() => import('@/pages/ContextExport'))
 const Settings = lazyWithRetry(() => import('@/pages/Settings'))
 const Compliance = lazyWithRetry(() => import('@/pages/Compliance'))
 const Profile = lazyWithRetry(() => import('@/pages/Profile'))
-const Booking = lazyWithRetry(() => import('@/pages/Booking'))
 const BuildLap = lazyWithRetry(() => import('@/pages/BuildLap'))
 const KitRedeem = lazyWithRetry(() => import('@/pages/kit/KitRedeem'))
 const KitHome = lazyWithRetry(() => import('@/pages/kit/KitHome'))
@@ -163,7 +162,7 @@ function preloadInitialRouteChunk() {
   if (typeof window === 'undefined') return
   const warm = (fn: () => Promise<unknown>) => { try { void fn() } catch { /* noop */ } }
   const p = window.location.pathname
-  if (p === '/' || p.startsWith('/build') || p.startsWith('/booking')) {
+  if (p === '/' || p.startsWith('/build')) {
     warm(() => import('@/pages/Landing'))
   } else if (p.startsWith('/auth')) {
     warm(() => import('@/pages/Auth'))
@@ -249,10 +248,6 @@ export const router = createBrowserRouter([
   {
     path: '/auth/callback',
     element: <LazyWrapper><AuthCallback /></LazyWrapper>,
-  },
-  {
-    path: '/booking',
-    element: <LazyWrapper><Booking /></LazyWrapper>,
   },
   {
     path: '/build',
