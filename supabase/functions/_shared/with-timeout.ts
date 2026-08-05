@@ -109,3 +109,35 @@ export class ProviderUnavailableError extends Error {
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * The outer wall-clock bound, for anything that is not a raw fetch.
+ *
+ * fetchWithTimeout above is the right tool when we control the request, because
+ * an AbortController actually cancels it. A supabase-js query builder, an SDK
+ * call or any other thenable gives us no abort handle, so this bounds the
+ * WAITING rather than the work: on expiry the caller gets a rejection with a
+ * label it can log, and the underlying request is left to finish into nothing.
+ *
+ * That is the honest description of what it does, and it is still worth having:
+ * the failure it prevents is a hung dependency holding an edge function until
+ * the platform's own wall clock kills it, which surfaces to the caller as a
+ * generic 500 with nothing in the logs saying which call hung.
+ *
+ * Accepts a PromiseLike, so a query builder can be passed in directly.
+ */
+export function withTimeout<T>(work: PromiseLike<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    work.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}

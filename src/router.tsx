@@ -143,6 +143,12 @@ const SortPage = lazyWithRetry(() => import('@/pages/SortPage'))
 // door it sits behind is a later decision, and it stays out of primary nav and
 // out of the authed prefetch list until that decision is made.
 const ReviewPage = lazyWithRetry(() => import('@/pages/ReviewPage'))
+// The learning loop's decision surface (harness chain stage 9), where the
+// weekly pass's proposals get a yes or a no. URL-reachable only, same call as
+// the two above: it has nothing on it until somebody has been checking work for
+// a few weeks, so it stays out of primary nav and out of the authed prefetch
+// list until that decision is made.
+const ProposalsPage = lazyWithRetry(() => import('@/pages/ProposalsPage'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
 /**
@@ -357,6 +363,10 @@ export const router = createBrowserRouter([
       {
         path: '/review',
         element: <LazyWrapper><RequireAuth><ReviewPage /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/proposals',
+        element: <LazyWrapper><RequireAuth><ProposalsPage /></RequireAuth></LazyWrapper>,
       },
       {
         path: '/settings',
