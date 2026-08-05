@@ -34,6 +34,29 @@
  * offending line with the file, the line number and the exact text, because the
  * first acceptance run lost a single unpointed imperative through both passes
  * while being told only how many there were.
+ *
+ * ---------------------------------------------------------------------------
+ * Stage 7a: the deterministic close
+ * ---------------------------------------------------------------------------
+ *
+ * Asking twice is not an invariant. Across three real acceptance runs the
+ * unpointed count came back 6, then 1, then 4, because two generation passes
+ * cannot guarantee model compliance. Spec 4.7a rule 3 already specifies the
+ * deterministic answer: "Unresolved claims are deleted or rewritten as NOT
+ * ESTABLISHED, never shipped."
+ *
+ * So after the last generation pass, and before a single ZIP byte is written,
+ * demoteUnpointedClaims rewrites every rule that still points at nothing into
+ * its honest NOT ESTABLISHED form, in place. Then the checks are RE-RUN over the
+ * demoted package and the result is asserted, not assumed: if anything is still
+ * unpointed that is a bug in the demoter, so it is logged as an error and the
+ * block stands rather than being reported as a pass.
+ *
+ * Two numbers ship, and both are needed. baseline_unresolved_claims is the count
+ * BEFORE demotion and is the measurement of generator quality, so the repair is
+ * never allowed to flatter it. unpointed_after_demotion is what the leader
+ * actually received. The honest reading is "the generator left 4 unsourced; the
+ * system demoted all 4; zero unsourced rules shipped."
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -52,14 +75,17 @@ import { recordAiUsage, checkDailySoftCap } from "../_shared/ai-usage.ts";
 import {
   collectClaims,
   collectNotEstablished,
+  parseImperativeTotal,
   parseUnpointedImperatives,
   PROVENANCE_CHECK_IDS,
+  runProvenanceChecksOverClaims,
   situatedGeneralisationOffenders,
   unpointedClaims,
   unresolvedPointerClaims,
   type LocatedClaim,
   type ProvenanceOptions,
 } from "../_shared/provenance-checks.ts";
+import { demoteUnpointedClaims } from "../_shared/demote-claims.ts";
 import {
   flattenPackageForPull,
   gatedFiles,
@@ -241,9 +267,19 @@ Deno.serve(async (req) => {
     let notEstablished: LocatedClaim[] = [];
     let violations: string[] = [];
     let offenders: ProvenanceOffender[] = [];
+    // Blocking only where the demand can be met. With nothing to cite, the
+    // checks report an honest skip and a block would be a gate nobody can
+    // satisfy, which the chain forbids. Declared out here because stage 7a
+    // below fires on exactly this condition, not only the retry loop.
+    const blocking = Boolean(targets?.hasTargets);
     let lastModel = "";
     let pass = 0;
     const passLedger: Array<{ pass: number; claims: LocatedClaim[]; notEstablished: LocatedClaim[] }> = [];
+    // Hoisted so stage 7a below reads the SAME masked spans and the SAME id sets
+    // the gate read. A demotion pass working off a differently-built view would
+    // eventually edit a line the gate never flagged.
+    let gateQuotes: string[] = [];
+    let gateOptions: ProvenanceOptions = {};
 
     // The first user turn, identical on both passes. The regeneration pass
     // appends the previous attempt and a repair instruction to it rather than
@@ -375,6 +411,7 @@ Deno.serve(async (req) => {
         ...(targets?.options.evidenceQuotes ?? []),
         ...verbatimSpans(pkg),
       ];
+      gateQuotes = quotes;
       const files = gatedFiles(pkg);
 
       // Persist the transcript spans this package actually cited BEFORE the gate
@@ -400,7 +437,7 @@ Deno.serve(async (req) => {
       // Built AFTER the persist, because that step is what decides which ids
       // are live. The gate must read the sets as they are now, not as they were
       // when the model was asked.
-      const gateOptions = { ...(targets?.options ?? {}), evidenceQuotes: quotes };
+      gateOptions = { ...(targets?.options ?? {}), evidenceQuotes: quotes };
       // Collected once, against the final id sets, so the ledger rows and the
       // gate findings describe the same package. Two collections that disagree
       // is how a record stops being a record.
@@ -433,10 +470,6 @@ Deno.serve(async (req) => {
 
       violations = provenanceViolations(qualityGate.checks);
       offenders = provenanceOffenders(claims, gateOptions, pkg);
-      // Blocking only where the demand can be met. With nothing to cite, the
-      // checks report an honest skip and a block would be a gate nobody can
-      // satisfy, which the chain forbids.
-      const blocking = Boolean(targets?.hasTargets);
       if (!blocking || violations.length === 0) break;
       if (pass >= MAX_GENERATION_PASSES) break;
 
@@ -453,16 +486,104 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "The generated skill was incomplete. Please try again." }, 502);
     }
 
+    // The number this phase exists to move: rules stated without pointing at
+    // what they came from, counted across the whole gated package. Read BEFORE
+    // the demotion pass and never recomputed, because it measures the GENERATOR
+    // and a repair is not allowed to flatter the thing it repaired.
+    const everyRuleCitedBefore = qualityGate.checks.find((c) => c.id === "prov.everyRuleCited");
+    const baselineUnresolvedClaims = parseUnpointedImperatives(everyRuleCitedBefore?.detail) ?? 0;
+    // The denominator, so the acceptance run can check that demoted plus pointed
+    // accounts for every imperative rather than trusting the repair.
+    const totalImperatives = parseImperativeTotal(everyRuleCitedBefore?.detail) ?? 0;
+
+    // -----------------------------------------------------------------------
+    // Stage 7a: demote what still points at nothing (spec 4.7a rule 3)
+    // -----------------------------------------------------------------------
+    //
+    // Demotion is the deterministic enforcement arm of a BLOCKING check, so it
+    // fires on exactly the condition that makes prov.* blocking. With nothing
+    // citable the checks are advisory by design (no criteria, no evidence, so
+    // no rule COULD carry a pointer), and demoting there would rewrite an
+    // honest package into a wall of NOT ESTABLISHED for a leader who did
+    // nothing wrong. That is not the visible-failure trade it looks like: the
+    // finding is still reported, and reporting is what an advisory check is.
+    //
+    // A genuinely failed load is a different thing from an empty one and must
+    // not read as "nothing to cite"; loadPointerTargets logs that as an error
+    // of ours rather than a finding about them.
+    const demotion = blocking
+      ? demoteUnpointedClaims(pkg.files, claims, gateQuotes)
+      : { files: pkg.files, demoted: [] };
+    const demotedClaims = demotion.demoted.length;
+    let unpointedAfterDemotion = baselineUnresolvedClaims;
+
+    if (demotedClaims > 0) {
+      pkg = { ...pkg, files: demotion.files };
+
+      // Every demoted rule gets its own ledger row, against the FINAL pass, at
+      // resolution marked_awaiting. The pass's existing 'unresolved' row for the
+      // same claim_hash stays, so the record reads "the generator left this
+      // unsourced, the system demoted it" rather than showing a silent edit.
+      const finalEntry = passLedger[passLedger.length - 1];
+      if (finalEntry) finalEntry.notEstablished = [...finalEntry.notEstablished, ...demotion.demoted];
+    }
+
+    // Asserted, not assumed, and run whenever there was anything to fix - a pass
+    // that demoted NOTHING while the baseline was non-zero is the same bug as
+    // one that demoted some and missed the rest. Only meaningful where demotion
+    // was supposed to run; where it was not, the surviving count IS the
+    // advisory finding and reporting it is the correct outcome.
+    if (blocking && baselineUnresolvedClaims > 0) {
+      const demotedClaimList = collectClaims(gatedFiles(pkg), gateQuotes);
+      const recheck = runProvenanceChecksOverClaims(demotedClaimList, gateOptions);
+      const everyRuleCited = recheck.find((c) => c.id === "prov.everyRuleCited");
+      unpointedAfterDemotion = parseUnpointedImperatives(everyRuleCited?.detail) ?? 0;
+
+      if (!everyRuleCited?.passed) {
+        // Not a finding about the leader. The demoter was handed a claim it
+        // could not locate, which is our bug, so it is logged as one and the
+        // block below stands rather than being reported as a pass.
+        log.error("demotion left unpointed rules standing", {
+          userId: user.id,
+          baseline: baselineUnresolvedClaims,
+          demoted: demotedClaims,
+          surviving: unpointedAfterDemotion,
+          detail: everyRuleCited?.detail,
+          claims: unpointedClaims(demotedClaimList)
+            .slice(0, 5)
+            .map((c) => ({ path: c.path, line: c.line, text: c.text.slice(0, 120) })),
+        });
+      }
+
+      // The reported gate must describe the package that shipped, not the one
+      // that was thrown away. Only the prov.* checks can have moved.
+      const byId = new Map(recheck.map((check) => [check.id, check]));
+      const checks = qualityGate.checks.map((check) => byId.get(check.id) ?? check);
+      qualityGate = {
+        checks,
+        summary: { passed: checks.filter((c) => c.passed).length, total: checks.length },
+      };
+      violations = provenanceViolations(checks);
+      claims = demotedClaimList;
+    }
+
+    // The body the leader is handed back, demoted the same way. It is the same
+    // prose the surface leaf carries, so leaving it un-demoted would ship the
+    // unsourced wording through the response while the ZIP said otherwise.
+    const bodyFile = [{ path: "", content: skill.body }];
+    skill.body = demoteUnpointedClaims(
+      bodyFile,
+      collectClaims(bodyFile, gateQuotes),
+      gateQuotes,
+    ).files[0]?.content ?? skill.body;
+
     const provenanceBlocked = Boolean(targets?.hasTargets) && violations.length > 0;
 
-    // The number this phase exists to move: rules stated without pointing at
-    // what they came from, counted across the whole gated package.
-    const baselineUnresolvedClaims = parseUnpointedImperatives(
-      qualityGate.checks.find((c) => c.id === "prov.everyRuleCited")?.detail,
-    ) ?? 0;
     log.info("provenance result", {
       userId: user.id,
       unpointed_imperatives: baselineUnresolvedClaims,
+      demoted_claims: demotedClaims,
+      unpointed_after_demotion: unpointedAfterDemotion,
       passes: pass,
       blocked: provenanceBlocked,
       router_lines: routerLineCount(pkg),
@@ -539,6 +660,13 @@ Deno.serve(async (req) => {
           router_lines: routerLineCount(pkg),
           provenance_passes: pass,
           provenance_blocked: provenanceBlocked,
+          // The three numbers, persisted together so the reading survives the
+          // response. baseline is the generator, demoted is the repair, after
+          // is what the leader actually received.
+          baseline_unresolved_claims: baselineUnresolvedClaims,
+          total_imperatives: totalImperatives,
+          demoted_claims: demotedClaims,
+          unpointed_after_demotion: unpointedAfterDemotion,
         },
       })
       .select("id")
@@ -603,7 +731,16 @@ Deno.serve(async (req) => {
         archetype: skill.archetype || null,
       },
       quality_gate: qualityGate,
+      // The generator's reading, before any repair. Never recomputed.
       baseline_unresolved_claims: baselineUnresolvedClaims,
+      // The denominator that reading came out of, so demoted + pointed can be
+      // checked against it instead of taken on trust.
+      total_imperatives: totalImperatives,
+      // What stage 7a rewrote, and what survived it. The pair is the honest
+      // sentence: "the generator left N unsourced; the system demoted all N;
+      // zero unsourced rules shipped."
+      demoted_claims: demotedClaims,
+      unpointed_after_demotion: unpointedAfterDemotion,
       // Never a bare rejection (spec 4.5). When two passes could not clear the
       // gate the package still ships, and this is what the leader is shown so
       // they can decide whether to keep it, edit it, or say more.
@@ -611,10 +748,7 @@ Deno.serve(async (req) => {
         blocked: provenanceBlocked,
         passes: pass,
         violations,
-        message: provenanceBlocked
-          ? "Some rules in this skill do not point at anything you said or graded. They are listed " +
-            "above. Keep the skill, edit those lines, or tell me more about where they came from."
-          : null,
+        message: provenanceMessage(demotedClaims, provenanceBlocked),
       },
       package_files: pkg.files.map((f) => f.path),
       zip_base64: zipResult.base64,
@@ -627,6 +761,34 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: (err as Error).message }, 500);
   }
 });
+
+/**
+ * What the leader is told, in plain words, about what happened to their rules.
+ *
+ * Two separate facts, and the demotion one is said first because it describes
+ * the package in their hands: some rules had nothing behind them, so the package
+ * says so instead of stating them as fact. The second sentence only appears when
+ * something is still standing that they may want to act on.
+ */
+function provenanceMessage(demoted: number, blocked: boolean): string | null {
+  const parts: string[] = [];
+  if (demoted > 0) {
+    parts.push(
+      demoted === 1
+        ? "1 rule had nothing to point at, so it is marked NOT ESTABLISHED in the package rather " +
+          "than stated as fact."
+        : `${demoted} rules had nothing to point at, so they are marked NOT ESTABLISHED in the ` +
+          "package rather than stated as fact.",
+    );
+  }
+  if (blocked) {
+    parts.push(
+      "Some rules still do not point at anything you said or graded. They are listed above. Keep " +
+        "the skill, edit those lines, or tell me more about where they came from.",
+    );
+  }
+  return parts.length > 0 ? parts.join(" ") : null;
+}
 
 /** The prov.* findings, as the sentences the regeneration prompt is handed. */
 function provenanceViolations(checks: QualityCheck[]): string[] {

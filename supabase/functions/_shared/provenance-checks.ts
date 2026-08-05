@@ -42,6 +42,22 @@ export interface ImperativeClaim {
   line: number;
 }
 
+/**
+ * An imperative claim plus where on its line the sentence starts.
+ *
+ * `start` is a 0-based character offset into the LINE, counted past the list
+ * marker and any indentation, which is exactly the position a demotion prefix
+ * has to be spliced in at for "- Keep it short." to become
+ * "- NOT ESTABLISHED: Keep it short." with the marker and indent untouched.
+ *
+ * Masking is length-preserving, so an offset read off a masked line is the same
+ * offset on the unmasked line. That is what lets the demoter find its target in
+ * the gated view and edit the real file without ever reading inside a quote.
+ */
+export interface OffsetClaim extends ImperativeClaim {
+  start: number;
+}
+
 /** One file of a package, as the gate reads it. */
 export interface ProvenanceFile {
   path: string;
@@ -141,20 +157,45 @@ function stripDecoration(sentence: string): string {
   return sentence.replace(/^[\s>*_`"'“‘(]+/, "").trim();
 }
 
-function splitSentences(line: string): string[] {
-  const parts = line.split(/(?<=[.!?])\s+/);
-  const out: string[] = [];
-  for (const part of parts) {
-    const trimmed = part.trim();
-    if (!trimmed) continue;
+const SENTENCE_BREAK = /(?<=[.!?])\s+/g;
+
+interface SentenceSpan {
+  text: string;
+  /** Offset of the sentence's first character, relative to `base`'s origin. */
+  start: number;
+}
+
+/**
+ * Sentences on one line, each with the offset it starts at.
+ *
+ * The one implementation of the split. Anything that needs only the strings
+ * reads .text off this, so a caller that edits a line and a caller that counts
+ * one can never disagree about where a sentence begins.
+ */
+function splitSentenceSpans(line: string, base: number): SentenceSpan[] {
+  const out: SentenceSpan[] = [];
+  const push = (segment: string, at: number) => {
+    const trimmed = segment.trim();
+    if (!trimmed) return;
     // A trailing pointer split off its own sentence belongs to the sentence it
-    // cites, never to a claim of its own.
+    // cites, never to a claim of its own. It keeps the earlier sentence's start.
     if (POINTER_ONLY.test(trimmed) && out.length > 0) {
-      out[out.length - 1] = `${out[out.length - 1]} ${trimmed}`;
-      continue;
+      const previous = out[out.length - 1];
+      out[out.length - 1] = { text: `${previous.text} ${trimmed}`, start: previous.start };
+      return;
     }
-    out.push(trimmed);
+    const lead = segment.length - segment.trimStart().length;
+    out.push({ text: trimmed, start: base + at + lead });
+  };
+
+  const re = new RegExp(SENTENCE_BREAK.source, "g");
+  let from = 0;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(line)) !== null) {
+    push(line.slice(from, match.index), from);
+    from = match.index + match[0].length;
   }
+  push(line.slice(from), from);
   return out;
 }
 
@@ -175,17 +216,36 @@ function isImperative(sentence: string): boolean {
  * into, so counting it would penalise the fix.
  */
 export function extractImperativeClaims(body: string): ImperativeClaim[] {
-  const claims: ImperativeClaim[] = [];
+  return extractImperativeClaimsWithOffsets(body).map(({ text, line }) => ({ text, line }));
+}
+
+/**
+ * The same imperatives, each carrying the offset its sentence starts at.
+ *
+ * Exists so a demotion can be spliced into the exact position the gate found the
+ * claim at, rather than re-derived by a second parser that would eventually
+ * disagree with this one.
+ */
+export function extractImperativeClaimsWithOffsets(body: string): OffsetClaim[] {
+  const claims: OffsetClaim[] = [];
   const lines = (body ?? "").split("\n");
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
     if (!raw.trim()) continue;
     if (HEADING_LINE.test(raw)) continue;
-    const withoutMarker = raw.replace(LIST_MARKER, "").trimStart();
+    // Same string as raw.replace(LIST_MARKER, "").trimStart(), with the number
+    // of characters it consumed kept so offsets stay anchored to the real line.
+    const marker = LIST_MARKER.exec(raw);
+    const afterMarker = marker ? marker[0].length : 0;
+    const rest = raw.slice(afterMarker);
+    const indent = rest.length - rest.trimStart().length;
+    const withoutMarker = rest.slice(indent);
     if (isNotEstablished(stripDecoration(withoutMarker))) continue;
-    for (const sentence of splitSentences(withoutMarker)) {
-      if (isNotEstablished(stripDecoration(sentence))) continue;
-      if (isImperative(sentence)) claims.push({ text: sentence, line: i + 1 });
+    for (const span of splitSentenceSpans(withoutMarker, afterMarker + indent)) {
+      if (isNotEstablished(stripDecoration(span.text))) continue;
+      if (isImperative(span.text)) {
+        claims.push({ text: span.text, line: i + 1, start: span.start });
+      }
     }
   }
   return claims;
@@ -245,6 +305,20 @@ function readFile(file: ProvenanceFile, quotes: string[]): {
   const masked = maskQuotedSpans(file.content ?? "", quotes);
   const scope = pathMayDeclareScope(file.path ?? "") ? parseScopeHeader(masked) : null;
   return { body: scope ? blankScopeHeader(masked) : masked, scope };
+}
+
+/**
+ * The exact bytes the gate reads for one file: quotes and labelled fences
+ * blanked, any declared scope header blanked, everything else untouched and
+ * every offset preserved.
+ *
+ * Exported so the demoter can work off the same view. A demoter that masked
+ * differently from the gate would eventually edit a span the gate had ruled
+ * out of bounds, which is the CH-16 failure, so there is one function and both
+ * call it.
+ */
+export function gatedBodyFor(file: ProvenanceFile, quotes: string[] = []): string {
+  return readFile(file, quotes).body;
 }
 
 /**
@@ -576,6 +650,18 @@ export function parseUnpointedImperatives(detail?: string | null): number | null
   return match ? Number(match[1]) : null;
 }
 
+/**
+ * The denominator from the same detail: how many imperatives were found at all.
+ *
+ * Needed so the acceptance run can do arithmetic rather than take a repair on
+ * trust - demoted plus pointed has to account for every imperative the generator
+ * wrote, or a demotion went missing somewhere between the two numbers.
+ */
+export function parseImperativeTotal(detail?: string | null): number | null {
+  const match = UNPOINTED_DETAIL.exec(detail ?? "");
+  return match ? Number(match[2]) : null;
+}
+
 function quoteSample(claims: LocatedClaim[], limit = 3): string {
   return claims
     .slice(0, limit)
@@ -781,9 +867,10 @@ export function runProvenanceChecksOverClaims(
 
 /**
  * How a claim's pointer resolved, in the vocabulary skill_provenance.resolution
- * speaks. 'deleted' is written by stage 7a in a later phase, when an
- * unresolvable rule is removed rather than reported; nothing in Phase 3b deletes
- * a rule, so nothing here returns it.
+ * speaks. Spec 4.7a rule 3 allows an unresolved claim to be deleted OR rewritten
+ * as NOT ESTABLISHED; stage 7a takes the second branch every time, because a
+ * flagged gap is information and a deleted line is not. So 'marked_awaiting' is
+ * what a demotion writes and nothing in the chain returns 'deleted'.
  */
 export type ClaimResolution = "cited" | "unresolved" | "marked_awaiting" | "deleted";
 

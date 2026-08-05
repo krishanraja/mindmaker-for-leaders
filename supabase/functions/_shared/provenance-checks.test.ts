@@ -4,13 +4,16 @@ import {
   collectClaims,
   collectNotEstablished,
   extractImperativeClaims,
+  extractImperativeClaimsWithOffsets,
   extractNotEstablished,
   findPointer,
+  gatedBodyFor,
   findAllPointers,
   formatScopeHeader,
   isScopeSatisfied,
   maskQuotedSpans,
   parseScopeHeader,
+  parseImperativeTotal,
   parseUnpointedImperatives,
   pathMayDeclareScope,
   resolveClaim,
@@ -696,5 +699,69 @@ describe("NOT ESTABLISHED under a label", () => {
   it("strips at most one label, so a nested prefix is not an escape", () => {
     const claims = extractImperativeClaims("Rules: Voice: NOT ESTABLISHED: avoid filler");
     expect(claims.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * The three exports stage 7a rests on. The demoter splices a prefix at an offset
+ * read off the gate's own view, so if any of these three drift the rewrite lands
+ * in the wrong place.
+ */
+describe('the offsets stage 7a edits at', () => {
+  it('reports the offset past the list marker and the indentation', () => {
+    const body = ['- Keep it short.', '  * Avoid filler.', '1. Send it by noon.', '\tName the ask.'].join('\n');
+    expect(extractImperativeClaimsWithOffsets(body).map((c) => c.start)).toEqual([2, 4, 3, 1]);
+  });
+
+  it('gives every sentence on a line its own offset', () => {
+    const claims = extractImperativeClaimsWithOffsets('Keep it short. Avoid filler.');
+    expect(claims.map((c) => [c.text, c.start])).toEqual([
+      ['Keep it short.', 0],
+      ['Avoid filler.', 15],
+    ]);
+  });
+
+  it('keeps a merged trailing pointer on the offset of the sentence it cites', () => {
+    const claims = extractImperativeClaimsWithOffsets('Keep it short. [C3].');
+    expect(claims).toHaveLength(1);
+    expect(claims[0]).toEqual({ text: 'Keep it short. [C3].', line: 1, start: 0 });
+  });
+
+  it('slices every offset back to the text the gate reported', () => {
+    const line = '  - Lead with what moved. Never bury the ask.';
+    for (const claim of extractImperativeClaimsWithOffsets(line)) {
+      expect(line.slice(claim.start, claim.start + claim.text.length)).toBe(claim.text);
+    }
+  });
+
+  it('agrees with extractImperativeClaims on everything but the offset', () => {
+    const body = ['# Heading', '- Keep it short. [C1]', 'NOT ESTABLISHED: avoid filler.', 'Send it by noon.'].join('\n');
+    expect(extractImperativeClaimsWithOffsets(body).map(({ text, line }) => ({ text, line })))
+      .toEqual(extractImperativeClaims(body));
+  });
+
+  it('gatedBodyFor returns the masked view at the same length', () => {
+    const quote = 'we do not want a deck';
+    const file = { path: 'rubric/client-updates.md', content: `They said ${quote}.\nKeep it short.` };
+    const gated = gatedBodyFor(file, [quote]);
+    expect(gated).toHaveLength(file.content.length);
+    expect(gated).not.toContain(quote);
+    expect(gated.split('\n')[1]).toBe('Keep it short.');
+  });
+
+  it('gatedBodyFor blanks a declared scope header on an eligible leaf only', () => {
+    const content = ['# Client updates', '**Applies to:** the pilot', '**Scope source:** [E7f2a]', 'Keep it short.'].join('\n');
+    const leaf = gatedBodyFor({ path: 'rubric/client-updates.md', content });
+    expect(leaf.split('\n')[1].trim()).toBe('');
+    const core = gatedBodyFor({ path: 'rubric/core.md', content });
+    expect(core.split('\n')[1]).toBe('**Applies to:** the pilot');
+  });
+
+  it('parseImperativeTotal reads the denominator the baseline came out of', () => {
+    const detail = runProvenanceChecks('Keep it short.\nAvoid filler. [C1]', {})
+      .find((c) => c.id === 'prov.everyRuleCited')?.detail;
+    expect(parseUnpointedImperatives(detail)).toBe(1);
+    expect(parseImperativeTotal(detail)).toBe(2);
+    expect(parseImperativeTotal('not a detail line')).toBeNull();
   });
 });
