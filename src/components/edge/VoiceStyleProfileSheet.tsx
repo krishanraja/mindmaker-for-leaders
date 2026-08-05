@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Check, ChevronLeft, ChevronRight, Loader2, Mic, Sparkles, Upload } from "lucide-react";
 import {
   Dialog,
@@ -159,6 +160,57 @@ function rulesIdFromProfile(p: VoiceProfile): string {
   return "sound-like-me";
 }
 
+/** Harness-chain tables are newer than the generated Database types. */
+const db = supabase as unknown as SupabaseClient;
+
+/** Longest slice of the paste kept on the evidence row itself. */
+const EVIDENCE_BODY_CHARS = 2000;
+
+/**
+ * Keep the pasted writing as evidence a later rule can point at, under the
+ * leader's own JWT so RLS scopes it to them. Best-effort by design: a failure
+ * is logged and the voice profile still saves, because losing the profile to
+ * save the provenance would be the wrong trade.
+ */
+async function persistPastedVoiceEvidence(sourceText: string): Promise<void> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: sourceRow, error: sourceError } = await db
+      .from("evidence_sources")
+      .insert({
+        user_id: user.id,
+        kind: "paste",
+        label: "Voice sample paste",
+        body: sourceText,
+      })
+      .select("id")
+      .single();
+
+    if (sourceError || !sourceRow) {
+      console.warn("voice paste: evidence_sources insert failed", sourceError);
+      return;
+    }
+
+    const { error: evidenceError } = await db.from("evidence").insert({
+      user_id: user.id,
+      kind: "artefact",
+      body: sourceText.slice(0, EVIDENCE_BODY_CHARS),
+      source_id: (sourceRow as { id: string }).id,
+      source_label: "pasted writing",
+      situated: true,
+      situation: "voice profile paste",
+      speaker_is_owner: true,
+    });
+    if (evidenceError) {
+      console.warn("voice paste: evidence insert failed", evidenceError);
+    }
+  } catch (err) {
+    console.warn("voice paste: could not store evidence", err);
+  }
+}
+
 /** Map a full profile onto the sheet's step picks (used by load + paste-extract). */
 function picksFromProfile(p: VoiceProfile): Partial<Record<StepId, string>> {
   return {
@@ -266,6 +318,12 @@ export function VoiceStyleProfileSheet({
             "Could not read your voice from that. Try a different sample, or pick instead.",
         );
         return;
+      }
+      // Keep the writing itself, so a voice rule can cite the sample it came
+      // from. Never awaited: it must not delay or block the profile.
+      const sourceText = (data as { source_text?: string } | null)?.source_text;
+      if (typeof sourceText === "string" && sourceText.trim().length > 0) {
+        void persistPastedVoiceEvidence(sourceText);
       }
       // Prefill the picks so the leader confirms (never a silent save).
       setPicks(picksFromProfile(extracted));
