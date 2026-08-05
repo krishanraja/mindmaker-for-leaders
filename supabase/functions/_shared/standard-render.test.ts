@@ -10,6 +10,7 @@ import {
   type RenderCriterion,
   type StandardProfile,
 } from './standard-render';
+import { metricsFrom } from './confusion';
 
 /**
  * The behaviour under test is the one that would have prevented the
@@ -280,6 +281,61 @@ describe('renderStandardMarkdown', () => {
     expect(md).toContain('you graded 3 of 3 repeated pieces the same way');
     expect(md).toContain('Pair split: 8 of 10 matched pairs separated');
     expect(md).toContain('Label: Verified.');
+  });
+
+  it('leads the baseline with the counts in plain words when a measurement exists', () => {
+    const md = renderStandardMarkdown({
+      criteria: [keptCriterion()],
+      constructs: [],
+      profile: EMPTY_PROFILE,
+      label: 'verified',
+      numbers: {
+        held_out_graded: 12,
+        measured_at: '2026-08-05',
+        self_agreement: { matched: 3, total: 3 },
+        measurement: metricsFrom({
+          tp: 4,
+          fp: 1,
+          fn: 1,
+          tn: 6,
+          excluded: { skipped: 1, insufficient: 1, total: 2 },
+        }),
+      },
+    });
+    expect(md).toContain('Of the things you would not have sent, it caught 4 of 5.');
+    expect(md).toContain('It also flagged 1 you would have sent.');
+    expect(md).toContain('2 pieces are not in those numbers: 1 you skipped');
+    // The three numbers still ship, separately, as the summary line.
+    expect(md).toContain('Baseline: 12 held-out items, 12 of them scored. Precision 0.80, recall 0.80, TNR 0.86');
+    expect(md).not.toContain('%');
+  });
+
+  it('CH-03: a run that flagged nothing renders baseline none, never a figure', () => {
+    // Zero criteria loaded. The check holds on everything, so TP and FP are both
+    // zero and precision is 0/0. TNR in that run is a perfect 1.00 and printing
+    // it would be the most flattering possible lie.
+    const md = renderStandardMarkdown({
+      criteria: [],
+      constructs: [],
+      profile: EMPTY_PROFILE,
+      label: 'draft',
+      numbers: {
+        held_out_graded: 10,
+        measurement: metricsFrom({
+          tp: 0,
+          fp: 0,
+          fn: 4,
+          tn: 6,
+          excluded: { skipped: 0, insufficient: 0, total: 0 },
+        }),
+        release_reason: 'A check that never fires has not been shown to do anything.',
+      },
+    });
+    expect(md).toContain('Baseline: none. The check ran on 10 held-out items and flagged none of them');
+    expect(md).not.toMatch(/Precision \d/);
+    expect(md).not.toMatch(/TNR \d/);
+    expect(md).not.toMatch(/\bNaN\b/);
+    expect(md).toContain('A check that never fires has not been shown to do anything.');
   });
 
   it('says self-agreement is AWAITING when no repeat was graded', () => {

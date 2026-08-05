@@ -86,7 +86,11 @@ export interface ReviewResult {
   notes: string[];
   passes: number;
   signature: { ran: boolean; provider: string | null; reason: string | null };
-  exemplars: { used: number; bothPoles: boolean; none: boolean };
+  /** `ids` are the training items retrieved. Present so a measurement run can
+   *  prove no held-out item reached the gate; the review surface ignores them. */
+  exemplars: { used: number; bothPoles: boolean; none: boolean; ids?: string[] };
+  /** Absent on older runs. A single-lens run is a measurement, not a review. */
+  lenses?: { asked: string[]; ran: string[]; metaRan: boolean };
   surface: string;
 }
 

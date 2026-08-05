@@ -31,6 +31,7 @@ import type {
   Triage,
 } from "./discrimination.ts";
 import { BASELINE_LABEL_TEXT, byWeightLoadOrder } from "./discrimination.ts";
+import { formatNumbersForPeople, type Metrics } from "./confusion.ts";
 
 // ---------------------------------------------------------------------------
 // Inputs
@@ -141,6 +142,16 @@ export interface StandardNumbers {
   pair_split?: { split: number; total: number; rate: number } | null;
   triage?: Triage | null;
   triage_reason?: string | null;
+  /**
+   * The measurement stage's own output, counts included, as
+   * confusion.metricsFrom produced it. When it is here the Baseline section
+   * reads from it and the three loose rates above are only the summary line;
+   * when it is absent the section falls back to them, and when they are absent
+   * too it says there is no baseline. Nothing in this file computes a metric.
+   */
+  measurement?: Metrics | null;
+  /** releaseVerdict's sentence, verbatim. Never rewritten here. */
+  release_reason?: string | null;
 }
 
 export interface RenderStandardInput {
@@ -332,11 +343,16 @@ function frontMatter(profile: StandardProfile): string[] {
 export function labelParagraph(label: BaselineLabel, numbers?: StandardNumbers | null): string {
   const text = BASELINE_LABEL_TEXT[label];
   if (label === "verified") {
-    const p = numbers?.precision;
-    const r = numbers?.recall;
+    const p = numbers?.measurement?.precision ?? numbers?.precision;
+    const r = numbers?.measurement?.recall ?? numbers?.recall;
+    const t = numbers?.measurement?.tnr ?? numbers?.tnr;
     const n = numbers?.held_out_graded;
+    // All three, separately. One agreement number here would be the sentence
+    // the whole stage exists to refuse.
     return `**${text}.** Measured against ${n} held-out pieces you graded before you saw any of this: ` +
-      `precision ${typeof p === "number" ? fmt(p) : AWAITING}, recall ${typeof r === "number" ? fmt(r) : AWAITING}.`;
+      `precision ${typeof p === "number" ? fmt(p) : AWAITING}, ` +
+      `recall ${typeof r === "number" ? fmt(r) : AWAITING}, ` +
+      `TNR ${typeof t === "number" ? fmt(t) : AWAITING}.`;
   }
   if (label === "provisional") {
     return `**${text}.** This is built from real grades and has not yet been measured against work it ` +
@@ -497,18 +513,56 @@ function priorSection(profile: StandardProfile): string[] {
   return section(10, "Correct priors", lines);
 }
 
+/**
+ * The Baseline section.
+ *
+ * Three rules, all of them CH-03:
+ *
+ *   1. precision, recall and TNR are printed SEPARATELY and never rolled into
+ *      one agreement figure, which would hide the only failure that gets a gate
+ *      switched off (flagging work the person would have sent);
+ *   2. a null precision renders "Baseline: none" and the reason, never a
+ *      figure. Zero criteria loaded means the check flagged nothing, which
+ *      makes precision 0/0, and 0/0 is an absent measurement rather than a
+ *      score of zero. Printing TNR next to it would be worse than silence,
+ *      because the degenerate run scores a perfect TNR by holding on
+ *      everything;
+ *   3. the plain-language form leads, because "it caught 4 of 5" is what a
+ *      person can act on and "precision 0.80" is what they nod at.
+ */
 function baselineSection(numbers: StandardNumbers | null | undefined, label: BaselineLabel): string[] {
   const lines: string[] = [];
   const heldOut = numbers?.held_out_graded ?? 0;
-  const precision = numbers?.precision;
-  const recall = numbers?.recall;
+  const measurement = numbers?.measurement ?? null;
+  const precision = typeof measurement?.precision === "number"
+    ? measurement.precision
+    : numbers?.precision;
+  const recall = typeof measurement?.recall === "number" ? measurement.recall : numbers?.recall;
+  const tnr = typeof measurement?.tnr === "number" ? measurement.tnr : numbers?.tnr;
+  const scored = measurement?.n ?? null;
 
   if (typeof precision === "number" && heldOut > 0) {
+    if (measurement) {
+      // The counts, in their own words, from the one implementation of the
+      // sentence. The figures follow as the summary line, never instead of it.
+      for (const line of formatNumbersForPeople(measurement)) lines.push(line);
+      lines.push("");
+    }
     lines.push(
-      `Baseline: ${heldOut} held-out items. Precision ${fmt(precision)}` +
-        (typeof recall === "number" ? `, recall ${fmt(recall)}` : "") +
-        (typeof numbers?.tnr === "number" ? `, TNR ${fmt(numbers.tnr)}` : "") +
+      `Baseline: ${heldOut} held-out items` +
+        (typeof scored === "number" && scored > 0 ? `, ${scored} of them scored` : "") +
+        `. Precision ${fmt(precision)}` +
+        (typeof recall === "number" ? `, recall ${fmt(recall)}` : ", recall not measurable") +
+        (typeof tnr === "number" ? `, TNR ${fmt(tnr)}` : ", TNR not measurable") +
         (clean(numbers?.measured_at) ? ` as of ${clean(numbers?.measured_at)}` : "") + ".",
+    );
+  } else if (measurement && measurement.n > 0) {
+    // The degenerate run. It happened, and it measured nothing.
+    lines.push(
+      `Baseline: none. The check ran on ${measurement.n} held-out ${
+        measurement.n === 1 ? "item" : "items"
+      } and flagged none of them, so there is no precision to report: nothing divided by nothing is ` +
+        "not a score of zero, it is an absent measurement.",
     );
   } else if (heldOut > 0) {
     lines.push(
@@ -520,6 +574,12 @@ function baselineSection(numbers: StandardNumbers | null | undefined, label: Bas
       "Baseline: none. No held-out set was graded, so there is no honest way to measure whether this " +
         "improved anything, only whether you keep using it.",
     );
+  }
+
+  const releaseReason = clean(numbers?.release_reason);
+  if (releaseReason) {
+    lines.push("");
+    lines.push(releaseReason);
   }
 
   const agreement = numbers?.self_agreement;

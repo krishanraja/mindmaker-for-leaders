@@ -582,3 +582,27 @@ describe('PROMPT 2 drift guard', () => {
     expect(empty).toContain('do not have their company details on file');
   });
 });
+
+describe("hold-out slack against the release floor", () => {
+  it("holds out more items than the release floor needs", async () => {
+    // Verified requires VERIFIED_MIN_HELD_OUT graded held-out items. Holding
+    // out exactly that many makes the label unreachable as soon as a leader
+    // skips one screen, which is an accident rather than a high bar. The gap
+    // is the number of skips a measured claim can survive.
+    const { VERIFIED_MIN_HELD_OUT } = await import("./discrimination.ts");
+    expect(SORT_BUDGET.holdOut.items).toBeGreaterThan(VERIFIED_MIN_HELD_OUT);
+  });
+
+  it("holds out whole pairs, so the pair design survives the split", () => {
+    expect(SORT_BUDGET.holdOut.pairItems).toBe(SORT_BUDGET.holdOut.pairs * 2);
+    expect(
+      SORT_BUDGET.holdOut.pairItems + SORT_BUDGET.holdOut.own + SORT_BUDGET.holdOut.peer,
+    ).toBe(SORT_BUDGET.holdOut.items);
+  });
+
+  it("leaves enough training items for the discrimination test to run", () => {
+    // The test needs 4 accepted and 4 rejected among probe-applicable items.
+    expect(SORT_BUDGET.training).toBeGreaterThanOrEqual(16);
+    expect(SORT_BUDGET.training + SORT_BUDGET.holdOut.items).toBe(SORT_BUDGET.unique);
+  });
+});

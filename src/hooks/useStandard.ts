@@ -23,6 +23,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { emitEvent } from '@/lib/track';
 import type { GeneratedArtifact } from '@/types/artifact';
+import {
+  metricsFrom,
+  releaseVerdict,
+  storedMetrics,
+  type ConfusionMatrix,
+  type Metrics,
+} from '../../supabase/functions/_shared/confusion.ts';
+import { weakerLabel } from '../../supabase/functions/_shared/discrimination.ts';
 
 /** The label the compile step wrote, honestly, at the time it wrote it. */
 export type StandardLabel = 'draft' | 'provisional' | 'verified';
@@ -36,7 +44,12 @@ export interface StandardMeta {
   /** Null until a measurement stage runs. Null is the honest common case. */
   precision: number | null;
   recall: number | null;
+  tnr: number | null;
   heldOutGraded: number | null;
+  /** The measurement as the measuring run produced it, counts and all. */
+  measurement: Metrics | null;
+  /** releaseVerdict's own sentence about why this label and not a stronger one. */
+  releaseReason: string;
   compiledAt: string;
 }
 
@@ -46,22 +59,85 @@ function num(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
-/** Read the metadata the compile step wrote. Never infer a label that is absent. */
+function int(value: unknown): number {
+  const n = num(value);
+  return n !== null && n >= 0 ? Math.floor(n) : 0;
+}
+
+/** The stored matrix, when a measurement run kept one. Never partially filled. */
+function readMatrix(value: unknown): ConfusionMatrix | null {
+  if (!value || typeof value !== 'object') return null;
+  const raw = value as Record<string, unknown>;
+  for (const key of ['tp', 'fp', 'fn', 'tn']) {
+    if (num(raw[key]) === null) return null;
+  }
+  const excluded = (raw.excluded ?? {}) as Record<string, unknown>;
+  const skipped = int(excluded.skipped);
+  const insufficient = int(excluded.insufficient);
+  return {
+    tp: int(raw.tp),
+    fp: int(raw.fp),
+    fn: int(raw.fn),
+    tn: int(raw.tn),
+    excluded: { skipped, insufficient, total: skipped + insufficient },
+  };
+}
+
+/**
+ * Read the metadata the compile step wrote, and never show a stronger label
+ * than the stored numbers support.
+ *
+ * The stored label is not trusted on its own. It is taken as a ceiling and
+ * re-derived through releaseVerdict from the numbers sitting beside it, and the
+ * weaker of the two wins. A row that says 'verified' with no measurement under
+ * it renders as Draft, which is what it is. That rule is the whole reason this
+ * function exists rather than a field read: 'verified' has exactly one source
+ * in this codebase, and the existence of a rubric is not it.
+ */
 export function readStandardMeta(artifact: GeneratedArtifact | null): StandardMeta | null {
   if (!artifact) return null;
   const meta = (artifact.metadata ?? {}) as Record<string, unknown>;
   const raw = typeof meta.label === 'string' ? meta.label : '';
+  // A row with no label is a Draft. Guessing upward from a missing field is
+  // exactly the quiet wrongness the label exists to prevent.
+  const stored: StandardLabel = LABELS.includes(raw as StandardLabel)
+    ? (raw as StandardLabel)
+    : 'draft';
+
+  const precision = num(meta.precision);
+  const recall = num(meta.recall);
+  const tnr = num(meta.tnr);
+  const heldOutGraded = num(meta.held_out_graded);
+  const matrix = readMatrix(meta.confusion);
+  const measurement = matrix
+    ? metricsFrom(matrix)
+    : precision === null && recall === null && tnr === null
+      ? null
+      : storedMetrics({ precision, recall, tnr, n: heldOutGraded ?? 0 });
+
+  const agreement = (meta.self_agreement ?? null) as { matched?: unknown; total?: unknown } | null;
+  const derived = releaseVerdict({
+    metrics: measurement,
+    heldOutGraded: heldOutGraded ?? 0,
+    selfAgreement: agreement
+      ? { matched: int(agreement.matched), total: int(agreement.total) }
+      : null,
+  });
+
   return {
-    // A row with no label is a Draft. Guessing upward from a missing field is
-    // exactly the quiet wrongness the label exists to prevent.
-    label: LABELS.includes(raw as StandardLabel) ? (raw as StandardLabel) : 'draft',
+    label: weakerLabel(stored, derived.label),
     criteriaVersion: num(meta.criteria_version),
     criteriaKept: num(meta.criteria_kept) ?? 0,
     criteriaAwaiting: num(meta.criteria_awaiting) ?? 0,
     surface: typeof meta.surface === 'string' && meta.surface ? meta.surface : null,
-    precision: num(meta.precision),
-    recall: num(meta.recall),
-    heldOutGraded: num(meta.held_out_graded),
+    precision,
+    recall,
+    tnr,
+    heldOutGraded,
+    measurement,
+    releaseReason: typeof meta.release_reason === 'string' && meta.release_reason
+      ? meta.release_reason
+      : derived.reason,
     compiledAt: artifact.created_at,
   };
 }

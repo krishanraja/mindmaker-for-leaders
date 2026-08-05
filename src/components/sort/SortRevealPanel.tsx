@@ -4,9 +4,11 @@ import {
   canReportSelfAgreement,
   canReportSplit,
   formatProgress,
+  measurementLines,
   selectBeat,
   shortfallNotes,
   type Beat,
+  type SortMeasurement,
   type SortRunDetail,
   type WhyLine,
 } from '@/lib/sortModel';
@@ -39,6 +41,11 @@ import { cn } from '@/lib/utils';
  *     there, and grading it against a standard they had just read and endorsed
  *     would inflate the one number this whole thing calls earned (CH-08).
  *   - the standard and the numbers belong after the last screen.
+ *   - the accuracy numbers on the completion screen are RENDERED, never
+ *     computed. They arrive as a prop from a measurement run that ran the gate
+ *     over the held-out pieces, and when there is none this says so in a
+ *     sentence rather than leaving a gap the reader fills in favourably
+ *     (CH-03). No arithmetic happens in this file.
  */
 
 interface BeatCopy {
@@ -132,6 +139,13 @@ interface SortRevealPanelProps {
   canShowKill: boolean;
   splitRate: SortSplit | null;
   selfAgreement: SortSelfAgreement | null;
+  /**
+   * What a measurement run found, if one has run. Null is the honest common
+   * case: the check is manual and on demand today, the same way the
+   * decision-engine eval is, so most completions have no number yet and the
+   * screen says exactly that.
+   */
+  measurement?: SortMeasurement | null;
   detail: SortRunDetail;
   unsavedGrades: number;
   className?: string;
@@ -145,6 +159,7 @@ export function SortRevealPanel({
   canShowKill,
   splitRate,
   selfAgreement,
+  measurement = null,
   detail,
   unsavedGrades,
   className,
@@ -211,6 +226,11 @@ export function SortRevealPanel({
 
       {complete && (
         <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
+          {measurementLines(measurement).map((line) => (
+            <p key={line} className="text-[12.5px] leading-relaxed text-muted-foreground">
+              {line}
+            </p>
+          ))}
           {showSplit && splitRate && (
             <p className="text-[12.5px] leading-relaxed text-muted-foreground">
               Some of these came in twos, written to differ in one way. You told those two apart{' '}

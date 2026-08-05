@@ -9,6 +9,7 @@ import {
   formatProgress,
   linesSoFar,
   manipPairDue,
+  measurementLines,
   pickFirstConstruct,
   selectBeat,
   shortfallNotes,
@@ -308,6 +309,33 @@ describe('what may be reported, and when', () => {
     expect(canReportSelfAgreement(2, false)).toBe(false);
     expect(canReportSelfAgreement(0, true)).toBe(false);
     expect(canReportSelfAgreement(3, true)).toBe(true);
+  });
+});
+
+describe('measurementLines', () => {
+  it('says plainly that no measurement exists when none was handed in', () => {
+    expect(measurementLines(null)).toHaveLength(1);
+    expect(measurementLines(null)[0]).toMatch(/no accuracy number here/i);
+    expect(measurementLines(undefined)[0]).toMatch(/none is claimed/i);
+  });
+
+  it('renders the counts it was given and computes nothing', () => {
+    // Deliberately inconsistent input: the rates say one thing and the counts
+    // say another. The screen must repeat the counts it was handed rather than
+    // quietly recompute a rate it thinks is more correct, because a frontend
+    // that can compute this number will one day compute it from whatever it
+    // happens to have (CH-03).
+    const lines = measurementLines({
+      precision: 0.5,
+      recall: 0.5,
+      tnr: 0.5,
+      n: 12,
+      counts: { tp: 4, fp: 1, fn: 1, tn: 6, excluded: { skipped: 0, insufficient: 0, total: 0 } },
+    });
+    expect(lines[0]).toBe('Of the things you would not have sent, it caught 4 of 5.');
+    expect(lines[1]).toBe('It also flagged 1 you would have sent.');
+    expect(lines.join(' ')).not.toContain('%');
+    expect(lines.join(' ')).not.toContain('0.5');
   });
 });
 

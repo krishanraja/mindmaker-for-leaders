@@ -26,11 +26,23 @@
  *          repeat, and self-agreement is reportable only once the session is
  *          over (canReportSelfAgreement), never as a live counter, because a
  *          live counter tells the person the repeats exist.
+ *   CH-03  The completion screen NEVER computes an accuracy number. It renders
+ *          what a measurement run produced and passed in, or it says plainly
+ *          that no measurement exists. measurementLines() below is the whole of
+ *          that rule: the only arithmetic it does is choosing between two
+ *          sentences, and the sentences themselves come from the one shared
+ *          implementation the standard file and the eval script also use.
  *
  * Plain language is a hard rule (CLAUDE.md): no display string produced or
  * selected here uses CTRL's internal vocabulary. Internal identifiers keep
  * their names; only what a person reads is translated.
  */
+
+import {
+  formatNumbersForPeople,
+  MEASUREMENT_ABSENT,
+  type Metrics,
+} from '../../supabase/functions/_shared/confusion.ts';
 
 export type SortVerdict = 'send' | 'would_not_send' | 'skip';
 
@@ -313,6 +325,39 @@ export function canReportSplit(pairsScored: number): boolean {
  */
 export function canReportSelfAgreement(probesScored: number, sessionComplete: boolean): boolean {
   return sessionComplete && probesScored > 0;
+}
+
+// ---------------------------------------------------------------------------
+// The measurement, at the end (CH-03)
+// ---------------------------------------------------------------------------
+
+/**
+ * What a measurement run produced, exactly as it produced it.
+ *
+ * This type is the shared one from the edge function's confusion module on
+ * purpose. A second frontend-shaped copy of it is how a rate ends up rendered
+ * next to counts it was not computed from.
+ */
+export type SortMeasurement = Metrics;
+
+/**
+ * The numbers at the end of the check, in the person's words.
+ *
+ * Every number in here was computed by the measurement script and handed in.
+ * Nothing on this side of the wire multiplies, divides or rounds anything: a
+ * frontend that can compute an accuracy figure is a frontend that will one day
+ * compute one from whatever it happens to have, and the whole point of the
+ * held-out set is that the answer is not available locally.
+ *
+ * When there is no measurement it says so in one sentence. That is the honest
+ * common case, and it stays a sentence rather than a blank space, because a
+ * blank invites the reader to assume the number was fine.
+ */
+export function measurementLines(
+  measurement: SortMeasurement | null | undefined,
+): string[] {
+  if (!measurement) return [MEASUREMENT_ABSENT];
+  return formatNumbersForPeople(measurement);
 }
 
 // ---------------------------------------------------------------------------
