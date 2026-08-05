@@ -7,7 +7,7 @@ const TOOLS = ['ChatGPT', 'Claude', 'Gemini', 'Cursor', 'Claude Code'];
 
 const PILLARS = [
   { icon: Scale, title: 'Weigh the call', body: 'Decompose a real decision into its considerations, check each against live evidence, and see exactly where only you can decide. It clarifies; it never recommends from a thin signal.' },
-  { icon: Brain, title: 'Your portable AI double', body: 'A Memory Web of who you are - ranked by importance, kept fresh. Export it to any AI in one tap so nothing starts from zero.' },
+  { icon: Brain, title: 'One memory, every AI', body: 'A Memory Web of who you are - ranked by importance, kept fresh. Export it to any AI in one tap so nothing starts from zero.' },
   { icon: Plug, title: 'Agent-native', body: 'A read-only MCP server: your own AI agents pull your live context on every call. No pasting, never stale.' },
   { icon: Radio, title: 'A daily read, not noise', body: 'A ~3-minute briefing anchored to your real priorities - and a structured feed your agents can read too.' },
 ];
@@ -40,14 +40,14 @@ export function ClarityHome() {
         <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center">
           <CtrlLogo className="h-10 w-auto text-accent" />
           <span className="mt-7 inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent">
-            CTRL &middot; Clarity for leaders
+            CTRL &middot; Your AI-native chief of staff
           </span>
           <h1 className="mt-6 text-balance text-[2rem] font-bold leading-[1.1] tracking-tight sm:text-6xl">
-            Clarity for the calls only you can make.
+            An AI-native chief of staff for the calls only you can make.
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            Most leaders run a business they can&rsquo;t quite see through, with no time for a two-year transformation.
-            CTRL tests your real decisions against live evidence, showing where each one holds and where it breaks, and gives your own AI agents your live context -
+            You are building the AI-native version of your business with a small team and no time to chase what is
+            actually true. CTRL tests your real decisions against live evidence, showing where each one holds and where it breaks, and gives your own AI agents your live context -
             so you decide with the full picture, and your fleet acts on who you are <em>right now</em>.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -120,7 +120,7 @@ export function ClarityHome() {
       <Section className="py-16 text-center">
         <GitFork className="mx-auto h-7 w-7 rotate-90 text-accent" />
         <h2 className="mt-4 text-balance text-3xl font-bold tracking-tight sm:text-4xl">Decide with the full picture.</h2>
-        <p className="mx-auto mt-3 max-w-md text-muted-foreground">Build your double in two minutes. The call stays yours - now with the evidence laid bare.</p>
+        <p className="mx-auto mt-3 max-w-md text-muted-foreground">Set your context up in minutes. The call stays yours - now with the evidence laid bare.</p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
           <Button size="lg" className="h-12 px-7 text-base" onClick={() => navigate('/auth')}>
             Start free <ArrowRight className="ml-1.5 h-4 w-4" />
