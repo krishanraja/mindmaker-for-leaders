@@ -1,4 +1,7 @@
 {
+  "redirects": [
+    { "source": "/booking", "destination": "/pricing", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/pricing", "destination": "/pricing.html" },
     { "source": "/(.*)", "destination": "/index.html" }

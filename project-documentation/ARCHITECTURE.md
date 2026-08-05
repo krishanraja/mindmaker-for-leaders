@@ -346,7 +346,6 @@ src/
 │   ├── Settings.tsx           # User settings (/settings)
 │   ├── Compliance.tsx         # Compliance center (/compliance)
 │   ├── Profile.tsx            # User profile (/profile)
-│   ├── Booking.tsx            # Workshop booking (/booking)
 │   ├── Diagnostic.tsx         # Assessment flow (legacy, redirects to /dashboard)
 │   ├── Voice.tsx              # Voice recording (legacy, redirects to /dashboard)
 │   ├── Pulse.tsx              # Strategic pulse (legacy, redirects to /dashboard)
@@ -398,7 +397,6 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/` | Landing | No | Video background hero, forced-dark CTRL branding with the emerald `ctrl.` wordmark |
 | `/auth` | Auth | No | Email + Google OAuth |
 | `/auth/callback` | AuthCallback | No | OAuth redirect handler |
-| `/booking` | Booking | No | External booking |
 | `/build` | BuildLap | No | Agent Skill Builder full-page flow |
 | `/dashboard` | Dashboard (Memory Web) | Yes | Default view - Memory Web with guided first experience |
 | `/dashboard?view=edge` | Dashboard (Edge) | Yes | Edge leadership amplifier |
@@ -1472,12 +1470,7 @@ A machine-readable JSON document served at this well-known path. It is the singl
   "url": "https://ctrl.themindmaker.ai",
   "pricing": {
     "free": "$0",
-    "full_diagnostic": "$49 one-time",
-    "deep_context_upgrade": "$29 one-time",
-    "diagnostic_deep_context_bundle": "$69 one-time",
-    "edge_pro": "$49/month",
-    "bootcamp_teams": "$15K-$50K",
-    "portfolio_partners": "$5K-$25K"
+    "edge_pro": "$49/month"
   },
   "icp": "C-suite / VP / Founder, 50-5000 employees, English-speaking, already using AI daily",
   "magic_moment": "one-click Context Export: first AI response unmistakably about them, not generic"

@@ -127,7 +127,7 @@ TODO(founder): expand the objection set to the AI-native buyer once the ICP is c
 |---|---|
 | **Sign up / log in** | https://ctrl.themindmaker.ai/auth |
 | **Product home** | https://ctrl.themindmaker.ai |
-| **Book a strategy call** | https://ctrl.themindmaker.ai/booking |
+| **Pricing** | https://ctrl.themindmaker.ai/pricing |
 | **Kit redemption** | https://ctrl.themindmaker.ai/kit |
 
 Production URL is **https://ctrl.themindmaker.ai** (never `leaders.themindmaker.ai`).
