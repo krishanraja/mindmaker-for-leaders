@@ -26,7 +26,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    const results: Record<string, any> = {};
+    const results: Record<string, unknown> = {};
 
     // 1. Clean up expired memories via existing DB function
     const { data: memoryCleanup, error: memoryError } = await supabase
