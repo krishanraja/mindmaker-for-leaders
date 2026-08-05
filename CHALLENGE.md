@@ -102,6 +102,12 @@ IF WRONG:  If the global split is the right unit, 5x2 halves construct coverage 
 COST:      Phase 2 (item composition, beats), Phase 3 (probe pass, per-criterion counts), one column riding the Phase 1 migration batch. Roughly a day and a half total.
 DECISION:  accept the per-criterion redefinition, the 5x2 re-budget, and the probe column, or defend the global switch.
 
+**AMENDED IN IMPLEMENTATION, 2026-08-05.** Building Phase 3a proved one clause of this challenge arithmetically impossible. "Define n per criterion over items whose `targets` contain it" gives at most 4 items per construct under the 5x2 composition this same challenge specifies (2 pairs, 2 items each). The sufficiency rule needs 4 accepted AND 4 rejected, which needs 8. So that unit is a provably always-`untested` branch, not a measurement, and the challenge as ruled would have killed every criterion by starvation.
+
+Resolution, which is what this challenge's own IF WRONG asked for: the **verdict-bearing** counts are taken over every training item whose probe could be applied and that carries a scoreable verdict, while the per-construct count ships alongside as `targeted` in every compile summary. Both units are logged; the tuning pass picks. The defect this challenge actually identified is untouched, because what is no longer global is the **failing** counts, which now come from a per-criterion deterministic probe rather than one grade split shared by every criterion.
+
+Consequence worth stating plainly: the discrimination question ("would a bad piece of work also pass this?") is a question about the whole graded corpus, not only about the items built to target one construct. Computing it corpus-wide is not merely the available option, it is the more correct one.
+
 ### CH-04. Grade-vector clustering at 0.8 has no shared index set, so it either never merges or merges everything
 
 LENS:      technical
