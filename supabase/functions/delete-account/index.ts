@@ -170,7 +170,7 @@ serve(async (req) => {
       'fact_extraction_log', 'feedback', 'generated_artifacts',
       'harness_runs', 'index_participant_data', 'ledger',
       'lead_qualification_scores', 'lead_qualifications',
-      'llm_call_log', 'prompt_library_profiles', 'proposals', 'roi_actuals',
+      'llm_call_log', 'mcp_pulls', 'prompt_library_profiles', 'proposals', 'roi_actuals',
       'skill_exports', 'skill_provenance', 'sort_grades', 'sort_items',
       'training_material', 'user_briefing_directives', 'user_business_context',
       'user_memory_budget', 'user_roles', 'velocity_events',

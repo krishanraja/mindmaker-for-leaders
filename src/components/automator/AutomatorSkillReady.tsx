@@ -1,24 +1,30 @@
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
   ArrowRight,
   Check,
-  Download,
   FileText,
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SkillInstallGuide } from "@/components/edge/SkillInstallGuide";
+import { SkillDelivery } from "@/components/skill/SkillDelivery";
 import type { BuiltYourWayChip } from "./automatorModel";
-import type { SkillData, SkillQualityGate } from "@/types/skill";
+import type { SkillData, SkillQualityGate, SkillReleaseBlock } from "@/types/skill";
 
 /**
  * AutomatorSkillReady - screen 3 of the Build-a-skill flow.
  *
  * The payoff: a check + "Your skill is ready", a skill card with "Built your
- * way" chips reflecting the cascade choices, a primary "Run it now" + a
- * secondary "Export as markdown", and a "Saved to Your skills" library peek
- * (the new skill alongside others) + a "Build another skill" nudge.
+ * way" chips reflecting the cascade choices, then the honest delivery block
+ * (SkillDelivery: where this stands, one trigger phrase to try, and the action
+ * this device can actually finish), the install steps, a "Saved to Your skills"
+ * library peek, and a "Build another skill" nudge.
+ *
+ * The delivery block is deliberately not a badge and not a "Run it now": the
+ * package is a file until someone installs it, and this screen is where
+ * pretending otherwise would be cheapest and most expensive.
  *
  * Mock: prototypes/skill-ready.html. Tokens only; emerald accent.
  */
@@ -44,6 +50,12 @@ interface AutomatorSkillReadyProps {
    * computed, persisted, returned, and never shown.
    */
   qualityGate?: SkillQualityGate | null;
+  /**
+   * The release block from the build. Absent means no measurement was recorded,
+   * which renders as Draft with the sentence saying so - never as a blank space
+   * a reader fills in optimistically.
+   */
+  release?: SkillReleaseBlock | null;
   onRun: () => void;
   onExport: () => void;
   onSeeAll: () => void;
@@ -57,6 +69,7 @@ export function AutomatorSkillReady({
   whatItDoes,
   library,
   qualityGate,
+  release,
   onRun,
   onExport: _onExport,
   onSeeAll,
@@ -64,6 +77,7 @@ export function AutomatorSkillReady({
   animated = true,
 }: AutomatorSkillReadyProps) {
   const advisories = (qualityGate?.checks ?? []).filter((c) => !c.passed);
+  const installRef = useRef<HTMLDivElement | null>(null);
   // Friendly display name: the generated skill name is lowercase-hyphenated, so
   // present the candidate's words where we have them (passed via whatItDoes is
   // the verb; the name shown here is the skill.name humanised).
@@ -152,18 +166,21 @@ export function AutomatorSkillReady({
         </div>
       )}
 
-      {/* One honest action: the skill is a download, not an in-app run. */}
-      <button
-        type="button"
-        onClick={onRun}
-        className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[13px] bg-accent text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
-      >
-        <Download className="h-[18px] w-[18px]" />
-        Download the skill (.zip)
-      </button>
+      {/* Where it stands, one thing to try, and the action this device can
+          finish. The skill is never described as live because it was built. */}
+      <SkillDelivery
+        skillName={skill.name}
+        release={release}
+        testPrompts={skill.test_prompts}
+        onDownload={onRun}
+        onInstall={() =>
+          installRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+      />
 
       {/* How to install - readable BEFORE downloading, no unzip required */}
-      <SkillInstallGuide skillName={skill.name} />
+      <div ref={installRef}>
+        <SkillInstallGuide skillName={skill.name} />
+      </div>
 
       {/* Saved to Your skills - library peek */}
       <div className="rounded-[16px] border border-border bg-card p-[15px]">

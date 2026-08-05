@@ -5,7 +5,6 @@ import {
   Star,
   Lightbulb,
   Wand2,
-  Download,
   Loader2,
   CheckCircle2,
   Package,
@@ -16,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { CtrlLogo } from '@/components/landing/CtrlLogo';
 import { SkillInstallGuide } from '@/components/edge/SkillInstallGuide';
+import { SkillDelivery } from '@/components/skill/SkillDelivery';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,11 +48,13 @@ export default function BuildLap() {
     error,
     triageResult,
     skillData,
+    release,
     zipFilename,
     generateSkill,
     downloadZip,
     reset,
   } = useSkillExport('free-skill-export');
+  const installRef = useRef<HTMLDivElement | null>(null);
 
   const [transcript, setTranscript] = useState('');
   const anonStarted = useRef(false);
@@ -228,17 +230,27 @@ export default function BuildLap() {
                         />
                       )}
                     </ul>
-                    <Button onClick={downloadZip} size="lg" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download {zipFilename ?? 'kit'}
-                    </Button>
                   </div>
+
+                  {/* Where this stands, one phrase to go and try, and the action
+                      this device can finish. A downloaded file is not a live
+                      skill, and this screen says so rather than implying it. */}
+                  <SkillDelivery
+                    skillName={skillData.name}
+                    release={release}
+                    testPrompts={skillData.test_prompts}
+                    onDownload={downloadZip}
+                    onInstall={() =>
+                      installRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  />
 
                   {/* The download is only half the win; without the install path
                       the ZIP sits in a downloads folder unused. */}
-                  <SkillInstallGuide
-                    skillName={(zipFilename ?? skillData.name).replace(/\.zip$/i, '')}
-                  />
+                  <div ref={installRef}>
+                    <SkillInstallGuide
+                      skillName={(zipFilename ?? skillData.name).replace(/\.zip$/i, '')}
+                    />
+                  </div>
 
                   {isAuthenticated && !isAnonymous ? (
                     <div className="flex flex-col sm:flex-row gap-2">

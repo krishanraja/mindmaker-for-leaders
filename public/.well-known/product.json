@@ -95,7 +95,7 @@
   "agent_access": {
     "mcp_server": "https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/mcp-context",
     "transport": "Streamable HTTP (MCP spec 2025-06-18), stateless JSON responses.",
-    "tools": ["get_leader_context", "get_todays_briefing (opt-in scope)", "list_skills", "get_skill"],
+    "tools": ["get_leader_context", "get_todays_briefing (opt-in scope)", "list_skills", "get_skill", "list_skill_files"],
     "auth": "A per-leader read-only key minted in Settings, Edge Pro tab, passed as a bearer token. Revocable anytime.",
     "requires": "Edge Pro"
   },

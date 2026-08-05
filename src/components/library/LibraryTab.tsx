@@ -19,7 +19,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useGeneratedArtifacts } from "@/hooks/useGeneratedArtifacts";
+import { useMcpPulls, type PullSummary } from "@/hooks/useMcpPulls";
 import { renderMarkdown } from "@/lib/renderMarkdown";
+import {
+  readSkillRelease,
+  threeNumbers,
+} from "../../../supabase/functions/_shared/skill-release.ts";
 import {
   ARTIFACT_KIND_LABEL,
   type ArtifactKind,
@@ -53,6 +58,9 @@ const KIND_TONE: Record<ArtifactKind, string> = {
  */
 export function LibraryTab() {
   const { artifacts, loading, remove } = useGeneratedArtifacts();
+  // Install state comes from observed pulls, never from the fact that a package
+  // was built or downloaded. See useMcpPulls.
+  const { forSkill } = useMcpPulls();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -231,6 +239,12 @@ export function LibraryTab() {
                           { month: "short", day: "numeric", year: "numeric" },
                         )}
                       </p>
+                      {kind === "skill" && (
+                        <SkillTruth
+                          artifact={artifact}
+                          pulls={forSkill(artifact.id, artifact.name)}
+                        />
+                      )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
@@ -305,6 +319,52 @@ export function LibraryTab() {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * The two true things about a built skill: whether anything has pulled it, and
+ * what (if anything) was measured about the rules in it.
+ *
+ * Both are deliberately understated. "Pulled" is an observation, not a claim
+ * that the skill is installed everywhere; silence is silence, not a claim that
+ * it is unused. The numbers carry the sentence that says what they measured, so
+ * a precision figure beside a skill name cannot be read as a score for the
+ * skill itself.
+ */
+function SkillTruth({
+  artifact,
+  pulls,
+}: {
+  artifact: GeneratedArtifact;
+  pulls: PullSummary | null;
+}) {
+  const release = readSkillRelease(artifact.metadata ?? null);
+  const numbers = threeNumbers(release);
+  const lastAt = pulls?.lastAt
+    ? new Date(pulls.lastAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    : null;
+
+  return (
+    <div className="mt-1 space-y-0.5">
+      <p className="text-[11px] leading-snug">
+        {pulls ? (
+          <span className="text-accent">
+            Your agent pulled this {pulls.count} time{pulls.count === 1 ? "" : "s"}
+            {lastAt ? `, last on ${lastAt}` : ""}.
+          </span>
+        ) : (
+          <span className="text-muted-foreground/70">
+            No agent has pulled this yet. Downloading it does not make it live.
+          </span>
+        )}
+      </p>
+      {numbers && (
+        <p className="text-[11px] leading-snug text-muted-foreground/70">
+          {release.labelText}. {numbers}
+        </p>
+      )}
     </div>
   );
 }

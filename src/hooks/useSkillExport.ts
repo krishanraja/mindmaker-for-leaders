@@ -5,6 +5,7 @@ import {
   type SkillData,
   type SkillExportResponse,
   type SkillQualityGate,
+  type SkillReleaseBlock,
   type SkillSeed,
   type SkillTriage,
 } from "@/types/skill";
@@ -26,6 +27,12 @@ interface UseSkillExport {
   triageResult: SkillTriage | null;
   skillData: SkillData | null;
   qualityGate: SkillQualityGate | null;
+  /**
+   * What the delivery screen may claim about this package (label, sentence,
+   * numbers). Null when the function did not send one, which the delivery
+   * screen renders as Draft with "no measurement exists" rather than as blank.
+   */
+  release: SkillReleaseBlock | null;
   zipBlob: Blob | null;
   zipFilename: string | null;
   generateSkill: (transcript: string, options?: GenerateSkillOptions) => Promise<SkillExportResponse | null>;
@@ -48,6 +55,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
   const [triageResult, setTriageResult] = useState<SkillTriage | null>(null);
   const [skillData, setSkillData] = useState<SkillData | null>(null);
   const [qualityGate, setQualityGate] = useState<SkillQualityGate | null>(null);
+  const [release, setRelease] = useState<SkillReleaseBlock | null>(null);
   const [zipBlob, setZipBlob] = useState<Blob | null>(null);
   const [zipFilename, setZipFilename] = useState<string | null>(null);
 
@@ -58,6 +66,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
     setTriageResult(null);
     setSkillData(null);
     setQualityGate(null);
+    setRelease(null);
     setZipBlob(null);
     setZipFilename(null);
   }, []);
@@ -70,6 +79,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
       setTriageResult(null);
       setSkillData(null);
       setQualityGate(null);
+      setRelease(null);
       setZipBlob(null);
       setZipFilename(null);
 
@@ -116,6 +126,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
         if (isSkillSuccess(response)) {
           setSkillData(response.skill);
           setQualityGate(response.quality_gate);
+          setRelease(response.release ?? null);
           setZipFilename(response.zip_filename);
           const blob = base64ToBlob(response.zip_base64, "application/zip");
           setZipBlob(blob);
@@ -153,6 +164,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
     triageResult,
     skillData,
     qualityGate,
+    release,
     zipBlob,
     zipFilename,
     generateSkill,

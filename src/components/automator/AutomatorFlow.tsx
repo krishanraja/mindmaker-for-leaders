@@ -346,6 +346,7 @@ export function AutomatorFlow({
               whatItDoes={readySkill.description.split(".")[0] + "."}
               library={library}
               qualityGate={skillExport.qualityGate}
+              release={skillExport.release}
               onRun={handleRun}
               onExport={handleExport}
               onSeeAll={handleSeeAll}

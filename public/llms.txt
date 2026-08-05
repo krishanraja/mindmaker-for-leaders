@@ -30,7 +30,8 @@ There is no one-time diagnostic, no deep-context upgrade and no bundle, and no a
 - **MCP server** (read-only, per-leader API key, requires Edge Pro):
   `https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/mcp-context`
   - Transport: Streamable HTTP (MCP spec 2025-06-18), stateless JSON responses.
-  - Tools: `get_leader_context`, `get_todays_briefing` (opt-in scope), `list_skills`, `get_skill`.
+  - Tools: `get_leader_context`, `get_todays_briefing` (opt-in scope), `list_skills`, `get_skill`, `list_skill_files`.
+  - `list_skills` marks each skill `stale: true/false`. `get_skill` returns the whole package (the router plus every file it routes to, each under a `## file:` heading), or one file when passed `file`; `list_skill_files` lists those paths. A skill compiled against an older version of the leader's standard is served with one line saying so, never silently.
   - Auth: a per-leader key the leader mints in **Settings, Edge Pro** and passes as a bearer token. Read-only; revocable anytime.
 - **Machine-readable product facts:** `https://ctrl.themindmaker.ai/.well-known/product.json`
 
