@@ -1,7 +1,7 @@
 /**
  * critique-artefact - stages 5, 6 and 7 of the harness chain, run as one pass.
  *
- * POST { artifact_id?, body?, surface?, run_id? }
+ * POST { artifact_id?, body?, surface?, run_id?, lenses? }
  *   -> 202 { run_id, stage: "loading" }
  *
  * The person submits a real piece of work (pasted, or one CTRL generated) and
@@ -62,6 +62,29 @@
  *   - every REVISION this function writes is CTRL-authored, so each one
  *     re-enters the mechanical and provenance checks before it ships. Our own
  *     revision is not exempt from the checks that caught the original.
+ *
+ * ---------------------------------------------------------------------------
+ * `lenses`: the measurement mode (stage 5)
+ * ---------------------------------------------------------------------------
+ *
+ * Default is all three, so nothing that already calls this changes. Stage 5's
+ * eval passes ["standard"], because the thing being measured is whether the
+ * person's OWN compiled standard agrees with them on work it never trained on.
+ * The two house checks are CTRL's, not theirs, and folding them into that
+ * number would measure the house style and print it as the person's.
+ *
+ * With one lens the meta-judge does not run: it exists to arbitrate three
+ * independent reviews, there is nothing to arbitrate, and letting a second
+ * model rewrite a single lens's verdicts would put the judge inside the
+ * measurement. The lens's own enforced verdicts are the answer, and the run
+ * says so in `notes`.
+ *
+ * Exemplars are TRAINING ONLY on every path (loadGradedItems filters held-out
+ * and repeat rows in the query and again in code, and the ids it used are
+ * returned so a caller can assert it). A held-out item retrieved into the gate
+ * is the measurement being scored against its own answer key, and it would
+ * inflate every number stage 5 produces by an amount nobody can recover
+ * afterwards.
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -164,6 +187,25 @@ interface GradeRow {
   } | null;
 }
 
+/** The three lenses, and the default set. Order is the order they are reported in. */
+const ALL_LENSES: LensName[] = ["standard", "evidence", "signature"];
+
+/**
+ * Which lenses this run may use.
+ *
+ * An unrecognised name is dropped rather than silently widening the set, and an
+ * empty or absent list means all three, which is what every existing caller
+ * sends by sending nothing.
+ */
+function readLenses(raw: unknown): LensName[] {
+  if (!Array.isArray(raw)) return [...ALL_LENSES];
+  const asked = new Set(
+    raw.filter((v): v is string => typeof v === "string").map((v) => v.trim().toLowerCase()),
+  );
+  const chosen = ALL_LENSES.filter((lens) => asked.has(lens));
+  return chosen.length > 0 ? chosen : [...ALL_LENSES];
+}
+
 /** The shape the review surface renders. Spec 4.6, field for field. */
 interface CritiqueResult {
   checked: string;
@@ -178,8 +220,15 @@ interface CritiqueResult {
   notes: string[];
   passes: number;
   signature: { ran: boolean; provider: string | null; reason: string | null };
-  exemplars: { used: number; bothPoles: boolean; none: boolean };
+  /**
+   * `ids` are the graded items that were retrieved. Returned so a measurement
+   * run can assert no held-out item reached the gate, rather than trusting that
+   * it did not.
+   */
+  exemplars: { used: number; bothPoles: boolean; none: boolean; ids: string[] };
   enforcement: ReturnType<typeof enforcementReport>;
+  /** The lenses this run was allowed to use, and the ones that answered. */
+  lenses: { asked: LensName[]; ran: LensName[]; metaRan: boolean };
   surface: string;
 }
 
@@ -242,6 +291,7 @@ Deno.serve(async (req) => {
     const artifactId = typeof payload?.artifact_id === "string" ? payload.artifact_id.trim() : "";
     const pasted = typeof payload?.body === "string" ? payload.body : "";
     const askedSurface = typeof payload?.surface === "string" ? payload.surface.trim() : "";
+    const lenses = readLenses(payload?.lenses);
 
     let artefact = pasted;
     let checked = askedSurface || "a piece of work";
@@ -293,6 +343,7 @@ Deno.serve(async (req) => {
           artifact_id: artifactId || null,
           generator_provider: generatorProvider,
           checked,
+          lenses_asked: lenses,
         },
       })
       .select("id")
@@ -310,6 +361,7 @@ Deno.serve(async (req) => {
       surface: askedSurface,
       generatorProvider,
       authored,
+      lenses,
       log: log.withContext({ run_id: runId, userId }),
     });
 
@@ -334,6 +386,8 @@ interface CritiqueParams {
   surface: string;
   generatorProvider: string | null;
   authored: boolean;
+  /** Which lenses this run may use. All three unless a caller narrowed it. */
+  lenses: LensName[];
   log: ReturnType<typeof createLogger>;
 }
 
@@ -342,7 +396,8 @@ interface CritiqueParams {
  * 'lenses' forever is worse than a run that says it stopped and why.
  */
 async function critique(admin: SupabaseClient, params: CritiqueParams): Promise<void> {
-  const { runId, userId, checked, generatorProvider, authored, log } = params;
+  const { runId, userId, checked, generatorProvider, authored, lenses, log } = params;
+  const wants = (lens: LensName): boolean => lenses.includes(lens);
   let artefact = params.artefact;
   const detail: Record<string, unknown> = {};
   const notes: string[] = [];
@@ -461,9 +516,9 @@ async function critique(admin: SupabaseClient, params: CritiqueParams): Promise<
     }
 
     const available = availableProviders();
-    const judgeProvider = pickJudgeProvider(generatorProvider, available);
+    const judgeProvider = wants("signature") ? pickJudgeProvider(generatorProvider, available) : null;
     const signatureRuns = judgeProvider !== null;
-    if (!signatureRuns) {
+    if (!signatureRuns && wants("signature")) {
       notes.push(
         "Signature: not run, no second provider available. It has to run somewhere other than " +
           "the model that wrote this, and there is nowhere else to run it right now.",
@@ -478,16 +533,18 @@ async function critique(admin: SupabaseClient, params: CritiqueParams): Promise<
     };
 
     const calls: Array<{ lens: LensName; prompt: BuiltPrompt; providers?: LlmProvider[] }> = [];
-    if (capped.scored.length > 0) {
+    if (wants("standard") && capped.scored.length > 0) {
       calls.push({
         lens: "standard",
         prompt: buildStandardLensPrompt({ ...lensInput, criteria: capped.scored }),
       });
     }
-    calls.push({
-      lens: "evidence",
-      prompt: buildEvidenceLensPrompt({ ...lensInput, criteria: [HOUSE_CRITERIA.evidence] }),
-    });
+    if (wants("evidence")) {
+      calls.push({
+        lens: "evidence",
+        prompt: buildEvidenceLensPrompt({ ...lensInput, criteria: [HOUSE_CRITERIA.evidence] }),
+      });
+    }
     if (signatureRuns && judgeProvider) {
       calls.push({
         lens: "signature",
@@ -495,6 +552,18 @@ async function critique(admin: SupabaseClient, params: CritiqueParams): Promise<
         // CH-14: any provider that is not the one recorded as generating this.
         providers: [judgeProvider],
       });
+    }
+
+    if (calls.length === 0) {
+      // Nothing to run is a real state, not an error: a single-lens measurement
+      // run against a person with no compiled criteria has no rubric to apply.
+      // It says so, and no LLM is called at all.
+      notes.push(
+        wants("standard") && capped.scored.length === 0 && lenses.length === 1
+          ? "There are no compiled checks for this kind of work, so there was nothing to review it " +
+            "against and nothing was scored. That is not a pass."
+          : "No check was available to run over this, so nothing was scored.",
+      );
     }
 
     // Run in parallel. Each has its own call and none is handed another's
@@ -560,7 +629,14 @@ async function critique(admin: SupabaseClient, params: CritiqueParams): Promise<
     }
 
     // --- 4. the meta-judge ---------------------------------------------------
-    await setStage("meta", { lenses_ran: lensAnswers.filter((l) => l.ran).length });
+    const ranLenses = lensAnswers.filter((l) => l.ran);
+    await setStage("meta", { lenses_ran: ranLenses.length });
+
+    // The judge arbitrates between independent reviews. With fewer than two
+    // there is nothing to arbitrate, and a second model rewriting a single
+    // lens's verdicts would put the judge inside the measurement rather than
+    // over it. The lens's own enforced verdicts are the answer.
+    const metaJudges = ranLenses.length >= 2;
 
     const allowedAll = [
       ...capped.scored,
@@ -589,10 +665,12 @@ async function critique(admin: SupabaseClient, params: CritiqueParams): Promise<
     let passes = 1;
 
     let meta: LensJson | null = null;
-    try {
-      meta = await callJson(admin, userId, metaPrompt, "meta");
-    } catch (err) {
-      log.warn("meta judge failed", { error: err });
+    if (metaJudges) {
+      try {
+        meta = await callJson(admin, userId, metaPrompt, "meta");
+      } catch (err) {
+        log.warn("meta judge failed", { error: err });
+      }
     }
 
     if (meta) {
@@ -612,10 +690,17 @@ async function critique(admin: SupabaseClient, params: CritiqueParams): Promise<
     } else {
       // The panel is still worth something without a judge over it. Merge the
       // lens verdicts, keeping every one, and say plainly that nothing arbitrated.
-      notes.push(
-        "The final pass over the three checks did not come back, so what you are reading is the " +
-          "three separate reviews rather than one arbitrated verdict.",
-      );
+      if (metaJudges) {
+        notes.push(
+          "The final pass over the three checks did not come back, so what you are reading is the " +
+            "three separate reviews rather than one arbitrated verdict.",
+        );
+      } else if (ranLenses.length === 1) {
+        notes.push(
+          `This ran one check only (${labelFor(ranLenses[0].lens)}), so there was nothing to ` +
+            "arbitrate between and what you are reading is that check's own answer.",
+        );
+      }
       judgement = lensAnswers.flatMap((answer) => answer.verdicts);
       uncovered = lensAnswers.flatMap((answer) => answer.uncovered);
     }
@@ -687,14 +772,28 @@ async function critique(admin: SupabaseClient, params: CritiqueParams): Promise<
       signature: {
         ran: signatureRuns,
         provider: judgeProvider,
-        reason: signatureRuns ? null : "no second provider available",
+        reason: signatureRuns
+          ? null
+          : wants("signature")
+          ? "no second provider available"
+          : "not asked for on this run",
       },
       exemplars: {
         used: selection.exemplars.length,
         bothPoles: selection.bothPoles,
         none: selection.none,
+        // Training-set ids only, by construction. Returned so a measurement run
+        // can ASSERT that rather than assume it: a held-out item retrieved as an
+        // exemplar is the gate being shown the answer key, and it would inflate
+        // every number stage 5 prints with no way to tell afterwards.
+        ids: selection.exemplars.map((item) => item.id),
       },
       enforcement: report,
+      lenses: {
+        asked: lenses,
+        ran: ranLenses.map((answer) => answer.lens),
+        metaRan: meta !== null,
+      },
       surface,
     };
 
@@ -1114,6 +1213,13 @@ async function loadEvidence(admin: SupabaseClient, userId: string): Promise<Evid
  * a hold-out item retrieved into the gate is the measurement being scored
  * against its own answer key, and nothing downstream can be trusted afterwards.
  * Self-agreement repeats are excluded too; those measure the grader.
+ *
+ * Excluded TWICE on purpose. The query filters on the joined row so held-out
+ * items never come back and never eat the MAX_GRADED budget, and the same
+ * predicate runs again in code so a PostgREST embed that silently stopped
+ * applying the filter cannot leak one. This is the single bug that would
+ * inflate every number stage 5 produces while looking like a clean run, so it
+ * gets a belt and braces and the ids ride out on the result for a third check.
  */
 async function loadGradedItems(admin: SupabaseClient, userId: string): Promise<GradedItem[]> {
   const { data } = await admin
@@ -1121,6 +1227,8 @@ async function loadGradedItems(admin: SupabaseClient, userId: string): Promise<G
     .select("item_id, verdict, why, sort_items!inner(body, held_out, repeat_of)")
     .eq("user_id", userId)
     .neq("verdict", "skip")
+    .eq("sort_items.held_out", false)
+    .is("sort_items.repeat_of", null)
     .order("created_at", { ascending: false })
     .limit(MAX_GRADED);
 
@@ -1128,7 +1236,7 @@ async function loadGradedItems(admin: SupabaseClient, userId: string): Promise<G
   return rows
     .filter((row) =>
       row.sort_items &&
-      !row.sort_items.held_out &&
+      row.sort_items.held_out !== true &&
       !row.sort_items.repeat_of &&
       String(row.sort_items.body ?? "").trim().length > 0
     )

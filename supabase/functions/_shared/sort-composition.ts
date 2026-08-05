@@ -135,8 +135,17 @@ export const SORT_BUDGET: SortBudget = {
   unique: 30,
   repeats: 3,
   total: 33,
-  holdOut: { pairs: 3, pairItems: 6, own: 2, peer: 2, items: 10 },
-  training: 20,
+  // 12, not 10, and the two spare items are the whole point. The release floor
+  // for a measured claim is 10 GRADED held-out items, so holding out exactly 10
+  // made Verified arithmetically unreachable the moment a leader skipped one
+  // screen, however good the gate was. A label nobody can reach is not a high
+  // bar, it is a broken one. Two items of slack absorb the ordinary skip.
+  //
+  // The cost is two training items (20 -> 18), which the discrimination test
+  // can afford: it needs 4 accepted and 4 rejected among the items whose probe
+  // applies, and 18 clears that with room.
+  holdOut: { pairs: 4, pairItems: 8, own: 2, peer: 2, items: 12 },
+  training: 18,
 };
 
 // ---------------------------------------------------------------------------

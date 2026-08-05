@@ -124,6 +124,11 @@ export default function SortPage() {
             canShowKill={sort.canShowKill}
             splitRate={sort.splitRate}
             selfAgreement={sort.selfAgreement}
+            // Null until a measurement run has scored this person's held-out
+            // pieces. Passed explicitly rather than left off: the completion
+            // screen has to say there is no number, and the only way it could
+            // ever show one is if a run computed it and handed it over.
+            measurement={null}
             detail={sort.detail}
             unsavedGrades={sort.unsavedGrades}
           />

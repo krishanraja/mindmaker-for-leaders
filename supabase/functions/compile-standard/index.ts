@@ -60,8 +60,8 @@ import {
   type PairRole,
   type Verdict,
 } from "../_shared/sort-composition.ts";
+import { releaseVerdict } from "../_shared/confusion.ts";
 import {
-  baselineLabel,
   byWeightLoadOrder,
   CLUSTER_AGREEMENT_MIN,
   clusterByApplication,
@@ -69,14 +69,12 @@ import {
   discriminationFor,
   discriminationReason,
   discriminationVerdict,
-  labelCeilingForTriage,
   MAX_CRITERIA_PER_SURFACE,
   medianOffDiagonal,
   parseProbe,
   REJECT_FAIL_MIN,
   triageFromSelfAgreement,
   tryApplyProbe,
-  weakerLabel,
   type CriterionWeight,
   type DiscTrainingItem,
 } from "../_shared/discrimination.ts";
@@ -945,14 +943,22 @@ async function compile(admin: SupabaseClient, params: CompileParams): Promise<vo
       version: nextVersion,
     });
 
-    // CH-12 caps what the numbers are allowed to claim; the numbers cap the
-    // rest. Nothing has been run against the hold-out at this stage, so
-    // precision and recall are null on purpose and the label is Draft. A
-    // measurement stage lifts it later; a compile step never lifts its own.
-    const label = weakerLabel(
-      baselineLabel({ heldOutGraded, precision: null, recall: null }),
-      labelCeilingForTriage(triage.triage),
-    );
+    // ONE door to the label, and it is releaseVerdict (stage 5). Nothing has
+    // been run against the hold-out at this stage, so `metrics` is null on
+    // purpose: no measurement exists, the label is Draft, and the reason says
+    // so in words rather than leaving the reader to infer it from a blank.
+    //
+    // The alternative, deriving a label from the fact that a rubric now exists,
+    // is precisely the failure this chain was built to prevent. A compile step
+    // never lifts its own label; a measurement stage lifts it later or does not.
+    const release = releaseVerdict({
+      metrics: null,
+      heldOutGraded,
+      // CH-12: the grader's own consistency is the ceiling on anything this can
+      // ever claim, so it is applied at the same door as the numbers.
+      selfAgreement: agreement,
+    });
+    const label = release.label;
 
     const markdown = renderStandardMarkdown({
       criteria: rendered,
@@ -963,6 +969,9 @@ async function compile(admin: SupabaseClient, params: CompileParams): Promise<vo
         held_out_graded: heldOutGraded,
         precision: null,
         recall: null,
+        tnr: null,
+        measurement: null,
+        release_reason: release.reason,
         self_agreement: { matched: agreement.matched, total: agreement.total },
         pair_split: { split: split.split, total: split.total, rate: split.rate },
         triage: triage.triage,
@@ -991,8 +1000,14 @@ async function compile(admin: SupabaseClient, params: CompileParams): Promise<vo
           held_out_graded: heldOutGraded,
           // Absent on purpose until a measure stage runs. A missing baseline is
           // information; a fabricated one is what this chain exists to prevent.
+          // All three are written as explicit nulls rather than omitted, so a
+          // reader can tell "measured and absent" from "this writer is older
+          // than the field".
           precision: null,
           recall: null,
+          tnr: null,
+          confusion: null,
+          release_reason: release.reason,
           rendered_at: new Date().toISOString(),
         },
       })

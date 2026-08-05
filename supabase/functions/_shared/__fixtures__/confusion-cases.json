@@ -1,0 +1,174 @@
+{
+  "note": "Deterministic measurement cases for stage 5. Committed so CI can gate the arithmetic that decides whether the product may say 'verified', with no live LLM and no database. Each case is a set of human/gate pairs plus the matrix, metrics and release label they must produce. 'would not send' is the positive class throughout: catching what they would reject is the job. Every threshold behind the expected labels lives in _shared/discrimination.ts and is marked PROVISIONAL, PENDING DATA; when one is retuned these expectations move with it, on purpose, so a threshold change cannot be made quietly.",
+  "cases": [
+    {
+      "name": "a released standard: the worked example",
+      "why": "The orientation test. Four of the five pieces they would have turned down were flagged, one piece they would have sent was flagged too, and the two excluded rows never touch the matrix.",
+      "heldOutGraded": 13,
+      "selfAgreement": { "matched": 3, "total": 3 },
+      "pairs": [
+        { "itemId": "h01", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "h02", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "h03", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "h04", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "h05", "human": "would_not_send", "gate": "holds" },
+        { "itemId": "h06", "human": "send", "gate": "breaks" },
+        { "itemId": "h07", "human": "send", "gate": "holds" },
+        { "itemId": "h08", "human": "send", "gate": "holds" },
+        { "itemId": "h09", "human": "send", "gate": "holds" },
+        { "itemId": "h10", "human": "send", "gate": "holds" },
+        { "itemId": "h11", "human": "send", "gate": "holds" },
+        { "itemId": "h12", "human": "send", "gate": "holds" },
+        { "itemId": "h13", "human": "skip", "gate": "breaks" },
+        { "itemId": "h14", "human": "would_not_send", "gate": "insufficient" }
+      ],
+      "expect": {
+        "matrix": {
+          "tp": 4,
+          "fp": 1,
+          "fn": 1,
+          "tn": 6,
+          "excluded": { "skipped": 1, "insufficient": 1, "total": 2 }
+        },
+        "metrics": { "precision": 0.8, "recall": 0.8, "tnr": 0.857143, "n": 12 },
+        "label": "verified",
+        "people": [
+          "Of the things you would not have sent, it caught 4 of 5.",
+          "It also flagged 1 you would have sent.",
+          "2 pieces are not in those numbers: 1 you skipped, and 1 it could not point at anything in."
+        ]
+      }
+    },
+    {
+      "name": "CH-03: zero criteria loaded, so the gate flags nothing",
+      "why": "The degenerate case. With an empty rubric the Standard lens holds on everything, TP and FP are both zero and precision is 0/0. That must be null and it must render as no baseline at all. Recall in the same run is a MEASURED zero, and the two have to stay different things.",
+      "heldOutGraded": 10,
+      "selfAgreement": { "matched": 3, "total": 3 },
+      "pairs": [
+        { "itemId": "z01", "human": "would_not_send", "gate": "holds" },
+        { "itemId": "z02", "human": "would_not_send", "gate": "holds" },
+        { "itemId": "z03", "human": "would_not_send", "gate": "holds" },
+        { "itemId": "z04", "human": "would_not_send", "gate": "holds" },
+        { "itemId": "z05", "human": "send", "gate": "holds" },
+        { "itemId": "z06", "human": "send", "gate": "holds" },
+        { "itemId": "z07", "human": "send", "gate": "holds" },
+        { "itemId": "z08", "human": "send", "gate": "holds" },
+        { "itemId": "z09", "human": "send", "gate": "holds" },
+        { "itemId": "z10", "human": "send", "gate": "holds" }
+      ],
+      "expect": {
+        "matrix": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "tn": 6,
+          "excluded": { "skipped": 0, "insufficient": 0, "total": 0 }
+        },
+        "metrics": { "precision": null, "recall": 0, "tnr": 1, "n": 10 },
+        "label": "draft",
+        "people": [
+          "Of the things you would not have sent, it caught 0 of 4.",
+          "It flagged none of the 6 you would have sent."
+        ]
+      }
+    },
+    {
+      "name": "the gate that cries wolf",
+      "why": "Precision under the release floor. It catches most of what they reject, but most of what it flags is work they were happy with, and that is the gate people switch off. Back to stage 3 rather than out as a standard.",
+      "heldOutGraded": 12,
+      "selfAgreement": { "matched": 3, "total": 3 },
+      "pairs": [
+        { "itemId": "w01", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "w02", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "w03", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "w04", "human": "would_not_send", "gate": "holds" },
+        { "itemId": "w05", "human": "send", "gate": "breaks" },
+        { "itemId": "w06", "human": "send", "gate": "breaks" },
+        { "itemId": "w07", "human": "send", "gate": "breaks" },
+        { "itemId": "w08", "human": "send", "gate": "breaks" },
+        { "itemId": "w09", "human": "send", "gate": "breaks" },
+        { "itemId": "w10", "human": "send", "gate": "holds" },
+        { "itemId": "w11", "human": "send", "gate": "holds" },
+        { "itemId": "w12", "human": "send", "gate": "holds" }
+      ],
+      "expect": {
+        "matrix": {
+          "tp": 3,
+          "fp": 5,
+          "fn": 1,
+          "tn": 3,
+          "excluded": { "skipped": 0, "insufficient": 0, "total": 0 }
+        },
+        "metrics": { "precision": 0.375, "recall": 0.75, "tnr": 0.375, "n": 12 },
+        "label": "draft",
+        "people": [
+          "Of the things you would not have sent, it caught 3 of 4.",
+          "It also flagged 5 you would have sent."
+        ]
+      }
+    },
+    {
+      "name": "CH-12: the grader's own consistency is the ceiling",
+      "why": "Numbers that would otherwise clear the verified floor, from someone who graded one of three repeated pieces differently the second time. Precision cannot exceed the consistency of the person it was measured against, so the label caps at Provisional and the reason says why.",
+      "heldOutGraded": 12,
+      "selfAgreement": { "matched": 2, "total": 3 },
+      "pairs": [
+        { "itemId": "c01", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "c02", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "c03", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "c04", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "c05", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "c06", "human": "send", "gate": "breaks" },
+        { "itemId": "c07", "human": "send", "gate": "holds" },
+        { "itemId": "c08", "human": "send", "gate": "holds" },
+        { "itemId": "c09", "human": "send", "gate": "holds" },
+        { "itemId": "c10", "human": "send", "gate": "holds" },
+        { "itemId": "c11", "human": "send", "gate": "holds" },
+        { "itemId": "c12", "human": "send", "gate": "holds" }
+      ],
+      "expect": {
+        "matrix": {
+          "tp": 5,
+          "fp": 1,
+          "fn": 0,
+          "tn": 6,
+          "excluded": { "skipped": 0, "insufficient": 0, "total": 0 }
+        },
+        "metrics": { "precision": 0.833333, "recall": 1, "tnr": 0.857143, "n": 12 },
+        "label": "provisional",
+        "people": [
+          "Of the things you would not have sent, it caught 5 of 5.",
+          "It also flagged 1 you would have sent."
+        ]
+      }
+    },
+    {
+      "name": "a perfect score on five pieces is still not verified",
+      "why": "Everything the gate said matched. It said it about five pieces, which is below the held-out floor, and a number about five pieces is a number about five pieces.",
+      "heldOutGraded": 5,
+      "selfAgreement": { "matched": 3, "total": 3 },
+      "pairs": [
+        { "itemId": "t01", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "t02", "human": "would_not_send", "gate": "breaks" },
+        { "itemId": "t03", "human": "send", "gate": "holds" },
+        { "itemId": "t04", "human": "send", "gate": "holds" },
+        { "itemId": "t05", "human": "send", "gate": "holds" }
+      ],
+      "expect": {
+        "matrix": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3,
+          "excluded": { "skipped": 0, "insufficient": 0, "total": 0 }
+        },
+        "metrics": { "precision": 1, "recall": 1, "tnr": 1, "n": 5 },
+        "label": "provisional",
+        "people": [
+          "Of the things you would not have sent, it caught 2 of 2.",
+          "It flagged none of the 3 you would have sent."
+        ]
+      }
+    }
+  ]
+}

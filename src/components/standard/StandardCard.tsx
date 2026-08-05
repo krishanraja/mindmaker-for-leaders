@@ -16,6 +16,7 @@ import { Download, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Eyebrow, Surface } from '@/components/system/surface';
 import type { StandardLabel, StandardMeta } from '@/hooks/useStandard';
+import { measurementLines } from '@/lib/sortModel';
 
 const LABEL_TEXT: Record<StandardLabel, string> = {
   draft: 'Draft',
@@ -23,16 +24,29 @@ const LABEL_TEXT: Record<StandardLabel, string> = {
   verified: 'Verified',
 };
 
-function labelLine(meta: StandardMeta): string {
-  if (meta.label === 'verified' && meta.precision !== null) {
-    const recall = meta.recall !== null ? `, recall ${meta.recall.toFixed(2)}` : '';
-    return `Checked against ${meta.heldOutGraded ?? 0} pieces you graded before you saw any of this. ` +
-      `Precision ${meta.precision.toFixed(2)}${recall}.`;
+/**
+ * The label line, in counts.
+ *
+ * `meta.label` has already been re-derived through releaseVerdict in
+ * useStandard, so Verified here means a measurement run said so, never that a
+ * rubric exists. The numbers are rendered by the one shared implementation
+ * every other surface uses; nothing is computed in this component.
+ */
+function labelLines(meta: StandardMeta): string[] {
+  if (meta.label === 'verified' && meta.measurement) {
+    return [
+      `Checked against ${meta.heldOutGraded ?? 0} pieces you graded before you saw any of this.`,
+      ...measurementLines(meta.measurement),
+    ];
   }
   if (meta.label === 'provisional') {
-    return 'Built from your real grades. It has not been checked against work it has never seen, so no accuracy number is claimed.';
+    return [
+      'Built from your real grades. It has not been checked against work it has never seen, so no accuracy number is claimed.',
+    ];
   }
-  return 'Nothing here is measured yet. No accuracy number is claimed, and every line is a proposal you can strike out.';
+  return [
+    'Nothing here is measured yet. No accuracy number is claimed, and every line is a proposal you can strike out.',
+  ];
 }
 
 function countLine(meta: StandardMeta): string {
@@ -75,7 +89,11 @@ export function StandardCard({
             {meta.surface ? `Your standard for ${meta.surface}` : 'Your standard'}
           </h3>
           <p className="mt-1 text-[12.5px] leading-snug text-muted-foreground">{countLine(meta)}</p>
-          <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">{labelLine(meta)}</p>
+          {labelLines(meta).map((line) => (
+            <p key={line} className="mt-1.5 text-[12px] leading-snug text-muted-foreground">
+              {line}
+            </p>
+          ))}
           <Button
             type="button"
             size="sm"
