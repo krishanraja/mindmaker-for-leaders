@@ -4,8 +4,8 @@
  * Voice-to-Agent-Skill pipeline. The leader describes a repetitive workflow,
  * we run a bounded-trigger check plus Four Honest Tests triage gate, generate
  * an agentskills.io-compliant skill via the LLM, validate it through the
- * quality gate, and package it as a ZIP the client can drop into
- * ~/.claude/skills/.
+ * quality gate, and package it as a router-plus-leaves ZIP the client can drop
+ * into ~/.claude/skills/.
  *
  * Triage failures (Memory Web facts, Custom Instructions, saved styles) are
  * still recorded in skill_exports with triage_result set accordingly, so the
@@ -14,6 +14,21 @@
  * Free for now: open to any authenticated user (kit graduates and new signups
  * taste the real pipeline). The cost driver is the LLM call (~6-10k tokens in,
  * ~3k out) plus the ZIP assembly, bounded by a generous daily soft cap.
+ *
+ * ---------------------------------------------------------------------------
+ * Phase 3b: every rule carries a pointer
+ * ---------------------------------------------------------------------------
+ *
+ * The three prov.* checks are BLOCKING here. This is the one function that can
+ * satisfy them: it loads the leader's compiled criteria and their evidence,
+ * offers their own transcript as citable spans, and hands the model short stable
+ * ids to cite. They stay advisory in free-skill-export, which has neither.
+ *
+ * Blocking never means rejecting. A block returns to generation ONCE with the
+ * specific violations named, and if the second pass still fails, the package
+ * ships with the findings listed and the leader decides. A bare rejection would
+ * take a real piece of work away from someone because a gate we wrote was
+ * unhappy, and the gate is not the product.
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -21,13 +36,38 @@ import { buildMemoryContext } from "../_shared/memory-context-builder.ts";
 import { selectModel } from "../_shared/openai-utils.ts";
 import { callLLMWithFallback, providerFromModel } from "../_shared/llm-fallback.ts";
 import { buildSkillSystemPrompt, buildSkillUserPrompt } from "./prompt.ts";
-import { runQualityGate, type SkillData } from "./quality-gate.ts";
-import { buildSkillZip } from "./zip.ts";
+import { runQualityGate, type QualityCheck, type SkillData } from "./quality-gate.ts";
+import { buildSkillZipFromPackage, packageFromZipInput, type BuildSkillZipInput } from "./zip.ts";
 import { recordAiUsage, checkDailySoftCap } from "../_shared/ai-usage.ts";
-import { parseUnpointedImperatives, type ProvenanceOptions } from "../_shared/provenance-checks.ts";
+import {
+  collectClaims,
+  collectNotEstablished,
+  parseUnpointedImperatives,
+  PROVENANCE_CHECK_IDS,
+  type LocatedClaim,
+} from "../_shared/provenance-checks.ts";
+import {
+  flattenPackageForPull,
+  gatedFiles,
+  routerLineCount,
+  verbatimSpans,
+  type SkillPackage,
+} from "../_shared/skill-package.ts";
+import {
+  buildMemoryLinkRows,
+  buildProvenanceRows,
+  citedEvidenceShortIds,
+  citedMemoryFactIds,
+  loadGradedWork,
+  loadPointerTargets,
+  persistCitedSpans,
+} from "./provenance.ts";
 import { createLogger } from "../_shared/logger.ts";
 
 const log = createLogger("generate-skill-export");
+
+/** Spec 4.5: one regeneration attempt, then the leader decides. Never a loop. */
+const MAX_GENERATION_PASSES = 2;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -165,175 +205,239 @@ Deno.serve(async (req) => {
     );
     const voiceProfileContext = voiceProfileMatch?.[0]?.trim() ?? "";
 
-    // Generate via the LLM. JSON mode keeps the model on-format. The
-    // system prompt encodes the triage gate + extraction rules.
-    const aiResponse = await callLLMWithFallback(
-      {
-        messages: [
-          { role: "system", content: buildSkillSystemPrompt() },
-          {
-            role: "user",
-            content: buildSkillUserPrompt({
-              transcript,
-              memoryContext: memoryResult.context,
-              profileContext,
-              voiceProfileContext,
-              seed,
-            }),
-          },
-        ],
-        model: selectModel("complex"),
-        temperature: 0.3,
-        max_tokens: 4000,
-        response_format: { type: "json_object" },
-      },
-      { useCache: false },
-    );
-
-    // Record the spend signal (service role: ai_usage_audit has no INSERT policy).
-    await recordAiUsage(serviceClient, {
-      userId: user.id,
-      functionName: "generate-skill-export",
-      provider: providerFromModel(aiResponse.model),
-      model: aiResponse.model,
-      purpose: "skill-export",
-      promptTokens: aiResponse.usage?.prompt_tokens,
-      completionTokens: aiResponse.usage?.completion_tokens,
-      totalTokens: aiResponse.usage?.total_tokens,
-      status: "ok",
-    });
-
-    let parsed: SkillJson;
-    try {
-      parsed = JSON.parse(aiResponse.content || "{}") as SkillJson;
-    } catch (err) {
-      console.error("generate-skill-export: failed to parse LLM JSON", err, aiResponse.content?.slice(0, 200));
-      return jsonResponse(
-        { error: "We couldn't generate a skill from this. Try being more specific about the steps you follow." },
-        502,
-      );
-    }
-
-    if (!parsed?.triage) {
-      return jsonResponse(
-        { error: "We couldn't generate a skill from this. Try being more specific about the steps you follow." },
-        502,
-      );
-    }
-
-    // Triage failure - record the routing decision so the UI can show what to do next.
-    if (!parsed.triage.passed) {
-      const triageResult = parsed.triage.result || "memory_fact";
-      await serviceClient.from("skill_exports").insert({
-        user_id: user.id,
-        skill_name: skillNameHint || "(triage routed)",
-        description: parsed.triage.reasoning || "",
-        transcript,
-        triage_result: triageResult,
+    // What this leader can cite, and what those citations resolve to. Empty is
+    // the normal state for anyone who has not run the chain, and it is why the
+    // transcript itself is offered as citable spans: without it the pointer
+    // requirement is satisfiable only by a package that says nothing.
+    const targets = await loadPointerTargets(serviceClient, user.id, transcript)
+      .catch((err) => {
+        log.warn("pointer targets unavailable, prov.* checks stay advisory", {
+          userId: user.id,
+          error: err,
+        });
+        return null;
       });
+    const gradedWork = await loadGradedWork(serviceClient, user.id);
 
-      return jsonResponse({
-        triage: {
-          passed: false,
-          result: triageResult,
-          reasoning: parsed.triage.reasoning || "",
+    let parsed: SkillJson | null = null;
+    let pkg: SkillPackage | null = null;
+    let qualityGate: ReturnType<typeof runQualityGate> | null = null;
+    let claims: LocatedClaim[] = [];
+    let notEstablished: LocatedClaim[] = [];
+    let violations: string[] = [];
+    let lastModel = "";
+    let pass = 0;
+    const passLedger: Array<{ pass: number; claims: LocatedClaim[]; notEstablished: LocatedClaim[] }> = [];
+
+    while (pass < MAX_GENERATION_PASSES) {
+      pass += 1;
+
+      // Generate via the LLM. JSON mode keeps the model on-format. The
+      // system prompt encodes the triage gate + extraction rules.
+      const aiResponse = await callLLMWithFallback(
+        {
+          messages: [
+            { role: "system", content: buildSkillSystemPrompt() },
+            {
+              role: "user",
+              content: buildSkillUserPrompt({
+                transcript,
+                memoryContext: memoryResult.context,
+                profileContext,
+                voiceProfileContext,
+                seed,
+                criteria: targets?.promptCriteria ?? [],
+                evidence: targets?.promptEvidence ?? [],
+                violations: pass > 1 ? violations : undefined,
+              }),
+            },
+          ],
+          model: selectModel("complex"),
+          temperature: 0.3,
+          max_tokens: 4000,
+          response_format: { type: "json_object" },
         },
-      }, 200);
-    }
-
-    // Triage passed - validate, package, persist.
-    const skill = parsed.skill;
-    if (!skill || !skill.name || !skill.description || !skill.body) {
-      return jsonResponse(
-        { error: "The generated skill was incomplete. Please try again." },
-        502,
+        { useCache: false },
       );
-    }
 
-    // Harness-chain rows this leader already holds. Empty is the normal state
-    // for anyone who has not run the chain yet; a failed read leaves the sets
-    // undefined so the prov.* checks report an honest skip instead of a pass.
-    let provenance: ProvenanceOptions | undefined;
-    try {
-      const [criteriaRes, evidenceRes] = await Promise.all([
-        serviceClient
-          .from("criteria")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("is_current", true)
-          .eq("disc_verdict", "keep"),
-        serviceClient
-          .from("evidence")
-          .select("id, situated, quote")
-          .eq("user_id", user.id)
-          .limit(500),
-      ]);
-      if (criteriaRes.error) throw criteriaRes.error;
-      if (evidenceRes.error) throw evidenceRes.error;
-      const evidenceRows = (evidenceRes.data ?? []) as Array<{
-        id: string;
-        situated: boolean | null;
-        quote: string | null;
-      }>;
-      provenance = {
-        knownCriterionIds: (criteriaRes.data ?? []).map((r: { id: string }) => r.id),
-        knownEvidenceIds: evidenceRows.map((r) => r.id),
-        situatedEvidenceIds: evidenceRows.filter((r) => r.situated).map((r) => r.id),
-        evidenceQuotes: evidenceRows
-          .map((r) => r.quote)
-          .filter((q): q is string => typeof q === "string" && q.length > 0),
-      };
-    } catch (err) {
-      log.warn("provenance sets unavailable, prov.* checks will skip", {
+      lastModel = aiResponse.model;
+
+      // Record the spend signal (service role: ai_usage_audit has no INSERT policy).
+      await recordAiUsage(serviceClient, {
         userId: user.id,
-        error: err,
+        functionName: "generate-skill-export",
+        provider: providerFromModel(aiResponse.model),
+        model: aiResponse.model,
+        purpose: pass === 1 ? "skill-export" : "skill-export-regen",
+        promptTokens: aiResponse.usage?.prompt_tokens,
+        completionTokens: aiResponse.usage?.completion_tokens,
+        totalTokens: aiResponse.usage?.total_tokens,
+        status: "ok",
+      });
+
+      try {
+        parsed = JSON.parse(aiResponse.content || "{}") as SkillJson;
+      } catch (err) {
+        console.error("generate-skill-export: failed to parse LLM JSON", err, aiResponse.content?.slice(0, 200));
+        return jsonResponse(
+          { error: "We couldn't generate a skill from this. Try being more specific about the steps you follow." },
+          502,
+        );
+      }
+
+      if (!parsed?.triage) {
+        return jsonResponse(
+          { error: "We couldn't generate a skill from this. Try being more specific about the steps you follow." },
+          502,
+        );
+      }
+
+      // Triage failure - record the routing decision so the UI can show what to do next.
+      if (!parsed.triage.passed) {
+        const triageResult = parsed.triage.result || "memory_fact";
+        await serviceClient.from("skill_exports").insert({
+          user_id: user.id,
+          skill_name: skillNameHint || "(triage routed)",
+          description: parsed.triage.reasoning || "",
+          transcript,
+          triage_result: triageResult,
+        });
+
+        return jsonResponse({
+          triage: {
+            passed: false,
+            result: triageResult,
+            reasoning: parsed.triage.reasoning || "",
+          },
+        }, 200);
+      }
+
+      const skill = parsed.skill;
+      if (!skill || !skill.name || !skill.description || !skill.body) {
+        return jsonResponse(
+          { error: "The generated skill was incomplete. Please try again." },
+          502,
+        );
+      }
+
+      const zipInput: BuildSkillZipInput = {
+        name: skill.name,
+        description: skill.description,
+        body: skill.body,
+        references: skill.references || [],
+        testPrompts: skill.test_prompts || [],
+        archetype: skill.archetype,
+        client: user.email || undefined,
+        surface: targets?.surface ?? null,
+        criteria: targets?.packageCriteria ?? [],
+        exemplars: gradedWork.exemplars,
+        holdout: gradedWork.holdout,
+        status: (targets?.packageCriteria.length ?? 0) > 0 ? "provisional" : "draft",
+      };
+      pkg = packageFromZipInput(zipInput);
+
+      // CH-16. The gate reads the rule-bearing files only, with every verbatim
+      // span blanked first: the evidence quotes it was handed, plus the fenced
+      // exemplar blocks the package itself carries. exemplars/ and evals/ are
+      // not in the gated set at all. No gate mutates a quoted span; a slop check
+      // may only report.
+      const quotes = [
+        ...(targets?.options.evidenceQuotes ?? []),
+        ...verbatimSpans(pkg),
+      ];
+      const files = gatedFiles(pkg);
+
+      // Persist the transcript spans this package actually cited BEFORE the gate
+      // reads the id sets, so every id the gate resolves is a live row.
+      if (targets && targets.pendingSpans.size > 0) {
+        const cited = citedEvidenceShortIds(collectClaims(files, quotes));
+        const { dropped } = await persistCitedSpans(
+          serviceClient,
+          user.id,
+          transcript,
+          skill.name,
+          targets,
+          cited,
+        );
+        if (dropped.length > 0) {
+          log.warn("cited transcript spans could not be persisted", {
+            userId: user.id,
+            dropped: dropped.length,
+          });
+        }
+      }
+
+      // Built AFTER the persist, because that step is what decides which ids
+      // are live. The gate must read the sets as they are now, not as they were
+      // when the model was asked.
+      const gateOptions = { ...(targets?.options ?? {}), evidenceQuotes: quotes };
+      // Collected once, against the final id sets, so the ledger rows and the
+      // gate findings describe the same package. Two collections that disagree
+      // is how a record stops being a record.
+      claims = collectClaims(files, quotes);
+      notEstablished = collectNotEstablished(files, quotes);
+
+      const skillData: SkillData = {
+        name: skill.name,
+        description: skill.description,
+        body: skill.body,
+        references: skill.references || [],
+        test_prompts: skill.test_prompts || [],
+        archetype: skill.archetype,
+        voice_profile_present: voiceProfileContext.length > 0,
+        provenance: gateOptions,
+        packageFiles: files,
+      };
+      qualityGate = runQualityGate(skillData);
+      passLedger.push({ pass, claims, notEstablished });
+
+      // Hard-fail only on the name format check - everything else is either
+      // advisory or handled by the regeneration path below.
+      const nameCheck = qualityGate.checks.find((c) => c.id === "package.nameFormat");
+      if (nameCheck && !nameCheck.passed) {
+        return jsonResponse(
+          { error: `Generated skill name "${skill.name}" is invalid. Please regenerate.` },
+          502,
+        );
+      }
+
+      violations = provenanceViolations(qualityGate.checks);
+      // Blocking only where the demand can be met. With nothing to cite, the
+      // checks report an honest skip and a block would be a gate nobody can
+      // satisfy, which the chain forbids.
+      const blocking = Boolean(targets?.hasTargets);
+      if (!blocking || violations.length === 0) break;
+      if (pass >= MAX_GENERATION_PASSES) break;
+
+      log.info("provenance gate blocked, regenerating once", {
+        userId: user.id,
+        pass,
+        violations: violations.length,
       });
     }
 
-    const skillData: SkillData = {
-      name: skill.name,
-      description: skill.description,
-      body: skill.body,
-      references: skill.references || [],
-      test_prompts: skill.test_prompts || [],
-      archetype: skill.archetype,
-      voice_profile_present: voiceProfileContext.length > 0,
-      provenance,
-    };
+    const skill = parsed?.skill;
+    if (!parsed || !skill || !pkg || !qualityGate) {
+      return jsonResponse({ error: "The generated skill was incomplete. Please try again." }, 502);
+    }
 
-    const qualityGate = runQualityGate(skillData);
+    const provenanceBlocked = Boolean(targets?.hasTargets) && violations.length > 0;
 
-    // Phase 1 baseline metric: how many rules this package states without
-    // pointing at what they came from. Advisory, logged every run so the later
-    // phases have a number to move.
+    // The number this phase exists to move: rules stated without pointing at
+    // what they came from, counted across the whole gated package.
     const baselineUnresolvedClaims = parseUnpointedImperatives(
       qualityGate.checks.find((c) => c.id === "prov.everyRuleCited")?.detail,
     ) ?? 0;
-    log.info("provenance baseline", {
+    log.info("provenance result", {
       userId: user.id,
       unpointed_imperatives: baselineUnresolvedClaims,
+      passes: pass,
+      blocked: provenanceBlocked,
+      router_lines: routerLineCount(pkg),
       skill_name: skill.name,
     });
 
-    // Hard-fail only on the name format check - everything else is advisory
-    // and shown to the user so they can decide whether to regenerate.
-    const nameCheck = qualityGate.checks.find((c) => c.id === "package.nameFormat");
-    if (nameCheck && !nameCheck.passed) {
-      return jsonResponse(
-        { error: `Generated skill name "${skill.name}" is invalid. Please regenerate.` },
-        502,
-      );
-    }
-
-    const zipResult = await buildSkillZip({
-      name: skill.name,
-      description: skill.description,
-      body: skill.body,
-      references: skill.references || [],
-      testPrompts: skill.test_prompts || [],
-      archetype: skill.archetype,
-      client: user.email || undefined,
-    });
+    const zipResult = await buildSkillZipFromPackage(pkg, skill.test_prompts || [], skill.name);
 
     // Persist the package in Storage FIRST, so the artefact survives the
     // response unmounting. Before this, the installable ZIP existed only in
@@ -376,13 +480,18 @@ Deno.serve(async (req) => {
     // tab on /memory can surface it alongside drafts, frameworks, exports,
     // and custom briefings. Quiet on failure - if the table doesn't exist
     // yet (migration not yet applied), the user still gets their skill.
-    const { error: artifactInsertError } = await serviceClient
+    //
+    // body is the FLATTENED package (CH-02): mcp-context.get_skill returns this
+    // one column, so a router whose leaves cannot be fetched would resolve to
+    // nothing on the far side. The flat form carries every leaf beneath the
+    // router under its own delimiter.
+    const { data: artifactRow, error: artifactInsertError } = await serviceClient
       .from("generated_artifacts")
       .insert({
         user_id: user.id,
         kind: "skill",
         name: skill.name,
-        body: skill.body,
+        body: flattenPackageForPull(pkg),
         metadata: {
           archetype: skill.archetype || null,
           zip_filename: `${skill.name}.zip`,
@@ -392,15 +501,60 @@ Deno.serve(async (req) => {
           // Which provider actually generated this artefact. The critique
           // stage's "different provider on Signature" rule checks against
           // this recorded fact, not an assumption (CH-14).
-          provider: providerFromModel(aiResponse.model),
-          model: aiResponse.model,
+          provider: providerFromModel(lastModel),
+          model: lastModel,
+          package_files: pkg.files.map((f) => f.path),
+          router_lines: routerLineCount(pkg),
+          provenance_passes: pass,
+          provenance_blocked: provenanceBlocked,
         },
-      });
+      })
+      .select("id")
+      .single();
     if (artifactInsertError) {
       console.warn(
         "generate-skill-export: generated_artifacts insert failed",
         artifactInsertError,
       );
+    }
+
+    // The provenance ledger: one row per claim per pass, plus the edges from
+    // this artefact back to the memory facts it was built out of. Both are
+    // best effort; neither is worth losing a package the leader is waiting for.
+    if (artifactRow?.id && targets) {
+      try {
+        const rows = passLedger.flatMap((entry) =>
+          buildProvenanceRows({
+            userId: user.id,
+            artifactId: artifactRow.id,
+            pass: entry.pass,
+            claims: entry.claims,
+            notEstablished: entry.notEstablished,
+            targets,
+          })
+        );
+        if (rows.length > 0) {
+          const { error } = await serviceClient.from("skill_provenance").insert(rows);
+          if (error) log.warn("skill_provenance insert failed", { userId: user.id, error });
+        }
+
+        const linkRows = buildMemoryLinkRows(
+          user.id,
+          artifactRow.id,
+          citedMemoryFactIds(claims, targets),
+        );
+        if (linkRows.length > 0) {
+          const { error } = await serviceClient
+            .from("memory_links")
+            .upsert(linkRows, {
+              onConflict: "user_id,from_type,from_id,to_type,to_id,edge_type",
+              ignoreDuplicates: true,
+            });
+          if (error) log.warn("memory_links insert failed", { userId: user.id, error });
+        }
+      } catch (err) {
+        log.warn("provenance ledger write failed", { userId: user.id, error: err });
+      }
     }
 
     return jsonResponse({
@@ -418,6 +572,19 @@ Deno.serve(async (req) => {
       },
       quality_gate: qualityGate,
       baseline_unresolved_claims: baselineUnresolvedClaims,
+      // Never a bare rejection (spec 4.5). When two passes could not clear the
+      // gate the package still ships, and this is what the leader is shown so
+      // they can decide whether to keep it, edit it, or say more.
+      provenance: {
+        blocked: provenanceBlocked,
+        passes: pass,
+        violations,
+        message: provenanceBlocked
+          ? "Some rules in this skill do not point at anything you said or graded. They are listed " +
+            "above. Keep the skill, edit those lines, or tell me more about where they came from."
+          : null,
+      },
+      package_files: pkg.files.map((f) => f.path),
       zip_base64: zipResult.base64,
       zip_filename: `${skill.name}.zip`,
       zip_byte_length: zipResult.byteLength,
@@ -428,6 +595,14 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: (err as Error).message }, 500);
   }
 });
+
+/** The prov.* findings, as the sentences the regeneration prompt is handed. */
+function provenanceViolations(checks: QualityCheck[]): string[] {
+  return checks
+    .filter((check) => (PROVENANCE_CHECK_IDS as readonly string[]).includes(check.id))
+    .filter((check) => !check.passed)
+    .map((check) => `${check.id}: ${check.detail ?? check.label}`);
+}
 
 function jsonResponse(payload: unknown, status: number): Response {
   return new Response(JSON.stringify(payload), {

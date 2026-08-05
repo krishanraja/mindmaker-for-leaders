@@ -1,69 +1,17 @@
 /**
- * Template builders for the static files included in every skill ZIP:
- *   - SKILL.md (YAML frontmatter + body)
+ * Template builders for the three static operator files included in every skill
+ * ZIP:
  *   - 01-test-prompts.txt
  *   - 02-maintenance-card.txt
  *   - 03-install-guide.txt
  *
  * Static files are kept verbatim from the project plan so clients see
  * consistent guidance regardless of which skill they download.
+ *
+ * SKILL.md is no longer built here. From Phase 3b it is a ROUTER, generated
+ * with the rest of the package by _shared/skill-package.ts, so the frontmatter
+ * and the routing table cannot drift apart.
  */
-
-export interface SkillFrontmatterInput {
-  name: string;
-  description: string;
-  archetype?: string;
-  client?: string;
-  version?: string;
-}
-
-export function buildSkillMarkdown(
-  frontmatter: SkillFrontmatterInput,
-  body: string,
-): string {
-  const yaml = renderYamlFrontmatter(frontmatter);
-  return `${yaml}\n\n${body.trimEnd()}\n`;
-}
-
-function renderYamlFrontmatter(input: SkillFrontmatterInput): string {
-  const lines: string[] = [];
-  lines.push("---");
-  lines.push(`name: ${input.name}`);
-  lines.push("description: >");
-  // YAML folded scalar: each non-empty line is appended with a single space.
-  // Wrap at ~80 chars for readability without breaking semantics.
-  const wrapped = wrap(input.description.replace(/\s+/g, " ").trim(), 80);
-  for (const line of wrapped) {
-    lines.push(`  ${line}`);
-  }
-  lines.push("license: Proprietary. Built by Mindmaker (themindmaker.ai).");
-  lines.push("compatibility: Designed for Claude Code, Claude.ai, and compatible agent platforms.");
-  lines.push("metadata:");
-  lines.push("  author: mindmaker");
-  lines.push(`  version: "${input.version || "1.0"}"`);
-  if (input.client) lines.push(`  client: ${input.client}`);
-  if (input.archetype) lines.push(`  archetype: ${input.archetype}`);
-  lines.push("---");
-  return lines.join("\n");
-}
-
-function wrap(text: string, width: number): string[] {
-  const out: string[] = [];
-  const words = text.split(" ");
-  let line = "";
-  for (const w of words) {
-    if (!line) {
-      line = w;
-    } else if (line.length + 1 + w.length <= width) {
-      line += ` ${w}`;
-    } else {
-      out.push(line);
-      line = w;
-    }
-  }
-  if (line) out.push(line);
-  return out.length ? out : [""];
-}
 
 export function buildTestPromptsFile(prompts: string[], skillName: string): string {
   const header = [

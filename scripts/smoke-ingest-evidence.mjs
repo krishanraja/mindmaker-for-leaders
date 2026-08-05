@@ -126,14 +126,38 @@ try {
   });
   const genOut = await gen.json();
   const baseline = genOut?.baseline_unresolved_claims;
-  check("generate returns the provenance baseline", typeof baseline === "number", `baseline_unresolved_claims=${baseline}`);
+  check("generate returns the provenance number", typeof baseline === "number", `baseline_unresolved_claims=${baseline}`);
   const provChecks = (genOut?.quality_gate?.checks || []).filter((c) => c.id.startsWith("prov."));
-  check("all three prov.* checks run and are advisory", provChecks.length === 3,
+  check("all three prov.* checks run", provChecks.length === 3,
     provChecks.map((c) => `${c.id}=${c.passed}`).join(" "));
 
-  console.log(`\n=== PHASE 1 BASELINE ===`);
-  console.log(`unpointed imperatives in a generated skill: ${baseline}`);
-  console.log(`This is the number Phase 3b must drive to zero.\n`);
+  // Phase 3b acceptance. Both halves matter and neither alone is a pass: zero
+  // unpointed rules in a package that still says something. A package that
+  // reached zero by emptying itself has failed, which is why the leaf content is
+  // asserted beside the number.
+  check("no rule in the package is unpointed", baseline === 0, `unpointed=${baseline}`);
+
+  const files = genOut?.package_files || [];
+  check("the package is a router plus leaves", files.includes("SKILL.md") &&
+    files.some((f) => f.startsWith("rubric/")) && files.includes("rubric/general.md"),
+    files.join(", "));
+
+  const bodyLines = String(genOut?.skill?.body || "").split("\n").filter((l) => l.trim()).length;
+  check("the skill still says something", bodyLines >= 15, `${bodyLines} non-blank body lines`);
+
+  const passes = genOut?.provenance?.passes;
+  check("the gate settled inside the one allowed regeneration", passes >= 1 && passes <= 2,
+    `passes=${passes}, blocked=${genOut?.provenance?.blocked}`);
+
+  console.log(`\n=== PHASE 3b ===`);
+  console.log(`unpointed imperatives in a generated skill: ${baseline}  (was 6 at the Phase 1 baseline)`);
+  console.log(`package: ${files.join(", ")}`);
+  console.log(`passes: ${passes}, blocked: ${genOut?.provenance?.blocked}`);
+  if (genOut?.provenance?.violations?.length) {
+    console.log(`violations still standing:`);
+    for (const v of genOut.provenance.violations) console.log(`  - ${v}`);
+  }
+  console.log("");
 } finally {
   const del = await auth(`admin/users/${userId}`, { method: "DELETE" }, service);
   check("cleanup: account deleted (new tables in the sweep)", del.ok, `status=${del.status}`);

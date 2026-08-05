@@ -1,20 +1,25 @@
 /**
- * Provenance checks over a generated skill body (Phase 1 of the harness chain).
+ * Provenance checks over a generated skill package.
  *
  * Pure module. No Deno imports, so vitest runs it beside the frontend suite.
  *
- * All three checks are ADVISORY in Phase 1. They exist to produce the baseline
- * number the later phases have to move: how many rules a generated skill states
- * without pointing at the evidence or the criterion it came from.
+ * Phase 1 shipped these three checks ADVISORY, to produce the one number the
+ * project exists to move: how many rules a generated skill states without
+ * pointing at the evidence or the criterion it came from. Phase 3b makes them
+ * BLOCKING in generate-skill-export, where criteria and evidence are supplied
+ * and the rule can therefore be satisfied. They stay advisory in
+ * free-skill-export, which has neither: a gate that cannot be satisfied must
+ * not block.
  *
- * CH-16 constraint: no gate evaluates or mutates a quoted span. Every check
- * here runs over a MASKED body, where verbatim evidence quotes and any fenced
- * block labelled as evidence or target voice register are blanked to spaces
- * first. A leader's own rejected wording can therefore never trip a rule
- * derived from that same wording.
+ * CH-16 constraint, and it is the rule the whole file is built around:
+ * NO GATE MUTATES A QUOTED SPAN. A slop check may only report. Every check here
+ * runs over a MASKED copy, where verbatim evidence quotes and any fenced block
+ * labelled as evidence or target voice register are blanked to spaces first, and
+ * exemplars/ is excluded from the gated set entirely. A leader's own rejected
+ * wording can therefore never trip a rule derived from that same wording.
  *
  * CH-13 constraint: matching is exact-substring, never fuzzy. A quote either
- * appears in the body character for character or it is not masked.
+ * appears in the text character for character or it is not masked.
  */
 
 export type PointerKind = "criterion" | "evidence";
@@ -30,6 +35,21 @@ export interface ImperativeClaim {
   text: string;
   /** 1-based line number in the body the claim was found on. */
   line: number;
+}
+
+/** One file of a package, as the gate reads it. */
+export interface ProvenanceFile {
+  path: string;
+  content: string;
+}
+
+/** An imperative, plus where in the package it lives and what it points at. */
+export interface LocatedClaim extends ImperativeClaim {
+  /** "" for a single-body run, otherwise the package-relative path. */
+  path: string;
+  /** "<path>#<nearest heading>", the section skill_provenance records. */
+  section: string;
+  pointer: Pointer | null;
 }
 
 /** Structurally identical to generate-skill-export/quality-gate.ts QualityCheck. */
@@ -141,6 +161,92 @@ export function extractImperativeClaims(body: string): ImperativeClaim[] {
     }
   }
   return claims;
+}
+
+/**
+ * The "NOT ESTABLISHED:" lines, which are the honest form an unpointed rule is
+ * rewritten into. They are deliberately NOT counted as claims, and they are
+ * extracted here so the provenance ledger can record them as marked_awaiting
+ * rather than lose them: a flagged gap is a finding, and a finding nobody wrote
+ * down is a finding that did not happen.
+ */
+export function extractNotEstablished(body: string): ImperativeClaim[] {
+  const out: ImperativeClaim[] = [];
+  const lines = (body ?? "").split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const withoutMarker = lines[i].replace(LIST_MARKER, "").trimStart();
+    const cleaned = stripDecoration(withoutMarker);
+    if (NOT_ESTABLISHED.test(cleaned)) out.push({ text: cleaned, line: i + 1 });
+  }
+  return out;
+}
+
+/**
+ * A stable id for a claim's text, so the same sentence in pass 1 and pass 2 is
+ * recognisably the same claim. 64-bit FNV-1a, rendered as 16 hex characters.
+ * Not a security primitive and never used as one; it is a join key.
+ */
+export function claimHash(text: string): string {
+  const normalised = (text ?? "").replace(/\s+/g, " ").trim().toLowerCase();
+  // Two 32-bit FNV-1a lanes with different offsets, concatenated. Keeps the
+  // arithmetic inside the 32-bit range JS bitwise ops are exact over.
+  let a = 0x811c9dc5;
+  let b = 0x01000193;
+  for (let i = 0; i < normalised.length; i++) {
+    const code = normalised.charCodeAt(i);
+    a = Math.imul(a ^ code, 0x01000193) >>> 0;
+    b = Math.imul(b ^ (code + i), 0x85ebca6b) >>> 0;
+  }
+  return a.toString(16).padStart(8, "0") + b.toString(16).padStart(8, "0");
+}
+
+const HEADING_TEXT = /^\s{0,3}#{1,6}\s+(.*)$/;
+
+/**
+ * Every imperative in a set of files, with its file, its nearest heading and
+ * its pointer. Quotes are masked before anything is read (CH-16).
+ */
+export function collectClaims(
+  files: ProvenanceFile[],
+  quotes: string[] = [],
+): LocatedClaim[] {
+  const out: LocatedClaim[] = [];
+  for (const file of files ?? []) {
+    const masked = maskQuotedSpans(file.content ?? "", quotes);
+    const headingByLine = new Map<number, string>();
+    let heading = "";
+    const lines = masked.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const match = HEADING_TEXT.exec(lines[i]);
+      if (match) heading = match[1].trim();
+      headingByLine.set(i + 1, heading);
+    }
+    for (const claim of extractImperativeClaims(masked)) {
+      const section = headingByLine.get(claim.line) ?? "";
+      out.push({
+        ...claim,
+        path: file.path ?? "",
+        section: section ? `${file.path}#${section}` : (file.path ?? ""),
+        pointer: findPointer(claim.text),
+      });
+    }
+  }
+  return out;
+}
+
+/** The NOT ESTABLISHED lines across a set of files, with their sections. */
+export function collectNotEstablished(
+  files: ProvenanceFile[],
+  quotes: string[] = [],
+): LocatedClaim[] {
+  const out: LocatedClaim[] = [];
+  for (const file of files ?? []) {
+    const masked = maskQuotedSpans(file.content ?? "", quotes);
+    for (const line of extractNotEstablished(masked)) {
+      out.push({ ...line, path: file.path ?? "", section: file.path ?? "", pointer: null });
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -279,14 +385,14 @@ export function parseUnpointedImperatives(detail?: string | null): number | null
   return match ? Number(match[1]) : null;
 }
 
-function quoteSample(claims: ImperativeClaim[], limit = 3): string {
+function quoteSample(claims: LocatedClaim[], limit = 3): string {
   return claims
     .slice(0, limit)
-    .map((c) => `line ${c.line}: "${c.text.slice(0, 70)}"`)
+    .map((c) => `${c.path ? `${c.path} ` : ""}line ${c.line}: "${c.text.slice(0, 70)}"`)
     .join("; ");
 }
 
-function everyRuleCited(claims: ImperativeClaim[]): ProvenanceCheck {
+function everyRuleCited(claims: LocatedClaim[]): ProvenanceCheck {
   const unpointed = claims.filter((claim) => !findPointer(claim.text));
   const detail = `${unpointed.length} of ${claims.length} imperatives carry no [C]/[E] pointer` +
     (unpointed.length > 0 ? ` (${quoteSample(unpointed)})` : "");
@@ -298,7 +404,7 @@ function everyRuleCited(claims: ImperativeClaim[]): ProvenanceCheck {
   };
 }
 
-function pointerResolves(claims: ImperativeClaim[], opts: ProvenanceOptions): ProvenanceCheck {
+function pointerResolves(claims: LocatedClaim[], opts: ProvenanceOptions): ProvenanceCheck {
   const criterionIds = opts.knownCriterionIds;
   const evidenceIds = opts.knownEvidenceIds;
   const hasCriterionIds = Array.isArray(criterionIds);
@@ -340,7 +446,7 @@ function pointerResolves(claims: ImperativeClaim[], opts: ProvenanceOptions): Pr
 }
 
 function noSituatedGeneralisation(
-  claims: ImperativeClaim[],
+  claims: LocatedClaim[],
   opts: ProvenanceOptions,
 ): ProvenanceCheck {
   const situated = opts.situatedEvidenceIds;
@@ -371,20 +477,82 @@ function noSituatedGeneralisation(
   };
 }
 
+/** The check ids this module owns, in the order it returns them. */
+export const PROVENANCE_CHECK_IDS = [
+  "prov.everyRuleCited",
+  "prov.pointerResolves",
+  "prov.noSituatedGeneralisation",
+] as const;
+
 /**
- * The three advisory provenance checks, in the QualityCheck shape the skill
- * quality gate already speaks. Quotes and labelled fences are masked first, so
- * nothing here reads a verbatim span.
+ * The three provenance checks, in the QualityCheck shape the skill quality gate
+ * already speaks. Quotes and labelled fences are masked first, so nothing here
+ * reads a verbatim span.
  */
 export function runProvenanceChecks(
   body: string,
   opts: ProvenanceOptions = {},
 ): ProvenanceCheck[] {
-  const masked = maskQuotedSpans(body ?? "", opts.evidenceQuotes ?? []);
-  const claims = extractImperativeClaims(masked);
+  return runProvenanceChecksOverClaims(
+    collectClaims([{ path: "", content: body ?? "" }], opts.evidenceQuotes ?? []),
+    opts,
+  );
+}
+
+/**
+ * The same three checks over a whole package.
+ *
+ * The caller decides which files are gated; gatedFiles() in skill-package.ts is
+ * the answer for a generated package and it excludes exemplars/ and evals/
+ * entirely (CH-16). Nothing here reads a file it was not handed.
+ */
+export function runProvenanceChecksOverFiles(
+  files: ProvenanceFile[],
+  opts: ProvenanceOptions = {},
+): ProvenanceCheck[] {
+  return runProvenanceChecksOverClaims(collectClaims(files, opts.evidenceQuotes ?? []), opts);
+}
+
+/** For a caller that already collected the claims and wants to reuse them. */
+export function runProvenanceChecksOverClaims(
+  claims: LocatedClaim[],
+  opts: ProvenanceOptions = {},
+): ProvenanceCheck[] {
   return [
     everyRuleCited(claims),
     pointerResolves(claims, opts),
     noSituatedGeneralisation(claims, opts),
   ];
+}
+
+/**
+ * How a claim's pointer resolved, in the vocabulary skill_provenance.resolution
+ * speaks. 'deleted' is written by stage 7a in a later phase, when an
+ * unresolvable rule is removed rather than reported; nothing in Phase 3b deletes
+ * a rule, so nothing here returns it.
+ */
+export type ClaimResolution = "cited" | "unresolved" | "marked_awaiting" | "deleted";
+
+export function resolveClaim(claim: LocatedClaim, opts: ProvenanceOptions = {}): ClaimResolution {
+  const pointer = claim.pointer;
+  if (!pointer) return "unresolved";
+  const known = pointer.kind === "criterion" ? opts.knownCriterionIds : opts.knownEvidenceIds;
+  // No id set for that kind means resolution was not checkable this pass. The
+  // honest answer is the pointer stands, the same skip prov.pointerResolves
+  // reports rather than a fake pass or a fake failure.
+  if (!Array.isArray(known)) return "cited";
+  return idResolves(pointer.id, known) ? "cited" : "unresolved";
+}
+
+/** The full id a short pointer resolves to, or null. The map back to a uuid. */
+export function resolvePointerId(pointer: Pointer, known: string[] | undefined): string | null {
+  if (!Array.isArray(known)) return null;
+  const needle = pointer.id.toLowerCase();
+  const hit = known.find((candidate) => {
+    const hay = String(candidate ?? "").toLowerCase();
+    if (!hay) return false;
+    if (hay === needle) return true;
+    return needle.length >= MIN_FRAGMENT_LENGTH && hay.startsWith(needle);
+  });
+  return hit ?? null;
 }
