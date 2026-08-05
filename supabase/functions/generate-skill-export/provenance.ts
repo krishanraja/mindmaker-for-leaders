@@ -29,7 +29,12 @@ import {
   type LocatedClaim,
   type ProvenanceOptions,
 } from "../_shared/provenance-checks.ts";
-import type { PackageCriterion, PackageExemplar, PackageHoldoutItem } from "../_shared/skill-package.ts";
+import type {
+  PackageCriterion,
+  PackageEvidence,
+  PackageExemplar,
+  PackageHoldoutItem,
+} from "../_shared/skill-package.ts";
 import type { PromptCriterion, PromptEvidence } from "./prompt.ts";
 
 /** Stored evidence rows offered for citation. Enough to choose from, not a dump. */
@@ -79,6 +84,12 @@ export interface PointerTargets {
   promptEvidence: PromptEvidence[];
   /** Rendered into the package's rubric leaves. */
   packageCriteria: PackageCriterion[];
+  /**
+   * The same evidence, in the shape the package needs to derive the surface
+   * leaf's "Applies to" header: the id the body cites, and the situation it was
+   * said in. Nothing else, because nothing else scopes a leaf.
+   */
+  packageEvidence: PackageEvidence[];
   /** What the gate resolves pointers against. Short ids, matched exactly. */
   options: ProvenanceOptions;
   /** short id -> criteria.id. */
@@ -249,6 +260,13 @@ export async function loadPointerTargets(
     promptCriteria,
     promptEvidence,
     packageCriteria,
+    packageEvidence: promptEvidence.map((row) => ({
+      shortId: row.shortId,
+      // Only a SITUATED row scopes anything. A standing quote is true wherever
+      // it is cited, so folding it into an "Applies to" line would narrow a leaf
+      // by more than the evidence says.
+      situation: row.situated ? text(row.situation) || null : null,
+    })),
     options: {
       knownCriterionIds,
       knownEvidenceIds,

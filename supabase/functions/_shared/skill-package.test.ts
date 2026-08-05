@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   buildSkillPackage,
   CORE_LEAF,
+  deriveScope,
   fileAt,
   flattenPackageForPull,
   GENERAL_LEAF,
@@ -11,12 +12,16 @@ import {
   routerLineCount,
   slugify,
   stripFrontmatter,
+  surfaceLeafPath,
   verbatimSpans,
   type BuildPackageInput,
   type PackageCriterion,
+  type PackageEvidence,
 } from './skill-package';
 import {
   collectClaims,
+  findAllPointers,
+  parseScopeHeader,
   parseUnpointedImperatives,
   runProvenanceChecksOverFiles,
 } from './provenance-checks';
@@ -80,6 +85,12 @@ const BASE: BuildPackageInput = {
   surface: 'client updates',
   references: [{ filename: 'company-context.md', content: '# Company\n\nThe pilot runs until March.' }],
   criteria: [CRITERION],
+  // E7f2a is cited by the body. E9b1c is available and never cited, which is how
+  // the scope header proves it describes the leaf rather than the id set.
+  evidence: [
+    { shortId: 'E7f2a', situation: 'client updates on the pilot engagement' },
+    { shortId: 'E9b1c', situation: 'the monthly board pack' },
+  ],
   exemplars: [
     { verdict: 'would_not_send', body: 'Never send a deck. Always pad it out.', why: 'buries the ask' },
     { verdict: 'send', body: 'We need a call on pricing by Friday.', why: 'leads with the decision' },
@@ -213,6 +224,105 @@ describe('what the gate reads', () => {
     ]);
     expect(checks[0].passed).toBe(true);
     expect(parseUnpointedImperatives(checks[0].detail)).toBe(0);
+  });
+});
+
+describe('the surface leaf declares its scope, once', () => {
+  const SURFACE_LEAF = 'rubric/client-updates.md';
+
+  function scopeOf(pkg = build()) {
+    return parseScopeHeader(fileAt(pkg, SURFACE_LEAF)!.content);
+  }
+
+  it('writes the header from the situations of the evidence its rules cite', () => {
+    expect(scopeOf()).toEqual({
+      appliesTo: 'client updates on the pilot engagement',
+      scopeIds: ['7f2a'],
+    });
+  });
+
+  it('names only evidence the leaf actually cites', () => {
+    // The rule the whole mechanism rests on: a leaf may not declare a scope its
+    // cited evidence does not support. E9b1c was available and never cited, so
+    // the board pack is not part of what this leaf covers.
+    const leaf = fileAt(build(), SURFACE_LEAF)!.content;
+    const rules = leaf
+      .split('\n')
+      .filter((line) => !line.startsWith('**Applies to:**') && !line.startsWith('**Scope source:**'))
+      .join('\n');
+    const cited = new Set(
+      findAllPointers(rules).filter((p) => p.kind === 'evidence').map((p) => p.id),
+    );
+    const scope = scopeOf()!;
+    for (const id of scope.scopeIds) expect(cited.has(id)).toBe(true);
+    expect(scope.scopeIds).not.toContain('9b1c');
+    expect(scope.appliesTo).not.toContain('board pack');
+  });
+
+  it('omits the header when no cited evidence carries a situation', () => {
+    // Never invent a scope. With nothing situated behind the citation the leaf
+    // says nothing about coverage, and its rules go back to needing their own
+    // qualifier, which is the honest fallback rather than a quiet upgrade.
+    expect(scopeOf(build({ evidence: [{ shortId: 'E7f2a', situation: null }] }))).toBeNull();
+    expect(scopeOf(build({ evidence: [] }))).toBeNull();
+    expect(fileAt(build({ evidence: [] }), SURFACE_LEAF)!.content).not.toContain('Applies to:');
+  });
+
+  it('never writes one on core.md or general.md', () => {
+    // Always-on and fallback are not situations. This boundary is what still
+    // catches a standing rule landing in core.md off one situated remark.
+    const pkg = build();
+    expect(parseScopeHeader(fileAt(pkg, CORE_LEAF)!.content)).toBeNull();
+    expect(parseScopeHeader(fileAt(pkg, GENERAL_LEAF)!.content)).toBeNull();
+    expect(parseScopeHeader(fileAt(pkg, 'SKILL.md')!.content)).toBeNull();
+  });
+
+  it('is what clears prov.noSituatedGeneralisation for a scoped leaf', () => {
+    // The finding this mechanism was built for: the body's rules rest on a
+    // situated transcript quote, and before the header every one of them read as
+    // a standing rule.
+    const opts = {
+      knownCriterionIds: ['1'],
+      knownEvidenceIds: ['7f2a'],
+      situatedEvidenceIds: ['7f2a'],
+    };
+    const scoped = build();
+    const scopedChecks = runProvenanceChecksOverFiles(gatedFiles(scoped), {
+      ...opts,
+      evidenceQuotes: verbatimSpans(scoped),
+    });
+    expect(scopedChecks[2].passed).toBe(true);
+    expect(scopedChecks[0].passed).toBe(true);
+
+    const unscoped = build({ evidence: [{ shortId: 'E7f2a', situation: null }] });
+    const unscopedChecks = runProvenanceChecksOverFiles(gatedFiles(unscoped), {
+      ...opts,
+      evidenceQuotes: verbatimSpans(unscoped),
+    });
+    expect(unscopedChecks[2].passed).toBe(false);
+  });
+
+  it('derives nothing from evidence the content never points at', () => {
+    expect(deriveScope('Lead with what changed [E7f2a].', [])).toBeNull();
+    expect(deriveScope('Lead with what changed.', [{ shortId: 'E7f2a', situation: 'the pilot' }]))
+      .toBeNull();
+    expect(deriveScope('Lead with what changed [C1].', [{ shortId: 'E7f2a', situation: 'the pilot' }]))
+      .toBeNull();
+  });
+
+  it('joins distinct situations and dedupes both sides', () => {
+    const evidence: PackageEvidence[] = [
+      { shortId: 'E7f2a', situation: 'the pilot engagement' },
+      { shortId: 'E9b1c', situation: 'the pilot engagement' },
+      { shortId: 'Eaa11', situation: 'the weekly call' },
+    ];
+    const scope = deriveScope('A [E7f2a]. B [E9b1c]. C [E7f2a]. D [Eaa11].', evidence)!;
+    expect(scope.appliesTo).toBe('the pilot engagement; the weekly call');
+    expect(scope.scopeIds).toEqual(['7f2a', '9b1c', 'aa11']);
+  });
+
+  it('knows which leaf the generator actually wrote', () => {
+    expect(surfaceLeafPath(build())).toBe(SURFACE_LEAF);
   });
 });
 

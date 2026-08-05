@@ -7,12 +7,19 @@ import {
   extractNotEstablished,
   findPointer,
   findAllPointers,
+  formatScopeHeader,
+  isScopeSatisfied,
   maskQuotedSpans,
+  parseScopeHeader,
   parseUnpointedImperatives,
+  pathMayDeclareScope,
   resolveClaim,
   resolvePointerId,
   runProvenanceChecks,
   runProvenanceChecksOverFiles,
+  situatedGeneralisationOffenders,
+  unpointedClaims,
+  unresolvedPointerClaims,
 } from './provenance-checks';
 import { shortIdsFor, splitCitableSpans, spanVerifies } from './citable-spans';
 
@@ -391,6 +398,197 @@ describe('runProvenanceChecksOverFiles', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Declared scope: the situated form, expressed once at the right altitude
+// ---------------------------------------------------------------------------
+
+describe('parseScopeHeader', () => {
+  const header = [
+    '# client updates',
+    '',
+    '**Applies to:** client updates on the pilot engagement',
+    '**Scope source:** [E12], [Ef66a]',
+    '',
+    'Lead with what changed [E12].',
+  ].join('\n');
+
+  it('reads the applies-to line and the ids behind it', () => {
+    expect(parseScopeHeader(header)).toEqual({
+      appliesTo: 'client updates on the pilot engagement',
+      scopeIds: ['12', 'f66a'],
+    });
+  });
+
+  it('returns null for a file that declares nothing', () => {
+    expect(parseScopeHeader('# core\n\nLead with the decision [C1].')).toBeNull();
+    expect(parseScopeHeader('')).toBeNull();
+  });
+
+  it('returns null rather than crashing on a malformed header', () => {
+    // An applies-to with nothing behind it is a coverage claim with no evidence,
+    // which is the shape this module refuses everywhere else.
+    expect(parseScopeHeader('**Applies to:** everything\n\nBody.')).toBeNull();
+    expect(parseScopeHeader('**Applies to:**\n**Scope source:** [E12]')).toBeNull();
+    expect(parseScopeHeader('**Scope source:** none of them')).toBeNull();
+    expect(parseScopeHeader(undefined as unknown as string)).toBeNull();
+  });
+
+  it('ignores a declaration buried below the top of the file', () => {
+    const buried = ['# leaf', '', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+      '**Applies to:** everything', '**Scope source:** [E12]'].join('\n');
+    expect(parseScopeHeader(buried)).toBeNull();
+  });
+
+  it('round trips what formatScopeHeader writes', () => {
+    const scope = { appliesTo: 'the weekly note', scopeIds: ['7f2a'] };
+    expect(parseScopeHeader(`# leaf\n\n${formatScopeHeader(scope).join('\n')}\n`)).toEqual(scope);
+  });
+});
+
+describe('pathMayDeclareScope', () => {
+  it('allows a surface leaf and nothing else', () => {
+    expect(pathMayDeclareScope('rubric/client-updates.md')).toBe(true);
+    // core is always-on and general is the fallback: neither is a situation.
+    expect(pathMayDeclareScope('rubric/core.md')).toBe(false);
+    expect(pathMayDeclareScope('rubric/general.md')).toBe(false);
+    // The router carries no rules, and a reference file is written by the
+    // generator, so honouring a header there would let it scope itself.
+    expect(pathMayDeclareScope('SKILL.md')).toBe(false);
+    expect(pathMayDeclareScope('references/company-context.md')).toBe(false);
+    expect(pathMayDeclareScope('')).toBe(false);
+  });
+});
+
+describe('prov.noSituatedGeneralisation with a declared scope', () => {
+  const SCOPED_LEAF = [
+    '# client updates',
+    '',
+    '**Applies to:** client updates on the pilot engagement',
+    '**Scope source:** [E12]',
+    '',
+    'Lead with what changed and the impact of those changes [E12].',
+  ].join('\n');
+
+  const opts = { knownEvidenceIds: ['12', '9f0a'], situatedEvidenceIds: ['12', '9f0a'] };
+
+  it('does not flag a rule whose situation the leaf already declares', () => {
+    const checks = runProvenanceChecksOverFiles(
+      [{ path: 'rubric/client-updates.md', content: SCOPED_LEAF }],
+      opts,
+    );
+    expect(checks[2].passed).toBe(true);
+    // and it is not silently lost from the count either
+    expect(checks[0].passed).toBe(true);
+  });
+
+  it('still flags the same rule in core.md, which is the james-harrabin guard', () => {
+    // "We do not want a deck" was said by ONE client about ONE engagement. In a
+    // surface leaf that says so at the top it is a scoped rule. In the always-on
+    // leaf it is a standing rule about everything the leader produces, and that
+    // is the flattening this whole chain exists to catch. The boundary is the
+    // point: core.md may never declare a scope, so the same sentence fails here.
+    const checks = runProvenanceChecksOverFiles(
+      [{ path: 'rubric/core.md', content: SCOPED_LEAF }],
+      opts,
+    );
+    expect(checks[2].passed).toBe(false);
+    expect(checks[2].detail).toContain('situated evidence only');
+  });
+
+  it('still flags a rule citing a situation the leaf does not cover', () => {
+    // A different situated id: the board pack, smuggled into the client-update
+    // leaf. The header covers [E12] and says nothing about [E9f0a].
+    const smuggled = SCOPED_LEAF.replace(
+      'Lead with what changed and the impact of those changes [E12].',
+      'Give them the context, the numbers and the recommendation [E9f0a].',
+    );
+    const checks = runProvenanceChecksOverFiles(
+      [{ path: 'rubric/client-updates.md', content: smuggled }],
+      opts,
+    );
+    expect(checks[2].passed).toBe(false);
+  });
+
+  it('never reads the header itself as a rule', () => {
+    // The situation string is the leader's world, not ours: it can contain
+    // "never" or "must" and the header is still metadata, not a rule.
+    const leaf = [
+      '# client updates',
+      '',
+      '**Applies to:** updates where he never wants a deck',
+      '**Scope source:** [E12]',
+      '',
+      'Lead with what changed [E12].',
+    ].join('\n');
+    const claims = collectClaims([{ path: 'rubric/client-updates.md', content: leaf }]);
+    expect(claims).toHaveLength(1);
+    expect(claims[0].text).toContain('Lead with what changed');
+  });
+
+  it('leaves a claim in an unscoped file behaving exactly as before', () => {
+    const checks = runProvenanceChecksOverFiles(
+      [{ path: 'rubric/core.md', content: 'Never produce a deck [E12].' }],
+      opts,
+    );
+    expect(checks[2].passed).toBe(false);
+  });
+});
+
+describe('isScopeSatisfied', () => {
+  const [claim] = collectClaims([
+    {
+      path: 'rubric/client-updates.md',
+      content: '# leaf\n\n**Applies to:** the pilot\n**Scope source:** [E12]\n\nLead with it [E12].',
+    },
+  ]);
+
+  it('is true when the file covers every situated pointer on the claim', () => {
+    expect(isScopeSatisfied(claim, claim.scope, ['12'])).toBe(true);
+  });
+
+  it('is false when the file declares no scope', () => {
+    expect(isScopeSatisfied(claim, null, ['12'])).toBe(false);
+  });
+
+  it('is false when the claim cites a situation the scope does not name', () => {
+    expect(isScopeSatisfied(claim, { appliesTo: 'the board pack', scopeIds: ['9f0a'] }, ['12']))
+      .toBe(false);
+  });
+});
+
+describe('the offender sets the retry is built from', () => {
+  const files = [
+    { path: 'rubric/client-updates.md', content: 'Keep it short.\nLead with the change [E404].' },
+  ];
+
+  it('names the unpointed line with its file and its line number', () => {
+    const claims = collectClaims(files);
+    const [offender] = unpointedClaims(claims);
+    expect(offender.path).toBe('rubric/client-updates.md');
+    expect(offender.line).toBe(1);
+    expect(offender.text).toBe('Keep it short.');
+  });
+
+  it('names the pointer that resolves to nothing', () => {
+    const found = unresolvedPointerClaims(collectClaims(files), { knownEvidenceIds: ['12'] });
+    expect(found).toHaveLength(1);
+    expect(found[0].unresolved).toEqual([{ kind: 'evidence', id: '404' }]);
+  });
+
+  it('reports the same offenders the check counted', () => {
+    const claims = collectClaims([
+      { path: 'rubric/core.md', content: 'Never produce a deck [E12].' },
+    ]);
+    const offenders = situatedGeneralisationOffenders(claims, ['12']);
+    const checks = runProvenanceChecksOverFiles(
+      [{ path: 'rubric/core.md', content: 'Never produce a deck [E12].' }],
+      { situatedEvidenceIds: ['12'] },
+    );
+    expect(offenders).toHaveLength(1);
+    expect(checks[2].detail).toContain(offenders[0].text.slice(0, 20));
+  });
+});
+
 describe('resolveClaim and resolvePointerId', () => {
   const opts = { knownCriterionIds: ['1'], knownEvidenceIds: ['7f2a'] };
 
@@ -470,5 +668,33 @@ describe('shortIdsFor', () => {
     const values = Array.from(ids.values());
     expect(new Set(values).size).toBe(2);
     expect(values[0].length).toBeGreaterThan(4);
+  });
+});
+
+describe("NOT ESTABLISHED under a label", () => {
+  it("does not count a labelled honest gap as an unpointed rule", () => {
+    // The generator did the right thing: no pointer existed, so it wrote the
+    // escape. Anchoring the marker to the line start alone counted this as a
+    // violation, which penalises the fix rather than the failure.
+    const claims = extractImperativeClaims("Hard rules: NOT ESTABLISHED: Avoid excessive detail");
+    expect(claims).toHaveLength(0);
+  });
+
+  it("records the labelled form as a marked gap, so it is not lost", () => {
+    const gaps = extractNotEstablished("Hard rules: NOT ESTABLISHED: Avoid excessive detail");
+    expect(gaps).toHaveLength(1);
+  });
+
+  it("still counts a rule that merely mentions the marker mid-sentence", () => {
+    // The marker has to INTRODUCE the assertion. Burying it inside a live rule
+    // is not an escape, and treating it as one would be a way to silence any
+    // rule by mentioning the phrase.
+    const claims = extractImperativeClaims("Avoid long updates because NOT ESTABLISHED: no source");
+    expect(claims.length).toBeGreaterThan(0);
+  });
+
+  it("strips at most one label, so a nested prefix is not an escape", () => {
+    const claims = extractImperativeClaims("Rules: Voice: NOT ESTABLISHED: avoid filler");
+    expect(claims.length).toBeGreaterThan(0);
   });
 });

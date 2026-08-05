@@ -44,7 +44,30 @@
  * operator .txt files are exempt too, and for a different reason worth stating:
  * they are installation and maintenance instructions about the package, not
  * rules about the person, so they have nothing to point at.
+ *
+ * ---------------------------------------------------------------------------
+ * The surface leaf declares its scope, once
+ * ---------------------------------------------------------------------------
+ *
+ * A surface leaf exists to hold the rules for ONE surface. So it says so at the
+ * top, in the two machine-readable lines provenance-checks.ts writes and reads:
+ *
+ *   **Applies to:** client updates on the pilot engagement
+ *   **Scope source:** [E12], [Ef66a]
+ *
+ * The line is derived from the situations of the evidence the leaf's own rules
+ * cite. Nothing is invented: when no cited evidence carries a situation the
+ * header is omitted entirely and those rules go back to needing their own
+ * qualifier. rubric/core.md and rubric/general.md never carry one, because
+ * always-on and fallback are not situations.
  */
+
+import {
+  findAllPointers,
+  formatScopeHeader,
+  resolvePointerId,
+  type FileScope,
+} from "./provenance-checks.ts";
 
 // ---------------------------------------------------------------------------
 // Shape
@@ -85,6 +108,18 @@ export interface PackageCriterion {
   gap?: number | null;
 }
 
+/**
+ * An evidence row the body was allowed to cite, with the situation it was said
+ * in. Only the fields the scope header needs: the package never re-renders the
+ * quote, which lives in the evidence table and in the leader's own transcript.
+ */
+export interface PackageEvidence {
+  /** "E7f2a", exactly as the body cites it, letter prefix included. */
+  shortId: string;
+  /** What was going on when it was said. Empty means it scopes nothing. */
+  situation?: string | null;
+}
+
 /** One of the person's own graded pieces. Verbatim, never cleaned up. */
 export interface PackageExemplar {
   position?: number | null;
@@ -109,6 +144,8 @@ export interface BuildPackageInput {
   surface?: string | null;
   references?: Array<{ filename: string; content: string }>;
   criteria?: PackageCriterion[];
+  /** The evidence the body could cite. Only the surface leaf's scope reads it. */
+  evidence?: PackageEvidence[];
   exemplars?: PackageExemplar[];
   holdout?: PackageHoldoutItem[];
   archetype?: string | null;
@@ -390,6 +427,42 @@ function criterionBlock(criterion: PackageCriterion): string[] {
   return out;
 }
 
+/**
+ * The scope a leaf's own rules earn, or null.
+ *
+ * Read off the evidence those rules ACTUALLY cite, never off the evidence that
+ * happened to be available: a leaf may not declare a scope its cited evidence
+ * does not support. Cited rows with no situation contribute nothing, and a leaf
+ * whose cited rows all lack one gets no header at all rather than a scope
+ * someone would have to take on trust.
+ */
+export function deriveScope(content: string, evidence: PackageEvidence[]): FileScope | null {
+  const byShortId = new Map<string, PackageEvidence>();
+  for (const row of evidence ?? []) {
+    const short = clean(row.shortId).replace(/^E/i, "");
+    if (short) byShortId.set(short, row);
+  }
+  if (byShortId.size === 0) return null;
+
+  const known = Array.from(byShortId.keys());
+  const situations: string[] = [];
+  const scopeIds: string[] = [];
+  for (const pointer of findAllPointers(content)) {
+    if (pointer.kind !== "evidence") continue;
+    // The same prefix rule the gate resolves pointers with, so a header written
+    // here and a claim read there can never disagree about which row was meant.
+    const resolved = resolvePointerId(pointer, known);
+    if (!resolved) continue;
+    const situation = clean(byShortId.get(resolved)?.situation);
+    if (!situation) continue;
+    if (!scopeIds.includes(resolved)) scopeIds.push(resolved);
+    if (!situations.includes(situation)) situations.push(situation);
+  }
+  if (scopeIds.length === 0 || situations.length === 0) return null;
+  return { appliesTo: situations.join("; "), scopeIds };
+}
+
+/** rubric/core.md. Always-on, so it never declares a scope. */
 function renderCoreLeaf(criteria: PackageCriterion[], surface: string): string {
   if (criteria.length === 0) {
     return [
@@ -416,23 +489,38 @@ function renderCoreLeaf(criteria: PackageCriterion[], surface: string): string {
   return `${lines.join("\n").trimEnd()}\n`;
 }
 
+/**
+ * The surface leaf: the one file that exists to hold the rules for this surface,
+ * and therefore the one file that may say so at the top.
+ *
+ * The scope is derived from the rules BEFORE the header is written, so the
+ * header can only ever describe evidence the leaf already cites.
+ */
 function renderSurfaceLeaf(
   body: string,
   criteria: PackageCriterion[],
   surface: string,
+  evidence: PackageEvidence[],
 ): string {
-  const lines: string[] = [`# ${surface}`, "", clean(body), ""];
+  const rules: string[] = [clean(body), ""];
   if (criteria.length > 0) {
-    lines.push("## Checks specific to this surface", "");
-    for (const criterion of criteria) lines.push(...criterionBlock(criterion), "");
+    rules.push("## Checks specific to this surface", "");
+    for (const criterion of criteria) rules.push(...criterionBlock(criterion), "");
   }
-  return `${lines.join("\n").trimEnd()}\n`;
+
+  const scope = deriveScope(rules.join("\n"), evidence);
+  const header = scope ? [...formatScopeHeader(scope), ""] : [];
+
+  return `${[`# ${surface}`, "", ...header, ...rules].join("\n").trimEnd()}\n`;
 }
 
 /**
  * The fallback leaf is not optional. Without it an unmatched piece either gets
  * judged against the wrong leaf or gets nothing, and the second one fails
  * silently, which is the worse of the two.
+ *
+ * It never declares a scope either: "anything that matched nothing else" is the
+ * absence of a situation, not a situation.
  */
 function renderGeneralLeaf(surface: string): string {
   return [
@@ -535,7 +623,10 @@ export function buildSkillPackage(input: BuildPackageInput): SkillPackage {
 
   // Leaves first, so the routing table only ever names files that exist.
   files.push({ path: CORE_LEAF, content: renderCoreLeaf(core, surface) });
-  files.push({ path: surfaceLeaf, content: renderSurfaceLeaf(input.body, rest, surface) });
+  files.push({
+    path: surfaceLeaf,
+    content: renderSurfaceLeaf(input.body, rest, surface, input.evidence ?? []),
+  });
   files.push({ path: GENERAL_LEAF, content: renderGeneralLeaf(surface) });
 
   const references: PackageFile[] = [];
@@ -644,6 +735,19 @@ export function verbatimSpans(pkg: SkillPackage): string[] {
 
 export function fileAt(pkg: SkillPackage, path: string): PackageFile | undefined {
   return pkg.files.find((file) => file.path === path);
+}
+
+/**
+ * The surface leaf's path. It is the one rubric leaf whose content the generator
+ * wrote, which is what a caller needs to know when it has to tell the generator
+ * WHERE a finding lives in terms the generator can act on.
+ */
+export function surfaceLeafPath(pkg: SkillPackage): string | null {
+  const leaf = pkg.files.find(
+    (file) =>
+      file.path.startsWith("rubric/") && file.path !== CORE_LEAF && file.path !== GENERAL_LEAF,
+  );
+  return leaf?.path ?? null;
 }
 
 export function routerLineCount(pkg: SkillPackage): number {

@@ -20,6 +20,11 @@
  *
  * CH-13 constraint: matching is exact-substring, never fuzzy. A quote either
  * appears in the text character for character or it is not masked.
+ *
+ * Scope, added after the first Phase 3b acceptance run: the package is
+ * router-plus-leaves, so a rule's situation can be declared ONCE at the top of
+ * the leaf that exists to hold it rather than repeated on every line inside it.
+ * See "Declared scope" below for the rule and the boundary that keeps it honest.
  */
 
 export type PointerKind = "criterion" | "evidence";
@@ -50,6 +55,13 @@ export interface LocatedClaim extends ImperativeClaim {
   /** "<path>#<nearest heading>", the section skill_provenance records. */
   section: string;
   pointer: Pointer | null;
+  /**
+   * The scope the file this claim lives in declares, or null when the file
+   * declares none. A claim carries it so every downstream check reads the same
+   * answer the collector read, rather than re-deriving it from a file it may no
+   * longer have.
+   */
+  scope: FileScope | null;
 }
 
 /** Structurally identical to generate-skill-export/quality-gate.ts QualityCheck. */
@@ -74,6 +86,22 @@ export interface ProvenanceOptions {
 const HEADING_LINE = /^\s{0,3}#{1,6}\s/;
 const LIST_MARKER = /^\s*(?:[-*+]\s+|\d+[.)]\s+)/;
 const NOT_ESTABLISHED = /^not established\s*:/i;
+/**
+ * One short label and a colon, e.g. "Hard rules: ". A generator writing an
+ * honest gap under a labelled field produces "Hard rules: NOT ESTABLISHED: x",
+ * and anchoring the marker to the line start alone counted that as an unpointed
+ * rule, which penalises the fix instead of the failure. At most ONE label is
+ * stripped, so the marker still has to INTRODUCE the assertion: "Do X because
+ * NOT ESTABLISHED" is not an escape and must keep failing.
+ */
+const LABEL_PREFIX = /^(?:\*\*)?[A-Za-z][A-Za-z0-9 ]{0,28}(?:\*\*)?\s*:\s*/;
+
+/** True when the text is the honest NOT ESTABLISHED form, with or without a label. */
+function isNotEstablished(text: string): boolean {
+  if (NOT_ESTABLISHED.test(text)) return true;
+  const delabelled = text.replace(LABEL_PREFIX, "");
+  return delabelled !== text && NOT_ESTABLISHED.test(delabelled);
+}
 const COMMAND_WORDS = /\b(?:must(?:\s+not)?|never|always|do not|don't|avoid)\b/i;
 
 /**
@@ -154,9 +182,9 @@ export function extractImperativeClaims(body: string): ImperativeClaim[] {
     if (!raw.trim()) continue;
     if (HEADING_LINE.test(raw)) continue;
     const withoutMarker = raw.replace(LIST_MARKER, "").trimStart();
-    if (NOT_ESTABLISHED.test(stripDecoration(withoutMarker))) continue;
+    if (isNotEstablished(stripDecoration(withoutMarker))) continue;
     for (const sentence of splitSentences(withoutMarker)) {
-      if (NOT_ESTABLISHED.test(stripDecoration(sentence))) continue;
+      if (isNotEstablished(stripDecoration(sentence))) continue;
       if (isImperative(sentence)) claims.push({ text: sentence, line: i + 1 });
     }
   }
@@ -176,7 +204,7 @@ export function extractNotEstablished(body: string): ImperativeClaim[] {
   for (let i = 0; i < lines.length; i++) {
     const withoutMarker = lines[i].replace(LIST_MARKER, "").trimStart();
     const cleaned = stripDecoration(withoutMarker);
-    if (NOT_ESTABLISHED.test(cleaned)) out.push({ text: cleaned, line: i + 1 });
+    if (isNotEstablished(cleaned)) out.push({ text: cleaned, line: i + 1 });
   }
   return out;
 }
@@ -203,8 +231,26 @@ export function claimHash(text: string): string {
 const HEADING_TEXT = /^\s{0,3}#{1,6}\s+(.*)$/;
 
 /**
- * Every imperative in a set of files, with its file, its nearest heading and
- * its pointer. Quotes are masked before anything is read (CH-16).
+ * One file, masked (CH-16) and with any scope header it is allowed to declare
+ * read off and then blanked, so nothing downstream reads the header as a rule.
+ */
+function readFile(file: ProvenanceFile, quotes: string[]): {
+  body: string;
+  scope: FileScope | null;
+} {
+  // Masked first, then the header is read. The header is generated metadata and
+  // never a leader's verbatim words, so reading it from the masked copy costs
+  // nothing; in the impossible case where a quote blanked it, the scope is lost
+  // and its rules are judged unscoped, which fails in the safe direction.
+  const masked = maskQuotedSpans(file.content ?? "", quotes);
+  const scope = pathMayDeclareScope(file.path ?? "") ? parseScopeHeader(masked) : null;
+  return { body: scope ? blankScopeHeader(masked) : masked, scope };
+}
+
+/**
+ * Every imperative in a set of files, with its file, its nearest heading, its
+ * pointer and the scope its file declares. Quotes are masked before anything is
+ * read (CH-16).
  */
 export function collectClaims(
   files: ProvenanceFile[],
@@ -212,22 +258,23 @@ export function collectClaims(
 ): LocatedClaim[] {
   const out: LocatedClaim[] = [];
   for (const file of files ?? []) {
-    const masked = maskQuotedSpans(file.content ?? "", quotes);
+    const { body, scope } = readFile(file, quotes);
     const headingByLine = new Map<number, string>();
     let heading = "";
-    const lines = masked.split("\n");
+    const lines = body.split("\n");
     for (let i = 0; i < lines.length; i++) {
       const match = HEADING_TEXT.exec(lines[i]);
       if (match) heading = match[1].trim();
       headingByLine.set(i + 1, heading);
     }
-    for (const claim of extractImperativeClaims(masked)) {
+    for (const claim of extractImperativeClaims(body)) {
       const section = headingByLine.get(claim.line) ?? "";
       out.push({
         ...claim,
         path: file.path ?? "",
         section: section ? `${file.path}#${section}` : (file.path ?? ""),
         pointer: findPointer(claim.text),
+        scope,
       });
     }
   }
@@ -241,9 +288,9 @@ export function collectNotEstablished(
 ): LocatedClaim[] {
   const out: LocatedClaim[] = [];
   for (const file of files ?? []) {
-    const masked = maskQuotedSpans(file.content ?? "", quotes);
-    for (const line of extractNotEstablished(masked)) {
-      out.push({ ...line, path: file.path ?? "", section: file.path ?? "", pointer: null });
+    const { body, scope } = readFile(file, quotes);
+    for (const line of extractNotEstablished(body)) {
+      out.push({ ...line, path: file.path ?? "", section: file.path ?? "", pointer: null, scope });
     }
   }
   return out;
@@ -290,6 +337,150 @@ function idResolves(id: string, known: string[]): boolean {
     if (hay === needle) return true;
     return needle.length >= MIN_FRAGMENT_LENGTH && hay.startsWith(needle);
   });
+}
+
+// ---------------------------------------------------------------------------
+// Declared scope
+// ---------------------------------------------------------------------------
+
+/**
+ * THE RULE, written into the code because it is the whole of this section:
+ *
+ *   A SCOPE DECLARED ONCE AT THE TOP OF A LEAF IS THE SITUATED FORM EXPRESSED AT
+ *   THE RIGHT ALTITUDE. A LEAF MAY NOT DECLARE A SCOPE ITS CITED EVIDENCE DOES
+ *   NOT SUPPORT.
+ *
+ * The package is router-plus-leaves. A surface leaf like rubric/client-updates.md
+ * exists precisely to scope its contents to one surface, so demanding that every
+ * line inside it repeat "For client updates on this engagement, ..." produces
+ * unreadable output and pushes a generator toward a boilerplate prefix, which
+ * games the check instead of satisfying it. The header states the situation once,
+ * where it is true of everything below it, and names the evidence that says so.
+ *
+ * The boundary is what keeps the check honest, and it is not a detail:
+ * rubric/core.md is always-on and rubric/general.md is the explicit fallback, so
+ * NEITHER may ever declare a scope. That is what still catches "Never produce a
+ * deck" landing in core.md off one situated remark about one client, which is the
+ * failure this whole file exists to prevent.
+ */
+
+/** What a leaf says it covers, and the evidence rows that say so. */
+export interface FileScope {
+  /** The situations, deduped and joined. Prose, for the reader. */
+  appliesTo: string;
+  /** The evidence ids behind those situations, without the E prefix. */
+  scopeIds: string[];
+}
+
+const SCOPE_APPLIES_TO_LABEL = "**Applies to:**";
+const SCOPE_SOURCE_LABEL = "**Scope source:**";
+
+/**
+ * Lines from the top of a file the header may occupy. It is written directly
+ * under the leaf's H1, so a small window is enough; a wide one would let a
+ * declaration buried halfway down a file silence the rules above it.
+ */
+const SCOPE_HEADER_WINDOW = 8;
+
+/**
+ * Which files may declare a scope at all.
+ *
+ * Only a SURFACE rubric leaf. core.md and general.md are unscoped by definition.
+ * SKILL.md is a router and carries no rules. references/*.md are written by the
+ * generator, and honouring a header there would let the generator hand itself a
+ * scope, which is the one thing this mechanism must not become.
+ */
+const SCOPE_ELIGIBLE_PATH = /^rubric\/(?!core\.md$)(?!general\.md$)[^/]+\.md$/;
+
+export function pathMayDeclareScope(path: string): boolean {
+  return SCOPE_ELIGIBLE_PATH.test(String(path ?? ""));
+}
+
+/**
+ * The header, in the exact two lines parseScopeHeader reads back. Lives beside
+ * its parser so the format and the thing that reads it cannot drift apart;
+ * skill-package.ts writes these lines rather than its own copy of them.
+ */
+export function formatScopeHeader(scope: FileScope): string[] {
+  return [
+    `${SCOPE_APPLIES_TO_LABEL} ${scope.appliesTo}`,
+    `${SCOPE_SOURCE_LABEL} ${scope.scopeIds.map((id) => `[E${id}]`).join(", ")}`,
+  ];
+}
+
+/**
+ * The scope a file declares, or null.
+ *
+ * Both lines are required and the source line must carry at least one evidence
+ * pointer: an "Applies to" with nothing behind it is a claim about coverage with
+ * no evidence, which is the shape this module refuses everywhere else. Anything
+ * malformed returns null, which leaves the file unscoped and its rules judged
+ * exactly as they are today.
+ */
+export function parseScopeHeader(fileContent: string): FileScope | null {
+  const lines = String(fileContent ?? "").split("\n").slice(0, SCOPE_HEADER_WINDOW);
+  let appliesTo = "";
+  let scopeIds: string[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!appliesTo && trimmed.startsWith(SCOPE_APPLIES_TO_LABEL)) {
+      appliesTo = trimmed.slice(SCOPE_APPLIES_TO_LABEL.length).trim();
+      continue;
+    }
+    if (scopeIds.length === 0 && trimmed.startsWith(SCOPE_SOURCE_LABEL)) {
+      scopeIds = findAllPointers(trimmed)
+        .filter((pointer) => pointer.kind === "evidence")
+        .map((pointer) => pointer.id);
+    }
+  }
+  if (!appliesTo || scopeIds.length === 0) return null;
+  return { appliesTo, scopeIds };
+}
+
+/**
+ * Blank the two header lines, same length, newlines kept.
+ *
+ * Same idiom and same reason as stripFrontmatter: the header is package metadata,
+ * not a rule about the person, so no check may read it as one. Without this a
+ * situation string that happened to contain the word "never" would arrive as an
+ * unpointed imperative on the one line the package writes itself.
+ */
+function blankScopeHeader(content: string): string {
+  const lines = content.split("\n");
+  const limit = Math.min(lines.length, SCOPE_HEADER_WINDOW);
+  for (let i = 0; i < limit; i++) {
+    const trimmed = lines[i].trim();
+    if (trimmed.startsWith(SCOPE_APPLIES_TO_LABEL) || trimmed.startsWith(SCOPE_SOURCE_LABEL)) {
+      lines[i] = lines[i].replace(/[^\n]/g, " ");
+    }
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Is this claim's situation already declared by the file it lives in?
+ *
+ * True when the file declares a scope and EVERY situated pointer the claim
+ * carries is one the scope names. A claim citing a situation the leaf does not
+ * cover is not covered by it: that is a rule smuggling a different situation
+ * into this surface, and it stays an offender.
+ *
+ * Matching uses the same prefix rule as every other pointer resolution here, so
+ * a claim and a header written from the same id set always agree.
+ */
+export function isScopeSatisfied(
+  claim: LocatedClaim,
+  fileScope: FileScope | null | undefined,
+  situatedIds: string[],
+): boolean {
+  if (!fileScope) return false;
+  const situated = findAllPointers(claim.text ?? "").filter(
+    (pointer) => pointer.kind === "evidence" && idResolves(pointer.id, situatedIds ?? []),
+  );
+  // Vacuously true for a claim with no situated pointer. The offender predicate
+  // never reaches it in that state, and a "no" here would be an answer to a
+  // question nobody asked.
+  return situated.every((pointer) => idResolves(pointer.id, fileScope.scopeIds));
 }
 
 // ---------------------------------------------------------------------------
@@ -392,8 +583,77 @@ function quoteSample(claims: LocatedClaim[], limit = 3): string {
     .join("; ");
 }
 
+// ---------------------------------------------------------------------------
+// The offender sets
+// ---------------------------------------------------------------------------
+//
+// Each check below reports a count and a sample. The regeneration prompt needs
+// the full set, with the file and line on each one, so that a second pass edits
+// named lines instead of re-rolling the package. Both read the SAME predicate
+// from here: a retry told about a different set of offenders than the gate found
+// is a retry aimed at the wrong lines.
+
+/** Imperatives carrying no pointer at all. prov.everyRuleCited's finding. */
+export function unpointedClaims(claims: LocatedClaim[]): LocatedClaim[] {
+  return (claims ?? []).filter((claim) => !findPointer(claim.text));
+}
+
+/** The pointers on a passage that were checkable this pass and resolved to nothing. */
+function unresolvedPointersFor(text: string, opts: ProvenanceOptions): Pointer[] {
+  return findAllPointers(text).filter((pointer) => {
+    const known = pointer.kind === "criterion" ? opts.knownCriterionIds : opts.knownEvidenceIds;
+    // No id set for that kind means it was not checkable, which is a skip and
+    // never a finding.
+    if (!Array.isArray(known)) return false;
+    return !idResolves(pointer.id, known);
+  });
+}
+
+export interface UnresolvedPointerClaim {
+  claim: LocatedClaim;
+  unresolved: Pointer[];
+}
+
+/** Claims carrying at least one pointer that resolves to nothing. */
+export function unresolvedPointerClaims(
+  claims: LocatedClaim[],
+  opts: ProvenanceOptions = {},
+): UnresolvedPointerClaim[] {
+  const out: UnresolvedPointerClaim[] = [];
+  for (const claim of claims ?? []) {
+    const unresolved = unresolvedPointersFor(claim.text, opts);
+    if (unresolved.length > 0) out.push({ claim, unresolved });
+  }
+  return out;
+}
+
+/**
+ * Standing rules resting on situated evidence only, AFTER the file's declared
+ * scope has been taken into account.
+ *
+ * A claim is an offender when all four hold:
+ *   1. it does not name its situation in its own sentence, and
+ *   2. it carries at least one pointer (an unpointed rule belongs to
+ *      prov.everyRuleCited, and counting it twice would double-report one fault), and
+ *   3. every pointer it carries is situated evidence, and
+ *   4. the file it lives in declares no scope covering those pointers.
+ */
+export function situatedGeneralisationOffenders(
+  claims: LocatedClaim[],
+  situatedIds: string[],
+): LocatedClaim[] {
+  const situated = situatedIds ?? [];
+  return (claims ?? []).filter((claim) => {
+    if (hasSituationalQualifier(claim.text)) return false;
+    const pointers = findAllPointers(claim.text);
+    if (pointers.length === 0) return false;
+    if (!pointers.every((p) => p.kind === "evidence" && idResolves(p.id, situated))) return false;
+    return !isScopeSatisfied(claim, claim.scope, situated);
+  });
+}
+
 function everyRuleCited(claims: LocatedClaim[]): ProvenanceCheck {
-  const unpointed = claims.filter((claim) => !findPointer(claim.text));
+  const unpointed = unpointedClaims(claims);
   const detail = `${unpointed.length} of ${claims.length} imperatives carry no [C]/[E] pointer` +
     (unpointed.length > 0 ? ` (${quoteSample(unpointed)})` : "");
   return {
@@ -423,9 +683,7 @@ function pointerResolves(claims: LocatedClaim[], opts: ProvenanceOptions): Prove
   const checkable = pointers.filter((p) =>
     p.kind === "criterion" ? hasCriterionIds : hasEvidenceIds
   );
-  const unresolved = checkable.filter((p) =>
-    !idResolves(p.id, (p.kind === "criterion" ? criterionIds : evidenceIds) as string[])
-  );
+  const unresolved = claims.flatMap((claim) => unresolvedPointersFor(claim.text, opts));
 
   const skipped = pointers.length - checkable.length;
   const skipNote = skipped > 0
@@ -459,20 +717,16 @@ function noSituatedGeneralisation(
     };
   }
 
-  const offenders = claims.filter((claim) => {
-    if (hasSituationalQualifier(claim.text)) return false;
-    const pointers = findAllPointers(claim.text);
-    // An unpointed rule is prov.everyRuleCited's finding, not this one's.
-    if (pointers.length === 0) return false;
-    return pointers.every((p) => p.kind === "evidence" && idResolves(p.id, situated));
-  });
+  const offenders = situatedGeneralisationOffenders(claims, situated);
+  const scoped = claims.filter((claim) => claim.scope).length;
+  const scopeNote = scoped > 0 ? `; ${scoped} in a leaf that declares its scope` : "";
 
   return {
     id: "prov.noSituatedGeneralisation",
     label: "No standing rule rests only on situated evidence",
     passed: offenders.length === 0,
     detail: offenders.length === 0
-      ? `${claims.length} imperative(s) checked, none generalise situated evidence`
+      ? `${claims.length} imperative(s) checked, none generalise situated evidence${scopeNote}`
       : `${offenders.length} rule(s) stated as standing on situated evidence only (${quoteSample(offenders)})`,
   };
 }

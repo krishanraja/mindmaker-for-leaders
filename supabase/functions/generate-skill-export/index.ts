@@ -29,13 +29,23 @@
  * ships with the findings listed and the leader decides. A bare rejection would
  * take a real piece of work away from someone because a gate we wrote was
  * unhappy, and the gate is not the product.
+ *
+ * That one retry is an EDIT, not a reroll: provenanceOffenders below names each
+ * offending line with the file, the line number and the exact text, because the
+ * first acceptance run lost a single unpointed imperative through both passes
+ * while being told only how many there were.
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildMemoryContext } from "../_shared/memory-context-builder.ts";
 import { selectModel } from "../_shared/openai-utils.ts";
 import { callLLMWithFallback, providerFromModel } from "../_shared/llm-fallback.ts";
-import { buildSkillSystemPrompt, buildSkillUserPrompt } from "./prompt.ts";
+import {
+  buildRegenerationPrompt,
+  buildSkillSystemPrompt,
+  buildSkillUserPrompt,
+  type ProvenanceOffender,
+} from "./prompt.ts";
 import { runQualityGate, type QualityCheck, type SkillData } from "./quality-gate.ts";
 import { buildSkillZipFromPackage, packageFromZipInput, type BuildSkillZipInput } from "./zip.ts";
 import { recordAiUsage, checkDailySoftCap } from "../_shared/ai-usage.ts";
@@ -44,12 +54,17 @@ import {
   collectNotEstablished,
   parseUnpointedImperatives,
   PROVENANCE_CHECK_IDS,
+  situatedGeneralisationOffenders,
+  unpointedClaims,
+  unresolvedPointerClaims,
   type LocatedClaim,
+  type ProvenanceOptions,
 } from "../_shared/provenance-checks.ts";
 import {
   flattenPackageForPull,
   gatedFiles,
   routerLineCount,
+  surfaceLeafPath,
   verbatimSpans,
   type SkillPackage,
 } from "../_shared/skill-package.ts";
@@ -225,33 +240,46 @@ Deno.serve(async (req) => {
     let claims: LocatedClaim[] = [];
     let notEstablished: LocatedClaim[] = [];
     let violations: string[] = [];
+    let offenders: ProvenanceOffender[] = [];
     let lastModel = "";
     let pass = 0;
     const passLedger: Array<{ pass: number; claims: LocatedClaim[]; notEstablished: LocatedClaim[] }> = [];
 
+    // The first user turn, identical on both passes. The regeneration pass
+    // appends the previous attempt and a repair instruction to it rather than
+    // replacing it, so the model edits work it can see instead of writing a
+    // second package from the same brief and hoping.
+    const firstTurn = buildSkillUserPrompt({
+      transcript,
+      memoryContext: memoryResult.context,
+      profileContext,
+      voiceProfileContext,
+      seed,
+      criteria: targets?.promptCriteria ?? [],
+      evidence: targets?.promptEvidence ?? [],
+    });
+    let previousAttempt = "";
+
     while (pass < MAX_GENERATION_PASSES) {
       pass += 1;
+
+      const messages: Array<{ role: string; content: string }> = [
+        { role: "system", content: buildSkillSystemPrompt() },
+        { role: "user", content: firstTurn },
+      ];
+      if (pass > 1) {
+        // The repair instruction goes in either way. Losing the previous
+        // attempt would make the edit harder; losing the findings would make
+        // the second pass a coin toss.
+        if (previousAttempt) messages.push({ role: "assistant", content: previousAttempt });
+        messages.push({ role: "user", content: buildRegenerationPrompt(violations, offenders) });
+      }
 
       // Generate via the LLM. JSON mode keeps the model on-format. The
       // system prompt encodes the triage gate + extraction rules.
       const aiResponse = await callLLMWithFallback(
         {
-          messages: [
-            { role: "system", content: buildSkillSystemPrompt() },
-            {
-              role: "user",
-              content: buildSkillUserPrompt({
-                transcript,
-                memoryContext: memoryResult.context,
-                profileContext,
-                voiceProfileContext,
-                seed,
-                criteria: targets?.promptCriteria ?? [],
-                evidence: targets?.promptEvidence ?? [],
-                violations: pass > 1 ? violations : undefined,
-              }),
-            },
-          ],
+          messages,
           model: selectModel("complex"),
           temperature: 0.3,
           max_tokens: 4000,
@@ -259,6 +287,7 @@ Deno.serve(async (req) => {
         },
         { useCache: false },
       );
+      previousAttempt = aiResponse.content ?? "";
 
       lastModel = aiResponse.model;
 
@@ -330,6 +359,7 @@ Deno.serve(async (req) => {
         client: user.email || undefined,
         surface: targets?.surface ?? null,
         criteria: targets?.packageCriteria ?? [],
+        evidence: targets?.packageEvidence ?? [],
         exemplars: gradedWork.exemplars,
         holdout: gradedWork.holdout,
         status: (targets?.packageCriteria.length ?? 0) > 0 ? "provisional" : "draft",
@@ -402,6 +432,7 @@ Deno.serve(async (req) => {
       }
 
       violations = provenanceViolations(qualityGate.checks);
+      offenders = provenanceOffenders(claims, gateOptions, pkg);
       // Blocking only where the demand can be met. With nothing to cite, the
       // checks report an honest skip and a block would be a gate nobody can
       // satisfy, which the chain forbids.
@@ -413,6 +444,7 @@ Deno.serve(async (req) => {
         userId: user.id,
         pass,
         violations: violations.length,
+        offenders: offenders.length,
       });
     }
 
@@ -602,6 +634,59 @@ function provenanceViolations(checks: QualityCheck[]): string[] {
     .filter((check) => (PROVENANCE_CHECK_IDS as readonly string[]).includes(check.id))
     .filter((check) => !check.passed)
     .map((check) => `${check.id}: ${check.detail ?? check.label}`);
+}
+
+/**
+ * The individual lines behind those findings, in terms the generator can act on.
+ *
+ * Two rules here, and both come from watching a single unpointed imperative
+ * survive two passes:
+ *
+ * 1. A finding is only worth sending if the generator can locate it. It writes
+ *    `body` and `references[]`, not package paths, so the package path is
+ *    translated into what it actually authored.
+ * 2. A finding in a file the PACKAGER wrote (the router, core.md, general.md) is
+ *    not the generator's to fix, and asking it to would invite a rewrite of a
+ *    file it does not control. Those stay in the violations summary and out of
+ *    the edit list.
+ */
+function provenanceOffenders(
+  claims: LocatedClaim[],
+  opts: ProvenanceOptions,
+  pkg: SkillPackage,
+): ProvenanceOffender[] {
+  const surfaceLeaf = surfaceLeafPath(pkg);
+  const authored = (path: string): string | null => {
+    if (path && path === surfaceLeaf) return "the skill body";
+    if (path.startsWith("references/")) return `the reference file ${path}`;
+    return null;
+  };
+
+  const out: ProvenanceOffender[] = [];
+  const push = (
+    claim: LocatedClaim,
+    finding: ProvenanceOffender["finding"],
+    note?: string,
+  ) => {
+    const where = authored(claim.path ?? "");
+    if (!where) return;
+    out.push({ finding, where, path: claim.path, line: claim.line, text: claim.text, note });
+  };
+
+  for (const claim of unpointedClaims(claims)) push(claim, "unpointed");
+  for (const { claim, unresolved } of unresolvedPointerClaims(claims, opts)) {
+    push(
+      claim,
+      "unresolved",
+      unresolved.map((p) => `[${p.kind === "criterion" ? "C" : "E"}${p.id}]`).join(", "),
+    );
+  }
+  if (Array.isArray(opts.situatedEvidenceIds)) {
+    for (const claim of situatedGeneralisationOffenders(claims, opts.situatedEvidenceIds)) {
+      push(claim, "situated", claim.scope ? `this leaf covers: ${claim.scope.appliesTo}` : undefined);
+    }
+  }
+  return out;
 }
 
 function jsonResponse(payload: unknown, status: number): Response {

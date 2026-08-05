@@ -39,6 +39,27 @@ export interface PromptEvidence {
   occurredAt?: string | null;
 }
 
+/**
+ * One line the gate found fault with, in the terms the generator can act on.
+ *
+ * The first Phase 3b acceptance run lost a single unpointed imperative through
+ * TWO passes, because the retry was handed the check's summary ("1 of 10
+ * imperatives carry no pointer") and re-rolled the package instead of repairing
+ * the line. A finding the second pass cannot locate is a finding it cannot fix.
+ */
+export interface ProvenanceOffender {
+  finding: "unpointed" | "unresolved" | "situated";
+  /** Where the generator writes it: "the skill body", or a reference filename. */
+  where: string;
+  /** The package file and line, for the record. */
+  path: string;
+  line: number;
+  /** The sentence, exactly as the gate read it. */
+  text: string;
+  /** Extra detail, e.g. the pointers that resolve to nothing. */
+  note?: string;
+}
+
 export interface SkillPromptInputs {
   transcript: string;
   memoryContext: string;
@@ -48,11 +69,6 @@ export interface SkillPromptInputs {
   /** The pointer targets. Empty means the model has nothing to cite. */
   criteria?: PromptCriterion[];
   evidence?: PromptEvidence[];
-  /**
-   * Set on the one regeneration attempt. The exact gate findings, so the second
-   * pass fixes named lines rather than rerolling the dice.
-   */
-  violations?: string[];
 }
 
 export function buildSkillSystemPrompt(): string {
@@ -67,7 +83,6 @@ export function buildSkillUserPrompt({
   seed,
   criteria,
   evidence,
-  violations,
 }: SkillPromptInputs): string {
   const lines: string[] = [];
 
@@ -112,27 +127,77 @@ export function buildSkillUserPrompt({
     );
   }
 
-  if (violations && violations.length > 0) {
-    // The one regeneration attempt (spec 4.5). Naming the failing lines is the
-    // difference between a fix and a reroll.
-    lines.push(
-      `REGENERATION: the previous attempt was blocked by the provenance gate. Every finding below is a`,
-      `line that states a rule without pointing at what it came from, or points at an id that does not`,
-      `exist, or turns a situated statement into a standing rule. Fix each one by adding the correct`,
-      `pointer from the CRITERIA / EVIDENCE lists above, by naming the situation, or by rewriting the`,
-      `line as "NOT ESTABLISHED: ...". Do not delete the useful content to make the gate quiet; a skill`,
-      `that says nothing passes for the wrong reason.`,
-      ``,
-      ...violations.map((v) => `- ${v}`),
-      ``,
-    );
-  }
-
   lines.push(
     `Apply the bounded-trigger check and the Four Honest Tests, then generate the skill (or route to a different output type). Return ONLY the JSON object described in the system prompt.`,
   );
 
   return lines.join("\n");
+}
+
+/**
+ * The one regeneration attempt (spec 4.5), written as an EDIT rather than a
+ * retry.
+ *
+ * This is the SECOND user turn. The caller puts the previous attempt back in the
+ * conversation as the assistant turn before it, because an instruction to change
+ * one line and leave everything else alone is unfollowable by a model that
+ * cannot see what it wrote. Without that, "regenerate with the violations named"
+ * is a reroll wearing a fix's clothes, and Phase 3b's first acceptance run lost a
+ * single unpointed imperative through both passes exactly that way.
+ *
+ * Every offending line is named with the file it landed in, its line number and
+ * its exact text. A finding the second pass cannot locate is a finding it cannot
+ * fix.
+ */
+export function buildRegenerationPrompt(
+  violations: string[],
+  offenders: ProvenanceOffender[],
+): string {
+  const lines: string[] = [
+    `REPAIR THE NAMED LINES AND CHANGE NOTHING ELSE.`,
+    ``,
+    `Your JSON above is accepted apart from the lines listed below. Return the SAME JSON object:`,
+    `same name, same description, same sections in the same order, same reference files, same test`,
+    `prompts, and every other sentence word for word as you wrote it. Edit only the lines named here.`,
+    `Do not rewrite the package to make the gate quiet; a skill that says nothing passes for the`,
+    `wrong reason, and a rewrite loses the lines that were already right.`,
+    ``,
+  ];
+
+  offenders.forEach((offender, i) => {
+    lines.push(`${i + 1}. In ${offender.where} (${offender.path} line ${offender.line}):`);
+    lines.push(`   "${offender.text}"`);
+    lines.push(`   ${offenderInstruction(offender)}`);
+  });
+  if (offenders.length > 0) lines.push(``);
+
+  if (violations.length > 0) {
+    lines.push(`The gate findings these came from:`, ...violations.map((v) => `- ${v}`), ``);
+  }
+
+  lines.push(
+    `Return ONLY the corrected JSON object, in the same shape as before. No prose before or after.`,
+  );
+  return lines.join("\n");
+}
+
+function offenderInstruction(offender: ProvenanceOffender): string {
+  switch (offender.finding) {
+    case "unpointed":
+      return `NO POINTER. Add the [C..] or [E..] id this rule came from, exactly as it was ` +
+        `given to you, or replace the whole line with "NOT ESTABLISHED: <what you were asserting>". ` +
+        `Change nothing else on the line.`;
+    case "unresolved":
+      return `POINTER RESOLVES TO NOTHING${offender.note ? ` (${offender.note})` : ""}. Replace it ` +
+        `with an id from the CRITERIA / EVIDENCE lists above, copied character for character, or ` +
+        `replace the whole line with "NOT ESTABLISHED: <what you were asserting>".`;
+    case "situated":
+    default:
+      return `STANDING RULE FROM A SITUATED QUOTE${offender.note ? ` (${offender.note})` : ""}. ` +
+        `The evidence it cites was said about one situation, and the leaf this line lives in does ` +
+        `not cover that situation. Either cite evidence from this surface, or name the situation ` +
+        `inside the sentence, or replace the whole line with "NOT ESTABLISHED: ...".`;
+  }
 }
 
 /**
@@ -297,7 +362,35 @@ The same contract applies to every reference file you emit, not only to the
 body. Cite the id you were given, exactly as it was written, including its
 letter prefix. Never invent an id: a pointer that resolves to nothing is worse
 than no pointer, because it looks checked.
-6. DO NOT RESTATE THE DESCRIPTION: The body is operational (procedure, examples, edge cases). The description handles triggering. The body's first paragraph must be different language and content from the description.
+6. WHERE A RULE LIVES IS PART OF WHAT IT SAYS.
+
+The package this body becomes is a router plus leaves. The body you write becomes
+the SURFACE leaf: the one file that exists to hold the rules for this one surface.
+The packager writes a single header at the top of that leaf, from the situations
+of the evidence your rules actually cite:
+
+  **Applies to:** client updates on the pilot engagement
+  **Scope source:** [E12], [Ef66a]
+
+That header states the situation ONCE, at the altitude where it is true of
+everything below it. So a rule in the body does not have to repeat the situation
+in its own sentence. "Lead with what changed and what it moved [E7f2a]" is
+complete. Prefixing every line with "For client updates on this engagement, ..."
+is not required, reads badly, and is not what the situated rule above asks for.
+
+Two things that header does not license:
+
+- It covers only the evidence your rules cite. A rule citing a quote about a
+  DIFFERENT situation (the board pack, the weekly call, another client) is not
+  covered by it, and must name that situation inside the sentence or become a
+  NOT ESTABLISHED line.
+- It does not exist on the always-on leaf. A rule you believe holds for
+  EVERYTHING this person produces does not belong in this body at all; the
+  always-on leaf is compiled from graded work, not written here. Writing a
+  universal rule off one situated quote is the exact failure this contract exists
+  to stop.
+
+7. DO NOT RESTATE THE DESCRIPTION: The body is operational (procedure, examples, edge cases). The description handles triggering. The body's first paragraph must be different language and content from the description.
 
 Required sections in body, in this exact order:
 - "## When this skill activates" (operational context, not a trigger restatement)

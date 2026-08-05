@@ -137,6 +137,14 @@ try {
   // asserted beside the number.
   check("no rule in the package is unpointed", baseline === 0, `unpointed=${baseline}`);
 
+  // The second half of the same contract, asserted rather than printed. A leaf
+  // that scopes itself at the top clears this honestly; a leaf that turns one
+  // client's remark into a standing rule still fails it, which is the finding
+  // the whole james-harrabin transcript above exists to provoke.
+  const situated = provChecks.find((c) => c.id === "prov.noSituatedGeneralisation");
+  check("no rule generalises a situated quote", situated?.passed === true,
+    situated?.detail || "check missing");
+
   const files = genOut?.package_files || [];
   check("the package is a router plus leaves", files.includes("SKILL.md") &&
     files.some((f) => f.startsWith("rubric/")) && files.includes("rubric/general.md"),
@@ -151,6 +159,7 @@ try {
 
   console.log(`\n=== PHASE 3b ===`);
   console.log(`unpointed imperatives in a generated skill: ${baseline}  (was 6 at the Phase 1 baseline)`);
+  console.log(`situated generalisations: ${situated?.passed ? 0 : "see detail"}  (${situated?.detail || "n/a"})`);
   console.log(`package: ${files.join(", ")}`);
   console.log(`passes: ${passes}, blocked: ${genOut?.provenance?.blocked}`);
   if (genOut?.provenance?.violations?.length) {

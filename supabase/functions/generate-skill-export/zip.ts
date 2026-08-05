@@ -39,6 +39,7 @@ import {
   buildSkillPackage,
   type BuildPackageInput,
   type PackageCriterion,
+  type PackageEvidence,
   type PackageExemplar,
   type PackageHoldoutItem,
   type PackageStatus,
@@ -57,6 +58,8 @@ export interface BuildSkillZipInput {
   surface?: string | null;
   /** Compiled criteria, already carrying their short ids. */
   criteria?: PackageCriterion[];
+  /** The evidence the body could cite, with the situations that scope the leaf. */
+  evidence?: PackageEvidence[];
   /** Their own graded work, verbatim. */
   exemplars?: PackageExemplar[];
   /** The graded items held back from the build. */
@@ -85,6 +88,7 @@ export function packageFromZipInput(input: BuildSkillZipInput): SkillPackage {
     surface: input.surface,
     references: input.references,
     criteria: input.criteria,
+    evidence: input.evidence,
     exemplars: input.exemplars,
     holdout: input.holdout,
     archetype: input.archetype,
