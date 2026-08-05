@@ -4,11 +4,16 @@ import { PLAN_MATRIX } from '@/constants/planMatrix';
 import { EDGE_PRO_PRICE_LONG } from '@/constants/billing';
 import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { BrandLockup } from '@/components/landing/BrandLockup';
+import { HeroBackdrop } from '@/components/public/HeroBackdrop';
+import { PublicHeader } from '@/components/public/PublicHeader';
+import { PublicFooter } from '@/components/public/PublicFooter';
+import { PRICING } from '@/components/public/publicCopy';
 
-// Public pricing surface. Free is a real daily instrument; Edge Pro is the
-// decision tier. A willing buyer should never have to hunt for this: it is linked
-// from the paywall, Settings, and the post-decision upgrade moment.
+// The interactive pricing surface: the one with a live checkout button. A
+// willing buyer should never have to hunt for it, so it is linked from the
+// paywall, Settings, the post-decision upgrade moment and the public header.
+// PLAN_MATRIX is the single source of truth for what each tier includes, shared
+// with the Settings tab so the two can never drift.
 function cell(value: string | true | false, tier: 'free' | 'pro') {
   if (value === true) {
     return <Check className={tier === 'pro' ? 'h-4 w-4 text-accent' : 'h-4 w-4 text-muted-foreground'} strokeWidth={2.6} />;
@@ -32,56 +37,71 @@ export default function Pricing() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center px-5 py-10">
-      <button onClick={() => navigate(user ? '/dashboard' : '/')} className="mb-8">
-        <BrandLockup />
-      </button>
+    <div className="min-h-screen bg-background text-foreground">
+      <PublicHeader omit="/upgrade" />
 
-      <div className="w-full max-w-2xl">
-        <header className="text-center mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">Simple pricing</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Free is a real daily instrument. Edge Pro is the decision tier: it deepens the one thing CTRL does that general tools cannot.
+      <section className="relative overflow-hidden px-5 py-14 text-center sm:px-8 sm:py-16">
+        <HeroBackdrop weight="quiet" />
+        <div className="relative z-10 mx-auto w-full max-w-3xl">
+          <h1 className="mx-auto max-w-[22ch] text-balance text-[26px] font-extrabold leading-[1.06] tracking-[-0.03em] sm:text-[41px]">
+            {PRICING.h1}
+          </h1>
+          <p className="mx-auto mt-4 max-w-[60ch] text-balance text-[15px] leading-[1.55] text-muted-foreground sm:text-base">
+            {PRICING.sub}
           </p>
-        </header>
-
-        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-          <div className="grid grid-cols-[1fr,auto,auto] gap-x-4 sm:gap-x-6 gap-y-2.5 items-center">
-            <div />
-            <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Free</p>
-              <p className="text-[11px] text-muted-foreground/70">$0</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-wider text-accent">Edge Pro</p>
-              <p className="text-[11px] text-muted-foreground/70">{EDGE_PRO_PRICE_LONG}</p>
-            </div>
-
-            {PLAN_MATRIX.map((row) => (
-              <div key={row.label} className="contents">
-                <span className="text-sm text-foreground/90 py-1">{row.label}</span>
-                <span className="flex items-center justify-center">{cell(row.free, 'free')}</span>
-                <span className="flex items-center justify-center">{cell(row.pro, 'pro')}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex flex-col items-center gap-2">
-            {hasAccess ? (
-              <p className="text-sm text-accent font-medium">You are on Edge Pro. Thank you.</p>
-            ) : (
-              <button
-                onClick={onSubscribe}
-                disabled={isProcessing}
-                className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90 transition disabled:opacity-60"
-              >
-                {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Upgrade to Edge Pro <ArrowRight className="h-4 w-4" /></>}
-              </button>
-            )}
-            <p className="text-[11px] text-muted-foreground/70">Cancel anytime. Your free daily read and Automator stay free.</p>
-          </div>
         </div>
-      </div>
+      </section>
+
+      <section className="px-5 pb-16 sm:px-8">
+        <div className="mx-auto w-full max-w-2xl">
+          <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+            <div className="grid grid-cols-[1fr,auto,auto] items-center gap-x-4 gap-y-2.5 sm:gap-x-6">
+              <div />
+              <div className="text-center">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Free</p>
+                <p className="text-[11px] text-muted-foreground/70">$0</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-semibold uppercase tracking-wider text-accent">Edge Pro</p>
+                <p className="text-[11px] text-muted-foreground/70">{EDGE_PRO_PRICE_LONG}</p>
+              </div>
+
+              {PLAN_MATRIX.map((row) => (
+                <div key={row.label} className="contents">
+                  <span className="py-1 text-sm text-foreground/90">{row.label}</span>
+                  <span className="flex items-center justify-center">{cell(row.free, 'free')}</span>
+                  <span className="flex items-center justify-center">{cell(row.pro, 'pro')}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex flex-col items-center gap-2">
+              {hasAccess ? (
+                <p className="text-sm font-medium text-accent">You are on Edge Pro. Thank you.</p>
+              ) : (
+                <button
+                  onClick={onSubscribe}
+                  disabled={isProcessing}
+                  className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-60"
+                >
+                  {isProcessing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      {PRICING.cta} <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <p className="mt-5 text-[13px] leading-relaxed text-muted-foreground">{PRICING.note}</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground/70">{PRICING.fine}</p>
+        </div>
+      </section>
+
+      <PublicFooter />
     </div>
   );
 }

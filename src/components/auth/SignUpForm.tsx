@@ -130,13 +130,9 @@ export function SignUpForm() {
               Creating account...
             </>
           ) : (
-            'Create Account'
+            'Create account'
           )}
         </Button>
-
-        <p className="text-xs text-muted-foreground text-center">
-          Self-contained. No integrations. Your data stays yours.
-        </p>
       </form>
     </div>
   )

@@ -34,9 +34,17 @@ if (SUPABASE_PUBLISHABLE_KEY && !SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publish
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// The build-time prerender pass imports this module in Node, where there is no
+// `localStorage`; reading it at module scope threw and aborted the whole SSR
+// bundle, taking the prerendered HTML for every public route with it. In a
+// browser this is exactly the storage it always was. Undefined lets supabase-js
+// fall back to its own in-memory store for the render pass, which never needs to
+// persist a session.
+const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined;
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: authStorage,
     persistSession: true,
     autoRefreshToken: true,
   },
