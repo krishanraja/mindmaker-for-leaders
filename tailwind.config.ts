@@ -114,6 +114,13 @@ export default {
             opacity: "0",
           },
         },
+        // The "works with" wall under the hero. The track holds its list twice,
+        // so travelling exactly half its width lands back on an identical frame
+        // and the loop has no seam.
+        "marquee": {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" }
+        },
         "shimmer": {
           "0%, 90%, 100%": {
             "background-position": "calc(-100% - 100px) 0"
@@ -128,6 +135,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "collapsible-down": "collapsible-down 0.3s ease-out",
         "collapsible-up": "collapsible-up 0.3s ease-out",
+        "marquee": "marquee 38s linear infinite",
         "shimmer": "shimmer 8s ease-in-out infinite",
       },
     },

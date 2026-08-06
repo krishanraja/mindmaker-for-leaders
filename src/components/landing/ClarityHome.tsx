@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import mindmakerIcon from '@/assets/mindmaker-icon.png';
 import { EDGE_PRO_PRICE_LONG } from '@/constants/billing';
 import { HeroBackdrop } from '@/components/public/HeroBackdrop';
 import { PublicHeader } from '@/components/public/PublicHeader';
 import { PublicFooter } from '@/components/public/PublicFooter';
+import { ToolMarquee } from '@/components/public/ToolMarquee';
 import { WeighDemo } from '@/components/public/WeighDemo';
-import { LANDING, TOOLS } from '@/components/public/publicCopy';
+import { LANDING } from '@/components/public/publicCopy';
 
 /**
  * The CTRL front door, built to the approved copy deck (2026-08-05).
@@ -70,14 +72,15 @@ export function ClarityHome() {
     <div className="min-h-screen bg-background text-foreground">
       <PublicHeader />
 
-      {/* HERO. The moving background is clipped to the hero; the page below it
-          stays in normal flow so the document scrolls as usual. */}
-      <section className="relative overflow-hidden px-5 py-16 text-center sm:px-8 sm:py-24">
+      {/* HERO. Sized to own the screen it lands on: the viewport minus the
+          header, so on a phone nothing from the next section peeks in under the
+          fold. svh rather than vh because mobile browser chrome moves.
+          The moving background is clipped to the hero; the page below it stays
+          in normal flow so the document scrolls as usual. */}
+      <section className="relative flex min-h-[calc(100svh-57px)] flex-col items-center justify-center overflow-hidden px-5 py-14 text-center sm:px-8 sm:py-20">
         <HeroBackdrop weight="full" />
         <div className="relative z-10 mx-auto w-full max-w-4xl">
-          <span className="inline-block rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1.5 font-display text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">
-            {LANDING.eyebrow}
-          </span>
+          <img src={mindmakerIcon} alt="Mindmaker" className="mx-auto h-9 w-auto sm:h-11" />
 
           <h1 className="mx-auto mt-6 max-w-[15ch] text-balance font-display text-[2rem] font-extrabold leading-[1.03] tracking-[-0.033em] sm:text-[3.5rem]">
             {LANDING.h1}
@@ -104,15 +107,8 @@ export function ClarityHome() {
 
           <p className="mt-6 text-[12.5px] text-foreground/50">{LANDING.trust}</p>
 
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            <span className="font-display text-[9.5px] font-medium uppercase tracking-[0.14em] text-foreground/30">
-              {LANDING.toolsLbl}
-            </span>
-            {TOOLS.map((t) => (
-              <span key={t} className="text-[12.5px] text-foreground/45">
-                {t}
-              </span>
-            ))}
+          <div className="mt-10">
+            <ToolMarquee />
           </div>
         </div>
       </section>
