@@ -1,6 +1,7 @@
+/* eslint-disable react-refresh/only-export-components -- useAuth is co-located with the provider it reads; every consumer imports both from here */
 /**
  * AuthProvider Component
- * 
+ *
  * Authentication context provider with baseline linking support.
  */
 
@@ -75,6 +76,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Persist first-touch attribution into user_metadata so the signup is
     // joinable to its acquisition source downstream.
     const attribution = getAttribution();
+
+    // A visitor who weighed a decision on /try is already signed in
+    // ANONYMOUSLY, and that anonymous user owns the case row. Converting that
+    // same user in place is what makes "make an account and it stays" true; a
+    // plain signUp would mint a second user and orphan their work.
+    const { data: current } = await supabase.auth.getSession();
+    if (current?.session?.user?.is_anonymous) {
+      const { error } = await supabase.auth.updateUser({
+        email,
+        password,
+        data: attribution ? { attribution } : undefined,
+      });
+      if (!error) {
+        emitEvent('signed_up', { email, attribution, converted_from_anonymous: true }, false);
+      }
+      return { error: error?.message ?? null };
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -104,7 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user,
     isAuthenticated: user !== null && !user.is_anonymous,
-    isAnonymous: user !== null && (user.is_anonymous === true || (user.user_metadata as any)?.is_anonymous === true),
+    isAnonymous:
+      user !== null &&
+      (user.is_anonymous === true ||
+        (user.user_metadata as Record<string, unknown> | undefined)?.is_anonymous === true),
     isLoading,
     signIn,
     signUp,

@@ -1,15 +1,25 @@
-import * as React from "react"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft } from "lucide-react"
+import { motion } from "framer-motion"
 import { SignInForm } from "@/components/auth/SignInForm"
 import { SignUpForm } from "@/components/auth/SignUpForm"
 import { useAuth } from "@/components/auth/AuthProvider"
-import { CtrlLogo } from "@/components/landing/CtrlLogo"
-import { motion } from "framer-motion"
+import { BrandLockup } from "@/components/landing/BrandLockup"
+import { CtrlWordmark } from "@/components/public/CtrlWordmark"
+import { HeroBackdrop } from "@/components/public/HeroBackdrop"
+import { PublicHeader } from "@/components/public/PublicHeader"
+import { AUTH_COPY } from "@/components/public/publicCopy"
 
+/**
+ * The last front door. Sign up leads, because every public CTA that lands here
+ * is an invitation to start; a returning leader takes one tap to switch.
+ *
+ * A visitor who weighed something on /try arrives with an anonymous session,
+ * which AuthProvider.signUp converts in place, so their weigh is waiting for
+ * them on the other side rather than orphaned behind a second account.
+ */
 export default function Auth() {
-  const [isSignIn, setIsSignIn] = useState(true)
+  const [isSignIn, setIsSignIn] = useState(false)
   const navigate = useNavigate()
   const { isAuthenticated, isLoading } = useAuth()
 
@@ -28,61 +38,52 @@ export default function Auth() {
   }
 
   return (
-    <div className="h-screen-safe overflow-hidden flex flex-col bg-background">
-      <header className="flex items-center px-4 sm:px-6 py-4">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back</span>
-        </button>
-      </header>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <PublicHeader variant="back" />
 
-      <main className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex items-center justify-center px-4 sm:px-6 pb-8">
+      <main className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:py-16">
+        <HeroBackdrop weight="quiet" />
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="w-full max-w-sm"
+          transition={{ duration: 0.35 }}
+          className="relative z-10 w-full max-w-[400px] rounded-2xl border border-border bg-card p-6 sm:p-7"
         >
-          <div className="flex justify-center mb-6">
-            <CtrlLogo className="h-7 w-auto" />
+          <div className="flex items-center justify-center gap-2.5">
+            <BrandLockup />
+            <CtrlWordmark className="h-[16px]" />
           </div>
 
-          <h2 className="text-xl font-semibold text-center text-foreground mb-1">
-            {isSignIn ? "Welcome back" : "Start thinking clearly"}
-          </h2>
-          <p className="text-sm text-muted-foreground text-center mb-6">
-            {isSignIn
-              ? "Sign in to your mind"
-              : "Voice your first thought in 2 minutes"}
-          </p>
-
-          <div className="flex gap-1 p-1 bg-secondary rounded-lg mb-6">
+          <div className="mt-5 flex gap-1 rounded-xl border border-border bg-popover p-1">
             <button
               onClick={() => setIsSignIn(true)}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all ${
-                isSignIn
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+              className={`flex-1 rounded-lg px-4 py-2 font-display text-[12.5px] font-bold transition-all ${
+                isSignIn ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Sign In
+              Sign in
             </button>
             <button
               onClick={() => setIsSignIn(false)}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all ${
-                !isSignIn
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+              className={`flex-1 rounded-lg px-4 py-2 font-display text-[12.5px] font-bold transition-all ${
+                !isSignIn ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Sign Up
+              Sign up
             </button>
           </div>
 
+          <h1 className="mt-5 text-center font-display text-xl font-bold tracking-tight text-foreground">
+            {isSignIn ? 'Welcome back.' : AUTH_COPY.h1}
+          </h1>
+          <p className="mt-1.5 mb-5 text-center text-sm text-muted-foreground">
+            {isSignIn ? 'Everything is where you left it.' : AUTH_COPY.sub}
+          </p>
+
           {isSignIn ? <SignInForm /> : <SignUpForm />}
+
+          <p className="mt-5 text-center text-[11.5px] text-muted-foreground">{AUTH_COPY.foot}</p>
         </motion.div>
       </main>
     </div>

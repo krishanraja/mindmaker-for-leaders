@@ -1,139 +1,208 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Scale, Brain, Plug, Radio, ShieldCheck, GitFork } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { CtrlLogo } from '@/components/landing/CtrlLogo';
+import { ArrowRight } from 'lucide-react';
+import { EDGE_PRO_PRICE_LONG } from '@/constants/billing';
+import { HeroBackdrop } from '@/components/public/HeroBackdrop';
+import { PublicHeader } from '@/components/public/PublicHeader';
+import { PublicFooter } from '@/components/public/PublicFooter';
+import { WeighDemo } from '@/components/public/WeighDemo';
+import { LANDING, TOOLS } from '@/components/public/publicCopy';
 
-const TOOLS = ['ChatGPT', 'Claude', 'Gemini', 'Cursor', 'Claude Code'];
+/**
+ * The CTRL front door, built to the approved copy deck (2026-08-05).
+ *
+ * Six beats, in this order and no other: the hero, a real decision being
+ * weighed, taste as the moat, a brain you own and can take with you, the
+ * expertise built into the product, the price, and the line to leave on.
+ * Copy lives in components/public/publicCopy.ts, not inline, so the five
+ * public surfaces stay in lockstep.
+ */
 
-const PILLARS = [
-  { icon: Scale, title: 'Weigh the call', body: 'Decompose a real decision into its considerations, check each against live evidence, and see exactly where only you can decide. It clarifies; it never recommends from a thin signal.' },
-  { icon: Brain, title: 'One memory, every AI', body: 'A Memory Web of who you are - ranked by importance, kept fresh. Export it to any AI in one tap so nothing starts from zero.' },
-  { icon: Plug, title: 'Agent-native', body: 'A read-only MCP server: your own AI agents pull your live context on every call. No pasting, never stale.' },
-  { icon: Radio, title: 'A daily read, not noise', body: 'A ~3-minute briefing anchored to your real priorities - and a structured feed your agents can read too.' },
-];
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-block font-display text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">{children}</span>
+  );
+}
 
-function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <section className={`mx-auto w-full max-w-5xl px-5 ${className}`}>{children}</section>;
+function Section({
+  children,
+  center = false,
+  className = '',
+}: {
+  children: React.ReactNode;
+  center?: boolean;
+  className?: string;
+}) {
+  return (
+    <section className={`border-t border-border px-5 py-12 sm:px-8 sm:py-[74px] ${className}`}>
+      <div className={`mx-auto w-full max-w-4xl ${center ? 'text-center' : ''}`}>{children}</div>
+    </section>
+  );
+}
+
+function Heading({ children, center = false }: { children: React.ReactNode; center?: boolean }) {
+  return (
+    <h2
+      className={`mt-3 max-w-[28ch] text-balance font-display text-[23px] font-extrabold leading-[1.14] tracking-[-0.025em] sm:text-[33px] ${
+        center ? 'mx-auto' : ''
+      }`}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function Body({ children, center = false }: { children: React.ReactNode; center?: boolean }) {
+  return (
+    <p
+      className={`mt-4 max-w-[58ch] text-[14.5px] leading-[1.62] text-muted-foreground sm:text-base ${
+        center ? 'mx-auto' : ''
+      }`}
+    >
+      {children}
+    </p>
+  );
 }
 
 export function ClarityHome() {
   const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* HERO - full-bleed background video behind constrained copy. The hero is
-          relative + overflow-hidden so the video is clipped to the hero only; the
-          OUTER page container stays normal-flow so the page keeps scrolling. */}
-      <section className="relative flex min-h-[88vh] flex-col items-center justify-center overflow-hidden px-5 py-16 text-center">
-        {/* Background video - sits behind everything, dimmed for legibility */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none"
-        >
-          <source src="/Mindmaker for Leaders - background video.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+      <PublicHeader />
 
-        {/* Hero content - lifted above the video */}
-        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center">
-          <CtrlLogo className="h-10 w-auto text-accent" />
-          <span className="mt-7 inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent">
-            CTRL &middot; Your AI-native chief of staff
+      {/* HERO. The moving background is clipped to the hero; the page below it
+          stays in normal flow so the document scrolls as usual. */}
+      <section className="relative overflow-hidden px-5 py-16 text-center sm:px-8 sm:py-24">
+        <HeroBackdrop weight="full" />
+        <div className="relative z-10 mx-auto w-full max-w-4xl">
+          <span className="inline-block rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1.5 font-display text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">
+            {LANDING.eyebrow}
           </span>
-          <h1 className="mt-6 text-balance text-[2rem] font-bold leading-[1.1] tracking-tight sm:text-6xl">
-            An AI-native chief of staff for the calls only you can make.
+
+          <h1 className="mx-auto mt-6 max-w-[15ch] text-balance font-display text-[2rem] font-extrabold leading-[1.03] tracking-[-0.033em] sm:text-[3.5rem]">
+            {LANDING.h1}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            You are building the AI-native version of your business with a small team and no time to chase what is
-            actually true. CTRL tests your real decisions against live evidence, showing where each one holds and where it breaks, and gives your own AI agents your live context -
-            so you decide with the full picture, and your fleet acts on who you are <em>right now</em>.
+
+          <p className="mx-auto mt-5 max-w-[60ch] text-balance text-[15px] leading-[1.55] text-muted-foreground sm:text-[18.5px]">
+            {LANDING.sub}
           </p>
+
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button size="lg" className="h-12 px-7 text-base" onClick={() => navigate('/auth')}>
-              Start free <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="secondary" className="h-12 px-7 text-base" onClick={() => navigate('/try')}>
-              Watch it work
-            </Button>
+            <button
+              onClick={() => navigate('/try')}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-6 py-3 font-display text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
+            >
+              {LANDING.cta1} <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => navigate('/auth')}
+              className="rounded-xl border border-border bg-transparent px-6 py-3 font-display text-[15px] font-bold text-foreground transition-colors hover:bg-secondary/60"
+            >
+              {LANDING.cta2}
+            </button>
           </div>
-          <p className="mt-5 flex items-center gap-1.5 text-xs text-muted-foreground/70">
-            <ShieldCheck className="h-3.5 w-3.5" /> No integrations, no plugins. Just your voice.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/40">Works with</span>
+
+          <p className="mt-6 text-[12.5px] text-foreground/50">{LANDING.trust}</p>
+
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <span className="font-display text-[9.5px] font-medium uppercase tracking-[0.14em] text-foreground/30">
+              {LANDING.toolsLbl}
+            </span>
             {TOOLS.map((t) => (
-              <span key={t} className="text-xs font-medium text-muted-foreground/50">{t}</span>
+              <span key={t} className="text-[12.5px] text-foreground/45">
+                {t}
+              </span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* PROBLEM */}
-      <Section className="py-16">
-        <div className="rounded-2xl border border-border bg-card/50 p-8 sm:p-12">
-          <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">The problem</p>
-          <p className="mt-3 max-w-2xl text-2xl font-medium leading-snug sm:text-3xl">
-            Every AI conversation starts from zero, and every big call rests on evidence you don&rsquo;t have time to chase.
-          </p>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            You re-explain who you are to every tool, the output stays generic, and the decisions that actually
-            matter get made on gut and a half-read newsletter. CTRL fixes both ends: it knows you, and it does the
-            chasing.
-          </p>
+      {/* JUDGEMENT. The claim is made and then immediately shown. */}
+      <Section center>
+        <Eyebrow>{LANDING.judgeEy}</Eyebrow>
+        <Heading center>{LANDING.judgeH}</Heading>
+        <Body center>{LANDING.judgeBody}</Body>
+
+        <div className="mt-8">
+          <WeighDemo />
         </div>
+
+        <p className="mt-5 text-[13px] text-muted-foreground">{LANDING.judgeCap}</p>
+
+        <button
+          onClick={() => navigate('/try')}
+          className="mt-6 rounded-full border border-border px-5 py-2.5 font-display text-[13px] font-bold text-foreground transition-colors hover:bg-secondary/60"
+        >
+          {LANDING.judgeCta}
+        </button>
       </Section>
 
-      {/* PILLARS */}
-      <Section className="py-8">
-        <h2 className="text-center text-3xl font-bold tracking-tight">What you get</h2>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {PILLARS.map((p) => (
-            <div key={p.title} className="rounded-2xl border border-border bg-card/60 p-6">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                <p.icon className="h-5 w-5" />
-              </span>
-              <h3 className="mt-4 text-lg font-semibold">{p.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{p.body}</p>
-            </div>
-          ))}
-        </div>
+      {/* TASTE */}
+      <Section>
+        <Eyebrow>{LANDING.tasteEy}</Eyebrow>
+        <Heading>{LANDING.tasteH}</Heading>
+        <Body>{LANDING.tasteBody}</Body>
       </Section>
 
-      {/* AGENT-NATIVE spotlight */}
-      <Section className="py-16">
-        <div className="overflow-hidden rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.07] to-transparent p-8 text-center sm:p-12">
-          <Plug className="mx-auto h-7 w-7 text-accent" />
-          <h2 className="mt-4 text-balance text-3xl font-bold tracking-tight sm:text-4xl">Your agents, on your live mind.</h2>
-          <p className="mx-auto mt-3 max-w-xl text-balance text-muted-foreground">
-            Pasted context is dead context. CTRL exposes your Memory Web to your own AI agents as a read-only MCP
-            server - they read your current context on every call, never a stale snapshot.
-          </p>
-          <Button variant="secondary" className="mt-6" onClick={() => navigate('/agents')}>
-            See the agent-native side <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Button>
-        </div>
+      {/* PORTABLE */}
+      <Section>
+        <Eyebrow>{LANDING.portEy}</Eyebrow>
+        <Heading>{LANDING.portH}</Heading>
+        <Body>{LANDING.portBody}</Body>
+        <button
+          onClick={() => navigate('/agents')}
+          className="mt-6 rounded-full border border-border px-5 py-2.5 text-[13px] font-bold text-foreground transition-colors hover:bg-secondary/60"
+        >
+          {LANDING.portCta}
+        </button>
       </Section>
 
-      {/* CLOSING CTA */}
-      <Section className="py-16 text-center">
-        <GitFork className="mx-auto h-7 w-7 rotate-90 text-accent" />
-        <h2 className="mt-4 text-balance text-3xl font-bold tracking-tight sm:text-4xl">Decide with the full picture.</h2>
-        <p className="mx-auto mt-3 max-w-md text-muted-foreground">Set your context up in minutes. The call stays yours - now with the evidence laid bare.</p>
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <Button size="lg" className="h-12 px-7 text-base" onClick={() => navigate('/auth')}>
-            Start free <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Button>
-          <Button size="lg" variant="ghost" className="h-12 px-7 text-base" onClick={() => navigate('/upgrade')}>
-            See pricing
-          </Button>
+      {/* WHAT WE COUNT */}
+      <Section>
+        <Eyebrow>{LANDING.countEy}</Eyebrow>
+        <Heading>{LANDING.countH}</Heading>
+        <Body>{LANDING.countBody}</Body>
+      </Section>
+
+      {/* PRICE */}
+      <Section center>
+        <Heading center>{LANDING.priceH}</Heading>
+        <Body center>{LANDING.priceBody}</Body>
+
+        <div className="mx-auto mt-7 grid max-w-[640px] gap-3.5 sm:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-card p-5 text-left">
+            <h3 className="font-display text-[13px] font-bold tracking-wide">Free</h3>
+            <p className="mb-2.5 mt-1.5 font-display text-[29px] font-extrabold tracking-[-0.025em]">$0</p>
+            <p className="text-[13.5px] leading-[1.55] text-muted-foreground">{LANDING.freeDesc}</p>
+          </div>
+          <div className="rounded-2xl border border-accent/35 bg-card p-5 text-left">
+            <h3 className="font-display text-[13px] font-bold tracking-wide text-accent">Edge Pro</h3>
+            <p className="mb-2.5 mt-1.5 text-[29px] font-extrabold tracking-[-0.025em]">
+              {EDGE_PRO_PRICE_LONG.split(' / ')[0]} <span className="text-[13px] font-semibold text-muted-foreground">/ month</span>
+            </p>
+            <p className="text-[13.5px] leading-[1.55] text-muted-foreground">{LANDING.proDesc}</p>
+          </div>
         </div>
-        <p className="mt-12 text-xs text-muted-foreground/60">
-          CTRL by Mindmaker &middot; <a href="/agents" className="underline hover:text-foreground">/agents</a> &middot;{' '}
-          <a href="/try" className="underline hover:text-foreground">/try</a>
+
+        <p className="mx-auto mt-5 max-w-[58ch] text-[13px] leading-relaxed text-muted-foreground">
+          {LANDING.priceNote}
         </p>
       </Section>
+
+      {/* CLOSE */}
+      <Section center className="!py-14 sm:!py-16">
+        <h2 className="mx-auto max-w-[18ch] text-balance font-display text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[52px]">
+          {LANDING.closeH}
+        </h2>
+        <button
+          onClick={() => navigate('/auth')}
+          className="mt-8 inline-flex items-center gap-1.5 rounded-xl bg-accent px-7 py-3.5 font-display text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
+        >
+          {LANDING.closeCta} <ArrowRight className="h-4 w-4" />
+        </button>
+      </Section>
+
+      <PublicFooter full />
     </div>
   );
 }
