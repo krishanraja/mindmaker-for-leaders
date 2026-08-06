@@ -75,8 +75,12 @@ export const LANDING = {
 export const TRY = {
   eyebrow: 'A real decision, weighed',
   h1: 'Watch it work on a real decision. Then give it one of yours.',
-  sub: 'This one actually ran. The sources below are the ones it found, and every link resolves.',
-  prov: 'Run on 5 August 2026. Sources as CTRL found them that day.',
+  // These two lines used to say "This one actually ran" and carry a run date.
+  // The example above the input is a worked one, not a stored run, so the claim
+  // was not true and the date was decoration. What survives is the part that is
+  // checkable: open a consideration and every source behind it resolves.
+  sub: 'A decision worked through end to end. Open any consideration to see the sources behind it, and every link resolves.',
+  prov: 'A worked example. The decision you put in below runs live, against today’s sources.',
   act2H: 'Now put one of yours in.',
   act2Sub: 'No account, no card. Same engine, your decision.',
   placeholder: 'Should we build our own agent stack or buy one?',

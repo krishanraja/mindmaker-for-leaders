@@ -9,14 +9,18 @@ import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine'
  * deliberately "Only you": no source can settle whether a team has the capacity,
  * and a page that pretended otherwise would be selling the opposite of CTRL.
  *
- * Every source below is a live public page. When a real weigh is baked in, swap
- * CLAIMS and RUN_ON for the case's own rows and the copy above it stays true.
+ * Every source below is a live public page, which is what lets the copy above
+ * it invite a visitor to click one.
+ *
+ * This stays a worked example rather than a stored run on purpose. A live run
+ * of this statement was tried on 2026-08-06 and returned 22 sources, all of
+ * them tagged unverified and 18 of 21 domains SEO content farms, so putting it
+ * here would have sent visitors clicking from a page about trustworthy evidence
+ * straight into untrustworthy evidence. Swap CLAIMS for a real case's rows once
+ * the verify stage's source quality is worth showing off.
  */
 
 export const STATEMENT = 'Should we switch our primary AI vendor to cut inference costs?';
-
-/** The date shown in the provenance line under the weigh. */
-export const RUN_ON = '5 August 2026';
 
 function claim(
   p: Partial<DecisionClaim> & { id: string; text: string; verdict: DecisionClaim['verdict'] },
