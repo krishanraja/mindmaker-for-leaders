@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion"
 import { SignInForm } from "@/components/auth/SignInForm"
 import { SignUpForm } from "@/components/auth/SignUpForm"
@@ -9,15 +9,28 @@ import { PublicHeader } from "@/components/public/PublicHeader"
 import { AUTH_COPY } from "@/components/public/publicCopy"
 
 /**
- * The last front door. Sign up leads, because every public CTA that lands here
- * is an invitation to start; a returning leader takes one tap to switch.
+ * The last front door.
+ *
+ * SIGN IN LEADS on a bare /auth, and that is deliberate rather than tidy. This
+ * page briefly defaulted to Sign up, on the reasoning that every marketing CTA
+ * landing here is an invitation to start. It is, but the people who reach /auth
+ * WITHOUT a CTA are the returning ones: they type the URL or arrive by bookmark.
+ * Handing them the signup form hands them its 12-character minimum, so a leader
+ * with an older, shorter password gets stopped at their own front door by a rule
+ * that only applies to new passwords. That happened to Krish on 2026-08-06.
+ *
+ * The intent is kept where it belongs: a CTA that means "start" links to
+ * /auth?mode=signup and gets the signup form. Nobody else does.
  *
  * A visitor who weighed something on /try arrives with an anonymous session,
  * which AuthProvider.signUp converts in place, so their weigh is waiting for
  * them on the other side rather than orphaned behind a second account.
  */
 export default function Auth() {
-  const [isSignIn, setIsSignIn] = useState(false)
+  const [searchParams] = useSearchParams()
+  // Read once on mount. The tabs own the state afterwards, so a tap is never
+  // fought by the URL it arrived on.
+  const [isSignIn, setIsSignIn] = useState(() => searchParams.get('mode') !== 'signup')
   const navigate = useNavigate()
   const { isAuthenticated, isLoading } = useAuth()
 

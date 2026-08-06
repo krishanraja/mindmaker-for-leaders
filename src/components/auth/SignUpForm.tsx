@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { useAuth } from "./AuthProvider"
 import { useNavigate } from "react-router-dom"
 import { Loader2 } from "lucide-react"
+import { PASSWORD_RULE_TEXT } from "@/lib/passwordPolicy"
 
 // Google icon SVG
 function GoogleIcon({ className }: { className?: string }) {
@@ -108,9 +109,8 @@ export function SignUpForm() {
             minLength={12}
             autoComplete="new-password"
           />
-          <p className="text-xs text-muted-foreground">
-            Must be at least 12 characters
-          </p>
+          {/* One shared rule, matching what the server actually enforces. */}
+          <p className="text-xs text-muted-foreground">{PASSWORD_RULE_TEXT}</p>
         </div>
 
         {error && (

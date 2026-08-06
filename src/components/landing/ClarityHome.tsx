@@ -98,7 +98,7 @@ export function ClarityHome() {
               {LANDING.cta1} <ArrowRight className="h-4 w-4" />
             </button>
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/auth?mode=signup')}
               className="rounded-xl border border-border bg-transparent px-6 py-3 font-display text-[15px] font-bold text-foreground transition-colors hover:bg-secondary/60"
             >
               {LANDING.cta2}
@@ -191,7 +191,7 @@ export function ClarityHome() {
           {LANDING.closeH}
         </h2>
         <button
-          onClick={() => navigate('/auth')}
+          onClick={() => navigate('/auth?mode=signup')}
           className="mt-8 inline-flex items-center gap-1.5 rounded-xl bg-accent px-7 py-3.5 font-display text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
         >
           {LANDING.closeCta} <ArrowRight className="h-4 w-4" />

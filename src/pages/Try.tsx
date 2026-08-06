@@ -165,7 +165,7 @@ export default function TryPage() {
             <div className="mx-auto mt-6 max-w-[560px] rounded-2xl border border-border bg-card p-5 text-left">
               <p className="text-sm leading-relaxed text-foreground">{upgradeMessage}</p>
               <button
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/auth?mode=signup')}
                 className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 font-display text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90"
               >
                 Create an account <ArrowRight className="h-4 w-4" />
@@ -204,7 +204,7 @@ export default function TryPage() {
               <p className="text-[14.5px] leading-relaxed text-foreground">{TRY.handoff}</p>
               <div className="mt-4 flex flex-wrap gap-2.5">
                 <button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/auth?mode=signup')}
                   className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2.5 font-display text-[13px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
                 >
                   {TRY.keepCta} <ArrowRight className="h-4 w-4" />
