@@ -42,7 +42,7 @@ export function PublicHeader({ omit, variant = 'default' }: PublicHeaderProps) {
             </Link>
           )}
           <Link
-            to="/auth"
+            to="/auth?mode=signup"
             className="rounded-full bg-accent px-3.5 py-1.5 text-[12.5px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
           >
             {NAV.cta}

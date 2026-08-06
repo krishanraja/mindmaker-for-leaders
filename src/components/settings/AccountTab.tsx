@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
 import { LogOut, Loader2, Hand, Shield, ArrowUpRight } from 'lucide-react'
+import { ChangePasswordCard } from './ChangePasswordCard'
 
 export function AccountTab() {
   const { user, signOut } = useAuth()
@@ -28,11 +29,6 @@ export function AccountTab() {
     }
   }
 
-  // Audit cleanup: removed the "Profile photo coming soon" placeholder and
-  // the Change Password button (no click handler, no backend wired up).
-  // Password reset is handled via the auth provider's "forgot password" link
-  // on the sign-in screen - that's the working path for now. Add a real
-  // in-app change-password flow when there's a working backend for it.
   return (
     <div className="space-y-6">
       <div className="bg-card border border-border p-6 rounded-2xl">
@@ -42,6 +38,8 @@ export function AccountTab() {
           <p className="text-foreground">{user?.email}</p>
         </div>
       </div>
+
+      <ChangePasswordCard />
 
       <div className="bg-card border border-border p-6 rounded-2xl">
         <h3 className="text-lg font-semibold text-foreground mb-1">Security &amp; compliance</h3>

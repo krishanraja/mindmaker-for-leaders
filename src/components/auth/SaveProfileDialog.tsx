@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { PASSWORD_RULE_TEXT, checkPassword } from '@/lib/passwordPolicy';
 import { Loader2, Lock, Mail } from 'lucide-react';
 
 interface SaveProfileDialogProps {
@@ -30,12 +31,11 @@ export const SaveProfileDialog: React.FC<SaveProfileDialogProps> = ({
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password.length < 12) {
-      toast({
-        title: 'Password too short',
-        description: 'Password must be at least 12 characters long',
-        variant: 'destructive'
-      });
+    // One shared rule across every surface that sets a password. HIBP is
+    // server-side only, so that rejection still arrives from Supabase.
+    const problem = checkPassword(password);
+    if (problem) {
+      toast({ title: 'That password will not be accepted', description: problem, variant: 'destructive' });
       return;
     }
 
@@ -176,12 +176,13 @@ export const SaveProfileDialog: React.FC<SaveProfileDialogProps> = ({
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password (min. 12 characters)"
+                placeholder="Enter a new password"
                 className="pl-9"
                 required
                 minLength={12}
               />
             </div>
+            <p className="text-xs text-muted-foreground">{PASSWORD_RULE_TEXT}</p>
           </div>
 
           <div className="space-y-2">

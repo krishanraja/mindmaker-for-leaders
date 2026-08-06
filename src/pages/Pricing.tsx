@@ -29,7 +29,7 @@ export default function Pricing() {
 
   const onSubscribe = async () => {
     if (!user) {
-      navigate('/auth');
+      navigate('/auth?mode=signup');
       return;
     }
     const url = await subscribe();
