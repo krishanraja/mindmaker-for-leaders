@@ -20,6 +20,11 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         gobold: ['Gobold', 'Impact', 'Arial Black', 'sans-serif'],
         grotesk: ['Space Grotesk', 'Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        // The public marketing voice. Sora is geometric and monoline with squared
+        // terminals, which is the ctrl wordmark's own construction, so the headlines
+        // and the logo read as one drawing. Scoped to the front doors on purpose:
+        // the authed app stays on Inter, where reading beats character.
+        display: ['Sora', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Core brand colors

@@ -19,7 +19,7 @@ import { LANDING, TOOLS } from '@/components/public/publicCopy';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-block text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">{children}</span>
+    <span className="inline-block font-display text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">{children}</span>
   );
 }
 
@@ -42,7 +42,7 @@ function Section({
 function Heading({ children, center = false }: { children: React.ReactNode; center?: boolean }) {
   return (
     <h2
-      className={`mt-3 max-w-[28ch] text-balance text-[23px] font-extrabold leading-[1.14] tracking-[-0.025em] sm:text-[33px] ${
+      className={`mt-3 max-w-[28ch] text-balance font-display text-[23px] font-extrabold leading-[1.14] tracking-[-0.025em] sm:text-[33px] ${
         center ? 'mx-auto' : ''
       }`}
     >
@@ -75,11 +75,11 @@ export function ClarityHome() {
       <section className="relative overflow-hidden px-5 py-16 text-center sm:px-8 sm:py-24">
         <HeroBackdrop weight="full" />
         <div className="relative z-10 mx-auto w-full max-w-4xl">
-          <span className="inline-block rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">
+          <span className="inline-block rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1.5 font-display text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">
             {LANDING.eyebrow}
           </span>
 
-          <h1 className="mx-auto mt-6 max-w-[15ch] text-balance text-[2rem] font-extrabold leading-[1.03] tracking-[-0.033em] sm:text-[3.5rem]">
+          <h1 className="mx-auto mt-6 max-w-[15ch] text-balance font-display text-[2rem] font-extrabold leading-[1.03] tracking-[-0.033em] sm:text-[3.5rem]">
             {LANDING.h1}
           </h1>
 
@@ -90,13 +90,13 @@ export function ClarityHome() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => navigate('/try')}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-6 py-3 text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-6 py-3 font-display text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
             >
               {LANDING.cta1} <ArrowRight className="h-4 w-4" />
             </button>
             <button
               onClick={() => navigate('/auth')}
-              className="rounded-xl border border-border bg-transparent px-6 py-3 text-[15px] font-bold text-foreground transition-colors hover:bg-secondary/60"
+              className="rounded-xl border border-border bg-transparent px-6 py-3 font-display text-[15px] font-bold text-foreground transition-colors hover:bg-secondary/60"
             >
               {LANDING.cta2}
             </button>
@@ -105,7 +105,7 @@ export function ClarityHome() {
           <p className="mt-6 text-[12.5px] text-foreground/50">{LANDING.trust}</p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            <span className="text-[9.5px] font-medium uppercase tracking-[0.14em] text-foreground/30">
+            <span className="font-display text-[9.5px] font-medium uppercase tracking-[0.14em] text-foreground/30">
               {LANDING.toolsLbl}
             </span>
             {TOOLS.map((t) => (
@@ -131,7 +131,7 @@ export function ClarityHome() {
 
         <button
           onClick={() => navigate('/try')}
-          className="mt-6 rounded-full border border-border px-5 py-2.5 text-[13px] font-bold text-foreground transition-colors hover:bg-secondary/60"
+          className="mt-6 rounded-full border border-border px-5 py-2.5 font-display text-[13px] font-bold text-foreground transition-colors hover:bg-secondary/60"
         >
           {LANDING.judgeCta}
         </button>
@@ -171,12 +171,12 @@ export function ClarityHome() {
 
         <div className="mx-auto mt-7 grid max-w-[640px] gap-3.5 sm:grid-cols-2">
           <div className="rounded-2xl border border-border bg-card p-5 text-left">
-            <h3 className="text-[13px] font-bold tracking-wide">Free</h3>
-            <p className="mb-2.5 mt-1.5 text-[29px] font-extrabold tracking-[-0.025em]">$0</p>
+            <h3 className="font-display text-[13px] font-bold tracking-wide">Free</h3>
+            <p className="mb-2.5 mt-1.5 font-display text-[29px] font-extrabold tracking-[-0.025em]">$0</p>
             <p className="text-[13.5px] leading-[1.55] text-muted-foreground">{LANDING.freeDesc}</p>
           </div>
           <div className="rounded-2xl border border-accent/35 bg-card p-5 text-left">
-            <h3 className="text-[13px] font-bold tracking-wide text-accent">Edge Pro</h3>
+            <h3 className="font-display text-[13px] font-bold tracking-wide text-accent">Edge Pro</h3>
             <p className="mb-2.5 mt-1.5 text-[29px] font-extrabold tracking-[-0.025em]">
               {EDGE_PRO_PRICE_LONG.split(' / ')[0]} <span className="text-[13px] font-semibold text-muted-foreground">/ month</span>
             </p>
@@ -191,12 +191,12 @@ export function ClarityHome() {
 
       {/* CLOSE */}
       <Section center className="!py-14 sm:!py-16">
-        <h2 className="mx-auto max-w-[18ch] text-balance text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[52px]">
+        <h2 className="mx-auto max-w-[18ch] text-balance font-display text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[52px]">
           {LANDING.closeH}
         </h2>
         <button
           onClick={() => navigate('/auth')}
-          className="mt-8 inline-flex items-center gap-1.5 rounded-xl bg-accent px-7 py-3.5 text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
+          className="mt-8 inline-flex items-center gap-1.5 rounded-xl bg-accent px-7 py-3.5 font-display text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
         >
           {LANDING.closeCta} <ArrowRight className="h-4 w-4" />
         </button>

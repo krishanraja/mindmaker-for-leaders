@@ -33,10 +33,10 @@ export default function AgentsPage() {
       <section className="relative overflow-hidden px-5 py-14 text-center sm:px-8 sm:py-[70px]">
         <HeroBackdrop weight="quiet" />
         <div className="relative z-10 mx-auto w-full max-w-3xl">
-          <span className="inline-block rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">
+          <span className="inline-block rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1.5 font-display text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">
             {AGENTS.eyebrow}
           </span>
-          <h1 className="mx-auto mt-5 max-w-[18ch] text-balance text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[44px]">
+          <h1 className="mx-auto mt-5 max-w-[18ch] text-balance font-display text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[44px]">
             {AGENTS.h1}
           </h1>
           <p className="mx-auto mt-4 max-w-[58ch] text-balance text-[15px] leading-[1.55] text-muted-foreground sm:text-[16.5px]">
@@ -47,7 +47,7 @@ export default function AgentsPage() {
 
       <section className="border-t border-border px-5 py-12 sm:px-8 sm:py-[74px]">
         <div className="mx-auto w-full max-w-3xl text-center">
-          <h2 className="mx-auto max-w-[28ch] text-balance text-[23px] font-extrabold leading-[1.14] tracking-[-0.025em] sm:text-[33px]">
+          <h2 className="mx-auto max-w-[28ch] text-balance font-display text-[23px] font-extrabold leading-[1.14] tracking-[-0.025em] sm:text-[33px]">
             {AGENTS.probH}
           </h2>
           <p className="mx-auto mt-4 max-w-[58ch] text-[14.5px] leading-[1.62] text-muted-foreground sm:text-base">
@@ -91,7 +91,7 @@ export default function AgentsPage() {
 
           <button
             onClick={() => navigate('/upgrade')}
-            className="mt-8 inline-flex items-center gap-1.5 rounded-xl bg-accent px-6 py-3 text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
+            className="mt-8 inline-flex items-center gap-1.5 rounded-xl bg-accent px-6 py-3 font-display text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
           >
             {AGENTS.cta} <ArrowRight className="h-4 w-4" />
           </button>

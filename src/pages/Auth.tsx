@@ -4,8 +4,8 @@ import { motion } from "framer-motion"
 import { SignInForm } from "@/components/auth/SignInForm"
 import { SignUpForm } from "@/components/auth/SignUpForm"
 import { useAuth } from "@/components/auth/AuthProvider"
-import { CtrlLogo } from "@/components/landing/CtrlLogo"
 import { BrandLockup } from "@/components/landing/BrandLockup"
+import { CtrlWordmark } from "@/components/public/CtrlWordmark"
 import { HeroBackdrop } from "@/components/public/HeroBackdrop"
 import { PublicHeader } from "@/components/public/PublicHeader"
 import { AUTH_COPY } from "@/components/public/publicCopy"
@@ -50,15 +50,15 @@ export default function Auth() {
           transition={{ duration: 0.35 }}
           className="relative z-10 w-full max-w-[400px] rounded-2xl border border-border bg-card p-6 sm:p-7"
         >
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2.5">
             <BrandLockup />
-            <CtrlLogo className="text-[15px]" />
+            <CtrlWordmark className="h-[16px]" />
           </div>
 
           <div className="mt-5 flex gap-1 rounded-xl border border-border bg-popover p-1">
             <button
               onClick={() => setIsSignIn(true)}
-              className={`flex-1 rounded-lg px-4 py-2 text-[12.5px] font-bold transition-all ${
+              className={`flex-1 rounded-lg px-4 py-2 font-display text-[12.5px] font-bold transition-all ${
                 isSignIn ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -66,7 +66,7 @@ export default function Auth() {
             </button>
             <button
               onClick={() => setIsSignIn(false)}
-              className={`flex-1 rounded-lg px-4 py-2 text-[12.5px] font-bold transition-all ${
+              className={`flex-1 rounded-lg px-4 py-2 font-display text-[12.5px] font-bold transition-all ${
                 !isSignIn ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -74,7 +74,7 @@ export default function Auth() {
             </button>
           </div>
 
-          <h1 className="mt-5 text-center text-xl font-bold tracking-tight text-foreground">
+          <h1 className="mt-5 text-center font-display text-xl font-bold tracking-tight text-foreground">
             {isSignIn ? 'Welcome back.' : AUTH_COPY.h1}
           </h1>
           <p className="mt-1.5 mb-5 text-center text-sm text-muted-foreground">

@@ -106,10 +106,10 @@ export default function TryPage() {
       <section className="relative overflow-hidden px-5 py-14 text-center sm:px-8 sm:py-16">
         <HeroBackdrop weight="quiet" />
         <div className="relative z-10 mx-auto w-full max-w-3xl">
-          <span className="inline-block text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">
+          <span className="inline-block font-display text-[10.5px] font-bold uppercase tracking-[0.13em] text-accent">
             {TRY.eyebrow}
           </span>
-          <h1 className="mx-auto mt-4 max-w-[20ch] text-balance text-[26px] font-extrabold leading-[1.06] tracking-[-0.03em] sm:text-[41px]">
+          <h1 className="mx-auto mt-4 max-w-[20ch] text-balance font-display text-[26px] font-extrabold leading-[1.06] tracking-[-0.03em] sm:text-[41px]">
             {TRY.h1}
           </h1>
           <p className="mx-auto mt-4 max-w-[58ch] text-balance text-[15px] leading-[1.55] text-muted-foreground sm:text-base">
@@ -128,7 +128,7 @@ export default function TryPage() {
       {/* ACT TWO: theirs. */}
       <section className="border-t border-border px-5 py-12 sm:px-8 sm:py-[74px]">
         <div className="mx-auto w-full max-w-3xl text-center">
-          <h2 className="mx-auto max-w-[28ch] text-balance text-[23px] font-extrabold leading-[1.14] tracking-[-0.025em] sm:text-[33px]">
+          <h2 className="mx-auto max-w-[28ch] text-balance font-display text-[23px] font-extrabold leading-[1.14] tracking-[-0.025em] sm:text-[33px]">
             {TRY.act2H}
           </h2>
           <p className="mx-auto mt-4 max-w-[58ch] text-[14.5px] leading-[1.62] text-muted-foreground sm:text-base">
@@ -150,7 +150,7 @@ export default function TryPage() {
             <button
               onClick={submit}
               disabled={!ready || busy}
-              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-accent px-6 py-3 text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-accent px-6 py-3 font-display text-[15px] font-bold text-accent-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {TRY.button}
@@ -167,7 +167,7 @@ export default function TryPage() {
               <p className="text-sm leading-relaxed text-foreground">{upgradeMessage}</p>
               <button
                 onClick={() => navigate('/auth')}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-accent px-5 py-2.5 font-display text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90"
               >
                 Create an account <ArrowRight className="h-4 w-4" />
               </button>
@@ -206,13 +206,13 @@ export default function TryPage() {
               <div className="mt-4 flex flex-wrap gap-2.5">
                 <button
                   onClick={() => navigate('/auth')}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2.5 text-[13px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2.5 font-display text-[13px] font-bold text-accent-foreground transition-opacity hover:opacity-90"
                 >
                   {TRY.keepCta} <ArrowRight className="h-4 w-4" />
                 </button>
                 <button
                   onClick={copyMemo}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2.5 text-[13px] font-bold text-foreground transition-colors hover:bg-secondary/60"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2.5 font-display text-[13px] font-bold text-foreground transition-colors hover:bg-secondary/60"
                 >
                   {copied ? <Check className="h-4 w-4 text-accent" /> : null}
                   {copied ? 'Copied' : TRY.shareCta}

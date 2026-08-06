@@ -43,7 +43,7 @@ export default function Pricing() {
       <section className="relative overflow-hidden px-5 py-14 text-center sm:px-8 sm:py-16">
         <HeroBackdrop weight="quiet" />
         <div className="relative z-10 mx-auto w-full max-w-3xl">
-          <h1 className="mx-auto max-w-[22ch] text-balance text-[26px] font-extrabold leading-[1.06] tracking-[-0.03em] sm:text-[41px]">
+          <h1 className="mx-auto max-w-[22ch] text-balance font-display text-[26px] font-extrabold leading-[1.06] tracking-[-0.03em] sm:text-[41px]">
             {PRICING.h1}
           </h1>
           <p className="mx-auto mt-4 max-w-[60ch] text-balance text-[15px] leading-[1.55] text-muted-foreground sm:text-base">
@@ -58,12 +58,12 @@ export default function Pricing() {
             <div className="grid grid-cols-[1fr,auto,auto] items-center gap-x-4 gap-y-2.5 sm:gap-x-6">
               <div />
               <div className="text-center">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Free</p>
-                <p className="text-[11px] text-muted-foreground/70">$0</p>
+                <p className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">Free</p>
+                <p className="font-display text-[11px] text-muted-foreground/70">$0</p>
               </div>
               <div className="text-center">
-                <p className="text-xs font-semibold uppercase tracking-wider text-accent">Edge Pro</p>
-                <p className="text-[11px] text-muted-foreground/70">{EDGE_PRO_PRICE_LONG}</p>
+                <p className="font-display text-xs font-semibold uppercase tracking-wider text-accent">Edge Pro</p>
+                <p className="font-display text-[11px] text-muted-foreground/70">{EDGE_PRO_PRICE_LONG}</p>
               </div>
 
               {PLAN_MATRIX.map((row) => (
@@ -82,7 +82,7 @@ export default function Pricing() {
                 <button
                   onClick={onSubscribe}
                   disabled={isProcessing}
-                  className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 font-display text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-60"
                 >
                   {isProcessing ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { BrandLockup } from '@/components/landing/BrandLockup';
-import { CtrlLogo } from '@/components/landing/CtrlLogo';
+import { CtrlWordmark } from './CtrlWordmark';
 import { NAV } from './publicCopy';
 
 /**
@@ -20,17 +20,17 @@ interface PublicHeaderProps {
 export function PublicHeader({ omit, variant = 'default' }: PublicHeaderProps) {
   return (
     <header className="relative z-10 flex items-center justify-between gap-3 border-b border-border/70 px-5 py-3.5 sm:px-8">
-      <Link to="/" className="flex items-center gap-2" aria-label="CTRL home">
+      <Link to="/" className="flex items-center gap-2.5" aria-label="CTRL home">
         <BrandLockup />
-        <CtrlLogo className="text-[15px]" />
+        <CtrlWordmark className="h-[17px]" />
       </Link>
 
       {variant === 'back' ? (
-        <Link to="/" className="text-[13px] text-muted-foreground transition-colors hover:text-foreground">
+        <Link to="/" className="font-display text-[13px] text-muted-foreground transition-colors hover:text-foreground">
           Back
         </Link>
       ) : (
-        <nav className="flex items-center gap-5">
+        <nav className="flex items-center gap-5 font-display">
           {omit !== '/try' && (
             <Link to="/try" className="hidden text-[13px] text-muted-foreground transition-colors hover:text-foreground sm:block">
               Watch it work
