@@ -59,9 +59,10 @@ export const LANDING = {
     'Memory web, voice profile, the Kit program, unlimited skill builds, the daily read, and three decision weighs a month.',
   proDesc:
     'Unlimited weighs, a second model arguing against the first, decision watch, Edge artifacts, and the live MCP that sends your brain where it needs to be.',
-  // The approved deck's trailing sentence stopped mid-thought ("...has made him
-  // realize that"), so only the complete sentence ships. Send the ending and it
-  // goes straight back in.
+  // The approved deck ended this on a half sentence ("...has made him realize
+  // that"). It was never shipped, and Krish confirmed on 2026-08-06 that it
+  // stays out, so the one complete sentence below is the whole note. Not a
+  // placeholder waiting on an ending.
   priceNote:
     'Mindmaker was built by Krish Raja, an operator and advisor to enterprise and SMBs across the globe on GenAI and data infrastructure commercial and corporate strategy.',
 
@@ -75,8 +76,12 @@ export const LANDING = {
 export const TRY = {
   eyebrow: 'A real decision, weighed',
   h1: 'Watch it work on a real decision. Then give it one of yours.',
-  sub: 'This one actually ran. The sources below are the ones it found, and every link resolves.',
-  prov: 'Run on 5 August 2026. Sources as CTRL found them that day.',
+  // These two lines used to say "This one actually ran" and carry a run date.
+  // The example above the input is a worked one, not a stored run, so the claim
+  // was not true and the date was decoration. What survives is the part that is
+  // checkable: open a consideration and every source behind it resolves.
+  sub: 'A decision worked through end to end. Open any consideration to see the sources behind it, and every link resolves.',
+  prov: 'A worked example. The decision you put in below runs live, against today’s sources.',
   act2H: 'Now put one of yours in.',
   act2Sub: 'No account, no card. Same engine, your decision.',
   placeholder: 'Should we build our own agent stack or buy one?',

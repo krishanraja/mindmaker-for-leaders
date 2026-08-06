@@ -11,7 +11,6 @@ import { PublicHeader } from '@/components/public/PublicHeader';
 import { PublicFooter } from '@/components/public/PublicFooter';
 import { WeighDemo } from '@/components/public/WeighDemo';
 import { TRY } from '@/components/public/publicCopy';
-import { RUN_ON } from '@/components/public/sampleWeigh';
 
 /**
  * /try - the page that shows the work before it asks for anything.
@@ -121,7 +120,7 @@ export default function TryPage() {
       <section className="px-5 pb-14 sm:px-8">
         <div className="mx-auto w-full max-w-3xl text-center">
           <WeighDemo stagger />
-          <p className="mt-5 text-[13px] text-muted-foreground">{TRY.prov.replace('5 August 2026', RUN_ON)}</p>
+          <p className="mt-5 text-[13px] text-muted-foreground">{TRY.prov}</p>
         </div>
       </section>
 
