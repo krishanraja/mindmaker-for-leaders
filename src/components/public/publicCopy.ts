@@ -59,9 +59,10 @@ export const LANDING = {
     'Memory web, voice profile, the Kit program, unlimited skill builds, the daily read, and three decision weighs a month.',
   proDesc:
     'Unlimited weighs, a second model arguing against the first, decision watch, Edge artifacts, and the live MCP that sends your brain where it needs to be.',
-  // The approved deck's trailing sentence stopped mid-thought ("...has made him
-  // realize that"), so only the complete sentence ships. Send the ending and it
-  // goes straight back in.
+  // The approved deck ended this on a half sentence ("...has made him realize
+  // that"). It was never shipped, and Krish confirmed on 2026-08-06 that it
+  // stays out, so the one complete sentence below is the whole note. Not a
+  // placeholder waiting on an ending.
   priceNote:
     'Mindmaker was built by Krish Raja, an operator and advisor to enterprise and SMBs across the globe on GenAI and data infrastructure commercial and corporate strategy.',
 
