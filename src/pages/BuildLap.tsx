@@ -13,7 +13,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { CtrlLogo } from '@/components/landing/CtrlLogo';
+import { CtrlWordmark } from '@/components/public/CtrlWordmark';
 import { SkillInstallGuide } from '@/components/edge/SkillInstallGuide';
 import { SkillDelivery } from '@/components/skill/SkillDelivery';
 import { Button } from '@/components/ui/button';
@@ -87,7 +87,7 @@ export default function BuildLap() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="flex items-center justify-between px-5 py-4 border-b border-border">
         <button onClick={() => navigate('/')} className="flex items-center gap-2" aria-label="Home">
-          <CtrlLogo className="h-4 w-auto" />
+          <CtrlWordmark className="h-4" />
         </button>
         <button
           onClick={() => navigate('/auth')}

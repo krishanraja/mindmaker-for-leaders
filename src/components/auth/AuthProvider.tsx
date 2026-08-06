@@ -1,6 +1,7 @@
+/* eslint-disable react-refresh/only-export-components -- useAuth is co-located with the provider it reads; every consumer imports both from here */
 /**
  * AuthProvider Component
- * 
+ *
  * Authentication context provider with baseline linking support.
  */
 
@@ -122,7 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user,
     isAuthenticated: user !== null && !user.is_anonymous,
-    isAnonymous: user !== null && (user.is_anonymous === true || (user.user_metadata as any)?.is_anonymous === true),
+    isAnonymous:
+      user !== null &&
+      (user.is_anonymous === true ||
+        (user.user_metadata as Record<string, unknown> | undefined)?.is_anonymous === true),
     isLoading,
     signIn,
     signUp,
