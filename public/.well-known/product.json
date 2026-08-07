@@ -52,7 +52,6 @@
     { "name": "Context export", "tier": "free", "what": "One-click export of your context, or a my-ai-context.md file, formatted for ChatGPT, Claude, Gemini, Cursor and Claude Code." },
     { "name": "Voice profile", "tier": "free", "what": "Eight dimensions of how you actually write and speak, captured by recognition picks or extracted from a sample of your real writing, so generated output sounds like you." },
     { "name": "Automator (skill builder)", "tier": "free", "what": "Turns something you do over and over into an agentskills.io-compliant skill you can install in your own AI. Unlimited builds and exports." },
-    { "name": "Kit program", "tier": "free", "what": "Four guided kits: Vibe Coding, Autonomous Business, Agentic Org Chart, and Memory and Identity." },
     { "name": "Daily briefing", "tier": "free", "what": "A short personalised read anchored to your real priorities, with the evidence trail for every item." },
     { "name": "Decision engine (weigh and verify)", "tier": "free_capped_pro_unlimited", "what": "Reframe to the AI-native version of the call, decompose into claims, verify against live evidence, advise. Free includes 3 full weighs per month; Edge Pro is unlimited." },
     { "name": "Multi-model cross-examination", "tier": "edge_pro", "what": "A second, independent pass that argues against the first on every decision." },
@@ -70,7 +69,7 @@
         "name": "Free",
         "amount": 0,
         "cadence": "forever",
-        "includes": ["Memory Web", "context export", "voice profile", "Kit program", "unlimited Automator skill builds and exports", "daily personalised briefing", "3 decision weighs per month"]
+        "includes": ["Memory Web", "context export", "voice profile", "unlimited Automator skill builds and exports", "daily personalised briefing", "3 decision weighs per month"]
       },
       {
         "id": "edge_pro",

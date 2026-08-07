@@ -59,8 +59,11 @@ export default function CaptureLanding() {
   const [phase, setPhase] = useState<Phase>('form');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // The Kit is retired. This used to open /kit; that route now 301s to /try,
+  // so it points there directly rather than through a redirect that costs a
+  // round trip and loses the query string on some clients.
   const goToKit = () => {
-    navigate('/kit?utm_source=capture&utm_medium=organic&utm_campaign=mm_ctrl_capture_page');
+    navigate('/try?utm_source=capture&utm_medium=organic&utm_campaign=mm_ctrl_capture_page');
   };
 
   const submit = async () => {

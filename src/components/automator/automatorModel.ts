@@ -185,7 +185,7 @@ export type ToneId = "warm" | "crisp" | "formal";
 /**
  * Map an in-flow tone pick to a full 8-dimension voice profile, so a single
  * warm/crisp/formal tap becomes the leader's SAVED voice - reused by every
- * future skill, every kit, and the harness. Inferred defaults for the
+ * future skill and the harness. Inferred defaults for the
  * dimensions the tone step does not directly capture (signoff, disagreement,
  * one hard rule); the full sheet or paste-extract can enrich later.
  */

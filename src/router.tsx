@@ -117,11 +117,6 @@ const Settings = lazyWithRetry(() => import('@/pages/Settings'))
 const Compliance = lazyWithRetry(() => import('@/pages/Compliance'))
 const Profile = lazyWithRetry(() => import('@/pages/Profile'))
 const BuildLap = lazyWithRetry(() => import('@/pages/BuildLap'))
-const KitRedeem = lazyWithRetry(() => import('@/pages/kit/KitRedeem'))
-const KitHome = lazyWithRetry(() => import('@/pages/kit/KitHome'))
-const KitIntake = lazyWithRetry(() => import('@/pages/kit/KitIntake'))
-const KitReading = lazyWithRetry(() => import('@/pages/kit/KitReading'))
-const KitPdf = lazyWithRetry(() => import('@/pages/kit/KitPdf'))
 const BriefingPage = lazyWithRetry(() => import('@/pages/BriefingPage'))
 const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
 const Goals = lazyWithRetry(() => import('@/pages/Goals'))
@@ -166,8 +161,6 @@ function preloadInitialRouteChunk() {
     warm(() => import('@/pages/Landing'))
   } else if (p.startsWith('/auth')) {
     warm(() => import('@/pages/Auth'))
-  } else if (p.startsWith('/kit')) {
-    warm(() => import('@/pages/kit/KitRedeem'))
   } else {
     // The authed area: the home/dashboard is the overwhelmingly common entry point.
     warm(() => import('@/pages/Dashboard'))
@@ -254,10 +247,6 @@ export const router = createBrowserRouter([
     element: <LazyWrapper><BuildLap /></LazyWrapper>,
   },
   {
-    path: '/kit',
-    element: <LazyWrapper><KitRedeem /></LazyWrapper>,
-  },
-  {
     // Dev/QC fixture-render harness (public so it can be screenshot without auth). Unlinked.
     path: '/preview',
     element: <LazyWrapper><Preview /></LazyWrapper>,
@@ -283,28 +272,6 @@ export const router = createBrowserRouter([
     // checkout button). A willing buyer never has to hunt.
     path: '/upgrade',
     element: <LazyWrapper><Pricing /></LazyWrapper>,
-  },
-  {
-    path: '/kit/me',
-    element: <LazyWrapper><KitHome /></LazyWrapper>,
-  },
-  {
-    path: '/kit/me/intake',
-    element: <LazyWrapper><KitIntake /></LazyWrapper>,
-  },
-  {
-    path: '/kit/reading/:pageId',
-    element: <LazyWrapper><KitReading /></LazyWrapper>,
-  },
-  {
-    // The hero PDF (print-styled). Unlinked; opened by the reveal's "Download
-    // PDF". Self-resolves the current redemption when no id is given.
-    path: '/kit/pdf',
-    element: <LazyWrapper><KitPdf /></LazyWrapper>,
-  },
-  {
-    path: '/kit/pdf/:redemptionId',
-    element: <LazyWrapper><KitPdf /></LazyWrapper>,
   },
 
   // Authenticated routes (share a persistent chrome: GlobalFAB + SettingsSheet)

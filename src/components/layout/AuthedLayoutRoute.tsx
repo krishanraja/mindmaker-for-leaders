@@ -38,7 +38,7 @@ export function AuthedLayoutRoute() {
   // present on authed mobile surfaces too. The CSS rule
   // `body.app-locked { overflow: hidden }` and the touchmove gate in
   // mobileViewport.ts both key off this class. Public marketing routes
-  // (Landing, /agents, /try, /auth, /build, /kit, /preview) never
+  // (Landing, /agents, /try, /auth, /build, /preview) never
   // mount this wrapper, so they will not receive app-locked and scroll normally.
   useEffect(() => {
     document.body.classList.add('app-locked')

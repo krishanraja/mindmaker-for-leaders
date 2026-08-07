@@ -54,9 +54,9 @@ export const LANDING = {
 
   // price
   priceH: 'Free is free forever.',
-  priceBody: 'Memory, voice, the Kit program, unlimited skill builds, the daily read, three full weighs a month.',
+  priceBody: 'Memory, voice, unlimited skill builds, the daily read, three full weighs a month.',
   freeDesc:
-    'Memory web, voice profile, the Kit program, unlimited skill builds, the daily read, and three decision weighs a month.',
+    'Memory web, voice profile, unlimited skill builds, the daily read, and three decision weighs a month.',
   proDesc:
     'Unlimited weighs, a second model arguing against the first, decision watch, Edge artifacts, and the live MCP that sends your brain where it needs to be.',
   // The approved deck ended this on a half sentence ("...has made him realize
