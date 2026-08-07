@@ -7,7 +7,7 @@
  *   3. SKILL READY  - the payoff + your skills library + export
  *
  * This file owns the pure data: the candidate shape, the per-candidate cascade
- * questions (tailored by archetype), and composeTranscript() - the function
+ * questions (tailored by archetype), and composeBuildBrief() - the function
  * that turns the cascade picks into a well-formed transcript the existing
  * generate-skill-export edge function already knows how to parse.
  *
@@ -896,8 +896,21 @@ function chipValue(stepId: CascadeStepId, opt: CascadeOption): string {
  * The result reads like a leader narrating their workflow, which is exactly
  * the input shape the prompt was tuned on - so the backend produces the skill
  * with no edge-function change.
+ *
+ * THIS IS NOT EVIDENCE, AND IT USED TO BE TREATED AS SOME.
+ *
+ * It was called composeTranscript and passed to generate-skill-export as the
+ * `transcript`, which the backend splits into citable spans. So every surviving
+ * [E#] pointer in a built skill resolved to a sentence in this file, written
+ * once by hand and attributed to whoever tapped the matching chip. The chain
+ * was real, offset-verified, and terminated in our own template library, which
+ * is worse than no provenance because it looks sourced.
+ *
+ * It is a BRIEF now: it shapes what gets built and nothing more. The leader's
+ * own words travel separately as `own_words`, and only those may be quoted.
+ * Do not pass this to anything that stores or cites it.
  */
-export function composeTranscript(
+export function composeBuildBrief(
   candidate: DeliverableCandidate,
   steps: CascadeStep[],
   picks: CascadePicks,
@@ -942,6 +955,32 @@ export function composeTranscript(
 
 function lowerFirst(s: string): string {
   return s.length > 0 ? s.charAt(0).toLowerCase() + s.slice(1) : s;
+}
+
+/**
+ * The leader's OWN material from this build, and nothing CTRL wrote.
+ *
+ * This is the only text a rule in the finished skill is allowed to quote, so
+ * the rule for what belongs here is strict: it came from them. The seed is
+ * mined from their own memory facts and decisions; a custom title is what they
+ * typed. Chip fragments are ours and never appear, however well they read.
+ *
+ * Empty is a real and common answer, for a leader who picked from suggestions
+ * and typed nothing. Returning "" rather than padding is the point: with no
+ * words of theirs and no compiled criteria, there is nothing legitimate to
+ * cite, and demoteUnpointedClaims rewrites the rules as NOT ESTABLISHED
+ * instead of dressing our template prose up as their voice.
+ */
+export function composeOwnWords(
+  candidate: DeliverableCandidate,
+  customTitle?: string,
+): string {
+  const parts: string[] = [];
+  const seed = (candidate.seedText ?? "").trim();
+  if (seed) parts.push(seed);
+  const typed = (customTitle ?? "").trim();
+  if (typed) parts.push(typed);
+  return parts.join("\n\n");
 }
 
 /**

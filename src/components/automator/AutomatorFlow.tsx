@@ -15,7 +15,8 @@ import { VoiceStyleProfileSheet } from "@/components/edge/VoiceStyleProfileSheet
 import {
   builtYourWayChips,
   cascadeFor,
-  composeTranscript,
+  composeBuildBrief,
+  composeOwnWords,
   toneIdFromProfile,
   toneToVoiceProfile,
   type CascadePicks,
@@ -216,14 +217,24 @@ export function AutomatorFlow({
       return;
     }
 
-    // Last step: compose the transcript and build the skill.
-    const transcript = composeTranscript(candidate, steps, picks);
+    // Last step: brief the build, and say separately which words are theirs.
+    //
+    // The brief shapes the skill. It is composed from chip picks, so it is our
+    // prose, and it is NOT offered for citation: passing it as the transcript
+    // is what used to make every [E#] in a finished skill resolve to a sentence
+    // in automatorModel.ts. Only ownWords may be quoted, and it is empty for a
+    // leader who tapped through without typing anything, which is the honest
+    // answer rather than a problem to paper over.
+    const transcript = composeBuildBrief(candidate, steps, picks);
     const seed: SkillSeed | null =
       candidate.seedText && candidate.seedKind
         ? { kind: candidate.seedKind, text: candidate.seedText }
         : null;
 
-    const response = await skillExport.generateSkill(transcript, { seed });
+    const response = await skillExport.generateSkill(transcript, {
+      seed,
+      ownWords: composeOwnWords(candidate),
+    });
     if (!response) {
       // useSkillExport set the error; the cascade surfaces it inline.
       return;
