@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-26
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).
@@ -26,14 +26,19 @@ As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed
 | Perplexity | Daily-briefing web search | Briefing topics/queries (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
 | Tavily | Daily-briefing web search/enrichment | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
 | Brave Search | Daily-briefing web search | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
-| Jina | Daily-briefing content retrieval/enrichment | Briefing topics/URLs | US | To confirm | SCCs (to confirm/sign) |
+| Jina | Business-context enrichment (company site reads) and briefing content retrieval | Company URLs/content, briefing topics | US | To confirm | SCCs (to confirm/sign) |
 | Apollo | Company enrichment | Company name/domain (business context) | US | To confirm | SCCs (to confirm/sign) |
 | Google (OAuth) | Sign-in / authentication | Email, name, OAuth identity | US | Standard terms | SCCs (to confirm/sign) |
 | Google Sheets | Operations sync | Minimized account/usage data | US | Standard terms | SCCs (to confirm/sign) |
+| NewsAPI.org | News aggregation for the daily briefing and the Home news feed | Briefing/news topics (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
+| Exa | Neural/semantic search for the daily briefing, the Home news feed, and decision-engine evidence retrieval | Briefing/decision topics and queries | US | To confirm | SCCs (to confirm/sign) |
+| Artificial Analysis | AI-model benchmark data used to validate news/decision claims about specific models | Model names/claims referenced in briefing or decision content (not account identity) | US | To confirm | SCCs (to confirm/sign) |
+| PostHog | Product analytics (page views, in-app usage events) | Account/session identifiers, page and event metadata | US | To confirm | SCCs (to confirm/sign) |
 
 Notes:
-- Search/enrichment providers (Perplexity, Tavily, Brave, Jina) primarily receive briefing topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
-- Apollo receives company-level data used for enrichment; treat as processing of business context.
+- Search/enrichment providers (Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa, Artificial Analysis) primarily receive briefing/decision topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
+- Apollo and Jina (company-site reads) receive company-level data used for enrichment; treat as processing of business context.
+- PostHog is loaded client-side (`index.html`) and tags events `product: mm_ctrl` so a shared Mindmaker-wide PostHog project can separate ventures; it captures page views and in-app usage, not Memory Web content.
 - Card data is never stored by Mindmaker; Stripe tokenizes it.
 
 ## How we notify customers of changes

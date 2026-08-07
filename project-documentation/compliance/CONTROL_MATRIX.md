@@ -1,6 +1,6 @@
 # CTRL Control Matrix (SOC 2 + ISO 27001:2022)
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-26 (updated 2026-07-26: C1.2 and P5 corrected against current code)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Maps the SOC 2 Trust Services Criteria (Common Criteria CC1-CC9 plus Availability, Confidentiality, Privacy) and key ISO/IEC 27001:2022 Annex A controls to CTRL's honest current status, the specific implementation or gap, and where evidence lives. This is a gap analysis, not a claim of conformance.
@@ -43,7 +43,7 @@ Cross-references: [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY
 | Ref | Criterion | ISO overlap | Status | Implementation or gap | Evidence |
 |-----|-----------|-------------|--------|-----------------------|----------|
 | C1.1 | Identify/protect confidential data | A.5.12-5.13, A.8.24 | IN PLACE | Data classification in ISP; AES-256-GCM for Memory; owner-scoped RLS | ISP s3/s5 |
-| C1.2 | Disposal of confidential data | A.8.10 | IN PLACE | cleanup-expired-data (pg_cron) + delete-account cascade; backups age out | DATA_RETENTION_POLICY.md |
+| C1.2 | Disposal of confidential data | A.8.10 | PARTIAL | cleanup-expired-data (code exists, correct; NOT currently wired to a pg_cron schedule, so it does not run automatically) + delete-account cascade (in place); backups age out | DATA_RETENTION_POLICY.md |
 
 ## SOC 2 - Privacy (P)
 
@@ -53,7 +53,7 @@ Cross-references: [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY
 | P2 Choice/Consent | Consent capture | A.5.34 | IN PLACE | upsert-sharing-consent; consent_audit table; marketing consent flag | ROPA Activity J |
 | P3 Collection | Lawful, minimized collection | A.5.34 | IN PLACE | Lawful bases mapped per category | PRIVACY_POLICY.md s4; ROPA.md |
 | P4 Use/Retention/Disposal | Retention and deletion | A.8.10 | IN PLACE | Configurable retention + scheduled cleanup + cascading deletion | DATA_RETENTION_POLICY.md |
-| P5 Access | Subject access/portability | A.5.34 | IN PLACE | memory-export (JSON+markdown), generate-custom-export; DSAR runbook | DSAR_RUNBOOK.md |
+| P5 Access | Subject access/portability | A.5.34 | IN PLACE | memory-export (chatgpt/claude/gemini/cursor/claude-code/markdown formats), the client-side JSON/CSV export path, generate-custom-export (Edge Pro only); DSAR runbook | DSAR_RUNBOOK.md |
 | P6 Disclosure/Transfers | Third-party disclosure and transfers | A.5.34 | PARTIAL | Subprocessors registered; "we do not sell". SCCs/DPAs PLANNED | SUBPROCESSORS.md |
 | P7 Quality | Accuracy/rectification | A.5.34 | IN PLACE | In-app edit + rectification path | DSAR_RUNBOOK.md |
 | P8 Monitoring/Enforcement | Complaint handling, breach notice | A.5.34, A.5.24 | PARTIAL | IR plan covers breach notice; formal complaint workflow maturing | INCIDENT_RESPONSE_PLAN.md |

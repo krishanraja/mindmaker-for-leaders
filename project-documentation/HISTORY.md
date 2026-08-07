@@ -2,7 +2,7 @@
 
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass: added Phase 18, covering everything shipped after Phase 17 through this pass).
 
 > This is a historical record, kept on purpose. Early phases below describe positioning and visuals that are now RETIRED: the "Clarity for Leaders" tagline, the light/Apple-like design system (warm off-white, ink, Mint). Those are accurate as history but are not the current product. The current state is: globally DARK (the `ctrl-ds` instrument palette, emerald `#00D9B6`), and the LOCKED positioning is **building the AI-native version of your business** (locked 2026-06-19, after the latest phase recorded here). The two halves that post-date this timeline are the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
 
@@ -743,6 +743,32 @@ Adapt the whole experience to the leader's lifecycle state, and match the device
 
 ### Verification
 Typecheck/build green, 225 unit tests pass. Backend (column migration, `send-reactivation-nudge`, cron) shipped to prod ahead of the frontend merge (additive, no dependency) and dry-run verified. A **live authed Playwright walk on desktop, tablet, and mobile separately**, as a brand-new cold user, confirmed the loop end to end: cockpit cold-start → inline onboarding (industry/role/interests) → feed settles with the kickstart leading → CTA → `/decision` prefilled, with device-context copy. No functional defects.
+
+---
+
+## Phase 18: Evidence-corpus sharpening, settings audit, money-path repair, and North Star (PRs #321, #325-#334, 2026-07-03 to 2026-07-18)
+
+> Canonical: `docs/CTRL-SYSTEM-SPEC.md` section 9; `NORTH_STAR.md`; `docs/PRICING.md`. See `DECISIONS_LOG.md` Decisions 61-68 for full rationale/trade-offs on each item below. This phase spans an unusually dense two-week run of audit-driven fixes and is grouped as one phase rather than split further.
+
+### What shipped
+- **Correction loop made real** (2026-07-03): `verify_memory_fact`/`fix_memory_fact` log correction events with the prior value; the extractor never re-infers a rejected value (closing a bug where rejected facts could silently re-insert).
+- **Decision memo export** (2026-07-03): every completed weigh assembles into a board-ready one-page markdown memo from real stored fields, no fabricated options section.
+- **Capability ladder** (2026-07-03): the You tab gets an earned 4-stage progression from observed behaviour only, replacing engagement-only/vanity metrics.
+- **Live MCP-gated brain actions wired** (2026-07-03): Strengthen/Fix on the brain's BondReader went from disabled buttons over complete RPCs to actually live.
+- **Decisions tab rebuilt as a radial force spider** (2026-07-01): a fixed six-force radial diagnostic (Capability/Economics/Risk/Build-vs-buy/Team/Timing) replaces the vertical claim ladder.
+- **Settings audit / one-door tuning** (2026-07-04, PR #325): the Home and Settings feed-tuning UIs, which previously wrote to two different tables and never synced, now share one panel; the track-record settings row no longer navigates behind the still-open drawer; active-decision cards get Open/Strengthen/Archive.
+- **Edge Pro money-path repair** (2026-07-04, PRs #326-327): fixed a Stripe webhook signature-verification bug that meant the paid tier had never once activated a subscription in production; added a webhook-independent fallback; repriced Edge Pro to $49/month and repositioned it as the decision tier (the daily briefing is now free). See `DECISIONS_LOG.md` Decision 60.
+- **Decision-engine reframe/sanitize/eval-gate hardening** (2026-07-04, PR #328): fixed an under-trigger where "support agents" (human agents) was mistaken for an AI-native decision and skipped its reframe; added an output sanitizer stripping em/en dashes from LLM-generated text; wired a vitest eval gate into CI.
+- **North Star flywheel instrumented** (2026-07-04, PR #330, founder-signed): the moat metric is now measured, not just narrated - a leader counts as a flywheel user the week they both hold a real brain and weigh a decision. See `NORTH_STAR.md`.
+- **Craft + growth pass** (2026-07-04, PR #329): sidebar footer cleanup, a collapsible desktop nav (default to the 3 primary tabs), an initial `/pricing` page, and a decision-peak upgrade nudge.
+- **Pricing/upgrade route split** (2026-07-04, PR #331): live verification caught the static `/pricing` SEO page (served via a `vercel.json` rewrite) shadowing the new interactive pricing route and still showing the old $29 price; the interactive checkout page moved to `/upgrade`, and `/pricing` stays the static SEO surface for crawlers/hard loads.
+- **News "shift" trend cards** (2026-07-06, PR #332): a flag-gated (`TRENDS_ENABLED`, default off) weekly detector surfaces structural, multi-story patterns (not just single-day news) as a distinct Home card type, gated by a deterministic verify pass over real recurrence.
+- **`/download` public capture page** (2026-07-07, PR #333): a feature-flagged, no-scroll email-capture screen for the CTRL starter kit, off by default.
+- **Home card glance/tap-to-read rework** (2026-07-03 to 2026-07-07, PRs #322-324, #334): news cards became glance-only (motif, headline, one clamped line, a quiet "The take >" door) with the full read moved into a `CardReadSheet`; every card renders at one exact measured height so nothing clips behind the bottom nav; a `card-for-you` edge function personalizes the Take against the leader's real brain context.
+- **PostHog product analytics** (2026-07-18): an inline script in `index.html` loads `posthog-js` from PostHog's CDN, tagging events `product: mm_ctrl` so a shared Mindmaker-wide project can separate ventures. No new npm dependency, no build change. Flagged during this drift-check pass as needing a subprocessor/privacy-policy disclosure, which has now been added (see `project-documentation/compliance/`).
+
+### Verification
+Each item above shipped with its own typecheck/build/unit-test/lint verification per its PR; the money-path repair was additionally verified end to end with a signed synthetic Stripe webhook event, and the North Star instrumentation was verified live against a real baseline snapshot (10 brain-rich, 1 active decider, 6 weekly-active) at ship time.
 
 ---
 

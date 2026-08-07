@@ -2,7 +2,9 @@
 
 Complete feature inventory.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass: re-counted edge functions/hooks/migrations, fixed the `/context-export` route typo, corrected the stale "Home is now the cockpit deck" callout, and added the note below for everything shipped after 2026-06-21).
+
+> **Post-2026-06-21 layers this doc still narrates only in outline (full detail in `CLAUDE.md`'s Architecture Quick Reference):** the CTRL 2028 radical-focus refactor (PRs #234-241, `CockpitHome`/`CockpitDeck` deleted, replaced by `HomeFeed.tsx` + `DesktopHomeView.tsx`, `VITE_COCKPIT_ENABLED` flag retired entirely); the unified onboarding->decisions->engagement loop (PR #298); evidence-corpus sharpening (PR #321: real correction loop on Memory facts, board-ready decision memo export, live MCP-gated Strengthen/Fix brain actions, capability ladder replacing engagement-only progression); the settings audit / one-door tuning (PR #325); the Decisions tab rebuilt as a radial force spider; the Edge Pro money-path repair + $49/decision-tier reposition (PRs #326-327, see the Pricing section below); the decision-engine reframe/sanitize/eval-gate hardening (PR #328); the North Star flywheel metric (PR #330, see `NORTH_STAR.md`); the static `/pricing` SEO page vs the interactive `/upgrade` checkout page split (PRs #329, #331); news "shift"/trend cards (PR #332); the `/download` public capture page (PR #333); the Home card glance/tap-to-read rework (PRs #322-324, #334); and PostHog product analytics (2026-07-18).
 
 > **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. The feature mechanics below are accurate; read them through that lens. Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`. The LATEST layer this doc predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing, the brain-canvas fix, the no-scroll/one-ask sweep). For those, trust the two specs and `CLAUDE.md`.
 
@@ -16,13 +18,13 @@ Complete feature inventory.
 
 ---
 
-## Repo at a glance (counts verified 2026-06-09; not re-counted since)
+## Repo at a glance (counts re-verified 2026-07-26)
 
-> **Updated 2026-06-17.** The brand redesign (PR #186), Brain engine (PRs #153-164, #187-189), and 4-kit program (PRs #190-#193) all shipped after these counts were last taken. Treat the edge-function / hook / migration totals below as **verified counts pending re-count**.
+> **Updated 2026-07-26.** Edge function / hook / migration totals below are live counts as of this pass, not a lower bound. Re-count directly from the repo (`ls supabase/functions`, `ls supabase/migrations`, `ls src/hooks`) rather than trusting any older figure.
 
-- **80 Supabase edge functions** (Deno runtime; count as of 2026-06-09, re-count pending), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), and the `track-event` attribution proxy, plus shared modules; latest added: `extract-voice-profile` (PR #204)
-- **59 React hooks** under `src/hooks/` (count as of 2026-06-09; added since v5.2: `useGoals`, `useDecisionEngine`, `useDecisionInbox`, `useDecisionCall`, `useGeneratedArtifacts`, `useProfileBasics`, `useOnceFlag`, `useBriefingStreamPreview`, `useWatchlist`)
-- **110 PostgreSQL migrations** applied to remote (count as of 2026-06-09; added since v5.2: `20260602000000_decision_engine.sql`, `20260605120000_create_goals.sql`, audit-infrastructure + cross-tenant RLS hardening; later additions include `20260615*_brain_*` and `20260616120000_memory_edges`)
+- **104 Supabase edge functions** (Deno runtime; re-counted 2026-07-26), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), the `track-event` attribution proxy, `card-for-you`, `capture-lead`, `detect-trends`, and North Star's supporting cron, plus shared modules
+- **77 React hooks** under `src/hooks/` (re-counted 2026-07-26)
+- **148 PostgreSQL migrations** applied to remote (re-counted 2026-07-26)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Brand redesign shipped LIVE** (PR #186, merge 1c01db5, 2026-06-16): globally forced dark, `ctrl-ds` instrument palette, emerald `#00D9B6`, the emerald `ctrl.` wordmark; rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. See **Redesign** below.
@@ -349,7 +351,9 @@ The Dashboard is the main authenticated hub, rendering either the **Memory Web**
 - AppHeader at top (brand lockup, not the generated "ctrl." text, since PR #197)
 - Backdrop blur effect
 
-> **Home is now the cockpit deck (PR #197, merge 7b5f0ef, behind `VITE_COCKPIT_ENABLED`).** The Home tab no longer shows the old "strongest signal" hero or the wall of AI-bets (bets moved to the Decisions case-picker). It now shows a plain time-aware greeting, the swipeable "worth a look" deck (broad AI news from the briefing pipeline's curated segments mixed with the leader's own `decision_alerts`; swipe heart = more-like-this, skip = dismiss; peeking card stack + dots; deck like/dislike persists and trains the feed per PR #200), and 3 value actions (Play my briefing -> `/briefing`, Run a decision -> `/decision`, Build a skill -> `/context`). Full detail in **Home / Decision Map / Automator UX Redesign** above.
+> **Home history, corrected 2026-07-26:** PR #197 (2026-06-16) first rebuilt Home as the swipeable "worth a look" `CockpitDeck` behind `VITE_COCKPIT_ENABLED`, described in the paragraph below - that describes a since-superseded implementation, kept for the record. The CTRL 2028 radical-focus refactor (PRs #234-241) then DELETED `CockpitHome.tsx`/`CockpitDeck.tsx` and the `VITE_COCKPIT_ENABLED` flag entirely, replacing them with `HomeFeed.tsx` (mobile) + `DesktopHomeView.tsx` (desktop): one browsable headline feed (mobile swipe-feed / desktop rail) plus the 3 doors, with real own-signals woven in and a bundled `coldDeck.ts` fallback so Home is never empty. Since PRs #322-324/#334 (2026-07-03/07), news cards are glance-only (motif, category chip, headline, one clamped line, source, heart/skip, a quiet "The take >" door) with the full summary/Take/benchmark/relevance opening in a `CardReadSheet`, and every card renders at one exact measured height so nothing clips behind the bottom nav. See `CLAUDE.md`'s Architecture Quick Reference for full detail on both the 2028 refactor and the card rework.
+>
+> **Historical (PR #197, merge 7b5f0ef, superseded above):** the Home tab no longer shows the old "strongest signal" hero or the wall of AI-bets (bets moved to the Decisions case-picker). It now shows a plain time-aware greeting, the swipeable "worth a look" deck (broad AI news from the briefing pipeline's curated segments mixed with the leader's own `decision_alerts`; swipe heart = more-like-this, skip = dismiss; peeking card stack + dots; deck like/dislike persists and trains the feed per PR #200), and 3 value actions (Play my briefing -> `/briefing`, Run a decision -> `/decision`, Build a skill -> `/context`). Full detail in **Home / Decision Map / Automator UX Redesign** above (also historical).
 
 ### Memory Web View (Default)
 
@@ -520,7 +524,7 @@ Voice-first context extraction system that builds a persistent knowledge base ab
 
 The headline differentiator: export your Memory Web as formatted context to any AI tool. One click to make ChatGPT, Claude, Gemini, Cursor, or any LLM instantly personalized.
 
-**Page**: `/context-export` (auth required)
+**Page**: `/context` (auth required) - corrected 2026-07-26; the actual `src/router.tsx` route is `/context`, not `/context-export` (this file's own later section already says `/context` correctly, this was a stale, internally-inconsistent typo)
 
 ### Export Formats (6)
 

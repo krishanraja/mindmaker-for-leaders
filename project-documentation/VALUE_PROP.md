@@ -1,6 +1,6 @@
 # Value Propositions
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass; pricing confirmed still accurate; see the North Star note below for how this doc's own "flywheel" section relates to the measured metric).
 
 > RECONCILIATION BANNER. CTRL's positioning is now **building the AI-native version of your business**, not "decision speed". The feature-level value props below (Memory Web, Briefing, the Automator, the Decision engine) are accurate as MECHANICS, but the binding promise is no longer "decide faster"; it is "make your business more AI-native". The product is globally DARK (not light). Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); building Automator skills is FREE for now. The one-time diagnostic SKUs ($49/$29/$69) are wired in Stripe but flagged TODO(founder) under the repositioning. Lead with the AI-native frame from `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`. TODO(founder): rewrite the binding promise and the audience value props to AI-native.
 
@@ -27,6 +27,8 @@ Clear value propositions for each audience. The binding promise is: **build the 
 ### The Flywheel
 
 The more you use CTRL, the richer your Memory Web becomes. The richer your Memory Web, the sharper every AI tool gets you to a decision and the more relevant your daily Briefing. The more relevant the Briefing, the more you bookmark and ban - which makes tomorrow's lens sharper still. Decision speed compounds. This is not incremental improvement. It is a structural advantage.
+
+This narrative is now backed by an actual measured metric, not just a story: the founder-signed North Star (`NORTH_STAR.md`, 2026-07-04) defines a "flywheel user" as a leader who BOTH holds a real brain (5+ current facts) AND weighed a decision in the last 7 days, instrumented live in `north_star_flywheel`. Use the narrative above for prose; cite `NORTH_STAR.md` for the actual definition and numbers.
 
 ### Component Value Props
 

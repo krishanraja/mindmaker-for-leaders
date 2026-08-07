@@ -1,7 +1,7 @@
 # CTRL Privacy Policy
 
 Effective date: 2026-06-02
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-26 (updated 2026-07-26: disclosed PostHog product analytics and added NewsAPI.org/Exa/Artificial Analysis to the subprocessor list, all already live in the product; TODO(founder): PostHog has been running in production since 2026-07-18 without a corresponding policy disclosure until this pass - confirm whether affected users need direct notice, not just an updated policy page)
 
 This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://ctrl.themindmaker.ai. CTRL is an executive leadership-clarity tool. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 
@@ -60,7 +60,7 @@ CTRL sends your inputs (chat, business context, assessment answers, briefing top
 
 ## 6. How we share your data
 
-We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, Apollo, Google (OAuth and Sheets), and Vercel.
+We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa, Artificial Analysis, Apollo, Google (OAuth and Sheets), PostHog, and Vercel.
 
 ## 7. Voice and audio
 
@@ -99,7 +99,7 @@ Mindmaker does not sell personal information and does not share it for cross-con
 
 ## 11. Cookies and similar technologies
 
-CTRL uses strictly necessary cookies and local/session storage to keep you signed in and to operate the application (for example, authentication tokens managed by Supabase Auth). We do not use third-party advertising cookies. To the extent any non-essential analytics are used, they are limited to first-party, minimized usage events under our legitimate interest in improving the Service, and we will surface consent controls where required by law.
+CTRL uses strictly necessary cookies and local/session storage to keep you signed in and to operate the application (for example, authentication tokens managed by Supabase Auth). We do not use third-party advertising cookies. We do use PostHog, a third-party product-analytics provider, to capture minimized usage events (page views and in-app actions, tagged only with an internal product identifier) under our legitimate interest in improving the Service; PostHog does not receive Memory Web content or other sensitive profile data. We will surface consent controls where required by law.
 
 ## 12. Data retention
 

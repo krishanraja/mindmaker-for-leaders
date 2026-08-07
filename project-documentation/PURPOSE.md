@@ -1,6 +1,6 @@
 # Purpose
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass; positioning/mechanics verified against code, no changes needed beyond this banner and the North Star cross-reference below).
 
 > Reconciliation note: this doc was written for the prior "decision-speed / portable AI double / zero-context tax" positioning. The current LOCKED positioning is **building the AI-native version of your business** (see `docs/MAIN-APP-POLISH-SPEC.md` section 0, and the root `README.md`). The product mechanics described below (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the kits) are real and in the code; the FRAMING has moved to AI-native. The "What CTRL Is" and "Core Problem" sections have been reframed. Some downstream audience/measurement sections still carry the old decision-speed language; read them through the AI-native lens and treat any undecided AI-native specifics as `TODO(founder)`.
 
@@ -134,6 +134,8 @@ Use these (AI-native) when generating outbound, ad copy, or social posts:
 - **Pricing anchor (settled)**: Free to start (the daily briefing + the Automator build + Memory Web + Voice + the Kit program + 3 decision weighs a month, all free). Edge Pro is $49/month, the decision tier: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch + Edge artifacts + drafting + email delivery + the live MCP pull of your built skills. The daily briefing is intentionally free, not an Edge Pro feature. TODO(founder): confirm whether the $49 one-time diagnostic SKUs survive the repositioning before quoting them.
 
 ## Measurement of Success
+
+**The moat metric (founder-signed 2026-07-04):** the flywheel, context in, judgment out, recurring. A leader counts as a flywheel user the week they BOTH hold a real brain (5+ current facts in `user_memory`) AND weigh at least one decision. Instrumented live in `north_star_flywheel` / `north_star_daily` (migration `20260704120000_north_star_flywheel.sql`); full definition in `NORTH_STAR.md`. The items below are supporting/diagnostic measures, not the North Star itself.
 
 - Time to first export (<2 minutes)
 - Number of AI tools receiving exported context (target: 2+ in week 1)
