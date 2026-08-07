@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass: added Decisions 61-68, covering everything shipped after Decision 60).
 
 > This is a decision record kept on purpose. Architectural decisions below remain accurate. Two product decisions are now SUPERSEDED by later ones: any early decision framing CTRL as "Clarity for Leaders / decision speed" is superseded by the LOCKED AI-native positioning (2026-06-19: build/orchestrate/productize/go-to-market the AI-native version of your business), and any decision specifying the light/Apple design system is superseded by the globally dark `ctrl-ds` instrument palette (PR #186). Canonical current sources: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
 
@@ -468,3 +468,58 @@ Key architectural and product decisions with rationale.
 **Rationale**: The daily briefing, the Automator, Memory, and Voice are the daily habit and the on-ramp, so a leader should feel CTRL working for them every day without paying. Edge Pro earns its price on the one surface where depth compounds and general tools cannot follow: the decision engine. Pricing against that value ($49/month) rather than against the habit, while giving every leader a real taste of the engine (3 full weighs a month), is the honest demonstration that the paid depth is real. This SUPERSEDES the $29/month figure and the "Edge Pro gates the daily briefing / all briefing types" framing from Decision 42 (2026-05-30); the briefing is now free.
 **Trade-off**: A higher monthly price against a narrower, deeper promise (the decision engine) vs a lower price that bundled the now-free briefing. Existing $9 and $29 subscribers are grandfathered; the $9 figure is never quoted publicly.
 **Outcome**: ✅ Canonical in code (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`) and in `docs/PRICING.md`; forward-facing docs swept to $49/month and the decision-tier positioning.
+
+## Decision 61: Memory Corrections Persist as Signals, the Extractor Never Re-Infers a Rejected Value (2026-07-03)
+**Date**: 2026-07-03
+**Decision**: `verify_memory_fact`/`fix_memory_fact` now log `user_corrected`/`user_rejected`/`user_disputed` events into `memory_events` carrying the prior value (migration `20260703090000`), and `extract-user-context` is correction-aware via `_shared/correction-guard.ts`: recent corrections ride the extraction prompt, and a deterministic damping pass drops re-extractions of ruled-out values.
+**Rationale**: The correction loop was a destructive overwrite, not a real loop - and worse, rejected facts left the dedup set once `is_current=false`, so they could silently re-insert on the next extraction pass. A leader correcting CTRL should see it stick.
+**Trade-off**: A damping pass to maintain vs an extractor that keeps re-asserting facts the leader already ruled out.
+**Outcome**: ✅ Live. Verify swipe flow shows an "I noted what I got wrong" beat after a correction; unit-tested.
+
+## Decision 62: Every Completed Weigh Produces a Board-Ready One-Page Memo (2026-07-03)
+**Date**: 2026-07-03
+**Decision**: `buildDecisionMemo` (pure, unit-tested) assembles the real stored decision output - question, AI-native reframe, the call with confidence, what checks out / what's shaky, the breakpoint, the case against, tensions, validate-next, and a per-claim evidence appendix - into copyable markdown. No options section is fabricated; nullable fields on older rows are skipped rather than invented.
+**Rationale**: A finished decision was locked in-app with no way to carry it to a board or a colleague. Assembling only from real stored fields (never inventing an options section the engine doesn't produce) keeps the export honest.
+**Trade-off**: A pure formatting layer to maintain vs decisions that stay trapped in the app.
+**Outcome**: ✅ Live. Quiet "Copy the memo" affordance on the result screen and the decision anatomy shelf.
+
+## Decision 63: An Earned Capability Ladder Replaces Engagement-Only Progression (2026-07-03)
+**Decision**: `src/lib/capabilityLadder.ts` derives four earned stages (getting oriented -> operating -> calibrating -> compounding) from observed behaviour only (facts checked, decisions weighed, commit-first calls, resolved outcomes, skills built, live MCP pull) - never points, streaks, or badges. `postureForStage` is exported as a behaviour-identical seam for later posture adoption.
+**Rationale**: The app never composed its own signals into "where is this leader on the road to running AI-native." An honest progression beats an engagement gimmick, and a cold/thin-data state should say where the leader is rather than show a deflating 0/N.
+**Trade-off**: A single shared scorer (`useCapabilitySignals`, no new tracking) to build and keep synced across the You tab and the Decisions -> History embed, vs a real earned-progress signal instead of vanity metrics.
+**Outcome**: ✅ Live. Unit-tested; `CapabilityHeader` renders across all three data-richness states.
+
+## Decision 64: Rebuild the Decisions Tab as a Radial Force Spider (2026-07-01)
+**Date**: 2026-07-01
+**Decision**: Replace the vertical claim "ladder" with a radial diagnostic: the decision anchored at the centre (confidence gauge), six fixed AI-native forces (Capability / Economics / Risk / Build-vs-buy / Team / Timing) spidering out at fixed positions, each captioned with the decision's specific concern and colour-coded by health.
+**Rationale**: A ladder reads as a list to scroll, not a shape to read at a glance. A fixed radial layout lets a leader see where a decision is strong or weak in one look, and tap a force to interrogate it.
+**Trade-off**: A new pure layout model (`decisionSpiderModel.ts`) + a ported radial SVG canvas vs a materially better at-a-glance diagnostic; old untagged claims are inferred into a force so nothing breaks.
+**Outcome**: ✅ Live. A bundled demo decision renders in the empty state; old decisions degrade gracefully.
+
+## Decision 65: Repair the Edge Pro Money Path (Async Webhook + a Webhook-Independent Fallback) (2026-07-04)
+**Date**: 2026-07-04
+**Decision**: Fix `stripe-webhook`'s use of the synchronous `constructEvent` (which throws in Supabase's async-only Web Crypto runtime, silently failing every signature verification) by switching to `constructEventAsync`, and add `verify-edge-subscription` (session-poll, idempotent, ownership-scoped) as a fallback so a delayed or missed webhook can no longer leave a paying leader unentitled.
+**Rationale**: An audit found the Edge Pro purchase path had never once activated a subscription in production - the single most severe finding of that pass, since it means the paid tier could take a leader's money without ever unlocking it.
+**Trade-off**: A second activation path to maintain vs a checkout flow that actually works.
+**Outcome**: ✅ Live. Verified end to end with a signed synthetic webhook event; the entitlement row activates and the idempotency store records the event.
+
+## Decision 66: Fix the Decision-Engine Reframe Under-Trigger, Sanitize LLM Output, Add an Eval Gate (2026-07-04)
+**Date**: 2026-07-04
+**Decision**: The AI-native classifier was counting the bare word "agent(s)" as an AI signal, so "hire two more support agents" (human agents) was mistaken for an already-AI-native decision and skipped the reframe it needed; added a human-agent guard. Also added `_shared/sanitize.ts` to strip em/en dashes from all model-generated user-facing text (the no-em-dash rule was enforced on source but not on LLM output), and wired a vitest job into CI as the decision-engine eval gate.
+**Rationale**: These were trust-and-magic bugs found in a live audit: a decision that should have been reframed silently wasn't, and a generated recommendation could ship a banned character. Both erode the product's core promise (the reframe) and its house style rule.
+**Trade-off**: A masking guard + an output sanitizer + a CI gate to maintain vs a decision engine that reliably reframes and never regresses on style.
+**Outcome**: ✅ Live. Verified: "hire two more support agents" now reframes correctly; CI vitest job wired in.
+
+## Decision 67: Instrument the North Star as a Measured Flywheel Metric (2026-07-04, founder-signed)
+**Date**: 2026-07-04
+**Decision**: The repo had no written, measured North Star (an audit finding). Founder-signed: the moat metric is the flywheel - a leader counts as a flywheel user the week they BOTH hold a real brain (5+ current facts in `user_memory`) AND weigh at least one decision. Instrumented via migration `20260704120000_north_star_flywheel.sql` (`north_star_flywheel` view, `north_star_daily` table + `snapshot_north_star()`, a daily pg_cron).
+**Rationale**: Without a measured North Star, every other metric in this log and in OUTCOMES.md was a proxy with no way to tell if the product was actually compounding for a leader. The flywheel definition ties directly to the product's core mechanic (context in, judgment out) rather than an engagement vanity number.
+**Trade-off**: A new schema object + daily cron to maintain vs an actual, falsifiable measure of whether the product works. Documented in `NORTH_STAR.md`.
+**Outcome**: ✅ Live. Verified live at ship time: 10 brain-rich, 1 active decider, 6 weekly-active (baseline).
+
+## Decision 68: Settings Sweep - One Door for Feed/Briefing Tuning, an Active-Decision Control Centre, a Design-System Cleanup (2026-07-04)
+**Date**: 2026-07-04
+**Decision**: Split `NewsPreferencesSheet` into a reusable `NewsPreferencesPanel` rendered both by the Home tuning drawer and directly in Settings, so a tune in one place shows in both (they previously wrote to two different tables and never synced); gave the track-record "active decision" cards Open/Strengthen/Archive wired to existing doors; fixed the track-record settings row navigating behind the still-open settings drawer; cleaned cliché AI-speak copy and off-token colours/emoji across Settings.
+**Rationale**: Settings had drifted from the rest of the app's polish and had a genuine functional bug (two tuning UIs, two tables, no sync).
+**Trade-off**: A shared panel component + new design primitives (`Surface`/`Eyebrow`/`SettingRow`/`SheetFooterBar`) to build vs eliminating a duplicate-source-of-truth bug and a broken navigation.
+**Outcome**: ✅ Live. Typecheck 0 new errors, 337 unit tests pass, build + prerender green.

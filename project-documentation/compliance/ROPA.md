@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-26 (updated 2026-07-26: added PostHog, NewsAPI.org, Exa, and Artificial Analysis as subprocessors; corrected the Memory retention automation claim; resolved the kit_builds cascade question)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://ctrl.themindmaker.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
@@ -31,7 +31,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: company, industry, company size, website, primary challenges, AI-readiness score, communication style, thinking style.
 - Data subjects: registered users.
 - Lawful basis: contract (Art 6(1)(b)).
-- Recipients/subprocessors: Supabase (US); Apollo (company enrichment, US); AI providers for processing (see Activity E).
+- Recipients/subprocessors: Supabase (US); Apollo (company enrichment, US); Jina (company-site content reads, US); AI providers for processing (see Activity E).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: life of account; deleted on account deletion.
 - Security: RLS owner-scoping (profiles/unified_profiles/user_business_context now owner-scoped or service-role-only after May-June 2026 remediation), TLS.
@@ -42,7 +42,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Lawful basis: contract (Art 6(1)(b)); consent for optional memory features.
 - Recipients/subprocessors: Supabase (US); OpenAI (embeddings text-embedding-3-small, US); primary LLM providers (US).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: configurable via user_memory_settings.retention_days; enforced by cleanup-expired-data (pg_cron). Deleted on account deletion.
+- Retention: configurable via user_memory_settings.retention_days, enforced by the cleanup-expired-data function; NOTE (2026-07-26): no pg_cron schedule currently invokes this function (unlike send-daily-briefing, memory-sweep, and other scheduled jobs), so today it runs only when manually/externally triggered, not on an automatic cadence. See [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md). Deleted on account deletion.
 - Security: AES-256-GCM encryption at rest, RLS owner-scoping, TLS.
 
 ### D. Conversations / chat
@@ -76,7 +76,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: briefing preferences, interests, account identity; briefing topics/queries sent to search providers.
 - Data subjects: registered users.
 - Lawful basis: contract (transactional delivery); consent (optional channels and marketing).
-- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search, Jina (web search/enrichment of briefing topics, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
+- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa (web search/enrichment of briefing and news-feed topics, US); Artificial Analysis (model-benchmark validation of claims referenced in briefing content, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: preferences for life of account; generated briefings per retention policy.
 - Security: RLS owner-scoping, TLS.
@@ -118,10 +118,10 @@ This record describes the processing activities Mindmaker carries out as control
 - Security: structured JSON logging with CI gate against console.log; no secrets in logs.
 
 ### L. Operations sync and product analytics
-- Personal data: minimized account and usage data; ops sync to Google Sheets.
+- Personal data: minimized account and usage data; ops sync to Google Sheets; page-view and in-app usage events sent to PostHog.
 - Data subjects: registered users.
 - Lawful basis: legitimate interests (Art 6(1)(f)).
-- Recipients/subprocessors: Google Sheets (ops sync, US); Supabase (US).
+- Recipients/subprocessors: Google Sheets (ops sync, US); PostHog (product analytics, US); Supabase (US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: minimized; reviewed periodically.
 - Security: scoped service credentials, TLS.
@@ -132,7 +132,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Lawful basis: contract (Art 6(1)(b)).
 - Recipients/subprocessors: Supabase (US); LLM providers for composition (see Activity E).
 - Transfers: EU/UK to US, SCCs (in progress).
-- Retention: life of account; deleted on account deletion (confirm delete-account cascade covers `kit_builds`, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)).
+- Retention: life of account; deleted on account deletion. Confirmed (2026-07-26): `kit_builds.user_id` has an `ON DELETE CASCADE` foreign key to `auth.users`, so the Postgres-level cascade covers it even though the `delete-account` function's explicit sweep list does not name the table separately.
 - Security: RLS owner-scoping, TLS. Note: kit_builds.intake rows created before PR #193 are truncated (the back half of the cascade was not captured); fully captured thereafter.
 
 ## General security measures (all activities)

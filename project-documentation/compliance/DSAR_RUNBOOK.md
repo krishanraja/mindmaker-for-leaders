@@ -1,6 +1,6 @@
 # Data Subject Access Request (DSAR) Runbook
 
-Last reviewed: 2026-06-02
+Last reviewed: 2026-07-26 (updated 2026-07-26: corrected the export tooling description and the retention-scheduling claim against current code)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Operational runbook for handling data-subject rights requests for CTRL: access, rectification, erasure, portability, restriction/objection, and CCPA opt-out. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 9.
@@ -39,7 +39,7 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 
 | Request type | Tooling / location | Notes |
 |--------------|--------------------|-------|
-| Access / Portability | `memory-export` edge function (JSON + markdown); `generate-custom-export` edge function | Produces user-scoped export of Memory and related data |
+| Access / Portability | `memory-export` edge function (exports to `chatgpt`/`claude`/`gemini`/`cursor`/`claude-code`/`markdown` formats, no raw JSON option); the client-side `useExportMemory()` path (JSON/CSV built in-browser from `user_memory`, does not call an edge function); `generate-custom-export` edge function (Edge Pro subscription required, takes a transcript, not a general-purpose account export) | Produces user-scoped export of Memory and related data; pick the tool that matches what the requester actually needs (formatted export vs raw JSON/CSV vs paid transcript-driven context doc) |
 | Memory data specifically | `memory-crud`, `memory-export`, `memory-settings` edge functions; Memory tables | Memory facts are AES-256-GCM encrypted at rest; export decrypts for the owner |
 | Profile / business context | profiles, unified_profiles, profile_insights, user_business_context (owner-scoped after May-June 2026 RLS remediation) | |
 | Conversations | chat_messages (owner-scoped) | |
@@ -48,13 +48,13 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 | Billing | Stripe customer record + local subscription status | Card data lives only in Stripe |
 | Consent history | consent_audit table; `upsert-sharing-consent`; notification prefs via `upsert-notification-prefs` | |
 | Erasure | `delete-account` edge function (cascading) | Removes user data across tables |
-| Retention settings | `user_memory_settings.retention_days`; enforced by `cleanup-expired-data` (pg_cron) | |
+| Retention settings | `user_memory_settings.retention_days`; enforced by `cleanup-expired-data` when it runs (no automated schedule currently wired, see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)) | |
 
 ## 5. Fulfillment steps by request type
 
 ### Access / Portability
 1. Verify identity (Section 3).
-2. Run the user's in-app export, or invoke `memory-export` / `generate-custom-export` scoped to the user's ID.
+2. Run the user's in-app export (`useExportMemory()`, JSON/CSV of Memory facts), or invoke `memory-export` scoped to the user's ID for a formatted (ChatGPT/Claude/Gemini/Cursor/Claude Code/markdown) export. `generate-custom-export` is a paid, transcript-driven tool gated on an active Edge Pro subscription and is not a substitute for a general access/portability request.
 3. Review output to confirm it is the requester's data only and contains no other person's personal data.
 4. Deliver via a secure channel (in-app download preferred; if emailed, use a time-limited link).
 5. Log completion.
@@ -68,7 +68,7 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 ### Erasure
 1. Verify identity.
 2. Use the in-app account deletion or invoke `delete-account` (cascading).
-3. Confirm Stripe-side handling (cancel subscription; financial records retained where legally required, then deleted).
+3. Confirm Stripe-side handling (cancel subscription; financial records retained where legally required, then deleted). NOTE (2026-07-26): `delete-account` itself does not call Stripe to cancel a subscription - this is currently a manual operator step, not an automated part of account deletion; TODO(founder/dev): confirm whether subscription cancellation should be added to `delete-account` or is handled elsewhere.
 4. Note that backups expire on their own cycle (see [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md)); deleted data is purged from primary stores immediately and ages out of backups.
 5. Confirm to the user and log.
 

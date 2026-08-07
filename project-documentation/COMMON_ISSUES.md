@@ -2,7 +2,7 @@
 
 Recurring bugs, architectural pain points, and solutions.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass: clarified the V3 checklist's light-mode line, which read as a positive item on a literal read; no other changes needed - this is a historical bug log, not a current-state doc).
 
 > **Status**: This is a developer bug/pain log dated 2026-04-26. Most pre-2026-04 issues are closed. The April 2026 six-week audit (Phase 7) covered revenue path, data path, UX, reliability, observability, and cleanup. New issues added at the bottom under "Audit Phase Aftermath." It predates the dark redesign (PR #186), the brain engine, the kit redesign, and the main-app polish, so for current known issues also read `CLAUDE.md` (the live architecture quick-reference, which lists the honest residual gaps). Note: where this doc lists "light mode color system" in an AVOID list, that is correct guidance; the app is globally dark.
 
@@ -225,7 +225,7 @@ The following failure points have been identified and guarded in `pipelineGuards
 Use this checklist when implementing new features to ensure V3 standards are met.
 
 ### Design System Setup
-- [ ] Using light mode color system
+- [ ] NOT using light mode color system (the app is globally forced dark; this box should be checked when the surface avoids light-mode styling)
 - [ ] All CSS variables defined (colors, shadows, spacing)
 - [ ] Typography scale correct
 - [ ] Border radius system followed

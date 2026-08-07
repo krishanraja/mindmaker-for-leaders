@@ -1,6 +1,6 @@
 # CTRL Data Retention Policy
 
-Last reviewed: 2026-06-17 (updated 2026-06-17)
+Last reviewed: 2026-07-26 (updated 2026-07-26: corrected the Memory-retention automation claim and the generated-briefings cleanup claim; resolved the kit_builds cascade question)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Defines how long CTRL keeps each category of personal data and how it is deleted. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 12 and [ROPA.md](./ROPA.md).
@@ -17,12 +17,12 @@ Defines how long CTRL keeps each category of personal data and how it is deleted
 |---------------|-----------|--------------------|
 | Account identity (email, name, display name) | Life of account | `delete-account` (cascading) on account deletion |
 | Business / work context | Life of account | `delete-account` cascade |
-| Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` (pg_cron) enforces per-user retention window; `delete-account` cascade on closure |
+| Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` enforces per-user retention window when invoked; `delete-account` cascade on closure |
 | Conversation / chat messages | Life of account (subject to any configured retention) | `delete-account` cascade; retention cleanup where applicable |
 | Assessment / diagnostic responses | Life of account | `delete-account` cascade |
-| Kit builds / lesson-kit inputs (`kit_builds.intake`) | Life of account | `delete-account` cascade (confirm cascade covers `kit_builds`, flagged for review) |
+| Kit builds / lesson-kit inputs (`kit_builds.intake`) | Life of account | `delete-account` cascade, confirmed: `kit_builds.user_id` has an `ON DELETE CASCADE` FK to `auth.users`, so the Postgres-level cascade covers it even though it is not in the edge function's explicit sweep list |
 | Daily-briefing preferences and interests | Life of account | `delete-account` cascade |
-| Generated briefings | Rolling window per briefing settings; not retained indefinitely | Scheduled cleanup / superseded by new briefings |
+| Generated briefings | Not retained indefinitely by design; no automated rolling-window cleanup job currently runs (see gap below) | `delete-account` cascade only today |
 | Voice transcripts | Treated as user content; life of account or per Memory retention if stored as Memory | `delete-account` cascade; retention cleanup where applicable |
 | Raw voice audio | Not maintained as a long-term store; handled transiently by transcription provider | Provider-side per OpenAI Whisper terms |
 | Billing metadata (Stripe customer ID, subscription status) | Life of account for service; financial records retained as required by tax/accounting law (commonly up to 6-7 years) | Subscription canceled on deletion; financial records retained then deleted at legal expiry |
@@ -35,7 +35,7 @@ Where a row says "in progress," see [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_R
 ## Deletion mechanisms in detail
 
 - Account deletion: `delete-account` edge function performs a cascading delete of the user's records across CTRL tables. Triggered by the user in-app or by an operator fulfilling an erasure DSAR (see [DSAR_RUNBOOK.md](./DSAR_RUNBOOK.md)).
-- Scheduled retention enforcement: `cleanup-expired-data` runs on pg_cron and removes Memory data older than the user's `user_memory_settings.retention_days` and other time-bound records.
+- Retention enforcement: `cleanup-expired-data` removes Memory data older than the user's `user_memory_settings.retention_days` and sweeps the `ai_cache` table when it runs. GAP (confirmed 2026-07-26): unlike `send-daily-briefing`, `memory-sweep`, `send-reactivation-nudge`, and `live-headlines-prewarm`, there is no `cron.schedule(...)` migration wiring `cleanup-expired-data` to a recurring job, so it is not actually invoked automatically today; it exists as deployable, correct code without a schedule. There is also no automated cleanup of the `briefings` table itself (only full account deletion removes it). TODO(founder/dev): either add the missing pg_cron schedule for `cleanup-expired-data` (and a briefings rolling-window job) or stop describing Memory/briefing retention as "scheduled" in this and related compliance documents until it is.
 - Stripe: subscription objects are canceled; card data is never stored by Mindmaker (tokenized by Stripe).
 
 ## Backups

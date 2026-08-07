@@ -1,7 +1,7 @@
 # CTRL & Mindmaker Master Messaging & FAQ
 *Product marketing, sales, content, and outbound reference*
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-07-26 (drift-check pass: flagged the diagnostic SKUs as unreachable in the live app and added the `/pricing` + `/upgrade` route references).
 
 > RECONCILIATION BANNER. The Mindmaker founder narrative, the enterprise-buyer pain, the Builder Economy theme, and the Sprint description are all still accurate and largely ON-positioning (the "AI-native competitors move faster by default" and "everyone will build" themes align with the current CTRL positioning). The one correction: the CTRL product description in PART 3 below was written as "a portable AI memory web / context layer". CTRL's positioning is now **building the AI-native version of your business** (the memory web is the substrate, not the headline). The pricing table (PART 5) is accurate: Edge Pro $49/month (the decision tier), the daily briefing and Automator builds free; the one-time diagnostic SKUs are flagged TODO(founder) under the repositioning. Canonical: `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`.
 
@@ -95,10 +95,10 @@ One decision. One trade-off analysis. One commitment. Working systems and a 90-d
 | SKU | Price | Audience |
 |---|---|---|
 | CTRL Free | $0 | Every leader. The land in land-and-expand. Includes read-write Memory Web, Voice Profile capture, Kit access, and **Automator skill builds + exports (free for now, no quota)**. The Kit-side-door entry path (anonymous students from `/kit`) graduates into this tier. |
-| Full Diagnostic | $49 one-time | Leaders who want a one-shot deep audit |
-| Deep Context Upgrade | $29 one-time | Pre-meeting / strategy sprint prep |
-| Diagnostic + Deep Context Bundle | $69 one-time (saves $10) | Default upsell after Memory Web is built |
-| Edge Pro | $49/month | Active leaders who treat AI as part of weekly cadence. The decision tier: unlimited decision weighs, a **multi-model cross-examination of every decision**, decision watch, plus the **live MCP pull of your built skills (`list_skills` / `get_skill`)**, unlimited Edge artifacts, drafting, email delivery, Custom Voice Export, MCP agent access. (The daily briefing and Automator skill builds are free, not gated here.) |
+| Full Diagnostic | $49 one-time | Wired in Stripe, but NOT currently reachable from any live route (`/diagnostic` redirects to `/dashboard`) - do not offer as a checkout link |
+| Deep Context Upgrade | $29 one-time | Same as above: wired in Stripe, not reachable in the live app |
+| Diagnostic + Deep Context Bundle | $69 one-time (saves $10) | Same as above: wired in Stripe, not reachable in the live app |
+| Edge Pro | $49/month | Active leaders who treat AI as part of weekly cadence. The decision tier: unlimited decision weighs, a **multi-model cross-examination of every decision**, decision watch, plus the **live MCP pull of your built skills (`list_skills` / `get_skill`)**, unlimited Edge artifacts, drafting, email delivery, Custom Voice Export, MCP agent access. (The daily briefing and Automator skill builds are free, not gated here.) Live checkout: `/upgrade`; static SEO pricing page: `/pricing`. |
 | Mindmaker Enterprise Sprint | $15K-$50K | Exec teams |
 | Mindmaker Portfolio Engagement | $5K-$25K | VC / PE / consulting partners |
 

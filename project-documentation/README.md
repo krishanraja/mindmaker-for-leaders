@@ -4,7 +4,7 @@
 
 This folder is the deeper source of truth for CTRL. The two highest-authority documents in the whole repo are the canonical product/build specs in `docs/`, and the top-level `README.md`. Where any file in this folder disagrees with them, the spec and the root README win.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass).
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass); **drift-checked 2026-07-26** (counts re-verified, pricing/route/compliance drift fixed across the folder - see `HISTORY.md` Phase 18 and `DECISIONS_LOG.md` Decisions 61-68 for what shipped since the last full pass).
 
 ---
 
@@ -13,14 +13,14 @@ This folder is the deeper source of truth for CTRL. The two highest-authority do
 CTRL is the tool for leaders building, orchestrating, productizing, and getting to market **the AI-native version of their business.** It is NOT a general business advisor, and not a generic "clarity for leaders" product. Every decision, headline, and nudge pulls toward one question: how do you make your business more AI-native, here? When a leader brings a general-business call ("should I hire a VP of Sales?"), CTRL reframes it into its AI-native version ("before you hire, should an agent own part of that motion first, and what does the human role become?") and works it from there. It is globally dark, instrument-grade (the `ctrl-ds` palette, emerald `#00D9B6`, the `BrandLockup`). It is mobile-first and no-scroll: every key surface fits the viewport with one clear action per screen. Production: **ctrl.themindmaker.ai**.
 
 The product has two halves:
-1. **The lesson kits** (`/kit`): four guided build-it-with-you kits a leader walks after a Mindmaker lightning lesson. Vibe Coding = a solution, Autonomous Business = a process, Agentic Org Chart = the company, Memory & Identity = the person.
+1. **The lesson kits** (`/kit`). **RETIRED 2026-08-07 (PR #355): the Kit is gone; `/kit*` 301s to `/try`.** Historical description: four guided build-it-with-you kits a leader walks after a Mindmaker lightning lesson. Vibe Coding = a solution, Autonomous Business = a process, Agentic Org Chart = the company, Memory & Identity = the person.
 2. **The main app** (the daily instrument): the news deck, the decision engine, the Brain/Memory Web, the daily briefing, the context export + Automator, compliance.
 
 ### The canonical sources (trust these over everything else)
 
 | Source | What it is | Authority |
 |---|---|---|
-| [`docs/KIT-REDESIGN-SPEC.md`](../docs/KIT-REDESIGN-SPEC.md) | The lesson-kit program, locked | Canonical |
+| [`docs/KIT-REDESIGN-SPEC.md`](../docs/KIT-REDESIGN-SPEC.md) | The lesson-kit program | HISTORICAL - the Kit was retired 2026-08-07 (PR #355) |
 | [`docs/MAIN-APP-POLISH-SPEC.md`](../docs/MAIN-APP-POLISH-SPEC.md) | The main-app standard (North Star, decision model, news categories, the no-scroll/one-ask laws, approachable language) | Canonical |
 | [root `README.md`](../README.md) | Current truth, tone + facts | Canonical |
 | [root `CLAUDE.md`](../CLAUDE.md) | Workflow + the live architecture quick-reference (kept current; trust its counts over this folder) | Canonical |
@@ -95,25 +95,25 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 - **Approachable, first-timer language**. No insider jargon presented cold. No em dashes.
 
 ### The two halves
-- **Lesson kits** (`/kit`): four kits (Vibe Coding / Autonomous Business / Agentic Org Chart / Memory & Identity). Each is strictly sequential (one action per screen), no-scroll on mobile, a native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace, a reveal wizard, and one branded personalized hero PDF. Canonical: `docs/KIT-REDESIGN-SPEC.md`.
+- **Lesson kits** (`/kit`). **RETIRED 2026-08-07 (PR #355): the Kit is gone; `/kit*` 301s to `/try`.** Historical: four kits (Vibe Coding / Autonomous Business / Agentic Org Chart / Memory & Identity). Each is strictly sequential (one action per screen), no-scroll on mobile, a native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace, a reveal wizard, and one branded personalized hero PDF. Canonical: `docs/KIT-REDESIGN-SPEC.md`.
 - **Main app**: every authed surface is no-scroll on all devices + one ask per screen + AI-native. The news deck uses nine AI-native category motifs with an AI-native-filtered/tagged briefing pipeline. The decision engine reframes to the AI-native lens. The Brain/Memory Web is a four-world rope canvas that fills the frame with zoom. Canonical: `docs/MAIN-APP-POLISH-SPEC.md`.
 
 ### Active routes (source of truth: `src/router.tsx`)
 
-Public: `/`, `/auth`, `/auth/callback`, `/build`, `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`), `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked).
+Public: `/`, `/auth`, `/auth/callback`, `/build`, `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked), `/upgrade` (interactive Edge Pro checkout), `/pricing` (static SEO page, served via a `vercel.json` rewrite, not a React route), `/download` (feature-flagged public email-capture page, off by default).
 
 Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`.
 
 Legacy redirects: `/today` `/pulse` `/voice` `/diagnostic` -> `/dashboard`; `/think` -> `/dashboard?view=edge`.
 
 ### Repo counts
-For current edge-function / hook / migration / route counts, trust `CLAUDE.md` (kept current) and the code itself, not a frozen table here. As of the last `CLAUDE.md` snapshot (counts dated 2026-06-09, re-count pending): ~80 edge functions, ~59 custom hooks, ~110 migrations. Treat these as a lower bound. TODO(founder/dev): a fresh re-count after the kit + main-app-polish PRs.
+Re-counted directly from the repo on 2026-07-26: **104 edge functions** (`supabase/functions/`, excluding `_shared/`), **77 custom hooks** (`src/hooks/`), **148 PostgreSQL migrations** (`supabase/migrations/`). These are live counts, not a lower bound. Always prefer re-counting from the repo over trusting any frozen figure, here or elsewhere - counts drift quickly given the pace of shipping.
 
 ### Tech Stack
 React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion; React Router 6 (`createBrowserRouter`, lazy); Tailwind + shadcn/ui (Radix), globally dark; React Context + TanStack Query; Supabase (PostgreSQL + Edge Functions, Deno); Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback; OpenAI Whisper / ElevenLabs; OpenAI `text-embedding-3-small` (pgvector); Supabase Auth / Stripe / Resend; Vitest + Playwright; Vercel + Supabase Cloud; Node `>=22 <24`. DB extensions: pgvector, pgcrypto, pg_cron.
 
 ### Pricing
-The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amount is canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`, i.e. `$49/mo`) and surfaced via `src/constants/billing.ts`. Edge Pro is the decision tier (unlimited decision weighs + cross-examination + decision watch + Edge artifacts + the live MCP pull of your skills); the daily briefing, the Automator, Memory, and Voice are free. The app reads the code, so trust the code over any doc. There is also a paid AI-literacy diagnostic and a deep-context upgrade still wired in the Stripe edge functions (`create-diagnostic-payment`: Full Diagnostic $49, Deep Context $29, Bundle $69). TODO(founder): confirm whether those one-time diagnostic SKUs survive the AI-native repositioning, and the full price list, before any sales doc quotes exact numbers.
+The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amount is canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`, i.e. `$49/mo`) and surfaced via `src/constants/billing.ts`. Edge Pro is the decision tier (unlimited decision weighs + cross-examination + decision watch + Edge artifacts + the live MCP pull of your skills); the daily briefing, the Automator, Memory, and Voice are free. The app reads the code, so trust the code over any doc. There is also a paid AI-literacy diagnostic and a deep-context upgrade still wired in the Stripe edge functions (`create-diagnostic-payment`: Full Diagnostic $49, Deep Context $29, Bundle $69), but confirmed (2026-07-26) NOT reachable from any live route today (`/diagnostic` redirects to `/dashboard`; no UI calls this flow) - do not offer these as checkout links. TODO(founder): confirm whether those one-time diagnostic SKUs survive the AI-native repositioning, and the full price list, before any sales doc quotes exact numbers.
 
 ---
 
@@ -121,7 +121,7 @@ The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amo
 
 - **AI-native version of your business** - the thing CTRL helps you build; the lens above every surface.
 - **The reframe** - turning a general-business input into its AI-native version (never refuse, never stay general).
-- **The kits** - the four `/kit` lesson kits (Vibe Coding / Autonomous Business / Agentic Org Chart / Memory & Identity).
+- ~~**The kits**~~ - RETIRED 2026-08-07. The four `/kit` lesson kits (Vibe Coding / Autonomous Business / Agentic Org Chart / Memory & Identity).
 - **The autonomy line** (Agentic Org Chart) - green (AI runs it) / amber (AI assists, you approve the handoff) / red (you only), plus the handoffs and a ranked place to start.
 - **Memory Web / Brain** - the leader's context as a four-world rope canvas; the substrate that makes any AI know the business.
 - **Automator / Skill Builder** - the `/context` flow that turns a recurring deliverable into an agentskills.io-compliant skill. Building skills is free for now (the Edge Pro gate was removed).
