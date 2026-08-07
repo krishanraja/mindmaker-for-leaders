@@ -7,6 +7,7 @@ import { PublicHeader } from '@/components/public/PublicHeader';
 import { PublicFooter } from '@/components/public/PublicFooter';
 import { ToolMarquee } from '@/components/public/ToolMarquee';
 import { BrainDemo } from '@/components/public/BrainDemo';
+import { BriefingSample } from '@/components/public/BriefingSample';
 import { LANDING } from '@/components/public/publicCopy';
 
 /**
@@ -144,6 +145,15 @@ export function ClarityHome() {
         <Eyebrow>{LANDING.tasteEy}</Eyebrow>
         <Heading>{LANDING.tasteH}</Heading>
         <Body>{LANDING.tasteBody}</Body>
+      </Section>
+
+      {/* DAILY READ. The second sensory proof, paced a section away from the
+          brain so the page is not two demos back to back: see it, then hear it. */}
+      <Section>
+        <Eyebrow>{LANDING.readEy}</Eyebrow>
+        <Heading>{LANDING.readH}</Heading>
+        <Body>{LANDING.readBody}</Body>
+        <BriefingSample />
       </Section>
 
       {/* PORTABLE */}

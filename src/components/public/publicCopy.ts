@@ -43,6 +43,17 @@ export const LANDING = {
   tasteBody:
     'The next moat is your expertise, and this tool is built for leaders who have it in spades. Your AI tool sounds like everyone else’s, and it hides a deeper problem: AI risks making humans become the same, and become replaceable. CTRL incorporates world class harness engineering and behavioural theory to encode your standards, taste and judgement, so you can amplify your mind, not dilute it.',
 
+  // daily read
+  readEy: 'Your daily read',
+  readH: 'Three minutes in your ear, before your first meeting.',
+  readBody:
+    'Every morning CTRL reads the industry for you, keeps only what touches what you are actually working on, and ends on the one thing worth acting on. No greeting, no throat-clearing; it opens on your name and gets straight into it.',
+  // The honesty label under the player. It has to say plainly that the words
+  // are a sample, because the voice and the format are real and someone could
+  // reasonably assume the story is too.
+  readNote:
+    'A sample, in the voice CTRL actually uses. Yours is built each morning from real headlines and what CTRL knows about your business.',
+
   // portable
   portEy: 'Portable',
   portH: 'The race for your data is over. The next big tech companies are coming for your brain. It’s time to own your context.',
