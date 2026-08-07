@@ -50,7 +50,7 @@ import type {
   KitTool,
 } from "../types.ts";
 import { KIT_TOOL_LABELS } from "../types.ts";
-import { kitEmailShell } from "../email-shell.ts";
+import { brandedEmailShell } from "../../email-shell.ts";
 import {
   beforeAfterTest,
   jobFileBuildPrompt,
@@ -758,9 +758,9 @@ export const memoryIdentityPreset: KitPreset = {
     pack: {
       subject: () => "Your Prompt Pack is ready",
       html: (ctx) =>
-        kitEmailShell({
+        brandedEmailShell({
           heading: "Your Prompt Pack is ready",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open your pack",
           bodyHtml: [
             '<p style="margin:0 0 16px;">Your pack is built. It is made from one job you already do, not a template, so it only works if you use it.</p>',
@@ -773,9 +773,9 @@ export const memoryIdentityPreset: KitPreset = {
       subject: () => "Day 3. Has the job file run yet?",
       html: (ctx) => {
         const skillName = escapeHtml(ctx.skillName ?? "your job file");
-        return kitEmailShell({
+        return brandedEmailShell({
           heading: "Day 3. Has the job file run yet?",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open the job-file prompt",
           bodyHtml: [
             `<p style="margin:0 0 16px;">If you have not run it yet, ${skillName} has been idle for 3 days.</p>`,
@@ -788,9 +788,9 @@ export const memoryIdentityPreset: KitPreset = {
     day7: {
       subject: () => "One job that knows its role. This week.",
       html: (ctx) =>
-        kitEmailShell({
+        brandedEmailShell({
           heading: "One job that knows its role. This week.",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open the plan",
           bodyHtml: [
             '<p style="margin:0 0 16px;">The plan said by today your AI runs one job loaded, by your standard, without the warm-up.</p>',

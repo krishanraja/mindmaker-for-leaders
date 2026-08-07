@@ -24,7 +24,7 @@ import type {
   KitPreset,
   KitTool,
 } from "../types.ts";
-import { kitEmailShell } from "../email-shell.ts";
+import { brandedEmailShell } from "../../email-shell.ts";
 import {
   asChiefScores,
   roleFromIntake,
@@ -277,9 +277,9 @@ const emails: KitPreset["emails"] = {
   pack: {
     subject: () => "Your AI chief of staff: start here",
     html: (ctx) =>
-      kitEmailShell({
+      brandedEmailShell({
         heading: "Your path is ready",
-        kitUrl: ctx.kitUrl,
+        actionUrl: ctx.kitUrl,
         buttonLabel: "Open your recommendation",
         bodyHtml: `<p style="margin:0 0 16px 0;">Your quiz answers pointed to one place to start. Inside: your recommended rung, why it fits you, the one wall to expect, and the starter files to get going (an identity file, a seed-memory prompt, and a 90-day plan).</p>
 <p style="margin:0 0 16px 0;">Do day 1 tonight: write your identity file and paste it in. Twenty minutes, and your AI stops forgetting who you are.</p>`,
@@ -289,9 +289,9 @@ const emails: KitPreset["emails"] = {
     subject: () => "Day 3. Is your identity file in yet?",
     html: (ctx) => {
       const toolLabel = ctx.toolLabel || "your AI";
-      return kitEmailShell({
+      return brandedEmailShell({
         heading: "Day 3. Is your identity file in yet?",
-        kitUrl: ctx.kitUrl,
+        actionUrl: ctx.kitUrl,
         buttonLabel: "Open your first week",
         bodyHtml: `<p style="margin:0 0 16px 0;">The rung you picked barely matters. What matters is the identity file, the memory, and noticing when it stops working.</p>
 <p style="margin:0 0 16px 0;">Two minutes, right now: open ${toolLabel}, paste your identity file, and ask it to brief you on your week. If it forgets who you are, the file needs one more line.</p>
@@ -302,9 +302,9 @@ const emails: KitPreset["emails"] = {
   day7: {
     subject: () => "One week in. Did it get sharper?",
     html: (ctx) =>
-      kitEmailShell({
+      brandedEmailShell({
         heading: "One week in. Did it get sharper?",
-        kitUrl: ctx.kitUrl,
+        actionUrl: ctx.kitUrl,
         buttonLabel: "Open your 90-day plan",
         bodyHtml: `<p style="margin:0 0 16px 0;">A week of morning briefs should already feel a little less generic. If it does, the memory is working. If it does not, fix the memory before you add anything.</p>
 <p style="margin:0 0 16px 0;">This week: do the one correction that matters and write it back into your identity file. That write-back loop is the whole engine.</p>`,

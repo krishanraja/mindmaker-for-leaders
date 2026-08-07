@@ -11,7 +11,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendEmail, getDefaultSender } from "../_shared/email-utils.ts";
-import { kitEmailShell } from "../_shared/kit-presets/email-shell.ts";
+import { brandedEmailShell } from "../_shared/email-shell.ts";
 import { createLogger } from "../_shared/logger.ts";
 
 // The button must always land on the live production app, not the marketing apex. Hardcode the
@@ -140,11 +140,11 @@ Deno.serve(async (req) => {
       parts.push(section("What to check next", checklist(items)));
     }
 
-    const html = kitEmailShell({
+    const html = brandedEmailShell({
       heading: decisionLine,
       bodyHtml: parts.join("\n"),
       buttonLabel: "Open in CTRL",
-      kitUrl: DECISION_URL,
+      actionUrl: DECISION_URL,
       eyebrow: "CTRL - your chief of staff",
     });
 

@@ -53,7 +53,7 @@ import type {
   KitTool,
 } from "../types.ts";
 import { KIT_TOOL_LABELS } from "../types.ts";
-import { kitEmailShell } from "../email-shell.ts";
+import { brandedEmailShell } from "../../email-shell.ts";
 import type { LeverageScore } from "./scoring.ts";
 import {
   areaLabelsOf,
@@ -735,9 +735,9 @@ export const autonomousBusinessPreset: KitPreset = {
     pack: {
       subject: () => "Your Autonomous Business Pack",
       html: (ctx) =>
-        kitEmailShell({
+        brandedEmailShell({
           heading: "Your Autonomous Business Pack",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open your pack",
           bodyHtml: [
             '<p style="margin:0 0 16px;">Your pack is built. It is made from your answers, not a template, so it only works if you use it.</p>',
@@ -751,9 +751,9 @@ export const autonomousBusinessPreset: KitPreset = {
       html: (ctx) => {
         const skillName = escapeHtml(ctx.skillName ?? "your first skill");
         const testPrompt = escapeHtml(ctx.testPrompt ?? "test prompt 1 from your pack page");
-        return kitEmailShell({
+        return brandedEmailShell({
           heading: "Day 3. Has it run yet?",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open the install steps",
           bodyHtml: [
             `<p style="margin:0 0 16px;">Your skill ${skillName} has been idle for 3 days, if you have not run it yet.</p>`,
@@ -767,9 +767,9 @@ export const autonomousBusinessPreset: KitPreset = {
     day7: {
       subject: () => "One process off your plate. This week.",
       html: (ctx) =>
-        kitEmailShell({
+        brandedEmailShell({
           heading: "One process off your plate. This week.",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open the plan",
           bodyHtml: [
             '<p style="margin:0 0 16px;">The plan said by today one workflow runs without you.</p>',
