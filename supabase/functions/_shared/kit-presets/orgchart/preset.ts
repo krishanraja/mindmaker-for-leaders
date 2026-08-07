@@ -30,7 +30,7 @@ import type {
   IntakeOption,
   KitPreset,
 } from "../types.ts";
-import { kitEmailShell } from "../email-shell.ts";
+import { brandedEmailShell } from "../../email-shell.ts";
 import {
   chartComposePrompt,
   first90Prompt,
@@ -518,9 +518,9 @@ export const orgchartPreset: KitPreset = {
     pack: {
       subject: () => "Your agentic org chart",
       html: (ctx) =>
-        kitEmailShell({
+        brandedEmailShell({
           heading: "Your agentic org chart",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open your chart",
           bodyHtml: [
             '<p style="margin:0 0 16px;">Your chart is built from your own answers, not a template. Every box is marked green (AI runs it), amber (AI assists, you approve the handoff), or red (you only), with the agent to add, the handoffs drawn, and the human role beside it.</p>',
@@ -532,9 +532,9 @@ export const orgchartPreset: KitPreset = {
     day3: {
       subject: () => "Day 3. Have you started the first box?",
       html: (ctx) =>
-        kitEmailShell({
+        brandedEmailShell({
           heading: "Day 3. Have you started the first box?",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open the chart",
           bodyHtml: [
             '<p style="margin:0 0 16px;">Your chart ranked one box to start with: the first agent worth standing up.</p>',
@@ -546,9 +546,9 @@ export const orgchartPreset: KitPreset = {
     day7: {
       subject: () => "One box, one agent. This week.",
       html: (ctx) =>
-        kitEmailShell({
+        brandedEmailShell({
           heading: "One box, one agent. This week.",
-          kitUrl: ctx.kitUrl,
+          actionUrl: ctx.kitUrl,
           buttonLabel: "Open the plan",
           bodyHtml: [
             '<p style="margin:0 0 16px;">The plan said by today one agent runs your start box.</p>',

@@ -32,7 +32,7 @@ import type {
   KitTool,
 } from "../types.ts";
 import { KIT_TOOL_LABELS } from "../types.ts";
-import { kitEmailShell } from "../email-shell.ts";
+import { brandedEmailShell } from "../../email-shell.ts";
 import {
   EXPERIENCE_LABELS,
   buildFromIntake,
@@ -535,9 +535,9 @@ const emails: KitPreset["emails"] = {
   pack: {
     subject: () => "Your Vibe Coding Field Kit",
     html: (ctx: KitEmailContext) =>
-      kitEmailShell({
+      brandedEmailShell({
         heading: "Your Vibe Coding Field Kit",
-        kitUrl: ctx.kitUrl,
+        actionUrl: ctx.kitUrl,
         buttonLabel: "Open your kit",
         bodyHtml: `<p style="margin:0 0 16px 0;">Your kit lives at the button below. Inside: your build briefed so any AI can ship it with you, set up to work the way you work, and a seven-day path to get it shipped.</p>
 <p style="margin:0 0 16px 0;">Do day 1 tonight: install your skill and run test prompt 1. Ten minutes, and the kit stops being a bookmark. A normal AI chat is all you need.</p>`,
@@ -550,9 +550,9 @@ const emails: KitPreset["emails"] = {
       const toolLabel = ctx.toolLabel || "your AI";
       const testPrompt =
         ctx.testPrompt || "test prompt 1 from the test prompts file in your skill ZIP";
-      return kitEmailShell({
+      return brandedEmailShell({
         heading: "Day 3. Did your skill run yet?",
-        kitUrl: ctx.kitUrl,
+        actionUrl: ctx.kitUrl,
         buttonLabel: "Open the 7-day plan",
         bodyHtml: `<p style="margin:0 0 16px 0;">You named the one thing you want to build. If your skill has not run yet, it is a file, not a tool.</p>
 <p style="margin:0 0 16px 0;">Two minutes, right now: open ${toolLabel}, load ${skillName}, and run this:</p>
@@ -564,9 +564,9 @@ const emails: KitPreset["emails"] = {
   day7: {
     subject: () => "Ship it scrappy. Today.",
     html: (ctx: KitEmailContext) =>
-      kitEmailShell({
+      brandedEmailShell({
         heading: "Ship it scrappy. Today.",
-        kitUrl: ctx.kitUrl,
+        actionUrl: ctx.kitUrl,
         buttonLabel: "Finish day 7 and log it",
         bodyHtml: `<p style="margin:0 0 16px 0;">Seven days since class. Scrappy counts: ugly, half manual, used once by one person is still shipped.</p>
 <p style="margin:0 0 16px 0;">Do the last unchecked step on your plan, then hit I Shipped It so I know.</p>

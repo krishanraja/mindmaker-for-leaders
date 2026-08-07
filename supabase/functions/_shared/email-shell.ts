@@ -1,12 +1,16 @@
 /**
- * Shared branded kit email shell.
+ * The shared branded email shell.
  *
- * ONE chrome for every kit email (pack / day3 / day7 across all four presets).
- * Each preset owns only its heading, body HTML, button label, and kit URL; the
+ * ONE chrome for every transactional email CTRL sends. A caller owns only its
+ * heading, body HTML, button label and destination URL; the
  * shell owns the Mindmaker branding, fonts, button, footer, and layout.
  *
- * IMPORTANT: this module is imported by the Deno edge runtime (send-kit-pack /
- * send-kit-nudges, via the preset modules). Keep it plain TypeScript: no Deno
+ * It lived under _shared/kit-presets/ until the Kit was retired, which made a
+ * live non-kit path (send-decision-summary) depend on a folder due for
+ * deletion. It is brand chrome, not kit chrome, so it sits in _shared.
+ *
+ * IMPORTANT: this module is imported by the Deno edge runtime. Keep it plain
+ * TypeScript: no Deno
  * globals, no Node APIs, no imports outside this folder. Same constraint as the
  * rest of _shared/kit-presets (see types.ts header).
  *
@@ -28,11 +32,11 @@
 const BRAND_ICON_URL = "https://ctrl.themindmaker.ai/favicon-192x192.png";
 const BRAND_WORDMARK_URL = "https://ctrl.themindmaker.ai/mindmaker-wordmark-onlight.png";
 
-/** Brand emerald (kit accent), deepened for the gradient/Outlook fill. */
+/** Brand emerald, deepened for the gradient/Outlook fill. */
 const EMERALD = "#2A9E7C";
 const EMERALD_DEEP = "#1E7860";
 
-/** Calm light surfaces matching the kit portal. */
+/** Calm light surfaces. */
 const PAGE_BG = "#f3f5f1";
 const CARD_BG = "#ffffff";
 const BORDER = "#e3e8e0";
@@ -43,15 +47,15 @@ const INK_SOFT = "#4a5a52";
 const FONT_STACK =
   "'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
-export interface KitEmailShellOpts {
+export interface BrandedEmailShellOpts {
   /** Bold heading line at the top of the message body. */
   heading: string;
   /** Pre-rendered, already-escaped body HTML (the preset owns its copy). */
   bodyHtml: string;
   /** CTA button label. */
   buttonLabel: string;
-  /** Absolute https kit URL the button points at. */
-  kitUrl: string;
+  /** Absolute https URL the button points at. */
+  actionUrl: string;
   /** Optional eyebrow above the header lockup; defaults to the brand line. */
   eyebrow?: string;
 }
@@ -68,8 +72,8 @@ function escapeAttr(value: string): string {
  * Render the full branded email document around a preset's body.
  * The returned string is a complete, standalone HTML email.
  */
-export function kitEmailShell(opts: KitEmailShellOpts): string {
-  const href = escapeAttr(opts.kitUrl);
+export function brandedEmailShell(opts: BrandedEmailShellOpts): string {
+  const href = escapeAttr(opts.actionUrl);
   const eyebrow = opts.eyebrow ?? "CTRL by Mindmaker";
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

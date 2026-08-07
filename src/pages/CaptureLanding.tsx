@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { BrandLockup } from '@/components/landing/BrandLockup';
 import {
-  KIT_SCOPE_VARS,
-  KitCard,
-  KitEyebrow,
-  KitHeadline,
-  KitSub,
-  KitPrimaryButton,
-  KitLinkish,
-} from '@/components/kit/kitPrimitives';
+  CAPTURE_SCOPE_VARS,
+  CaptureCard,
+  CaptureEyebrow,
+  CaptureHeadline,
+  CaptureSub,
+  CapturePrimaryButton,
+  CaptureLinkish,
+} from '@/components/capture/capturePrimitives';
 import { supabase } from '@/integrations/supabase/client';
 import { emitEvent } from '@/lib/track';
 
@@ -110,25 +110,25 @@ export default function CaptureLanding() {
       </header>
 
       <main className="flex-1 min-h-0 overflow-y-auto flex items-center justify-center px-4 pb-6">
-        <div style={KIT_SCOPE_VARS} className="w-full max-w-sm">
-          <KitCard>
+        <div style={CAPTURE_SCOPE_VARS} className="w-full max-w-sm">
+          <CaptureCard>
             {phase === 'success' ? (
               <div className="text-center">
-                <KitEyebrow className="mx-auto">THE CTRL STARTER KIT</KitEyebrow>
-                <KitHeadline className="mx-auto">Check your inbox</KitHeadline>
-                <KitSub className="mx-auto">Your kit link is on the way.</KitSub>
+                <CaptureEyebrow className="mx-auto">THE CTRL STARTER KIT</CaptureEyebrow>
+                <CaptureHeadline className="mx-auto">Check your inbox</CaptureHeadline>
+                <CaptureSub className="mx-auto">Your kit link is on the way.</CaptureSub>
                 <div className="mt-5">
-                  <KitLinkish onClick={goToKit}>Or start right now</KitLinkish>
+                  <CaptureLinkish onClick={goToKit}>Or start right now</CaptureLinkish>
                 </div>
               </div>
             ) : (
               <>
-                <KitEyebrow>THE CTRL STARTER KIT</KitEyebrow>
-                <KitHeadline>Get your starter kit</KitHeadline>
-                <KitSub>
+                <CaptureEyebrow>THE CTRL STARTER KIT</CaptureEyebrow>
+                <CaptureHeadline>Get your starter kit</CaptureHeadline>
+                <CaptureSub>
                   Two minutes of talking builds a portable context file of you. Every AI tool
                   you use starts knowing your world. We will email you your kit link.
-                </KitSub>
+                </CaptureSub>
 
                 <div className="mt-5 space-y-3">
                   <input
@@ -143,13 +143,13 @@ export default function CaptureLanding() {
                     placeholder="you@company.com"
                     aria-label="Email"
                     className="w-full rounded-xl border px-3.5 py-3 text-[15px] outline-none transition-all"
-                    style={{ background: '#FCFCFB', borderColor: 'var(--kit-line)', color: 'var(--kit-ink)' }}
+                    style={{ background: '#FCFCFB', borderColor: 'var(--capture-line)', color: 'var(--capture-ink)' }}
                     onFocus={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--kit-acc)';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px var(--kit-acc-soft)';
+                      e.currentTarget.style.borderColor = 'var(--capture-acc)';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px var(--capture-acc-soft)';
                     }}
                     onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--kit-line)';
+                      e.currentTarget.style.borderColor = 'var(--capture-line)';
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   />
@@ -167,26 +167,26 @@ export default function CaptureLanding() {
                   />
 
                   {phase === 'error' && (
-                    <p role="alert" className="text-sm" style={{ color: 'var(--kit-clay)' }}>
+                    <p role="alert" className="text-sm" style={{ color: 'var(--capture-clay)' }}>
                       {errorMessage}
                     </p>
                   )}
 
-                  <KitPrimaryButton
+                  <CapturePrimaryButton
                     disabled={phase === 'submitting'}
                     onClick={() => void submit()}
                   >
                     {phase === 'submitting' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Email me the kit
-                  </KitPrimaryButton>
+                  </CapturePrimaryButton>
                 </div>
 
-                <p className="mt-4 text-center text-[11px]" style={{ color: 'var(--kit-faint)' }}>
+                <p className="mt-4 text-center text-[11px]" style={{ color: 'var(--capture-faint)' }}>
                   No spam. Four short emails at most, unsubscribe in one click.
                 </p>
               </>
             )}
-          </KitCard>
+          </CaptureCard>
         </div>
       </main>
     </div>
