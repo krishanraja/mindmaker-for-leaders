@@ -13,6 +13,17 @@ import {
 export interface GenerateSkillOptions {
   skillNameHint?: string;
   seed?: SkillSeed | null;
+  /**
+   * The leader's OWN words from this build, when the caller composed any part
+   * of the transcript itself.
+   *
+   * The backend splits the transcript into citable spans, so whatever goes in
+   * as `transcript` is what a finished rule may quote. A caller that narrates
+   * on the leader's behalf (the Automator does, from chip picks) must say which
+   * text is genuinely theirs, or the skill ends up citing CTRL's own template
+   * prose back at them. Omit it when the person typed or spoke the whole thing.
+   */
+  ownWords?: string;
 }
 
 interface UseSkillExport {
@@ -92,6 +103,7 @@ export function useSkillExport(functionName: string = "generate-skill-export"): 
             transcript,
             skill_name_hint: options?.skillNameHint,
             ...(seed ? { seed } : {}),
+            ...(options?.ownWords?.trim() ? { own_words: options.ownWords.trim() } : {}),
           },
         });
 

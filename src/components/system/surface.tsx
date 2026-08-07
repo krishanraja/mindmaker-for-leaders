@@ -1,8 +1,7 @@
 /**
  * Main-app design primitives (the dark ctrl-ds instrument language).
  *
- * These are the counterpart to src/components/kit/kitPrimitives.tsx, but for the
- * core app rather than the /kit portal. They codify the ONE polished card
+ * These codify the ONE polished card
  * language already used by Home (CockpitHero) and Decisions (DecisionBoard /
  * DecisionResultView) so every other surface - Settings first - can render on it
  * instead of hand-rolling flat cards and off-token colors.

@@ -104,6 +104,7 @@ import {
   persistCitedSpans,
 } from "./provenance.ts";
 import { loadReleaseContext } from "./release.ts";
+import { threeNumbers } from "../_shared/skill-release.ts";
 import { createLogger } from "../_shared/logger.ts";
 
 const log = createLogger("generate-skill-export");
@@ -173,6 +174,23 @@ Deno.serve(async (req) => {
     const skillNameHint = typeof body?.skill_name_hint === "string"
       ? body.skill_name_hint.trim()
       : undefined;
+
+    /**
+     * The leader's OWN material, and the only text a rule is allowed to quote.
+     *
+     * The Automator used to hand its composed narration in as `transcript`, and
+     * that narration is CTRL's own template prose selected by tapping chips.
+     * The transcript is split into citable spans, so every surviving [E#] in a
+     * built skill resolved to a sentence we wrote and attributed to the leader.
+     * A provenance chain that terminates in our own template library is worse
+     * than none, because it looks sourced.
+     *
+     * So a caller that composes any part of its transcript must say which part
+     * is actually the person's. Only this is offered for citation. Callers that
+     * pass nothing keep the old behaviour, where the whole transcript is the
+     * leader's because they typed or spoke it.
+     */
+    const ownWords = typeof body?.own_words === "string" ? body.own_words.trim() : "";
 
     // Optional seed: when an entry point (Edge view chip, Memory blocker
     // button, Briefing decision_trigger button) hands the user a pre-anchored
@@ -251,7 +269,15 @@ Deno.serve(async (req) => {
     // the normal state for anyone who has not run the chain, and it is why the
     // transcript itself is offered as citable spans: without it the pointer
     // requirement is satisfiable only by a package that says nothing.
-    const targets = await loadPointerTargets(serviceClient, user.id, transcript)
+    //
+    // `citableText` is the leader's own words and nothing else. When a caller
+    // composed part of its transcript, the composed part must never reach this,
+    // or a rule ends up citing a sentence CTRL wrote. Fewer citable spans is
+    // the correct outcome there: demoteUnpointedClaims rewrites what cannot be
+    // sourced as NOT ESTABLISHED, which is the system working rather than
+    // failing.
+    const citableText = ownWords || transcript;
+    const targets = await loadPointerTargets(serviceClient, user.id, citableText)
       .catch((err) => {
         log.warn("pointer targets unavailable, prov.* checks stay advisory", {
           userId: user.id,
@@ -414,6 +440,16 @@ Deno.serve(async (req) => {
         // criteria are real, because "compiled" and "shown to work" are two
         // different claims and only one of them was earned.
         status: releaseContext.release.label,
+        // Provenance at the package level. Both fields existed on the input
+        // type and neither was ever populated, so every package shipped
+        // frontmatter that could not answer "where did this come from" or
+        // "what was measured". Null stays null: an absent built_from is the
+        // honest reading of a package with no compiled standard behind it, and
+        // an absent baseline is the honest reading of one nothing has scored.
+        builtFrom: targets?.sortRunId
+          ? `sort ${targets.sortRunId}, criteria v${releaseContext.criteriaVersion}`
+          : null,
+        baseline: threeNumbers(releaseContext.release),
       };
       pkg = packageFromZipInput(zipInput);
 
@@ -436,7 +472,11 @@ Deno.serve(async (req) => {
         const { dropped } = await persistCitedSpans(
           serviceClient,
           user.id,
-          transcript,
+          // The SAME string the spans were sliced from. Passing the full
+          // transcript here when the spans came from citableText would store a
+          // source the offsets no longer index, which is a silent provenance
+          // corruption of exactly the kind CH-13 exists to prevent.
+          citableText,
           skill.name,
           targets,
           cited,

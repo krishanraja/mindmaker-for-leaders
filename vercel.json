@@ -1,6 +1,8 @@
 {
   "redirects": [
-    { "source": "/booking", "destination": "/pricing", "permanent": true }
+    { "source": "/booking", "destination": "/pricing", "permanent": true },
+    { "source": "/kit", "destination": "/try", "permanent": true },
+    { "source": "/kit/:path*", "destination": "/try", "permanent": true }
   ],
   "rewrites": [
     { "source": "/pricing", "destination": "/pricing.html" },

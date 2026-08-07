@@ -50,17 +50,7 @@ const CLIENT_EVENTS = new Set([
   "landed",
   "signed_up",
   "activated",
-  // Kit Engine funnel (class follow-up portal). campaign_id carries the
-  // session code so per-class funnels light up in the warehouse without
-  // schema changes; kit dims ride in metadata.
-  "kit_redeemed",
-  "kit_intake_completed",
-  "kit_composed",
-  "kit_capsule_pasted",
-  "kit_artifact_downloaded",
-  "kit_shipped",
-  "kit_email_captured",
-  // Public /download starter-kit capture page.
+  // Public /download email capture page.
   "capture_submitted",
   // Harness chain stage 3a (CH-18): engagement with the compiled standard.
   // These two are the measurement that gates Phase 6, so they are events in
@@ -81,13 +71,6 @@ serve(async (req) => {
       );
     }
     const a = body?.attribution || {};
-    const kit = body?.kit && typeof body.kit === "object"
-      ? {
-        class_slug: body.kit.class_slug,
-        code: body.kit.code,
-        redemption_id: body.kit.redemption_id,
-      }
-      : undefined;
     const evt: AttributionEvent = {
       app: "ctrl",
       event: event as AttributionEvent["event"],
@@ -99,8 +82,7 @@ serve(async (req) => {
       utm_campaign: a.utm_campaign,
       utm_content: a.utm_content,
       utm_term: a.utm_term,
-      campaign_id: kit?.code ?? a.campaign_id,
-      ...(kit ? { metadata: { kit } } : {}),
+      campaign_id: a.campaign_id,
       agent: a.agent,
       referrer: a.referrer,
       landing_path: a.landing_path,

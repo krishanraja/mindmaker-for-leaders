@@ -77,7 +77,7 @@ verify_jwt = false
 [functions.track-event]
 verify_jwt = false
 
-# Public email capture on the /download starter-kit landing page. No session
+# Public email capture on the /download landing page. No session
 # exists yet for a cold visitor, so this must accept unauthenticated calls.
 [functions.capture-lead]
 verify_jwt = false
@@ -121,25 +121,6 @@ verify_jwt = false
 # Called by pg_cron with the service role key; rejects everything else.
 # Re-engages NEW (never-weighed) and DORMANT (lapsed) leaders.
 [functions.send-reactivation-nudge]
-verify_jwt = false
-
-# === KIT ENGINE (class follow-up portal) ===
-# Anonymous JWTs are valid JWTs, so verify_jwt = true accepts code-redeeming
-# students who never created an account.
-[functions.kit-redeem]
-verify_jwt = true
-
-[functions.kit-compose]
-verify_jwt = true
-
-[functions.kit-capsule-ingest]
-verify_jwt = true
-
-[functions.send-kit-pack]
-verify_jwt = true
-
-# Called by pg_cron with the service role key; rejects everything else.
-[functions.send-kit-nudges]
 verify_jwt = false
 
 # === MEMORY LEARNING ENGINES (Phase 0 / ITEM 2) ===

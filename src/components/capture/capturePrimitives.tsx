@@ -3,31 +3,20 @@
  * Light-palette primitives for the public /download capture page.
  *
  * These lived in components/kit/ because /download was the front door into the
- * Kit funnel. The Kit is being retired; this page is still LIVE (Vercel sets
- * VITE_FF_CAPTURE=true in production), so they move out ahead of the deletion.
- * Not merged into components/system/surface.tsx: that is the DARK main-app
- * system and would fight this light palette.
- */
-
-/**
- * Kit brand primitives, shared across the intake cascade (CaptureIntake) and the
- * post-build wizard (CaptureRevealWizard / CaptureBuildTrace). These are a literal port
- * of the approved mock (prototypes/kit-vibe-coding.html), scoped to the
- * `.kit-portal` `--capture-*` custom properties so they render on-brand wherever
- * the portal stylesheet (kit-portal.css) is in scope.
+ * Kit funnel. The Kit is now retired and this page is still LIVE (Vercel sets
+ * VITE_FF_CAPTURE=true in production), which is why they moved out ahead of the
+ * deletion rather than with it. Not merged into components/system/surface.tsx:
+ * that is the DARK main-app system and would fight this light palette.
  *
- * CAPTURE_SCOPE_VARS is also exported so a surface can guarantee the tokens are
- * present even before the global stylesheet lands (the same inline-scope trick
- * the forked intake already uses).
+ * Every value is inline, on purpose. The primitives once relied on a portal
+ * stylesheet that has been deleted with the rest of the Kit, so CAPTURE_SCOPE_VARS
+ * carries the whole palette and they cannot render unstyled.
  */
 
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * The mock's brand palette as inline custom properties. A literal port of the
- * locked mock; mirrors kit-portal.css so the primitives never render unstyled.
- */
+/** The brand palette as inline custom properties, so nothing external is needed. */
 export const CAPTURE_SCOPE_VARS: CSSProperties & Record<`--${string}`, string> = {
   "--capture-bg": "#F3F5F1",
   "--capture-card": "#FFFFFF",
@@ -71,7 +60,7 @@ export function CaptureCard({ children, className }: { children: ReactNode; clas
 export function CaptureEyebrow({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={cn("kit-label mb-3 text-[12px] font-bold uppercase", className)}
+      className={cn("mb-3 text-[12px] font-bold uppercase", className)}
       style={{
         fontFamily: "var(--capture-display)",
         letterSpacing: "0.1em",

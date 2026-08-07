@@ -59,6 +59,8 @@ interface CriterionRow {
   n_accepted: number | null;
   n_accepted_failing: number | null;
   construct_id: string | null;
+  /** compile-standard writes { sort_run_id, compile_run_id, ... } here. */
+  provenance: Record<string, unknown> | null;
 }
 
 interface EvidenceRow {
@@ -102,6 +104,14 @@ export interface PointerTargets {
   pendingSpans: Map<string, PendingSpan>;
   /** The surface the criteria were compiled for, when there is one. */
   surface: string | null;
+  /**
+   * The sort run these criteria were compiled from, for the package's
+   * `built_from` frontmatter. In three months the answer to "where did this
+   * come from" belongs in the file rather than in someone's memory. Null when
+   * the criteria carry no provenance, which is the honest reading of a package
+   * built before the chain existed.
+   */
+  sortRunId: string | null;
   /** Whether anything at all is citable. Drives blocking vs advisory. */
   hasTargets: boolean;
 }
@@ -130,7 +140,7 @@ export async function loadPointerTargets(
     .from("criteria")
     .select(
       "id, name, check_text, observable, weight, surface, holds_example, breaks_example, " +
-        "disc_verdict, n_rejected, n_rejected_failing, n_accepted, n_accepted_failing, construct_id",
+        "disc_verdict, n_rejected, n_rejected_failing, n_accepted, n_accepted_failing, construct_id, provenance",
     )
     .eq("user_id", userId)
     .eq("is_current", true)
@@ -283,8 +293,26 @@ export async function loadPointerTargets(
     memoryFactByShort,
     pendingSpans,
     surface: criteriaRows[0]?.surface ?? null,
+    sortRunId: sortRunIdFrom(criteriaRows),
     hasTargets: knownCriterionIds.length > 0 || knownEvidenceIds.length > 0,
   };
+}
+
+/**
+ * The sort run behind these criteria, when they all agree on one.
+ *
+ * Criteria for a surface are written by a single compile pass, so in practice
+ * there is one. If a future path ever mixes runs, this returns null rather than
+ * naming an arbitrary one: a `built_from` that points at one of several sources
+ * is worse than an absent one, because it reads as a complete answer.
+ */
+function sortRunIdFrom(rows: CriterionRow[]): string | null {
+  const ids = new Set<string>();
+  for (const row of rows) {
+    const id = row.provenance?.sort_run_id;
+    if (typeof id === "string" && id.trim()) ids.add(id.trim());
+  }
+  return ids.size === 1 ? [...ids][0] : null;
 }
 
 /**

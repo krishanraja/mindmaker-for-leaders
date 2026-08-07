@@ -30,7 +30,11 @@ export const LANDING = {
   judgeH: 'A new era of AI advisory is here, and it’s in your pocket.',
   judgeBody:
     'CTRL builds your private AI brain to power your decision making on all things AI. Backed up by decades of practical expertise, world class memory-theory and leadership knowledge from across the globe, verify or counter your next business idea and sharpen your mind, ready for you to be an AI-native leader.',
-  judgeCap: 'It never recommends from a thin signal. The call stays yours.',
+  // Describes the brain demo directly above it. The tension edge is the honest
+  // part and the part worth pointing at: a brain that only ever agrees with
+  // itself is not holding anything.
+  judgeCap:
+    'Your facts, and how they hold each other up. It keeps the ones that pull against each other too.',
   judgeCta: 'Put one of yours in',
 
   // taste
@@ -54,9 +58,9 @@ export const LANDING = {
 
   // price
   priceH: 'Free is free forever.',
-  priceBody: 'Memory, voice, the Kit program, unlimited skill builds, the daily read, three full weighs a month.',
+  priceBody: 'Memory, voice, unlimited skill builds, the daily read, three full weighs a month.',
   freeDesc:
-    'Memory web, voice profile, the Kit program, unlimited skill builds, the daily read, and three decision weighs a month.',
+    'Memory web, voice profile, unlimited skill builds, the daily read, and three decision weighs a month.',
   proDesc:
     'Unlimited weighs, a second model arguing against the first, decision watch, Edge artifacts, and the live MCP that sends your brain where it needs to be.',
   // The approved deck ended this on a half sentence ("...has made him realize

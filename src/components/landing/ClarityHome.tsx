@@ -6,7 +6,7 @@ import { HeroBackdrop } from '@/components/public/HeroBackdrop';
 import { PublicHeader } from '@/components/public/PublicHeader';
 import { PublicFooter } from '@/components/public/PublicFooter';
 import { ToolMarquee } from '@/components/public/ToolMarquee';
-import { WeighDemo } from '@/components/public/WeighDemo';
+import { BrainDemo } from '@/components/public/BrainDemo';
 import { LANDING } from '@/components/public/publicCopy';
 
 /**
@@ -119,8 +119,14 @@ export function ClarityHome() {
         <Heading center>{LANDING.judgeH}</Heading>
         <Body center>{LANDING.judgeBody}</Body>
 
+        {/*
+          The real BrainGraph on a static seed, not a picture of one. Swapped in
+          for the worked decision because this section's words are about the
+          brain; /try keeps the weigh, which is the right proof on the page
+          where you then do one.
+        */}
         <div className="mt-8">
-          <WeighDemo />
+          <BrainDemo />
         </div>
 
         <p className="mt-5 text-[13px] text-muted-foreground">{LANDING.judgeCap}</p>

@@ -18,7 +18,7 @@ import {
  * a blank "describe it" box. Step 4 (tone) is the unified VOICE step:
  *   - No saved voice yet: shows the same output three ways and asks you to pick
  *     the one that sounds like you. Picking one SAVES it as your voice profile
- *     (via onAdoptTone) so every future skill and kit inherits it.
+ *     (via onAdoptTone) so every future skill inherits it.
  *   - Voice already saved: no cold re-ask. It renders this deliverable in your
  *     saved voice and asks only "still sound like you?" - Keep (Next) or Adjust.
  *   - A paste-extract shortcut (onOpenVoiceSheet) is one tap away in both modes.
@@ -210,7 +210,7 @@ export function AutomatorCascade({
                       );
                     })}
                     <p className="px-2 pt-1.5 text-center text-[11.5px] leading-relaxed text-muted-foreground/70">
-                      CTRL saves this as your voice. Every skill and kit you build
+                      CTRL saves this as your voice. Every skill you build
                       sounds like this. Change it anytime.
                     </p>
                   </div>
