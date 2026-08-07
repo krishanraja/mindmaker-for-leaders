@@ -8,7 +8,9 @@ import { SortPreamble } from '@/components/sort/SortPreamble';
 import { SortRunner } from '@/components/sort/SortRunner';
 import { SortManipCheck } from '@/components/sort/SortManipCheck';
 import { SortRevealPanel } from '@/components/sort/SortRevealPanel';
+import { SortCompilePanel } from '@/components/sort/SortCompilePanel';
 import { Surface, Eyebrow } from '@/components/system/surface';
+import type { SortDepth } from '@/lib/sortModel';
 import { cn } from '@/lib/utils';
 
 /**
@@ -40,6 +42,28 @@ const SURFACE_CHOICES: Array<{ value: string; label: string }> = [
   { value: 'linkedin posts', label: 'Posts you publish' },
 ];
 
+/**
+ * The two decks. Short is the default because twenty minutes is a real ask and
+ * most people will not finish it, and an unfinished check measures nothing.
+ *
+ * The cost line on each is not marketing hedging. The short deck holds back
+ * four pieces and a measured claim needs ten, so no amount of good grading can
+ * ever earn it an accuracy number. Someone choosing between these deserves to
+ * know that before they spend the time, not after.
+ */
+const DEPTH_CHOICES: Array<{ value: SortDepth; label: string; cost: string }> = [
+  {
+    value: 'short',
+    label: 'The shorter check, about twelve minutes',
+    cost: 'Builds your standard. Cannot put an accuracy number on it.',
+  },
+  {
+    value: 'full',
+    label: 'The full check, about twenty minutes',
+    cost: 'Holds back enough work to earn a measured claim later.',
+  },
+];
+
 type Phase = 'intro' | 'preamble' | 'running';
 
 export default function SortPage() {
@@ -50,13 +74,14 @@ export default function SortPage() {
   const [surface, setSurface] = useState('');
   const [otherSurface, setOtherSurface] = useState('');
   const [showOther, setShowOther] = useState(false);
+  const [depth, setDepth] = useState<SortDepth>('short');
 
   const chosenSurface = showOther ? otherSurface.trim() : surface;
 
   const begin = () => {
     if (!chosenSurface) return;
     setPhase('preamble');
-    void sort.startSort(chosenSurface);
+    void sort.startSort(chosenSurface, depth);
   };
 
   const retry = () => {
@@ -79,6 +104,8 @@ export default function SortPage() {
             setSurface('');
           }}
           onOtherChange={setOtherSurface}
+          depth={depth}
+          onPickDepth={setDepth}
           canStart={Boolean(chosenSurface)}
           onStart={begin}
         />
@@ -131,6 +158,18 @@ export default function SortPage() {
             measurement={null}
             detail={sort.detail}
             unsavedGrades={sort.unsavedGrades}
+          />
+          {/*
+            Stage 3a, fired automatically by useSort the moment the last screen
+            was graded. This is what turns the panel's "your standard is not
+            written yet, that comes next" from a promise into a thing that
+            happened.
+          */}
+          <SortCompilePanel
+            status={sort.compileStatus}
+            stage={sort.compileStage}
+            detail={sort.compileDetail}
+            error={sort.compileError}
           />
           <button
             type="button"
@@ -228,6 +267,8 @@ interface SortIntroProps {
   otherSurface: string;
   onShowOther: () => void;
   onOtherChange: (value: string) => void;
+  depth: SortDepth;
+  onPickDepth: (value: SortDepth) => void;
   canStart: boolean;
   onStart: () => void;
 }
@@ -240,20 +281,23 @@ function SortIntro({
   otherSurface,
   onShowOther,
   onOtherChange,
+  depth,
+  onPickDepth,
   canStart,
   onStart,
 }: SortIntroProps) {
+  const short = depth === 'short';
   return (
-    <div className="flex h-full min-h-0 flex-col justify-center gap-5">
+    <div className="flex h-full min-h-0 flex-col justify-center gap-5 overflow-y-auto">
       <div>
-        <Eyebrow>About twenty minutes</Eyebrow>
+        <Eyebrow>{short ? 'About twelve minutes' : 'About twenty minutes'}</Eyebrow>
         <h2 className="mt-1.5 text-[20px] font-bold leading-tight tracking-[-0.01em] text-foreground">
           I show you work. You tell me what you would send.
         </h2>
         <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">
-          About thirty short pieces, one at a time. Two answers each, and a line about why if you
-          have one. It is quicker to react to something than to describe yourself, which is why this
-          works and a questionnaire does not.
+          {short ? 'About twenty short pieces' : 'About thirty short pieces'}, one at a time. Two
+          answers each, and a line about why if you have one. It is quicker to react to something
+          than to describe yourself, which is why this works and a questionnaire does not.
         </p>
       </div>
 
@@ -300,6 +344,41 @@ function SortIntro({
               Something else
             </button>
           )}
+        </div>
+      </Surface>
+
+      <Surface className="p-4">
+        <p className="text-[14px] font-semibold text-foreground">How long have you got?</p>
+        <div className="mt-3 flex flex-col gap-2">
+          {DEPTH_CHOICES.map((choice) => {
+            const active = depth === choice.value;
+            return (
+              <button
+                key={choice.value}
+                type="button"
+                onClick={() => onPickDepth(choice.value)}
+                className={cn(
+                  'w-full rounded-2xl border px-3.5 py-3 text-left transition-colors',
+                  active
+                    ? 'border-accent/50 bg-accent/10'
+                    : 'border-border bg-card/40 hover:border-accent/30 hover:bg-secondary/50',
+                )}
+              >
+                <span
+                  className={cn(
+                    'block text-[14px] font-medium',
+                    active ? 'text-foreground' : 'text-muted-foreground',
+                  )}
+                >
+                  {choice.label}
+                </span>
+                {/* The trade, on the button, before the time is spent. */}
+                <span className="mt-0.5 block text-[12px] leading-snug text-muted-foreground/80">
+                  {choice.cost}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </Surface>
 

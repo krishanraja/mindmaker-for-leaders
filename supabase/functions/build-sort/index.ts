@@ -1,14 +1,22 @@
 /**
  * build-sort - stage 2 of the harness chain, the build half.
  *
- * POST { surface, session_label?, context?, request_id? }
+ * POST { surface, depth?: "short" | "full", session_label?, context?, request_id? }
  *   -> 202 { run_id, stage: "planning" }
  *
- * Assembles one 33-screen forced-sort deck: 20 synthesised items as 5
- * constructs x 2 matched pairs, up to 6 of the person's own real artefacts, up
- * to 4 public attributed peer pieces, and 3 repeat probes appended. The budget
- * and every placement rule live in ../_shared/sort-composition.ts, which is
- * pure and unit-tested; this file does auth, IO and stage-writing only.
+ * Assembles one forced-sort deck. The FULL deck is 33 screens: 20 synthesised
+ * items as 5 constructs x 2 matched pairs, up to 6 of the person's own real
+ * artefacts, up to 4 public attributed peer pieces, and 3 repeat probes
+ * appended. The SHORT deck (the default) is 22 screens and cuts the synthesised
+ * and peer halves while leaving the same four own items in training, because
+ * own work is the accept side and starving it makes every criterion compile
+ * 'untested'. Both budgets and every placement rule live in
+ * ../_shared/sort-composition.ts, which is pure and unit-tested; this file does
+ * auth, IO and stage-writing only.
+ *
+ * The short deck cannot ever be called Verified (its hold-out is below the
+ * release floor). That is written into stage_detail as `can_reach_verified` so
+ * the screen can say it rather than the reader having to work it out.
  *
  * Shape of the response is deliberate (CH-15). Generating ten matched pairs is
  * one large model call; the chain has no run state to poll unless we create it,
@@ -42,16 +50,20 @@ import { selectModel } from "../_shared/openai-utils.ts";
 import { callLLMWithFallback, providerFromModel } from "../_shared/llm-fallback.ts";
 import { checkDailySoftCap, recordAiUsage } from "../_shared/ai-usage.ts";
 import {
+  budgetForDepth,
   chooseHoldOut,
   makeRng,
   minPairSeparation,
+  parseSortDepth,
   planDeck,
   seedFromString,
-  SORT_BUDGET,
   type PairInput,
   type PeerInput,
   type PlannedItem,
+  type SortBudget,
+  type SortDepth,
 } from "../_shared/sort-composition.ts";
+import { canReachVerified } from "../_shared/discrimination.ts";
 import { peerCorpusStatus, peerSamplesForSurface, peerSourceLabel } from "../_shared/peer-corpus.ts";
 import { getUserContext } from "../_shared/user-context.ts";
 import {
@@ -146,6 +158,11 @@ Deno.serve(async (req) => {
     const requestId = typeof payload?.request_id === "string"
       ? payload.request_id.trim().slice(0, MAX_REQUEST_ID_CHARS)
       : "";
+    // Anything unreadable resolves to the short deck. Silently handing someone
+    // the twenty-minute deck because a field arrived malformed is the wrong way
+    // round: the long one is the deliberate, opted-into choice.
+    const depth = parseSortDepth(payload?.depth);
+    const budget = budgetForDepth(depth);
 
     if (!surface) {
       return json({
@@ -191,7 +208,9 @@ Deno.serve(async (req) => {
         stage_detail: {
           ...(requestId ? { request_id: requestId } : {}),
           ...(sessionLabel ? { session_label: sessionLabel } : {}),
-          budget: SORT_BUDGET,
+          depth,
+          budget,
+          can_reach_verified: canReachVerified(budget),
         },
       })
       .select("id")
@@ -204,7 +223,9 @@ Deno.serve(async (req) => {
       userId,
       surface,
       contextLine,
-      log: log.withContext({ run_id: runId, userId }),
+      depth,
+      budget,
+      log: log.withContext({ run_id: runId, userId, depth }),
     });
 
     if (typeof EdgeRuntime !== "undefined" && EdgeRuntime?.waitUntil) {
@@ -226,6 +247,8 @@ interface BuildParams {
   userId: string;
   surface: string;
   contextLine: string;
+  depth: SortDepth;
+  budget: SortBudget;
   log: ReturnType<typeof createLogger>;
 }
 
@@ -234,7 +257,7 @@ interface BuildParams {
  * on 'generating_pairs' forever is worse than a run that says it failed.
  */
 async function buildDeck(admin: SupabaseClient, params: BuildParams): Promise<void> {
-  const { runId, userId, surface, contextLine, log } = params;
+  const { runId, userId, surface, contextLine, depth, budget, log } = params;
   const detail: Record<string, unknown> = {};
 
   const setStage = async (stage: string, extra: Record<string, unknown> = {}) => {
@@ -288,7 +311,7 @@ async function buildDeck(admin: SupabaseClient, params: BuildParams): Promise<vo
         if (byEvidence !== 0) return byEvidence;
         return (b.created_at ?? "").localeCompare(a.created_at ?? "");
       })
-      .slice(0, SORT_BUDGET.constructs);
+      .slice(0, budget.constructs);
 
     if (constructs.length === 0) {
       await fail(
@@ -353,7 +376,7 @@ async function buildDeck(admin: SupabaseClient, params: BuildParams): Promise<vo
 
     await setStage("generating_pairs", {
       constructs: constructs.length,
-      constructs_expected: SORT_BUDGET.constructs,
+      constructs_expected: budget.constructs,
       quotes: quotesByEvidence.size,
     });
 
@@ -453,7 +476,7 @@ async function buildDeck(admin: SupabaseClient, params: BuildParams): Promise<vo
 
     await setStage("assembling", {
       pairs: pairs.length,
-      pairs_expected: SORT_BUDGET.pairs,
+      pairs_expected: budget.pairs,
       pair_rejects: rejects,
       em_dash_pairs: emDashPairs,
     });
@@ -466,20 +489,20 @@ async function buildDeck(admin: SupabaseClient, params: BuildParams): Promise<vo
       .eq("kind", "artefact")
       .is("redacted_at", null)
       .order("created_at", { ascending: false })
-      .limit(SORT_BUDGET.own * 3);
+      .limit(budget.own * 3);
 
     const own: string[] = [];
     for (const row of artefactRows ?? []) {
       const body = (row.body ?? "").toString().trim();
       if (body.length < MIN_ITEM_BODY_CHARS) continue;
       own.push(body.slice(0, MAX_OWN_BODY_CHARS));
-      if (own.length >= SORT_BUDGET.own) break;
+      if (own.length >= budget.own) break;
     }
-    const ownShortfall = Math.max(0, SORT_BUDGET.own - own.length);
+    const ownShortfall = Math.max(0, budget.own - own.length);
 
     // --- 4. peer items (CH-11) ----------------------------------------------
     const peerStatus = peerCorpusStatus(surface);
-    const peer: PeerInput[] = peerSamplesForSurface(surface, SORT_BUDGET.peer).map((sample) => ({
+    const peer: PeerInput[] = peerSamplesForSurface(surface, budget.peer).map((sample) => ({
       body: sample.body,
       sourceLabel: peerSourceLabel(sample),
     }));
@@ -488,8 +511,8 @@ async function buildDeck(admin: SupabaseClient, params: BuildParams): Promise<vo
     // Seeded from the run id, so the same run rebuilds the same deck and an
     // auditor can reproduce it.
     const rng = makeRng(seedFromString(runId));
-    const planned = planDeck({ pairs, own, peer, rng });
-    const holdOut = chooseHoldOut(planned);
+    const planned = planDeck({ pairs, own, peer, rng, budget });
+    const holdOut = chooseHoldOut(planned, budget);
     const heldOut = new Set(holdOut.heldOutIds);
     const separation = minPairSeparation(planned);
 
@@ -566,19 +589,24 @@ async function buildDeck(admin: SupabaseClient, params: BuildParams): Promise<vo
         status: "done",
         stage_detail: {
           ...detail,
+          // Every `_expected` is the CHOSEN budget's target, never the full
+          // deck's. shortfallNotes() compares these to report what the deck was
+          // missing, so hardcoding the full numbers here would tell a short-sort
+          // user their deck "ran short" about a choice they made on purpose.
           items: unique.length,
-          items_expected: SORT_BUDGET.unique,
+          items_expected: budget.unique,
           repeats: repeats.length,
           own_available: own.length,
-          own_expected: SORT_BUDGET.own,
+          own_expected: budget.own,
           own_shortfall: ownShortfall,
           peer_available: peer.length,
-          peer_expected: SORT_BUDGET.peer,
+          peer_expected: budget.peer,
           peer_shortfall: peerStatus.shortfall,
           peer_awaiting_curation: peerStatus.awaitingCuration,
           peer_surface: peerStatus.resolvedSurface,
           peer_attribution: peerAttribution,
           held_out: holdOut.heldOutIds.length,
+          held_out_expected: budget.holdOut.items,
           held_out_shape: { pairs: holdOut.pairs, own: holdOut.own, peer: holdOut.peer },
           min_pair_separation: Number.isFinite(separation) ? separation : null,
         },
@@ -587,6 +615,7 @@ async function buildDeck(admin: SupabaseClient, params: BuildParams): Promise<vo
       .eq("id", runId);
 
     log.info("sort deck ready", {
+      depth,
       items: unique.length,
       repeats: repeats.length,
       pairs: pairs.length,

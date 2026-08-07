@@ -68,6 +68,12 @@ export interface PlanDeckInput {
   peer: PeerInput[];
   /** Injected uniform [0,1) source. Same rng in, same deck out. */
   rng: () => number;
+  /**
+   * Which deck this is. Only `repeats` is read here (every other count comes
+   * from the arrays above), and it defaults to the full budget so an existing
+   * caller behaves exactly as it did.
+   */
+  budget?: SortBudget;
 }
 
 /**
@@ -147,6 +153,73 @@ export const SORT_BUDGET: SortBudget = {
   holdOut: { pairs: 4, pairItems: 8, own: 2, peer: 2, items: 12 },
   training: 18,
 };
+
+/**
+ * The shorter deck: about twelve minutes instead of about twenty.
+ *
+ * WHAT IT CUTS, AND WHY IT IS NOT SIMPLY "HALF"
+ *
+ * A proportional halving produces nothing. The binding floor downstream is
+ * discriminationVerdict's 4 accepted AND 4 rejected TRAINING items per
+ * criterion; miss it and every criterion compiles 'untested', which means zero
+ * criteria rows, which means the standard has nothing in it. So the two classes
+ * that feed the ACCEPT side are protected and the rest is cut:
+ *
+ *   - `own` drops 6 -> 5 but holdOut.own drops 2 -> 1, so FOUR own items train
+ *     in both budgets. CH-08's argument is that the person's own work is the
+ *     class a discerning grader reliably sends, and the preamble deliberately
+ *     pre-normalises rejecting. Halving own starves the accept side and is the
+ *     single fastest way to make this whole deck measure nothing.
+ *   - the synthesised half carries the cut: 5 constructs -> 3, so 10 pairs -> 6.
+ *     Five pairs still train (one is held out), giving 5 satisfying halves on
+ *     the accept side beside the 4 own items.
+ *   - `peer` drops 4 -> 2, one held out.
+ *
+ * WHAT IT COSTS, STATED RATHER THAN BURIED
+ *
+ *   1. Verified is ARITHMETICALLY UNREACHABLE. 4 held-out items is below
+ *      VERIFIED_MIN_HELD_OUT (10), so no measurement run can ever lift this
+ *      deck past Provisional. That is correct: a precision computed on four
+ *      items is a number about four items. It is surfaced on screen via
+ *      canReachVerified(), never left for the reader to infer.
+ *   2. Three constructs are tested, not five.
+ *   3. With one placement block of six pairs, the first pair completes around
+ *      position nine, so the open manipulation question lands once (screen 16)
+ *      rather than two or three times.
+ *
+ * Every other gate clears: pair separation (one block of 6 gives offset 6, over
+ * MIN_PAIR_SEPARATION), repeat sources (min(10, 19+1-8) = 10 candidates, so all
+ * 3 probes are placed and TRIAGE_MIN_REPEATS is met), MIN_PAIRS_FOR_SPLIT_RATE
+ * (6 pairs are all graded; hold-out suppresses TRAINING, not grading),
+ * KILL_MIN_GRADED at 16 of 22, and CONSTRUCTS_BEAT_AT at 20 of 22.
+ */
+export const SHORT_SORT_BUDGET: SortBudget = {
+  constructs: 3,
+  pairsPerConstruct: 2,
+  pairs: 6,
+  synthesised: 12,
+  own: 5,
+  peer: 2,
+  unique: 19,
+  repeats: 3,
+  total: 22,
+  holdOut: { pairs: 1, pairItems: 2, own: 1, peer: 1, items: 4 },
+  training: 15,
+};
+
+export type SortDepth = "short" | "full";
+
+/** The default when a caller says nothing. Short, by product decision. */
+export const DEFAULT_SORT_DEPTH: SortDepth = "short";
+
+/** Anything that is not exactly 'full' is short. An unreadable depth is never the long deck. */
+export function parseSortDepth(raw: unknown): SortDepth {
+  return raw === "full" ? "full" : DEFAULT_SORT_DEPTH;
+}
+
+export function budgetForDepth(depth: SortDepth): SortBudget {
+  return depth === "full" ? SORT_BUDGET : SHORT_SORT_BUDGET;
+}
 
 // ---------------------------------------------------------------------------
 // Placement constants
@@ -320,7 +393,7 @@ function coupleIndices(slotCount: number): Array<[number, number]> {
  *   3. pairs into the remainder, coupled by the block scheme above.
  */
 export function planDeck(input: PlanDeckInput): PlannedItem[] {
-  const { pairs, own, peer, rng } = input;
+  const { pairs, own, peer, rng, budget = SORT_BUDGET } = input;
   const nPairs = pairs.length;
   const nOwn = own.length;
   const nPeer = peer.length;
@@ -426,7 +499,7 @@ export function planDeck(input: PlanDeckInput): PlannedItem[] {
   // opening stretch, and only where the gap rule can actually be met.
   const latestSource = Math.min(REPEAT_SOURCE_WINDOW, total + 1 - REPEAT_MIN_GAP);
   const repeatCandidates = items.filter((it) => it.position <= latestSource);
-  const sources = pickSpread(repeatCandidates, Math.min(SORT_BUDGET.repeats, repeatCandidates.length), rng);
+  const sources = pickSpread(repeatCandidates, Math.min(budget.repeats, repeatCandidates.length), rng);
   sources.forEach((source, i) => {
     items.push({
       key: `repeat:${i}`,
@@ -481,18 +554,30 @@ export interface HoldOutSelection {
 }
 
 /**
- * Ten of the thirty never train anything.
+ * The budget's held-out share never trains anything: 12 of the full deck's 30,
+ * 4 of the short deck's 19.
  *
  * WHOLE PAIRS ONLY. Holding out items at random splits roughly half the pairs
  * across the boundary and destroys the one property the pair design buys: that
  * a hold-out pair tests the same construct the training set taught. Repeats are
  * never held out; they measure the grader, not the standard.
  *
+ * THE COUNTS ARE ABSOLUTE, NOT PROPORTIONAL, WHICH IS WHY THE BUDGET IS A
+ * PARAMETER. Applying the full deck's holdOut.pairs (4) to a six-pair deck
+ * makes spreadIndices take its k >= n branch and hold out FOUR OF SIX pairs,
+ * leaving two pairs to train on. Two training pairs cannot reach
+ * discriminationVerdict's 4-and-4 floor, so every criterion compiles 'untested'
+ * and the sort produces no standard at all. Each budget carries its own
+ * hold-out shape for exactly that reason.
+ *
  * rng-free on purpose. planDeck has already randomised position, so an evenly
  * spread selection over position order is already unpredictable, and a
  * deterministic hold-out is one less thing to reproduce when auditing a run.
  */
-export function chooseHoldOut(items: PlannedItem[]): HoldOutSelection {
+export function chooseHoldOut(
+  items: PlannedItem[],
+  budget: SortBudget = SORT_BUDGET,
+): HoldOutSelection {
   const unique = items.filter((it) => !it.repeatOfKey);
 
   const pairFirstPosition = new Map<string, number>();
@@ -514,11 +599,11 @@ export function chooseHoldOut(items: PlannedItem[]): HoldOutSelection {
   const ownItems = unique.filter((it) => it.origin === "own").sort((a, b) => a.position - b.position);
   const peerItems = unique.filter((it) => it.origin === "peer").sort((a, b) => a.position - b.position);
 
-  const pairPicks = spreadIndices(completePairs.length, Math.min(SORT_BUDGET.holdOut.pairs, completePairs.length))
+  const pairPicks = spreadIndices(completePairs.length, Math.min(budget.holdOut.pairs, completePairs.length))
     .map((i) => completePairs[i]);
-  const ownPicks = spreadIndices(ownItems.length, Math.min(SORT_BUDGET.holdOut.own, ownItems.length))
+  const ownPicks = spreadIndices(ownItems.length, Math.min(budget.holdOut.own, ownItems.length))
     .map((i) => ownItems[i]);
-  const peerPicks = spreadIndices(peerItems.length, Math.min(SORT_BUDGET.holdOut.peer, peerItems.length))
+  const peerPicks = spreadIndices(peerItems.length, Math.min(budget.holdOut.peer, peerItems.length))
     .map((i) => peerItems[i]);
 
   const heldOutIds: string[] = [];

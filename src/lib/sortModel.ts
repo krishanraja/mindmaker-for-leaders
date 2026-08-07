@@ -376,10 +376,45 @@ export interface SortRunDetail {
   peer_shortfall?: number;
   peer_awaiting_curation?: boolean;
   held_out?: number;
+  held_out_expected?: number;
   constructs?: number;
   constructs_expected?: number;
   pairs?: number;
   pairs_expected?: number;
+  /** Which deck was built. build-sort writes it; nothing infers it. */
+  depth?: SortDepth;
+  /**
+   * Whether a deck this size could EVER be called Verified. Computed by the
+   * backend from the budget's hold-out against the release floor, so the screen
+   * reports a fact rather than re-deriving one from numbers it half has.
+   */
+  can_reach_verified?: boolean;
+}
+
+export type SortDepth = 'short' | 'full';
+
+/**
+ * What the shorter deck costs, said before the person picks it and again when
+ * they finish.
+ *
+ * The short deck holds out four items and Verified needs ten graded held-out
+ * items, so no measurement run can ever lift it past Provisional. That is a
+ * real ceiling, not a temporary state, and the difference matters: "not
+ * measured yet" invites waiting, "cannot be measured at this length" tells
+ * someone what to do about it.
+ *
+ * Silence here would be the dishonest option. A person who finishes a short
+ * sort and reads "no accuracy number is claimed" would reasonably assume one is
+ * coming.
+ */
+export function depthCeilingNote(detail: SortRunDetail): string | null {
+  if (detail.can_reach_verified !== false) return null;
+  const held = detail.held_out ?? detail.held_out_expected ?? 0;
+  return (
+    `This was the shorter check, so ${held} pieces were held back rather than the twelve the longer one holds. ` +
+    'That is enough to build your standard and not enough to put an accuracy number on it, however well you graded. ' +
+    'The longer check is the one that can earn a measured claim.'
+  );
 }
 
 /**

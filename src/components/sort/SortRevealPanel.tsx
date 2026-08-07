@@ -3,6 +3,7 @@ import type { SortSelfAgreement, SortSplit } from '@/hooks/useSort';
 import {
   canReportSelfAgreement,
   canReportSplit,
+  depthCeilingNote,
   formatProgress,
   measurementLines,
   selectBeat,
@@ -187,7 +188,13 @@ export function SortRevealPanel({
     );
   }
 
+  // A deliberately shorter deck is not a shortfall, so the two are separate
+  // sentences. shortfallNotes says "the deck ran short of its own target";
+  // depthCeilingNote says "this deck's target is below what a measured claim
+  // needs, and always was". Someone who read only the first would wait for a
+  // number that can never arrive.
   const notes = complete ? shortfallNotes(detail) : [];
+  const ceilingNote = complete ? depthCeilingNote(detail) : null;
   const showSplit = complete && splitRate !== null && canReportSplit(splitRate.total);
   // Only after the last screen (CH-12): a live count would tell them some
   // pieces come back a second time, which is the one thing that breaks it.
@@ -243,6 +250,9 @@ export function SortRevealPanel({
               answer {selfAgreement.matched} of those {selfAgreement.total} times.
             </p>
           )}
+          {ceilingNote && (
+            <p className="text-[12.5px] leading-relaxed text-muted-foreground">{ceilingNote}</p>
+          )}
           {notes.map((note) => (
             <p key={note} className="text-[12.5px] leading-relaxed text-muted-foreground">
               {note}
@@ -254,9 +264,15 @@ export function SortRevealPanel({
               next, and I would rather say so than quietly count them.
             </p>
           )}
+          {/*
+            This used to say the standard "comes next". It now literally comes
+            next, in the panel directly below, because useSort fires stage 3a
+            the moment the last screen is graded. A promise that has already
+            been kept reads as a stall.
+          */}
           <p className="text-[12.5px] leading-relaxed text-muted-foreground">
-            Your standard is not written yet. That comes next, and it gets built from these answers
-            and your own lines, not from anything I assumed about you.
+            Your standard gets built from these answers and your own lines, not from anything I
+            assumed about you.
           </p>
         </div>
       )}

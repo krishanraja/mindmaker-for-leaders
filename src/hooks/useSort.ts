@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import {
   manipPairDue,
+  type SortDepth,
   type SortRunDetail,
   type SortVerdict,
   type WhyLine,
@@ -31,7 +32,17 @@ import {
  *    all, because which items are the test and which are repeats must stay
  *    invisible (CH-12, and revision-2 defect 9).
  *
- * 2. THE REF PATTERN FROM KitIntake (~lines 435 to 540).
+ * 2. STAGE 3a IS CHAINED, NOT LEFT TO A BUTTON.
+ *    compile-standard had no caller anywhere in the app, so `criteria` rows
+ *    never existed and no built skill could carry a [C#] pointer. It is fired
+ *    here the moment the last screen is graded, because the person opted in by
+ *    grading the whole deck and the panel has already promised it. Two details
+ *    make that safe rather than racy: the last grade is a promise held in a ref
+ *    and awaited before the call (grades are fire-and-forget, so without this
+ *    the compile can read one row short), and compile-standard is idempotent on
+ *    the sort run id, so a double fire returns the first run.
+ *
+ * 3. THE REF PATTERN FROM KitIntake (~lines 435 to 540).
  *    A grade schedules an auto-advance on a timer. The #193 bug was a deferred
  *    advance closing over a STALE step index and count, which silently
  *    truncated every kit intake. A 33-screen auto-advancing flow reproduces it
@@ -74,6 +85,39 @@ export type SortRunStage =
   | 'failed';
 
 export type SortStatus = 'idle' | 'starting' | 'building' | 'ready' | 'failed';
+
+/**
+ * The compile run's stages, as compile-standard writes them. Three of these are
+ * terminal and only one is an error: `halted` means the matched pairs did not
+ * separate and `template_and_voice` means the grader disagreed with themselves.
+ * Both are findings the instrument is designed to produce, and the UI has to
+ * read them as findings rather than dressing them as failures.
+ */
+export type CompileStage =
+  | 'loading'
+  | 'probing'
+  | 'clustering'
+  | 'writing'
+  | 'ready'
+  | 'halted'
+  | 'template_and_voice'
+  | 'failed';
+
+export type CompileStatus = 'idle' | 'starting' | 'running' | 'done' | 'failed';
+
+/** The slice of the compile run's stage_detail the completion screen reads. */
+export interface CompileDetail {
+  outcome?: string;
+  reason?: string;
+  next?: string;
+  kept?: number;
+  untested?: number;
+  deleted?: number;
+  merged?: number;
+  criteria_version?: number;
+  label?: string;
+  artifact_id?: string | null;
+}
 
 /**
  * What the render layer is allowed to know about an item: the words, where it
@@ -164,6 +208,12 @@ export function useSort() {
   const [detail, setDetail] = useState<SortRunDetail>({});
   const [unsavedGrades, setUnsavedGrades] = useState(0);
 
+  const [compileRunId, setCompileRunId] = useState<string | null>(null);
+  const [compileStage, setCompileStage] = useState<CompileStage | null>(null);
+  const [compileStatus, setCompileStatus] = useState<CompileStatus>('idle');
+  const [compileDetail, setCompileDetail] = useState<CompileDetail>({});
+  const [compileError, setCompileError] = useState<string | null>(null);
+
   const [manipPrompt, setManipPrompt] = useState<ManipPrompt | null>(null);
   const [manipSubmitting, setManipSubmitting] = useState(false);
   const [manipRevealed, setManipRevealed] = useState(false);
@@ -181,6 +231,15 @@ export function useSort() {
   const advanceTimer = useRef<number | null>(null);
 
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const compilePollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /**
+   * The grade currently in flight. Grades are sent fire-and-forget so the screen
+   * can move on, which means the LAST one can still be in the air when the deck
+   * ends. compile() awaits this before firing, or the compile reads a sort that
+   * is one grade short of the one the person actually gave.
+   */
+  const inFlightGradeRef = useRef<Promise<GradeResponse | null> | null>(null);
+  const compileStartedRef = useRef(false);
   const runIdRef = useRef<string | null>(null);
   const gradedIdsRef = useRef<Set<string>>(new Set());
   const askedPairsRef = useRef<Set<string>>(new Set());
@@ -203,6 +262,7 @@ export function useSort() {
     () => () => {
       if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current);
       if (pollTimer.current) clearTimeout(pollTimer.current);
+      if (compilePollTimer.current) clearTimeout(compilePollTimer.current);
     },
     [],
   );
@@ -211,27 +271,36 @@ export function useSort() {
   // Start + poll
   // -------------------------------------------------------------------------
 
-  const startSort = useCallback(async (surface: string, sessionLabel?: string) => {
-    const trimmed = surface.trim();
-    if (!trimmed || startingRef.current) return;
-    startingRef.current = true;
-    setStatus('starting');
-    setError(null);
-    setStage(null);
-    setItems([]);
-    setLines([]);
-    setCurrentIndex(0);
-    setIsComplete(false);
-    setLastVerdict(null);
-    setUnsavedGrades(0);
-    gradedIdsRef.current = new Set();
-    askedPairsRef.current = new Set();
-    lastGradeRef.current = null;
+  const startSort = useCallback(
+    async (surface: string, depth: SortDepth = 'short', sessionLabel?: string) => {
+      const trimmed = surface.trim();
+      if (!trimmed || startingRef.current) return;
+      startingRef.current = true;
+      setStatus('starting');
+      setError(null);
+      setStage(null);
+      setItems([]);
+      setLines([]);
+      setCurrentIndex(0);
+      setIsComplete(false);
+      setLastVerdict(null);
+      setUnsavedGrades(0);
+      setCompileRunId(null);
+      setCompileStage(null);
+      setCompileStatus('idle');
+      setCompileDetail({});
+      setCompileError(null);
+      compileStartedRef.current = false;
+      inFlightGradeRef.current = null;
+      gradedIdsRef.current = new Set();
+      askedPairsRef.current = new Set();
+      lastGradeRef.current = null;
 
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('build-sort', {
         body: {
           surface: trimmed,
+          depth,
           ...(sessionLabel ? { session_label: sessionLabel } : {}),
           // A retried build must return the first deck, never a second one.
           request_id: crypto.randomUUID(),
@@ -250,7 +319,9 @@ export function useSort() {
     } finally {
       startingRef.current = false;
     }
-  }, []);
+    },
+    [],
+  );
 
   /**
    * Load the deck. This is the ONE place the answer key is read, and it goes
@@ -387,6 +458,105 @@ export function useSort() {
     [applyProgress],
   );
 
+  // -------------------------------------------------------------------------
+  // Stage 3a: compile the standard (CH-18)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Build the standard from what they just graded.
+   *
+   * Fired automatically when the last screen is done rather than sat behind a
+   * button. The person committed to this by grading the whole deck, and the
+   * panel has already told them it comes next; a button here would be a second
+   * door in front of a step the screen has promised.
+   *
+   * compile-standard is idempotent on the sort run id, so the ref guard below is
+   * belt and braces rather than the only thing standing between a person and two
+   * compile runs.
+   */
+  const compile = useCallback(async () => {
+    const session = runIdRef.current;
+    if (!session || compileStartedRef.current) return;
+    compileStartedRef.current = true;
+    setCompileStatus('starting');
+    setCompileError(null);
+
+    // The last grade is still in the air (grades are sent fire-and-forget so
+    // the screen can move). Waiting on it is the difference between compiling
+    // what they graded and compiling one row less. sendGrade bounds itself to
+    // two attempts, so this cannot hang.
+    try {
+      await inFlightGradeRef.current;
+    } catch {
+      // A failed grade is already counted in unsavedGrades and surfaced. It is
+      // not a reason to refuse to build anything.
+    }
+
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('compile-standard', {
+        body: { run_id: session },
+      });
+      if (invokeError) throw invokeError;
+      const id = typeof data?.run_id === 'string' ? data.run_id : null;
+      if (!id) throw new Error('The standard did not start building.');
+      setCompileRunId(id);
+      setCompileStage((data?.stage as CompileStage) ?? 'loading');
+      setCompileStatus('running');
+    } catch (e) {
+      compileStartedRef.current = false;
+      setCompileStatus('failed');
+      setCompileError(
+        e instanceof Error ? e.message : 'Your standard could not be built from this check.',
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isComplete) return;
+    void compile();
+  }, [isComplete, compile]);
+
+  /** Poll the compile run, same shape as the sort run's poll above. */
+  useEffect(() => {
+    if (!compileRunId) return;
+    let active = true;
+
+    const poll = async () => {
+      const { data } = await db
+        .from('harness_runs')
+        .select('id, stage, status, stage_detail, error')
+        .eq('id', compileRunId)
+        .maybeSingle();
+      if (!active) return;
+
+      const row = data as HarnessRunRow | null;
+      if (row) {
+        setCompileStage(row.stage as CompileStage);
+        setCompileDetail((row.stage_detail ?? {}) as CompileDetail);
+      }
+
+      // 'halted' and 'template_and_voice' are findings, not errors: the pairs
+      // did not separate, or the grader did not agree with themselves. Both end
+      // the run as 'done' and both have something true to say.
+      if (row?.stage === 'ready' || row?.stage === 'halted' || row?.stage === 'template_and_voice') {
+        setCompileStatus('done');
+        return;
+      }
+      if (row?.stage === 'failed' || row?.status === 'failed') {
+        setCompileStatus('failed');
+        setCompileError(row?.error || 'Your standard could not be built from this check.');
+        return;
+      }
+      compilePollTimer.current = setTimeout(poll, POLL_MS);
+    };
+
+    poll();
+    return () => {
+      active = false;
+      if (compilePollTimer.current) clearTimeout(compilePollTimer.current);
+    };
+  }, [compileRunId]);
+
   /** Cancel a pending auto-advance. Called by every manual move. */
   const holdAdvance = useCallback(() => {
     if (advanceTimer.current !== null) {
@@ -445,8 +615,9 @@ export function useSort() {
       setLastVerdict(verdict);
       recordLine({ itemId: item.id, verdict, why: trimmed });
 
-      // Fire and forget: the screen has already moved on by the time this lands.
-      void sendGrade({
+      // Fire and forget: the screen has already moved on by the time this
+      // lands. The promise is kept so compile() can wait on the last one.
+      inFlightGradeRef.current = sendGrade({
         item_id: item.id,
         verdict,
         ...(trimmed ? { why: trimmed } : {}),
@@ -492,7 +663,9 @@ export function useSort() {
       if (trimmed === last.why) return;
       lastGradeRef.current = { ...last, why: trimmed };
       recordLine({ itemId: last.itemId, verdict: last.verdict, why: trimmed });
-      void sendGrade({
+      // Tracked for the same reason as the verdict itself: a line typed on the
+      // last screen is a write the compile has to see.
+      inFlightGradeRef.current = sendGrade({
         item_id: last.itemId,
         verdict: last.verdict,
         ...(trimmed ? { why: trimmed } : {}),
@@ -577,6 +750,13 @@ export function useSort() {
     splitRate,
     selfAgreement,
     detail,
+    // the standard (stage 3a)
+    compileRunId,
+    compileStage,
+    compileStatus,
+    compileDetail,
+    compileError,
+    compile,
     // the open question
     manipPrompt,
     manipSubmitting,
