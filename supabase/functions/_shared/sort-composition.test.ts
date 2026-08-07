@@ -2,10 +2,12 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  budgetForDepth,
   canShowKill,
   chooseHoldOut,
   contentTokens,
   haltVerdict,
+  KILL_MIN_EACH_SIDE,
   makeRng,
   matchesExistingConstruct,
   MIN_PAIR_SEPARATION,
@@ -13,14 +15,17 @@ import {
   namesIntendedDimension,
   OWN_EARLIEST_POSITION,
   pairSplitRate,
+  parseSortDepth,
   planDeck,
   REPEAT_MIN_GAP,
   selfAgreement,
+  SHORT_SORT_BUDGET,
   SORT_BUDGET,
   splitRateForHalt,
   type PairInput,
   type PeerInput,
   type PlannedItem,
+  type SortBudget,
 } from './sort-composition';
 import {
   peerCorpusStatus,
@@ -78,6 +83,17 @@ function canonicalDeck(seed = 1): PlannedItem[] {
   return planDeck({ pairs: makePairs(), own: makeOwn(), peer: makePeer(), rng: makeRng(seed) });
 }
 
+/** A full deck for any budget, so short and full can be compared like for like. */
+function deckFor(budget: SortBudget, seed = 1): PlannedItem[] {
+  return planDeck({
+    pairs: makePairs(budget.constructs),
+    own: makeOwn(budget.own),
+    peer: makePeer(budget.peer),
+    rng: makeRng(seed),
+    budget,
+  });
+}
+
 const uniqueItems = (items: PlannedItem[]) => items.filter((it) => !it.repeatOfKey);
 const repeatItems = (items: PlannedItem[]) => items.filter((it) => it.repeatOfKey);
 
@@ -97,6 +113,90 @@ describe('SORT_BUDGET', () => {
     expect(h.pairs * 2).toBe(h.pairItems);
     expect(h.pairItems + h.own + h.peer).toBe(h.items);
     expect(SORT_BUDGET.unique - h.items).toBe(SORT_BUDGET.training);
+  });
+});
+
+// -- the short budget -------------------------------------------------------
+
+/**
+ * The short deck is arithmetic that either clears the chain's own floors or
+ * silently produces nothing, and "nothing" looks exactly like a healthy run
+ * until you notice the standard is empty. Every floor is pinned here.
+ */
+describe('SHORT_SORT_BUDGET', () => {
+  it('holds the same internal identities the full budget does', () => {
+    const b = SHORT_SORT_BUDGET;
+    expect(b.constructs * b.pairsPerConstruct).toBe(b.pairs);
+    expect(b.pairs * 2).toBe(b.synthesised);
+    expect(b.synthesised + b.own + b.peer).toBe(b.unique);
+    expect(b.unique + b.repeats).toBe(b.total);
+    expect(b.holdOut.pairs * 2).toBe(b.holdOut.pairItems);
+    expect(b.holdOut.pairItems + b.holdOut.own + b.holdOut.peer).toBe(b.holdOut.items);
+    expect(b.unique - b.holdOut.items).toBe(b.training);
+  });
+
+  it('is genuinely shorter, or it is not worth having', () => {
+    expect(SHORT_SORT_BUDGET.total).toBeLessThan(SORT_BUDGET.total);
+  });
+
+  it('protects the accept side: the same own items train in both decks', () => {
+    // CH-08. The preamble pre-normalises rejecting, so own work is the class a
+    // discerning grader reliably sends. Cutting it proportionally starves the
+    // accept side and every criterion then compiles 'untested'. The cut lands
+    // on the synthesised and peer halves instead, never here.
+    const trainingOwn = (b: SortBudget) => b.own - b.holdOut.own;
+    expect(trainingOwn(SHORT_SORT_BUDGET)).toBe(trainingOwn(SORT_BUDGET));
+    expect(trainingOwn(SHORT_SORT_BUDGET)).toBeGreaterThanOrEqual(KILL_MIN_EACH_SIDE);
+  });
+
+  it('can still reach the 4-and-4 floor on both sides', () => {
+    // Rejects come from the violating halves, accepts from own plus the
+    // satisfying halves. Both sides need KILL_MIN_EACH_SIDE before
+    // discriminationVerdict will return anything but 'untested'.
+    const trainingPairs = SHORT_SORT_BUDGET.pairs - SHORT_SORT_BUDGET.holdOut.pairs;
+    const trainingOwn = SHORT_SORT_BUDGET.own - SHORT_SORT_BUDGET.holdOut.own;
+    expect(trainingPairs).toBeGreaterThanOrEqual(KILL_MIN_EACH_SIDE);
+    expect(trainingPairs + trainingOwn).toBeGreaterThanOrEqual(KILL_MIN_EACH_SIDE);
+  });
+
+  it('keeps enough pairs for the halt metric to be a measurement', async () => {
+    // Held-out items are still GRADED; the hold-out suppresses training, not
+    // grading. So every pair counts toward the split rate.
+    const { MIN_PAIRS_FOR_SPLIT_RATE } = await import('./sort-composition');
+    expect(SHORT_SORT_BUDGET.pairs).toBeGreaterThanOrEqual(MIN_PAIRS_FOR_SPLIT_RATE);
+  });
+
+  it('keeps enough repeat probes for the grader triage to be measured', async () => {
+    const { TRIAGE_MIN_REPEATS } = await import('./discrimination.ts');
+    expect(SHORT_SORT_BUDGET.repeats).toBeGreaterThanOrEqual(TRIAGE_MIN_REPEATS);
+  });
+
+  it('cannot reach Verified, and says so rather than pretending', async () => {
+    const { canReachVerified, VERIFIED_MIN_HELD_OUT } = await import('./discrimination.ts');
+    // This is the price of the short deck, not a defect. A precision computed
+    // on four held-out items is a number about four items.
+    expect(SHORT_SORT_BUDGET.holdOut.items).toBeLessThan(VERIFIED_MIN_HELD_OUT);
+    expect(canReachVerified(SHORT_SORT_BUDGET)).toBe(false);
+    expect(canReachVerified(SORT_BUDGET)).toBe(true);
+  });
+});
+
+describe('budgetForDepth / parseSortDepth', () => {
+  it('resolves the two depths to the two budgets', () => {
+    expect(budgetForDepth('full')).toBe(SORT_BUDGET);
+    expect(budgetForDepth('short')).toBe(SHORT_SORT_BUDGET);
+  });
+
+  it('never hands someone the long deck by accident', () => {
+    // Only the exact string 'full' opts in. A missing, misspelled or hostile
+    // value resolves to the short deck, because twenty minutes is a choice
+    // someone makes rather than something a malformed field does to them.
+    expect(parseSortDepth('full')).toBe('full');
+    expect(parseSortDepth('short')).toBe('short');
+    expect(parseSortDepth(undefined)).toBe('short');
+    expect(parseSortDepth(null)).toBe('short');
+    expect(parseSortDepth('Full')).toBe('short');
+    expect(parseSortDepth(42)).toBe('short');
   });
 });
 
@@ -296,6 +396,85 @@ describe('chooseHoldOut', () => {
     expect(selection.own).toBe(1);
     expect(selection.peer).toBe(1);
     expect(selection.heldOutIds.length).toBe(selection.pairs * 2 + 2);
+  });
+
+  /**
+   * This is the whole reason the budget is a parameter rather than a module
+   * constant, so the failure it prevents is pinned rather than described.
+   *
+   * The hold-out counts are ABSOLUTE. Applied to a deck they were not sized
+   * for, spreadIndices takes its k >= n branch and quietly takes everything.
+   */
+  it('would hold out four of the short deck\'s six pairs under the full budget', () => {
+    const items = deckFor(SHORT_SORT_BUDGET, 5);
+    const wrong = chooseHoldOut(items, SORT_BUDGET);
+    expect(wrong.pairs).toBe(4);
+
+    const held = new Set(wrong.heldOutIds);
+    const trainingPairKeys = new Set(
+      uniqueItems(items).filter((it) => it.pairKey && !held.has(it.key)).map((it) => it.pairKey),
+    );
+    // Two training pairs cannot reach the 4-and-4 floor, so every criterion
+    // compiles 'untested' and the sort produces no standard at all.
+    expect(trainingPairKeys.size).toBe(2);
+    expect(trainingPairKeys.size).toBeLessThan(KILL_MIN_EACH_SIDE);
+
+    // The right budget leaves five, which clears it.
+    const right = chooseHoldOut(items, SHORT_SORT_BUDGET);
+    expect(right.pairs).toBe(SHORT_SORT_BUDGET.holdOut.pairs);
+    expect(SHORT_SORT_BUDGET.pairs - right.pairs).toBeGreaterThanOrEqual(KILL_MIN_EACH_SIDE);
+  });
+});
+
+// -- the short deck, planned end to end -------------------------------------
+
+describe('planDeck + chooseHoldOut at short depth', () => {
+  it('lays out exactly the budgeted deck', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const items = deckFor(SHORT_SORT_BUDGET, seed);
+      expect(items).toHaveLength(SHORT_SORT_BUDGET.total);
+      expect(uniqueItems(items)).toHaveLength(SHORT_SORT_BUDGET.unique);
+      // The repeat probes are the thing a shorter deck loses first: the source
+      // window and the minimum gap can squeeze the candidate pool to nothing,
+      // and three of them is what makes the grader triage a measurement.
+      expect(repeatItems(items)).toHaveLength(SHORT_SORT_BUDGET.repeats);
+    }
+  });
+
+  it('still holds the pair separation invariant', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const items = deckFor(SHORT_SORT_BUDGET, seed);
+      expect(minPairSeparation(items)).toBeGreaterThanOrEqual(MIN_PAIR_SEPARATION);
+    }
+  });
+
+  it('holds out four items in whole pairs, never splitting one', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const items = deckFor(SHORT_SORT_BUDGET, seed);
+      const selection = chooseHoldOut(items, SHORT_SORT_BUDGET);
+      expect(selection.heldOutIds).toHaveLength(SHORT_SORT_BUDGET.holdOut.items);
+
+      const held = new Set(selection.heldOutIds);
+      const byPair = new Map<string, PlannedItem[]>();
+      for (const it of uniqueItems(items)) {
+        if (!it.pairKey) continue;
+        byPair.set(it.pairKey, [...(byPair.get(it.pairKey) ?? []), it]);
+      }
+      for (const members of byPair.values()) {
+        expect([0, 2]).toContain(members.filter((m) => held.has(m.key)).length);
+      }
+      for (const r of repeatItems(items)) expect(held.has(r.key)).toBe(false);
+    }
+  });
+
+  it('leaves the budgeted training set, with the own class intact', () => {
+    const items = deckFor(SHORT_SORT_BUDGET, 7);
+    const held = new Set(chooseHoldOut(items, SHORT_SORT_BUDGET).heldOutIds);
+    const training = uniqueItems(items).filter((it) => !held.has(it.key));
+    expect(training).toHaveLength(SHORT_SORT_BUDGET.training);
+    expect(training.filter((it) => it.origin === 'own')).toHaveLength(
+      SHORT_SORT_BUDGET.own - SHORT_SORT_BUDGET.holdOut.own,
+    );
   });
 });
 

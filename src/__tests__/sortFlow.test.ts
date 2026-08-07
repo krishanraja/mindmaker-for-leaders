@@ -12,6 +12,7 @@ import {
   measurementLines,
   pickFirstConstruct,
   selectBeat,
+  depthCeilingNote,
   shortfallNotes,
   usableLines,
   type BeatInput,
@@ -363,5 +364,36 @@ describe('shortfallNotes', () => {
     const notes = shortfallNotes({ items: 26, items_expected: 30 });
     expect(notes.some((n) => n.includes('26 screens instead of 30'))).toBe(true);
     expect(notes.some((n) => n.includes('weaker'))).toBe(true);
+  });
+
+  it('does not call a complete short deck a shortfall', () => {
+    // build-sort writes items_expected from the CHOSEN budget, so a whole
+    // 19-item short deck compares against 19 and says nothing. Reading the full
+    // deck's 30 here would tell someone their deliberate choice went wrong.
+    expect(
+      shortfallNotes({ items: 19, items_expected: 19, depth: 'short', own_shortfall: 0 }),
+    ).toEqual([]);
+  });
+});
+
+describe('depthCeilingNote', () => {
+  it('says nothing when the deck can still earn a measured claim', () => {
+    expect(depthCeilingNote({ depth: 'full', can_reach_verified: true, held_out: 12 })).toBeNull();
+  });
+
+  it('says nothing when the backend did not report a ceiling', () => {
+    // Absent is not the same as false. An older run with no flag must not be
+    // told it has a ceiling nobody measured.
+    expect(depthCeilingNote({})).toBeNull();
+  });
+
+  it('states the ceiling as permanent, not as pending', () => {
+    const note = depthCeilingNote({ depth: 'short', can_reach_verified: false, held_out: 4 });
+    expect(note).not.toBeNull();
+    expect(note).toContain('4 pieces');
+    // The distinction that matters: "cannot at this length", never "not yet".
+    // "Not yet" invites someone to wait for a number that can never arrive.
+    expect(note).toContain('however well you graded');
+    expect(note).toContain('longer check');
   });
 });

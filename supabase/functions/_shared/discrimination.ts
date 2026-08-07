@@ -59,7 +59,12 @@
  * could not.
  */
 
-import { KILL_MIN_EACH_SIDE, type SelfAgreementResult, type Verdict } from "./sort-composition.ts";
+import {
+  KILL_MIN_EACH_SIDE,
+  type SelfAgreementResult,
+  type SortBudget,
+  type Verdict,
+} from "./sort-composition.ts";
 
 // ---------------------------------------------------------------------------
 // Thresholds. Every one of these is [U] in the spec.
@@ -859,6 +864,23 @@ export function baselineLabel(input: BaselineInput): BaselineLabel {
   }
   if (precision >= PROVISIONAL_MIN_PRECISION) return "provisional";
   return "draft";
+}
+
+/**
+ * Could a deck built on this budget EVER be called Verified, however well it is
+ * graded and however good the measurement turns out to be?
+ *
+ * Computed rather than stored, because a boolean written next to a budget is a
+ * second copy of the same fact and the two drift. Lives here rather than in
+ * sort-composition because VERIFIED_MIN_HELD_OUT is a release threshold, and
+ * this module already imports that module (never the other way round).
+ *
+ * `false` is not a defect to route around. It is the honest price of a shorter
+ * deck and it belongs on the screen the person chooses the deck on, not in a
+ * comment they will never read.
+ */
+export function canReachVerified(budget: SortBudget): boolean {
+  return budget.holdOut.items >= VERIFIED_MIN_HELD_OUT;
 }
 
 /** The weaker of two labels. Triage caps what a measurement is allowed to claim. */
