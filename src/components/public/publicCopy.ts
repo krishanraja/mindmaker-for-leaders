@@ -30,7 +30,11 @@ export const LANDING = {
   judgeH: 'A new era of AI advisory is here, and it’s in your pocket.',
   judgeBody:
     'CTRL builds your private AI brain to power your decision making on all things AI. Backed up by decades of practical expertise, world class memory-theory and leadership knowledge from across the globe, verify or counter your next business idea and sharpen your mind, ready for you to be an AI-native leader.',
-  judgeCap: 'It never recommends from a thin signal. The call stays yours.',
+  // Describes the brain demo directly above it. The tension edge is the honest
+  // part and the part worth pointing at: a brain that only ever agrees with
+  // itself is not holding anything.
+  judgeCap:
+    'Your facts, and how they hold each other up. It keeps the ones that pull against each other too.',
   judgeCta: 'Put one of yours in',
 
   // taste
