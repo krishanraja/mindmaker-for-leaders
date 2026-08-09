@@ -1,8 +1,8 @@
 # Purpose
 
-**Last reconciled:** 2026-07-26 (drift-check pass; positioning/mechanics verified against code, no changes needed beyond this banner and the North Star cross-reference below).
+**Last reconciled:** 2026-08-09 (drift-check pass: the lesson-kit program described throughout this file was RETIRED 2026-08-07, PR #355 - `/kit*` now redirects to `/try`. `public/.well-known/product.json`, ratified 2026-08-04, also resolves several `TODO(founder)` markers below: the ICP is AI-native founders/small-team CEOs, not the broader audience this file's "Three Audiences" section describes, and the one-time diagnostic SKUs plus the Bootcamp/Portfolio advisory engagements are dead, not pending.)
 
-> Reconciliation note: this doc was written for the prior "decision-speed / portable AI double / zero-context tax" positioning. The current LOCKED positioning is **building the AI-native version of your business** (see `docs/MAIN-APP-POLISH-SPEC.md` section 0, and the root `README.md`). The product mechanics described below (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the kits) are real and in the code; the FRAMING has moved to AI-native. The "What CTRL Is" and "Core Problem" sections have been reframed. Some downstream audience/measurement sections still carry the old decision-speed language; read them through the AI-native lens and treat any undecided AI-native specifics as `TODO(founder)`.
+> Reconciliation note: this doc was written for the prior "decision-speed / portable AI double / zero-context tax" positioning. The current LOCKED positioning is **building the AI-native version of your business** (`product.json`'s shorter public tagline: "Your AI-native chief of staff") (see `docs/MAIN-APP-POLISH-SPEC.md` section 0, and the root `README.md`). The product mechanics described below (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine) are real and in the code; the FRAMING has moved to AI-native, and the kits this file describes as a current product half no longer exist. The "What CTRL Is" and "Core Problem" sections have been reframed. Some downstream audience/measurement sections still carry the old decision-speed language and the pre-ratification broad ICP; read them through the AI-native lens and the ratified founder/small-team-CEO ICP.
 
 ---
 
@@ -13,8 +13,7 @@ CTRL is the tool for leaders building, orchestrating, productizing, and getting 
 It wears a globally dark, instrument-grade cockpit (the `ctrl-ds` palette, emerald `#00D9B6`, the `BrandLockup`). This is not light mode and not warm off-white.
 
 It **is**:
-- A pair of guided lesson kits and a daily instrument that move a leader through the AI-native lifecycle: build (with AI), orchestrate (the agentic org + the autonomy line), productize (the AI-native version of the offer), go-to-market (how the AI offer reaches customers), on the Memory & Identity substrate.
-- The four lesson kits (`/kit`): Vibe Coding (a solution), Autonomous Business (a process), Agentic Org Chart (the company), Memory & Identity (the person).
+- A daily instrument that moves a leader through the AI-native lifecycle: build (with AI), orchestrate (the agentic org + the autonomy line), productize (the AI-native version of the offer), go-to-market (how the AI offer reaches customers), on the Memory & Identity substrate. (Historical: a pair of guided lesson kits used to be the guided front door into this lifecycle. **RETIRED 2026-08-07, PR #355** - the four kits, Vibe Coding/Autonomous Business/Agentic Org Chart/Memory & Identity, no longer exist; `/kit*` redirects to `/try`.)
 - A news deck of AI-native categories, filtered and tagged so only what changes how you build/run an AI-native business reaches you.
 - A decision engine that reframes any call to its AI-native version, then grounds it in evidence and shows where it holds and where it breaks.
 - A Brain / Memory Web: the leader's context as a four-world rope canvas, the substrate that makes any AI know the business.
@@ -63,12 +62,12 @@ The gap is not a context-setup gap. It is a transformation gap: knowing the AI-n
 
 ## How CTRL Solves This
 
-1. **Start with a guided kit** - after a Mindmaker lightning lesson, the leader walks one of four build-it-with-you kits: ship a real build (Vibe Coding), take a workflow off their plate (Autonomous Business), map the agentic org with the autonomy line (Agentic Org Chart), or make the AI know them (Memory & Identity).
+1. **Start free, in minutes** - sign up, talk or type about your business, and CTRL builds your Memory Web from that conversation. (Historical: the guided-kit front door described in earlier versions of this doc was retired 2026-08-07; today's public entry points are `/try`, a pre-login pressure-test demo, and free signup.)
 2. **Reframe every call to its AI-native version** - the decision engine never answers a general question as general; it reframes it ("before you hire, should an agent own part of that motion first?"), then grounds it in evidence and shows where it holds and where it breaks.
 3. **See only AI-native news** - the news deck filters out anything not about deploying/building/selling AI and tags every story to one of nine AI-native categories.
 4. **Build the substrate** - the Brain / Memory Web holds the leader's context so any AI tool knows the business; export it anywhere (ChatGPT, Claude, Gemini, Cursor, Claude Code, raw markdown).
 5. **Turn a workflow into an agent** - the Automator turns one weekly workflow into an installable, agentskills.io-compliant skill (free for now).
-6. **Compound over time** - each kit and each decision moves the business further along the AI-native lifecycle (build, orchestrate, productize, go-to-market).
+6. **Compound over time** - each decision moves the business further along the AI-native lifecycle (build, orchestrate, productize, go-to-market).
 
 The critical insight: CTRL does not replace any AI tool. It is where a leader decides what the AI-native version of their business should be, and pulls every call toward it.
 
@@ -130,8 +129,8 @@ Use these (AI-native) when generating outbound, ad copy, or social posts:
 - **Reframe hook**: "Stop asking the general-business question. CTRL reframes 'should I hire a VP of Sales?' into 'should an agent own part of that motion first?' and works that."
 - **Autonomy-line hook**: "Map your org to the autonomy line: what an agent runs, what it assists on with your approval, what stays human, and where to start."
 - **Privacy hook**: "No integrations. No plugins. No enterprise security review. You talk to it; that is the whole connection."
-- **Kit hook**: "After the lesson, walk a kit: ship a build, take a workflow off your plate, map your agentic org, or make the AI know you."
-- **Pricing anchor (settled)**: Free to start (the daily briefing + the Automator build + Memory Web + Voice + the Kit program + 3 decision weighs a month, all free). Edge Pro is $49/month, the decision tier: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch + Edge artifacts + drafting + email delivery + the live MCP pull of your built skills. The daily briefing is intentionally free, not an Edge Pro feature. TODO(founder): confirm whether the $49 one-time diagnostic SKUs survive the repositioning before quoting them.
+- ~~**Kit hook**~~: RETIRED 2026-08-07 (PR #355) - do not use "walk a kit" copy; there is no live kit to walk.
+- **Pricing anchor (settled)**: Free to start (the daily briefing + the Automator build + Memory Web + Voice + 3 decision weighs a month, all free). Edge Pro is $49/month, the decision tier: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch + Edge artifacts + drafting + email delivery + the live MCP pull of your built skills. The daily briefing is intentionally free, not an Edge Pro feature. RESOLVED (was TODO(founder)): per `product.json`'s guardrails (ratified 2026-08-04), the one-time diagnostic SKUs do NOT survive the repositioning - they are dead and must not be quoted.
 
 ## Measurement of Success
 

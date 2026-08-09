@@ -187,6 +187,8 @@ These outcomes attach to surfaces that shipped after the original 30/90-day fram
 
 ### Kit Program (`/kit`; PRs #190-193)
 
+> **RETIRED 2026-08-07 (PR #355).** `/kit*` now redirects to `/try`. Everything below describes deleted product; kept as historical outcome record only.
+
 **A class or lesson turns into a usable, forkable artifact**
 - The leader can fork any of the four kits (including the Agentic Org Chart kit), run its pick-cascade, and watch a live picks-board assemble their choices - the lesson becomes a thing they built, not a thing they watched.
 - The composed org chart carries an **honesty floor** (PR #193): a box that touches a flagged guardrail can never be left agent-led, so the output cannot quietly recommend an unsafe hand-off.

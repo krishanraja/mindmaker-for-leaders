@@ -20,11 +20,13 @@ Complete feature inventory.
 
 ## Repo at a glance (counts re-verified 2026-07-26)
 
-> **Updated 2026-07-26.** Edge function / hook / migration totals below are live counts as of this pass, not a lower bound. Re-count directly from the repo (`ls supabase/functions`, `ls supabase/migrations`, `ls src/hooks`) rather than trusting any older figure.
+> **Updated 2026-08-09.** Edge function / hook / migration totals below are live counts as of this pass, not a lower bound. Re-count directly from the repo (`ls supabase/functions`, `ls supabase/migrations`, `ls src/hooks`) rather than trusting any older figure.
+>
+> **The Kit program (`/kit`, described in the "Kit Engine" section below) was RETIRED 2026-08-07, PR #355.** `/kit*` now 301s to `/try`; the routes, pages, and components that section describes no longer exist in the app. That section is kept as historical build record, not current product.
 
-- **104 Supabase edge functions** (Deno runtime; re-counted 2026-07-26), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), the `track-event` attribution proxy, `card-for-you`, `capture-lead`, `detect-trends`, and North Star's supporting cron, plus shared modules
-- **77 React hooks** under `src/hooks/` (re-counted 2026-07-26)
-- **148 PostgreSQL migrations** applied to remote (re-counted 2026-07-26)
+- **105 Supabase edge functions** (Deno runtime; re-counted 2026-08-09), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), the `track-event` attribution proxy, `card-for-you`, `capture-lead`, `detect-trends`, and North Star's supporting cron, plus shared modules
+- **79 React hooks** under `src/hooks/` (re-counted 2026-08-09)
+- **154 PostgreSQL migrations** applied to remote (re-counted 2026-08-09)
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Brand redesign shipped LIVE** (PR #186, merge 1c01db5, 2026-06-16): globally forced dark, `ctrl-ds` instrument palette, emerald `#00D9B6`, the emerald `ctrl.` wordmark; rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. See **Redesign** below.
@@ -218,12 +220,12 @@ CTRL's memory rendered as a connected graph: the leader's facts wired to each ot
 - Limited prompts (2 categories)
 - Basic tensions view
 
-**Paid Tiers** (Stripe-managed, signature-verified, idempotent)
-- **Full Diagnostic** ($49 one-time): full tensions/risks/scenarios, complete prompt library (3-8 categories), priority ranking, downloadable reports.
-- **Deep Context Upgrade** ($29 one-time): enhanced company context enrichment.
-- **Full Diagnostic + Deep Context Bundle** ($69 one-time, saves $10): both above. Default upsell.
+**Paid Tiers - DEAD, do not offer** (Stripe-managed, signature-verified, idempotent, but per `public/.well-known/product.json`'s guardrails, ratified 2026-08-04: "There is no one-time diagnostic, no deep-context upgrade and no bundle. Any one-time price list you have seen for CTRL is dead." Kept here only because `/diagnostic` still redirects to `/dashboard` and no UI reaches this flow, so the description below is unreachable code, not a sellable tier.)
+- ~~**Full Diagnostic** ($49 one-time): full tensions/risks/scenarios, complete prompt library (3-8 categories), priority ranking, downloadable reports.~~
+- ~~**Deep Context Upgrade** ($29 one-time): enhanced company context enrichment.~~
+- ~~**Full Diagnostic + Deep Context Bundle** ($69 one-time, saves $10): both above.~~
 
-**Sales Anchor - Diagnostic**: "10 minutes. Six dimensions. The provocation report your board will ask you about. $49 (cheaper than the slide deck a consultant would write to ask you the same questions)."
+~~**Sales Anchor - Diagnostic**: "10 minutes. Six dimensions. The provocation report your board will ask you about. $49..."~~ DO NOT USE - the $49 Diagnostic is dead per `product.json`'s guardrails and unreachable from any live route.
 
 ---
 
@@ -706,6 +708,8 @@ The Edge Pro gate on the Skill Builder was REMOVED in PR #204: any authenticated
 ---
 
 ## Kit Engine: Class Follow-Up Portal
+
+> **RETIRED 2026-08-07 (PR #355).** `/kit*` now 301s to `/try`. The pages, components, and six edge functions this section describes have been deleted from the app. Kept as historical build record only.
 
 ### Overview
 

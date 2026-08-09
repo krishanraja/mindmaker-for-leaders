@@ -4,7 +4,7 @@
 
 This folder is the deeper source of truth for CTRL. The two highest-authority documents in the whole repo are the canonical product/build specs in `docs/`, and the top-level `README.md`. Where any file in this folder disagrees with them, the spec and the root README win.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass); **drift-checked 2026-07-26** (counts re-verified, pricing/route/compliance drift fixed across the folder - see `HISTORY.md` Phase 18 and `DECISIONS_LOG.md` Decisions 61-68 for what shipped since the last full pass).
+**Last reconciled:** 2026-06-21 (AI-native reconciliation pass); **drift-checked 2026-07-26**; **drift-checked 2026-08-09** (full-folder pass: repo counts re-verified again, the `/sort` `/review` `/proposals` harness-chain routes added, and - the most consequential fix - `AGENT_BRIEFING.md`, `SALES_BRIEF.md`, `ICP.md`, `VALUE_PROP.md`, `PURPOSE.md`, `Master_Messaging_and_FAQ.md`, and `BRANDING.md` still described the Kit program, `/booking`, and the one-time diagnostic/Bootcamp/Portfolio SKUs as live or pending; all are retired or dead and those files are now corrected. See the Drift Report from this pass for the full list.).
 
 ---
 
@@ -20,6 +20,7 @@ The product has two halves:
 
 | Source | What it is | Authority |
 |---|---|---|
+| [`public/.well-known/product.json`](../public/.well-known/product.json) | Machine-readable product truth, purpose-built for fleet/sales agents (positioning, ratified ICP, pricing, guardrails, objections) | Canonical, and the single most current source in the repo (ratified 2026-08-04) - read it before writing any outbound copy |
 | [`docs/KIT-REDESIGN-SPEC.md`](../docs/KIT-REDESIGN-SPEC.md) | The lesson-kit program | HISTORICAL - the Kit was retired 2026-08-07 (PR #355) |
 | [`docs/MAIN-APP-POLISH-SPEC.md`](../docs/MAIN-APP-POLISH-SPEC.md) | The main-app standard (North Star, decision model, news categories, the no-scroll/one-ask laws, approachable language) | Canonical |
 | [root `README.md`](../README.md) | Current truth, tone + facts | Canonical |
@@ -34,6 +35,7 @@ The product has two halves:
 ## Documentation Structure
 
 ### For sales, marketing, and ops AI agents (start here)
+0. [`public/.well-known/product.json`](../public/.well-known/product.json) - the ratified, machine-readable product truth (positioning, ICP, pricing, guardrails, objections); when this folder's prose disagrees with it, it wins
 1. [AGENT_BRIEFING.md](./AGENT_BRIEFING.md) - the one-read briefing: positioning, ICP, value prop, messaging, outcomes, guardrails
 2. [SALES_BRIEF.md](./SALES_BRIEF.md) - outbound brief (angles, objections, pricing, fit signals)
 3. [ICP.md](./ICP.md) - who to target, who not to
@@ -102,12 +104,12 @@ Lead with the AI-native positioning. Where a doc still carries an old "decision 
 
 Public: `/`, `/auth`, `/auth/callback`, `/build`, `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked), `/upgrade` (interactive Edge Pro checkout), `/pricing` (static SEO page, served via a `vercel.json` rewrite, not a React route), `/download` (feature-flagged public email-capture page, off by default).
 
-Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`.
+Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/sort`, `/review`, `/proposals`, `/settings`, `/compliance`, `/profile`. (`/sort`, `/review`, `/proposals` are the harness-chain surfaces added since the last full pass - live but URL-only, not in any nav; see `CLAUDE.md`'s harness-chain bullets.)
 
 Legacy redirects: `/today` `/pulse` `/voice` `/diagnostic` -> `/dashboard`; `/think` -> `/dashboard?view=edge`.
 
 ### Repo counts
-Re-counted directly from the repo on 2026-07-26: **104 edge functions** (`supabase/functions/`, excluding `_shared/`), **77 custom hooks** (`src/hooks/`), **148 PostgreSQL migrations** (`supabase/migrations/`). These are live counts, not a lower bound. Always prefer re-counting from the repo over trusting any frozen figure, here or elsewhere - counts drift quickly given the pace of shipping.
+Re-counted directly from the repo on 2026-08-09: **105 edge functions** (`supabase/functions/`, excluding `_shared/`), **79 custom hooks** (`src/hooks/`), **154 PostgreSQL migrations** (`supabase/migrations/`). These are live counts, not a lower bound. Always prefer re-counting from the repo over trusting any frozen figure, here or elsewhere - counts drift quickly given the pace of shipping.
 
 ### Tech Stack
 React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion; React Router 6 (`createBrowserRouter`, lazy); Tailwind + shadcn/ui (Radix), globally dark; React Context + TanStack Query; Supabase (PostgreSQL + Edge Functions, Deno); Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback; OpenAI Whisper / ElevenLabs; OpenAI `text-embedding-3-small` (pgvector); Supabase Auth / Stripe / Resend; Vitest + Playwright; Vercel + Supabase Cloud; Node `>=22 <24`. DB extensions: pgvector, pgcrypto, pg_cron.

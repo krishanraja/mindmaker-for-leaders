@@ -2,7 +2,7 @@
 
 **For outbound sales agents (human and AI). Read this before writing any email, post, or DM.**
 
-**Last reconciled:** 2026-07-26 (drift-check pass: fixed the free-tier row, which contradicted `docs/PRICING.md`; flagged the diagnostic SKUs as unreachable in the live app; added `/pricing` + `/upgrade`).
+**Last reconciled:** 2026-08-09 (drift-check pass: the Kit program was RETIRED 2026-08-07, PR #355 - removed it from the free-tier row and the proof points; `/booking` is RETIRED, PR #347, footer no longer links a live booking page - removed that claim; repo counts corrected, they had never been updated past a Phase-10-era snapshot).
 
 > RECONCILIATION BANNER (read before using any line below). CTRL's positioning is now **building the AI-native version of your business**, NOT "decision speed / a portable AI double / the zero-context tax". Most of the prose below (the one-liner, the email angles, the decision-speed framing, the "Apple-like / white space" visual claims) is OFF-POSITIONING and was written for the prior product. It is kept here for the feature mechanics, which are still accurate, but you must NOT ship its hooks as-is. Lead with the AI-native positioning and the reframe rule from `AGENT_BRIEFING.md` (the current canonical sales entry point) and `docs/MAIN-APP-POLISH-SPEC.md` section 0. Visual fact: CTRL is globally DARK (ctrl-ds palette, emerald `#00D9B6`, the BrandLockup), never light / "Apple-white". Pricing fact: Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); the one-time diagnostic SKUs are flagged TODO(founder). TODO(founder): rewrite this brief's hooks, email angles, and one-liner to the AI-native positioning; until then prefer `AGENT_BRIEFING.md`.
 
@@ -166,9 +166,11 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 
 ## Who This Is For
 
-**Title:** C-suite, VPs, Senior Directors, Founders
-**Company Size:** 50-5,000 employees (sweet spot 100-1,000)
-**Industries:** Creator economy, SaaS, financial services, professional services, healthcare, e-commerce, media, edtech, biotech, legal, manufacturing
+> **RATIFIED ICP (2026-08-04, `product.json`), supersedes the mid-market frame below.** CTRL's beachhead is "AI-native founders and small-team CEOs... small teams, where the founder or CEO is still close to the work." The qualifier is not company size or vertical, it is that they are actively building the AI-native version of their business, already use at least one AI tool daily but keep getting generic output, and have no time and no staff to chase evidence for the calls that matter. Not a fit: generic-chatbot shoppers, enterprise procurement cycles, anyone shopping for consulting/advisory (Mindmaker retired advisory business in July 2026). The "50-5,000 employees" framing below predates this ratification and describes an earlier, broader mid-market target; treat it as superseded, not a parallel-valid segment. TODO(founder): decide whether to delete the mid-market detail entirely or keep it as a secondary segment note.
+
+**Title:** Founders, small-team CEOs (ratified primary); C-suite, VPs, Senior Directors at larger companies (superseded secondary frame)
+**Company Size:** Small teams where the founder/CEO is still close to the work (ratified primary); the older frame said 50-5,000 employees, sweet spot 100-1,000 (superseded)
+**Industries:** Industry-agnostic per the ratified ICP; the older frame listed creator economy, SaaS, financial services, professional services, healthcare, e-commerce, media, edtech, biotech, legal, manufacturing
 **Mindset:** Pragmatic, time-poor, skeptical of AI hype but know they need to move faster
 
 **Pain Signals (top quotes that prove fit):**
@@ -195,15 +197,14 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 
 ## Pricing
 
+**Ratified 2026-08-04 in `public/.well-known/product.json` (CTRL's own machine-readable, fleet-agent-facing source of truth): two tiers only, Free and Edge Pro.** Its guardrails say explicitly: "There is no one-time diagnostic, no deep-context upgrade and no bundle. Any one-time price list you have seen for CTRL is dead," and "Mindmaker retired all advisory business in July 2026. Never quote a bootcamp, portfolio, workshop or consulting engagement for CTRL." That resolves what this file previously carried as a `TODO(founder)`: the rows below are DEAD, not pending confirmation.
+
 | Tier | Price | What you get |
 |------|-------|--------------|
-| **Free / Core** | $0 | Memory Web (read-write), Voice Profile capture, the full Kit program, unlimited Automator skill builds + exports, the daily personalised Briefing, and 3 decision weighs/month (per `docs/PRICING.md`, the canonical plan matrix - this replaces the older "Decision Advisor / Meeting Prep / Prompt Coach preview" description, which undersold the free tier and omitted its actual cap) |
-| **Full Diagnostic** | $49 one-time | Wired in Stripe, but NOT currently reachable from any live route (`/diagnostic` redirects to `/dashboard`) - do not offer as a checkout link |
-| **Deep Context Upgrade** | $29 one-time | Same as above: wired in Stripe, not reachable in the live app |
-| **Diagnostic + Deep Context Bundle** | $69 one-time | Same as above: wired in Stripe, not reachable in the live app |
+| **Free / Core** | $0 | Memory Web (read-write), Voice Profile capture, unlimited Automator skill builds + exports, the daily personalised Briefing, and 3 decision weighs/month (per `docs/PRICING.md` and `product.json`). The Kit program that used to be part of this row was RETIRED 2026-08-07 (PR #355); `/kit*` now redirects to `/try`. |
 | **Edge Pro** | $49/month | Unlimited decision weighs + multi-model cross-examination + decision watch, unlimited Edge artifacts, drafting, email delivery, the live MCP pull of your built skills, Custom Voice Export. Live checkout: `/upgrade`; static SEO pricing page: `/pricing`. |
-| **Bootcamp** (Teams) | $15K-$50K | 4-hour exec sprint + pilot charter |
-| **Portfolio** (Partners) | $5K-$25K | Heatmap + offer pack |
+
+**Dead, do not quote:** Full Diagnostic ($49 one-time), Deep Context Upgrade ($29 one-time), Diagnostic + Deep Context Bundle ($69 one-time) - still wired in Stripe as dead code but explicitly disclaimed in `product.json`. Bootcamp ($15K-$50K) and Portfolio ($5K-$25K) - Mindmaker retired all advisory/consulting engagements in July 2026; any revived advisory offer lives on themindmaker.ai, not inside CTRL, and must not appear in a CTRL sales brief.
 
 ---
 
@@ -216,7 +217,7 @@ AI identifies strengths to amplify and blind spots to close. Personalized patter
 - **Self-contained** - no Slack/email/calendar access, no enterprise security review
 - **Encrypted at rest** (AES-256-GCM); user controls retention; data never trains any AI model
 - **Portable** - not locked to any AI provider or platform
-- **80 edge functions, 59 hooks, 110 migrations live** - this is not a prototype
+- **105 edge functions, 79 hooks, 154 migrations live** (re-counted 2026-08-09) - this is not a prototype
 - **Audit weeks 1-6 shipped** (revenue path, data path, UX, reliability, observability, cleanup): timeouts + retries on external APIs, mandatory Stripe signature verification + idempotency, structured edge-function logger, e2e test contracts
 - **Built by Krish Raja** - operator experience: Microsoft (2010), MD at Captify ($0→$12M ARR), data revenue at Nine Entertainment ($9M→$61M). Now CEO of Mindmaker, running a multi-agent OS that automates the output of a 30-person team.
 - Context export produces richer, more structured prompts than most leaders write by hand in an hour
@@ -314,7 +315,10 @@ Download the ZIP from the preview sheet. The bundle includes a `03-install-guide
 - **Product**: ctrl.themindmaker.ai
 - **Pricing (static SEO page)**: ctrl.themindmaker.ai/pricing
 - **Upgrade to Edge Pro (live checkout)**: ctrl.themindmaker.ai/upgrade
-- **Booking**: Calendly integration for strategy calls (linked in product footer)
+- **Pre-login demo**: ctrl.themindmaker.ai/try
+- **Machine-readable product truth (for fleet agents)**: ctrl.themindmaker.ai/.well-known/product.json
+
+`/booking` is RETIRED (PR #347, 308s to `/pricing`); `Booking.tsx` and the Calendly strategy-call flow it describes no longer exist in the app. Do not link it.
 
 ---
 

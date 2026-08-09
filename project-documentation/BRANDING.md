@@ -1,6 +1,6 @@
 # Branding
 
-**Last reconciled:** 2026-07-26 (drift-check pass; verified against code, no changes needed).
+**Last reconciled:** 2026-08-09 (drift-check pass: messaging pillar 4, "start with a kit", is retired - the Kit program no longer exists as of 2026-08-07, PR #355).
 
 > RECONCILIATION BANNER. The voice mechanics here (short sentences, active voice, second person, no hype, no FOMO, no emojis, no em dashes) are still correct and useful. But two things in this doc are OFF and corrected below: (1) the positioning is now **building the AI-native version of your business**, not "decision speed / clarity for leaders / portable AI double"; lead with the AI-native frame and the reframe rule. (2) The visual brand is globally DARK (the ctrl-ds instrument palette, emerald `#00D9B6`, the BrandLockup), NOT light / "white backgrounds / generous white space / Mint sparingly on white". The "Visual Brand Elements" section below is corrected to the dark system; the canonical visual reference is `project-documentation/DESIGN_SYSTEM.md` and the code. TODO(founder): lock the AI-native messaging pillars and word-choices (the decision-speed pillars below are placeholders).
 
@@ -46,8 +46,8 @@
 ### 3. Draw the autonomy line
 "Map your org to what an agent runs, what it assists on with your approval, and what stays human, with a ranked place to start."
 
-### 4. Start with a kit
-"After the lesson, walk a guided kit: ship a build, take a workflow off your plate, map your agentic org, or make the AI know you."
+### 4. ~~Start with a kit~~ (RETIRED 2026-08-07, PR #355)
+The guided lesson-kit program this pillar described no longer exists; `/kit*` redirects to `/try`. Do not use "walk a guided kit" copy. TODO(founder): decide the replacement front-door pillar (candidates already live in the product: the `/try` pre-login demo, or "start free in minutes").
 
 ### 5. Operator Credibility
 "Krish built $0 to $12M ARR at Captify, $9M to $61M data revenue at Nine. CTRL is the tool he wished existed."

@@ -24,7 +24,9 @@ Complete system architecture and data flow documentation.
 >
 > **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`), +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`), +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
 >
-> **Re-counted 2026-07-26 (current totals, supersede every earlier count in this file): 104 edge functions** in `supabase/functions/` (excluding `_shared/`), **148 PostgreSQL migrations** in `supabase/migrations/`, **77 custom hooks** in `src/hooks/`. These are live counts, not a lower bound; re-count directly from the repo rather than trusting any older figure in this document.
+> **Re-counted 2026-08-09 (current totals, supersede every earlier count in this file): 105 edge functions** in `supabase/functions/` (excluding `_shared/`), **154 PostgreSQL migrations** in `supabase/migrations/`, **79 custom hooks** in `src/hooks/`. These are live counts, not a lower bound; re-count directly from the repo rather than trusting any older figure in this document.
+>
+> **Post-2026-08-07 layers (not yet narrated in prose below, full detail in `CLAUDE.md`'s Architecture Quick Reference):** the Kit program was RETIRED (PR #355) - `src/pages/kit`, `src/components/kit`, the six kit edge functions, and `Booking.tsx`/`/booking` are all deleted from the live app (the Kit Engine sections further down in this file, and the `/kit*` and `/booking` route-table rows, are HISTORICAL BUILD RECORD only - nothing they describe is reachable in the app today). The Automator's provenance was fixed so it stops citing CTRL's own template prose as leader evidence (PR #355). The sort/compile chain gained a short-deck depth option (PR #354). The landing page gained a real `BrainGraph` hero (PR #355) and a real-audio daily-briefing sample section (PR #360). The header wordmark asset was swapped (PR #359, `ctrl-wordmark-new.png` replacing `ctrl-logo.png`; same `CtrlWordmark` component, same purpose).
 
 ---
 
@@ -266,7 +268,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 77 custom hooks (re-counted 2026-07-26)
+├── hooks/                     # 79 custom hooks (re-counted 2026-08-09)
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -352,8 +354,8 @@ src/
 │   ├── Settings.tsx           # User settings (/settings)
 │   ├── Compliance.tsx         # Compliance center (/compliance)
 │   ├── Profile.tsx            # User profile (/profile)
-│   ├── Booking.tsx            # Workshop booking (/booking)
 │   ├── Pricing.tsx            # Interactive Edge Pro checkout (/upgrade); static SEO twin served at /pricing via a vercel.json rewrite to public/pricing.html
+│   │                          # (Booking.tsx deleted, PR #347: /booking now 308s to /pricing at the CDN, not a React route)
 │   ├── Agents.tsx             # Public /agents surface
 │   ├── Try.tsx                # Public /try surface
 │   ├── CaptureLanding.tsx     # Feature-flagged public email-capture page (/download)
@@ -396,7 +398,6 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/` | Landing | No | Video background hero, forced-dark CTRL branding with the emerald `ctrl.` wordmark |
 | `/auth` | Auth | No | Email + Google OAuth |
 | `/auth/callback` | AuthCallback | No | OAuth redirect handler |
-| `/booking` | Booking | No | External booking |
 | `/build` | BuildLap | No | Agent Skill Builder full-page flow |
 | `/dashboard` | Dashboard (Memory Web) | Yes | Default view - Memory Web with guided first experience |
 | `/dashboard?view=edge` | Dashboard (Edge) | Yes | Edge leadership amplifier |
@@ -408,22 +409,20 @@ Using React Router v6 with `createBrowserRouter` and lazy loading (defined in `s
 | `/track-record` | TrackRecord | Yes | Track record + earned capability ladder |
 | `/decision-map` | DecisionMap | Yes | One pinned-decision hero + connector rail |
 | `/enrich` | EnrichPage | Yes | Inbound "borrow your own AI" enrichment loop |
+| `/sort` | SortPage | Yes | Harness-chain graded-sort surface (URL-only, not in nav) |
+| `/review` | ReviewPage | Yes | Harness-chain artefact critique surface (URL-only, not in nav) |
+| `/proposals` | ProposalsPage | Yes | Harness-chain capture/learning-loop proposals (URL-only, not in nav) |
 | `/settings` | Settings | Yes | User preferences |
 | `/compliance` | Compliance | Yes | Compliance / audit center |
 | `/profile` | Profile | Yes | User profile |
 | `/preview` | Preview | No | Dev/QC fixture harness, unlinked |
 | `/agents` | Agents | No | Public surface |
-| `/try` | Try | No | Public surface |
+| `/try` | Try | No | Public surface; also now the `/kit*` and `/booking` redirect target |
 | `/download` | CaptureLanding | No | Feature-flagged (`FF.publicCapture`) public email-capture page; degrades to `NotFound` when the flag is off |
 | `/upgrade` | Pricing | No | Interactive Edge Pro checkout (live subscribe button) |
 | `/pricing` | (static `public/pricing.html`) | No | Static SEO pricing page, served via a `vercel.json` rewrite, not a React route |
-| `/kit` | KitEntry | No | Class follow-up portal code entry (anonymous session) |
-| `/kit/me` | KitHome | No | Kit + journey home (anonymous, upgrades on email capture) |
-| `/kit/me/intake` | KitIntake | No | 6-question intake (voice or taps) |
-| `/kit/reading/:pageId` | KitReading | No | Full-screen reader for a single artifact |
-| `/kit/pdf`, `/kit/pdf/:redemptionId` | KitPdf | No | Print-styled branded hero PDF route per kit |
 
-The four `/kit*` routes are the Kit Engine portal (Phase 11). They live **outside** the authed app shell - no `AuthedLayoutRoute`, no sidebar, no Command Palette. They run on an anonymous Supabase session (a real `auth.uid()` with role `authenticated`), and the portal owns its own scroll via `KitPortalLayout` (see Kit Engine section below).
+**RETIRED 2026-08-07 (PR #355 Kit; PR #347 Booking) - removed from the live route table above, kept here as a dead-reference note.** `/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf(/:redemptionId)` and their backing pages (`KitEntry`/`KitHome`/`KitIntake`/`KitReading`/`KitPdf`) no longer exist in `src/pages/`; `/kit*` now 301s to `/try` at the CDN. `/booking` and `Booking.tsx` no longer exist; `/booking` now 308s to `/pricing` at the CDN (`vercel.json`), it is not a React route. See the **Kit Engine** section far below for the historical build record - everything in that section describes deleted code.
 
 **Legacy Redirects (all redirect to `/dashboard`):**
 
@@ -1508,6 +1507,8 @@ The CTRL landing page (`/`) and any other public routes are pre-rendered at buil
 ---
 
 ## Kit Engine Portal (Phase 11, 2026-06-10)
+
+> **RETIRED 2026-08-07 (PR #355).** Everything in this section and in the **Kit Engine (4-kit program)** section below is HISTORICAL BUILD RECORD. The routes, pages, components, and edge functions it describes have been deleted from the live app (`src/pages/kit`, `src/components/kit`, and the six kit edge functions are gone; `/kit*` now 301s to `/try`). The `kit_*` database tables and their historical rows still exist and are still governed by the compliance docs (not swept on account deletion - see `compliance/DATA_RETENTION_POLICY.md`), but no new kit data is being written. Kept below, unedited, as the build record of what shipped and why; do not use it to describe the current product.
 
 The Kit Engine is CTRL's class follow-up portal. It is a standalone, forced-dark, mobile-first surface (same `ctrl-ds` dark instrument palette as the rest of the app) that lives **outside** the authed app shell on four public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`). It is also a bridge into the full CTRL app: intake answers seed the student's Memory Web, and a bridge card links to `/dashboard` after email capture.
 

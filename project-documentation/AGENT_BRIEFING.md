@@ -1,8 +1,8 @@
 # CTRL Agent Briefing
 **For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
 
-**Last reconciled:** 2026-07-26 (drift-check pass: added the diagnostic-SKU unreachability caveat and the `/pricing` + `/upgrade` links).
-**Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, the root `README.md`. Trust those over this file where they disagree.
+**Last reconciled:** 2026-08-09 (drift-check pass: the Kit program was RETIRED 2026-08-07, PR #355 - `/kit*` now 301s to `/try`; removed it as a product half, the CTA link, and the free-tier mention. `/booking` is also RETIRED, PR #347 - 308s to `/pricing`; removed as a CTA. Repo counts re-verified.)
+**Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, the root `README.md`. Trust those over this file where they disagree. (`docs/KIT-REDESIGN-SPEC.md` is HISTORICAL - the Kit it describes no longer exists.)
 
 > Reconciliation note: CTRL's positioning moved from "clarity / portable AI double for leaders" to **building the AI-native version of your business.** This briefing has been reframed to the AI-native lens. The product mechanics are real and in the code; the FRAMING is what changed. Where a precise AI-native ICP / message / price was not yet settled, it is flagged `TODO(founder)` instead of invented. The runtime endpoint `https://ctrl.themindmaker.ai/.well-known/product.json` was regenerated 2026-07-26 to the AI-native positioning and the $49/mo pricing; TODO(founder): confirm the exact final public tagline/one-liner wording there (it currently carries a working version, flagged as such in the file's own `positioning_note` field).
 
@@ -25,16 +25,20 @@
 
 ## 2. ICP: who CTRL is built for
 
-> Reconciliation note: the firmographic ICP below (senior leaders at 50-5,000-person companies already using AI) is carried from the prior positioning and is still a reasonable starting frame, but it was written for "portable context", not "build the AI-native business". TODO(founder): confirm whether the AI-native positioning narrows or shifts the ICP (for example, toward leaders actively trying to make their business AI-native, founders productizing AI, operators standing up an agentic org). Do not invent a new ICP in outbound; use this frame and the AI-native qualifiers.
+> **RESOLVED (was TODO(founder)):** `public/.well-known/product.json`, ratified 2026-08-04, answers exactly this question. CTRL's ICP is **AI-native founders and small-team CEOs** - small teams where the founder/CEO is still close to the work, industry-agnostic. The qualifier is not headcount, it is that they are actively building the AI-native version of their business, already use at least one AI tool daily but keep getting generic output, and have no time and no staff to chase evidence for the calls that matter. Not a fit: generic-chatbot shoppers, enterprise procurement cycles, anyone shopping for consulting/advisory. The "50-5,000 employees" table below predates this ratification; treat it as superseded.
 
-### Primary buyer (carried frame, pending founder confirmation)
+### Primary buyer (RATIFIED 2026-08-04, `product.json`)
 
 | Dimension | Detail |
 |---|---|
-| **Titles** | CEO, COO, CFO, CTO, VPs, Senior Directors, Founders |
-| **Company size** | 50-5,000 employees. Sweet spot: 100-1,000. |
+| **Titles** | Founders, small-team CEOs |
+| **Company size** | Small teams where the founder/CEO is still close to the work (not a headcount band) |
 | **Geography** | English-speaking markets priority |
-| **AI usage** | Already using at least one AI tool. Not starting from zero. |
+| **AI usage** | Already using at least one AI tool daily (ChatGPT, Claude, Gemini, Cursor, Claude Code), but keeps getting generic output |
+
+<details>
+<summary>Superseded frame (pre-2026-08-04): 50-5,000 employees, sweet spot 100-1,000, CEO/COO/CFO/CTO/VPs/Senior Directors/Founders at mid-market companies. Kept only so outbound history is legible; do not use.</summary>
+</details>
 
 ### AI-native fit signals (lead with these)
 - "I know my business needs to become AI-native and I do not know where to start."
@@ -50,18 +54,11 @@
 
 ---
 
-## 3. The two halves of the product (what you are selling)
+## 3. What you are selling
 
-### A. The lesson kits (`/kit`) - the front door
-A leader finishes a Mindmaker lightning lesson, scans a code, and walks a guided, build-it-with-you kit. Four kits, each about one thing:
-- **Vibe Coding** - a *solution*: teach any AI how you work and what has burned you, then ship one real build.
-- **Autonomous Business** - a *process*: take one recurring workflow off your plate.
-- **Agentic Org Chart** - the *company*: map divisions to tasks to handoffs, each tagged green (AI runs it) / amber (AI assists, you approve the handoff) / red (you only), with a ranked place to start.
-- **Memory & Identity** - the *person*: make the AI know you across sessions, in your voice.
+> **The lesson-kit program (`/kit`) is RETIRED (2026-08-07, PR #355).** `/kit*` now 301s to `/try`. Do not describe kits, a "kit redemption" flow, or a class-QR side door as live product - none of it exists anymore. The four kits (Vibe Coding, Autonomous Business, Agentic Org Chart, Memory & Identity) are historical only. The public front door today is `/try` (a pre-login pressure-test demo) and free signup at `/auth`.
 
-Each kit is strictly sequential (one action per screen), no-scroll on mobile, a native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace, a reveal wizard, and one branded personalized hero PDF. The kit program is public: a student scans the class QR, redeems a code, and runs in an anonymous session (no signup). Saving a profile graduates them into a named free CTRL account without losing data. Canonical: `docs/KIT-REDESIGN-SPEC.md`.
-
-### B. The main app - the daily instrument
+### The main app - the daily instrument
 Every authenticated surface is no-scroll on all devices, one ask per screen, AI-native:
 - **Home / cockpit** - a daily deck of "worth a look" headlines, AI-native only.
 - **News deck** - nine AI-native news categories (model & capability, AI economics, tools & vendors, orchestration & agent reliability, AI-native product & GTM, governance, security & agent risk, org & talent, proof & adoption), each with a branded SVG motif. The briefing pipeline filters out anything not about deploying/building/selling AI, and tags every story.
@@ -89,15 +86,12 @@ The AI-native long pitch is not yet written tight enough to ship in outbound. Us
 
 | Tier | Price | Grounded in code? |
 |---|---|---|
-| **Free / Core** | $0 | Yes (free tier is the kit side-door + Memory Web + the Automator build, which is free for now) |
+| **Free / Core** | $0 | Yes (free tier is Memory Web + Voice + the Automator build, which is free for now, + 3 decision weighs/month) |
 | **Edge Pro** | $49/month | Yes - canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`), surfaced via `src/constants/billing.ts` |
-| **Full Diagnostic** | $49 one-time | Wired in `create-diagnostic-payment`, but NOT reachable from any live route today (`/diagnostic` redirects to `/dashboard`; no UI calls this flow) - do not offer as a checkout link |
-| **Deep Context Upgrade** | $29 one-time | Same as above: wired in Stripe, not reachable in the live app |
-| **Diagnostic + Deep Context Bundle** | $69 one-time | Same as above: wired in Stripe, not reachable in the live app |
 
-**What is settled:** Edge Pro is $49/month. Free is a real daily instrument: Memory, Voice, the Kit program, unlimited Automator skill builds, the daily personalised briefing, and 3 decision weighs a month are all FREE. Edge Pro is the decision tier: it removes the 3-weighs cap (unlimited), adds a multi-model cross-examination of every decision, decision watch, Edge artifacts + drafting + email delivery, and the live MCP pull of your built skills into any AI (`list_skills` / `get_skill`). The daily briefing is intentionally free (the daily habit / on-ramp), not a paid feature. Pricing constants are canonical in `src/constants/billing.ts` + the shared edge-pricing module; the app reads them, so trust the code over any doc.
+**CTRL is two tiers only.** `public/.well-known/product.json` (ratified 2026-08-04) states this as a guardrail: "There is no one-time diagnostic, no deep-context upgrade and no bundle. Any one-time price list you have seen for CTRL is dead," and separately, "Mindmaker retired all advisory business in July 2026. Never quote a bootcamp, portfolio, workshop or consulting engagement for CTRL." The Full Diagnostic ($49) / Deep Context ($29) / Bundle ($69) SKUs are still wired in `create-diagnostic-payment` as dead code, and Bootcamp/Portfolio engagement bands are Mindmaker (not CTRL) offerings - do not quote any of them for CTRL. This resolves what used to be an open `TODO(founder)` in this section.
 
-**TODO(founder):** confirm whether the one-time Full Diagnostic ($49) / Deep Context ($29) / Bundle ($69) SKUs survive the AI-native repositioning, and confirm the Bootcamp/Portfolio engagement bands, before quoting them. They are real in the Stripe plumbing today but are not currently reachable from any live route, and were defined under the old positioning - do not offer them as checkout links.
+**What is settled:** Edge Pro is $49/month. Free is a real daily instrument: Memory, Voice, unlimited Automator skill builds, the daily personalised briefing, and 3 decision weighs a month are all FREE. Edge Pro is the decision tier: it removes the 3-weighs cap (unlimited), adds a multi-model cross-examination of every decision, decision watch, Edge artifacts + drafting + email delivery, and the live MCP pull of your built skills into any AI (`list_skills` / `get_skill`). The daily briefing is intentionally free (the daily habit / on-ramp), not a paid feature. Pricing constants are canonical in `src/constants/billing.ts` + the shared edge-pricing module; the app reads them, so trust the code over any doc.
 
 **Pricing guardrails:** Edge Pro is $49/month. Do not quote $9/month (legacy grandfathered price, never quoted publicly). No em dashes. No invented prices.
 
@@ -129,8 +123,9 @@ TODO(founder): expand the objection set to the AI-native buyer once the ICP is c
 | **Product home** | https://ctrl.themindmaker.ai |
 | **Pricing (static SEO page, for hard loads/crawlers)** | https://ctrl.themindmaker.ai/pricing |
 | **Upgrade to Edge Pro (interactive, live subscribe button)** | https://ctrl.themindmaker.ai/upgrade |
-| **Book a strategy call** | https://ctrl.themindmaker.ai/booking |
-| **Kit redemption** | https://ctrl.themindmaker.ai/kit |
+| **Pre-login demo (pressure-test a decision)** | https://ctrl.themindmaker.ai/try |
+
+`/booking` and `/kit` are RETIRED routes (redirect only, PR #347 and PR #355) - do not send outbound traffic to them. There is no live "book a strategy call" or "kit redemption" link inside the CTRL product; Mindmaker advisory engagements are sold from themindmaker.ai, not from inside CTRL.
 
 Production URL is **https://ctrl.themindmaker.ai** (never `leaders.themindmaker.ai`).
 

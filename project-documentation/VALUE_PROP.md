@@ -1,8 +1,8 @@
 # Value Propositions
 
-**Last reconciled:** 2026-07-26 (drift-check pass; pricing confirmed still accurate; see the North Star note below for how this doc's own "flywheel" section relates to the measured metric).
+**Last reconciled:** 2026-08-09 (drift-check pass: the Kit program was RETIRED 2026-08-07, PR #355 - removed from the pricing table and CTA progression. The one-time diagnostic SKU question below is now RESOLVED, not TODO: `public/.well-known/product.json` (ratified 2026-08-04) states plainly they are dead and must not be quoted, and that Bootcamp/Portfolio advisory engagements must not be quoted for CTRL either - Mindmaker retired advisory business in July 2026.)
 
-> RECONCILIATION BANNER. CTRL's positioning is now **building the AI-native version of your business**, not "decision speed". The feature-level value props below (Memory Web, Briefing, the Automator, the Decision engine) are accurate as MECHANICS, but the binding promise is no longer "decide faster"; it is "make your business more AI-native". The product is globally DARK (not light). Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); building Automator skills is FREE for now. The one-time diagnostic SKUs ($49/$29/$69) are wired in Stripe but flagged TODO(founder) under the repositioning. Lead with the AI-native frame from `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md`. TODO(founder): rewrite the binding promise and the audience value props to AI-native.
+> RECONCILIATION BANNER. CTRL's positioning is now **building the AI-native version of your business** (product.json's shorter public tagline is "Your AI-native chief of staff"), not "decision speed". The feature-level value props below (Memory Web, Briefing, the Automator, the Decision engine) are accurate as MECHANICS, but the binding promise is no longer "decide faster"; it is "make your business more AI-native". The product is globally DARK (not light). Edge Pro is $49/month (grounded in `edge-pricing.ts`, the decision tier; the daily briefing is free); building Automator skills is FREE for now. Lead with the AI-native frame from `AGENT_BRIEFING.md` + `docs/MAIN-APP-POLISH-SPEC.md` + `product.json`. Separately, `product.json` (2026-08-04) ratified CTRL's ICP as AI-native founders / small-team CEOs, not the broader mid-market audience this file's "Teams"/"Partners" sections and price point table below still describe - see `ICP.md`'s banner for detail; TODO(founder): decide whether the Teams/Partners sections below (Bootcamp, Portfolio) still apply to CTRL at all given product.json says Mindmaker's advisory business is retired and must not be quoted for CTRL.
 
 Clear value propositions for each audience. The binding promise is: **build the AI-native version of your business** (reframe every call to its AI-native version, never stay general).
 
@@ -62,7 +62,7 @@ This narrative is now backed by an actual measured metric, not just a story: the
 **Automator (free for now: build skills with no quota and no paywall)**
 - "Pick a recurring workflow, run a 5-step recognition cascade, get a Claude Skill that sounds like you."
 - The output is a downloadable, agentskills.io-compliant ZIP. Drop it into `~/.claude/skills/` and forget it. The skill fires whenever a triggering phrase appears in Claude Code, Claude.ai, or Cursor.
-- **Building skills is free for now** - any authenticated leader (including anonymous Kit sessions) can run the full pipeline, with no per-month cap. Edge Pro gates unlimited decision weighs, the live MCP pull of your skills, and Edge artifacts, not the build (and not the daily briefing, which is free).
+- **Building skills is free for now** - any authenticated leader can run the full pipeline, with no per-month cap. Edge Pro gates unlimited decision weighs, the live MCP pull of your skills, and Edge artifacts, not the build (and not the daily briefing, which is free).
 - **Voice-aware tone step**: the cascade's tone step is voice-aware. A cold pick writes the voice profile; a returning leader gets a "still sound like you?" confirmation; a paste-extract affordance lets them paste real writing so `extract-voice-profile` derives the 8 dimensions.
 - **Voice Profile (captured via `VoiceStyleProfileSheet`, five recognition picks or a paste-extract power path)** locks every generated skill to the leader's actual voice - sign-off, sentence rhythm, hard rules, sample register. It is a single `ctrl_voice_profile` fact. The body carries a `## Voice and tone` section and a structured 8-dimension `voice-profile.md` reference file.
 - **Four Honest Tests triage gate** (REPEATABLE / SPECIALISED / BOUNDED / VOICE-LOCK): if the input is really a Memory Web fact, a Custom Instruction, or a Saved Style, CTRL routes you to the right surface instead of generating a junk skill. VOICE-LOCK was added 2026-06-18 so bounded creative-output workflows ("draft LinkedIn posts in my voice") route correctly as `voice-lock` skills instead of being mistaken for universal style preferences.
@@ -219,7 +219,7 @@ This narrative is now backed by an actual measured metric, not just a story: the
 | **Key Output** | Memory Web + Exports + Briefing | Pilot charter | Heatmap + offer pack |
 | **Core Action** | Talk, export, decide faster | Workshop, align, commit | Assess, prioritize, intervene |
 | **Buyer** | Self-funded | Exec team sponsor | Partner/firm |
-| **Price Point** | Free / $49 Diagnostic / $49/mo Edge Pro / $69 bundle | $15K-$50K | $5K-$25K |
+| **Price Point** | Free / $49/mo Edge Pro (two tiers only; the Diagnostic/bundle SKUs and the Teams/Partners price points to the right are dead for CTRL per `product.json`) | ~~$15K-$50K~~ (dead - Mindmaker retired advisory business July 2026) | ~~$5K-$25K~~ (dead - same) |
 
 ### Shared Anti-Positioning
 
@@ -244,13 +244,10 @@ This narrative is now backed by an actual measured metric, not just a story: the
 
 | SKU | Price | What's included | Best for |
 |-----|-------|-----------------|----------|
-| **Free / Core** | $0 | Memory Web (read-write), **Voice Profile capture**, Context Export (all 6 tools), Onboarding, basic Daily Briefing, Decision Advisor, Meeting Prep, Prompt Coach, Edge profile (preview), Kit access, **Automator skill builds + exports (free for now, no quota)**. Kit side-door students from `/kit` graduate here. | Every new leader. The "land" in land-and-expand. |
-| **Full Diagnostic** | $49 one-time | Complete tensions, risk signals, org scenarios, full thinking tools library | Leaders who want a one-shot deep audit |
-| **Deep Context Upgrade** | $29 one-time | Enhanced company-context enrichment for sharper AI output | Leaders pre-meeting prep / strategy sprints |
-| **Diagnostic + Deep Context Bundle** | $69 one-time | Both above. Saves $10 vs buying separately. | Default upsell once Memory Web is built |
+| **Free / Core** | $0 | Memory Web (read-write), **Voice Profile capture**, Context Export (all 6 tools), Onboarding, basic Daily Briefing, Decision Advisor, Meeting Prep, Prompt Coach, Edge profile (preview), **Automator skill builds + exports (free for now, no quota)**. | Every new leader. The "land" in land-and-expand. |
 | **Edge Pro** | $49/month | The **decision engine**: unlimited decision weighs + a multi-model cross-examination of every decision + decision watch, plus the **live MCP pull of your built skills (`list_skills` / `get_skill`)**, unlimited Edge artifacts (board memos, strategy docs, emails, agendas), drafting, email delivery, Custom Voice Export, MCP agent access. (The daily briefing is free, not gated here.) | Leaders who treat AI as part of their weekly cadence |
-| **Bootcamp** | $15K-$50K | 4-hour executive sprint + pilot charter + provocation report | Exec teams |
-| **Portfolio** | $5K-$25K | Heatmap + offer pack across portfolio companies | VCs / PE / consultants |
+
+**Dead, do not quote for CTRL** (per `product.json`'s guardrails): Full Diagnostic ($49 one-time), Deep Context Upgrade ($29 one-time), Diagnostic + Deep Context Bundle ($69 one-time), Bootcamp ($15K-$50K), Portfolio ($5K-$25K). Kit access was RETIRED 2026-08-07 (PR #355) and is no longer part of the Free tier.
 
 ---
 
@@ -267,4 +264,4 @@ Pick the right hook for the audience and channel:
 - **For builder/operator audiences**: "Built by Krish Raja - 16 years monetizing emerging tech, $0 → $12M ARR at Captify, $9M → $61M data revenue at Nine. The tool he wished existed when running real P&Ls."
 - **For Claude / Cursor / Claude Code power users**: "CTRL is the first tool that turns your weekly leader workflows into agentskills.io-compliant Skills you drop into `~/.claude/skills/`. Two minutes of voice. Permanent leverage. Triage gate refuses to generate junk."
 - **For "automation fatigue" audiences**: "Most automation tools generate something whether your input was a real workflow or not. CTRL's Four Honest Tests triage gate refuses to generate a skill from a fact, a tone preference, or a writing style. The respect for your time is the product."
-- **CTA progression**: Free signup (or Kit redemption → side-door upgrade) → Voice Profile → free Automator skill (no quota) → seed beats accepted → first Briefing (free) → first decision weigh (3 free/month) → Diagnostic upsell → Edge Pro upsell (unlimited decision weighs + cross-examination + decision watch + live MCP skills pull + Edge artifacts + Custom Voice Export).
+- **CTA progression**: Free signup → Voice Profile → free Automator skill (no quota) → seed beats accepted → first Briefing (free) → first decision weigh (3 free/month) → Edge Pro upsell (unlimited decision weighs + cross-examination + decision watch + live MCP skills pull + Edge artifacts + Custom Voice Export). The Kit redemption side-door and the Diagnostic upsell step are both retired/dead; do not use them in outbound.
