@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-10
+Last verified: 2026-08-11
 
 ## Production baseline
 
@@ -21,17 +21,17 @@ Repository inventory at this production baseline is 113 Edge Function directorie
 
 ## Release candidate in review
 
-The Blind Spot trusted-advisor redesign is built on `codex/blind-spot-trusted-advisor`, not merged or deployed. The repository candidate contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migrations.
+The Blind Spot trusted-advisor redesign is built on `codex/blind-spot-trusted-advisor` at `4272276a5681064111bbd1efc2793afe47219041`. It is not merged or production-deployed. Its Vercel preview is READY and was explicitly accepted on 2026-08-11. The repository candidate contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migrations.
 
 Candidate evidence at the last local readback:
 
 - 870 Vitest tests pass across 53 files, including 16 focused Blind Spot logic and component tests.
-- 37 Blind Spot Playwright checks pass in the production desktop and mobile shells across 1440x900, 1280x720, 390x844, and 320x568.
+- 37 Blind Spot Playwright checks pass against the freshly built production bundle in the desktop and mobile shells across 1440x900, 1280x720, 390x844, and 320x568.
 - Typecheck reports zero new diagnostics against the 221-diagnostic baseline.
 - Standards, documentation checks, changed-file lint, the 2,789-module production build, and 3/3 prerender routes pass.
 - The public fixture is `/preview?surface=blind-spot` with pattern, tension, loading, error, accepted, rejected, conversation, stale-evidence, and long-content states.
 
-Preview acceptance, reviewed PR, merge, database migration, Edge Function release, Vercel release, and production readback remain separate gates.
+PR review, merge, database migration, Edge Function release, exact production approval, Vercel release, and production readback remain separate gates.
 
 This file records the deployed application baseline that the current documentation was checked against. Documentation-only commits may advance Git without changing the application behavior described here.
 

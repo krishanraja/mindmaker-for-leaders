@@ -2,16 +2,16 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against the `codex/blind-spot-trusted-advisor` working tree and locked prototype hash below
+Last verified: 2026-08-11 against accepted preview commit `4272276a5681064111bbd1efc2793afe47219041` and the locked prototype hash below
 
 This is the single resumable state route for material CTRL interface work. Product and architecture truth remain in the other `docs/current/` documents. Accepted product decisions remain in `project-documentation/DECISIONS_LOG.md`.
 
 ## Current phase
 
 - Surface: Blind Spot trusted-advisor redesign
-- Phase: Verified preview candidate
-- Gate: Founder preview acceptance against the built production vertical slice
-- Production implementation: Authorised locally on `codex/blind-spot-trusted-advisor`
+- Phase: Preview accepted
+- Gate: Reviewed pull request, merge, and separate exact production approval
+- Production implementation: Accepted on Vercel preview from `codex/blind-spot-trusted-advisor`
 - Data mode: Synthetic fixture only
 
 ## Design task contract
@@ -72,7 +72,7 @@ The second rubric pass reached the same winner. No hard-constraint or diversity 
 - Approval state: Explicitly approved by Krish on 2026-08-11
 - Locked scope: Blind Spot instrument hierarchy, tension map, evidence treatment, experiment action, correction path, advisor sheet, responsive behavior and CTRL visual system
 - Downstream owner: `krish-build`
-- Next action: Founder preview acceptance against the matching Git revision
+- Next action: Complete PR #366 review, then hold at the exact production approval gate before merging to `main`
 
 ### Rendered evidence
 
@@ -98,13 +98,14 @@ Interactive evidence inspection, all three rejection reasons, stop-after-rejecti
 ## Verification evidence
 
 - 870 Vitest tests pass across 53 files.
-- 37 Blind Spot Playwright checks pass at 1440x900, 1280x720, 390x844, and 320x568 inside the shared app shells.
+- 37 Blind Spot Playwright checks pass against the freshly built production bundle at 1440x900, 1280x720, 390x844, and 320x568 inside the shared app shells.
 - Typecheck adds zero diagnostics to the 221-diagnostic baseline.
 - Changed-file ESLint, standards, documentation drift, production build, and 3/3 prerender checks pass.
+- GitHub CI and the Vercel preview are green for `4272276a5681064111bbd1efc2793afe47219041`; deployed browser readback and the correction/advisor sheets passed.
+- Krish explicitly accepted that preview on 2026-08-11.
 - Local pgTAP execution is blocked only because Docker Desktop is not running. No remote database was mutated to bypass that local environment constraint.
 
 ## Remaining gates
 
-- Preview acceptance against the matching Git revision
 - Reviewed pull request and merge
 - Separate exact production deployment approval and deployed-revision verification
