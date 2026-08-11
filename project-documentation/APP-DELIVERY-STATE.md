@@ -1,4 +1,6 @@
-# CTRL app delivery state
+# Historical CTRL delivery trace
+
+> Historical reference only. This file preserves the design and release conversation that led to the current product. The current production baseline lives in [`../docs/current/release-state.md`](../docs/current/release-state.md). Later “paused work” and “next action” sections below are closed historical notes.
 
 Updated: 2026-08-10
 

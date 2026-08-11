@@ -6,6 +6,30 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
+## [Unreleased] - 2026-08-10 - Documentation authority and drift gate
+
+### Added
+
+- A six-document current set under `docs/current/` for product, architecture, features, release state, documentation standards, and navigation.
+- Four task-specific agent guides under `docs/agent-instructions/`.
+- `npm run docs:check`, with CI enforcement for local links, metadata, inventory counts, route coverage, decision IDs, pricing consistency, size budgets, and known contradictory claims.
+
+### Changed
+
+- Rebuilt the root README as a new-engineer and operator entry point.
+- Reduced `CLAUDE.md` to universal instructions and progressive links; preserved the former release journal under `docs/history/`.
+- Reclassified phase architecture, feature, delivery, corpus, kit, and polish records as historical instead of placing current overlays above stale bodies.
+- Corrected capability-specific AI-provider documentation across architecture, privacy, retention, the ROPA, the subprocessor register, and `.env.example`.
+- Renumbered the duplicated August decision block to preserve unique append-only IDs.
+- Added documentation verification to the release guide and CI.
+
+### Verified
+
+- Documentation links, metadata, counts, routes, decision IDs, pricing, and known drift checks pass.
+- Standards and changed-file ESLint pass. Typecheck reports 221 baseline diagnostics and zero new diagnostics. The full Vitest suite, production build, and 3/3 prerender routes pass.
+
+---
+
 ## [Unreleased] - 2026-07-04 - Settings audit: one-door tuning, decisions control-centre, design-system sweep
 
 > **Why.** The Settings surface had drifted from the rest of the app: an "amateur" design system next to the polished Home/Decisions language, a DUPLICATE briefing tuner (the Home "Tune what pops up" sheet wrote `news_preferences`; a separate Settings → Interests panel wrote `briefing_interests`, so tuning in one never showed in the other), a track-record row that navigated behind the still-open settings drawer, and cliché AI-speak ("Watching how it lands", "That is the point"). Fixed holistically against five principles, one door / one of everything, the polished card language everywhere, plain copy, solid pinned footers, interactions that actually work, never patched one-by-one.

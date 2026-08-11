@@ -1,9 +1,12 @@
 # CI gate for mm-ctrl.
 #
-# Runs on every PR + every push to main. Three checks, each blocking:
-#   1. typecheck — baseline-gated tsc (catches type errors before they hit prod)
-#   2. build     — full Vite build catches integration breakage that tsc alone misses
-#   3. lint      — eslint with --max-warnings=0 only on files this PR touched
+# Runs on every PR + every push to main. Six checks, each blocking:
+#   1. standards - design-token and copy invariants
+#   2. docs      - links, authority, inventory, routes, decisions, and drift traps
+#   3. test      - the full Vitest suite
+#   4. typecheck - baseline-gated tsc
+#   5. build     - the full production build and prerender
+#   6. lint      - eslint with --max-warnings=0 on files this PR touched
 #
 # typecheck + lint are both BASELINE-scoped because the existing codebase carries
 # ~430 pre-existing type errors and ~1600 lint warnings (mostly any-typed
@@ -15,8 +18,8 @@
 # shipped). The real check runs tsc against tsconfig.app.json and compares to
 # scripts/typecheck-baseline.json; see scripts/typecheck-ci.mjs.
 #
-# To strengthen later: add the test:run job once vitest coverage exists,
-# wire to required-status-checks in branch protection, and enable Dependabot.
+# Keep these job names in required status checks. Dependency and security
+# automation remains a separate repository-governance decision.
 
 name: ci
 
@@ -27,6 +30,16 @@ on:
     branches: [main]
 
 jobs:
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/check-docs.mjs
+
   standards:
     name: standards
     runs-on: ubuntu-latest

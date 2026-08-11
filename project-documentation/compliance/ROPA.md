@@ -40,7 +40,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: structured facts extracted from user-voiced thoughts.
 - Data subjects: registered users.
 - Lawful basis: contract (Art 6(1)(b)); consent for optional memory features.
-- Recipients/subprocessors: Supabase (US); OpenAI (embeddings text-embedding-3-small, US); primary LLM providers (US).
+- Recipients/subprocessors: Supabase (US); OpenAI (embeddings and selected extraction/generation, US); other configured AI providers where the called function requires them (US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: configurable via user_memory_settings.retention_days, enforced by the cleanup-expired-data function; NOTE (2026-07-26): no pg_cron schedule currently invokes this function (unlike send-daily-briefing, memory-sweep, and other scheduled jobs), so today it runs only when manually/externally triggered, not on an automatic cadence. See [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md). Deleted on account deletion.
 - Security: AES-256-GCM encryption at rest, RLS owner-scoping, TLS.
@@ -49,7 +49,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: chat messages to and from CTRL assistants.
 - Data subjects: registered users.
 - Lawful basis: contract (Art 6(1)(b)).
-- Recipients/subprocessors: Supabase (US); LLM providers (Google Vertex/Gemini primary, OpenAI fallback, US).
+- Recipients/subprocessors: Supabase (US); function-specific LLM providers. Current briefing conversation uses OpenAI; other conversation and legacy paths may use OpenAI or Google Gemini (US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: life of account / configurable; deleted on account deletion. chat_messages now owner-scoped after remediation.
 - Security: RLS owner-scoping, TLS.
@@ -58,7 +58,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: business context, chat, assessment answers, briefing topics, voice transcripts.
 - Data subjects: registered users.
 - Lawful basis: contract (Art 6(1)(b)).
-- Recipients/subprocessors: Google Cloud Vertex AI / Gemini 2.0 Flash (primary LLM, US); OpenAI (fallback LLM, Whisper transcription, embeddings, US); ElevenLabs (briefing TTS, US).
+- Recipients/subprocessors: OpenAI (current onboarding result, Blind Spot, briefing generation and conversation, claim adjudication, primary transcription, and embeddings, US); Google Cloud Vertex AI / Gemini (selected generation and transcription fallback, US); Anthropic (decision reasoning and cross-examination when configured, US); xAI (cross-examination when configured, US); ElevenLabs (briefing TTS, US).
 - Transfers: EU/UK to US, SCCs/DPAs (in progress).
 - Retention: providers process transiently per their API terms; we retain outputs (responses, transcripts) per their data category.
 - Security: TLS, rate limiting on AI endpoints, structured edge-function logging (AI-usage audit log ai_usage_audit in progress).
@@ -85,7 +85,7 @@ This record describes the processing activities Mindmaker carries out as control
 - Personal data: voice audio, resulting transcripts.
 - Data subjects: registered users.
 - Lawful basis: contract (Art 6(1)(b)).
-- Recipients/subprocessors: OpenAI Whisper (transcription, US); Supabase (transcript storage, US).
+- Recipients/subprocessors: OpenAI (primary transcription, US); Google Gemini (transcription fallback when needed, US); Supabase (transcript storage, US).
 - Transfers: EU/UK to US, SCCs/DPA (in progress).
 - Retention: transcripts retained per data category; raw audio handled per provider, not maintained as a long-term store.
 - Security: TLS, RLS owner-scoping.
@@ -137,4 +137,4 @@ This record describes the processing activities Mindmaker carries out as control
 
 ## General security measures (all activities)
 
-Per-user Row-Level Security on all 108 public tables; AES-256-GCM encryption of Memory facts at rest; TLS in transit; provider-managed disk encryption; Stripe webhook verification and idempotency; rate limiting on AI endpoints; git-versioned migrations; structured logging with CI gate. Full detail and planned controls (audit logging, MFA, access reviews, pen test) in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) and [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
+Per-user Row-Level Security or service-only controls on reviewed public data boundaries; AES-256-GCM encryption of Memory facts at rest; TLS in transit; provider-managed disk encryption; Stripe webhook verification and idempotency; rate limiting on AI endpoints; git-versioned migrations; structured logging with CI gate. Full detail and planned controls (audit logging, MFA, access reviews, pen test) in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md) and [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).

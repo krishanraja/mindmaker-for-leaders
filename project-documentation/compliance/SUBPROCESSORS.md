@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-07-26
+Last reviewed: 2026-08-10
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).
@@ -10,7 +10,7 @@ DPA status legend:
 - Standard terms: we rely on the provider's published DPA / data terms incorporated by their standard terms of service, but we have not yet executed and filed a countersigned copy.
 - To confirm: relationship in use; DPA review/signature is an open action item.
 
-As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed DPAs and SCCs with all subprocessors is an in-progress action tracked in [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md). The table reflects current honest status, not an aspiration.
+As of 2026-08-10, none of the DPAs below are marked "Signed". Formalizing signed DPAs and SCCs with all subprocessors is an in-progress action tracked in [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md). The table reflects current honest status, not an aspiration.
 
 ## Register
 
@@ -18,8 +18,10 @@ As of 2026-06-02, none of the DPAs below are marked "Signed". Formalizing signed
 |--------------|---------|----------------------|----------|------------|----------------------------------|
 | Supabase | Database, authentication, storage, edge compute | All stored categories (identity, business context, Memory facts, chat, assessments, preferences, transcripts, billing metadata) | US (AWS) | To confirm | SCCs (to confirm/sign) |
 | Vercel | Frontend hosting and CDN | Account identity, request metadata | US | To confirm | SCCs (to confirm/sign) |
-| Google Cloud (Vertex AI / Gemini 2.0 Flash) | Primary LLM generation | Business context, chat, assessments, briefing topics, transcripts | US | Standard terms | SCCs (to confirm/sign) |
-| OpenAI | Fallback LLM, Whisper transcription, text-embedding-3-small embeddings | Chat, business context, assessments, voice audio/transcripts, text for embeddings | US | Standard terms | SCCs (to confirm/sign) |
+| Google Cloud (Vertex AI / Gemini) | Selected generation paths, OpenAI-fallback generation, transcription fallback, and decision-panel review when configured | Business context, chat, assessments, briefing topics, decision context, voice audio/transcripts | US | Standard terms | SCCs (to confirm/sign) |
+| OpenAI | Primary provider for current onboarding results, Blind Spot, briefing generation and conversation, claim adjudication and transcription; embeddings and selected fallback paths | Chat, business context, assessments, briefing and decision context, voice audio/transcripts, text for embeddings | US | Standard terms | SCCs (to confirm/sign) |
+| Anthropic | Decision reasoning and Edge Pro cross-examination when configured | Decision text, authorised business context, and verified claim summaries | US | Standard terms | SCCs (to confirm/sign) |
+| xAI | Edge Pro cross-examination when configured | Decision text, authorised business context, and verified claim summaries | US | Standard terms | SCCs (to confirm/sign) |
 | ElevenLabs | Briefing text-to-speech audio | Briefing text derived from interests/preferences | US | To confirm | SCCs (to confirm/sign) |
 | Stripe | Payment processing and subscriptions | Billing identity, Stripe customer ID, subscription status (card data tokenized by Stripe) | US | Standard terms | SCCs (to confirm/sign) |
 | Resend | Transactional and notification email | Email address, name, message content | US | To confirm | SCCs (to confirm/sign) |
