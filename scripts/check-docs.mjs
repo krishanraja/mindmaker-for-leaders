@@ -36,6 +36,7 @@ function isHistorical(rel, body) {
   return rel.startsWith('docs/history/')
     || rel.startsWith('project-documentation/_archive/')
     || /historical (?:record|reference|only|product|architecture|feature|engineering|ctrl|main-app)/i.test(body.slice(0, 700))
+    || /historical[^\n]{0,100}(?:reference|not current guidance)/i.test(body.slice(0, 700))
     || /Status:\s*RETIRED/i.test(body.slice(0, 700));
 }
 
@@ -173,6 +174,86 @@ function checkPricing() {
   notes.push(`Edge Pro pricing consistent at ${cents} cents`);
 }
 
+function checkCommercialAuthority() {
+  const requiredLinks = [
+    ['README.md', 'docs/current/commercial.md'],
+    ['CLAUDE.md', 'docs/agent-instructions/marketing-sales.md'],
+    ['docs/current/README.md', './commercial.md'],
+    ['docs/agent-instructions/README.md', './marketing-sales.md'],
+    ['project-documentation/README.md', '../docs/current/commercial.md'],
+  ];
+  for (const [rel, needle] of requiredLinks) {
+    if (!read(rel).includes(needle)) fail(`${rel}: missing commercial authority link ${needle}`);
+  }
+
+  const commercial = read('docs/current/commercial.md');
+  const agent = read('docs/agent-instructions/marketing-sales.md');
+  const product = JSON.parse(read('public/.well-known/product.json'));
+  const llms = read('public/llms.txt');
+  const machine = JSON.stringify(product);
+
+  for (const needle of [
+    'one current user-authored or verified intention',
+    'at least two distinct recurrence records',
+    'two source kinds or at least seven days',
+    'Plaintext fields are retained',
+    'does not authorize publishing or sending',
+  ]) {
+    if (!commercial.includes(needle)) fail(`docs/current/commercial.md: missing contract phrase "${needle}"`);
+  }
+  for (const needle of [
+    'Never send a message, publish content',
+    'Claims ledger',
+    'Stop and request authority',
+    'Minimum evaluation set',
+  ]) {
+    if (!agent.includes(needle)) fail(`docs/agent-instructions/marketing-sales.md: missing agent control "${needle}"`);
+  }
+
+  if (product.human_commercial_authority !== 'https://github.com/krishanraja/mm-ctrl/blob/main/docs/current/commercial.md') {
+    fail('product.json: human commercial authority is missing or incorrect');
+  }
+  const blindSpot = product.features?.find((item) => item.name === 'Blind Spot');
+  const qualification = blindSpot?.pattern_qualification ?? '';
+  for (const needle of ['current user-authored or verified intention', 'at least two distinct recurrence records', 'two source kinds', 'seven days']) {
+    if (!qualification.includes(needle)) fail(`product.json: Blind Spot qualification missing "${needle}"`);
+  }
+  if (product.delivery?.not_shipped?.join(' ') !== 'Slack WhatsApp') {
+    fail('product.json: current non-shipped delivery channels must remain explicit');
+  }
+  if (!product.claim_policy?.authority_boundary?.includes('do not authorize publishing')) {
+    fail('product.json: missing autonomous-agent action boundary');
+  }
+
+  const forbidden = [
+    /retired all advisory/i,
+    /at least two independent facts/i,
+    /hourly re-verification/i,
+    /a few minutes/i,
+    /privacy-first/i,
+    /contradictions resolved at write time/i,
+  ];
+  for (const pattern of forbidden) {
+    if (pattern.test(machine)) fail(`product.json: forbidden or unsupported claim ${pattern}`);
+    if (pattern.test(llms)) fail(`public/llms.txt: forbidden or unsupported claim ${pattern}`);
+  }
+
+  const historicalCommercial = [
+    'project-documentation/AGENT_BRIEFING.md',
+    'project-documentation/ICP.md',
+    'project-documentation/SALES_BRIEF.md',
+    'project-documentation/VALUE_PROP.md',
+    'project-documentation/PURPOSE.md',
+    'project-documentation/Master_Messaging_and_FAQ.md',
+    'project-documentation/OUTCOMES.md',
+    'project-documentation/SPINE.md',
+  ];
+  for (const rel of historicalCommercial) {
+    if (!isHistorical(rel, read(rel))) fail(`${rel}: superseded authority is not marked historical`);
+  }
+  notes.push('commercial authority, machine truth, agent controls, and historical boundaries checked');
+}
+
 function checkKnownDrift() {
   const currentPaths = [
     'README.md',
@@ -215,6 +296,7 @@ checkInventory();
 checkDecisionIds();
 checkRoutes();
 checkPricing();
+checkCommercialAuthority();
 checkKnownDrift();
 
 if (failures.length) {

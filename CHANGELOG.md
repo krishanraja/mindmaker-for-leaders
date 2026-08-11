@@ -6,6 +6,28 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
+## [Unreleased] - 2026-08-11 - Commercial documentation authority
+
+### Added
+
+- One current commercial authority for buyer, problem, offer, proof, message, objections, claim boundaries, and freshness.
+- One operating manual and evaluation set for autonomous marketing and sales agents.
+
+### Changed
+
+- Rebuilt the public machine-readable product record around executable facts and explicit action-time verification rules.
+- Corrected Blind Spot qualification, data protection, Decision Watch, setup-time, delivery-channel, and separate Mindmaker-service claims.
+- Reclassified superseded commercial briefs as historical inputs instead of competing current truth.
+- Extended documentation navigation and drift checks so the commercial authority and agent safety contract cannot disappear silently.
+
+### Verified
+
+- Documentation links, inventory, routes, decision IDs, pricing, commercial authority, machine truth, and historical boundaries pass the expanded drift gate.
+- Standards and changed-file ESLint pass. Typecheck remains at the 221-diagnostic baseline with zero new diagnostics.
+- All 870 Vitest tests across 53 files pass. The 2,789-module production build and 3/3 prerender routes pass.
+
+---
+
 ## [Released] - 2026-08-11 - Blind Spot trusted-advisor instrument
 
 ### Added

@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last reconciled:** 2026-08-11 (Decision 79 records the founder-approved Blind Spot trusted-advisor contract).
+**Last reconciled:** 2026-08-11 (Decision 80 establishes one commercial authority and one bounded operating contract for autonomous commercial agents).
 
 > This is an append-only decision record. IDs are unique and never reused. Earlier framing may be superseded by a later decision; the current product and architecture sources are [`docs/current/`](../docs/current/README.md). Dated outcomes record what was true at that decision point, not the current release state.
 
@@ -615,3 +615,10 @@ Key architectural and product decisions with rationale.
 **Trade-off**: More qualification, signing, ownership, persistence, expiry, and fixture machinery behind one screen in exchange for a simpler front end, honest evidence claims, safe correction, and one learning loop instead of duplicate features.
 **Founder lock**: Krish explicitly approved `BLIND-SPOT-INSTRUMENT-v1` on 2026-08-11.
 **Outcome**: Live from PR #366 at production source revision `0f20baf2437667c3719c94f1c16d04bb08b42023`. The migration and Edge Function v3 are deployed with owner-scoped RLS, service-role-only mutation RPCs, and JWT enforcement. The full 37-case Blind Spot suite passes on `makeyourmindup.ai` across the four approved viewports.
+
+## Decision 80: Commercial Agents Use One Current Authority and Stop at the Action Boundary (2026-08-11)
+**Date**: 2026-08-11
+**Decision**: Consolidate the buyer, offer, proof, messaging, objections, and claim rules in `docs/current/commercial.md`, with `public/.well-known/product.json` as its machine-readable companion. Autonomous marketing and sales agents may research, qualify, plan, draft, and generate attributed links from those sources. Drafting never authorizes sending, publishing, discounts, contracts, or external system changes. Volatile facts are reverified at action time, unsupported proof is omitted, and superseded commercial files are historical only.
+**Rationale**: A large set of plausible commercial briefs had become a hidden source of false confidence. They contradicted shipped Blind Spot evidence, overstated encryption and setup time, promised a precise Decision Watch cadence, and made a global claim about separate Mindmaker services. An agent needs less source material, clearer precedence, and an explicit authority boundary to be commercially useful without inventing certainty.
+**Trade-off**: Retire several familiar briefs from the current authority path and require action-time verification for volatile claims in exchange for one coherent product story, defensible evidence, and safer autonomous operation.
+**Outcome**: Current documentation, machine truth, agent instructions, public LLM guidance, indexes, and automated drift checks are aligned around the same contract.

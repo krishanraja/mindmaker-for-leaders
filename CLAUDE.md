@@ -31,4 +31,5 @@ Node.js must satisfy `>=22 <25`. The working shell is PowerShell on Windows: use
 - [Workflow and Git](./docs/agent-instructions/workflow.md)
 - [Frontend and product UX](./docs/agent-instructions/frontend.md)
 - [Supabase, data, and AI](./docs/agent-instructions/supabase.md)
+- [Marketing and sales](./docs/agent-instructions/marketing-sales.md)
 - [Verification and release evidence](./docs/agent-instructions/verification.md)

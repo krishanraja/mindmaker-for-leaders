@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against the Blind Spot v2 implementation candidate
+Last verified: 2026-08-11 against application baseline `0f20baf2437667c3719c94f1c16d04bb08b42023`
 
 CTRL is a Vite React application on Vercel with Supabase Auth, PostgreSQL, Edge Functions, Storage, Vault, and scheduled jobs. The architecture has one personal context substrate and one curation pool. Product surfaces are views over those shared systems.
 
