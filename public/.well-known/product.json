@@ -6,7 +6,7 @@
   "stripe_account": "mindmaker_llc",
   "url": "https://makeyourmindup.ai",
   "status": "live",
-  "last_updated": "2026-08-08",
+  "last_updated": "2026-08-10",
   "source_of_truth": "https://makeyourmindup.ai/.well-known/product.json",
   "tagline": "A quieter way through AI.",
   "one_liner": "CTRL is a calm AI decision partner for founders and small-team CEOs: it filters the AI world through what they are actually deciding, tests one real call against live evidence, keeps one portable memory, and sends a short daily read or listen.",
@@ -54,7 +54,6 @@
   "features": [
     { "name": "Memory Web", "tier": "free", "what": "A structured, ranked, encrypted memory of you and your business, built from voice or text, kept fresh, contradictions resolved at write time." },
     { "name": "Context export", "tier": "free", "what": "One-click export of your context, or a my-ai-context.md file, formatted for ChatGPT, Claude, Gemini, Cursor and Claude Code." },
-    { "name": "Voice profile", "tier": "free", "what": "Eight dimensions of how you actually write and speak, captured by recognition picks or extracted from a sample of your real writing, so generated output sounds like you." },
     { "name": "Blind Spot", "tier": "free", "what": "A single, tentative reflection grounded in independent facts, with a short experiment. Nothing is promoted to memory without confirmation." },
     { "name": "Daily briefing", "tier": "free", "what": "A short personalised read anchored to real priorities. Leaders can ask a spoken follow-up and hear a grounded answer in the same voice. Email and audio delivery can work without an account." },
     { "name": "Decision engine (weigh and verify)", "tier": "free_capped_pro_unlimited", "what": "Reframe to the AI-native version of the call, decompose into claims, verify against live evidence, advise. Free includes 3 full weighs per month; Edge Pro is unlimited." },
@@ -73,7 +72,7 @@
         "name": "Free",
         "amount": 0,
         "cadence": "forever",
-        "includes": ["Memory Web", "context export", "voice profile", "Blind Spot reflections", "daily personalised briefing", "3 decision weighs per month"]
+        "includes": ["Memory Web", "context export", "Blind Spot reflections", "daily personalised briefing", "3 decision weighs per month"]
       },
       {
         "id": "edge_pro",

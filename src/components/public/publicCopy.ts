@@ -69,9 +69,9 @@ export const LANDING = {
 
   // price
   priceH: 'Free is free forever.',
-  priceBody: 'Memory, voice, Blind Spot reflections, the daily read, three full weighs a month.',
+  priceBody: 'Memory, Blind Spot reflections, the daily read, three full weighs a month.',
   freeDesc:
-    'Memory web, voice profile, Blind Spot reflections, the daily read, and three decision weighs a month.',
+    'Memory web, Blind Spot reflections, the daily read, and three decision weighs a month.',
   proDesc:
     'Unlimited weighs, a second model arguing against the first, decision watch, Edge artifacts, and the live MCP that sends your brain where it needs to be.',
   // The approved deck ended this on a half sentence ("...has made him realize

@@ -14,7 +14,7 @@ The deeper source of truth lives in [`project-documentation/`](./project-documen
 - [`docs/CTRL-SYSTEM-SPEC.md`](./docs/CTRL-SYSTEM-SPEC.md) - the product, data, evidence, memory, and decision rules.
 - [`docs/MAIN-APP-POLISH-SPEC.md`](./docs/MAIN-APP-POLISH-SPEC.md) - the interface standard: the AI-native North Star, no-scroll/one-ask laws, and approachable language.
 
-For sales, marketing, and ops AI agents: start at [`project-documentation/README.md`](./project-documentation/README.md), then `SALES_BRIEF.md`, `ICP.md`, `VALUE_PROP.md`, `OUTCOMES.md`, `Master_Messaging_and_FAQ.md`. (Note: those sales docs are mid-reconciliation to the AI-native positioning; trust this README and the two specs above where they disagree.)
+For sales, marketing, and ops AI agents: start at [`project-documentation/README.md`](./project-documentation/README.md), then `SALES_BRIEF.md`, `ICP.md`, `VALUE_PROP.md`, `OUTCOMES.md`, and `Master_Messaging_and_FAQ.md`.
 
 For developers: [`CLAUDE.md`](./CLAUDE.md) (workflow + the current architecture quick-reference), then `project-documentation/ARCHITECTURE.md`, `FEATURES.md`, `COMMON_ISSUES.md`.
 
@@ -26,11 +26,11 @@ For developers: [`CLAUDE.md`](./CLAUDE.md) (workflow + the current architecture 
 One calm question at a time creates a useful starting lens before an account is required. The handoff carries only consented, bounded fields into CTRL. It never copies the user's raw private sentence into the authenticated product.
 
 ### 2. CTRL daily instrument
-Home, Decide, Blind Spot, Memory, and the audio briefing are the product. Settings and deeper harnesses stay reachable without becoming competing destinations. The lesson kits under `/kit`, and review/build harnesses such as `/sort`, remain nested workflows for a specific job rather than separate products.
+Today, Decide, Blind Spot, Memory, and the audio briefing are the product. Settings and deeper harnesses stay reachable without becoming competing destinations. The lesson-kit product is retired; `/kit*` permanently redirects to `/try`. Review/build routes such as `/sort` remain subordinate harnesses for a specific job.
 
 The leader-facing instrument is intentionally small:
 Every authenticated surface is no-scroll on all devices, one ask per screen, and locked to the AI-native frame:
-- **Home / cockpit** - a daily deck of "worth a look" headlines, AI-native only.
+- **Today / First Lens** - one useful next move and a small, premium set of AI-native signals from the shared pool.
 - **News deck** - nine AI-native news categories (model & capability, AI economics, tools & vendors, orchestration & agent reliability, AI-native product & GTM, governance, security & agent risk, org & talent, proof & adoption), each with a branded SVG motif. The briefing pipeline filters out anything that is not about deploying, building, or selling AI, and tags every story to a category.
 - **Decision engine** (`/decision`) - pressure-tests a decision (decompose, verify against live evidence, cross-examine, advise), with an honest AI-native reframe shown as a banner.
 - **Brain / Memory Web** (`/memory`) - your context as a four-world rope canvas that fills the frame, with zoom and pan; the substrate that makes any AI know your business.
@@ -58,8 +58,8 @@ Every authenticated surface is no-scroll on all devices, one ask per screen, and
 | `/auth`, `/auth/callback` | Auth (Email + Google OAuth) | No |
 | `/build` | Redirect to the public CTRL starting point | No |
 | `/try` | Public "watch it work" demo | No |
-| `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`) | The lesson-kit program | No (anonymous session) |
-| `/dashboard` | Home hub (cockpit / memory) | Yes |
+| `/kit`, `/kit/*` | Permanent redirect to `/try` | No |
+| `/dashboard` | Today / First Lens | Yes |
 | `/memory` | Brain / Memory Web | Yes |
 | `/blind-spot` | Grounded leadership reflection | Yes |
 | `/context` | One-click context copy or download | Yes |
@@ -76,7 +76,7 @@ Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`) redirect to `/dashbo
 
 ## Pricing
 
-Pricing constants are canonical in `src/constants/billing.ts` (and the shared edge-pricing module); the app reads them, so trust the code over any doc. Edge Pro is a monthly subscription (`EDGE_PRO_PRICE_LABEL`); there is a paid AI-literacy diagnostic. TODO(founder): confirm the current full price list for the AI-native product before any sales doc quotes exact numbers.
+There are two self-serve tiers. Free includes Memory, Blind Spot, the personalised daily briefing, and three decision weighs each month. Edge Pro is $49 per month and adds unlimited weighs, multi-model cross-examination, decision watch, generated artifacts, and live MCP access. `supabase/functions/_shared/edge-pricing.ts` is the canonical amount and `src/constants/planMatrix.ts` is the canonical capability matrix.
 
 ---
 
@@ -105,7 +105,7 @@ Pricing constants are canonical in `src/constants/billing.ts` (and the shared ed
 | Auth / Payments / Email | Supabase Auth / Stripe / Resend |
 | Tests | Vitest (unit) + Playwright (e2e) |
 | Hosting | Vercel (frontend) + Supabase Cloud (backend) |
-| Node.js | `>=22 <24` |
+| Node.js | `>=22 <25` (Vercel production uses 24.x) |
 
 For current edge-function / hook / migration counts and the live architecture, see `CLAUDE.md` (kept current).
 
@@ -124,6 +124,8 @@ npm run build        # production build
 Supabase deploy + migration conventions live in [`CLAUDE.md`](./CLAUDE.md). Frontend auto-deploys to Vercel on push to `main`; edge functions deploy via `supabase functions deploy <name>`; migrations apply via the Supabase Management API.
 
 The optional Control Center adapter is disabled unless both `CONTROL_CENTER_URL` and `CONTROL_CENTER_PUBLISHABLE_KEY` are present in the CTRL Edge Function secrets. The source key is publishable and the Control Center table is RLS read-only for anonymous callers, but it stays server-injected so the cross-system boundary remains explicit. Never expose either as a `VITE_*` variable.
+
+The `live-headlines-prewarm` and `daily-briefing-email` jobs authenticate with a random `ctrl_cron_secret` stored in Supabase Vault and mirrored as the `CTRL_CRON_SECRET` Edge Function secret. The migration creates and schedules the Vault side; deployment tooling must synchronize the value without printing or persisting it. Do not restore the retired `app.supabase_service_role_key` Postgres setting.
 
 ---
 

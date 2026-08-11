@@ -14,7 +14,6 @@ Four tabs: Today, Decide, Blind spot, Memory.
 
 ## What you get
 - **Memory Web** and **context export**: one click into ChatGPT, Claude, Gemini, Cursor and Claude Code, or a `my-ai-context.md` file.
-- **Voice profile**: eight dimensions of how you actually write, so generated output sounds like you.
 - **Blind Spot**: a grounded reflection that stays tentative until confirmed.
 - **Daily briefing**: a short read anchored to real priorities. Ask a spoken follow-up and CTRL answers from the briefing, cites the supporting segments, and speaks back in the same voice.
 - **Decision engine**: reframe, decompose, verify, advise.
@@ -22,7 +21,7 @@ Four tabs: Today, Decide, Blind spot, Memory.
 
 ## Pricing
 Two tiers, nothing else.
-- **Free, $0**: Memory Web, context export, voice profile, Blind Spot reflections, the daily personalised briefing, and 3 decision weighs a month. A real daily instrument, not a trial.
+- **Free, $0**: Memory Web, context export, Blind Spot reflections, the daily personalised briefing, and 3 decision weighs a month. A real daily instrument, not a trial.
 - **Edge Pro, $49 / month**: the decision tier. Unlimited weighs, a multi-model cross-examination of every decision, decision watch (alerts when a load-bearing assumption weakens), Edge artifacts (memos, docs, emails, agendas), drafting, email delivery, and the live MCP pull of your context and skills into any AI.
 
 There is no one-time diagnostic, no deep-context upgrade and no bundle, and no advisory, bootcamp or consulting engagement. Any other price list for CTRL is dead.

@@ -409,7 +409,7 @@ Before shipping:
 **Symptom**: User was told "go to Interests" but doesn't see the tab.
 **Root Cause**: Frontend cache (Vercel's CDN can serve stale index.html with old chunk hashes for 24h+ on some paths). OR the user merged main but didn't trigger a fresh Vercel production deploy. OR they have an old tab/window open.
 **Solution**:
-  1. Check `ctrl.themindmaker.ai` main bundle hash (`curl -s ... | grep 'assets/index-'`). Compare to latest Vercel deployment output. Mismatch = stale.
+  1. Check `makeyourmindup.ai` main bundle hash (`curl -s ... | grep 'assets/index-'`). Compare to latest Vercel deployment output. Mismatch = stale.
   2. Force a redeploy via Vercel API (`POST /v13/deployments` with `forceNew=1` and the main sha).
   3. User hard-refresh (Cmd+Shift+R) or incognito window.
   4. Confirm the `Interests` tab sits at position 3 in Settings (after Account + Work).

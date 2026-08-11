@@ -1,9 +1,9 @@
 # CTRL Privacy Policy
 
 Effective date: 2026-06-02
-Last reviewed: 2026-07-26 (updated 2026-07-26: disclosed PostHog product analytics and added NewsAPI.org/Exa/Artificial Analysis to the subprocessor list, all already live in the product; TODO(founder): PostHog has been running in production since 2026-07-18 without a corresponding policy disclosure until this pass - confirm whether affected users need direct notice, not just an updated policy page)
+Last reviewed: 2026-08-10 (canonical domain and current product description reconciled; legacy lesson-kit records remain covered)
 
-This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://ctrl.themindmaker.ai. CTRL is an executive leadership-clarity tool. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
+This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://makeyourmindup.ai. CTRL is an AI decision-support and advisory tool for busy leaders. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 
 Related internal documents: [ROPA.md](./ROPA.md), [SUBPROCESSORS.md](./SUBPROCESSORS.md), [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md), [DSAR_RUNBOOK.md](./DSAR_RUNBOOK.md).
 
@@ -27,7 +27,7 @@ This policy covers personal data processed through the CTRL web application and 
 | Memory Web facts | Thoughts and statements you voice that are extracted into structured facts (encrypted at rest with AES-256-GCM) | Derived from your inputs |
 | Conversation / chat messages | Messages you send to and receive from CTRL's assistants | You, during use |
 | AI-literacy diagnostic / assessment responses | Answers to AI-fluency and leadership assessments | You, during assessments |
-| Kit builds / lesson-kit inputs | Org/team/workflow intake you provide when forking a lesson kit (boxes, pathway, profile, time sinks, guardrails, grind, what work involves, team maturity), stored in `kit_builds.intake` | You, during a kit build |
+| Legacy lesson-kit records | Org/team/workflow intake previously provided when the retired lesson-kit flow was active, stored in `kit_builds.intake` | You, during a historical kit build |
 | Daily-briefing preferences and interests | Topics, interests, briefing settings | You; inferred from your stated interests |
 | Voice recordings and transcripts | Audio you record, transcribed to text (transcripts retained; audio handled per the transcription provider, see Section 7) | You, during voice use |
 | Billing data | Stripe customer ID, subscription status | Created when you subscribe |
@@ -43,7 +43,7 @@ For users in the EU/UK, the GDPR requires a lawful basis for each purpose. The t
 | Provide the Service (auth, core features) | Account identity, business context, chat, assessments | Contract (Art 6(1)(b)) |
 | Build and maintain your Memory Web | Memory Web facts, chat, voice transcripts | Contract (Art 6(1)(b)); consent where you enable optional memory features |
 | Generate AI responses, briefings, and assessments | Business context, chat, assessments, preferences, transcripts | Contract (Art 6(1)(b)) |
-| Build and compose lesson kits you fork | Kit builds / lesson-kit inputs | Contract (Art 6(1)(b)) |
+| Retain and support legacy lesson-kit records until deletion | Legacy lesson-kit records | Contract (Art 6(1)(b)) |
 | Daily briefings and notifications | Briefing preferences, interests, account identity | Contract for transactional delivery; consent for optional channels |
 | Process payments and manage subscriptions | Billing data, account identity | Contract (Art 6(1)(b)); legal obligation for tax/accounting records (Art 6(1)(c)) |
 | Transactional email (confirmations, security, billing) | Account identity | Contract (Art 6(1)(b)) |
