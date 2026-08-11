@@ -81,7 +81,7 @@ export function KickstartCard({ card, variant = 'feed', onOpen }: KickstartCardP
             type="button"
             onClick={() => onOpen?.(card)}
             className={cn(
-              'inline-flex shrink-0 items-center gap-2 rounded-xl bg-accent font-bold text-accent-foreground transition hover:brightness-110',
+              'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-accent font-bold text-accent-foreground transition hover:brightness-110',
               isLead ? 'px-5 py-2.5 text-[14px]' : 'px-4 py-2.5 text-[13px]',
             )}
           >
