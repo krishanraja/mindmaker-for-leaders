@@ -1,4 +1,6 @@
-# CTRL System Spec (one holistic instrument, not separate parts)
+# Historical CTRL system design record
+
+> Historical reference only. This file records the product-system design sequence and contains superseded navigation and lifecycle language. Current product truth lives in [`current/product.md`](./current/product.md); current architecture lives in [`current/architecture.md`](./current/architecture.md).
 
 > **Current release overlay, 2026-08-10.** CTRL is one product at `makeyourmindup.ai`. Make Your Mind Up is its warm, one-question-at-a-time intake. The stable primary surfaces are Today, Briefing, Decide, Blind Spot, Memory, and Settings. Today presents one ranked First Lens over a shared curation pool, retaining the premium category visual system. Blind Spot replaces Automator/Skill Builder as the promoted development experience. No-login email/audio delivery is a primary mode, not a secondary add-on. User overwhelm is poison: one useful ask at a time, common actions in one tap, and no duplicated feeds or setup chores. This overlay supersedes conflicting phase-era surface names and navigation below; the dated detail remains design history.
 

@@ -2,9 +2,9 @@
 
 Key architectural and product decisions with rationale.
 
-**Last reconciled:** 2026-08-10 (Decision 72 ports the founder-approved briefing, learning loop, Settings access, and Option E typography into the product).
+**Last reconciled:** 2026-08-10 (Decision 78 records product-wide adoption of the founder-selected typography after the integrated release decisions).
 
-> This is a decision record kept on purpose. Architectural decisions below remain accurate. Two product decisions are now SUPERSEDED by later ones: any early decision framing CTRL as "Clarity for Leaders / decision speed" is superseded by the LOCKED AI-native positioning (2026-06-19: build/orchestrate/productize/go-to-market the AI-native version of your business), and any decision specifying the light/Apple design system is superseded by the globally dark `ctrl-ds` instrument palette (PR #186). Canonical current sources: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
+> This is an append-only decision record. IDs are unique and never reused. Earlier framing may be superseded by a later decision; the current product and architecture sources are [`docs/current/`](../docs/current/README.md). Dated outcomes record what was true at that decision point, not the current release state.
 
 ---
 
@@ -566,44 +566,44 @@ Key architectural and product decisions with rationale.
 **Trade-off**: A shared panel component + new design primitives (`Surface`/`Eyebrow`/`SettingRow`/`SheetFooterBar`) to build vs eliminating a duplicate-source-of-truth bug and a broken navigation.
 **Outcome**: ✅ Live. Typecheck 0 new errors, 337 unit tests pass, build + prerender green.
 
-## Decision 69: One Product, One Domain, One Warm Front Door (2026-08-10)
+## Decision 73: One Product, One Domain, One Warm Front Door (2026-08-10)
 **Date**: 2026-08-10
 **Decision**: CTRL is the product; Make Your Mind Up is its warm public onboarding experience; `makeyourmindup.ai` is the canonical domain. The former CTRL hostname permanently redirects to it.
 **Rationale**: Two names and two destinations made the user reconstruct the product boundary immediately after an intentionally simple intake. The data and experience are one journey.
 **Trade-off**: Retire the separate onboarding product identity and move its domain versus preserve two independently legible products that duplicate context and navigation.
 **Outcome**: Implemented across metadata, public copy, handoff, documentation, and the production cutover.
 
-## Decision 70: First Lens Is the Onboarding Payoff; Blind Spot Replaces Skill Builder as the Promoted Development Surface (2026-08-10)
+## Decision 74: First Lens Is the Onboarding Payoff; Blind Spot Replaces Skill Builder as the Promoted Development Surface (2026-08-10)
 **Date**: 2026-08-10
 **Decision**: A consented handoff lands on one premium First Lens and one useful first decision. Blind Spot becomes the promoted leadership-development experience. The Kit is retired and skill-building remains only as nested portability machinery where still useful.
 **Rationale**: Overwhelmed leaders should not finish a calm onboarding flow and meet a feature grid, setup project, or workflow builder. One grounded reflection compounds judgement without asking the leader to design the tool.
 **Trade-off**: Remove promotional surface area for already-built machinery versus preserve more visible features that make the product harder to understand.
 **Outcome**: First Lens, Blind Spot, navigation, routes, copy, and plan matrix aligned. `/kit*` redirects to `/try`.
 
-## Decision 71: One Curated Pool, with Control Center as a Read-Only Source Adapter (2026-08-10)
+## Decision 75: One Curated Pool, with Control Center as a Read-Only Source Adapter (2026-08-10)
 **Date**: 2026-08-10
 **Decision**: Control Center contributes high-fit, source-backed items inside `live-headlines`; it does not create another feed. The bridge uses a publishable key constrained by read-only RLS, never a cross-project service-role key.
 **Rationale**: CTRL already has ranking, clustering, provenance, category motifs, personalization, audio, and feedback. Duplicating any of those around Control Center would create competing truth and UI.
 **Trade-off**: A deliberately narrow adapter and fail-closed boundary versus privileged server access and a broader but riskier integration.
 **Outcome**: Production probe gathered 267 items, retained 211 AI-native items, and included 11 Control Center items. A forced prewarm produced a fresh 10-card cache.
 
-## Decision 72: Audio Is a Conversational Product Surface, Not a Play Button (2026-08-10)
+## Decision 76: Audio Is a Conversational Product Surface, Not a Play Button (2026-08-10)
 **Date**: 2026-08-10
 **Decision**: The briefing has a premium persistent control, read and listen states, human error recovery, and spoken or typed follow-up answered from the current briefing with citations and voice response.
 **Rationale**: Audio is the lowest-friction way for a busy leader to receive value. Treating it as plain text in the header undersold a signature capability and broke the human feeling inherited from Make Your Mind Up.
 **Trade-off**: More state, accessibility, TTS, and ownership contracts to maintain versus a briefing users can genuinely converse with.
 **Outcome**: Shipped with ownership checks on paid synthesis, rate limits, signed URL reuse, and responsive verified states.
 
-## Decision 73: Delivery Must Converge on Retry and Cron Must Not Depend on a Hidden Service-Role Setting (2026-08-10)
+## Decision 77: Delivery Must Converge on Retry and Cron Must Not Depend on a Hidden Service-Role Setting (2026-08-10)
 **Date**: 2026-08-10
 **Decision**: Normalize and deduplicate subscriptions and interests; claim emails and daily deliveries atomically; reuse audio; serialize Blind Spot confirmation; and authenticate pg_cron through a Vault-generated shared secret mirrored to Edge Function secrets.
 **Rationale**: No-login delivery is a core product mode. Retries, concurrent tabs, and scheduler overlap cannot create duplicate sends or learning records. Production inspection also proved the legacy Postgres service-role setting was absent, leaving the old scheduler unable to authenticate.
 **Trade-off**: More explicit claims, indexes, RPCs, and secret synchronization versus silent duplicate delivery or a scheduler that only appears armed.
 **Outcome**: Additive migrations and fifteen reviewed functions deployed. Two repaired jobs are active, the Vault and Edge secret are synchronized, and live contract checks pass.
 
-## Decision 74: Option E Is the Canonical Typography System (2026-08-10)
+## Decision 78: Option E Is Applied Across the Product (2026-08-10)
 **Date**: 2026-08-10
-**Decision**: Use Segoe UI Variable Display and Text as optical cuts of one family. Reserve mono for compact evidence metadata.
+**Decision**: Operationalise Decision 71 across active product, pricing, email, generated share cards, prototypes, and design tokens. Use Segoe UI Variable Display and Text as optical cuts of one family. Reserve mono for compact evidence metadata.
 **Rationale**: Mixed display, body, and monospace families made briefing questions, navigation, and learning prompts feel assembled rather than designed. One optical family preserves the human display character without visual conflict.
 **Trade-off**: Give up more visibly eclectic font pairings versus a coherent, native, fast-loading product system.
 **Outcome**: Applied across active app, pricing, email, generated share cards, prototypes, and design tokens.

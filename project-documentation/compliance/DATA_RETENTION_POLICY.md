@@ -24,7 +24,7 @@ Defines how long CTRL keeps each category of personal data and how it is deleted
 | Daily-briefing preferences and interests | Life of account | `delete-account` cascade |
 | Generated briefings | Not retained indefinitely by design; no automated rolling-window cleanup job currently runs (see gap below) | `delete-account` cascade only today |
 | Voice transcripts | Treated as user content; life of account or per Memory retention if stored as Memory | `delete-account` cascade; retention cleanup where applicable |
-| Raw voice audio | Not maintained as a long-term store; handled transiently by transcription provider | Provider-side per OpenAI Whisper terms |
+| Raw voice audio | Not maintained as a long-term store; handled transiently by transcription providers | Provider-side under OpenAI terms or Google terms when the Gemini fallback is used |
 | Billing metadata (Stripe customer ID, subscription status) | Life of account for service; financial records retained as required by tax/accounting law (commonly up to 6-7 years) | Subscription canceled on deletion; financial records retained then deleted at legal expiry |
 | Consent records (consent_audit, marketing consent) | Life of account plus a limited evidentiary period after closure to prove lawful consent handling | Aged out after the evidentiary period |
 | Operational / edge-function logs | Short operational window (current default short retention on provider log surfaces) | Provider log rotation; centralized aggregation with defined retention is in progress |

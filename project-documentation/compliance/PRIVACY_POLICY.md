@@ -60,11 +60,11 @@ CTRL sends your inputs (chat, business context, assessment answers, briefing top
 
 ## 6. How we share your data
 
-We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa, Artificial Analysis, Apollo, Google (OAuth and Sheets), PostHog, and Vercel.
+We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), Anthropic and xAI when configured for decision review, ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa, Artificial Analysis, Apollo, Google (OAuth and Sheets), PostHog, and Vercel.
 
 ## 7. Voice and audio
 
-When you use voice features, your audio is transcribed to text. We retain the resulting transcripts as part of your data. The audio itself is handled by our transcription provider (OpenAI Whisper) under that provider's terms; we do not maintain a long-term store of raw audio as a product feature.
+When you use voice features, your audio is transcribed to text. We retain the resulting transcripts as part of your data. The audio itself is handled by OpenAI as the primary transcription provider and may be sent to Google Gemini if the primary path fails. We do not maintain a long-term store of raw audio as a product feature.
 
 ## 8. International data transfers
 

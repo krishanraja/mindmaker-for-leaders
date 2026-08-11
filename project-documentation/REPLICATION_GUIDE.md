@@ -9,7 +9,7 @@ This is the operational guide for a fresh CTRL instance and for releasing the ca
 - Node.js `>=22 <25`; Vercel production uses 24.x.
 - React, TypeScript, Vite, Tailwind, Radix/shadcn.
 - Supabase Auth, PostgreSQL, Storage, Edge Functions, Vault, pg_cron, pg_net, pgvector, and pgcrypto.
-- OpenAI plus the configured search/model providers.
+- Capability-specific AI providers. See the current architecture provider matrix; do not assume one global primary model.
 - ElevenLabs for audio, Resend for email, Stripe for Edge Pro.
 - Vercel for frontend deployment.
 
@@ -100,8 +100,8 @@ Canonical domains:
 
 Retired domains should remain attached only as permanent redirects to the canonical host:
 
-- `ctrl.themindmaker.ai`
-- `www.ctrl.themindmaker.ai`
+- `ctrl.themindmaker.ai` (retired redirect)
+- `www.ctrl.themindmaker.ai` (retired redirect)
 
 Do not move the canonical domain until the candidate deployment is READY and accepted. Keep the prior production deployment and pre-release commit recorded for rollback.
 
@@ -110,14 +110,14 @@ Do not move the canonical domain until the candidate deployment is READY and acc
 Before merge:
 
 ```bash
+npm run docs:check
 npm run standards:check
 npm run typecheck
 npm test -- --run
 npm run build
-npm run test:e2e
 ```
 
-Also run changed-file ESLint, bundle every altered Edge Function, and inspect the Vercel preview at desktop, mobile, and 320px.
+Also run changed-file ESLint, bundle every altered Edge Function, and inspect the Vercel preview at desktop, mobile, and 320px. Run `npm run test:e2e` against an active local server or an authorised preview through `E2E_BASE_URL`; report the current skipped authenticated specs until the auth seed helper is wired.
 
 Production acceptance must prove:
 
