@@ -1,7 +1,7 @@
 # CTRL Privacy Policy
 
 Effective date: 2026-06-02
-Last reviewed: 2026-08-10 (canonical domain and current product description reconciled; legacy lesson-kit records remain covered)
+Last reviewed: 2026-08-11 (Blind Spot evidence, experiment, correction, and advisor handling reconciled)
 
 This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://makeyourmindup.ai. CTRL is an AI decision-support and advisory tool for busy leaders. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 
@@ -25,6 +25,7 @@ This policy covers personal data processed through the CTRL web application and 
 | Account identity | Email address, name, display name | You, at sign-up; Google OAuth if used |
 | Business / work context | Company, industry, company size, website, primary challenges, AI-readiness score, communication style, thinking style | You, during onboarding and use |
 | Memory Web facts | Thoughts and statements you voice that are extracted into structured facts (encrypted at rest with AES-256-GCM) | Derived from your inputs |
+| Blind Spot records | Confirmed pattern text, exact evidence snapshots, experiment and outcome; rejection reason and evidence fingerprint when you reject a read | Derived from your stored records and your explicit response |
 | Conversation / chat messages | Messages you send to and receive from CTRL's assistants | You, during use |
 | AI-literacy diagnostic / assessment responses | Answers to AI-fluency and leadership assessments | You, during assessments |
 | Legacy lesson-kit records | Org/team/workflow intake previously provided when the retired lesson-kit flow was active, stored in `kit_builds.intake` | You, during a historical kit build |
@@ -42,6 +43,7 @@ For users in the EU/UK, the GDPR requires a lawful basis for each purpose. The t
 |---------|----------------------|-------------------|
 | Provide the Service (auth, core features) | Account identity, business context, chat, assessments | Contract (Art 6(1)(b)) |
 | Build and maintain your Memory Web | Memory Web facts, chat, voice transcripts | Contract (Art 6(1)(b)); consent where you enable optional memory features |
+| Offer and follow up a Blind Spot reflection | Business context, verified intentions, decisions, check-ins, confirmed pattern evidence, experiment outcome | Contract (Art 6(1)(b)); the pattern is stored only after your confirmation |
 | Generate AI responses, briefings, and assessments | Business context, chat, assessments, preferences, transcripts | Contract (Art 6(1)(b)) |
 | Retain and support legacy lesson-kit records until deletion | Legacy lesson-kit records | Contract (Art 6(1)(b)) |
 | Daily briefings and notifications | Briefing preferences, interests, account identity | Contract for transactional delivery; consent for optional channels |
@@ -64,7 +66,7 @@ We share personal data only with subprocessors that help us operate the Service,
 
 ## 7. Voice and audio
 
-When you use voice features, your audio is transcribed to text. We retain the resulting transcripts as part of your data. The audio itself is handled by OpenAI as the primary transcription provider and may be sent to Google Gemini if the primary path fails. We do not maintain a long-term store of raw audio as a product feature.
+When you use voice features, your audio is transcribed to text. Transcript retention follows the feature and your settings. The Blind Spot advisor does not persist its exchange as a separate conversation record; an optional correction becomes Memory only when you submit it. Audio is handled by OpenAI as the primary transcription provider and may be sent to Google Gemini if the primary path fails. We do not maintain a long-term store of raw audio as a product feature.
 
 ## 8. International data transfers
 

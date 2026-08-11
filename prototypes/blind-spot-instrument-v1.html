@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <title>CTRL Blind Spot Instrument v1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08090c;
+      --rail: #0a0c10;
+      --panel: #101319;
+      --panel-deep: #0d1015;
+      --panel-soft: #14171d;
+      --line: #22262e;
+      --line-soft: #171a20;
+      --ink: #e6eaf2;
+      --ink-soft: #c8ced8;
+      --muted: #8b94a3;
+      --quiet: #626b78;
+      --emerald: #00d9b6;
+      --emerald-soft: rgba(0, 217, 182, 0.1);
+      --rose: #ee617d;
+      --rose-soft: rgba(238, 97, 125, 0.09);
+      --rose-line: rgba(238, 97, 125, 0.34);
+      --focus: #f7f3eb;
+      --display: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+      --text: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+      --system: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 69% 17%, rgba(238, 97, 125, 0.035), transparent 25%),
+        radial-gradient(circle at 35% 74%, rgba(0, 217, 182, 0.026), transparent 27%),
+        var(--bg);
+      color: var(--ink);
+      font-family: var(--text);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button, textarea { font: inherit; }
+
+    button:focus-visible,
+    textarea:focus-visible,
+    [tabindex="0"]:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    button { cursor: pointer; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 206px minmax(0, 1fr);
+      height: 100dvh;
+      min-height: 620px;
+      overflow: hidden;
+    }
+
+    .rail {
+      display: flex;
+      min-height: 0;
+      flex-direction: column;
+      border-right: 1px solid var(--line-soft);
+      background: rgba(10, 12, 16, 0.94);
+    }
+
+    .brand {
+      display: flex;
+      height: 60px;
+      flex: 0 0 60px;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 0 18px;
+    }
+
+    .mark {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      transform: rotate(1deg);
+    }
+
+    .mark span { border-radius: 1px; background: var(--emerald); }
+    .mark span:first-child { opacity: .32; transform: translateY(4px); }
+    .mark span:nth-child(2) { opacity: .72; }
+    .mark span:nth-child(3) { opacity: .74; }
+    .mark span:nth-child(4) { background: var(--ink); opacity: .9; }
+
+    .brand-name,
+    .eyebrow,
+    .meta,
+    .nav-section,
+    .preview-badge,
+    .anchor-kind,
+    .source,
+    .experiment-label,
+    .dialog-label {
+      font-family: var(--system);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+    }
+
+    .brand-name { color: #aab2be; font-size: 10px; letter-spacing: .24em; }
+
+    nav { padding: 14px 10px; }
+    .nav-section { margin: 16px 10px 7px; color: #4f5863; font-size: 9px; font-weight: 700; }
+
+    .nav-item {
+      display: flex;
+      min-height: 44px;
+      width: 100%;
+      align-items: center;
+      gap: 11px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      padding: 0 12px;
+      color: #8f98a4;
+      text-align: left;
+    }
+
+    .nav-item svg { width: 17px; height: 17px; flex: 0 0 auto; }
+    .nav-item span { font-size: 12px; font-weight: 590; }
+
+    .nav-item[aria-current="page"] {
+      background: var(--emerald-soft);
+      color: var(--emerald);
+      box-shadow: inset 2px 0 0 var(--emerald);
+    }
+
+    .rail-footer {
+      display: grid;
+      gap: 6px;
+      margin-top: auto;
+      border-top: 1px solid var(--line-soft);
+      padding: 12px 10px 15px;
+    }
+
+    .workspace {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      grid-template-rows: 60px minmax(0, 1fr);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 0 28px;
+      background: rgba(8, 9, 12, 0.86);
+      backdrop-filter: blur(12px);
+    }
+
+    .top-title .eyebrow { color: #525b67; font-size: 8px; }
+    .top-title strong { display: block; margin-top: 3px; font-family: var(--display); font-size: 12px; font-weight: 640; }
+
+    .preview-badge {
+      margin-left: auto;
+      border: 1px solid #28303a;
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: #717a86;
+      font-size: 8px;
+    }
+
+    .privacy-mini {
+      display: inline-flex;
+      min-height: 32px;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid rgba(238, 97, 125, .18);
+      border-radius: 999px;
+      padding: 0 11px;
+      color: #ad8c94;
+      font-size: 10px;
+    }
+
+    .privacy-mini svg { width: 13px; height: 13px; }
+
+    main {
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: clamp(22px, 3vh, 34px) clamp(26px, 4vw, 62px) 36px;
+    }
+
+    .instrument {
+      width: min(1080px, 100%);
+      margin: 0 auto;
+    }
+
+    .private-line {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #b999a1;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .private-line svg { width: 14px; height: 14px; color: var(--rose); }
+    .private-line .divider { color: #4c535e; }
+    .private-line .muted { color: #767f8b; font-weight: 520; }
+
+    .read-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 32px;
+      align-items: end;
+      padding: 18px 0 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow { color: var(--rose); font-size: 9px; font-weight: 700; }
+
+    h1 {
+      max-width: 780px;
+      margin: 8px 0 0;
+      font-family: var(--display);
+      font-size: clamp(34px, 4.1vw, 58px);
+      font-weight: 690;
+      letter-spacing: -.047em;
+      line-height: .98;
+      text-wrap: balance;
+    }
+
+    .read-copy {
+      max-width: 72ch;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .strength {
+      display: grid;
+      justify-items: end;
+      gap: 8px;
+      padding-bottom: 2px;
+      white-space: nowrap;
+    }
+
+    .strength-rail { display: flex; gap: 4px; }
+    .strength-rail span { width: 34px; height: 2px; border-radius: 999px; background: var(--rose); }
+    .strength-rail span:nth-child(2) { opacity: .65; }
+    .strength-rail span:nth-child(3) { opacity: .32; }
+    .meta { color: #818a97; font-size: 9px; font-weight: 700; }
+
+    .tension-map {
+      display: grid;
+      grid-template-columns: minmax(245px, .88fr) 104px minmax(330px, 1.2fr);
+      min-height: 302px;
+      align-items: stretch;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .map-side {
+      display: grid;
+      align-content: center;
+      gap: 10px;
+      padding: 24px 0;
+    }
+
+    .map-side.recurrence { align-content: center; }
+
+    .anchor-kind {
+      color: #67717f;
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .anchor {
+      position: relative;
+      display: grid;
+      width: 100%;
+      min-height: 72px;
+      gap: 7px;
+      align-content: center;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: linear-gradient(145deg, rgba(20, 23, 29, .94), rgba(13, 16, 21, .94));
+      padding: 14px 16px;
+      color: var(--ink-soft);
+      text-align: left;
+    }
+
+    .anchor:hover { border-color: #343a44; }
+    .anchor::after {
+      position: absolute;
+      top: 50%;
+      right: -17px;
+      width: 17px;
+      height: 1px;
+      background: var(--rose-line);
+      content: "";
+    }
+
+    .recurrence .anchor::after { right: auto; left: -17px; }
+    .source { color: #7d8794; font-size: 8px; }
+    .quote { font-size: 12px; line-height: 1.42; text-wrap: pretty; }
+
+    .tension-axis {
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .tension-axis::before {
+      position: absolute;
+      top: 21px;
+      bottom: 21px;
+      left: 50%;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, var(--rose-line) 22%, var(--rose-line) 78%, transparent);
+      content: "";
+    }
+
+    .tension-mark {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      width: 50px;
+      height: 50px;
+      place-items: center;
+      border: 1px solid var(--rose-line);
+      border-radius: 50%;
+      background: #0d1015;
+      color: var(--rose);
+      box-shadow: 0 0 44px rgba(238, 97, 125, .11);
+    }
+
+    .tension-mark::before,
+    .tension-mark::after {
+      position: absolute;
+      width: 12px;
+      height: 1px;
+      background: currentColor;
+      content: "";
+    }
+
+    .tension-mark::before { transform: translate(-4px, -1px) rotate(52deg); }
+    .tension-mark::after { transform: translate(5px, 3px) rotate(-58deg); }
+    .axis-label { position: absolute; bottom: 24px; color: #725963; font: 8px var(--system); letter-spacing: .16em; text-transform: uppercase; }
+
+    .experiment {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: center;
+      padding: 22px 0 0;
+    }
+
+    .experiment-copy { display: grid; gap: 7px; }
+    .experiment-label { color: var(--emerald); font-size: 8px; font-weight: 700; }
+    .experiment h2 { margin: 0; font-family: var(--display); font-size: 21px; font-weight: 650; letter-spacing: -.024em; }
+    .experiment p { max-width: 68ch; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.48; }
+
+    .actions { display: flex; align-items: center; gap: 8px; }
+
+    .button {
+      display: inline-flex;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 0 15px;
+      background: var(--panel-soft);
+      color: var(--ink-soft);
+      font-size: 11px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .button svg { width: 15px; height: 15px; }
+
+    .button.primary {
+      border-color: var(--emerald);
+      background: var(--emerald);
+      color: #06110f;
+      box-shadow: 0 10px 30px -18px rgba(0, 217, 182, .82);
+    }
+
+    .button.quiet { background: transparent; color: #8e97a3; }
+    .button.icon-only { min-width: 46px; padding: 0 13px; }
+    .button.icon-only:not(:has(span)) { width: 46px; padding: 0; }
+
+    .mobile-header,
+    .mobile-nav { display: none; }
+
+    dialog {
+      width: min(520px, calc(100vw - 32px));
+      max-height: min(680px, calc(100dvh - 32px));
+      overflow: auto;
+      border: 1px solid #2b3038;
+      border-radius: 18px;
+      background: #101319;
+      padding: 0;
+      color: var(--ink);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, .76);
+    }
+
+    dialog::backdrop { background: rgba(3, 5, 7, .78); backdrop-filter: blur(6px); }
+
+    .dialog-inner { padding: 24px; }
+    .dialog-top { display: flex; align-items: start; gap: 16px; }
+    .dialog-label { color: var(--rose); font-size: 8px; font-weight: 700; }
+    dialog h2 { margin: 8px 0 0; font-family: var(--display); font-size: 24px; letter-spacing: -.03em; }
+    dialog p { color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .close { margin-left: auto; flex: 0 0 auto; }
+    .reason-grid { display: grid; gap: 8px; margin-top: 20px; }
+    .reason-grid .button { justify-content: flex-start; width: 100%; }
+    .voice-row { display: flex; gap: 8px; margin-top: 12px; }
+    textarea { width: 100%; min-height: 94px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; background: #0b0e12; padding: 12px; color: var(--ink); font-size: 13px; }
+    .grounding { margin-top: 16px; border-left: 2px solid var(--rose); padding-left: 12px; }
+    .grounding strong { display: block; color: var(--ink-soft); font-size: 12px; }
+    .grounding span { display: block; margin-top: 4px; color: var(--quiet); font-size: 10px; }
+    .accepted { display: none; align-items: center; gap: 9px; color: #aef6ea; font-size: 12px; }
+    .accepted svg { width: 18px; height: 18px; }
+
+    @media (max-width: 980px) {
+      .tension-map { grid-template-columns: minmax(210px, .8fr) 80px minmax(300px, 1.2fr); }
+      .experiment { align-items: end; }
+      .actions { flex-wrap: wrap; justify-content: flex-end; max-width: 340px; }
+    }
+
+    @media (min-width: 761px) and (max-height: 760px) {
+      main { padding-top: 18px; padding-bottom: 12px; }
+      .read-head { padding-top: 13px; padding-bottom: 14px; }
+      .tension-map { min-height: 278px; }
+      .map-side { padding-block: 18px; }
+      .experiment { padding-top: 16px; }
+    }
+
+    @media (max-width: 760px) {
+      body { overflow: hidden; }
+
+      .app {
+        display: block;
+        min-height: 0;
+        height: 100dvh;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      .rail, .topbar { display: none; }
+
+      .workspace {
+        display: grid;
+        height: 100%;
+        grid-template-rows: 60px minmax(0, 1fr) 72px;
+      }
+
+      .mobile-header {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--line-soft);
+        padding: 0 14px 0 16px;
+        background: rgba(8, 9, 12, .92);
+      }
+
+      .mobile-header .brand { height: auto; flex: 0 1 auto; border: 0; padding: 0; }
+      .mobile-header .preview-badge { margin-left: auto; margin-right: 8px; padding-inline: 8px; }
+
+      .mobile-settings {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: var(--panel-deep);
+        color: #9aa3af;
+      }
+
+      .mobile-settings svg { width: 18px; height: 18px; }
+
+      main {
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 15px 16px 20px;
+      }
+
+      .private-line { gap: 7px; font-size: 10px; }
+
+      .read-head {
+        display: block;
+        padding: 11px 0 13px;
+      }
+
+      h1 {
+        margin-top: 6px;
+        font-size: clamp(31px, 9.4vw, 38px);
+        line-height: .98;
+      }
+
+      .read-copy {
+        display: -webkit-box;
+        overflow: hidden;
+        margin-top: 8px;
+        font-size: 11.5px;
+        line-height: 1.42;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
+      .strength {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+      }
+
+      .strength-rail span { width: 24px; }
+
+      .tension-map {
+        display: grid;
+        min-height: 275px;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 34px auto;
+        padding: 12px 0;
+      }
+
+      .map-side { align-content: initial; gap: 7px; padding: 0; }
+      .map-side.recurrence { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+      .map-side.recurrence .anchor-kind { grid-column: 1 / -1; }
+
+      .anchor {
+        min-height: 62px;
+        gap: 5px;
+        border-radius: 10px;
+        padding: 10px 11px;
+      }
+
+      .anchor::after { display: none; }
+      .source { font-size: 7px; letter-spacing: .09em; }
+      .quote { font-size: 10.5px; line-height: 1.28; }
+
+      .recurrence .anchor {
+        min-width: 0;
+        min-height: 92px;
+        align-content: start;
+        padding: 9px;
+      }
+
+      .recurrence .quote {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+      }
+
+      .tension-axis { overflow: visible; }
+      .tension-axis::before { top: 50%; right: 0; bottom: auto; left: 0; width: 100%; height: 1px; }
+      .tension-mark { width: 34px; height: 34px; }
+      .axis-label { display: none; }
+
+      .experiment {
+        display: block;
+        padding-top: 14px;
+      }
+
+      .experiment-copy { gap: 4px; }
+      .experiment h2 { font-size: 18px; }
+      .experiment p {
+        display: -webkit-box;
+        overflow: hidden;
+        font-size: 11px;
+        line-height: 1.38;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 84px 46px;
+        max-width: none;
+        margin-top: 11px;
+      }
+
+      .actions .primary { min-width: 0; }
+      .actions .quiet { width: 46px; padding: 0; }
+      .actions .quiet span { display: none; }
+      .actions #reject { width: 84px; gap: 6px; padding: 0 9px; }
+      .actions #reject span { display: inline; }
+      .accepted { min-height: 46px; margin-top: 11px; }
+
+      .mobile-nav {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        border-top: 1px solid var(--line-soft);
+        background: rgba(8, 9, 12, .97);
+      }
+
+      .mobile-nav .nav-item {
+        display: grid;
+        min-width: 0;
+        min-height: 72px;
+        place-content: center;
+        justify-items: center;
+        gap: 5px;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+      }
+
+      .mobile-nav .nav-item[aria-current="page"] { box-shadow: inset 0 2px 0 var(--emerald); }
+      .mobile-nav .nav-item span { overflow: hidden; max-width: 100%; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+      .mobile-nav .nav-item svg { width: 19px; height: 19px; }
+    }
+
+    @media (max-width: 350px), (max-height: 640px) and (max-width: 760px) {
+      .workspace { grid-template-rows: 56px minmax(0, 1fr) 66px; }
+      main { padding: 12px 13px 18px; }
+      .brand-name { display: none; }
+      .mobile-header .preview-badge { font-size: 7px; }
+      h1 { font-size: 29px; }
+      .read-copy { -webkit-line-clamp: 3; }
+      .tension-map { min-height: 260px; }
+      .map-side.recurrence { grid-template-columns: 1fr; }
+      .recurrence .anchor { min-height: 58px; }
+      .recurrence .quote { -webkit-line-clamp: 2; }
+      .mobile-nav .nav-item { min-height: 66px; }
+      .experiment p { -webkit-line-clamp: 3; }
+      .actions { grid-template-columns: minmax(0, 1fr) 46px; }
+      .actions .primary { grid-column: 1 / -1; }
+      .actions #reject { width: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail" aria-label="Primary">
+      <div class="brand" aria-label="CTRL">
+        <div class="mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <span class="brand-name">CTRL</span>
+      </div>
+      <nav>
+        <div class="nav-section">Your instruments</div>
+        <button class="nav-item" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5V20H6a2 2 0 0 1-2-2Z"/><path d="M9.5 20v-6h5v6"/></svg>
+          <span>Today</span>
+        </button>
+        <button class="nav-item" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v18M5 7h14M7.5 7l-3 6h6l-3-6Zm9 0-3 6h6l-3-6Z"/><path d="M8 21h8"/></svg>
+          <span>Decide</span>
+        </button>
+        <button class="nav-item" type="button" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.8 12s3.4-5.5 9.2-5.5 9.2 5.5 9.2 5.5-3.4 5.5-9.2 5.5S2.8 12 2.8 12Z"/><circle cx="12" cy="12" r="2.3"/></svg>
+          <span>Blind spot</span>
+        </button>
+        <button class="nav-item" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8.5 6.2A3.5 3.5 0 0 1 12 2.8a3.5 3.5 0 0 1 3.5 3.4 3.2 3.2 0 0 1 2.8 4.9 3.5 3.5 0 0 1-.4 6.7A3.5 3.5 0 0 1 12 20.6a3.5 3.5 0 0 1-5.9-2.8 3.5 3.5 0 0 1-.4-6.7 3.2 3.2 0 0 1 2.8-4.9Z"/><path d="M12 6v12M8.5 9.5 12 12m3.5-2.5L12 12m-3.5 3 3.5-3m3.5 3L12 12"/></svg>
+          <span>Memory</span>
+        </button>
+      </nav>
+      <div class="rail-footer">
+        <button class="nav-item" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.08V21h-4v-.08A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.08-.4H3v-4h.08A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.08V3h4v.08A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.4.26.74.6 1 1 .22.34.35.74.4 1.15V11h.2v4h-.08A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+          <span>Settings</span>
+        </button>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <div class="top-title"><span class="eyebrow">CTRL instrument</span><strong>Blind spot</strong></div>
+        <div class="privacy-mini">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          Private to you
+        </div>
+        <span class="preview-badge">Synthetic preview</span>
+      </header>
+
+      <header class="mobile-header">
+        <div class="brand" aria-label="CTRL">
+          <div class="mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <span class="brand-name">CTRL</span>
+        </div>
+        <span class="preview-badge">Preview</span>
+        <button class="mobile-settings" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.5 1a7.4 7.4 0 0 0-1.8-1L14.2 3h-4.4l-.4 3a7.4 7.4 0 0 0-1.8 1L5.1 6 3 9.4 5.1 11a7 7 0 0 0 0 2L3 14.6 5.1 18l2.5-1a7.4 7.4 0 0 0 1.8 1l.4 3h4.4l.4-3a7.4 7.4 0 0 0 1.8-1l2.5 1 2.1-3.4-2.1-1.6c.1-.3.1-.7.1-1Z"/></svg>
+        </button>
+      </header>
+
+      <main>
+        <article class="instrument" aria-labelledby="read-title">
+          <div class="private-line">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <span>Between us</span><span class="divider">·</span><span class="muted">Private to you</span>
+          </div>
+
+          <section class="read-head">
+            <div>
+              <div class="eyebrow">My read</div>
+              <h1 id="read-title">Strategy is outrunning ownership.</h1>
+              <p class="read-copy">You keep naming ownership as the constraint while the decisions stay with you.</p>
+            </div>
+            <div class="strength" aria-label="Evidence strength: 3 signals, 2 source types, across 6 weeks">
+              <div class="strength-rail" aria-hidden="true"><span></span><span></span><span></span></div>
+              <div class="meta">3 signals · 2 sources · 6 weeks</div>
+            </div>
+          </section>
+
+          <section class="tension-map" aria-label="The tension between your intention and what keeps recurring">
+            <div class="map-side intention">
+              <div class="anchor-kind">What you said matters</div>
+              <button class="anchor" type="button" data-evidence="objective">
+                <span class="source">Your objective · 2 Jul</span>
+                <span class="quote">“Build a team that can ship without me in every loop.”</span>
+              </button>
+            </div>
+
+            <div class="tension-axis" aria-hidden="true">
+              <div class="tension-mark"></div>
+              <span class="axis-label">Tension</span>
+            </div>
+
+            <div class="map-side recurrence">
+              <div class="anchor-kind">What keeps recurring</div>
+              <button class="anchor" type="button" data-evidence="decision">
+                <span class="source">Your decision · 19 Jul</span>
+                <span class="quote">“Keep product strategy with me until the new lead is in.”</span>
+              </button>
+              <button class="anchor" type="button" data-evidence="blocker">
+                <span class="source">Your blocker · 7 Aug</span>
+                <span class="quote">“Too many decisions still come back to me.”</span>
+              </button>
+              <button class="anchor" type="button" data-evidence="checkin">
+                <span class="source">Your check-in · 10 Aug</span>
+                <span class="quote">“Still covering the product gaps myself.”</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="experiment" aria-labelledby="experiment-title">
+            <div class="experiment-copy">
+              <div class="experiment-label">15-minute test</div>
+              <h2 id="experiment-title">Hand over one live product call.</h2>
+              <p>Name the decision, the owner and what only you still need to decide. Then leave the room.</p>
+            </div>
+            <div class="actions" id="actions">
+              <button class="button primary" type="button" id="accept">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+                <span>Try this before tomorrow</span>
+              </button>
+              <button class="button quiet icon-only" type="button" id="reject" aria-label="Not quite">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+                <span>Not quite</span>
+              </button>
+              <button class="button quiet icon-only" type="button" id="talk" aria-label="Talk this through">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 17.5 3.5 20l.8-4A7.5 7.5 0 1 1 7 17.5Z"/><path d="M8 11h8M8 14h5"/></svg>
+                <span>Talk this through</span>
+              </button>
+            </div>
+            <div class="accepted" id="accepted" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 8"/></svg>
+              I’ll bring this back in your next briefing.
+            </div>
+          </section>
+        </article>
+      </main>
+
+      <nav class="mobile-nav" aria-label="Primary">
+        <button class="nav-item" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5V20H6a2 2 0 0 1-2-2Z"/><path d="M9.5 20v-6h5v6"/></svg><span>Today</span>
+        </button>
+        <button class="nav-item" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v18M5 7h14M7.5 7l-3 6h6l-3-6Zm9 0-3 6h6l-3-6Z"/><path d="M8 21h8"/></svg><span>Decide</span>
+        </button>
+        <button class="nav-item" type="button" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.8 12s3.4-5.5 9.2-5.5 9.2 5.5 9.2 5.5-3.4 5.5-9.2 5.5S2.8 12 2.8 12Z"/><circle cx="12" cy="12" r="2.3"/></svg><span>Blind spot</span>
+        </button>
+        <button class="nav-item" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8.5 6.2A3.5 3.5 0 0 1 12 2.8a3.5 3.5 0 0 1 3.5 3.4 3.2 3.2 0 0 1 2.8 4.9 3.5 3.5 0 0 1-.4 6.7A3.5 3.5 0 0 1 12 20.6a3.5 3.5 0 0 1-5.9-2.8 3.5 3.5 0 0 1-.4-6.7 3.2 3.2 0 0 1 2.8-4.9Z"/><path d="M12 6v12M8.5 9.5 12 12m3.5-2.5L12 12m-3.5 3 3.5-3m3.5 3L12 12"/></svg><span>Memory</span>
+        </button>
+      </nav>
+    </section>
+  </div>
+
+  <dialog id="evidence-dialog" aria-labelledby="evidence-title">
+    <div class="dialog-inner">
+      <div class="dialog-top">
+        <div><div class="dialog-label">Verified anchor</div><h2 id="evidence-title">Your source, in context</h2></div>
+        <button class="button quiet icon-only close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+      </div>
+      <p id="evidence-copy"></p>
+      <div class="grounding"><strong id="evidence-source"></strong><span id="evidence-date"></span></div>
+    </div>
+  </dialog>
+
+  <dialog id="reject-dialog" aria-labelledby="reject-title">
+    <div class="dialog-inner">
+      <div class="dialog-top">
+        <div><div class="dialog-label">Not quite</div><h2 id="reject-title">What did I miss?</h2></div>
+        <button class="button quiet icon-only close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+      </div>
+      <p>One tap is enough. I’ll leave this alone until the evidence changes.</p>
+      <div class="reason-grid">
+        <button class="button reason" type="button">Wrong pattern</button>
+        <button class="button reason" type="button">Evidence is stale</button>
+        <button class="button reason" type="button">Missing context</button>
+      </div>
+      <div class="voice-row">
+        <button class="button quiet" type="button" aria-label="Add a voice correction">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+          Add a voice note
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="talk-dialog" aria-labelledby="talk-title">
+    <div class="dialog-inner">
+      <div class="dialog-top">
+        <div><div class="dialog-label">Between us</div><h2 id="talk-title">Talk this through</h2></div>
+        <button class="button quiet icon-only close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+      </div>
+      <p>I’ll stay with the four anchors on screen. Nothing else gets pulled in.</p>
+      <textarea aria-label="Your message" placeholder="What am I missing?"></textarea>
+      <div class="voice-row">
+        <button class="button primary" type="button">Send</button>
+        <button class="button quiet icon-only" type="button" aria-label="Speak instead">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const evidence = {
+      objective: { copy: 'Build a team that can ship without me in every loop.', source: 'Your objective', date: 'Observed 2 July · User-authored' },
+      decision: { copy: 'Keep product strategy with me until the new lead is in.', source: 'Your decision', date: 'Observed 19 July · Confirmed decision' },
+      blocker: { copy: 'Too many decisions still come back to me.', source: 'Your blocker', date: 'Observed 7 August · User-authored' },
+      checkin: { copy: 'Still covering the product gaps myself.', source: 'Your check-in', date: 'Observed 10 August · User-authored' }
+    };
+
+    const dialogs = [...document.querySelectorAll('dialog')];
+    document.querySelectorAll('.close').forEach((button) => button.addEventListener('click', () => button.closest('dialog').close()));
+    dialogs.forEach((dialog) => dialog.addEventListener('click', (event) => {
+      const box = dialog.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
+    }));
+
+    document.querySelectorAll('[data-evidence]').forEach((button) => button.addEventListener('click', () => {
+      const item = evidence[button.dataset.evidence];
+      document.getElementById('evidence-copy').textContent = `“${item.copy}”`;
+      document.getElementById('evidence-source').textContent = item.source;
+      document.getElementById('evidence-date').textContent = item.date;
+      document.getElementById('evidence-dialog').showModal();
+    }));
+
+    document.getElementById('reject').addEventListener('click', () => document.getElementById('reject-dialog').showModal());
+    document.getElementById('talk').addEventListener('click', () => document.getElementById('talk-dialog').showModal());
+    document.querySelectorAll('.reason').forEach((button) => button.addEventListener('click', () => {
+      document.getElementById('reject-dialog').close();
+      document.getElementById('actions').style.display = 'none';
+      const accepted = document.getElementById('accepted');
+      accepted.style.display = 'flex';
+      accepted.textContent = `Got it. I’ll leave this alone until the evidence changes.`;
+    }));
+
+    document.getElementById('accept').addEventListener('click', () => {
+      document.getElementById('actions').style.display = 'none';
+      document.getElementById('accepted').style.display = 'flex';
+    });
+  </script>
+</body>
+</html>

@@ -12,6 +12,7 @@ This directory is the shortest reliable path from product intent to safe operati
 |---|---|---|
 | Understand the product | [Product](./product.md) | [Features](./features.md) |
 | Change the interface | [Product](./product.md) | [Architecture](./architecture.md), [frontend instructions](../agent-instructions/frontend.md) |
+| Resume material interface work | [Design delivery state](./design-state.md) | [Product](./product.md), [Architecture](./architecture.md) |
 | Change data or AI behavior | [Architecture](./architecture.md) | [Supabase instructions](../agent-instructions/supabase.md), [release guide](../../project-documentation/REPLICATION_GUIDE.md) |
 | Operate or release CTRL | [Release state](./release-state.md) | [Release guide](../../project-documentation/REPLICATION_GUIDE.md) |
 | Maintain documentation | [Documentation standards](./documentation-standards.md) | `npm run docs:check` |
@@ -37,6 +38,7 @@ Code wins when prose drifts. Correct the prose in the same change.
 - [Features](./features.md): live, supporting, nested, and retired capabilities.
 - [Release state](./release-state.md): exact production baseline, verification evidence, and known debt.
 - [Documentation standards](./documentation-standards.md): ownership, freshness, history, and automated drift rules.
+- [Design delivery state](./design-state.md): the current material surface, approval gate, artifact revision, and exactly one next action.
 
 ## Reference, not competing truth
 

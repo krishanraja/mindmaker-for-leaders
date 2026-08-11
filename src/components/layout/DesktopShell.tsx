@@ -95,7 +95,7 @@ function DesktopRail() {
                 }
               }}
               className={cn(
-                'group relative w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium',
+                'group relative min-h-11 w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium',
                 'transition-colors duration-100',
                 isActive
                   ? 'bg-accent/15 text-accent'
@@ -148,7 +148,7 @@ function DesktopRail() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                'min-h-11 w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-accent/15 text-accent'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50',
@@ -180,7 +180,7 @@ function DesktopRail() {
           <button
             type="button"
             onClick={signOut}
-            className="p-1.5 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             aria-label="Sign out"
             title="Sign out"
           >

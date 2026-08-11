@@ -43,7 +43,7 @@ export function CommandPaletteTrigger({ className = '' }: { className?: string }
     <button
       type="button"
       onClick={toggle}
-      className={`group flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-sm w-full max-w-md ${className}`}
+      className={`group flex min-h-11 items-center gap-2 px-3 rounded-lg border border-border bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-sm w-full max-w-md ${className}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

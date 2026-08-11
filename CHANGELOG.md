@@ -6,6 +6,33 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
+## [Unreleased] - 2026-08-11 - Blind Spot trusted-advisor instrument
+
+### Added
+
+- One CTRL Blind Spot instrument with a private-state label, short mechanism-level read, visible evidence strength, exact dated anchors, tension map, one 15-minute experiment, one-tap correction, and bounded voice or text advisor.
+- Structured `BlindSpotCandidateV2` qualification, candidate signing, evidence fingerprint suppression, source ownership and freshness reload, and confirmation support adjudication.
+- Additive owner-scoped evidence-link, experiment, and rejection tables plus atomic, idempotent confirmation and experiment-outcome functions.
+- Due Blind Spot experiment check-ins in the existing briefing learning slot.
+- Public `/preview?surface=blind-spot` fixtures for the complete state range and responsive contract coverage at four approved viewports.
+
+### Changed
+
+- Thin evidence now produces an honest tension question instead of a Blind Spot claim.
+- The model selects source IDs; the server owns displayed excerpts, labels, dates, independence checks, and content limits.
+- Rejection ends the session and suppresses the same evidence combination until its inputs change. Immediate alternative generation is removed.
+
+### Verified so far
+
+- 870 Vitest tests pass across 53 files, including 16 focused Blind Spot logic and component tests.
+- 37 Blind Spot Playwright checks pass inside the shared production shells at 1440x900, 1280x720, 390x844, and 320x568.
+- Typecheck reports zero new diagnostics against the existing baseline.
+- Standards, documentation checks, changed-file lint, the 2,789-module production build, and 3/3 prerender routes pass.
+- The pgTAP database contract is present; local execution is pending because Docker Desktop is not running.
+- Preview acceptance, reviewed PR, merge, and production release remain separate gates.
+
+---
+
 ## [Unreleased] - 2026-08-10 - Documentation authority and drift gate
 
 ### Added

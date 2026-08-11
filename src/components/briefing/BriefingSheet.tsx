@@ -9,6 +9,7 @@ import { useDevice } from '@/hooks/useDevice';
 import { BRIEFING_TYPES } from '@/types/briefing';
 import type { PlaybackSpeed } from '@/types/briefing';
 import type { PendingVerification } from '@/types/memory';
+import type { BlindSpotExperiment } from '@/types/blindSpot';
 import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import { SegmentCard } from './SegmentCard';
@@ -26,9 +27,10 @@ function formatTime(seconds: number): string {
 
 interface BriefingSheetProps {
   learningPromptOverride?: PendingVerification;
+  experimentPromptOverride?: BlindSpotExperiment;
 }
 
-export function BriefingSheet({ learningPromptOverride }: BriefingSheetProps = {}) {
+export function BriefingSheet({ learningPromptOverride, experimentPromptOverride }: BriefingSheetProps = {}) {
   const {
     briefing,
     setBriefing,
@@ -216,7 +218,8 @@ export function BriefingSheet({ learningPromptOverride }: BriefingSheetProps = {
                 <BriefingLearningPrompt
                   briefingId={briefing.id}
                   promptOverride={learningPromptOverride}
-                  memoryEnabledOverride={learningPromptOverride ? true : undefined}
+                  experimentOverride={experimentPromptOverride}
+                  memoryEnabledOverride={learningPromptOverride || experimentPromptOverride ? true : undefined}
                 />
 
                 {briefing.segments.length > 0 && (

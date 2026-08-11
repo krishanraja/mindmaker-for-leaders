@@ -19,6 +19,14 @@ import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton
 import { useBriefingContext } from '@/contexts/BriefingContext';
 import { SettingsSheetProvider, useSettingsSheet } from '@/contexts/SettingsSheetContext';
 import { SettingsSheet } from '@/components/settings/SettingsSheet';
+import { BlindSpotInstrument } from '@/components/blind-spot/BlindSpotInstrument';
+import { BlindSpotAdvisorSheet, BlindSpotRejectionSheet } from '@/components/blind-spot/BlindSpotSheets';
+import { blindSpotPatternFixture, blindSpotTensionFixture } from '@/components/blind-spot/fixtures';
+import { DesktopShell } from '@/components/layout/DesktopShell';
+import { MobileFrame } from '@/components/layout/MobileFrame';
+import { CommandPaletteProvider } from '@/components/layout/CommandPalette';
+import { ContestProvider } from '@/contexts/ContestProvider';
+import { useDevice } from '@/hooks/useDevice';
 import type { BriefingRead } from '@/components/briefing/briefingRead';
 import type { Briefing } from '@/types/briefing';
 import type { TrackRecordRow } from '@/types/track-record';
@@ -26,6 +34,7 @@ import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine'
 import type { UserMemoryFact } from '@/types/memory';
 import type { ContestKind, ContestResult, ContestTarget } from '@/types/contest';
 import type { CockpitData, DeckCard } from '@/types/cockpit';
+import type { BlindSpotFixtureState } from '@/types/blindSpot';
 
 const noop = () => {};
 
@@ -128,6 +137,87 @@ function SettingsShellFixture() {
     <SettingsSheetProvider>
       <SettingsShellFixtureContent />
     </SettingsSheetProvider>
+  );
+}
+
+const BLIND_SPOT_STATES: BlindSpotFixtureState[] = ['pattern', 'tension', 'loading', 'error', 'accepted', 'rejected', 'conversation', 'stale-evidence', 'long-content'];
+
+function BlindSpotFixtureProviders({ children }: { children: ReactNode }) {
+  return (
+    <SettingsSheetProvider>
+      <CommandPaletteProvider>
+        <ContestProvider>
+          {children}
+          <SettingsSheet />
+        </ContestProvider>
+      </CommandPaletteProvider>
+    </SettingsSheetProvider>
+  );
+}
+
+function BlindSpotFixture() {
+  const { isMobile } = useDevice();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requested = searchParams.get('state') as BlindSpotFixtureState | null;
+  const state = requested && BLIND_SPOT_STATES.includes(requested) ? requested : 'pattern';
+  const [localStatus, setLocalStatus] = useState(state);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [advisorOpen, setAdvisorOpen] = useState(state === 'conversation');
+
+  useEffect(() => {
+    setLocalStatus(state);
+    setAdvisorOpen(state === 'conversation');
+  }, [state]);
+
+  const longCandidate = {
+    ...blindSpotPatternFixture,
+    headline: 'Ownership is still waiting for permission.',
+    explanation: 'The record suggests you want decisions to move outward, while several recent moments still route final ownership through you.',
+    recurrence: blindSpotPatternFixture.recurrence.map((anchor, index) => ({ ...anchor, excerpt: `${anchor.excerpt} This is deliberately extended fixture content ${index + 1} to test balanced wrapping without losing the source or meaning.` })),
+  };
+  const candidate = state === 'tension' ? blindSpotTensionFixture : state === 'long-content' ? longCandidate : blindSpotPatternFixture;
+  const signed = { candidate, candidateToken: 'synthetic-preview-token', anchorFingerprint: '0'.repeat(64) };
+
+  const selector = (
+      <div className="mx-auto flex min-h-11 w-full max-w-[980px] shrink-0 items-center gap-2 overflow-x-auto px-3 scrollbar-hide">
+        <span className="shrink-0 font-ctrl-system text-[8px] uppercase tracking-[0.14em] text-accent">Synthetic preview</span>
+        {BLIND_SPOT_STATES.map((item) => <button key={item} type="button" onClick={() => setSearchParams({ surface: 'blind-spot', state: item })} className={`min-h-11 shrink-0 rounded-xl px-3 text-[10px] font-semibold capitalize ${state === item ? 'bg-accent text-accent-foreground' : 'border border-border text-muted-foreground'}`}>{item.replace('-', ' ')}</button>)}
+      </div>
+  );
+  const content = (
+      <div className="flex h-full min-h-0 flex-col gap-3">
+        {!isMobile && selector}
+        <div className="min-h-0 flex-1">
+        {state === 'loading' ? <div role="status" className="grid h-full min-h-[360px] place-items-center text-sm text-muted-foreground">Looking for the useful tension.</div>
+          : state === 'error' ? <div role="alert" className="grid h-full min-h-[360px] place-items-center text-sm text-destructive">I could not look at this cleanly right now. Nothing was saved.</div>
+            : <BlindSpotInstrument
+              candidate={candidate}
+              status={localStatus === 'accepted' ? 'accepted' : localStatus === 'rejected' ? 'rejected' : localStatus === 'stale-evidence' ? 'stale-evidence' : 'ready'}
+              onConfirm={() => setLocalStatus('accepted')}
+              onReject={() => setRejectOpen(true)}
+              onTalk={() => setAdvisorOpen(true)}
+            />}
+        </div>
+      </div>
+  );
+  const extras = <><BlindSpotRejectionSheet open={rejectOpen} onOpenChange={setRejectOpen} signed={signed} onRejected={() => setLocalStatus('rejected')} /><BlindSpotAdvisorSheet open={advisorOpen} onOpenChange={setAdvisorOpen} signed={signed} /></>;
+
+  if (isMobile) {
+    return (
+      <BlindSpotFixtureProviders>
+        <MobileFrame scroll hideScrollbar padding="px-3 pt-3 pb-24" banner={selector} extras={extras}>
+          {content}
+        </MobileFrame>
+      </BlindSpotFixtureProviders>
+    );
+  }
+  return (
+    <BlindSpotFixtureProviders>
+      <DesktopShell eyebrow="CTRL instrument" title="Blind spot" fit>
+        {content}
+        {extras}
+      </DesktopShell>
+    </BlindSpotFixtureProviders>
   );
 }
 
@@ -401,6 +491,7 @@ export default function PreviewPage() {
   if (searchParams.get('surface') === 'first-lens') return <FirstLensFixture />;
   if (searchParams.get('surface') === 'briefing-shell') return <BriefingShellFixture />;
   if (searchParams.get('surface') === 'settings-shell') return <SettingsShellFixture />;
+  if (searchParams.get('surface') === 'blind-spot') return <BlindSpotFixture />;
   return (
     // animated={false} renders each component at its final state (no entrance fade) so the
     // static screenshot is clean - headless Chrome pauses framer-motion entrance animations.
