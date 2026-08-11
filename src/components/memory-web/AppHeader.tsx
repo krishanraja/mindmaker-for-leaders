@@ -4,7 +4,6 @@ import { useLocation } from 'react-router-dom';
 import { BrandLockup } from '@/components/landing/BrandLockup';
 import { useSettingsSheet } from '@/contexts/SettingsSheetContext';
 import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
-import { TuneFeedButton } from '@/components/cockpit/TuneFeedButton';
 import { TrackRecordHeaderButton } from '@/components/track-record/TrackRecordHeaderButton';
 
 interface AppHeaderProps {
@@ -22,6 +21,9 @@ interface AppHeaderProps {
    * between the brand lockup and the right-hand actions.
    */
   center?: ReactNode;
+  /** Retained for route compatibility. The handoff still keeps Settings
+      reachable because privacy and delivery controls must never disappear. */
+  handoff?: boolean;
 }
 
 /**
@@ -47,10 +49,8 @@ export function AppHeader({ onAdd, onExport, center }: AppHeaderProps) {
         <div className="min-w-0 flex flex-1 justify-center px-2">{center}</div>
       )}
       <div className="flex items-center gap-1.5">
-        {/* Tune-feed and the audio digest belong to Home (the daily-read door).
-            Off Home, the header carries only that page's own actions, so each tab
-            reads as its own surface (Play lives on Home, not on Memory/Decisions). */}
-        {isHome && <TuneFeedButton compact />}
+        {/* Home keeps one premium audio door. Feed tuning now lives in Settings,
+            so the header does not become a row of competing utility icons. */}
         {isHome && <BriefingHeaderButton />}
         {isDecision && <TrackRecordHeaderButton />}
         {onExport && (
@@ -73,10 +73,11 @@ export function AppHeader({ onAdd, onExport, center }: AppHeaderProps) {
         )}
         <button
           onClick={openSheet}
-          className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border bg-card/70 text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground"
           aria-label="Open settings"
+          title="Settings"
         >
-          <SettingsIcon className="h-4 w-4" />
+          <SettingsIcon className="h-[18px] w-[18px]" />
         </button>
       </div>
     </header>

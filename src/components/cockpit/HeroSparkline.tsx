@@ -135,10 +135,10 @@ export function HeroSparkline({
 
       {labels && (
         <>
-          <text x="244" y="24" fill="#7f8aa0" fontSize="8.5" fontFamily="Inter">
+          <text x="244" y="24" fill="#7f8aa0" fontSize="8.5" fontFamily="Segoe UI, system-ui, sans-serif">
             build cost
           </text>
-          <text x="246" y="82" fill="#9fe9da" fontSize="8.5" fontFamily="Inter">
+          <text x="246" y="82" fill="#9fe9da" fontSize="8.5" fontFamily="Segoe UI, system-ui, sans-serif">
             rent cost
           </text>
         </>

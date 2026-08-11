@@ -1,45 +1,52 @@
 # CTRL by Mindmaker
 
-> Build the AI-native version of your business.
+> A quieter way through AI.
 
-CTRL is the tool for leaders building, orchestrating, productizing, and getting to market the **AI-native version of their business**. It is not a general business advisor. Every decision, headline, and nudge in the app pulls toward one question: how do you make your business more AI-native, here? When a leader brings a general-business call ("should I hire a VP of Sales?"), CTRL reframes it into its AI-native version ("before you hire, should an agent own part of that motion first, and what does the human role become?") and works it from there.
+CTRL is a calm, personal AI briefing and decision partner for leaders with too much to hold in their heads. It learns their judgement through Make Your Mind Up's one-question-at-a-time onboarding, watches the AI world through that lens, weighs one real decision against live evidence, and gently surfaces blind spots. The interface stays intentionally small; the curation, memory, evidence, and delivery systems do the heavy lifting behind it.
 
-Production: **ctrl.themindmaker.ai**. Globally dark, instrument-grade UI (the `ctrl-ds` palette, emerald `#00D9B6`). Mobile-first and no-scroll: every key surface fits the viewport with one clear action per screen.
+Production: **makeyourmindup.ai**. The product is CTRL; the old `ctrl.themindmaker.ai` host is retired. The public front door keeps Make Your Mind Up's warm, one-question-at-a-time interaction language, while the authenticated product stays a focused daily instrument.
 
 ---
 
 ## Documentation
 
-The deeper source of truth lives in [`project-documentation/`](./project-documentation/README.md). The two canonical product/build specs are:
-- [`docs/MAIN-APP-POLISH-SPEC.md`](./docs/MAIN-APP-POLISH-SPEC.md) - the main-app standard: the AI-native North Star, the decision model, the news categories, the no-scroll/one-ask laws, the approachable-language rules.
-- [`docs/KIT-REDESIGN-SPEC.md`](./docs/KIT-REDESIGN-SPEC.md) - the lesson-kit program.
+The deeper source of truth lives in [`project-documentation/`](./project-documentation/README.md). The canonical product/build specs are:
+- [`docs/CTRL-SYSTEM-SPEC.md`](./docs/CTRL-SYSTEM-SPEC.md) - the product, data, evidence, memory, and decision rules.
+- [`docs/MAIN-APP-POLISH-SPEC.md`](./docs/MAIN-APP-POLISH-SPEC.md) - the interface standard: the AI-native North Star, no-scroll/one-ask laws, and approachable language.
 
-For sales, marketing, and ops AI agents: start at [`project-documentation/README.md`](./project-documentation/README.md), then `SALES_BRIEF.md`, `ICP.md`, `VALUE_PROP.md`, `OUTCOMES.md`, `Master_Messaging_and_FAQ.md`. (Note: those sales docs are mid-reconciliation to the AI-native positioning; trust this README and the two specs above where they disagree.)
+For sales, marketing, and ops AI agents: start at [`project-documentation/README.md`](./project-documentation/README.md), then `SALES_BRIEF.md`, `ICP.md`, `VALUE_PROP.md`, `OUTCOMES.md`, and `Master_Messaging_and_FAQ.md`.
 
 For developers: [`CLAUDE.md`](./CLAUDE.md) (workflow + the current architecture quick-reference), then `project-documentation/ARCHITECTURE.md`, `FEATURES.md`, `COMMON_ISSUES.md`.
 
 ---
 
-## The two halves of the product
+## One product, nested harnesses
 
-### 1. The lesson kits (`/kit`)
-A leader finishes a Mindmaker lightning lesson, scans a code, and walks a guided, build-it-with-you kit. Four kits, each about one thing:
-- **Vibe Coding** - a *solution*: teach any AI how you work and what has burned you, then ship one real build.
-- **Autonomous Business** - a *process*: take one recurring workflow off your plate.
-- **Agentic Org Chart** - the *company*: map divisions to tasks to handoffs, each tagged green (AI runs it) / amber (AI assists, you approve the handoff) / red (you only), with a ranked place to start.
-- **Memory & Identity** - the *person*: make the AI know you across sessions, in your voice.
+### 1. Make Your Mind Up entry (`/`)
+One calm question at a time creates a useful starting lens before an account is required. The handoff carries only consented, bounded fields into CTRL. It never copies the user's raw private sentence into the authenticated product.
 
-Each kit is strictly sequential (one action per screen), no-scroll on mobile, a native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace, and one branded, personalized hero PDF. See `docs/KIT-REDESIGN-SPEC.md`.
+### 2. CTRL daily instrument
+Today, Decide, Blind Spot, Memory, and the audio briefing are the product. Settings and deeper harnesses stay reachable without becoming competing destinations. The lesson-kit product is retired; `/kit*` permanently redirects to `/try`. Review/build routes such as `/sort` remain subordinate harnesses for a specific job.
 
-### 2. The main app (the leader's daily instrument)
+The leader-facing instrument is intentionally small:
 Every authenticated surface is no-scroll on all devices, one ask per screen, and locked to the AI-native frame:
-- **Home / cockpit** - a daily deck of "worth a look" headlines, AI-native only.
+- **Today / First Lens** - one useful next move and a small, premium set of AI-native signals from the shared pool.
 - **News deck** - nine AI-native news categories (model & capability, AI economics, tools & vendors, orchestration & agent reliability, AI-native product & GTM, governance, security & agent risk, org & talent, proof & adoption), each with a branded SVG motif. The briefing pipeline filters out anything that is not about deploying, building, or selling AI, and tags every story to a category.
 - **Decision engine** (`/decision`) - pressure-tests a decision (decompose, verify against live evidence, cross-examine, advise), with an honest AI-native reframe shown as a banner.
 - **Brain / Memory Web** (`/memory`) - your context as a four-world rope canvas that fills the frame, with zoom and pan; the substrate that makes any AI know your business.
-- **Daily Briefing** (`/briefing`) - a short audio read of the AI world, tuned to your chosen AI-native categories.
-- **Context Export** (`/context`) - your context, portable into ChatGPT, Claude, Gemini, Cursor, Claude Code, or raw markdown; plus the Automator, which turns something you do every week into an AI skill.
+- **Daily Briefing** (`/briefing`) - a short audio read of the AI world, tuned to your chosen AI-native categories, with grounded spoken follow-up.
+- **Blind Spot** (`/blind-spot`) - one tentative, evidence-backed reflection at a time. Nothing is saved as a pattern until the leader confirms it.
+- **Context Export** (`/context`) - a legacy deep link for portable context. It is deliberately absent from primary navigation.
 - **Compliance** (`/compliance`) - an honest, calm view of how your data is protected (no overclaiming of certifications).
+
+### One curation and learning spine
+
+- Make Your Mind Up onboarding writes the starting context and a short-lived handoff.
+- Control Center can contribute high-fit, source-backed curation through the optional server-only bridge.
+- Those inputs join CTRL's existing corroborated shared pool. There is no second feed or second briefing engine.
+- The leader's explicit facts, interests, feedback, and confirmed reflections re-rank that pool through the unified brain profile.
+- Home, in-app audio, email, and future delivery channels consume the same ranked truth. Channel logic does not duplicate curation.
+- Retryable writes are database-convergent: subscriptions, handoffs, active interests, confirmed blind spots, and daily delivery claims do not duplicate on retries.
 
 ---
 
@@ -49,17 +56,18 @@ Every authenticated surface is no-scroll on all devices, one ask per screen, and
 |---|---|---|
 | `/` | Landing | No |
 | `/auth`, `/auth/callback` | Auth (Email + Google OAuth) | No |
-| `/build` | Skill Builder (full-page) | No |
+| `/build` | Redirect to the public CTRL starting point | No |
 | `/try` | Public "watch it work" demo | No |
-| `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`) | The lesson-kit program | No (anonymous session) |
-| `/dashboard` | Home hub (cockpit / memory) | Yes |
+| `/kit`, `/kit/*` | Permanent redirect to `/try` | No |
+| `/dashboard` | Today / First Lens | Yes |
 | `/memory` | Brain / Memory Web | Yes |
-| `/context` | Context Export + Automator | Yes |
+| `/blind-spot` | Grounded leadership reflection | Yes |
+| `/context` | One-click context copy or download | Yes |
 | `/briefing` | Daily Briefing | Yes |
 | `/decision`, `/decision-map` | Decision engine + map | Yes |
 | `/goals`, `/track-record` | Goals + track record | Yes |
 | `/enrich` | Inbound enrich loop | Yes |
-| `/agents` | Agents | Yes |
+| `/agents` | Agents | No |
 | `/settings`, `/compliance`, `/profile` | Settings, Compliance, Profile | Yes |
 
 Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`) redirect to `/dashboard`; `/think` redirects to `/dashboard?view=edge`. (Source of truth: `src/router.tsx`.)
@@ -68,7 +76,7 @@ Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`) redirect to `/dashbo
 
 ## Pricing
 
-Pricing constants are canonical in `src/constants/billing.ts` (and the shared edge-pricing module); the app reads them, so trust the code over any doc. Edge Pro is a monthly subscription (`EDGE_PRO_PRICE_LABEL`); there is a paid AI-literacy diagnostic. TODO(founder): confirm the current full price list for the AI-native product before any sales doc quotes exact numbers.
+There are two self-serve tiers. Free includes Memory, Blind Spot, the personalised daily briefing, and three decision weighs each month. Edge Pro is $49 per month and adds unlimited weighs, multi-model cross-examination, decision watch, generated artifacts, and live MCP access. `supabase/functions/_shared/edge-pricing.ts` is the canonical amount and `src/constants/planMatrix.ts` is the canonical capability matrix.
 
 ---
 
@@ -97,7 +105,7 @@ Pricing constants are canonical in `src/constants/billing.ts` (and the shared ed
 | Auth / Payments / Email | Supabase Auth / Stripe / Resend |
 | Tests | Vitest (unit) + Playwright (e2e) |
 | Hosting | Vercel (frontend) + Supabase Cloud (backend) |
-| Node.js | `>=22 <24` |
+| Node.js | `>=22 <25` (Vercel production uses 24.x) |
 
 For current edge-function / hook / migration counts and the live architecture, see `CLAUDE.md` (kept current).
 
@@ -115,6 +123,10 @@ npm run build        # production build
 
 Supabase deploy + migration conventions live in [`CLAUDE.md`](./CLAUDE.md). Frontend auto-deploys to Vercel on push to `main`; edge functions deploy via `supabase functions deploy <name>`; migrations apply via the Supabase Management API.
 
+The optional Control Center adapter is disabled unless both `CONTROL_CENTER_URL` and `CONTROL_CENTER_PUBLISHABLE_KEY` are present in the CTRL Edge Function secrets. The source key is publishable and the Control Center table is RLS read-only for anonymous callers, but it stays server-injected so the cross-system boundary remains explicit. Never expose either as a `VITE_*` variable.
+
+The `live-headlines-prewarm` and `daily-briefing-email` jobs authenticate with a random `ctrl_cron_secret` stored in Supabase Vault and mirrored as the `CTRL_CRON_SECRET` Edge Function secret. The migration creates and schedules the Vault side; deployment tooling must synchronize the value without printing or persisting it. Do not restore the retired `app.supabase_service_role_key` Postgres setting.
+
 ---
 
-Built by Krish Raja. Live at **ctrl.themindmaker.ai**.
+Built by Krish Raja. Live at **makeyourmindup.ai**.

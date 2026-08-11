@@ -39,7 +39,7 @@ export const CAPTURE_SCOPE_VARS: CSSProperties & Record<`--${string}`, string> =
   "--capture-slate": "#5A6A6D",
   "--capture-slate-soft": "#EDF1EF",
   "--capture-slate-line": "#DBE3E0",
-  "--capture-display": "'Gobold', ui-sans-serif, -apple-system, 'Segoe UI', sans-serif",
+  "--capture-display": "'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif",
 };
 
 export function CaptureCard({ children, className }: { children: ReactNode; className?: string }) {
@@ -73,14 +73,14 @@ export function CaptureEyebrow({ children, className }: { children: ReactNode; c
 }
 
 export function CaptureHeadline({ children, className }: { children: ReactNode; className?: string }) {
-  // Inter, lowercase, slightly smaller so headlines do not wrap.
+  // The same optical display family as onboarding and the authenticated app.
   return (
     <h1
       className={cn(
         "m-0 text-[clamp(20px,2.4vw,25px)] font-extrabold leading-[1.14] lowercase",
         className,
       )}
-      style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", color: "var(--capture-ink)" }}
+      style={{ fontFamily: "var(--capture-display)", letterSpacing: "-0.02em", color: "var(--capture-ink)" }}
     >
       {children}
     </h1>

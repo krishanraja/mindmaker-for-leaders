@@ -4,13 +4,11 @@
  * Font families, scales, and brand typography utilities.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 :root {
   /* Font Families */
-  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Gobold', serif; /* Hero headlines only */
-  --font-grotesk: 'Inter', 'Helvetica Neue', 'Arial', sans-serif; /* Brand typography */
+  --font-primary: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-grotesk: var(--font-display);
   
   /* Font Sizes */
   --text-xs: 0.75rem; /* 12px */

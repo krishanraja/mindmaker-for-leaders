@@ -1,38 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Home,
-  Zap,
-  Brain,
-  Radio,
-  ArrowUpRight,
-  Target,
-  Settings,
-  Shield,
-  User,
-  LogOut,
-  Mic,
-  Download,
-  Scale,
-  History,
-  Boxes,
-} from 'lucide-react';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  CommandShortcut,
-} from '@/components/ui/command';
-import { useAuth } from '@/components/auth/AuthProvider';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { CommandPaletteContext, useCommandPalette } from './useCommandPalette';
+
+const CommandPaletteDialog = lazy(() => import('./CommandPaletteDialog').then((module) => ({ default: module.CommandPaletteDialog })))
 
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  const toggle = () => setOpen((v) => !v);
+  const toggle = useCallback(() => setOpen((value) => !value), []);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -43,142 +16,17 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [toggle]);
 
   return (
     <CommandPaletteContext.Provider value={{ open, setOpen, toggle }}>
       {children}
-      <CommandPalette />
+      {open && (
+        <Suspense fallback={null}>
+          <CommandPaletteDialog open={open} onOpenChange={setOpen} />
+        </Suspense>
+      )}
     </CommandPaletteContext.Provider>
-  );
-}
-
-function CommandPalette() {
-  const { open, setOpen } = useCommandPalette();
-  const navigate = useNavigate();
-  const { signOut } = useAuth();
-  // Search-first: at rest we show a SHORT primary set (the four tabs + the core
-  // actions); the rest only appears once the leader types, so the door is never
-  // a wall of 13 options. cmdk filters across everything that is rendered, so
-  // rendering "More" only while searching keeps everything findable.
-  const [q, setQ] = useState('');
-  const searching = q.trim().length > 0;
-
-  const go = (path: string) => () => {
-    setOpen(false);
-    navigate(path);
-  };
-
-  return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput value={q} onValueChange={setQ} placeholder="Search or jump anywhere..." />
-      <CommandList className="max-h-[420px]">
-        <CommandEmpty>No matches.</CommandEmpty>
-
-        {/* PRIMARY: the four tabs (matching the app nav + its G_ chords) + the
-            two actions a leader reaches for most. Always shown. */}
-        <CommandGroup heading="Go to">
-          <CommandItem onSelect={go('/dashboard')}>
-            <Home className="mr-2 h-4 w-4" />
-            Home
-            <CommandShortcut>G H</CommandShortcut>
-          </CommandItem>
-          <CommandItem onSelect={go('/decision')}>
-            <Scale className="mr-2 h-4 w-4" />
-            Decisions
-            <CommandShortcut>G D</CommandShortcut>
-          </CommandItem>
-          <CommandItem onSelect={go('/memory')}>
-            <Brain className="mr-2 h-4 w-4" />
-            Brain
-            <CommandShortcut>G B</CommandShortcut>
-          </CommandItem>
-          <CommandItem onSelect={go('/track-record')}>
-            <History className="mr-2 h-4 w-4" />
-            History
-            <CommandShortcut>G Y</CommandShortcut>
-          </CommandItem>
-        </CommandGroup>
-
-        <CommandSeparator />
-
-        <CommandGroup heading="Do">
-          <CommandItem onSelect={go('/briefing')}>
-            <Radio className="mr-2 h-4 w-4" />
-            Read today's briefing
-          </CommandItem>
-          <CommandItem onSelect={go('/context')}>
-            <Boxes className="mr-2 h-4 w-4" />
-            Build a skill
-          </CommandItem>
-        </CommandGroup>
-
-        {/* MORE: only while searching, so it never crowds the resting palette. */}
-        {searching && (
-          <>
-            <CommandSeparator />
-            <CommandGroup heading="More">
-              <CommandItem onSelect={go('/dashboard?view=edge')}>
-                <Zap className="mr-2 h-4 w-4" />
-                Edge
-              </CommandItem>
-              <CommandItem onSelect={go('/goals')}>
-                <Target className="mr-2 h-4 w-4" />
-                Goals
-              </CommandItem>
-              <CommandItem onSelect={go('/context')}>
-                <Download className="mr-2 h-4 w-4" />
-                Quick export to AI
-              </CommandItem>
-              <CommandItem
-                onSelect={() => {
-                  setOpen(false);
-                  window.dispatchEvent(new CustomEvent('mm:capture-voice'));
-                }}
-              >
-                <Mic className="mr-2 h-4 w-4" />
-                Capture a thought (voice)
-              </CommandItem>
-              <CommandItem
-                onSelect={() => {
-                  setOpen(false);
-                  window.dispatchEvent(new CustomEvent('mm:generate-briefing'));
-                }}
-              >
-                <Zap className="mr-2 h-4 w-4" />
-                Generate today's briefing
-              </CommandItem>
-            </CommandGroup>
-
-            <CommandSeparator />
-
-            <CommandGroup heading="Account">
-              <CommandItem onSelect={go('/profile')}>
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </CommandItem>
-              <CommandItem onSelect={go('/compliance')}>
-                <Shield className="mr-2 h-4 w-4" />
-                Compliance
-              </CommandItem>
-              <CommandItem onSelect={go('/settings')}>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </CommandItem>
-              <CommandItem
-                onSelect={() => {
-                  setOpen(false);
-                  signOut();
-                }}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign out
-              </CommandItem>
-            </CommandGroup>
-          </>
-        )}
-      </CommandList>
-    </CommandDialog>
   );
 }
 

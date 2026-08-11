@@ -4,6 +4,7 @@ import {
   verifyShift,
   verifyAndRank,
   computeMomentum,
+  rootDomain,
   populatedDayCount,
   parseProposedShifts,
   buildDetectionMessages,
@@ -126,6 +127,34 @@ describe('verifyShift - the confabulation gate', () => {
     expect(MIN_SOURCES).toBeGreaterThan(1);
   });
 
+  it('REJECTS different publisher labels that resolve to one origin', () => {
+    const corpus = threeDayCorpus().map((item, index) => ({
+      ...item,
+      source: ['Newsletter A', 'Newsletter B', 'Newsletter C'][index],
+      url: `https://www.same-origin.com/story-${index}`,
+    }));
+    const map = new Map(corpus.map((item) => [item.id, item]));
+    expect(verifyShift({
+      title: 'Circular coverage',
+      summary: 's',
+      implication: 'i',
+      category: 'org',
+      evidenceIds: corpus.map((item) => item.id),
+    }, map)).toBeNull();
+  });
+
+  it('REJECTS uncitable items even when their source labels look independent', () => {
+    const corpus = threeDayCorpus().map((item) => ({ ...item, url: null }));
+    const map = new Map(corpus.map((item) => [item.id, item]));
+    expect(verifyShift({
+      title: 'Uncitable shift',
+      summary: 's',
+      implication: 'i',
+      category: 'org',
+      evidenceIds: corpus.map((item) => item.id),
+    }, map)).toBeNull();
+  });
+
   it('falls back to the most common evidence category when the proposed one is invalid', () => {
     const corpus = buildCorpus([
       pool('2026-07-01', [{ id: 'e1', headline: 'A', category: 'economics', source: 's1.com' }]),
@@ -169,6 +198,12 @@ describe('momentum + helpers', () => {
   it('isTrendCategory validates the nine lanes', () => {
     expect(isTrendCategory('org')).toBe(true);
     expect(isTrendCategory('marketing')).toBe(false);
+  });
+
+  it('normalizes root domains and rejects malformed URLs', () => {
+    expect(rootDomain('https://www.Reuters.com/world/story')).toBe('reuters.com');
+    expect(rootDomain('not a URL')).toBeNull();
+    expect(rootDomain(null)).toBeNull();
   });
 });
 

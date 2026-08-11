@@ -2,9 +2,51 @@
 
 Key architectural and product decisions with rationale.
 
-**Last reconciled:** 2026-07-26 (drift-check pass: added Decisions 61-68, covering everything shipped after Decision 60).
+**Last reconciled:** 2026-08-10 (Decision 72 ports the founder-approved briefing, learning loop, Settings access, and Option E typography into the product).
 
 > This is a decision record kept on purpose. Architectural decisions below remain accurate. Two product decisions are now SUPERSEDED by later ones: any early decision framing CTRL as "Clarity for Leaders / decision speed" is superseded by the LOCKED AI-native positioning (2026-06-19: build/orchestrate/productize/go-to-market the AI-native version of your business), and any decision specifying the light/Apple design system is superseded by the globally dark `ctrl-ds` instrument palette (PR #186). Canonical current sources: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
+
+---
+
+## Decision 72: The Briefing Is One Premium Door with One Optional Learning Loop (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Make the audio briefing a signature one-click product surface. The header control shows honest briefing state, duration or progress, and opens or generates the real briefing without an intermediate workflow. The responsive briefing uses a 462px desktop drawer and a near-full-height mobile sheet, keeps playback and talk-back primary, and collapses detailed segment notes by default. At most one real pending memory verification appears per meaningful session. A correction can be spoken or typed, is mirrored back before persistence, and is written through the existing verified-memory path only after explicit confirmation, with a short undo window. Settings remains permanently reachable and exposes the existing privacy, memory, transcript, delivery, and tuning controls.
+**Rationale**: The product serves overwhelmed leaders. Backend sophistication should appear as a calm, high-quality instrument rather than more destinations, forms, or duplicate training surfaces. Briefing playback earns the primary visual treatment; conversation and one high-value clarification enrich CTRL without interrupting consumption or turning the product into profile administration.
+**Trade-off**: Lower-priority transcript detail and memory management are progressively disclosed, and the product asks fewer questions, in exchange for a clearer daily habit, higher trust, and cleaner signals when the user does contribute judgment.
+**Founder lock**: Krish approved the fitted briefing direction, selected typography Option E, and then said `go` to port the approved interaction into the product.
+**Outcome**: The real product shell now includes the premium briefing control and responsive sheet, existing briefing conversation pipeline, one-question verified-memory loop, permanent Settings access, and product-wide Option E tokens. Browser verification passed at 1280x720, 390x844, and 320x568 with zero horizontal overflow, 44px actions, keyboard Escape and focus restoration, correction proposal, keep, and undo states. Targeted ESLint, typecheck with zero current errors, focused conversation tests, standards, the 2,782-module production build, and 3/3 prerender routes pass. Commit, preview deployment, and production remain separate gates.
+
+---
+
+## Decision 71: CTRL Uses One Segoe Family for Its Human-Facing Voice (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Adopt Option E from `TYPOGRAPHY-COMBINATIONS-v1`. Use `Segoe UI Variable Display` for headings and display statements, and `Segoe UI Variable Text` for body copy, navigation, inputs and actions. These are optical cuts of one family, so hierarchy comes from scale, weight and spacing rather than a competing typeface. Reserve the system-mono token for evidence, state, timestamps and compact metadata. Keep the CTRL wordmark as a brand-mark exception. Existing Make Your Mind Up typography utility names remain migration aliases but resolve to this selected canon.
+**Rationale**: The founder rejected both a serif and sans pairing and an all-serif system because the page felt visually divided or strange. Option E keeps the warmth and clarity of the preferred briefing treatment without asking two unrelated families to coexist. The display and text cuts provide enough hierarchy while preserving one visual grammar from onboarding through the briefing and into CTRL.
+**Trade-off**: Less overt editorial contrast in exchange for stronger coherence, more reliable wrapping, broader native rendering, and a simpler system to carry across every surface.
+**Founder lock**: After reviewing six controlled combinations with identical copy, spacing, color and hierarchy, Krish replied `e`.
+**Outcome**: `BRIEFING-PULSE-v1` and the canonical product tokens now use the selected system. Browser verification passed at 1440x900, 1280x720, 390x844 and 320x568 with zero horizontal overflow, 44px actions, coherent dynamic memory states and empty console logs. Standards, production build and prerender pass. Commit, deployment and production remain separate gates.
+**Supersedes**: Decision 70. Its reopened review note remains the historical record of why the serif canon was rejected.
+
+---
+
+## Decision 70: CTRL Uses the Editorial Serif as Its Complete Human Voice (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Lock one semantic typography hierarchy across Make Your Mind Up and CTRL. Georgia is the editorial voice for questions, explanations, recommendations, reflections, proposed memories and conversational actions. Inter/system sans is reserved for operational chrome such as navigation, Settings and utility controls. SF Mono or the system-mono token is reserved for evidence, state, timestamps and compact metadata. Do not use the serif as a headline accent directly paired with sans inside the same advisory thought.
+**Rationale**: The warm serif in the audio briefing carried the human, curious quality the founder wanted to preserve from Make Your Mind Up. A headline-only application made it look pasted onto an Inter interface. Giving the serif ownership of the complete human voice makes the product feel intentional and continuous, while the sans and mono families retain clear operational jobs.
+**Trade-off**: Tighter semantic discipline and less freedom to mix type for decoration, in exchange for a recognizable CTRL voice that stays coherent across onboarding, briefings, decisions and reflection.
+**Founder lock**: Krish said, "I still feel like the fonts you used in the audio briefing 'your judgement stays in the loop' was a nice aesthetic, can you make that the canon?" He rejected the first headline-only pairing because the fonts did not work together visually; the locked rule therefore applies the serif to the full human-language surface, not headings alone.
+**Outcome**: Canonical tokens and utility aliases are defined in `src/index.css`; `BRIEFING-PULSE-v1` applies the rule across the First Lens and audio briefing. Production build and prerender pass. Full app-surface adoption belongs to the implementation pass; commit, deployment and production remain separate gates.
+**REOPENED REVIEW NOTE**: The founder rejected the full-serif application immediately after rendered review: "no, now it all looks weird. the entire font system looks totally off." Decision 70 is therefore not operative and no typography canon is currently locked. The provisional product tokens were removed. `TYPOGRAPHY-COMBINATIONS-v1` now presents six controlled systems for selection; the eventual founder choice must supersede this decision explicitly.
+
+---
+
+## Decision 69: The First CTRL Landing Proves the Make Your Mind Up Handoff with One Personal Lens (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Lock `HOME-FIRST-LENS-v3` as the first authenticated Home state after the public Make Your Mind Up flow. The state shows one premium relationship visual, reflects only the consented handoff fields (`q2`, `q4`, `anxietyLane`, and `archetypeTitle`), asks for one-tap confirmation, and offers one relevant starter decision. The user's raw delayed-decision sentence remains private and does not cross the handoff. Once confirmed or dismissed, the stable Home returns to its normal daily state.
+**Rationale**: The clearer Attention Tape hierarchy was directionally right, but a text-first feed made the transition feel like a downgrade from personal reflection to an RSS reader. The stabilized CTRL visual language earns its place when it proves interpretation, not when it decorates equal-weight cards. The first landing should make the user feel that CTRL understood the useful shape of what they shared and immediately put it to work.
+**Trade-off**: A distinct one-time Home state and a reusable lens renderer to maintain vs forcing the normal returning-user feed to carry an onboarding job it cannot honestly perform.
+**Founder lock**: Krish reviewed the rendered desktop and mobile revision on 2026-08-10 and responded, "looks great".
+**Outcome**: Approved for local implementation and preview verification. Production release remains a separate gate.
 
 ---
 
@@ -523,3 +565,45 @@ Key architectural and product decisions with rationale.
 **Rationale**: Settings had drifted from the rest of the app's polish and had a genuine functional bug (two tuning UIs, two tables, no sync).
 **Trade-off**: A shared panel component + new design primitives (`Surface`/`Eyebrow`/`SettingRow`/`SheetFooterBar`) to build vs eliminating a duplicate-source-of-truth bug and a broken navigation.
 **Outcome**: ✅ Live. Typecheck 0 new errors, 337 unit tests pass, build + prerender green.
+
+## Decision 69: One Product, One Domain, One Warm Front Door (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: CTRL is the product; Make Your Mind Up is its warm public onboarding experience; `makeyourmindup.ai` is the canonical domain. The former CTRL hostname permanently redirects to it.
+**Rationale**: Two names and two destinations made the user reconstruct the product boundary immediately after an intentionally simple intake. The data and experience are one journey.
+**Trade-off**: Retire the separate onboarding product identity and move its domain versus preserve two independently legible products that duplicate context and navigation.
+**Outcome**: Implemented across metadata, public copy, handoff, documentation, and the production cutover.
+
+## Decision 70: First Lens Is the Onboarding Payoff; Blind Spot Replaces Skill Builder as the Promoted Development Surface (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: A consented handoff lands on one premium First Lens and one useful first decision. Blind Spot becomes the promoted leadership-development experience. The Kit is retired and skill-building remains only as nested portability machinery where still useful.
+**Rationale**: Overwhelmed leaders should not finish a calm onboarding flow and meet a feature grid, setup project, or workflow builder. One grounded reflection compounds judgement without asking the leader to design the tool.
+**Trade-off**: Remove promotional surface area for already-built machinery versus preserve more visible features that make the product harder to understand.
+**Outcome**: First Lens, Blind Spot, navigation, routes, copy, and plan matrix aligned. `/kit*` redirects to `/try`.
+
+## Decision 71: One Curated Pool, with Control Center as a Read-Only Source Adapter (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Control Center contributes high-fit, source-backed items inside `live-headlines`; it does not create another feed. The bridge uses a publishable key constrained by read-only RLS, never a cross-project service-role key.
+**Rationale**: CTRL already has ranking, clustering, provenance, category motifs, personalization, audio, and feedback. Duplicating any of those around Control Center would create competing truth and UI.
+**Trade-off**: A deliberately narrow adapter and fail-closed boundary versus privileged server access and a broader but riskier integration.
+**Outcome**: Production probe gathered 267 items, retained 211 AI-native items, and included 11 Control Center items. A forced prewarm produced a fresh 10-card cache.
+
+## Decision 72: Audio Is a Conversational Product Surface, Not a Play Button (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: The briefing has a premium persistent control, read and listen states, human error recovery, and spoken or typed follow-up answered from the current briefing with citations and voice response.
+**Rationale**: Audio is the lowest-friction way for a busy leader to receive value. Treating it as plain text in the header undersold a signature capability and broke the human feeling inherited from Make Your Mind Up.
+**Trade-off**: More state, accessibility, TTS, and ownership contracts to maintain versus a briefing users can genuinely converse with.
+**Outcome**: Shipped with ownership checks on paid synthesis, rate limits, signed URL reuse, and responsive verified states.
+
+## Decision 73: Delivery Must Converge on Retry and Cron Must Not Depend on a Hidden Service-Role Setting (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Normalize and deduplicate subscriptions and interests; claim emails and daily deliveries atomically; reuse audio; serialize Blind Spot confirmation; and authenticate pg_cron through a Vault-generated shared secret mirrored to Edge Function secrets.
+**Rationale**: No-login delivery is a core product mode. Retries, concurrent tabs, and scheduler overlap cannot create duplicate sends or learning records. Production inspection also proved the legacy Postgres service-role setting was absent, leaving the old scheduler unable to authenticate.
+**Trade-off**: More explicit claims, indexes, RPCs, and secret synchronization versus silent duplicate delivery or a scheduler that only appears armed.
+**Outcome**: Additive migrations and fifteen reviewed functions deployed. Two repaired jobs are active, the Vault and Edge secret are synchronized, and live contract checks pass.
+
+## Decision 74: Option E Is the Canonical Typography System (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Use Segoe UI Variable Display and Text as optical cuts of one family. Reserve mono for compact evidence metadata.
+**Rationale**: Mixed display, body, and monospace families made briefing questions, navigation, and learning prompts feel assembled rather than designed. One optical family preserves the human display character without visual conflict.
+**Trade-off**: Give up more visibly eclectic font pairings versus a coherent, native, fast-loading product system.
+**Outcome**: Applied across active app, pricing, email, generated share cards, prototypes, and design tokens.

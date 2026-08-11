@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CTRL Home: First Lens v3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #06080b;
+      --shell: #080b0f;
+      --panel: #0b0f14;
+      --panel-2: #0d1218;
+      --line: #222a33;
+      --line-soft: #151a20;
+      --ink: #f2f0ea;
+      --muted: #9ba4af;
+      --quiet: #68717d;
+      --signal: #25e1ba;
+      --signal-deep: #0b8c78;
+      --signal-soft: rgba(37, 225, 186, .11);
+      --cream: #f2eee4;
+      --warm: #f97316;
+      --pink: #ec4899;
+      --shadow: 0 40px 90px -50px rgba(0, 0, 0, .96), 0 0 0 1px rgba(37, 225, 186, .08);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 72% 32%, rgba(37, 225, 186, .045), transparent 29%),
+        radial-gradient(circle at 57% 14%, rgba(236, 72, 153, .025), transparent 20%),
+        var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+    button:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 206px minmax(0, 1fr);
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .rail {
+      display: flex;
+      min-height: 0;
+      flex-direction: column;
+      border-right: 1px solid var(--line-soft);
+      background: rgba(8, 11, 15, .92);
+    }
+
+    .brand {
+      display: flex;
+      height: 60px;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 0 18px;
+    }
+
+    .mark {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      transform: rotate(2deg);
+    }
+
+    .mark span { border-radius: 1px; background: var(--signal); }
+    .mark span:first-child { opacity: .35; transform: translateY(4px); }
+    .mark span:nth-child(2) { opacity: .7; }
+    .mark span:nth-child(3) { opacity: .75; }
+    .mark span:nth-child(4) { background: var(--cream); opacity: .9; }
+
+    .brand-name,
+    .eyebrow,
+    .mono,
+    .nav-label,
+    .chip,
+    .visual-label,
+    .node-label {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+    }
+
+    .brand-name { color: #adb5bf; font-size: 10px; letter-spacing: .24em; }
+    .mobile-brand { display: none; }
+    nav { padding: 14px 10px; }
+
+    .nav-label {
+      margin: 16px 10px 7px;
+      color: #4f5863;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .nav-item {
+      display: flex;
+      min-height: 40px;
+      align-items: center;
+      gap: 11px;
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      padding: 0 12px;
+      color: #8f98a4;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav-item[aria-current="page"] {
+      background: rgba(37, 225, 186, .105);
+      color: var(--signal);
+      box-shadow: inset 2px 0 0 var(--signal);
+    }
+
+    .nav-dot {
+      width: 13px;
+      height: 13px;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      opacity: .78;
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: auto;
+      border-top: 1px solid var(--line-soft);
+      padding: 14px 16px 17px;
+    }
+
+    .avatar {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--signal-soft);
+      color: var(--signal);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .person strong { display: block; font-size: 12px; }
+    .person span { display: block; margin-top: 2px; color: var(--quiet); font-size: 10px; }
+
+    .workspace {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      grid-template-rows: 60px minmax(0, 1fr);
+    }
+
+    .topbar {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 22px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 0 32px;
+      background: rgba(6, 8, 11, .84);
+    }
+
+    .top-title .eyebrow { color: #515a65; font-size: 8px; }
+    .top-title strong { display: block; margin-top: 3px; font-size: 12px; }
+
+    .handoff-state {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      gap: 8px;
+      margin-left: 14px;
+      border: 1px solid rgba(37, 225, 186, .17);
+      border-radius: 999px;
+      padding: 0 11px;
+      color: #8b968f;
+      font-size: 10px;
+    }
+
+    .handoff-state::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--signal);
+      box-shadow: 0 0 12px rgba(37, 225, 186, .55);
+      content: "";
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 15px; margin-left: auto; }
+    .quiet-action { min-height: 44px; border: 0; background: transparent; color: #a4adb8; cursor: pointer; }
+
+    .preview-badge {
+      border: 1px solid #28303a;
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: #69727d;
+      font: 8px "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    main {
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      padding: clamp(25px, 3.5vh, 42px) clamp(30px, 4vw, 64px) 32px;
+    }
+
+    .brief { position: relative; width: min(1160px, 100%); margin: 0 auto; }
+
+    .brief::before {
+      position: absolute;
+      top: 76px;
+      bottom: 40px;
+      left: 17px;
+      width: 1px;
+      background: linear-gradient(180deg, var(--signal), rgba(37, 225, 186, .08));
+      content: "";
+    }
+
+    .brief-head {
+      display: flex;
+      min-height: 88px;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 34px;
+      padding: 0 0 22px 54px;
+    }
+
+    .brief-head .eyebrow { color: var(--signal); font-size: 9px; }
+    .brief-head h1 { margin: 8px 0 0; font-size: clamp(29px, 2.7vw, 42px); line-height: 1.04; letter-spacing: -.038em; }
+    .brief-head p { max-width: 41ch; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; text-align: right; }
+
+    .signal {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      grid-template-columns: 54px minmax(0, 1fr);
+      border-top: 1px solid var(--line);
+    }
+
+    .marker {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      align-content: start;
+      justify-items: center;
+      padding-top: 27px;
+    }
+
+    .marker::before {
+      width: 11px;
+      height: 11px;
+      border: 2px solid var(--panel);
+      border-radius: 50%;
+      background: var(--signal);
+      box-shadow: 0 0 0 1px var(--signal), 0 0 22px rgba(37, 225, 186, .38);
+      content: "";
+    }
+
+    .marker .mono { margin-top: 14px; color: var(--quiet); font-size: 8px; writing-mode: vertical-rl; }
+
+    .lens-wrap { padding: 24px 0 26px; }
+
+    .lens-card {
+      position: relative;
+      display: grid;
+      min-height: 430px;
+      grid-template-columns: minmax(420px, 1.1fr) minmax(320px, .9fr);
+      overflow: hidden;
+      border: 1px solid rgba(49, 59, 71, .9);
+      border-radius: 22px;
+      background:
+        linear-gradient(118deg, rgba(255, 255, 255, .018), transparent 34%),
+        linear-gradient(180deg, #0d1218, #090d12);
+      box-shadow: var(--shadow);
+    }
+
+    .lens-card::after {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background: linear-gradient(110deg, transparent 12%, rgba(255,255,255,.022) 41%, transparent 55%);
+      content: "";
+    }
+
+    .visual {
+      position: relative;
+      min-height: 430px;
+      overflow: hidden;
+      border-right: 1px solid rgba(45, 54, 65, .78);
+      background:
+        radial-gradient(circle at 52% 49%, rgba(37, 225, 186, .12), transparent 30%),
+        linear-gradient(rgba(37, 225, 186, .025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 225, 186, .025) 1px, transparent 1px),
+        #090d12;
+      background-size: auto, 34px 34px, 34px 34px, auto;
+    }
+
+    .visual::before {
+      position: absolute;
+      inset: -35% 35% 58% -28%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(236,72,153,.09), transparent 67%);
+      content: "";
+    }
+
+    .visual-label {
+      position: absolute;
+      z-index: 2;
+      top: 24px;
+      left: 25px;
+      color: #6f7985;
+      font-size: 8px;
+    }
+
+    .lens-svg { position: absolute; inset: 24px 16px 13px; width: calc(100% - 32px); height: calc(100% - 37px); }
+    .lens-svg text { font-family: "SFMono-Regular", Consolas, monospace; }
+    .lens-svg .orbit { fill: none; stroke: #25303a; }
+    .lens-svg .orbit-signal { fill: none; stroke: url(#handoff-gradient); stroke-linecap: round; filter: url(#soft-glow); }
+    .lens-svg .connection { stroke: rgba(37, 225, 186, .33); stroke-width: 1.2; }
+    .lens-svg .connection-warm { stroke: url(#handoff-gradient); stroke-width: 1.6; }
+    .lens-svg .node { fill: #0a0f14; stroke: rgba(37, 225, 186, .86); stroke-width: 1.7; }
+    .lens-svg .node-core { fill: #aef6ea; }
+    .lens-svg .center-glow { fill: rgba(37, 225, 186, .27); filter: url(#large-glow); }
+    .lens-svg .center { fill: #0c1517; stroke: var(--signal); stroke-width: 2; }
+    .lens-svg .label { fill: #82909b; font-size: 8px; letter-spacing: 1.6px; }
+    .lens-svg .center-label { fill: #dffaf3; font-size: 9px; font-weight: 700; letter-spacing: 1.7px; }
+    .lens-svg .arc-label { fill: #8b7687; font-size: 7px; letter-spacing: 1.5px; }
+
+    .scan-line {
+      position: absolute;
+      z-index: 1;
+      top: 19%;
+      bottom: 19%;
+      left: 50%;
+      width: 1px;
+      background: linear-gradient(transparent, rgba(37, 225, 186, .22), transparent);
+      animation: scan 8s ease-in-out infinite;
+    }
+
+    .visual-foot {
+      position: absolute;
+      z-index: 2;
+      right: 24px;
+      bottom: 20px;
+      left: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #626e79;
+      font-size: 9px;
+    }
+
+    .visual-foot strong { color: #9aa5ae; font-weight: 650; }
+
+    .lens-copy {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(31px, 3.2vw, 48px);
+    }
+
+    .chip {
+      display: inline-flex;
+      width: fit-content;
+      min-height: 27px;
+      align-items: center;
+      border: 1px solid rgba(37, 225, 186, .24);
+      border-radius: 999px;
+      padding: 0 10px;
+      color: var(--signal);
+      font-size: 8px;
+    }
+
+    .lens-copy h2 {
+      max-width: 16ch;
+      margin: 18px 0 0;
+      font-size: clamp(30px, 3vw, 47px);
+      line-height: 1.01;
+      letter-spacing: -.045em;
+      text-wrap: balance;
+    }
+
+    .lens-copy p {
+      max-width: 44ch;
+      margin: 18px 0 0;
+      color: #b2bbc5;
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    .lens-copy p strong { color: var(--ink); font-weight: 650; }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+
+    .primary-action,
+    .secondary-action {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      padding: 0 18px;
+      font-size: 13px;
+      font-weight: 780;
+      cursor: pointer;
+    }
+
+    .primary-action { min-width: 158px; border: 0; background: var(--cream); color: #101316; }
+    .secondary-action { border: 1px solid #2c343f; background: transparent; color: #aab3bd; }
+    .primary-action[aria-pressed="true"] { background: var(--signal); color: #07100e; }
+
+    .privacy {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin-top: 22px;
+      padding-top: 17px;
+      border-top: 1px solid #202730;
+      color: #717b86;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .privacy::before { margin-top: 4px; color: var(--signal); content: "◇"; }
+
+    .first-call .marker { padding-top: 23px; }
+    .first-call .marker::before { width: 7px; height: 7px; border-width: 1px; box-shadow: 0 0 0 1px rgba(37, 225, 186, .55); }
+
+    .call-card {
+      display: grid;
+      min-height: 132px;
+      grid-template-columns: 112px minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 18px 2px 18px 0;
+    }
+
+    .mini-visual {
+      position: relative;
+      display: grid;
+      width: 112px;
+      height: 82px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid #222c34;
+      border-radius: 14px;
+      background: radial-gradient(circle, rgba(37,225,186,.13), transparent 52%), #090d12;
+    }
+
+    .mini-visual svg { width: 90px; height: 62px; }
+    .mini-visual line { stroke: rgba(37,225,186,.36); stroke-width: 1; }
+    .mini-visual circle { fill: #090d12; stroke: var(--signal); stroke-width: 1.6; }
+    .mini-visual circle:last-child { fill: #aef6ea; filter: drop-shadow(0 0 7px rgba(37,225,186,.8)); }
+
+    .call-copy { min-width: 0; }
+    .call-copy .eyebrow { color: var(--signal); font-size: 8px; }
+    .call-copy h3 { max-width: 31ch; margin: 8px 0 0; font-size: clamp(20px, 2vw, 28px); line-height: 1.12; letter-spacing: -.03em; }
+    .call-copy p { margin: 7px 0 0; color: #828c97; font-size: 12px; line-height: 1.45; }
+
+    .weigh {
+      display: inline-flex;
+      min-width: 102px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid rgba(37,225,186,.3);
+      border-radius: 11px;
+      background: rgba(37,225,186,.06);
+      color: var(--signal);
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .lower-register {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      padding: 17px 2px 0 54px;
+      color: var(--quiet);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .lower-register strong { color: #9aa4ae; font-weight: 650; }
+
+    @keyframes breathe { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+    @keyframes scan { 0%, 100% { transform: translateX(-86px); opacity: .18; } 50% { transform: translateX(86px); opacity: .75; } }
+    .lens-svg .pulse { animation: breathe 4.8s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lens-svg .pulse, .scan-line { animation: none !important; }
+    }
+
+    @media (max-width: 1080px) {
+      .app { grid-template-columns: 188px minmax(0, 1fr); }
+      main { padding-right: 28px; padding-left: 28px; }
+      .lens-card { grid-template-columns: minmax(340px, 1.04fr) minmax(300px, .96fr); }
+      .lens-copy { padding: 30px; }
+      .lens-copy h2 { font-size: 36px; }
+      .handoff-state { display: none; }
+    }
+
+    @media (max-height: 780px) and (min-width: 721px) {
+      main { padding-top: 20px; }
+      .brief-head { min-height: 68px; padding-bottom: 15px; }
+      .brief-head h1 { font-size: 29px; }
+      .lens-wrap { padding-top: 16px; padding-bottom: 16px; }
+      .lens-card, .visual { min-height: 370px; }
+      .lens-copy h2 { font-size: 34px; }
+      .lens-copy p { margin-top: 13px; line-height: 1.46; }
+      .actions { margin-top: 18px; }
+      .privacy { margin-top: 16px; padding-top: 13px; }
+      .call-card { min-height: 104px; padding-top: 11px; padding-bottom: 11px; }
+      .mini-visual { height: 72px; }
+      .lower-register { display: none; }
+    }
+
+    @media (max-width: 720px) {
+      html, body { height: auto; }
+      body { overflow-x: hidden; overflow-y: auto; }
+
+      .app {
+        display: block;
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+        padding-bottom: calc(66px + env(safe-area-inset-bottom));
+      }
+
+      .rail {
+        position: fixed;
+        z-index: 30;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: block;
+        height: calc(66px + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line);
+        border-right: 0;
+        background: rgba(8, 11, 15, .97);
+        backdrop-filter: blur(18px);
+      }
+
+      .rail .brand, .rail .nav-label, .rail .person, .rail .nav-item:nth-of-type(n + 5) { display: none; }
+      .rail nav { display: grid; height: 66px; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0 4px; }
+
+      .rail .nav-item {
+        display: flex;
+        min-width: 0;
+        min-height: 58px;
+        flex-direction: column;
+        justify-content: center;
+        gap: 6px;
+        border-radius: 0;
+        padding: 6px 2px 4px;
+        font-size: 10px;
+        text-align: center;
+      }
+
+      .rail .nav-item[aria-current="page"] { background: transparent; box-shadow: inset 0 2px 0 var(--signal); }
+      .rail .nav-dot { width: 12px; height: 12px; }
+      .workspace { display: block; min-height: 100dvh; }
+
+      .topbar {
+        position: sticky;
+        z-index: 20;
+        top: 0;
+        min-height: 58px;
+        padding: 0 18px;
+        background: rgba(6, 8, 11, .94);
+        backdrop-filter: blur(18px);
+      }
+
+      .mobile-brand { display: flex; align-items: center; gap: 9px; }
+      .mobile-brand .mark { width: 19px; height: 19px; }
+      .top-title, .handoff-state, .preview-badge, .top-actions .quiet-action:first-child { display: none; }
+      .top-actions { margin-left: auto; }
+      .top-actions .quiet-action { min-width: 44px; min-height: 44px; padding: 0 2px; }
+
+      main { overflow: visible; padding: 24px 17px 28px; }
+      .brief::before { top: 112px; bottom: 50px; left: 14px; }
+
+      .brief-head { display: block; min-height: 0; padding: 0 0 23px 33px; }
+      .brief-head h1 { max-width: 12ch; margin-top: 10px; font-size: 34px; line-height: 1.02; }
+      .brief-head p { display: none; }
+
+      .signal { grid-template-columns: 31px minmax(0, 1fr); }
+      .marker { padding-top: 27px; }
+      .marker .mono { display: none; }
+      .lens-wrap { min-width: 0; padding: 22px 0 25px; }
+
+      .lens-card { display: block; min-height: 0; border-radius: 18px; }
+      .visual { min-height: 262px; border-right: 0; border-bottom: 1px solid rgba(45, 54, 65, .78); }
+      .visual-label { top: 18px; left: 18px; }
+      .lens-svg { inset: 24px 8px 8px; width: calc(100% - 16px); height: calc(100% - 32px); }
+      .visual-foot { right: 18px; bottom: 15px; left: 18px; font-size: 8px; }
+      .visual-foot span:last-child { display: none; }
+
+      .lens-copy { display: flex; padding: 27px 23px 24px; }
+      .lens-copy .chip { order: 1; }
+      .lens-copy h2 { order: 2; }
+      .lens-copy .actions { order: 3; }
+      .lens-copy p { order: 4; }
+      .lens-copy .privacy { order: 5; }
+      .lens-copy h2 { max-width: none; margin-top: 17px; font-size: clamp(29px, 8.6vw, 34px); line-height: 1.01; }
+      .lens-copy p { margin-top: 16px; font-size: 14px; line-height: 1.55; }
+      .actions { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(92px, .85fr); margin-top: 22px; }
+      .primary-action, .secondary-action { width: 100%; min-width: 0; min-height: 50px; padding-right: 10px; padding-left: 10px; }
+      .privacy { margin-top: 19px; }
+
+      .first-call .marker { padding-top: 27px; }
+      .call-card { display: grid; min-height: 0; grid-template-columns: 74px minmax(0, 1fr); gap: 14px; padding: 21px 0 23px; }
+      .mini-visual { width: 74px; height: 74px; }
+      .mini-visual svg { width: 67px; height: 52px; }
+      .call-copy h3 { margin-top: 7px; font-size: 21px; }
+      .call-copy p { font-size: 11px; }
+      .weigh { grid-column: 1 / -1; width: 100%; min-height: 48px; margin-top: 2px; }
+
+      .lower-register { display: block; padding: 17px 0 8px 31px; }
+      .lower-register span { display: block; }
+      .lower-register span + span { margin-top: 5px; }
+    }
+
+    @media (max-width: 360px) {
+      main { padding-right: 14px; padding-left: 14px; }
+      .brief-head { padding-left: 30px; }
+      .signal { grid-template-columns: 28px minmax(0, 1fr); }
+      .lens-copy { padding-right: 20px; padding-left: 20px; }
+      .lens-copy h2 { font-size: 29px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail" aria-label="CTRL navigation">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <span class="brand-name">CTRL</span>
+      </div>
+      <nav aria-label="Primary">
+        <button class="nav-item" aria-current="page"><span class="nav-dot" aria-hidden="true"></span>Today</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Decide</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Blind spot</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Memory</button>
+        <div class="nav-label">Account</div>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Profile</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Compliance</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Settings</button>
+      </nav>
+      <div class="person">
+        <div class="avatar">KR</div>
+        <div><strong>Krish</strong><span>Personal workspace</span></div>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="mobile-brand" aria-label="CTRL">
+          <div class="mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <span class="brand-name">CTRL</span>
+        </div>
+        <div class="top-title"><span class="eyebrow">Home</span><strong>Starting point</strong></div>
+        <span class="handoff-state">Make Your Mind Up connected</span>
+        <div class="top-actions">
+          <button class="quiet-action">Tune</button>
+          <button class="quiet-action">Listen</button>
+          <span class="preview-badge">Design preview</span>
+        </div>
+      </header>
+
+      <main>
+        <div class="brief">
+          <header class="brief-head">
+            <div>
+              <span class="eyebrow">Your CTRL is ready</span>
+              <h1>I know what to watch for now.</h1>
+            </div>
+            <p>You gave me the shape of the problem. This is how I will put it to work.</p>
+          </header>
+
+          <section class="signal" aria-labelledby="lens-heading">
+            <div class="marker"><span class="mono">Your lens</span></div>
+            <div class="lens-wrap">
+              <article class="lens-card">
+                <div class="visual" aria-label="Your starting lens: people, agents and proof connected through orchestration">
+                  <span class="visual-label">Signal carried forward</span>
+                  <span class="scan-line" aria-hidden="true"></span>
+                  <svg class="lens-svg" viewBox="0 0 500 390" role="img" aria-labelledby="visual-title visual-desc">
+                    <title id="visual-title">Your personal CTRL lens</title>
+                    <desc id="visual-desc">A relationship map connecting people, agents and proof around your judgment, with orchestration as the starting theme.</desc>
+                    <defs>
+                      <linearGradient id="handoff-gradient" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#ec4899" />
+                        <stop offset="34%" stop-color="#f97316" />
+                        <stop offset="72%" stop-color="#25e1ba" />
+                      </linearGradient>
+                      <filter id="soft-glow" x="-40%" y="-40%" width="180%" height="180%">
+                        <feGaussianBlur stdDeviation="2.2" result="blur" />
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                      </filter>
+                      <filter id="large-glow" x="-100%" y="-100%" width="300%" height="300%">
+                        <feGaussianBlur stdDeviation="15" />
+                      </filter>
+                    </defs>
+
+                    <circle class="orbit" cx="250" cy="192" r="135" stroke-width="1" stroke-dasharray="2 10" />
+                    <circle class="orbit" cx="250" cy="192" r="99" stroke-width="1" />
+                    <path class="orbit-signal" d="M119 161 A135 135 0 0 1 348 97" stroke-width="2.2" />
+                    <text class="arc-label" x="111" y="145">MAKE YOUR MIND UP</text>
+                    <text class="label" x="330" y="83">ORCHESTRATION</text>
+
+                    <line class="connection-warm" x1="151" y1="126" x2="250" y2="192" />
+                    <line class="connection" x1="350" y1="129" x2="250" y2="192" />
+                    <line class="connection" x1="349" y1="264" x2="250" y2="192" />
+                    <line class="connection" x1="151" y1="266" x2="250" y2="192" />
+
+                    <g class="pulse">
+                      <circle class="node" cx="151" cy="126" r="22" />
+                      <circle class="node-core" cx="151" cy="126" r="3.8" />
+                    </g>
+                    <text class="label" x="121" y="96">PEOPLE</text>
+
+                    <g class="pulse" style="animation-delay:1.2s">
+                      <circle class="node" cx="350" cy="129" r="22" />
+                      <circle class="node-core" cx="350" cy="129" r="3.8" />
+                    </g>
+                    <text class="label" x="330" y="98">AGENTS</text>
+
+                    <g class="pulse" style="animation-delay:2.1s">
+                      <circle class="node" cx="349" cy="264" r="22" />
+                      <circle class="node-core" cx="349" cy="264" r="3.8" />
+                    </g>
+                    <text class="label" x="329" y="300">PROOF</text>
+
+                    <g class="pulse" style="animation-delay:3s">
+                      <circle class="node" cx="151" cy="266" r="22" />
+                      <circle class="node-core" cx="151" cy="266" r="3.8" />
+                    </g>
+                    <text class="label" x="122" y="301">CONTROL</text>
+
+                    <circle class="center-glow" cx="250" cy="192" r="40" />
+                    <circle class="center" cx="250" cy="192" r="36" />
+                    <circle class="node-core" cx="250" cy="179" r="4.5" />
+                    <text class="center-label" x="218" y="204">JUDGMENT</text>
+                  </svg>
+                  <div class="visual-foot"><span><strong>Starting bias</strong> · humans + agents</span><span>one warm signal, not your transcript</span></div>
+                </div>
+
+                <div class="lens-copy">
+                  <span class="chip">Here is what I heard</span>
+                  <h2 id="lens-heading">Wire agents into the work. Keep judgment human.</h2>
+                  <p>You chose <strong>doing over watching</strong>, and a hybrid company over a fully autonomous one. I will bias CTRL towards orchestration, team design and proof that the work actually moved.</p>
+                  <div class="actions">
+                    <button class="primary-action" id="confirm-lens" aria-pressed="false">Yes, start here <span aria-hidden="true">→</span></button>
+                    <button class="secondary-action">Not quite</button>
+                  </div>
+                  <div class="privacy">Your exact words stayed private. CTRL carried the pattern, not the transcript.</div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="signal first-call" aria-labelledby="call-heading">
+            <div class="marker"><span class="mono">First call</span></div>
+            <div class="call-card">
+              <div class="mini-visual" aria-hidden="true">
+                <svg viewBox="0 0 100 70">
+                  <line x1="50" y1="35" x2="20" y2="17"/><line x1="50" y1="35" x2="80" y2="17"/>
+                  <line x1="50" y1="35" x2="20" y2="54"/><line x1="50" y1="35" x2="80" y2="54"/>
+                  <circle cx="20" cy="17" r="6"/><circle cx="80" cy="17" r="6"/>
+                  <circle cx="20" cy="54" r="6"/><circle cx="80" cy="54" r="6"/>
+                  <circle cx="50" cy="35" r="7"/>
+                </svg>
+              </div>
+              <div class="call-copy">
+                <span class="eyebrow">Ready to weigh</span>
+                <h3 id="call-heading">Where should AI take work off my team first?</h3>
+                <p>A useful first decision, drawn from the lens above.</p>
+              </div>
+              <button class="weigh">Weigh it <span aria-hidden="true">→</span></button>
+            </div>
+          </section>
+
+          <div class="lower-register">
+            <span><strong>Tomorrow:</strong> your first personal briefing arrives here and by email.</span>
+            <span class="mono">No dashboard work required</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const mobileLayout = window.matchMedia("(max-width: 720px)");
+    const appShell = document.querySelector(".app");
+    const navigationRail = document.querySelector(".rail");
+    const confirmLens = document.querySelector("#confirm-lens");
+
+    function placeNavigation() {
+      if (mobileLayout.matches) appShell.append(navigationRail);
+      else appShell.prepend(navigationRail);
+    }
+
+    confirmLens.addEventListener("click", () => {
+      const confirmed = confirmLens.getAttribute("aria-pressed") === "true";
+      confirmLens.setAttribute("aria-pressed", String(!confirmed));
+      confirmLens.innerHTML = confirmed ? 'Yes, start here <span aria-hidden="true">→</span>' : 'Starting here <span aria-hidden="true">✓</span>';
+    });
+
+    placeNavigation();
+    mobileLayout.addEventListener("change", placeNavigation);
+  </script>
+</body>
+</html>

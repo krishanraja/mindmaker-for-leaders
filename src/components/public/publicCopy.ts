@@ -69,9 +69,9 @@ export const LANDING = {
 
   // price
   priceH: 'Free is free forever.',
-  priceBody: 'Memory, voice, unlimited skill builds, the daily read, three full weighs a month.',
+  priceBody: 'Memory, Blind Spot reflections, the daily read, three full weighs a month.',
   freeDesc:
-    'Memory web, voice profile, unlimited skill builds, the daily read, and three decision weighs a month.',
+    'Memory web, Blind Spot reflections, the daily read, and three decision weighs a month.',
   proDesc:
     'Unlimited weighs, a second model arguing against the first, decision watch, Edge artifacts, and the live MCP that sends your brain where it needs to be.',
   // The approved deck ended this on a half sentence ("...has made him realize
@@ -112,7 +112,7 @@ export const PRICING = {
   sub: 'No add-ons, no one-time upsells. The daily instrument is free and stays free. Edge Pro is for when weighing becomes the way you think.',
   cta: 'Upgrade to Edge Pro',
   note: 'The cap is three weighs a month. If you are not hitting it, free is the right tier.',
-  fine: 'Cancel anytime. Your daily read, memory and skill builds stay free.',
+  fine: 'Cancel anytime. Your daily read, memory and Blind Spot reflections stay free.',
 } as const;
 
 export const AGENTS = {
@@ -127,14 +127,6 @@ export const AGENTS = {
   t3: 'The skills you have built in CTRL.',
   t4: 'One skill in full, pulled live, never a stale copy.',
   cta: 'See pricing',
-} as const;
-
-export const AUTH_COPY = {
-  h1: 'Start building yours.',
-  sub: 'Two minutes. Then weigh a real call.',
-  google: 'Continue with Google',
-  email: 'Create account',
-  foot: 'Self-contained. No integrations. Your data stays yours.',
 } as const;
 
 /** The AI tools a leader already runs, named under the hero. */

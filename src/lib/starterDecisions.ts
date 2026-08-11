@@ -29,3 +29,20 @@ export function starterDecisionsFor(role?: string | null): string[] {
 export function pickStarterDecision(role?: string | null): string {
   return starterDecisionsFor(role)[0];
 }
+
+/**
+ * Choose the first decision from a consented onboarding lane when role has not
+ * been collected yet. The decision strings still live in this one module, so
+ * the handoff, Home empty state, and reactivation paths cannot drift apart.
+ */
+export function starterDecisionForLane(lane?: string | null): string {
+  switch ((lane ?? '').toLowerCase()) {
+    case 'economics':
+      return BUILD;
+    case 'model':
+    case 'tools':
+      return VENDOR;
+    default:
+      return OFFLOAD;
+  }
+}

@@ -2,7 +2,9 @@
 
 Complete feature inventory.
 
-**Last reconciled:** 2026-07-26 (drift-check pass: re-counted edge functions/hooks/migrations, fixed the `/context-export` route typo, corrected the stale "Home is now the cockpit deck" callout, and added the note below for everything shipped after 2026-06-21).
+**Last reconciled:** 2026-08-10.
+
+> **Current feature map. This supersedes conflicting historical feature descriptions below.** Primary product: Make Your Mind Up onboarding and First Lens; Today with one ranked, visually distinctive curation pool; conversational audio briefing; Decide; Blind Spot; Memory; no-login email/audio delivery; permanently reachable Settings. Supporting utilities: context export, profile, compliance, pricing, agent access, and the unpromoted harness chain (`/sort`, `/review`, `/proposals`). Retired: Kit as a product, Automator/Skill Builder as a primary user surface, blank-circle navigation, duplicated feeds, and the former CTRL hostname. The deeper legacy inventory remains for implementation provenance only.
 
 > **Post-2026-06-21 layers this doc still narrates only in outline (full detail in `CLAUDE.md`'s Architecture Quick Reference):** the CTRL 2028 radical-focus refactor (PRs #234-241, `CockpitHome`/`CockpitDeck` deleted, replaced by `HomeFeed.tsx` + `DesktopHomeView.tsx`, `VITE_COCKPIT_ENABLED` flag retired entirely); the unified onboarding->decisions->engagement loop (PR #298); evidence-corpus sharpening (PR #321: real correction loop on Memory facts, board-ready decision memo export, live MCP-gated Strengthen/Fix brain actions, capability ladder replacing engagement-only progression); the settings audit / one-door tuning (PR #325); the Decisions tab rebuilt as a radial force spider; the Edge Pro money-path repair + $49/decision-tier reposition (PRs #326-327, see the Pricing section below); the decision-engine reframe/sanitize/eval-gate hardening (PR #328); the North Star flywheel metric (PR #330, see `NORTH_STAR.md`); the static `/pricing` SEO page vs the interactive `/upgrade` checkout page split (PRs #329, #331); news "shift"/trend cards (PR #332); the `/download` public capture page (PR #333); the Home card glance/tap-to-read rework (PRs #322-324, #334); and PostHog product analytics (2026-07-18).
 
@@ -18,13 +20,13 @@ Complete feature inventory.
 
 ---
 
-## Repo at a glance (counts re-verified 2026-07-26)
+## Repo at a glance (counts re-verified 2026-08-10)
 
-> **Updated 2026-07-26.** Edge function / hook / migration totals below are live counts as of this pass, not a lower bound. Re-count directly from the repo (`ls supabase/functions`, `ls supabase/migrations`, `ls src/hooks`) rather than trusting any older figure.
+> Counts are descriptive and drift quickly. Re-count the repository before quoting them.
 
-- **104 Supabase edge functions** (Deno runtime; re-counted 2026-07-26), spanning briefing, memory, AI generation, billing, diagnostic, email/notifications, enrichment, the Decision Engine trio (`decision-engine` / `decision-eval` / `decision-watch`), the Skill Builder (`generate-skill-export`), the `track-event` attribution proxy, `card-for-you`, `capture-lead`, `detect-trends`, and North Star's supporting cron, plus shared modules
-- **77 React hooks** under `src/hooks/` (re-counted 2026-07-26)
-- **148 PostgreSQL migrations** applied to remote (re-counted 2026-07-26)
+- **113 Edge Function directories** excluding `_shared`
+- **78 hook files** under `src/hooks/`
+- **158 SQL migrations** in `supabase/migrations/`
 - **PostgreSQL extensions in use**: pgvector, pgcrypto, pg_cron
 - **6 audit-week tracks shipped** (PR #93-#101): revenue path, data path, UX, reliability, observability, cleanup. See `HISTORY.md` Phase 7.
 - **Brand redesign shipped LIVE** (PR #186, merge 1c01db5, 2026-06-16): globally forced dark, `ctrl-ds` instrument palette, emerald `#00D9B6`, the emerald `ctrl.` wordmark; rebuilt mobile cockpit, decision spine, StoneRead, brain four-world rope canvas, capture, onboarding. Prod-verified with screenshots. See **Redesign** below.

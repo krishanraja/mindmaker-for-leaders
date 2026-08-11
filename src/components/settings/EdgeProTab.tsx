@@ -423,7 +423,7 @@ function PlanMatrix() {
       <div className="mb-3">
         <h3 className="text-lg font-semibold text-foreground">What you get</h3>
         <p className="text-xs text-muted-foreground">
-          Free includes Memory Web, Voice Profile, unlimited Automator skills, the daily briefing,
+          Free includes Memory Web, Voice Profile, Blind Spot reflections, the daily briefing,
           and 3 decision weighs a month. Edge Pro ({EDGE_PRO_PRICE_LONG}) unlocks unlimited weighs,
           a multi-model cross-examination of every decision, decision watch, Edge artifacts, and the
           live pull of your skills into any AI.

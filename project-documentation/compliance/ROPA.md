@@ -1,9 +1,9 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-07-26 (updated 2026-07-26: added PostHog, NewsAPI.org, Exa, and Artificial Analysis as subprocessors; corrected the Memory retention automation claim; resolved the kit_builds cascade question)
+Last reviewed: 2026-08-10 (canonical domain and retired lesson-kit status reconciled)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
-System: CTRL, https://ctrl.themindmaker.ai; Supabase project ref bkyuxvschuwngtcdhsyg
+System: CTRL, https://makeyourmindup.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
 This record describes the processing activities Mindmaker carries out as controller. Recipient/subprocessor detail is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md); retention detail in [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md); security measures in [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md).
 
@@ -126,8 +126,8 @@ This record describes the processing activities Mindmaker carries out as control
 - Retention: minimized; reviewed periodically.
 - Security: scoped service credentials, TLS.
 
-### M. Lesson-kit builds
-- Personal data: org/team/workflow intake provided when forking a lesson kit (boxes, pathway, profile, time sinks, guardrails, grind, what work involves, team maturity), stored in `kit_builds.intake`.
+### M. Legacy lesson-kit records (retired collection surface)
+- Personal data: org/team/workflow intake previously provided when the lesson-kit flow was active (boxes, pathway, profile, time sinks, guardrails, grind, what work involves, team maturity), stored in `kit_builds.intake`. The product no longer collects new lesson-kit intake through `/kit`.
 - Data subjects: registered users.
 - Lawful basis: contract (Art 6(1)(b)).
 - Recipients/subprocessors: Supabase (US); LLM providers for composition (see Activity E).

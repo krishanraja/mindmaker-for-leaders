@@ -49,14 +49,14 @@ function svg(t: string, s: string, l: string): string {
     .join("");
   const stat = s ? `<text x="80" y="160" font-size="92" font-weight="700" fill="#00D9B6">${esc(s)}</text>` : "";
   const sub = l ? `<text x="80" y="${startY + headlines.length * 76 + 24}" font-size="30" font-weight="400" fill="#8a93a3">${esc(l)}</text>` : "";
-  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
     <rect width="${W}" height="${H}" fill="#0a0e12"/>
     <ellipse cx="${W / 2}" cy="-80" rx="640" ry="420" fill="#0d261f"/>
     <ellipse cx="${W / 2}" cy="-80" rx="380" ry="240" fill="#0f3429"/>
     ${stat}
     ${headlineTspans}
     ${sub}
-    <text x="80" y="560" font-size="26" font-weight="600" fill="#5b6373">CTRL · ctrl.themindmaker.ai</text>
+    <text x="80" y="560" font-size="26" font-weight="600" fill="#5b6373">CTRL · makeyourmindup.ai</text>
     <rect x="1040" y="528" width="80" height="6" rx="3" fill="#00D9B6"/>
   </svg>`;
 }

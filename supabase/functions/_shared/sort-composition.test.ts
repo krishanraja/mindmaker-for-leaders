@@ -710,11 +710,11 @@ function repoFile(relative: string): string {
 }
 
 describe('PROMPT 2 drift guard', () => {
-  const doc = readFileSync(repoFile('docs/PHASE-0.5-HANDRUN.md'), 'utf8');
+  const doc = readFileSync(repoFile('docs/PHASE-0.5-HANDRUN.md'), 'utf8').replace(/\r\n?/g, '\n');
 
   it('carries the hand-run pair prompt character for character', () => {
     // The hand run only measures the shipped generator if the shipped generator
-    // sends the same words. Byte identity, both directions.
+    // sends the same words. Platform newline encoding is not wording drift.
     expect(doc).toContain(HANDRUN_PROMPT_2_RULES);
 
     const step2 = doc.slice(doc.indexOf('## Step 2'));

@@ -12,6 +12,7 @@
 // no PII, and curation backends + a future public widget both consume it.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { ONBOARDING_LANE_LABELS, strongestOnboardingLane } from "../_shared/onboarding-lens.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -22,38 +23,6 @@ function json(obj: unknown, status = 200): Response {
     status,
     headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "public, max-age=900" },
   });
-}
-
-// q5 keyword -> the AI-native lane(s) it implicates. Mirrors the MYMU reads
-// ranker so the whole portfolio categorises anxiety the same way.
-const KEYWORD_CATEGORY: Array<[RegExp, string[]]> = [
-  [/\b(team|people|hire|hiring|headcount|staff|replace|replacing|layoff|reorg|restructure)\b/i, ["org", "orchestration"]],
-  [/\b(tool|tools|stack|consolidat|software|platform)\b/i, ["tools"]],
-  [/\b(build|buy|vendor|lock[- ]?in|cost|costs|price|pricing|budget|spend|roi|cheaper|expensive)\b/i, ["economics"]],
-  [/\b(agent|agents|automat|workflow|autonomous|orchestrat|pipeline)\b/i, ["orchestration"]],
-  [/\b(board|investor|positioning|narrative|fundrais|raise)\b/i, ["product", "proof"]],
-  [/\b(supervis|govern|regulat|compliance|risk|safe|safety|legal|policy)\b/i, ["governance", "security"]],
-  [/\b(breach|leak|attack|secur|jailbreak|injection)\b/i, ["security"]],
-  [/\b(product|gtm|go[- ]?to[- ]?market|launch|market|customer|sales|growth)\b/i, ["product"]],
-  [/\b(model|models|gpt|claude|gemini|llm|capabilit|benchmark)\b/i, ["model"]],
-  [/\b(deploy|production|proof|case stud|outcome)\b/i, ["proof"]],
-];
-
-const LANE_LABEL: Record<string, string> = {
-  model: "Which models to bet on",
-  economics: "Build-vs-buy and AI cost",
-  tools: "Which AI tools to standardise on",
-  orchestration: "Wiring agents into the work",
-  product: "Rebuilding go-to-market with AI",
-  governance: "Policy and guardrails",
-  security: "AI security exposure",
-  org: "Team and headcount under AI",
-  proof: "Proving AI pays off",
-};
-
-function laneFor(q5: string): string | null {
-  for (const [re, lanes] of KEYWORD_CATEGORY) if (re.test(q5)) return lanes[0];
-  return null;
 }
 
 Deno.serve(async (req) => {
@@ -78,7 +47,7 @@ Deno.serve(async (req) => {
       .not("q5_decision", "is", null)
       .limit(5000);
     for (const row of data ?? []) {
-      const lane = laneFor(String((row as { q5_decision?: string }).q5_decision ?? ""));
+      const lane = strongestOnboardingLane({ q5: String((row as { q5_decision?: string }).q5_decision ?? "") });
       if (!lane) continue;
       counts[lane] = (counts[lane] ?? 0) + 1;
       total++;
@@ -90,7 +59,7 @@ Deno.serve(async (req) => {
   const lanes = Object.entries(counts)
     .map(([lane, count]) => ({
       lane,
-      label: LANE_LABEL[lane] ?? lane,
+      label: ONBOARDING_LANE_LABELS[lane] ?? lane,
       count,
       share: total ? Math.round((count / total) * 100) / 100 : 0,
     }))

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "engines": {
-    "node": ">=22 <24"
+    "node": ">=22 <25"
   },
   "scripts": {
     "dev": "cross-env ROLLUP_DISABLE_NATIVE=1 vite",

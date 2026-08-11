@@ -1,178 +1,75 @@
-# CTRL Agent Briefing
-**For Mindmaker OS fleet agents: sell, market, and represent CTRL with zero extra context. Read this first.**
+# CTRL agent briefing
 
-**Last reconciled:** 2026-07-26 (drift-check pass: added the diagnostic-SKU unreachability caveat and the `/pricing` + `/upgrade` links).
-**Canonical sources:** `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, the root `README.md`. Trust those over this file where they disagree.
+Last reconciled: 2026-08-10
 
-> Reconciliation note: CTRL's positioning moved from "clarity / portable AI double for leaders" to **building the AI-native version of your business.** This briefing has been reframed to the AI-native lens. The product mechanics are real and in the code; the FRAMING is what changed. Where a precise AI-native ICP / message / price was not yet settled, it is flagged `TODO(founder)` instead of invented. The runtime endpoint `https://ctrl.themindmaker.ai/.well-known/product.json` was regenerated 2026-07-26 to the AI-native positioning and the $49/mo pricing; TODO(founder): confirm the exact final public tagline/one-liner wording there (it currently carries a working version, flagged as such in the file's own `positioning_note` field).
+Use this file to represent CTRL without additional context. Runtime product facts are also published at `https://makeyourmindup.ai/.well-known/product.json`.
 
----
+## What CTRL is
 
-## 1. Positioning (LOCKED)
+CTRL is a calm AI decision partner for founders and small-team CEOs with too much to hold in their heads. It filters the AI world through what they are actually deciding, tests one real call against live evidence, keeps a portable memory, surfaces leadership blind spots carefully, and sends a short daily read or listen.
 
-**What CTRL is:** the tool for leaders building, orchestrating, productizing, and getting to market **the AI-native version of their business.**
+Make Your Mind Up is the public onboarding experience and `makeyourmindup.ai` is the domain. CTRL is the product.
 
-**What CTRL is not:** a general business advisor; a generic "clarity for leaders" or "decision speed" product; a ChatGPT wrapper.
+Short line: **A quieter way through AI.**
 
-**The reframe rule (the heart of the positioning):** general-business inputs are never refused and never answered as-is. They are reframed into the AI-native version of the decision and the leader is pulled there.
-- "Should I hire a VP of Sales?" -> "Before you hire, should an agent own part of that motion first, and what does the human role become?"
-- "Should we raise prices?" -> "Should the AI-native version of your offer change what you sell and how you price the AI capability itself?"
-- "Should we move upmarket?" -> "What would the AI-native version of your product need to be to win upmarket?"
+Positioning frame: **Build the AI-native version of your business.** CTRL reframes general business questions through that lens; it is not a generic business advisor or chatbot wrapper.
 
-**One-liner (working):** CTRL helps a leader build, orchestrate, productize, and take to market the AI-native version of their business. TODO(founder): lock the final public one-liner and tagline (the old "Your context. Every AI. One click." is retired).
+## Who it is for
 
----
+The ratified beachhead is AI-native founders and small-team CEOs who:
 
-## 2. ICP: who CTRL is built for
+- are still close to the work and the important calls;
+- already use at least one AI tool daily;
+- keep receiving generic output because every tool starts without context;
+- lack time or staff to monitor AI news and check evidence;
+- are actively changing how their product, workflows, or company operate around AI.
 
-> Reconciliation note: the firmographic ICP below (senior leaders at 50-5,000-person companies already using AI) is carried from the prior positioning and is still a reasonable starting frame, but it was written for "portable context", not "build the AI-native business". TODO(founder): confirm whether the AI-native positioning narrows or shifts the ICP (for example, toward leaders actively trying to make their business AI-native, founders productizing AI, operators standing up an agentic org). Do not invent a new ICP in outbound; use this frame and the AI-native qualifiers.
+It is not aimed at enterprise procurement programs, implementation engineers seeking build tooling, people who want generic chat, or buyers seeking consulting services.
 
-### Primary buyer (carried frame, pending founder confirmation)
+## The experience
 
-| Dimension | Detail |
-|---|---|
-| **Titles** | CEO, COO, CFO, CTO, VPs, Senior Directors, Founders |
-| **Company size** | 50-5,000 employees. Sweet spot: 100-1,000. |
-| **Geography** | English-speaking markets priority |
-| **AI usage** | Already using at least one AI tool. Not starting from zero. |
+1. Make Your Mind Up asks one easy question at a time and captures the shape of the leader's judgement.
+2. First Lens shows what CTRL heard and one useful place to start.
+3. Today keeps only the AI changes that touch the leader's real priorities.
+4. Decide weighs a real call, verifies its load-bearing claims, and shows what holds, what is shaky, and what only the leader can decide.
+5. Blind Spot offers one grounded, tentative reflection. It becomes memory only after the leader confirms it.
+6. Memory keeps structured, correctable, portable context.
+7. The daily briefing can be read, heard, or talked back to. Its voice is curious, direct, and human.
+8. A leader can receive the same useful intelligence by email and audio without opening the app.
 
-### AI-native fit signals (lead with these)
-- "I know my business needs to become AI-native and I do not know where to start."
-- "I want an agent to own part of a workflow, but I cannot see which part is safe to hand off."
-- "I am trying to figure out the AI-native version of what we sell."
-- "My competitors are moving faster because they are building with AI, not just buying it."
+Primary navigation: Today, Decide, Blind spot, Memory. Settings remains permanently reachable. Context export and harness routes are utilities, not destinations to promote.
 
-### Who is NOT a fit
-- Leaders who want general business strategy with no AI-native angle (CTRL reframes, it does not advise generally).
-- Technical AI implementation roles wanting build tooling (CTRL is for the leader directing the AI-native shift, not the engineer).
-- Leaders who do not use any AI tools at all yet.
-- Buyers requiring deep Slack/email/calendar/CRM integrations (CTRL is deliberately self-contained).
+## What was retired
 
----
+- The Kit is retired; `/kit*` redirects to `/try`.
+- Automator/Skill Builder is no longer a primary user surface. Blind Spot is the leadership-development experience. Existing skill/MCP machinery may survive only as a nested portability harness.
+- `ctrl.themindmaker.ai` is retired and redirects to `makeyourmindup.ai`.
+- Generic dashboard language, feature grids, and multi-step setup work are not the product.
 
-## 3. The two halves of the product (what you are selling)
+## Pricing
 
-### A. The lesson kits (`/kit`) - the front door
-A leader finishes a Mindmaker lightning lesson, scans a code, and walks a guided, build-it-with-you kit. Four kits, each about one thing:
-- **Vibe Coding** - a *solution*: teach any AI how you work and what has burned you, then ship one real build.
-- **Autonomous Business** - a *process*: take one recurring workflow off your plate.
-- **Agentic Org Chart** - the *company*: map divisions to tasks to handoffs, each tagged green (AI runs it) / amber (AI assists, you approve the handoff) / red (you only), with a ranked place to start.
-- **Memory & Identity** - the *person*: make the AI know you across sessions, in your voice.
+Free is a genuine daily instrument: Memory Web, context export, Blind Spot reflections, the daily personalised briefing, and three decision weighs per month.
 
-Each kit is strictly sequential (one action per screen), no-scroll on mobile, a native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace, a reveal wizard, and one branded personalized hero PDF. The kit program is public: a student scans the class QR, redeems a code, and runs in an anonymous session (no signup). Saving a profile graduates them into a named free CTRL account without losing data. Canonical: `docs/KIT-REDESIGN-SPEC.md`.
+Edge Pro is $49 per month and is the decision tier: unlimited weighs, multi-model cross-examination, decision watch, Edge artifacts, drafting, live MCP pull, and artifact email delivery. The canonical amount is `EDGE_PRO_UNIT_AMOUNT_CENTS = 4900` in `supabase/functions/_shared/edge-pricing.ts`.
 
-### B. The main app - the daily instrument
-Every authenticated surface is no-scroll on all devices, one ask per screen, AI-native:
-- **Home / cockpit** - a daily deck of "worth a look" headlines, AI-native only.
-- **News deck** - nine AI-native news categories (model & capability, AI economics, tools & vendors, orchestration & agent reliability, AI-native product & GTM, governance, security & agent risk, org & talent, proof & adoption), each with a branded SVG motif. The briefing pipeline filters out anything not about deploying/building/selling AI, and tags every story.
-- **Decision engine** (`/decision`) - pressure-tests a decision (decompose, verify against live evidence, cross-examine, advise) with an honest AI-native reframe banner.
-- **Brain / Memory Web** (`/memory`) - the leader's context as a four-world rope canvas that fills the frame, with zoom; the substrate that makes any AI know the business.
-- **Daily Briefing** (`/briefing`) - a short audio read of the AI world, tuned to the leader's chosen AI-native categories.
-- **Context Export + Automator** (`/context`) - context portable into ChatGPT, Claude, Gemini, Cursor, Claude Code, or raw markdown; plus the Automator, which turns something the leader does every week into an agentskills.io-compliant skill.
-- **Compliance** (`/compliance`) - an honest, calm view of how data is protected (no overclaiming of certifications).
+Do not quote legacy $9 or $29 subscription prices. Do not promote old one-time diagnostic SKUs; no live product route offers them.
 
-Canonical: `docs/MAIN-APP-POLISH-SPEC.md`.
+## Voice and proof rules
 
----
+- Warm, direct, curious, and first-person where CTRL is speaking.
+- The call always stays with the leader.
+- Use plain language. Never make a leader learn app vocabulary.
+- No em dashes, fabricated cohort counts, fake urgency, unsupported certifications, or invented confidence.
+- Say “anchored to” when explaining why something appeared.
+- Show sources and provenance for evidence claims.
+- Treat thin signal as thin signal. Ask rather than pretend.
 
-## 4. Pitches
+## Links
 
-### Short pitch
-CTRL helps you build, orchestrate, productize, and take to market the AI-native version of your business. Start with a guided kit (ship a build, take a workflow off your plate, map your agentic org, or make the AI know you), then run the daily instrument: an AI-native news deck, a decision engine that reframes every call to its AI-native version, and an Automator that turns a weekly workflow into an installable agent skill.
+- Product and onboarding: https://makeyourmindup.ai
+- Sign in: https://makeyourmindup.ai/auth
+- Pricing: https://makeyourmindup.ai/pricing
+- Agent access: https://makeyourmindup.ai/agents
+- Machine-readable facts: https://makeyourmindup.ai/.well-known/product.json
 
-### TODO(founder): lock the long pitch
-The AI-native long pitch is not yet written tight enough to ship in outbound. Use the short pitch and the two-halves description above. Do not reuse the old "zero-context tax / portable double" long pitch; it is off-positioning.
-
----
-
-## 5. Pricing
-
-| Tier | Price | Grounded in code? |
-|---|---|---|
-| **Free / Core** | $0 | Yes (free tier is the kit side-door + Memory Web + the Automator build, which is free for now) |
-| **Edge Pro** | $49/month | Yes - canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`), surfaced via `src/constants/billing.ts` |
-| **Full Diagnostic** | $49 one-time | Wired in `create-diagnostic-payment`, but NOT reachable from any live route today (`/diagnostic` redirects to `/dashboard`; no UI calls this flow) - do not offer as a checkout link |
-| **Deep Context Upgrade** | $29 one-time | Same as above: wired in Stripe, not reachable in the live app |
-| **Diagnostic + Deep Context Bundle** | $69 one-time | Same as above: wired in Stripe, not reachable in the live app |
-
-**What is settled:** Edge Pro is $49/month. Free is a real daily instrument: Memory, Voice, the Kit program, unlimited Automator skill builds, the daily personalised briefing, and 3 decision weighs a month are all FREE. Edge Pro is the decision tier: it removes the 3-weighs cap (unlimited), adds a multi-model cross-examination of every decision, decision watch, Edge artifacts + drafting + email delivery, and the live MCP pull of your built skills into any AI (`list_skills` / `get_skill`). The daily briefing is intentionally free (the daily habit / on-ramp), not a paid feature. Pricing constants are canonical in `src/constants/billing.ts` + the shared edge-pricing module; the app reads them, so trust the code over any doc.
-
-**TODO(founder):** confirm whether the one-time Full Diagnostic ($49) / Deep Context ($29) / Bundle ($69) SKUs survive the AI-native repositioning, and confirm the Bootcamp/Portfolio engagement bands, before quoting them. They are real in the Stripe plumbing today but are not currently reachable from any live route, and were defined under the old positioning - do not offer them as checkout links.
-
-**Pricing guardrails:** Edge Pro is $49/month. Do not quote $9/month (legacy grandfathered price, never quoted publicly). No em dashes. No invented prices.
-
----
-
-## 6. Objections and answers (AI-native reframe)
-
-**"I already use ChatGPT / Claude."**
-Good. CTRL is not another chat tool. It helps you turn your business into its AI-native version: which workflows an agent should own, how your org should be wired for handoffs, what the AI-native version of your product is. The chat tools are where the work lands; CTRL is where you decide what to build.
-
-**"We already have an AI strategy."**
-CTRL is not a strategy deck. It is the instrument that turns the strategy into specific AI-native moves: a workflow taken off your plate, an agentic org chart with the autonomy line drawn, the first agent to stand up.
-
-**"What about data privacy?"**
-CTRL is self-contained. No Slack, email, or calendar integration. The leader talks to it; that is the connection. Data is encrypted at rest. Context never trains any AI model. Account deletion is end-to-end. (Keep this honest; do not overclaim certifications.)
-
-**"Is this just general business advice with an AI label?"**
-No. The opposite. CTRL refuses to stay general. Bring it a general call and it reframes it into the AI-native version and works that. If a question has no AI-native version, it is not what CTRL is for.
-
-TODO(founder): expand the objection set to the AI-native buyer once the ICP is confirmed.
-
----
-
-## 7. CTAs and links
-
-| Action | URL |
-|---|---|
-| **Sign up / log in** | https://ctrl.themindmaker.ai/auth |
-| **Product home** | https://ctrl.themindmaker.ai |
-| **Pricing (static SEO page, for hard loads/crawlers)** | https://ctrl.themindmaker.ai/pricing |
-| **Upgrade to Edge Pro (interactive, live subscribe button)** | https://ctrl.themindmaker.ai/upgrade |
-| **Book a strategy call** | https://ctrl.themindmaker.ai/booking |
-| **Kit redemption** | https://ctrl.themindmaker.ai/kit |
-
-Production URL is **https://ctrl.themindmaker.ai** (never `leaders.themindmaker.ai`).
-
----
-
-## 8. Attribution and UTM scheme
-
-All outbound links must carry UTM parameters so first-touch is attributed in the Mindmaker OS warehouse and Stripe.
-
-| Parameter | Purpose | Required |
-|---|---|---|
-| `utm_source` | Channel/platform (`linkedin`, `email`, `x`, `n8n`) | Yes |
-| `utm_medium` | Medium (`social`, `outbound`, `dm`, `agent`) | Yes |
-| `utm_campaign` | Campaign name | Yes |
-| `utm_content` | Variant/angle | Recommended |
-| `utm_term` | Audience segment | Optional |
-| `agent` | Agent id that generated the link | Recommended |
-| `campaign_id` | Internal campaign reference | Optional |
-
-Rules: always append UTM params; lowercase hyphen-separated values; `utm_source` names the specific platform. Parameters are captured first-touch on landing, persisted through signup, stamped onto Stripe at checkout.
-
-Example:
-```
-https://ctrl.themindmaker.ai/auth?utm_source=email&utm_medium=outbound&utm_campaign=ai-native-build&utm_content=agentic-org&utm_term=founder&agent=n8n-outbound-01
-```
-
----
-
-## 9. Agent guardrails
-
-### Forbidden
-- **No em dashes.** Use commas, colons, parentheses, or rewrite.
-- **No "$9/mo" for Edge Pro.** It is $49/month. Existing $9 subscribers are grandfathered but that figure is never quoted publicly.
-- **No light-mode / "warm off-white" / Apple-quality visual claims.** CTRL is globally dark, instrument-grade (ctrl-ds palette, emerald `#00D9B6`, the BrandLockup).
-- **No general-business-advisor framing.** CTRL builds the AI-native version of the business; it reframes general calls, it does not answer them as general advice.
-- **No plugin/integration language.** CTRL is export-based and self-contained. Say "export to" / "works with", not "connects to" / "integrates with".
-- **No "leaders.themindmaker.ai".** The live URL is https://ctrl.themindmaker.ai.
-- **No hallucinated features, prices, customers, or percentages.** If it is not grounded in the canonical sources or the code, do not claim it.
-
-### Required
-- Lead with **"the AI-native version of your business."**
-- Use **the reframe** when describing the decision engine.
-- Use **"green / amber / red autonomy line"** for the Agentic Org Chart kit.
-- Keep sentences short. Active voice. No hype, no FOMO.
-- Pricing claims must match section 5; when in doubt, trust the code (`edge-pricing.ts` / `billing.ts`).
+All outbound links should preserve UTM attribution. Never send people to the retired CTRL hostname.

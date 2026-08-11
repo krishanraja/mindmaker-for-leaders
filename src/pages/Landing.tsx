@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom"
-import { ClarityHome } from "@/components/landing/ClarityHome"
+import { CtrlOnboarding } from "@/components/onboarding/CtrlOnboarding"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { BrandedAppLoader } from "@/components/system/BrandedAppLoader"
 
@@ -32,5 +32,5 @@ export default function Landing() {
     return <Navigate to="/dashboard" replace />
   }
 
-  return <ClarityHome />
+  return <CtrlOnboarding />
 }

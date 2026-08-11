@@ -42,10 +42,11 @@ import { getEditorialLens } from "../_shared/editorial-lens.ts";
 import { loadBrainProfile, brainSignature, toLensSource } from "../_shared/brain-profile.ts";
 import { buildImportanceLens } from "../_shared/briefing-lens.ts";
 import { scorePoolForUser, type EngineCandidate, type ScoredPoolItem } from "../_shared/personalization-core.ts";
+import { isCronRequest, isServiceRequest } from "../_shared/service-request.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-ctrl-cron-secret",
 };
 
 interface HeadlineCard {
@@ -137,13 +138,21 @@ interface GatherEnv {
   exaKey?: string;
   aaKey?: string;
   openaiKey?: string;
+  controlCenterUrl?: string;
+  controlCenterKey?: string;
 }
 
 /** Tier 1, part A: gather the day's AI-native stories + the AA leaderboard. */
 async function gatherAiNative(env: GatherEnv): Promise<{ raw: RawArticle[]; aiNative: RawArticle[]; aaModels: AaModel[] }> {
   const cutoffMs = Date.now() - MAX_AGE_DAYS * 24 * 3_600_000;
   const [raw, aaModels] = await Promise.all([
-    gatherAll({ braveKey: env.braveKey, newsApiKey: env.newsApiKey, exaKey: env.exaKey }),
+    gatherAll({
+      braveKey: env.braveKey,
+      newsApiKey: env.newsApiKey,
+      exaKey: env.exaKey,
+      controlCenterUrl: env.controlCenterUrl,
+      controlCenterKey: env.controlCenterKey,
+    }),
     env.aaKey ? fetchAaModelIndex(env.aaKey).catch(() => [] as AaModel[]) : Promise.resolve([] as AaModel[]),
   ]);
   const aiNative = raw.filter((a) => {
@@ -297,6 +306,11 @@ serve(async (req) => {
       exaKey: Deno.env.get("EXA_API_KEY") ?? undefined,
       aaKey: Deno.env.get("ARTIFICIALANALYSIS_API_KEY") ?? undefined,
       openaiKey: Deno.env.get("OPENAI_API_KEY") ?? undefined,
+      controlCenterUrl: Deno.env.get("CONTROL_CENTER_URL") ?? undefined,
+      controlCenterKey:
+        Deno.env.get("CONTROL_CENTER_PUBLISHABLE_KEY") ??
+        Deno.env.get("CONTROL_CENTER_SERVICE_ROLE_KEY") ??
+        undefined,
     };
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
@@ -304,6 +318,25 @@ serve(async (req) => {
     const today = new Date().toISOString().split("T")[0];
     const force = url.searchParams.get("force") === "1";
     const debug = url.searchParams.get("debug") === "1";
+    const serviceRequest = isServiceRequest(req.headers.get("Authorization"), serviceKey);
+    const cronRequest = isCronRequest(
+      req.headers.get("X-CTRL-Cron-Secret"),
+      Deno.env.get("CTRL_CRON_SECRET") ?? "",
+    );
+    const callerId = serviceRequest || cronRequest ? null : await resolveUserId(req, supabase);
+
+    // JWT verification is implemented here because modern publishable keys are
+    // not JWTs and the scheduled refresh uses a separate Vault-backed secret.
+    if (!serviceRequest && !cronRequest && !callerId) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+
+    // Rebuilding the shared cache and running source diagnostics are operator
+    // actions, not public product actions. The daily pg_cron call already uses
+    // the service credential; normal signed-in clients never need either flag.
+    if ((force || debug) && !serviceRequest && !cronRequest) {
+      return json({ error: "Forbidden" }, 403);
+    }
 
     // ---- Ops debug: per-source gather counts (no keys exposed). ----
     if (debug) {
@@ -311,9 +344,9 @@ serve(async (req) => {
       const by = (o: string) => raw.filter((a) => a.origin === o).length;
       return json({
         gathered: { total: raw.length, aiNative: aiNative.length },
-        bySource: { gdelt: by("gdelt"), hn: by("hn"), rss: by("rss"), brave: by("brave"), newsapi: by("newsapi"), exa: by("exa") },
+        bySource: { gdelt: by("gdelt"), hn: by("hn"), rss: by("rss"), brave: by("brave"), newsapi: by("newsapi"), exa: by("exa"), controlCenter: by("control_center") },
         aaModels: aaModels.length,
-        keysPresent: { brave: !!env.braveKey, newsapi: !!env.newsApiKey, exa: !!env.exaKey, aa: !!env.aaKey, openai: !!env.openaiKey },
+        keysPresent: { brave: !!env.braveKey, newsapi: !!env.newsApiKey, exa: !!env.exaKey, aa: !!env.aaKey, openai: !!env.openaiKey, controlCenter: !!(env.controlCenterUrl && env.controlCenterKey) },
         personalize: PERSONALIZE,
       });
     }
@@ -344,7 +377,7 @@ serve(async (req) => {
     const genericCards = shared.map(toDisplayCard);
 
     // ---- TIER 2: personalize for the calling user (fallback-safe). ----
-    const userId = PERSONALIZE ? await resolveUserId(req, supabase) : null;
+    const userId = PERSONALIZE ? callerId : null;
     if (!userId || !env.openaiKey) {
       return json({ cards: genericCards, cached: !force, personalized: false });
     }

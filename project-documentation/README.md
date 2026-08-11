@@ -1,130 +1,67 @@
-# CTRL Project Documentation
+# CTRL project documentation
 
-**Master Index**
+Last reconciled: 2026-08-10
 
-This folder is the deeper source of truth for CTRL. The two highest-authority documents in the whole repo are the canonical product/build specs in `docs/`, and the top-level `README.md`. Where any file in this folder disagrees with them, the spec and the root README win.
+CTRL is one product at `makeyourmindup.ai`. Make Your Mind Up is the warm, one-question-at-a-time front door; CTRL is the daily decision-support system behind it. The product is for overwhelmed founders and small-team CEOs who are actively building the AI-native version of their business. It should feel calm and human at the surface while curation, memory, evidence, delivery, and AI orchestration stay sophisticated underneath.
 
-**Last reconciled:** 2026-06-21 (AI-native reconciliation pass); **drift-checked 2026-07-26** (counts re-verified, pricing/route/compliance drift fixed across the folder - see `HISTORY.md` Phase 18 and `DECISIONS_LOG.md` Decisions 61-68 for what shipped since the last full pass).
+## Source-of-truth order
 
----
+1. Running code, production schema, and `src/router.tsx`.
+2. Root [`README.md`](../README.md), [`CLAUDE.md`](../CLAUDE.md), and `public/.well-known/product.json`.
+3. [`APP-DELIVERY-STATE.md`](./APP-DELIVERY-STATE.md) for the current release state.
+4. [`DECISIONS_LOG.md`](./DECISIONS_LOG.md) for settled product and architecture decisions.
+5. [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`FEATURES.md`](./FEATURES.md), and [`REPLICATION_GUIDE.md`](./REPLICATION_GUIDE.md) for technical operation.
+6. [`HISTORY.md`](./HISTORY.md) and explicitly historical sections for provenance only.
 
-## Read this first: the current product, in one paragraph
+If prose disagrees with code or the production readback, code and measured production state win.
 
-CTRL is the tool for leaders building, orchestrating, productizing, and getting to market **the AI-native version of their business.** It is NOT a general business advisor, and not a generic "clarity for leaders" product. Every decision, headline, and nudge pulls toward one question: how do you make your business more AI-native, here? When a leader brings a general-business call ("should I hire a VP of Sales?"), CTRL reframes it into its AI-native version ("before you hire, should an agent own part of that motion first, and what does the human role become?") and works it from there. It is globally dark, instrument-grade (the `ctrl-ds` palette, emerald `#00D9B6`, the `BrandLockup`). It is mobile-first and no-scroll: every key surface fits the viewport with one clear action per screen. Production: **ctrl.themindmaker.ai**.
+## Current product
 
-The product has two halves:
-1. **The lesson kits** (`/kit`). **RETIRED 2026-08-07 (PR #355): the Kit is gone; `/kit*` 301s to `/try`.** Historical description: four guided build-it-with-you kits a leader walks after a Mindmaker lightning lesson. Vibe Coding = a solution, Autonomous Business = a process, Agentic Org Chart = the company, Memory & Identity = the person.
-2. **The main app** (the daily instrument): the news deck, the decision engine, the Brain/Memory Web, the daily briefing, the context export + Automator, compliance.
+The primary navigation is Today, Decide, Blind spot, and Memory. The audio briefing is a signature control available from Today and as a dedicated surface. Settings is always reachable. Context export, compliance, profile, and the harness chain (`/sort`, `/review`, `/proposals`) remain subordinate utilities, not competing products.
 
-### The canonical sources (trust these over everything else)
+- Public onboarding captures judgement without a dashboard or account requirement.
+- First Lens turns that intake into an immediate, premium post-handoff payoff.
+- Today shows one useful next move and a small, visually distinctive AI-native read.
+- Decide weighs one real call against live evidence and keeps the final judgement with the leader.
+- Blind Spot offers one tentative reflection grounded in independent facts and saves nothing until confirmation.
+- Memory keeps portable context, corrections, and provenance.
+- The briefing can be read, heard, and talked back to in the same warm voice.
+- No-login delivery can send the same ranked intelligence by email and audio.
 
-| Source | What it is | Authority |
-|---|---|---|
-| [`docs/KIT-REDESIGN-SPEC.md`](../docs/KIT-REDESIGN-SPEC.md) | The lesson-kit program | HISTORICAL - the Kit was retired 2026-08-07 (PR #355) |
-| [`docs/MAIN-APP-POLISH-SPEC.md`](../docs/MAIN-APP-POLISH-SPEC.md) | The main-app standard (North Star, decision model, news categories, the no-scroll/one-ask laws, approachable language) | Canonical |
-| [root `README.md`](../README.md) | Current truth, tone + facts | Canonical |
-| [root `CLAUDE.md`](../CLAUDE.md) | Workflow + the live architecture quick-reference (kept current; trust its counts over this folder) | Canonical |
-| `src/router.tsx` | The live route table | Code is truth |
-| `src/constants/billing.ts` + `supabase/functions/_shared/edge-pricing.ts` | The live Edge Pro price | Code is truth |
+The former Kit and Automator/Skill Builder are not primary products. `/kit*` redirects to `/try`. Skill generation and MCP artifacts may remain as nested backend harnesses where they support portability, but the user-facing development surface is Blind Spot.
 
-> Reconciliation note (2026-06-21): the sales/positioning docs in this folder were written for an earlier positioning ("clarity for leaders", "portable AI double", "the zero-context tax", a light/Apple-quality look). They have been reconciled to the AI-native positioning and the globally-dark visual where the facts are settled, and any AI-native ICP/messaging/go-to-market detail that is NOT yet decided is flagged `TODO(founder)` rather than invented. Read them through the AI-native lens above. The product mechanics they describe (Memory Web, Briefing, the Automator/Skill Builder, the Decision Engine, the Kits) are real and still in the code; it is the FRAMING that moved to AI-native.
+## Brand and interaction laws
 
----
+- Product name: CTRL.
+- Canonical domain: `makeyourmindup.ai`.
+- Retired domain: `ctrl.themindmaker.ai`, redirected to the canonical host.
+- Typography: Segoe UI Variable Display and Text as optical cuts of one family; mono only for compact metadata.
+- Visual language: dark, premium, instrument-like, with stable category motifs and restrained emerald accents.
+- One primary ask at a time. No horizontal overflow. No clipped meaning. Minimum 44px signature controls.
+- Plain language, no em dashes, no fabricated urgency, proof, or confidence.
 
-## Documentation Structure
+## Live architecture snapshot
 
-### For sales, marketing, and ops AI agents (start here)
-1. [AGENT_BRIEFING.md](./AGENT_BRIEFING.md) - the one-read briefing: positioning, ICP, value prop, messaging, outcomes, guardrails
-2. [SALES_BRIEF.md](./SALES_BRIEF.md) - outbound brief (angles, objections, pricing, fit signals)
-3. [ICP.md](./ICP.md) - who to target, who not to
-4. [VALUE_PROP.md](./VALUE_PROP.md) - per-audience value props
-5. [OUTCOMES.md](./OUTCOMES.md) - stage-by-stage outcomes
-6. [Master_Messaging_and_FAQ.md](./Master_Messaging_and_FAQ.md) - founder narrative + master FAQ
-7. [BRANDING.md](./BRANDING.md) - voice, tone, vocabulary
+Recounted 2026-08-10: 113 Edge Function directories excluding `_shared`, 78 hook files, and 158 SQL migrations. Counts are descriptive, not contracts; re-count the repository before quoting them.
 
-### For developers (start here)
-1. [root `CLAUDE.md`](../CLAUDE.md) - workflow + the current architecture quick-reference
-2. [ARCHITECTURE.md](./ARCHITECTURE.md) - system architecture, data flow, edge functions
-3. [FEATURES.md](./FEATURES.md) - feature inventory
-4. [COMMON_ISSUES.md](./COMMON_ISSUES.md) - recurring bugs and pain points
-5. Design tokens: the live dark `ctrl-ds` tokens are in the code (`src/styles/tokens.css`, `index.css`) and the cross-app contract is in [SPINE.md](./SPINE.md). (The old light [DESIGN_SYSTEM.md](./_archive/DESIGN_SYSTEM.md) is archived.)
-6. [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) - rebuild instructions
-7. [DECISIONS_LOG.md](./DECISIONS_LOG.md) - architectural + product decisions
-8. [MASTER_INSTRUCTIONS.md](./MASTER_INSTRUCTIONS.md) - engineering principles + AI behavior
+The production flow is:
 
-### Strategic foundation
-- [PURPOSE.md](./PURPOSE.md) - mission + problem statement
-- [SPINE.md](./SPINE.md) - the cross-app MindmakerOS standards spine (CTRL is the reference implementation)
-- [CTRL-CORPUS.md](./CTRL-CORPUS.md) - the opinionated single source of truth for what CTRL must be
-- [CTRL-BUILD-ROADMAP.md](./CTRL-BUILD-ROADMAP.md) - the build plan toward the Corpus
+`Make Your Mind Up intake -> consented handoff -> CTRL profile and First Lens -> shared curation pool -> per-user ranking -> Today / audio briefing / no-login delivery -> reactions and corrections -> richer profile`
 
-### History (kept for the record)
-- [HISTORY.md](./HISTORY.md) - the build phases
-- See also [`_archive/`](./_archive/) for superseded docs kept for history
+Control Center contributes to the shared pool through a publishable key constrained by read-only RLS. It is not a second feed. Daily prewarm and delivery are pg_cron jobs authenticated by a Vault-generated shared secret. Public writes are idempotent and consent-gated; user-scoped AI and paid-audio paths require ownership.
 
----
+## Documentation map
 
-## Quick Start for Sales / Marketing AI Agents
+- [`AGENT_BRIEFING.md`](./AGENT_BRIEFING.md): current one-read product and go-to-market brief.
+- [`ICP.md`](./ICP.md), [`VALUE_PROP.md`](./VALUE_PROP.md), [`OUTCOMES.md`](./OUTCOMES.md): current commercial framing.
+- [`BRANDING.md`](./BRANDING.md): current brand, voice, typography, and domain rules.
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md): system boundaries and data flow.
+- [`FEATURES.md`](./FEATURES.md): current feature inventory and retired surfaces.
+- [`REPLICATION_GUIDE.md`](./REPLICATION_GUIDE.md): environment, deployment, and verification.
+- [`MASTER_INSTRUCTIONS.md`](./MASTER_INSTRUCTIONS.md): permanent engineering and UX laws.
+- [`HISTORY.md`](./HISTORY.md): chronological record; not current product guidance.
+- [`CTRL-BUILD-ROADMAP.md`](./CTRL-BUILD-ROADMAP.md): historical roadmap; not a backlog.
 
-1. Read [AGENT_BRIEFING.md](./AGENT_BRIEFING.md) - positioning, ICP, value prop, messaging, outcomes, guardrails in one place
-2. Read [SALES_BRIEF.md](./SALES_BRIEF.md), [ICP.md](./ICP.md), [VALUE_PROP.md](./VALUE_PROP.md), [OUTCOMES.md](./OUTCOMES.md)
-3. Reference [BRANDING.md](./BRANDING.md) and [Master_Messaging_and_FAQ.md](./Master_Messaging_and_FAQ.md)
+## Release rule
 
-Lead with the AI-native positioning. Where a doc still carries an old "decision speed / portable double" hook, prefer the AI-native frame from the canonical sources above.
-
-## Quick Start for Developers
-
-1. [root `CLAUDE.md`](../CLAUDE.md) - workflow + live architecture
-2. [ARCHITECTURE.md](./ARCHITECTURE.md), [FEATURES.md](./FEATURES.md), [COMMON_ISSUES.md](./COMMON_ISSUES.md)
-3. Design tokens: the live dark `ctrl-ds` tokens are in the code (`src/styles/tokens.css`, `index.css`) + the cross-app contract in [SPINE.md](./SPINE.md) (the old light [DESIGN_SYSTEM.md](./_archive/DESIGN_SYSTEM.md) is archived)
-4. [REPLICATION_GUIDE.md](./REPLICATION_GUIDE.md) to set up a new instance
-
----
-
-## Current State (reconciled 2026-06-21)
-
-### Product Positioning (LOCKED)
-- **What CTRL is**: the tool for building, orchestrating, productizing, and getting to market the AI-native version of your business.
-- **The reframe rule**: general-business inputs are never refused and never answered as-is; they are reframed into the AI-native version of the decision (see `docs/MAIN-APP-POLISH-SPEC.md` section 0).
-- **Tagline**: "Build the AI-native version of your business." (The old "Clarity for Leaders" is retired.) TODO(founder): confirm the final public tagline.
-
-### Design Philosophy
-- **Globally dark, instrument-grade**: the `ctrl-ds` palette, emerald `#00D9B6` primary (`--primary 171 100% 43%`), the `BrandLockup` (Mindmaker icon + `ctrl-logo` wordmark). This is NOT light mode, NOT "warm off-white", NOT white cards. `index.html` carries `class="dark"`.
-- **No-scroll, one ask per screen** on every device.
-- **Voice-first** where it fits; **honest in the renderer** (the quiet/empty state is intentional, never faked; confidence tracks evidence).
-- **Approachable, first-timer language**. No insider jargon presented cold. No em dashes.
-
-### The two halves
-- **Lesson kits** (`/kit`). **RETIRED 2026-08-07 (PR #355): the Kit is gone; `/kit*` 301s to `/try`.** Historical: four kits (Vibe Coding / Autonomous Business / Agentic Org Chart / Memory & Identity). Each is strictly sequential (one action per screen), no-scroll on mobile, a native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace, a reveal wizard, and one branded personalized hero PDF. Canonical: `docs/KIT-REDESIGN-SPEC.md`.
-- **Main app**: every authed surface is no-scroll on all devices + one ask per screen + AI-native. The news deck uses nine AI-native category motifs with an AI-native-filtered/tagged briefing pipeline. The decision engine reframes to the AI-native lens. The Brain/Memory Web is a four-world rope canvas that fills the frame with zoom. Canonical: `docs/MAIN-APP-POLISH-SPEC.md`.
-
-### Active routes (source of truth: `src/router.tsx`)
-
-Public: `/`, `/auth`, `/auth/callback`, `/build`, `/try`, `/agents`, `/preview` (dev/QC fixture harness, unlinked), `/upgrade` (interactive Edge Pro checkout), `/pricing` (static SEO page, served via a `vercel.json` rewrite, not a React route), `/download` (feature-flagged public email-capture page, off by default).
-
-Authenticated (all wear the `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/track-record`, `/decision-map`, `/enrich`, `/settings`, `/compliance`, `/profile`.
-
-Legacy redirects: `/today` `/pulse` `/voice` `/diagnostic` -> `/dashboard`; `/think` -> `/dashboard?view=edge`.
-
-### Repo counts
-Re-counted directly from the repo on 2026-07-26: **104 edge functions** (`supabase/functions/`, excluding `_shared/`), **77 custom hooks** (`src/hooks/`), **148 PostgreSQL migrations** (`supabase/migrations/`). These are live counts, not a lower bound. Always prefer re-counting from the repo over trusting any frozen figure, here or elsewhere - counts drift quickly given the pace of shipping.
-
-### Tech Stack
-React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion; React Router 6 (`createBrowserRouter`, lazy); Tailwind + shadcn/ui (Radix), globally dark; React Context + TanStack Query; Supabase (PostgreSQL + Edge Functions, Deno); Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback; OpenAI Whisper / ElevenLabs; OpenAI `text-embedding-3-small` (pgvector); Supabase Auth / Stripe / Resend; Vitest + Playwright; Vercel + Supabase Cloud; Node `>=22 <24`. DB extensions: pgvector, pgcrypto, pg_cron.
-
-### Pricing
-The only firmly-grounded price is **Edge Pro**, a monthly subscription whose amount is canonical in `supabase/functions/_shared/edge-pricing.ts` (`EDGE_PRO_UNIT_AMOUNT_CENTS = 4900`, i.e. `$49/mo`) and surfaced via `src/constants/billing.ts`. Edge Pro is the decision tier (unlimited decision weighs + cross-examination + decision watch + Edge artifacts + the live MCP pull of your skills); the daily briefing, the Automator, Memory, and Voice are free. The app reads the code, so trust the code over any doc. There is also a paid AI-literacy diagnostic and a deep-context upgrade still wired in the Stripe edge functions (`create-diagnostic-payment`: Full Diagnostic $49, Deep Context $29, Bundle $69), but confirmed (2026-07-26) NOT reachable from any live route today (`/diagnostic` redirects to `/dashboard`; no UI calls this flow) - do not offer these as checkout links. TODO(founder): confirm whether those one-time diagnostic SKUs survive the AI-native repositioning, and the full price list, before any sales doc quotes exact numbers.
-
----
-
-## Terminology (reconciled)
-
-- **AI-native version of your business** - the thing CTRL helps you build; the lens above every surface.
-- **The reframe** - turning a general-business input into its AI-native version (never refuse, never stay general).
-- ~~**The kits**~~ - RETIRED 2026-08-07. The four `/kit` lesson kits (Vibe Coding / Autonomous Business / Agentic Org Chart / Memory & Identity).
-- **The autonomy line** (Agentic Org Chart) - green (AI runs it) / amber (AI assists, you approve the handoff) / red (you only), plus the handoffs and a ranked place to start.
-- **Memory Web / Brain** - the leader's context as a four-world rope canvas; the substrate that makes any AI know the business.
-- **Automator / Skill Builder** - the `/context` flow that turns a recurring deliverable into an agentskills.io-compliant skill. Building skills is free for now (the Edge Pro gate was removed).
-- **Decision engine** - pressure-tests a decision (decompose, verify against live evidence, cross-examine, advise) with an honest AI-native reframe.
-- **Anchored to** - the phrase on every briefing segment naming the profile fact that earned its slot.
-- **Honest renderer** - the empty/cold-start state is intentional and welcoming, never faked; confidence tracks evidence.
+A release is complete only when code is on `main`, required Supabase migrations and functions are deployed, Vercel production is READY, canonical and retired domains behave correctly, and live acceptance plus documentation match the deployed state.

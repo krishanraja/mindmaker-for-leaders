@@ -139,7 +139,7 @@ export function deriveNextMove(s: CapabilitySignals): CapabilityNextMove {
     return { label: 'Keep weighing real calls - at four scored, your track record earns its trend', route: '/decision' };
   }
   if (s.skillCount === 0 && !s.mcpConnected) {
-    return { label: 'Put your context to work - build a skill or plug your own agent into your brain', route: '/context' };
+    return { label: 'Carry your current context into the AI you already use', route: '/context' };
   }
   if (!s.feedTuned) {
     return { label: 'Tune your feed so the daily read leans where your business does', route: '/dashboard' };

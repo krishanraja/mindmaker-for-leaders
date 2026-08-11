@@ -1,4 +1,4 @@
-# CTRL (ctrl.themindmaker.ai)
+# CTRL (makeyourmindup.ai)
 #
 # Posture: the PUBLIC surfaces are deliberately open to search AND to AI
 # crawlers (answer-engine optimisation). GPTBot, ClaudeBot and PerplexityBot
@@ -16,6 +16,7 @@ User-agent: Googlebot
 Allow: /
 Disallow: /dashboard
 Disallow: /memory
+Disallow: /blind-spot
 Disallow: /context
 Disallow: /briefing
 Disallow: /decision
@@ -33,6 +34,7 @@ User-agent: Bingbot
 Allow: /
 Disallow: /dashboard
 Disallow: /memory
+Disallow: /blind-spot
 Disallow: /context
 Disallow: /briefing
 Disallow: /decision
@@ -50,6 +52,7 @@ User-agent: Twitterbot
 Allow: /
 Disallow: /dashboard
 Disallow: /memory
+Disallow: /blind-spot
 Disallow: /context
 Disallow: /briefing
 Disallow: /decision
@@ -67,6 +70,7 @@ User-agent: facebookexternalhit
 Allow: /
 Disallow: /dashboard
 Disallow: /memory
+Disallow: /blind-spot
 Disallow: /context
 Disallow: /briefing
 Disallow: /decision
@@ -84,6 +88,7 @@ User-agent: GPTBot
 Allow: /
 Disallow: /dashboard
 Disallow: /memory
+Disallow: /blind-spot
 Disallow: /context
 Disallow: /briefing
 Disallow: /decision
@@ -101,6 +106,7 @@ User-agent: ClaudeBot
 Allow: /
 Disallow: /dashboard
 Disallow: /memory
+Disallow: /blind-spot
 Disallow: /context
 Disallow: /briefing
 Disallow: /decision
@@ -118,6 +124,7 @@ User-agent: PerplexityBot
 Allow: /
 Disallow: /dashboard
 Disallow: /memory
+Disallow: /blind-spot
 Disallow: /context
 Disallow: /briefing
 Disallow: /decision
@@ -135,6 +142,7 @@ User-agent: *
 Allow: /
 Disallow: /dashboard
 Disallow: /memory
+Disallow: /blind-spot
 Disallow: /context
 Disallow: /briefing
 Disallow: /decision
@@ -148,4 +156,4 @@ Disallow: /profile
 Disallow: /think
 Disallow: /preview
 
-Sitemap: https://ctrl.themindmaker.ai/sitemap.xml
+Sitemap: https://makeyourmindup.ai/sitemap.xml

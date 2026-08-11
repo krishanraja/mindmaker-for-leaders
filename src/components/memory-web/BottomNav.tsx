@@ -1,14 +1,16 @@
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Brain, Scale } from 'lucide-react';
+import { Home, Brain, Scale, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // The unified cockpit nav (the legacy 6-tab fork + VITE_COCKPIT_ENABLED flag were
 // retired - the cockpit is the one home). Home=cockpit, Decisions=weigh + history,
-// Memory=brain. Briefing dissolves into the cockpit; Edge/automate is contextual.
+// Memory=brain. Briefing dissolves into Today; the old skill builder becomes
+// the Blind spot reflection surface. Four plain jobs, no feature taxonomy.
 const navItems = [
-  { path: '/dashboard', search: '', icon: Home, label: 'Home' },
-  { path: '/decision', search: '', icon: Scale, label: 'Decisions' },
+  { path: '/dashboard', search: '', icon: Home, label: 'Today' },
+  { path: '/decision', search: '', icon: Scale, label: 'Decide' },
+  { path: '/blind-spot', search: '', icon: Eye, label: 'Blind spot' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory' },
 ];
 

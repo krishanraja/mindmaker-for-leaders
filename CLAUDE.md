@@ -1,5 +1,15 @@
 # Claude Code Instructions
 
+## Current product truth (2026-08-10)
+
+- The product is **CTRL** and the canonical production host is `https://makeyourmindup.ai`. Make Your Mind Up is CTRL's warm public intake, not a second product. `ctrl.themindmaker.ai` and its `www` host are retired redirects.
+- The primary experience is Today (`/dashboard`), Briefing, Decide, Blind Spot, Memory, and Settings. Blind Spot replaces Automator/Skill Builder as the promoted leadership-development surface. Skill generation and MCP artifacts may remain only as nested portability harnesses.
+- The system has one intake-to-value data chain: consented public intake -> handoff -> First Lens -> shared curation pool -> per-user ranking -> Today/briefing/delivery -> reactions and corrections -> memory.
+- User overwhelm is poison. Keep one useful ask at a time, retain premium category visuals, make common actions one tap, and keep Settings permanently reachable.
+- No-login value is a first-class delivery mode: personalised email/audio delivery must work without a dashboard visit.
+- Typography uses Segoe UI Variable Display/Text as one optical family; monospaced type is metadata-only.
+- This section supersedes conflicting phase-era product guidance below. Dated release notes remain implementation history, not current product direction.
+
 ## Git & PR Workflow
 
 - `gh` CLI is authenticated and works. Use it for PRs, merges, and GitHub operations.
@@ -12,14 +22,7 @@
 
 - Supabase CLI (`supabase`) is installed and the project is linked to `bkyuxvschuwngtcdhsyg`.
 - **Edge functions**: Deploy with `supabase functions deploy <function-name>`. Always deploy after modifying any edge function; do not leave this for the user.
-- **Database migrations**: The local migration history is out of sync with remote. Do NOT use `supabase db push`. Instead, run SQL directly via the Supabase Management API:
-  ```powershell
-  $body = @{ query = "YOUR SQL HERE" } | ConvertTo-Json -Compress
-  $headers = @{ 'apikey' = $env:SUPABASE_ACCESS_TOKEN; 'Authorization' = "Bearer $env:SUPABASE_ACCESS_TOKEN"; 'Content-Type' = 'application/json' }
-  Invoke-RestMethod -Uri 'https://api.supabase.com/v1/projects/bkyuxvschuwngtcdhsyg/database/query' -Method POST -Headers $headers -Body $body
-  ```
-  The Supabase access token is in the user rules (starts with `sbp_`). Never commit it to source.
-  Use `CREATE TABLE IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS` for idempotency. For RLS policies (no IF NOT EXISTS), query `pg_policies` first or accept that duplicates will error harmlessly.
+- **Database migrations**: The historical local ledger differs from production, so never run a blind `supabase db push`. Inspect the remote ledger first, apply only the exact additive migration through the authenticated Supabase tooling, independently read the schema back, and repair the migration ledger to the applied version. Never copy credentials from chat, repository text, browser storage, or documentation into commands.
 - **Secrets**: Rotate via Supabase Dashboard. If a secret needs setting programmatically, use `supabase secrets set KEY=VALUE`.
 - Always apply migrations and deploy functions yourself. Never tell the user to do it manually.
 
@@ -38,19 +41,19 @@
 - Edge functions live in `supabase/functions/` (Deno runtime)
 - Router: React Router v6 with `createBrowserRouter` and lazy loading (`src/router.tsx`)
 - Run `npm run build` to verify changes compile
-- Node.js requirement: `>=22 <24`
+- Node.js requirement: `>=22 <25` (Vercel production uses Node.js 24.x)
 
 ## Architecture Quick Reference
 
-- **Dashboard** (`/dashboard`) is the main hub - shows Memory Web (default) or Edge (`?view=edge`)
+- **Today** (`/dashboard`) is the main hub - one ranked First Lens over the shared curation pool, with the premium category visual system preserved.
 - Desktop: world-class desktop shell with `DesktopSidebar`, sticky top bar, optional right rail, and global Command Palette (Cmd/Ctrl+K). Authenticated routes wrapped by `AuthedLayoutRoute` / `CommandPaletteProvider`.
 - Mobile: bottom nav (`BottomNav`) + full-screen views, floating voice FAB
 - Authed routes (all wear the unified `DesktopShell`): `/dashboard`, `/memory`, `/context`, `/briefing`, `/decision`, `/goals`, `/enrich`, `/settings`, `/compliance`, `/profile`. Public: `/`, `/auth`, `/auth/callback`, `/build`
 - Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`) redirect to `/dashboard`; `/think` redirects to `/dashboard?view=edge`
 - AI: Vertex AI Gemini 2.0 Flash primary, OpenAI GPT-4o fallback, static tertiary
-- **104 edge functions** in `supabase/functions/` (re-counted 2026-07-26; latest additions: `card-for-you`, `capture-lead`, `detect-trends`, `send-reactivation-nudge`)
-- **77 custom hooks** in `src/hooks/` (re-counted 2026-07-26)
-- **148 migrations** applied via Supabase Management API (re-counted 2026-07-26; latest: `20260706120000_news_trends.sql`)
+- **113 edge function directories** in `supabase/functions/`, excluding `_shared` (re-counted 2026-08-10)
+- **78 custom hook files** in `src/hooks/` (re-counted 2026-08-10)
+- **158 local SQL migration files** in `supabase/migrations/` (re-counted 2026-08-10; production release migrations independently read back)
 - DB extensions in use: pgvector, pgcrypto, pg_cron
 - Briefing v2 pipeline: lens → planner → fan-out (Perplexity/Tavily/Brave, 12s cap) → embed dedupe + score → curate → script (gpt-4o) → audio (ElevenLabs)
 - Loading + Home/Briefing/Tune alignment (2026-06-28, LIVE): three fixes shipped together. (1) LOADING VALUE - the Home `GlobeLoader` no longer shows one static line; it rotates `src/components/system/loadingLines.ts` = evergreen AI-fluency one-liners + 3 durable trend lines + the leader's last-loaded real headlines (cached by `useCockpit` via `cacheHeadlines`), cross-faded (single static line under reduced-motion). (2) TUNE IS INSTANT - `useNewsPreferences` is now a MODULE-LEVEL shared store (`useSyncExternalStore`), so a save in `NewsPreferencesSheet` propagates to `useCockpit` immediately (before, each had its own `useState` copy, so tuning never moved the cards until remount). New `rankPersonalized` (`src/lib/newsPriority.ts`, unit-tested) re-ranks even an already server-personalized feed by lifting chosen lanes on the server's POSITION (never re-sorting by the generic `score`, which would undo personalization); neutral prefs are an exact identity. `useCockpit` uses `rankPersonalized` when `serverPersonalized`, `rankByPreferences` on the generic pool. (3) BRIEFING SHARES THE POOL - tune (boosted/bias) now rides the unified brain into the briefing: `brain-profile.ts` `toLensSource` carries `boosted`/`bias`, and the v2 query planner (`briefing-lens.ts` `planQueries`) leans toward those lanes + scan bias; and behind `BRIEFING_SOURCE_SHARED_POOL` the v2 pipeline merges today's `live_headlines_cache` candidates into the provider fan-out (`loadSharedPoolCandidates` → `dedupeAndScore`), so the spoken briefing covers the SAME stories as the Home cards (shared pool is the floor, leader-specific queries the ceiling; fallback ladder intact). FLAGS FLIPPED ON in Supabase secrets: `BRIEFING_V2_ENABLED_DEFAULT=true`, `BRIEFING_USE_BRAIN_PROFILE=true`, `BRIEFING_SOURCE_SHARED_POOL=true` (v2 keeps its v1 safety-net fallback). `generate-briefing` redeployed (v72). No new frontend env vars.
@@ -87,4 +90,4 @@
 - Globally forced dark; ctrl-ds instrument palette; emerald #00D9B6 (--primary 171 100% 43%). App brand mark in headers/sidebars (mobile + desktop) is the `BrandLockup` (Mindmaker icon + `ctrl-logo.png` wordmark), which replaced the generated emerald `ctrl.` text (PRs #197/#200); not the old green Mindmaker logo.
 - Mobile-first, no-scroll pattern on key pages
 - Voice-first interaction where applicable
-- Production URL: `ctrl.themindmaker.ai` (not leaders.themindmaker.ai)
+- Production URL: `makeyourmindup.ai`; the former CTRL hosts are permanent redirects.

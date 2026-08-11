@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { MobileFrame } from '@/components/layout/MobileFrame';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCockpit } from '@/hooks/useCockpit';
+import { BrandedAppLoader } from '@/components/system/BrandedAppLoader';
 import { HomeFeed } from './HomeFeed';
-import { HandoffWelcome } from './HandoffWelcome';
+import { FirstLens } from './FirstLens';
+import { useHandoffWelcome } from './HandoffWelcome';
 import { cockpitGreeting, resolveDisplayName } from './cockpitGreeting';
 
 /**
@@ -36,6 +38,9 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data, loading, recordDeckReaction, reload } = useCockpit();
+  const handoff = useHandoffWelcome(reload);
+  const handoffActive = handoff.phase !== 'idle';
+  const showingHandoff = handoff.phase === 'ready' && !!handoff.signal;
 
   // Real name when we have one; null when the only identifier is an email /
   // handle / random id, so the greeting reads "Good morning." not
@@ -43,29 +48,47 @@ export function CockpitView({ banner, forceLoading }: CockpitViewProps) {
   const firstName = resolveDisplayName(user);
 
   return (
-    <>
-    <HandoffWelcome />
-    {/* pb reserves the fixed BottomNav's height (h-16 + safe area) so the three
-      doors keep their reserved place ABOVE the nav and never clip behind it
-      (CTRL-SYSTEM-SPEC s2: nothing clips behind the nav). */}
-    <MobileFrame banner={banner} padding="px-4">
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col pt-3 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
-        <HomeFeed
+    <MobileFrame
+      banner={showingHandoff ? undefined : banner}
+      padding="px-4"
+      scroll={showingHandoff}
+      hideScrollbar={showingHandoff}
+      handoff={handoffActive}
+    >
+      {handoff.phase === 'resolving' ? (
+        <BrandedAppLoader caption="Carrying your starting point into CTRL" />
+      ) : showingHandoff && handoff.signal ? (
+        <FirstLens
           variant="mobile"
-          data={data}
-          loading={loading || !!forceLoading}
-          greeting={cockpitGreeting(firstName)}
-          onOpenCard={(card) => {
-            if (card.route) navigate(card.route, card.prefill ? { state: { prefill: card.prefill } } : undefined);
-            else if (card.betId) navigate(`/decision-map?case=${card.betId}`);
-            else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');
+          signal={handoff.signal}
+          saving={handoff.saving}
+          error={handoff.error}
+          onConfirm={() => void handoff.confirm()}
+          onDismiss={handoff.dismiss}
+          onWeigh={(decision) => {
+            void handoff.confirm().then((confirmed) => {
+              if (confirmed) navigate('/decision', { state: { prefill: decision } });
+            });
           }}
-          onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
-          onWeighCard={(prefill) => navigate('/decision', { state: { prefill } })}
-          onProfileComplete={reload}
         />
-      </div>
+      ) : (
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col pt-3 pb-[calc(4rem+env(safe-area-inset-bottom,0px))]">
+          <HomeFeed
+            variant="mobile"
+            data={data}
+            loading={loading || !!forceLoading}
+            greeting={cockpitGreeting(firstName)}
+            onOpenCard={(card) => {
+              if (card.route) navigate(card.route, card.prefill ? { state: { prefill: card.prefill } } : undefined);
+              else if (card.betId) navigate(`/decision-map?case=${card.betId}`);
+              else if (card.url) window.open(card.url, '_blank', 'noopener,noreferrer');
+            }}
+            onReactDeck={(card, reaction) => void recordDeckReaction(card, reaction)}
+            onWeighCard={(prefill) => navigate('/decision', { state: { prefill } })}
+            onProfileComplete={reload}
+          />
+        </div>
+      )}
     </MobileFrame>
-    </>
   );
 }

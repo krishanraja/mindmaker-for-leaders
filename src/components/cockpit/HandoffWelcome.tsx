@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { handoffLensFor, handoffSignalSchema, type HandoffSignal } from './handoffLensModel';
 
 // user_memory is not in the generated Supabase types; write through the
 // untyped client like useInlineProfile does.
@@ -10,7 +11,7 @@ const db = supabase as unknown as SupabaseClient;
 /**
  * The warm-handoff consumer (CTRL side of the portfolio hive mind).
  *
- * When a leader arrives from Make Your Mind Up having opted in at the fork, the
+ * When a leader creates an account after public CTRL onboarding, the
  * URL carries `?h=<token>`. This resolves that consented, CATEGORISED signal
  * (an anxiety lane, never the raw q5) and stages a single honest confirmation:
  * "here's what I think is on your mind - want me to start there?" On yes, it
@@ -19,27 +20,10 @@ const db = supabase as unknown as SupabaseClient;
  * and the leader confirms it before it lands. Self-dismissing, once per leader.
  */
 
-const LANE_PHRASE: Record<string, string> = {
-  orchestration: 'getting AI agents wired into how your team actually works',
-  org: 'what AI changes about your team and headcount',
-  economics: 'the build-versus-buy and cost maths on AI',
-  tools: 'which AI tools to standardise on',
-  product: 'rebuilding how you go to market with AI',
-  governance: 'the policy and guardrails for AI use',
-  security: 'your AI security exposure',
-  model: 'which models to bet on',
-  proof: 'proving AI is actually paying off',
-};
-
 const TOKEN_KEY = 'handoff_token';
-const DONE_KEY = 'handoff_done';
+const DONE_PREFIX = 'ctrl_handoff_done:';
 
-interface Signal {
-  entryVariant?: string;
-  anxietyLane?: string;
-  companyDomain?: string;
-  archetypeTitle?: string;
-}
+type HandoffPhase = 'idle' | 'resolving' | 'ready';
 
 function readToken(): string | null {
   try {
@@ -50,23 +34,59 @@ function readToken(): string | null {
   }
 }
 
-export function HandoffWelcome() {
+function completionKey(token: string): string {
+  return `${DONE_PREFIX}${token}`;
+}
+
+function isComplete(token: string): boolean {
+  try {
+    return localStorage.getItem(completionKey(token)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function removePendingToken() {
+  try {
+    sessionStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* private mode */
+  }
+}
+
+export interface HandoffWelcomeState {
+  phase: HandoffPhase;
+  signal: HandoffSignal | null;
+  saving: boolean;
+  error: string | null;
+  confirm: () => Promise<boolean>;
+  dismiss: () => void;
+}
+
+/**
+ * Resolve and persist the one-time onboarding handoff. Rendering stays in
+ * FirstLens so this hook can fail open to the existing Home without mixing
+ * network state into the visual component.
+ */
+export function useHandoffWelcome(onComplete?: () => void): HandoffWelcomeState {
   const { user } = useAuth();
-  const [signal, setSignal] = useState<Signal | null>(null);
+  const [token] = useState<string | null>(() => readToken());
+  const [phase, setPhase] = useState<HandoffPhase>(() => (token && !isComplete(token) ? 'resolving' : 'idle'));
+  const [signal, setSignal] = useState<HandoffSignal | null>(null);
   const [saving, setSaving] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.id) return;
-    let done = false;
-    try {
-      done = localStorage.getItem(DONE_KEY) === '1';
-    } catch {
-      /* private mode */
+    if (!token) {
+      setPhase('idle');
+      return;
     }
-    if (done) return;
-    const token = readToken();
-    if (!token) return;
+    if (isComplete(token)) {
+      removePendingToken();
+      setPhase('idle');
+      return;
+    }
+    if (!user?.id) return;
 
     let active = true;
     (async () => {
@@ -74,80 +94,95 @@ export function HandoffWelcome() {
         const { data, error } = await supabase.functions.invoke('resolve-handoff', {
           body: { token },
         });
-        if (active && !error && data?.ok && data.signal) setSignal(data.signal as Signal);
+        if (!active) return;
+        if (!error && data?.ok) {
+          if (data.signal) {
+            const parsed = handoffSignalSchema.safeParse(data.signal);
+            if (parsed.success) {
+              setSignal(parsed.data);
+              setPhase('ready');
+              return;
+            }
+          }
+          removePendingToken();
+        }
+        if (!error && data?.ok === false) removePendingToken();
+        setPhase('idle');
       } catch {
-        /* silent: a missing handoff just means no warm start */
-      }
-      try {
-        sessionStorage.removeItem(TOKEN_KEY);
-      } catch {
-        /* ignore */
+        if (active) setPhase('idle');
       }
     })();
     return () => {
       active = false;
     };
-  }, [user?.id]);
+  }, [token, user?.id]);
 
-  if (!signal || hidden) return null;
-  const phrase = LANE_PHRASE[signal.anxietyLane ?? ''] ?? 'the AI shift in your business';
-
-  const finish = () => {
+  const finish = useCallback(() => {
+    if (!token) return;
     try {
-      localStorage.setItem(DONE_KEY, '1');
+      localStorage.setItem(completionKey(token), '1');
     } catch {
-      /* ignore */
+      /* private mode */
     }
-    setHidden(true);
-  };
+    removePendingToken();
+    setSignal(null);
+    setError(null);
+    setPhase('idle');
+    onComplete?.();
+  }, [onComplete, token]);
 
-  const confirm = async () => {
-    if (!user?.id) return;
+  const confirm = useCallback(async (): Promise<boolean> => {
+    if (!user?.id || !signal || saving) return false;
     setSaving(true);
+    setError(null);
+    const lens = handoffLensFor(signal);
     try {
-      await db.from('user_memory').insert({
+      const payload = {
         user_id: user.id,
         fact_key: 'handoff_focus',
         fact_category: 'blocker',
         fact_label: "What you're weighing",
-        fact_value: phrase,
-        fact_context: `Arrived from Make Your Mind Up (${signal.entryVariant ?? 'fork'}); lane ${signal.anxietyLane ?? 'unknown'}`,
+        fact_value: lens.focusPhrase,
+        fact_context: `Confirmed from CTRL onboarding (${signal.entryVariant ?? 'fork'}); lane ${signal.anxietyLane ?? 'unknown'}`,
         source_type: 'enrichment',
         verification_status: 'inferred',
         confidence_score: 0.75,
         is_high_stakes: false,
         is_current: true,
-      });
+      };
+
+      const { data: existing, error: lookupError } = await db
+        .from('user_memory')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('fact_key', 'handoff_focus')
+        .eq('is_current', true)
+        .limit(1)
+        .maybeSingle();
+      if (lookupError) throw lookupError;
+
+      const write = existing?.id
+        ? db.from('user_memory').update(payload).eq('id', existing.id).eq('user_id', user.id)
+        : db.from('user_memory').insert(payload);
+      const { error: writeError } = await write;
+      if (writeError) throw writeError;
     } catch {
-      /* best-effort: never block the leader on a seed write */
+      setError('I could not save that starting point. Try once more.');
+      setSaving(false);
+      return false;
     }
     setSaving(false);
     finish();
-  };
+    return true;
+  }, [finish, saving, signal, user?.id]);
 
-  return (
-    <div className="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-md rounded-2xl border border-primary/30 bg-card/95 p-4 shadow-xl backdrop-blur sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-96">
-      <p className="text-sm leading-relaxed text-foreground">
-        Make Your Mind Up sent you over with a head start. From what you told it, the thing on your
-        mind is <span className="font-semibold text-primary">{phrase}</span>. Want me to start there?
-      </p>
-      <div className="mt-3 flex gap-2">
-        <button
-          type="button"
-          onClick={confirm}
-          disabled={saving}
-          className="rounded-xl bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
-        >
-          Yes, start there
-        </button>
-        <button
-          type="button"
-          onClick={finish}
-          className="rounded-xl border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary/50"
-        >
-          Not quite
-        </button>
-      </div>
-    </div>
+  const dismiss = useCallback(() => {
+    if (saving) return;
+    finish();
+  }, [finish, saving]);
+
+  return useMemo(
+    () => ({ phase, signal, saving, error, confirm, dismiss }),
+    [confirm, dismiss, error, phase, saving, signal],
   );
 }

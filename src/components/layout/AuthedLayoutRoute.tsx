@@ -1,24 +1,34 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useDevice } from '@/hooks/useDevice'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { SettingsSheetProvider } from '@/contexts/SettingsSheetContext'
-import { GlobalFAB } from '@/components/mobile/GlobalFAB'
-import { SettingsSheet } from '@/components/settings/SettingsSheet'
+import { SettingsSheetProvider, useSettingsSheet } from '@/contexts/SettingsSheetContext'
 import { CommandPaletteProvider } from '@/components/layout/CommandPalette'
 import { ContestProvider } from '@/contexts/ContestProvider'
-import { GlobalBriefingPlayer } from '@/components/briefing/GlobalBriefingPlayer'
+import { useBriefingContext } from '@/contexts/BriefingContext'
+
+const GlobalFAB = lazy(() => import('@/components/mobile/GlobalFAB').then((module) => ({ default: module.GlobalFAB })))
+const SettingsSheet = lazy(() => import('@/components/settings/SettingsSheet').then((module) => ({ default: module.SettingsSheet })))
+const GlobalBriefingPlayer = lazy(() => import('@/components/briefing/GlobalBriefingPlayer').then((module) => ({ default: module.GlobalBriefingPlayer })))
 
 function AuthedChrome() {
   const { isAuthenticated } = useAuth()
   const { isMobile } = useDevice()
+  const { open: settingsOpen } = useSettingsSheet()
+  const [settingsActivated, setSettingsActivated] = useState(false)
 
-  if (!isAuthenticated || !isMobile) return null
+  useEffect(() => {
+    if (settingsOpen) setSettingsActivated(true)
+  }, [settingsOpen])
+
+  if (!isAuthenticated) return null
 
   return (
     <>
-      <GlobalFAB />
-      <SettingsSheet />
+      <Suspense fallback={null}>
+        {isMobile && <GlobalFAB />}
+        {settingsActivated && <SettingsSheet />}
+      </Suspense>
     </>
   )
 }
@@ -27,8 +37,17 @@ function AuthedChrome() {
 // top-bar audio button can open + play it from any tab in a single tap.
 function AuthedBriefingPlayer() {
   const { isAuthenticated } = useAuth()
+  const { isSheetOpen, isMiniPlayerVisible } = useBriefingContext()
+  const [playerActivated, setPlayerActivated] = useState(false)
+
+  useEffect(() => {
+    if (isSheetOpen || isMiniPlayerVisible) setPlayerActivated(true)
+  }, [isMiniPlayerVisible, isSheetOpen])
+
   if (!isAuthenticated) return null
-  return <GlobalBriefingPlayer />
+  return playerActivated
+    ? <Suspense fallback={null}><GlobalBriefingPlayer /></Suspense>
+    : null
 }
 
 export function AuthedLayoutRoute() {
