@@ -218,7 +218,7 @@ function DesktopTopBar({ title, eyebrow, actions, showCommandPalette = true }: D
               </p>
             )}
             {title && (
-              <h1 className="text-sm font-semibold text-foreground leading-none truncate">
+              <h1 className="font-ctrl-display truncate text-[15px] font-semibold leading-[1.2] tracking-[-0.01em] text-foreground">
                 {title}
               </h1>
             )}

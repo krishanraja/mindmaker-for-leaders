@@ -1,10 +1,33 @@
 # Changelog
 
+## 2026-08-11 - Shared shell and typography stability
+
+- Corrected the shared desktop page-title line box so Segoe Variable Display no longer clips in compact top bars.
+- Widened the mobile briefing control, aligned its label with CTRL display typography, and removed the legacy rose-orange progress gradient.
+- Raised compact header actions and Memory facets to 44px touch targets, and made the Decisions header switch responsive at 320px.
+- Removed duplicated Privacy and Data facets from Memory; those controls remain available from their canonical Settings surface.
+- Removed the repeated mobile briefing heading and aligned emergency and graph labels to the canonical Segoe Variable stack.
+- Removed the Home loading-to-content cross-fade that could briefly layer loading copy over a live headline, and raised the remaining Memory pill and zoom controls to 44px targets.
+- Expanded the compact desktop decision email and closing links to 44px interaction areas without making them visually heavier.
+
 All notable changes to this project. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) with phase-grouped entries.
 
 For the full design narrative behind each phase, see [`project-documentation/HISTORY.md`](./project-documentation/HISTORY.md).
 
 ---
+
+## [Unreleased] - 2026-08-11 - Progressive onboarding brand handoff
+
+### Changed
+
+- The public intake now moves through seven calibrated visual phases from Make Your Mind Up warmth to the canonical CTRL icon and emerald instrument palette.
+- Onboarding focus states, progress indicators, sliders, selected choices, and primary actions now follow the same phase instead of retaining a disconnected pink-orange accent.
+- The result state now uses the exact main-app brand asset and CTRL instrument card treatment.
+
+### Verified
+
+- Brand-phase unit contracts pin monotonic progression and exact palette endpoints.
+- Public onboarding E2E covers every phase, the final canonical icon and background, and reduced-motion behavior.
 
 ## [Unreleased] - 2026-08-11 - Commercial documentation authority
 

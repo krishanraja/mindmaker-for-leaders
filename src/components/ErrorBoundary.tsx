@@ -33,7 +33,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 emergency-fallback" style={{ background: '#fafafa', color: '#111111', fontFamily: 'system-ui, sans-serif' }}>
+        <div className="min-h-screen flex items-center justify-center p-4 emergency-fallback" style={{ background: '#fafafa', color: '#111111', fontFamily: "'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif" }}>
           <div className="max-w-md mx-auto text-center space-y-4">
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>
               Something went wrong

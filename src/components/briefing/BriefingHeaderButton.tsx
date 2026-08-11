@@ -108,7 +108,7 @@ export function BriefingHeaderButton({ className, briefingOverride }: BriefingHe
       data-briefing-trigger
       title="Your audio briefing"
       className={cn(
-        'group relative grid h-11 w-[108px] shrink-0 grid-cols-[32px_minmax(0,1fr)] items-center gap-2 overflow-hidden rounded-xl border px-2 text-left transition-colors sm:w-[194px] sm:grid-cols-[34px_minmax(0,1fr)_34px] sm:gap-2.5 sm:px-2.5',
+        'group relative grid h-11 w-[148px] shrink-0 grid-cols-[32px_minmax(0,1fr)] items-center gap-2 overflow-hidden rounded-xl border px-2 text-left transition-colors sm:w-[194px] sm:grid-cols-[34px_minmax(0,1fr)_34px] sm:gap-2.5 sm:px-2.5',
         ready
           ? 'border-accent/35 bg-accent/[0.045] shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.04),0_0_24px_-18px_hsl(var(--accent))] hover:border-accent/55'
           : 'border-border bg-card/70 hover:border-accent/30',
@@ -129,7 +129,7 @@ export function BriefingHeaderButton({ className, briefingOverride }: BriefingHe
       </span>
 
       <span className="min-w-0">
-        <strong className="font-ctrl-system block text-[8.5px] font-semibold uppercase tracking-[0.18em] text-foreground">
+        <strong className="font-ctrl-display block text-[10px] font-semibold leading-4 tracking-[-0.01em] text-foreground">
           Briefing
         </strong>
         <span className="block truncate text-[10px] leading-4 text-muted-foreground sm:text-[10.5px]">
@@ -152,7 +152,7 @@ export function BriefingHeaderButton({ className, briefingOverride }: BriefingHe
 
       <span className="absolute inset-x-2 bottom-0 h-px overflow-hidden bg-border sm:inset-x-2.5">
         <span
-          className="block h-full bg-gradient-to-r from-pink-500 via-orange-400 to-accent transition-[width] duration-150"
+          className="block h-full bg-accent transition-[width] duration-150"
           style={{ width: ready ? `${Math.max(progress, 4)}%` : busy ? '28%' : '0%' }}
         />
       </span>

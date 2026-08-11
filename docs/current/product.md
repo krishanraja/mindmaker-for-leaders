@@ -37,11 +37,13 @@ Every surface must strengthen this loop. A new feed, profile, assistant, or work
 | Today | Show the useful part of today through the leader's lens | Read, listen, or take one next step |
 | Decide | Test one real call against live evidence | Weigh this decision |
 | Blind Spot | Offer one private, grounded read with visible proof | Try one small experiment, correct the read, or talk it through |
-| Memory | Keep portable context and corrections | Add, verify, or export what matters |
+| Memory | Keep portable context and corrections | See the graph, correct facts, or open generated artifacts |
 | Briefing | Deliver the same ranked truth in a human voice | Listen, read, or ask one follow-up |
 | Settings | Keep control and privacy reachable | Change one preference or data choice |
 
 The primary navigation is Today, Decide, Blind spot, and Memory. Briefing is a signature control and dedicated route. Settings is always reachable without competing with the core navigation.
+
+Memory keeps only three facets: Graph, All facts, and Library. Privacy, retention, import, and data export have one owner in Settings rather than duplicate controls inside Memory.
 
 ## Entry and delivery
 
@@ -64,7 +66,8 @@ The primary navigation is Today, Decide, Blind spot, and Memory. Briefing is a s
 9. Use 44px minimum targets for signature controls.
 10. Use Segoe UI Variable Display for display text and Segoe UI Variable Text for human-facing body and controls. Reserve mono for compact metadata.
 11. Use a dark, quiet, instrument-grade visual system with restrained emerald emphasis.
-12. Use no em dashes in product copy or documentation.
+12. Let the public intake begin in Make Your Mind Up warmth, then progressively converge its mark and palette on CTRL as context becomes useful. The result state must match the main app exactly.
+13. Use no em dashes in product copy or documentation.
 
 ## Voice
 

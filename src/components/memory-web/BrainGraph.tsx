@@ -302,7 +302,7 @@ export function BrainGraph({
                     fill="#03130e"
                     fontSize={9}
                     fontWeight={800}
-                    style={{ fontFamily: 'system-ui' }}
+                    style={{ fontFamily: "'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif" }}
                   >
                     YOU
                   </text>
@@ -483,7 +483,7 @@ function ZoomBtn({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] border border-border bg-card/85 text-muted-foreground backdrop-blur-sm transition-colors hover:border-accent/40 hover:text-foreground"
+      className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-card/85 text-muted-foreground backdrop-blur-sm transition-colors hover:border-accent/40 hover:text-foreground"
     >
       {children}
     </button>
