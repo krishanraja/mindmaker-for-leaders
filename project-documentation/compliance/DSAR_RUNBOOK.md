@@ -1,6 +1,6 @@
 # Data Subject Access Request (DSAR) Runbook
 
-Last reviewed: 2026-07-26 (updated 2026-07-26: corrected the export tooling description and the retention-scheduling claim against current code)
+Last reviewed: 2026-08-11 (Blind Spot confirmed evidence, experiments, and rejection fingerprints added)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Operational runbook for handling data-subject rights requests for CTRL: access, rectification, erasure, portability, restriction/objection, and CCPA opt-out. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 9.
@@ -45,6 +45,7 @@ CTRL data is in the Supabase project (ref bkyuxvschuwngtcdhsyg), keyed by the us
 | Conversations | chat_messages (owner-scoped) | |
 | Assessments / diagnostics | assessment/diagnostic tables | |
 | Briefing preferences | briefing preference/interest tables | |
+| Blind Spot | `user_patterns`, `blind_spot_evidence_links`, `blind_spot_experiments`, `blind_spot_rejections` | Include confirmed patterns, source snapshots, outcomes, and rejection reason/fingerprint. Generated unconfirmed reads and advisor exchanges are not stored by this feature. |
 | Billing | Stripe customer record + local subscription status | Card data lives only in Stripe |
 | Consent history | consent_audit table; `upsert-sharing-consent`; notification prefs via `upsert-notification-prefs` | |
 | Erasure | `delete-account` edge function (cascading) | Removes user data across tables |

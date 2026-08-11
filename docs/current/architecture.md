@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-10 against source at `abd82b21639e9f0948477204f08c671930c2d8c7`
+Last verified: 2026-08-11 against the Blind Spot v2 implementation candidate
 
 CTRL is a Vite React application on Vercel with Supabase Auth, PostgreSQL, Edge Functions, Storage, Vault, and scheduled jobs. The architecture has one personal context substrate and one curation pool. Product surfaces are views over those shared systems.
 
@@ -35,7 +35,7 @@ flowchart LR
 | Scheduled work | Prewarm, delivery, memory, watch, and lifecycle jobs | migrations using Vault, pg_cron, and pg_net |
 | Vercel | Static assets, SPA routing, canonical and redirect hosts | `vercel.json` and project configuration |
 
-The repository contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 158 SQL migrations at this verified baseline. These are measured inventory counts, not design targets.
+The repository contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migrations at this verified baseline. These are measured inventory counts, not design targets.
 
 ## Frontend boundaries
 
@@ -104,10 +104,17 @@ explicit fact or correction
   -> shared brain accessor
   -> ranking, briefing, decisions, export
 
-independent user facts
-  -> tentative Blind Spot candidate
-  -> evidence re-grounding on confirmation
-  -> confirmed pattern only after user approval
+verified intention plus recurrence records
+  -> model selects source IDs and writes one short read
+  -> server restores exact excerpts, dates, labels, and evidence strength
+  -> signed, unstored Blind Spot candidate
+  -> ownership, freshness, independence, and support rechecked on confirmation
+  -> atomic pattern, evidence-link, and experiment write
+  -> one due briefing check-in after at least 24 hours
+
+rejected candidate
+  -> reason plus anchor fingerprint only
+  -> unchanged evidence suppressed until its inputs change
 ```
 
 ## Core data ownership
@@ -118,6 +125,7 @@ independent user facts
 | Decisions | `decision_cases`, `decision_claims`, `decision_evidence`, `decision_tensions`, `decision_events`, `decision_outcomes` | Authenticated owner |
 | Curation | `live_headlines_cache`, `personal_pool_cache`, `news_preferences`, `briefing_interests` | Shared cache plus owner-scoped preference data |
 | Briefing | `briefings`, `briefing_feedback`, `user_briefing_directives` | Authenticated owner; delivery is server-mediated |
+| Blind Spot | `user_patterns`, `blind_spot_evidence_links`, `blind_spot_experiments`, `blind_spot_rejections` | Candidate remains client-held and signed; confirmation and outcomes are owner-checked service writes |
 | Public handoff and delivery | `portfolio_handoff`, `delivery_subscriptions`, `leader_notification_prefs` | Validated, consented, idempotent contracts |
 | Billing | `edge_subscriptions` and Stripe event records | Server and signed webhook only |
 
@@ -131,7 +139,7 @@ Provider routing is capability-specific. There is no truthful single sentence su
 |---|---|
 | Onboarding result and Blind Spot | OpenAI first, Gemini fallback through `_shared/llm-fallback.ts` |
 | Briefing script and curation | OpenAI chat-completions execution, default `gpt-4o-mini`; model selection metadata may be benchmark-assisted |
-| Briefing conversation | OpenAI `gpt-4o-mini`, grounded only in the briefing and authorised context |
+| Briefing and Blind Spot conversation | OpenAI `gpt-4o-mini`, grounded only in the displayed briefing or signed Blind Spot anchors |
 | Decision reasoning | Anthropic Claude first, OpenAI GPT-4o fallback |
 | Decision claim adjudication | OpenAI `gpt-4o-mini` |
 | Edge Pro cross-examination | Available panel members from Claude, GPT-4o, Gemini, and Grok; failures are dropped, not fabricated |

@@ -17,7 +17,21 @@ Last verified: 2026-08-10
 | Hook files | 78 |
 | SQL migration files | 158 |
 
-Repository inventory at this baseline is 113 Edge Function directories excluding `_shared`, 78 hook files, and 158 SQL migration files.
+Repository inventory at this production baseline is 113 Edge Function directories excluding `_shared`, 78 hook files, and 158 SQL migration files.
+
+## Release candidate in review
+
+The Blind Spot trusted-advisor redesign is built on `codex/blind-spot-trusted-advisor`, not merged or deployed. The repository candidate contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migrations.
+
+Candidate evidence at the last local readback:
+
+- 870 Vitest tests pass across 53 files, including 16 focused Blind Spot logic and component tests.
+- 37 Blind Spot Playwright checks pass in the production desktop and mobile shells across 1440x900, 1280x720, 390x844, and 320x568.
+- Typecheck reports zero new diagnostics against the 221-diagnostic baseline.
+- Standards, documentation checks, changed-file lint, the 2,789-module production build, and 3/3 prerender routes pass.
+- The public fixture is `/preview?surface=blind-spot` with pattern, tension, loading, error, accepted, rejected, conversation, stale-evidence, and long-content states.
+
+Preview acceptance, reviewed PR, merge, database migration, Edge Function release, Vercel release, and production readback remain separate gates.
 
 This file records the deployed application baseline that the current documentation was checked against. Documentation-only commits may advance Git without changing the application behavior described here.
 

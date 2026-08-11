@@ -1,6 +1,6 @@
 # CTRL Data Retention Policy
 
-Last reviewed: 2026-07-26 (updated 2026-07-26: corrected the Memory-retention automation claim and the generated-briefings cleanup claim; resolved the kit_builds cascade question)
+Last reviewed: 2026-08-11 (Blind Spot evidence, rejection, and experiment records added)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Defines how long CTRL keeps each category of personal data and how it is deleted. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 12 and [ROPA.md](./ROPA.md).
@@ -18,6 +18,8 @@ Defines how long CTRL keeps each category of personal data and how it is deleted
 | Account identity (email, name, display name) | Life of account | `delete-account` (cascading) on account deletion |
 | Business / work context | Life of account | `delete-account` cascade |
 | Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` enforces per-user retention window when invoked; `delete-account` cascade on closure |
+| Confirmed Blind Spot patterns, evidence snapshots, and experiment outcomes | Life of account; an active experiment stops prompting after 14 days | `delete-account` cascade; expiry changes the experiment state but does not erase the confirmed record |
+| Rejected Blind Spot evidence fingerprints | Life of account or until account deletion; generated diagnosis text is not stored | `delete-account` cascade; a new evidence fingerprint naturally permits a new read |
 | Conversation / chat messages | Life of account (subject to any configured retention) | `delete-account` cascade; retention cleanup where applicable |
 | Assessment / diagnostic responses | Life of account | `delete-account` cascade |
 | Kit builds / lesson-kit inputs (`kit_builds.intake`) | Life of account | `delete-account` cascade, confirmed: `kit_builds.user_id` has an `ON DELETE CASCADE` FK to `auth.users`, so the Postgres-level cascade covers it even though it is not in the edge function's explicit sweep list |
@@ -25,6 +27,7 @@ Defines how long CTRL keeps each category of personal data and how it is deleted
 | Generated briefings | Not retained indefinitely by design; no automated rolling-window cleanup job currently runs (see gap below) | `delete-account` cascade only today |
 | Voice transcripts | Treated as user content; life of account or per Memory retention if stored as Memory | `delete-account` cascade; retention cleanup where applicable |
 | Raw voice audio | Not maintained as a long-term store; handled transiently by transcription providers | Provider-side under OpenAI terms or Google terms when the Gemini fallback is used |
+| Blind Spot advisor exchange | Not persisted by the Blind Spot feature; an optional correction is stored only when the user submits it into Memory | Transient client and provider processing; submitted correction follows Memory retention |
 | Billing metadata (Stripe customer ID, subscription status) | Life of account for service; financial records retained as required by tax/accounting law (commonly up to 6-7 years) | Subscription canceled on deletion; financial records retained then deleted at legal expiry |
 | Consent records (consent_audit, marketing consent) | Life of account plus a limited evidentiary period after closure to prove lawful consent handling | Aged out after the evidentiary period |
 | Operational / edge-function logs | Short operational window (current default short retention on provider log surfaces) | Provider log rotation; centralized aggregation with defined retention is in progress |

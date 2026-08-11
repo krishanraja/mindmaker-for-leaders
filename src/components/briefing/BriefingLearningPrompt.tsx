@@ -5,6 +5,8 @@ import { useUserMemory } from '@/hooks/useUserMemory';
 import { useVoice } from '@/hooks/useVoice';
 import { cn } from '@/lib/utils';
 import type { PendingVerification } from '@/types/memory';
+import type { BlindSpotExperiment, BlindSpotExperimentOutcome } from '@/types/blindSpot';
+import { supabase } from '@/integrations/supabase/client';
 
 type LearningMode = 'question' | 'capture' | 'proposal' | 'saving' | 'saved' | 'skipped';
 
@@ -13,12 +15,60 @@ const SAVE_UNDO_WINDOW_MS = 5000;
 interface BriefingLearningPromptProps {
   briefingId: string;
   promptOverride?: PendingVerification;
+  experimentOverride?: BlindSpotExperiment;
   memoryEnabledOverride?: boolean;
+}
+
+function BlindSpotExperimentCheckIn({ experiment }: { experiment: BlindSpotExperiment }) {
+  const [note, setNote] = useState('');
+  const [saving, setSaving] = useState<BlindSpotExperimentOutcome | null>(null);
+  const [saved, setSaved] = useState<BlindSpotExperimentOutcome | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (outcome: BlindSpotExperimentOutcome) => {
+    setSaving(outcome);
+    setError(null);
+    const { data, error: invokeError } = await supabase.functions.invoke('blind-spot', { body: {
+      action: 'experiment-check-in', experimentId: experiment.id, outcome, note: note.trim() || null,
+    } });
+    if (invokeError || !data?.ok) {
+      setError('That did not save. Your answer is still here.');
+      setSaving(null);
+      return;
+    }
+    setSaved(outcome);
+    setSaving(null);
+  };
+
+  if (saved) {
+    const message = saved === 'positive'
+      ? 'Useful. I’ll treat that outcome as another grounded observation.'
+      : saved === 'not_yet'
+        ? 'Understood. I’ll ask once more before this expires.'
+        : 'Noted. That is an outcome, not proof that the original read was wrong.';
+    return <div role="status" className="rounded-[20px] border border-accent/25 bg-accent/[0.045] px-4 py-4 text-[13px] leading-relaxed text-foreground">{message}</div>;
+  }
+
+  return (
+    <div className="rounded-[20px] border border-border bg-card/60 px-4 py-4">
+      <p className="font-ctrl-system text-[9px] uppercase tracking-[0.18em] text-[hsl(var(--node-challenge))]">A private check-in</p>
+      <h3 className="font-ctrl-display mt-2 text-[18px] font-semibold leading-tight text-foreground">{experiment.check_in_prompt}</h3>
+      <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">You tried: {experiment.title}</p>
+      <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={2} maxLength={500} placeholder="Optional note" className="mt-3 w-full resize-none rounded-xl border border-border bg-background/70 px-3 py-2 text-[12px] text-foreground outline-none focus:ring-2 focus:ring-ring" />
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <button type="button" onClick={() => void submit('positive')} disabled={Boolean(saving)} className="min-h-11 rounded-xl bg-accent px-2 text-[11px] font-bold text-accent-foreground disabled:opacity-50">{saving === 'positive' ? 'Saving...' : 'It helped'}</button>
+        <button type="button" onClick={() => void submit('not_really')} disabled={Boolean(saving)} className="min-h-11 rounded-xl border border-border px-2 text-[11px] font-semibold text-foreground disabled:opacity-50">Not really</button>
+        <button type="button" onClick={() => void submit('not_yet')} disabled={Boolean(saving) || experiment.defer_count > 0} className="min-h-11 rounded-xl border border-border px-2 text-[11px] font-semibold text-muted-foreground disabled:opacity-40">Not yet</button>
+      </div>
+      {error && <p role="alert" className="mt-2 text-[11px] text-destructive">{error}</p>}
+    </div>
+  );
 }
 
 export function BriefingLearningPrompt({
   briefingId,
   promptOverride,
+  experimentOverride,
   memoryEnabledOverride,
 }: BriefingLearningPromptProps) {
   const { data: memorySettings } = useMemorySettings();
@@ -34,6 +84,7 @@ export function BriefingLearningPrompt({
   const [draft, setDraft] = useState('');
   const [proposal, setProposal] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [dueExperiment, setDueExperiment] = useState<BlindSpotExperiment | null>(experimentOverride ?? null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -45,6 +96,19 @@ export function BriefingLearningPrompt({
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = null;
   }, [briefingId]);
+
+  useEffect(() => {
+    if (experimentOverride) {
+      setDueExperiment(experimentOverride);
+      return;
+    }
+    let active = true;
+    void supabase.functions.invoke<{ experiment: BlindSpotExperiment | null }>('blind-spot', { body: { action: 'due-experiment' } })
+      .then(({ data, error }) => {
+        if (active && !error) setDueExperiment(data?.experiment ?? null);
+      });
+    return () => { active = false; };
+  }, [briefingId, experimentOverride]);
 
   useEffect(() => {
     if (!prompt && nextPrompt) setPrompt(nextPrompt);
@@ -107,6 +171,8 @@ export function BriefingLearningPrompt({
     persistRecording: false,
     onTranscript: propose,
   });
+
+  if (dueExperiment) return <BlindSpotExperimentCheckIn experiment={dueExperiment} />;
 
   const startVoiceCorrection = () => {
     resetRecording();

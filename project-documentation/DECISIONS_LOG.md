@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last reconciled:** 2026-08-10 (Decision 78 records product-wide adoption of the founder-selected typography after the integrated release decisions).
+**Last reconciled:** 2026-08-11 (Decision 79 records the founder-approved Blind Spot trusted-advisor contract).
 
 > This is an append-only decision record. IDs are unique and never reused. Earlier framing may be superseded by a later decision; the current product and architecture sources are [`docs/current/`](../docs/current/README.md). Dated outcomes record what was true at that decision point, not the current release state.
 
@@ -607,3 +607,11 @@ Key architectural and product decisions with rationale.
 **Rationale**: Mixed display, body, and monospace families made briefing questions, navigation, and learning prompts feel assembled rather than designed. One optical family preserves the human display character without visual conflict.
 **Trade-off**: Give up more visibly eclectic font pairings versus a coherent, native, fast-loading product system.
 **Outcome**: Applied across active app, pricing, email, generated share cards, prototypes, and design tokens.
+
+## Decision 79: Blind Spot Is a Private Evidence Instrument, Not an AI Diagnosis (2026-08-11)
+**Date**: 2026-08-11
+**Decision**: Replace the long Make Your Mind Up result card with one CTRL trusted-advisor instrument. It leads with `Between us`, one direct `My read` headline of eight words or fewer, visible evidence strength, exact dated anchors, one tension relationship, one 15-minute experiment, `Not quite`, and a bounded voice or text advisor. A pattern requires one current verified intention and two independent recurrence records. Anything thinner is a tension, not a diagnosis. Confirmation reloads and requalifies every owner-scoped source before one atomic pattern, evidence-link, and experiment write. Rejection stores only a reason and evidence fingerprint and suppresses the unchanged read. The experiment returns once through the existing briefing learning slot; Memory remains the only history surface.
+**Rationale**: The old surface was text-heavy, visually disconnected from CTRL, overly polite, and weak about why it had reached its conclusion. The product needs the candour of a trusted private advisor while making its evidence boundary obvious. Backend sophistication should create confidence and follow-through without adding another dashboard, score, or workflow.
+**Trade-off**: More qualification, signing, ownership, persistence, expiry, and fixture machinery behind one screen in exchange for a simpler front end, honest evidence claims, safe correction, and one learning loop instead of duplicate features.
+**Founder lock**: Krish explicitly approved `BLIND-SPOT-INSTRUMENT-v1` on 2026-08-11.
+**Outcome**: Built on `codex/blind-spot-trusted-advisor`. Focused logic and component tests and the full 37-case responsive Blind Spot fixture suite pass. Preview acceptance, reviewed PR, merge, and production release remain separate gates.

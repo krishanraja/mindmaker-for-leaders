@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-10 against `src/router.tsx`, `public/.well-known/product.json`, and plan constants
+Last verified: 2026-08-11 against `src/router.tsx`, `public/.well-known/product.json`, plan constants, and Blind Spot v2 fixtures
 
 This inventory distinguishes the user-facing product from supporting and nested harnesses. It does not treat every route or Edge Function as a feature.
 
@@ -13,7 +13,7 @@ This inventory distinguishes the user-facing product from supporting and nested 
 | Today and First Lens | A small, premium set of ranked AI signals and one useful next move | `/dashboard` | Free |
 | Daily briefing | A short personal read and listen, with grounded talk-back | `/briefing` and Today control | Free |
 | Decide | An AI-native reframe, verified claims, tensions, and advice | `/decision` | 3 per month free; unlimited Pro |
-| Blind Spot | One tentative reflection grounded in independent facts | `/blind-spot` | Free |
+| Blind Spot | One private mechanism-level read, exact evidence anchors, a small experiment, and bounded advisor talk-back | `/blind-spot` | Free |
 | Memory | Structured, corrected, portable context | `/memory` | Free |
 | Settings and privacy | Delivery, interests, memory, transcript, data, and account controls | `/settings`, `/compliance`, `/profile` | Free |
 
@@ -30,6 +30,7 @@ Entitlements are defined by [`src/constants/planMatrix.ts`](../../src/constants/
 - Context export for use in ChatGPT, Claude, Gemini, Cursor, and Claude Code.
 - Decision watch, outcomes, track record, and map.
 - Memory correction lineage, verification, encryption, expiry settings, and export.
+- Blind Spot evidence qualification, rejection suppression, one active experiment, and a due briefing check-in.
 - Billing, account deletion, consent, and compliance controls.
 - Loading, stale-chunk, network, and retry recovery paths.
 

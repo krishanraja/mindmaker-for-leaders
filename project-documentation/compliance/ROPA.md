@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-08-10 (canonical domain and retired lesson-kit status reconciled)
+Last reviewed: 2026-08-11 (Blind Spot trusted-advisor processing reconciled)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://makeyourmindup.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
@@ -53,6 +53,15 @@ This record describes the processing activities Mindmaker carries out as control
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: life of account / configurable; deleted on account deletion. chat_messages now owner-scoped after remediation.
 - Security: RLS owner-scoping, TLS.
+
+### D2. Blind Spot reflection and experiment
+- Personal data: verified intentions, decisions, missions, check-ins, exact evidence snapshots, confirmed pattern text, experiment and outcome; rejection reason and evidence fingerprint.
+- Data subjects: registered users.
+- Lawful basis: contract (Art 6(1)(b)). A generated candidate is not persisted before explicit confirmation.
+- Recipients/subprocessors: Supabase (US); OpenAI for source-ID selection, support adjudication, and bounded advisor responses; Google Gemini only through the configured generation fallback (US).
+- Transfers: EU/UK to US, SCCs/DPAs (in progress).
+- Retention: confirmed records and rejection fingerprints for life of account; active experiments stop prompting after 14 days; advisor exchanges are not stored by this feature. Submitted corrections follow Memory retention.
+- Security: signed candidate round-trip, source ownership and freshness reload, RLS, service-mediated atomic confirmation, exact evidence snapshots, rate limits, and TLS.
 
 ### E. AI generation, transcription, and embeddings
 - Personal data: business context, chat, assessment answers, briefing topics, voice transcripts.

@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-10 against `public/.well-known/product.json` and `src/router.tsx`
+Last verified: 2026-08-11 against `public/.well-known/product.json`, `src/router.tsx`, and the Blind Spot v2 contract
 
 CTRL is a calm AI decision partner for founders and small-team CEOs building the AI-native version of their business. Make Your Mind Up is its warm public intake. The product lives at [makeyourmindup.ai](https://makeyourmindup.ai).
 
@@ -36,7 +36,7 @@ Every surface must strengthen this loop. A new feed, profile, assistant, or work
 |---|---|---|
 | Today | Show the useful part of today through the leader's lens | Read, listen, or take one next step |
 | Decide | Test one real call against live evidence | Weigh this decision |
-| Blind Spot | Offer one tentative, grounded reflection | Confirm, reject, or try one small experiment |
+| Blind Spot | Offer one private, grounded read with visible proof | Try one small experiment, correct the read, or talk it through |
 | Memory | Keep portable context and corrections | Add, verify, or export what matters |
 | Briefing | Deliver the same ranked truth in a human voice | Listen, read, or ask one follow-up |
 | Settings | Keep control and privacy reachable | Change one preference or data choice |
@@ -79,6 +79,9 @@ The audio briefing follows the same voice. Spoken follow-up must remain grounded
 - Content reactions tune ranking; they do not become personality facts.
 - Skipping is neutral.
 - Blind Spot saves no pattern until the leader confirms it and the evidence floor is met.
+- A Blind Spot pattern needs one current verified intention and two independent recurrence records. Anything thinner is labelled as a tension and asks one question.
+- Rejecting a read stores only the reason and evidence fingerprint. CTRL does not repeat it until those inputs change.
+- An accepted read creates one 15-minute experiment and one later briefing check-in. It does not create another history surface.
 - Talk-back respects memory and transcript settings and says when nothing durable was saved.
 
 ## Commercial contract

@@ -2,13 +2,17 @@ import { expect, test, type Page } from '@playwright/test'
 
 const VIEWPORTS = [
   { name: 'desktop', width: 1440, height: 900 },
+  { name: 'compact desktop', width: 1280, height: 720 },
   { name: 'mobile', width: 390, height: 844 },
   { name: 'small mobile', width: 320, height: 568 },
 ]
 
-const SURFACES = ['first-lens', 'briefing-shell', 'settings-shell'] as const
+const SURFACES = ['first-lens', 'briefing-shell', 'settings-shell', 'blind-spot'] as const
 
 async function expectSurfaceContract(page: Page) {
+  await expect(page.getByRole('heading', { name: 'Unexpected Application Error!' })).toHaveCount(0)
+  await expect(page.locator('body')).not.toContainText('must be used within')
+
   const result = await page.evaluate(() => {
     const visible = (element: Element) => {
       const style = getComputedStyle(element)
@@ -50,6 +54,35 @@ async function expectSurfaceContract(page: Page) {
   expect(result.clippedText).toEqual([])
   expect(result.bannedFonts).toEqual([])
 }
+
+for (const viewport of VIEWPORTS) {
+  for (const state of ['pattern', 'tension', 'loading', 'error', 'accepted', 'rejected', 'stale-evidence', 'long-content'] as const) {
+    test(`blind-spot ${state} holds at ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize(viewport)
+      await page.goto(`/preview?surface=blind-spot&state=${state}`)
+      await expectSurfaceContract(page)
+      if (state === 'pattern' && viewport.width === 390) {
+        const fit = await page.locator('article').evaluate((element) => element.getBoundingClientRect().bottom <= window.innerHeight)
+        expect(fit).toBe(true)
+      }
+    })
+  }
+}
+
+test('blind-spot advisor preserves typed context when the response fails', async ({ page }) => {
+  await page.route('**/functions/v1/blind-spot', (route) => route.fulfill({
+    status: 503,
+    contentType: 'application/json',
+    body: JSON.stringify({ error: 'synthetic transport failure' }),
+  }))
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/preview?surface=blind-spot&state=conversation')
+  const input = page.getByPlaceholder('Ask about this read')
+  await input.fill('What evidence would change this read?')
+  await page.getByRole('button', { name: 'Send question' }).click()
+  await expect(page.getByRole('alert')).toContainText('Ask that once more')
+  await expect(input).toHaveValue('What evidence would change this read?')
+})
 
 for (const viewport of VIEWPORTS) {
   for (const surface of SURFACES) {
