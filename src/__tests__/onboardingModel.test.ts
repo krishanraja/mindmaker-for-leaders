@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   companyAiLabel,
   fallbackResult,
+  sliderValueForKey,
   weekNeedsMeLabel,
   type OnboardingAnswers,
 } from '@/components/onboarding/onboardingModel';
@@ -29,6 +30,25 @@ describe('onboarding labels', () => {
     expect(companyAiLabel(19)).toBe('A few corners');
     expect(companyAiLabel(20)).toBe('A whole function');
     expect(companyAiLabel(80)).toBe('Almost everything except the choices');
+  });
+});
+
+describe('sliderValueForKey', () => {
+  it('supports standard range-control keyboard interactions', () => {
+    expect(sliderValueForKey(50, 'ArrowLeft')).toBe(49);
+    expect(sliderValueForKey(50, 'ArrowDown')).toBe(49);
+    expect(sliderValueForKey(50, 'ArrowRight')).toBe(51);
+    expect(sliderValueForKey(50, 'ArrowUp')).toBe(51);
+    expect(sliderValueForKey(50, 'PageDown')).toBe(40);
+    expect(sliderValueForKey(50, 'PageUp')).toBe(60);
+    expect(sliderValueForKey(50, 'Home')).toBe(0);
+    expect(sliderValueForKey(50, 'End')).toBe(100);
+  });
+
+  it('clamps at the limits and ignores unrelated keys', () => {
+    expect(sliderValueForKey(0, 'ArrowLeft')).toBe(0);
+    expect(sliderValueForKey(100, 'PageUp')).toBe(100);
+    expect(sliderValueForKey(50, 'Enter')).toBeNull();
   });
 });
 
