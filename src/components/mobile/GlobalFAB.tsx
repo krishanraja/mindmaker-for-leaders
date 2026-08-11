@@ -41,6 +41,7 @@ const HIDE_ON = [
   '/memory', // Brain has Add-memory voice
   '/context', // Automator has "talk through the workflow"
   '/briefing', // Briefing has voice-steer
+  '/blind-spot', // Blind spot owns its one reflection prompt
   '/enrich', // Enrich is itself a long-format context capture
   '/onboarding',
   '/settings',

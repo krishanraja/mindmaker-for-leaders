@@ -11,6 +11,7 @@ import {
   type FactCategory,
   type UserMemoryFact,
 } from '@/types/memory'
+import { PrivacyControlsPanel } from '@/components/memory/PrivacyControlsPanel'
 
 const CATEGORY_ORDER: FactCategory[] = [
   'identity',
@@ -154,6 +155,8 @@ export function PrivacyDataTab() {
 
   return (
     <div className="space-y-6">
+      <PrivacyControlsPanel />
+
       {/* User Memory */}
       <div className="bg-card p-6 rounded-2xl border border-border">
         <div className="flex items-start justify-between mb-2 gap-3">

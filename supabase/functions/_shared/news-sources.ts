@@ -110,7 +110,7 @@ async function getText(url: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<str
       headers: {
         Accept: "application/rss+xml, application/xml, text/xml, */*",
         "User-Agent":
-          "Mozilla/5.0 (compatible; ctrl-news/1.0; +https://ctrl.themindmaker.ai)",
+          "Mozilla/5.0 (compatible; ctrl-news/1.0; +https://makeyourmindup.ai)",
       },
       signal: controller.signal,
     });
@@ -599,6 +599,101 @@ export interface GatherKeys {
   braveKey?: string;
   newsApiKey?: string;
   exaKey?: string;
+  /**
+   * Optional server-to-server bridge into Mindmaker's existing Control Center
+   * curation corpus. These values must only come from Edge Function secrets.
+   */
+  controlCenterUrl?: string;
+  controlCenterKey?: string;
+}
+
+interface ControlCenterRow {
+  idea?: unknown;
+  thesis?: unknown;
+  source_url?: unknown;
+  source_captured_at?: unknown;
+  created_at?: unknown;
+  brand_fit_score?: unknown;
+  meta?: unknown;
+}
+
+function safeHttpUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function safeIsoDate(value: unknown): string | null {
+  if (typeof value !== "string" || !Number.isFinite(Date.parse(value))) return null;
+  return new Date(value).toISOString();
+}
+
+/**
+ * Treat Control Center rows as untrusted external data, not instructions.
+ * Only a source-backed, high-fit row survives; its original article hostname
+ * remains the source of record, so Control Center cannot manufacture
+ * corroboration or reputation by selecting it.
+ */
+export function parseControlCenterRows(value: unknown): RawArticle[] {
+  if (!Array.isArray(value)) return [];
+  const articles: RawArticle[] = [];
+  for (const candidate of value.slice(0, 100)) {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+    const row = candidate as ControlCenterRow;
+    const title = stripHtml(typeof row.idea === "string" ? row.idea : "").slice(0, 320);
+    const url = safeHttpUrl(row.source_url);
+    const brandFit = typeof row.brand_fit_score === "number" ? row.brand_fit_score : Number(row.brand_fit_score);
+    if (!title || !url || !Number.isFinite(brandFit) || brandFit < 8) continue;
+    const host = hostOf(url);
+    if (!host || isLowQualityHost(host)) continue;
+    const description = stripHtml(typeof row.thesis === "string" ? row.thesis : "").slice(0, 1_200);
+    articles.push({
+      title,
+      url,
+      description,
+      source: host,
+      publishedIso: safeIsoDate(row.source_captured_at) ?? safeIsoDate(row.created_at),
+      // Fit helps order already-trusted evidence, but never changes its trust tier.
+      engagement: Math.max(0, Math.min(100, Math.round(brandFit * 5))),
+      sourceTier: reputationTier(host),
+      origin: "control_center",
+    });
+  }
+  return articles;
+}
+
+/**
+ * Read the already-curated newsletter corpus through PostgREST. The bridge is
+ * optional and fail-closed: missing secrets, an invalid endpoint, timeout, or
+ * schema drift simply contributes no rows to CTRL's existing source pool.
+ */
+export async function fetchControlCenter(
+  url: string,
+  secretKey: string,
+): Promise<RawArticle[]> {
+  const base = safeHttpUrl(url)?.replace(/\/$/, "");
+  if (!base || !secretKey.trim()) return [];
+  const since = new Date(Date.now() - 10 * 86_400_000).toISOString();
+  const params = new URLSearchParams({
+    select: "idea,thesis,source_url,source_captured_at,created_at,brand_fit_score,meta",
+    source_type: "eq.inspiration_sweep",
+    buried_at: "is.null",
+    parent_idea_id: "is.null",
+    source_url: "not.is.null",
+    brand_fit_score: "gte.8",
+    created_at: `gte.${since}`,
+    order: "source_captured_at.desc.nullslast,created_at.desc",
+    limit: "80",
+  });
+  const data = await getJson(`${base}/rest/v1/content_ideas?${params}`, {
+    apikey: secretKey,
+    Authorization: `Bearer ${secretKey}`,
+  });
+  return parseControlCenterRows(data);
 }
 
 /**
@@ -617,6 +712,9 @@ export async function gatherAll(keys: GatherKeys | string | undefined): Promise<
   if (k.braveKey) tasks.push(fetchBrave(k.braveKey).catch(() => []));
   if (k.newsApiKey) tasks.push(fetchNewsApi(k.newsApiKey).catch(() => []));
   if (k.exaKey) tasks.push(fetchExa(k.exaKey).catch(() => []));
+  if (k.controlCenterUrl && k.controlCenterKey) {
+    tasks.push(fetchControlCenter(k.controlCenterUrl, k.controlCenterKey).catch(() => []));
+  }
   const results = await Promise.all(tasks);
   // Drop known content-farm hosts before anything downstream sees them, so a
   // low-quality mill can never be the corroborating (or worse, the sole) source

@@ -39,7 +39,7 @@ export interface SynthRead {
 const OPENAI_TIMEOUT_MS = 20_000;
 
 const BASE_SYSTEM_PROMPT =
-  "You are the news editor for CTRL, an AI-native chief of staff for a busy " +
+  "You are the news editor for CTRL, a calm and curious decision partner for a busy " +
   "business leader. For each story you get the original outlet title + snippet. " +
   "Produce TWO fields:\n" +
   "1. \"headline\": Rewrite the title into a sharp, professional NEWS headline " +

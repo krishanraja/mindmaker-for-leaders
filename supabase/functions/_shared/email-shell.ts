@@ -17,20 +17,15 @@
  * Email-safe constraints respected here:
  * - Tables + inline styles for layout. No flexbox, no grid.
  * - Absolute https image URLs only, every <img> has width/height + alt.
- * - Inter via a Google Fonts <link>/@import in <head> PLUS an inline
- *   font-family fallback stack, so the mail still reads right where Inter does
- *   not load (most desktop clients).
- * - The app hero is Gobold (uppercase, tracked) which does not render in email;
- *   the brand eyebrow approximates it with heavy-weight uppercase Inter +
- *   positive letter-spacing. Gobold is NOT loaded in email.
+ * - The same platform-native Segoe/SF system stack as the app. No remote font
+ *   request, no flash, and no second visual voice in clients that block fonts.
  * - Bulletproof emerald CTA (Outlook VML fallback) so the button renders in
  *   Word-engine Outlook, not just a bare link.
  * - No em dashes anywhere (hard brand rule).
  */
 
 /** Prod-hosted brand marks (verified 200, image/png). Absolute https only. */
-const BRAND_ICON_URL = "https://ctrl.themindmaker.ai/favicon-192x192.png";
-const BRAND_WORDMARK_URL = "https://ctrl.themindmaker.ai/mindmaker-wordmark-onlight.png";
+const BRAND_ICON_URL = "https://makeyourmindup.ai/favicon-192x192.png";
 
 /** Brand emerald, deepened for the gradient/Outlook fill. */
 const EMERALD = "#2A9E7C";
@@ -45,7 +40,7 @@ const INK_SOFT = "#4a5a52";
 
 /** Inline font stack used everywhere a font-family is set inline. */
 const FONT_STACK =
-  "'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text', 'Segoe UI', Helvetica, Arial, sans-serif";
 
 export interface BrandedEmailShellOpts {
   /** Bold heading line at the top of the message body. */
@@ -88,11 +83,7 @@ export function brandedEmailShell(opts: BrandedEmailShellOpts): string {
 <!--[if mso]>
 <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
 <![endif]-->
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet" />
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap');
 body { margin:0; padding:0; width:100% !important; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; background-color:${PAGE_BG}; }
 table { border-collapse:collapse; }
 img { border:0; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; display:block; }
@@ -120,10 +111,11 @@ a { color:${EMERALD_DEEP}; }
 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
 <tr>
 <td valign="middle" style="padding-right:12px;">
-<img src="${BRAND_ICON_URL}" width="40" height="40" alt="Mindmaker" style="display:block;width:40px;height:40px;border-radius:9px;" />
+<img src="${BRAND_ICON_URL}" width="40" height="40" alt="Mindmaker icon" style="display:block;width:40px;height:40px;border-radius:9px;" />
 </td>
 <td valign="middle">
-<img src="${BRAND_WORDMARK_URL}" width="150" height="26" alt="Mindmaker" style="display:block;width:150px;height:auto;max-height:30px;" />
+<div style="font-family:${FONT_STACK};font-size:24px;line-height:1;font-weight:900;letter-spacing:0.08em;color:${INK};">CTRL</div>
+<div style="font-family:${FONT_STACK};font-size:9px;line-height:1.4;font-weight:700;letter-spacing:0.16em;color:${INK_SOFT};padding-top:4px;">BY MINDMAKER</div>
 </td>
 </tr>
 </table>

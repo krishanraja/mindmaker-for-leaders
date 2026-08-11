@@ -18,14 +18,14 @@ export default {
         'xs': '475px',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        gobold: ['Gobold', 'Impact', 'Arial Black', 'sans-serif'],
-        grotesk: ['Space Grotesk', 'Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
-        // The public marketing voice. Sora is geometric and monoline with squared
-        // terminals, which is the ctrl wordmark's own construction, so the headlines
-        // and the logo read as one drawing. Scoped to the front doors on purpose:
-        // the authed app stays on Inter, where reading beats character.
-        display: ['Sora', 'Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+        // Option E is the product-wide canon. Legacy utility names remain as
+        // compatibility aliases, but they now resolve to optical cuts of the
+        // same Segoe Variable family instead of introducing another voice.
+        sans: ['var(--font-ctrl-text)'],
+        gobold: ['var(--font-ctrl-display)'],
+        grotesk: ['var(--font-ctrl-display)'],
+        display: ['var(--font-ctrl-display)'],
+        mono: ['var(--font-ctrl-system)'],
       },
       colors: {
         // Core brand colors

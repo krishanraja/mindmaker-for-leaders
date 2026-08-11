@@ -7,7 +7,7 @@
  * - Last API error
  * - Edge function latency
  * 
- * Only visible in development mode or with ?diagnostics=true query param.
+ * Only visible when explicitly requested with ?diagnostics=true.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -45,9 +45,8 @@ export const DiagnosticsPanel: React.FC = () => {
 
   // Check if diagnostics should be visible
   useEffect(() => {
-    const isDev = import.meta.env.DEV;
     const hasQueryParam = new URLSearchParams(window.location.search).get('diagnostics') === 'true';
-    setIsVisible(isDev || hasQueryParam);
+    setIsVisible(hasQueryParam);
   }, []);
 
   // Track latency

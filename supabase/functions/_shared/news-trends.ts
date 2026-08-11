@@ -164,6 +164,21 @@ export function computeMomentum(daySpan: number, sourceCount: number, recentCoun
   return daySpan * 2 + sourceCount + recentCount;
 }
 
+/**
+ * The independent origin behind a citation. Publisher labels are editorial
+ * metadata, not corroboration: three newsletters can repeat one press release.
+ * Missing or malformed URLs contribute no source at all.
+ */
+export function rootDomain(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+    return host || null;
+  } catch {
+    return null;
+  }
+}
+
 function mostCommonCategory(items: CorpusItem[]): TrendCategory {
   const tally = new Map<TrendCategory, number>();
   for (const i of items) tally.set(i.category, (tally.get(i.category) ?? 0) + 1);
@@ -207,9 +222,11 @@ export function verifyShift(
   if (items.length < minEvidence) return null;
 
   const days = new Set(items.map((i) => i.day));
-  const sources = new Set(items.map((i) => (i.source || "").trim()).filter(Boolean));
+  const sources = new Set(items.map((i) => rootDomain(i.url)).filter(Boolean));
+  const urls = new Set(items.map((i) => i.url).filter(Boolean));
   if (days.size < minDaySpan) return null;
   if (sources.size < minSources) return null;
+  if (urls.size < minEvidence) return null;
 
   const newest = Math.max(...items.map((i) => dayMs(i.day)).filter(Number.isFinite));
   const recentCount = items.filter((i) => {
@@ -273,7 +290,7 @@ export function buildDetectionMessages(
     ? `\nCalibration thesis (register only, never assert it as fact): ${lens.thesis}\n`
     : "";
   const system =
-    "You are a strategy analyst for CTRL, an AI-native chief of staff for a busy " +
+    "You are a strategy analyst for CTRL, a calm and curious decision partner for a busy " +
     "business leader. You are given DATED AI-native news headlines from the last " +
     "few weeks. Identify 3-5 STRUCTURAL SHIFTS - patterns that recur across many " +
     "DISTINCT stories over MULTIPLE DAYS and tell a leader how the AI-native world, " +

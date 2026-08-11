@@ -17,7 +17,7 @@ export interface EmailOptions {
     user_id?: string;
     session_id?: string;
     assessment_id?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   tags?: Array<{ name: string; value: string }>;
 }
@@ -26,6 +26,18 @@ export interface EmailResult {
   success: boolean;
   id?: string;
   error?: string;
+}
+
+interface ResendEmailPayload {
+  from: string;
+  to: string[];
+  subject: string;
+  html: string;
+  reply_to?: string;
+  cc?: string[];
+  bcc?: string[];
+  metadata?: Record<string, unknown>;
+  tags?: Array<{ name: string; value: string }>;
 }
 
 /**
@@ -45,7 +57,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
   }
 
   try {
-    const emailPayload: any = {
+    const emailPayload: ResendEmailPayload = {
       from: options.from,
       to: Array.isArray(options.to) ? options.to : [options.to],
       subject: options.subject,
@@ -99,7 +111,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
       };
     }
 
-    const result = await response.json();
+    const result = await response.json() as { id?: string };
     console.log('✅ Email sent successfully:', result.id);
     
     return {
@@ -126,7 +138,7 @@ export function getDefaultSender(context: 'booking' | 'diagnostic' | 'confirmati
     diagnostic: 'AI Leadership Growth Benchmark <no-reply@themindmaker.ai>',
     confirmation: 'Krish from MindMaker <no-reply@themindmaker.ai>',
     reminder: 'MindMaker <no-reply@themindmaker.ai>',
-    notification: 'MindMaker <no-reply@themindmaker.ai>',
+    notification: 'CTRL by Mindmaker <no-reply@themindmaker.ai>',
   };
   
   return senders[context];
@@ -138,7 +150,7 @@ export function getDefaultSender(context: 'booking' | 'diagnostic' | 'confirmati
 export function getAppUrl(origin?: string | null): string {
   const appUrl = Deno.env.get('APP_URL');
   const publicSiteUrl = Deno.env.get('PUBLIC_SITE_URL');
-  const fallback = 'https://themindmaker.ai';
+  const fallback = 'https://makeyourmindup.ai';
   
   return appUrl || publicSiteUrl || origin || fallback;
 }

@@ -112,13 +112,13 @@ const Auth = lazyWithRetry(() => import('@/pages/Auth'))
 const AuthCallback = lazyWithRetry(() => import('@/pages/AuthCallback'))
 const Dashboard = lazyWithRetry(() => import('@/pages/Dashboard'))
 const MemoryCenter = lazyWithRetry(() => import('@/pages/MemoryCenter'))
-const ContextExport = lazyWithRetry(() => import('@/pages/ContextExport'))
+const ContextExport = lazyWithRetry(() => import('@/pages/ContextExportSimple'))
 const Settings = lazyWithRetry(() => import('@/pages/Settings'))
 const Compliance = lazyWithRetry(() => import('@/pages/Compliance'))
 const Profile = lazyWithRetry(() => import('@/pages/Profile'))
-const BuildLap = lazyWithRetry(() => import('@/pages/BuildLap'))
 const BriefingPage = lazyWithRetry(() => import('@/pages/BriefingPage'))
 const DecisionPage = lazyWithRetry(() => import('@/pages/DecisionPage'))
+const BlindSpot = lazyWithRetry(() => import('@/pages/BlindSpot'))
 const Goals = lazyWithRetry(() => import('@/pages/Goals'))
 const TrackRecord = lazyWithRetry(() => import('@/pages/TrackRecord'))
 const DecisionMap = lazyWithRetry(() => import('@/pages/DecisionMap'))
@@ -185,17 +185,10 @@ export function prefetchAuthedRoutes() {
   const warm = () => {
     const imports: Array<() => Promise<unknown>> = [
       () => import('@/pages/Dashboard'),
-      () => import('@/pages/MemoryCenter'),
       () => import('@/pages/DecisionPage'),
+      () => import('@/pages/BlindSpot'),
+      () => import('@/pages/MemoryCenter'),
       () => import('@/pages/BriefingPage'),
-      () => import('@/pages/Goals'),
-      () => import('@/pages/TrackRecord'),
-      () => import('@/pages/DecisionMap'),
-      () => import('@/pages/ContextExport'),
-      () => import('@/pages/EnrichPage'),
-      () => import('@/pages/Settings'),
-      () => import('@/pages/Compliance'),
-      () => import('@/pages/Profile'),
     ]
     for (const fn of imports) { try { void fn() } catch { /* best-effort */ } }
   }
@@ -244,7 +237,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/build',
-    element: <LazyWrapper><BuildLap /></LazyWrapper>,
+    element: <Navigate to="/" replace />,
   },
   {
     // Dev/QC fixture-render harness (public so it can be screenshot without auth). Unlinked.
@@ -301,6 +294,10 @@ export const router = createBrowserRouter([
       {
         path: '/decision',
         element: <LazyWrapper><RequireAuth><DecisionPage /></RequireAuth></LazyWrapper>,
+      },
+      {
+        path: '/blind-spot',
+        element: <LazyWrapper><RequireAuth><BlindSpot /></RequireAuth></LazyWrapper>,
       },
       {
         path: '/goals',

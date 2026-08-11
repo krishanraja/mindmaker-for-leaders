@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CTRL Typography Combinations v1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #06080b;
+      --panel: #0b0f14;
+      --panel-2: #0d1218;
+      --line: #202832;
+      --line-soft: #151b22;
+      --ink: #f2efe7;
+      --muted: #8e99a4;
+      --quiet: #5e6975;
+      --green: #25e1ba;
+      --green-soft: rgba(37,225,186,.09);
+      --pink: #ec4899;
+      --warm: #f97316;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --ui: "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(37,225,186,.055), transparent 24%),
+        radial-gradient(circle at 82% 8%, rgba(236,72,153,.035), transparent 22%),
+        var(--bg);
+      color: var(--ink);
+      font-family: var(--ui);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+    button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+    .topbar {
+      position: sticky;
+      z-index: 20;
+      top: 0;
+      display: flex;
+      min-height: 62px;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid var(--line-soft);
+      background: rgba(6,8,11,.86);
+      padding: 0 clamp(18px, 4vw, 54px);
+      backdrop-filter: blur(18px);
+    }
+
+    .mark {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      grid-template-columns: repeat(2,1fr);
+      gap: 2px;
+    }
+    .mark i { border-radius: 1px; background: var(--green); }
+    .mark i:first-child { opacity: .35; transform: translateY(4px); }
+    .mark i:nth-child(2) { opacity: .72; }
+    .mark i:nth-child(3) { opacity: .76; }
+    .mark i:last-child { background: var(--ink); opacity: .9; }
+    .wordmark { color: #a7b0ba; font: 700 10px var(--mono); letter-spacing: .22em; }
+    .top-label { margin-left: 10px; color: #64707b; font: 700 9px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .top-note { margin-left: auto; color: #69747f; font-size: 11px; }
+
+    main { width: min(1280px, 100%); margin: 0 auto; padding: clamp(34px, 5vw, 68px) clamp(16px, 4vw, 48px) 80px; }
+    .intro { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr); gap: 34px; align-items: end; margin-bottom: 35px; }
+    .eyebrow { color: var(--green); font: 700 9px var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+    .intro h1 { max-width: 17ch; margin: 12px 0 0; font-size: clamp(32px, 5vw, 58px); line-height: .98; letter-spacing: -.045em; }
+    .intro p { max-width: 52ch; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
+    .instruction { display: flex; align-items: center; gap: 9px; margin-top: 15px; color: #77838e; font-size: 11px; }
+    .instruction span { display: grid; width: 23px; height: 23px; place-items: center; border: 1px solid rgba(37,225,186,.22); border-radius: 50%; color: var(--green); font: 700 9px var(--mono); }
+
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+    .option {
+      --display: Georgia, serif;
+      --text: "Segoe UI", sans-serif;
+      --action: var(--text);
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 21px;
+      background: linear-gradient(150deg, rgba(255,255,255,.035), rgba(255,255,255,.008));
+      box-shadow: inset 0 1px rgba(255,255,255,.025);
+      transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+    }
+
+    .option:hover { border-color: #34404c; transform: translateY(-2px); }
+    .option[data-selected="true"] { border-color: rgba(37,225,186,.58); box-shadow: inset 0 0 0 1px rgba(37,225,186,.08), 0 24px 70px -48px rgba(37,225,186,.9); }
+    .option[data-selected="true"]::after { position: absolute; top: 0; right: 0; left: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--green), transparent); content: ""; }
+
+    .option-a { --display: "Sitka Display", "Sitka Text", Georgia, serif; --text: "Sitka Text", Georgia, serif; --action: "Sitka Text", Georgia, serif; }
+    .option-b { --display: Constantia, Georgia, serif; --text: Constantia, Georgia, serif; --action: Constantia, Georgia, serif; }
+    .option-c { --display: Cambria, Georgia, serif; --text: Calibri, "Segoe UI", sans-serif; --action: Calibri, "Segoe UI", sans-serif; }
+    .option-d { --display: Georgia, serif; --text: Verdana, sans-serif; --action: Verdana, sans-serif; }
+    .option-e { --display: "Segoe UI Variable Display", "Segoe UI", sans-serif; --text: "Segoe UI Variable Text", "Segoe UI", sans-serif; --action: "Segoe UI", sans-serif; }
+    .option-f { --display: "Trebuchet MS", sans-serif; --text: "Trebuchet MS", sans-serif; --action: "Trebuchet MS", sans-serif; }
+
+    .option-head { display: flex; min-height: 57px; align-items: center; gap: 11px; border-bottom: 1px solid var(--line-soft); padding: 0 15px; }
+    .letter { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid rgba(255,255,255,.12); border-radius: 9px; color: #aab2ba; font: 700 10px var(--mono); }
+    .option-name { min-width: 0; flex: 1; }
+    .option-name strong { display: block; color: #d9d9d4; font-size: 12px; }
+    .option-name span { display: block; overflow: hidden; margin-top: 3px; color: #66727e; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .select-chip { min-height: 34px; border: 1px solid rgba(255,255,255,.11); border-radius: 10px; background: rgba(255,255,255,.025); padding: 0 10px; color: #89949e; font-size: 10px; cursor: pointer; }
+    .option[data-selected="true"] .select-chip { border-color: rgba(37,225,186,.22); background: var(--green-soft); color: var(--green); }
+
+    .sample { padding: 15px; }
+    .mini-chrome { display: flex; min-height: 38px; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.07); border-radius: 11px 11px 0 0; background: rgba(0,0,0,.14); padding: 0 10px; color: #65717c; font: 700 8px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .mini-chrome svg { width: 14px; height: 14px; color: var(--green); fill: none; stroke: currentColor; stroke-width: 1.7; }
+    .mini-chrome span:last-child { margin-left: auto; color: #4d5863; }
+
+    .player {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(37,225,186,.13);
+      border-top: 0;
+      border-radius: 0 0 16px 16px;
+      background: radial-gradient(circle at 50% 5%, rgba(37,225,186,.09), transparent 42%);
+      padding: 18px 17px 16px;
+      text-align: center;
+    }
+    .status { color: #5f6d77; font: 700 7px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .orb { display: grid; width: 43px; height: 43px; place-items: center; margin: 12px auto; border: 1px solid rgba(37,225,186,.29); border-radius: 50%; background: rgba(37,225,186,.075); box-shadow: 0 0 28px -16px rgba(37,225,186,.95); color: var(--green); }
+    .orb::before { width: 9px; height: 12px; border-right: 3px solid currentColor; border-left: 3px solid currentColor; content: ""; }
+    .sample-title { margin: 0; color: var(--ink); font-family: var(--display); font-size: 21px; font-weight: 600; line-height: 1.12; letter-spacing: -.025em; text-wrap: balance; }
+    .sample-body { margin: 9px auto 0; color: #84909a; font-family: var(--text); font-size: 11px; line-height: 1.5; text-wrap: pretty; }
+    .progress { height: 2px; margin-top: 14px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.08); }
+    .progress i { display: block; width: 27%; height: 100%; background: var(--green); }
+
+    .question { margin-top: 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 15px; background: rgba(255,255,255,.015); padding: 15px; }
+    .question-label { color: #b47d81; font: 700 7px var(--mono); letter-spacing: .15em; text-transform: uppercase; }
+    .question h3 { margin: 9px 0 6px; color: #eceae3; font-family: var(--display); font-size: 17px; font-weight: 600; line-height: 1.22; letter-spacing: -.018em; text-wrap: balance; }
+    .question p { margin: 0; color: #79858f; font-family: var(--text); font-size: 10px; line-height: 1.5; text-wrap: pretty; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 13px; }
+    .actions span { display: grid; min-height: 36px; place-items: center; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; color: #b6bbb9; font-family: var(--action); font-size: 11px; font-weight: 600; }
+
+    .lens-line { margin-top: 14px; border-top: 1px solid rgba(255,255,255,.07); padding-top: 13px; }
+    .lens-line .question-label { color: var(--green); }
+    .lens-line h4 { margin: 8px 0 0; color: #e9e7df; font-family: var(--display); font-size: 18px; font-weight: 600; line-height: 1.18; letter-spacing: -.022em; text-wrap: balance; }
+
+    .option-foot { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--line-soft); padding: 12px 15px 14px; }
+    .font-role { min-width: 0; }
+    .font-role span { display: block; color: #4f5a65; font: 700 7px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .font-role strong { display: block; overflow: hidden; margin-top: 4px; color: #8e98a1; font-size: 9px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+
+    .selection-bar {
+      position: sticky;
+      z-index: 15;
+      bottom: 14px;
+      display: flex;
+      width: min(620px, calc(100% - 20px));
+      min-height: 54px;
+      align-items: center;
+      gap: 13px;
+      margin: 26px auto 0;
+      border: 1px solid rgba(37,225,186,.22);
+      border-radius: 16px;
+      background: rgba(9,13,17,.92);
+      padding: 7px 9px 7px 15px;
+      box-shadow: 0 22px 70px -36px rgba(0,0,0,.96);
+      backdrop-filter: blur(18px);
+    }
+    .selection-bar[data-active="false"] { display: none; }
+    .selected-letter { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 9px; background: var(--green-soft); color: var(--green); font: 700 10px var(--mono); }
+    .selected-copy { min-width: 0; flex: 1; }
+    .selected-copy strong { display: block; font-size: 11px; }
+    .selected-copy span { display: block; margin-top: 3px; color: #697580; font-size: 9px; }
+    .copy-choice { min-height: 40px; border: 0; border-radius: 11px; background: var(--green); padding: 0 14px; color: #04110e; font-size: 11px; font-weight: 800; cursor: pointer; }
+    .copy-choice[data-copied="true"] { background: #dffaf3; }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 680px) {
+      .top-label, .top-note { display: none; }
+      main { padding-top: 32px; }
+      .intro { display: block; }
+      .intro p { margin-top: 19px; }
+      .grid { grid-template-columns: 1fr; }
+      .sample-title { font-size: 23px; }
+      .question h3 { font-size: 19px; }
+      .option-name span { white-space: normal; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="wordmark">CTRL</span>
+    <span class="top-label">Typography comparison</span>
+    <span class="top-note">Same words, same hierarchy, six voices</span>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <span class="eyebrow">Type lab / round one</span>
+        <h1>Pick the voice, not the font name.</h1>
+      </div>
+      <div>
+        <p>Each card uses the same CTRL briefing, question and First Lens line. The color, spacing and hierarchy are fixed, so the only meaningful difference is the type system.</p>
+        <div class="instruction"><span>1</span> Choose the card that feels most human, premium and calm.</div>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Six typography combinations">
+      <article class="option option-a" data-key="A" data-name="Sitka family" data-selected="false">
+        <header class="option-head"><span class="letter">A</span><div class="option-name"><strong>Quiet editorial</strong><span>One optical family, display + reading cuts</span></div><button class="select-chip" type="button">Choose A</button></header>
+        <div class="sample"></div>
+        <footer class="option-foot"><div class="font-role"><span>Display</span><strong>Sitka Display</strong></div><div class="font-role"><span>Text + action</span><strong>Sitka Text</strong></div></footer>
+      </article>
+
+      <article class="option option-b" data-key="B" data-name="Constantia throughout" data-selected="false">
+        <header class="option-head"><span class="letter">B</span><div class="option-name"><strong>Warm continuity</strong><span>One serif for every human-language layer</span></div><button class="select-chip" type="button">Choose B</button></header>
+        <div class="sample"></div>
+        <footer class="option-foot"><div class="font-role"><span>Display</span><strong>Constantia</strong></div><div class="font-role"><span>Text + action</span><strong>Constantia</strong></div></footer>
+      </article>
+
+      <article class="option option-c" data-key="C" data-name="Cambria + Calibri" data-selected="false">
+        <header class="option-head"><span class="letter">C</span><div class="option-name"><strong>Measured executive</strong><span>Serif judgment with a quieter humanist text</span></div><button class="select-chip" type="button">Choose C</button></header>
+        <div class="sample"></div>
+        <footer class="option-foot"><div class="font-role"><span>Display</span><strong>Cambria</strong></div><div class="font-role"><span>Text + action</span><strong>Calibri</strong></div></footer>
+      </article>
+
+      <article class="option option-d" data-key="D" data-name="Georgia + Verdana" data-selected="false">
+        <header class="option-head"><span class="letter">D</span><div class="option-name"><strong>Screen-native classic</strong><span>Companion fonts drawn for clarity on screens</span></div><button class="select-chip" type="button">Choose D</button></header>
+        <div class="sample"></div>
+        <footer class="option-foot"><div class="font-role"><span>Display</span><strong>Georgia</strong></div><div class="font-role"><span>Text + action</span><strong>Verdana</strong></div></footer>
+      </article>
+
+      <article class="option option-e" data-key="E" data-name="Segoe UI throughout" data-selected="false">
+        <header class="option-head"><span class="letter">E</span><div class="option-name"><strong>Calm product</strong><span>One modern family, hierarchy through weight</span></div><button class="select-chip" type="button">Choose E</button></header>
+        <div class="sample"></div>
+        <footer class="option-foot"><div class="font-role"><span>Display</span><strong>Segoe UI Variable</strong></div><div class="font-role"><span>Text + action</span><strong>Segoe UI Variable</strong></div></footer>
+      </article>
+
+      <article class="option option-f" data-key="F" data-name="Trebuchet MS throughout" data-selected="false">
+        <header class="option-head"><span class="letter">F</span><div class="option-name"><strong>Humanist modern</strong><span>One warmer sans with more character</span></div><button class="select-chip" type="button">Choose F</button></header>
+        <div class="sample"></div>
+        <footer class="option-foot"><div class="font-role"><span>Display</span><strong>Trebuchet MS</strong></div><div class="font-role"><span>Text + action</span><strong>Trebuchet MS</strong></div></footer>
+      </article>
+    </section>
+
+    <aside class="selection-bar" data-active="false" aria-live="polite">
+      <span class="selected-letter" id="selected-letter">?</span>
+      <div class="selected-copy"><strong id="selected-name">Nothing selected yet</strong><span id="selected-help">Choose by feel. You can change your mind.</span></div>
+      <button class="copy-choice" id="copy-choice" type="button" disabled>Copy choice</button>
+    </aside>
+  </main>
+
+  <template id="sample-template">
+    <div class="mini-chrome"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m10 8 6 4-6 4Z"/></svg><span>CTRL / Briefing</span><span>2 min</span></div>
+    <section class="player">
+      <div class="status">Playing your starting brief</div>
+      <div class="orb" aria-hidden="true"></div>
+      <h2 class="sample-title">Your judgment stays in the loop.</h2>
+      <p class="sample-body">Two useful minutes, built from the pattern you chose to carry into CTRL.</p>
+      <div class="progress"><i></i></div>
+    </section>
+    <section class="question">
+      <span class="question-label">One thing before you go</span>
+      <h3>Are you still betting on a hybrid team?</h3>
+      <p>This is worth checking because it changes what CTRL recommends about agents, hiring and proof.</p>
+      <div class="actions"><span>Yes</span><span>Changed</span></div>
+      <div class="lens-line"><span class="question-label">Here is what I heard</span><h4>Wire agents into the work. Keep judgment human.</h4></div>
+    </section>
+  </template>
+
+  <script>
+    const template = document.querySelector("#sample-template");
+    const options = [...document.querySelectorAll(".option")];
+    const selectedLetter = document.querySelector("#selected-letter");
+    const selectedName = document.querySelector("#selected-name");
+    const selectedHelp = document.querySelector("#selected-help");
+    const copyChoice = document.querySelector("#copy-choice");
+    const selectionBar = document.querySelector(".selection-bar");
+    let selected = null;
+
+    options.forEach(option => {
+      option.querySelector(".sample").append(template.content.cloneNode(true));
+      option.querySelector(".select-chip").addEventListener("click", () => choose(option));
+      option.addEventListener("dblclick", () => choose(option));
+    });
+
+    function choose(option) {
+      options.forEach(item => {
+        const active = item === option;
+        item.dataset.selected = String(active);
+        item.querySelector(".select-chip").textContent = active ? "Selected" : `Choose ${item.dataset.key}`;
+      });
+      selected = option;
+      selectionBar.dataset.active = "true";
+      selectedLetter.textContent = option.dataset.key;
+      selectedName.textContent = option.querySelector(".option-name strong").textContent;
+      selectedHelp.textContent = option.dataset.name;
+      copyChoice.disabled = false;
+      copyChoice.dataset.copied = "false";
+      copyChoice.textContent = "Copy choice";
+      history.replaceState(null, "", `#${option.dataset.key.toLowerCase()}`);
+    }
+
+    copyChoice.addEventListener("click", async () => {
+      if (!selected) return;
+      const message = `Typography choice ${selected.dataset.key}: ${selected.dataset.name}`;
+      try { await navigator.clipboard.writeText(message); } catch { /* Clipboard is optional in the prototype. */ }
+      copyChoice.dataset.copied = "true";
+      copyChoice.textContent = "Copied";
+    });
+
+    const requested = location.hash.slice(1).toUpperCase();
+    const initial = options.find(option => option.dataset.key === requested);
+    if (initial) choose(initial);
+  </script>
+</body>
+</html>

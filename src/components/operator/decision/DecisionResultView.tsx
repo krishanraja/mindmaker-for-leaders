@@ -21,21 +21,16 @@
  */
 
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Check, AlertTriangle, Sparkles, Eye, ArrowLeft, ChevronRight, Loader2, Copy,
+  Check, AlertTriangle, ArrowLeft, ChevronRight, Loader2,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { useEdgeSubscription } from '@/hooks/useEdgeSubscription';
-import { EDGE_PRO_PRICE_LABEL } from '@/constants/billing';
 import {
   type useDecisionEngine, type DecisionClaim, type DecisionEvidence,
 } from '@/hooks/useDecisionEngine';
 import { VERDICT_STYLE, deriveTruth, emptyEvidenceMessage } from './decisionParts';
-import { buildDecisionMemo } from './decisionMemo';
 import { EvidenceList } from './EvidenceList';
 
 type Engine = ReturnType<typeof useDecisionEngine>;
@@ -86,11 +81,8 @@ export function DecisionResultView({
   banking: boolean;
   isDesktop?: boolean;
 }) {
-  const { decisionCase, claims, evidence, tensions } = engine;
+  const { decisionCase, claims, evidence } = engine;
   const [openClaimId, setOpenClaimId] = useState<string | null>(null);
-  const [memoCopied, setMemoCopied] = useState(false);
-  const navigate = useNavigate();
-  const { hasAccess } = useEdgeSubscription();
 
   const { holds, breaks } = useMemo(
     () => deriveTruth(claims, decisionCase?.breakpoint_assumption_id ?? null, decisionCase?.counter_case ?? null),
@@ -103,29 +95,24 @@ export function DecisionResultView({
   const openClaim = openClaimId ? claims.find((c) => c.id === openClaimId) ?? null : null;
   const theCall = decisionCase.recommendation || decisionCase.title || decisionCase.statement;
 
-  const Reframe = decisionCase.reframed && decisionCase.reframe_note ? (
-    <div className="flex shrink-0 gap-2.5 rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5">
-      <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
-      <p className="text-[11.5px] leading-snug text-muted-foreground text-pretty">
-        <span className="font-semibold text-foreground/90">How I looked at it: </span>
-        {decisionCase.reframe_note}
-      </p>
-    </div>
-  ) : null;
-
   const Call = (
     <div className="relative shrink-0 overflow-hidden rounded-[20px] border border-accent/30 bg-gradient-to-b from-card to-background p-[18px] shadow-[0_30px_60px_-34px_rgba(0,0,0,0.95)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_88%_-10%,hsl(var(--accent)/0.14),transparent_60%)]" />
       <div className="relative mb-3 flex items-center gap-2">
-        <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-accent">My answer</span>
+        <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-accent">What the evidence points to</span>
         {pct != null && (
           <span className="ml-auto flex items-baseline gap-1.5">
             <b className="text-[21px] font-bold leading-none text-accent tabular-nums [text-shadow:0_0_16px_hsl(var(--accent)/0.45)] sm:text-[26px]">{pct}%</b>
-            <span className="text-[8.5px] uppercase tracking-wide text-muted-foreground">sure</span>
+            <span className="text-[8.5px] uppercase tracking-wide text-muted-foreground">evidence fit</span>
           </span>
         )}
       </div>
       <h2 className={cn('relative font-extrabold leading-snug tracking-tight text-foreground text-balance', isDesktop ? 'text-[23px]' : 'text-[18.5px]')}>{theCall}</h2>
+      {decisionCase.reframed && decisionCase.reframe_note && (
+        <p className="relative mt-3 text-[11.5px] leading-relaxed text-muted-foreground text-pretty">
+          <span className="font-semibold text-foreground/85">The question I tested: </span>{decisionCase.reframe_note}
+        </p>
+      )}
       {pct != null && (
         <div className="relative mt-3 h-1.5 overflow-hidden rounded-full bg-foreground/[0.07]">
           <motion.i className="block h-full rounded-full bg-gradient-to-r from-accent/55 to-accent shadow-[0_0_14px_hsl(var(--accent)/0.55)]" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6, ease: 'easeOut' }} />
@@ -167,67 +154,14 @@ export function DecisionResultView({
     </div>
   );
 
-  const Watch = decisionCase.last_verified_at ? (
-    <div className="flex shrink-0 items-start gap-2.5 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2.5">
-      <Eye className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
-      <p className="text-[11.5px] leading-snug text-foreground/90">
-        <span className="font-bold text-foreground">This one is tracked.</span> If a load-bearing fact changes, I will re-check it and flag it. Last checked{' '}
-        {formatDistanceToNow(new Date(decisionCase.last_verified_at), { addSuffix: true })}.
-      </p>
-    </div>
-  ) : null;
-
   const claimsHint = claims.length > 0 ? (
     <button
       type="button"
       onClick={() => setOpenClaimId(decisionCase.breakpoint_assumption_id ?? claims[0].id)}
       className="flex w-full shrink-0 items-center justify-between rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5 text-left transition-colors hover:border-accent/30"
     >
-      <span className="text-[11.5px] text-muted-foreground">See what this is based on, point by point ({claims.length} {claims.length === 1 ? 'point' : 'points'})</span>
+      <span className="text-[11.5px] text-muted-foreground">Show the evidence ({claims.length} {claims.length === 1 ? 'point' : 'points'})</span>
       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-    </button>
-  ) : null;
-
-  // The memo: the one-page artifact this weigh produced (the call, the case
-  // against, the breakpoint, the evidence). Copies as markdown for the board
-  // pack, the team thread, or any AI session.
-  const handleCopyMemo = async () => {
-    if (!decisionCase) return;
-    try {
-      await navigator.clipboard.writeText(buildDecisionMemo(decisionCase, claims, evidence, tensions));
-      setMemoCopied(true);
-      setTimeout(() => setMemoCopied(false), 2000);
-    } catch {
-      /* clipboard unavailable; the button simply does not confirm */
-    }
-  };
-
-  const memoRow = (
-    <button
-      type="button"
-      onClick={handleCopyMemo}
-      className="flex w-full shrink-0 items-center justify-between rounded-xl border border-border bg-foreground/[0.025] px-3 py-2.5 text-left transition-colors hover:border-accent/30"
-    >
-      <span className="text-[11.5px] text-muted-foreground">
-        {memoCopied ? 'Copied. Paste it anywhere your team works.' : 'Copy the memo - a one-page version for your team or board pack'}
-      </span>
-      {memoCopied ? <Check className="h-3.5 w-3.5 text-accent" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-    </button>
-  );
-
-  // Upgrade at the desire peak: a free leader who just got a real answer is the
-  // moment to offer unlimited weighs + the cross-examination. Quiet, never a wall,
-  // and only for non-Pro.
-  const upgradeNudge = !hasAccess ? (
-    <button
-      type="button"
-      onClick={() => navigate('/upgrade')}
-      className="flex w-full shrink-0 items-center justify-between rounded-xl border border-accent/25 bg-accent/[0.06] px-3 py-2.5 text-left transition-colors hover:border-accent/50"
-    >
-      <span className="text-[11.5px] text-foreground/90">
-        Weigh without limits, and let a second model cross-examine every call. Edge Pro, {EDGE_PRO_PRICE_LABEL}.
-      </span>
-      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-accent" />
     </button>
   ) : null;
 
@@ -243,42 +177,14 @@ export function DecisionResultView({
     </div>
   );
 
-  // ---- DESKTOP: two-zone, room to breathe -----------------------------------
-  if (isDesktop) {
-    return (
-      <div className="flex h-full min-h-0 flex-col">
-        <div className="grid min-h-0 flex-1 grid-cols-[1.15fr_0.85fr] gap-4">
-          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto scrollbar-hide pr-1">
-            {Reframe}
-            {Call}
-            {Watch}
-            {claimsHint}
-            {memoRow}
-            {upgradeNudge}
-          </div>
-          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto scrollbar-hide">
-            {Truth}
-            <div className="mt-auto">{Actions}</div>
-          </div>
-        </div>
-        <ClaimSheet claim={openClaim} evidence={openClaim ? evByClaim(openClaim.id) : []} onClose={() => setOpenClaimId(null)} />
-      </div>
-    );
-  }
-
-  // ---- MOBILE: one thumb-first column, bounded, depth in a sheet ------------
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto scrollbar-hide py-0.5">
-        {Reframe}
+      <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col gap-3 overflow-y-auto py-0.5 scrollbar-hide">
         {Call}
         {Truth}
-        {Watch}
         {claimsHint}
-        {memoRow}
-        {upgradeNudge}
       </div>
-      {Actions}
+      <div className="mx-auto w-full max-w-3xl">{Actions}</div>
       <ClaimSheet claim={openClaim} evidence={openClaim ? evByClaim(openClaim.id) : []} onClose={() => setOpenClaimId(null)} />
     </div>
   );

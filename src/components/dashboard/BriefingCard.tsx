@@ -1,10 +1,9 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Radio, Play, Check, ChevronDown, Plus, RefreshCw, Bookmark, BookmarkCheck, Ban, Loader2, Info, Zap } from "lucide-react";
+import { Radio, Play, Check, ChevronDown, Plus, RefreshCw, Bookmark, BookmarkCheck, Ban, Loader2, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -15,7 +14,6 @@ import { useBriefingInterests } from "@/hooks/useBriefingInterests";
 import { useKillLensItem } from "@/hooks/useKillLensItem";
 import { haptics } from "@/lib/haptics";
 import { useBriefingContext } from "@/contexts/BriefingContext";
-import type { SkillSeed } from "@/types/skill";
 
 /**
  * Inline segment row used in the expanded dashboard briefing card.
@@ -37,34 +35,12 @@ function InlineSegmentRow({
 
   const { beats, add } = useBriefingInterests();
   const { killByBriefing, killing } = useKillLensItem();
-  const navigate = useNavigate();
   const alreadyPinned =
     anchor.length > 0 &&
     beats.some((b) => b.text.toLowerCase() === anchor.toLowerCase());
   const [pinning, setPinning] = useState(false);
   const [killed, setKilled] = useState(false);
   const isKilling = killing === (segment.lens_item_id ?? "");
-
-  // Decision-trigger segments are exactly the kind of "this changes something
-  // for me" beat that warrants a skill - they tie a news event to an active
-  // decision on the leader's desk. Show an inline automate affordance only
-  // for that framework tag so we don't clutter every story.
-  const isDecisionTrigger =
-    (segment.framework_tag || "").toLowerCase() === "decision_trigger";
-  const handleAutomate = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    haptics.light();
-    // Prefer the anchor (matched_profile_fact - the leader's actual decision
-    // text from their profile) over the rewritten headline. Falls back to
-    // headline so the seed is never empty.
-    const seedText = anchor || segment.headline;
-    const seed: SkillSeed = {
-      kind: "briefing_segment",
-      text: seedText,
-      label: anchor ? anchor : segment.headline,
-    };
-    navigate("/context", { state: { seed } });
-  };
 
   const handlePin = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -137,15 +113,6 @@ function InlineSegmentRow({
             Anchored to: <span className="text-foreground/80">{anchor}</span>
           </span>
           <div className="flex items-center gap-0.5 ml-auto">
-            {isDecisionTrigger && (
-              <button
-                onClick={handleAutomate}
-                title={`Build a skill for "${anchor || segment.headline}"`}
-                className="p-1 rounded transition-colors text-muted-foreground/50 hover:text-amber-500 hover:bg-amber-500/10"
-              >
-                <Zap className="w-3 h-3" />
-              </button>
-            )}
             <button
               onClick={handlePin}
               disabled={alreadyPinned || pinning}
@@ -192,21 +159,6 @@ function InlineSegmentRow({
         </div>
       )}
 
-      {/* When v1 (no anchor) AND the tag is decision_trigger, surface a
-          standalone automate row so we don't miss the most-relevant signal
-          just because v2 wasn't enabled for this user/briefing yet. */}
-      {!hasV2 && isDecisionTrigger && (
-        <div className="flex items-center justify-end mt-0.5 pl-1">
-          <button
-            onClick={handleAutomate}
-            title={`Build a skill for "${segment.headline}"`}
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium text-amber-600 hover:bg-amber-500/10 transition-colors"
-          >
-            <Zap className="w-3 h-3" />
-            Automate
-          </button>
-        </div>
-      )}
     </div>
   );
 }

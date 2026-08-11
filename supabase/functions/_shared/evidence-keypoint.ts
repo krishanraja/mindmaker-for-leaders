@@ -24,7 +24,7 @@ export interface KeyPointInput {
 const OPENAI_TIMEOUT_MS = 20_000;
 
 const SYSTEM_PROMPT =
-  "You distil decision evidence for CTRL, an AI-native chief of staff for a busy business " +
+  "You distil decision evidence for CTRL, a calm and curious decision partner for a busy business " +
   "leader. For each evidence snippet you get an id, a source title, and an excerpt. Write " +
   '"key_point": ONE line (MAX 18 words) stating the single key stat, fact, or opinion in the ' +
   "snippet that bears on a decision. Lead with the concrete so-what (a number, the finding, the " +

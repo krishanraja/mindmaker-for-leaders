@@ -30,11 +30,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    let active = true;
+    // A blocked storage lock or slow session refresh must never hold the public
+    // front door hostage. Fail open to onboarding, then still accept a valid
+    // session if Supabase resolves after this bound.
+    const loadingBound = window.setTimeout(() => {
+      if (active) setIsLoading(false);
+    }, 1_500);
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!active) return;
+        setUser(session?.user ?? null);
+        setIsLoading(false);
+        window.clearTimeout(loadingBound);
+      })
+      .catch(() => {
+        if (!active) return;
+        setIsLoading(false);
+        window.clearTimeout(loadingBound);
+      });
 
     // Listen for auth changes
     const {
@@ -57,6 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => {
+      active = false;
+      window.clearTimeout(loadingBound);
       subscription.unsubscribe();
     };
   }, []);

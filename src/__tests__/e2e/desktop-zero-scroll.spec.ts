@@ -56,7 +56,7 @@ async function signUp(page: Page) {
   const email = `test-${Date.now()}@test.com`;
   await page.goto('/auth');
   // Reveal the sign-up form.
-  await page.getByRole('button', { name: /sign up/i }).first().click();
+  await page.getByRole('button', { name: /new here|sign up/i }).first().click();
   await page.locator('#signup-email').fill(email);
   await page.locator('#signup-password').fill(PASSWORD);
   await page.getByRole('button', { name: /create account/i }).click();
@@ -105,6 +105,14 @@ test.describe(BASE_URL ? 'Desktop zero-scroll invariant' : 'Desktop zero-scroll 
         // Allow 1px for sub-pixel rounding; anything more is a real scrollbar.
         const overflow = await pageScrollOverflowPx(page);
         expect(overflow, `page overflow on ${route.path} @ ${vp.name}`).toBeLessThanOrEqual(1);
+
+        if (route.path === '/dashboard') {
+          const rail = page.getByTestId('desktop-home-rail');
+          await expect(rail).toBeVisible();
+          const box = await rail.boundingBox();
+          expect(box, `desktop Home rail missing @ ${vp.name}`).not.toBeNull();
+          expect(box!.height, `desktop Home rail became a full-height card wall @ ${vp.name}`).toBeLessThanOrEqual(522);
+        }
       });
     }
   }

@@ -1,7 +1,8 @@
 // Fixture-render harness (dev/QC). Renders each surface's presentational components against
 // the RANGE of content they must hold - so every state can be screenshot + checked before it
 // reaches a user (no auth, no data round-trip). Not linked in nav; remove when the redesign is done.
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { DecisionCard } from '@/components/track-record/DecisionCard';
 import { TrackRecordView } from '@/components/track-record/TrackRecordView';
 import { TrackRecordSkeleton } from '@/components/track-record/TrackRecordSkeleton';
@@ -10,26 +11,167 @@ import { ConsiderationStone } from '@/components/decision-map/ConsiderationStone
 import { MemoryItemCard } from '@/components/memory/MemoryItemCard';
 import { ContestPanel } from '@/components/contest/ContestPanel';
 import { HomeFeed } from '@/components/cockpit/HomeFeed';
+import { FirstLens } from '@/components/cockpit/FirstLens';
 import { StoneRead } from '@/components/decision-map/StoneRead';
 import { BriefingHero } from '@/components/briefing/BriefingHero';
-import { AutomatorSuggestions } from '@/components/automator/AutomatorSuggestions';
-import { AutomatorCascade } from '@/components/automator/AutomatorCascade';
-import { AutomatorSkillReady } from '@/components/automator/AutomatorSkillReady';
-import {
-  builtYourWayChips,
-  cascadeFor,
-  type CascadePicks,
-  type DeliverableCandidate,
-} from '@/components/automator/automatorModel';
+import { BriefingSheet } from '@/components/briefing/BriefingSheet';
+import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
+import { useBriefingContext } from '@/contexts/BriefingContext';
+import { SettingsSheetProvider, useSettingsSheet } from '@/contexts/SettingsSheetContext';
+import { SettingsSheet } from '@/components/settings/SettingsSheet';
 import type { BriefingRead } from '@/components/briefing/briefingRead';
+import type { Briefing } from '@/types/briefing';
 import type { TrackRecordRow } from '@/types/track-record';
 import type { DecisionClaim, DecisionEvidence } from '@/hooks/useDecisionEngine';
 import type { UserMemoryFact } from '@/types/memory';
 import type { ContestKind, ContestResult, ContestTarget } from '@/types/contest';
 import type { CockpitData, DeckCard } from '@/types/cockpit';
-import type { SkillData } from '@/types/skill';
 
 const noop = () => {};
+
+const HANDOFF_SIGNAL = {
+  entryVariant: 'decide',
+  q2: 'do',
+  q4: 'hybrid',
+  anxietyLane: 'orchestration',
+  archetypeTitle: 'The operator running humans and agents as one team',
+};
+
+const BRIEFING_SHELL_FIXTURE: Briefing = {
+  id: 'preview-briefing',
+  user_id: 'preview-user',
+  briefing_date: new Date().toISOString().slice(0, 10),
+  briefing_type: 'default',
+  script_text: 'A short preview briefing.',
+  segments: [
+    {
+      headline: 'Agent orchestration moved from experiment to operating model.',
+      analysis: 'The useful question is no longer whether to use agents, but where human judgment must remain explicit.',
+      framework_tag: 'signal',
+      source: 'CTRL preview evidence',
+      relevance_reason: 'You are deciding how humans and agents should share the work.',
+      matched_profile_fact: 'Building an agent-first operating model',
+    },
+    {
+      headline: 'Proof of work is becoming more valuable than an AI strategy deck.',
+      analysis: 'Teams are learning faster when one bounded workflow is made real before a broad transformation plan is written.',
+      framework_tag: 'krishs_take',
+      source: 'CTRL preview evidence',
+      relevance_reason: 'Your next decision needs an observable test, not another abstract programme.',
+    },
+  ],
+  audio_url: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=',
+  audio_duration_seconds: 128,
+  context_snapshot: null,
+  news_sources: null,
+  generation_model: 'preview',
+  custom_context: null,
+  voice_note_url: null,
+  is_pro_only: false,
+  created_at: new Date().toISOString(),
+  schema_version: 2,
+  stage: 'complete',
+};
+
+function BriefingShellFixture() {
+  const { setBriefing, setSheetOpen } = useBriefingContext();
+
+  useEffect(() => {
+    setBriefing(BRIEFING_SHELL_FIXTURE);
+    setSheetOpen(true);
+    return () => setSheetOpen(false);
+  }, [setBriefing, setSheetOpen]);
+
+  return (
+    <main className="min-h-screen bg-background px-6 py-8 text-foreground">
+      <div className="mb-8 flex justify-end">
+        <BriefingHeaderButton briefingOverride={BRIEFING_SHELL_FIXTURE} />
+      </div>
+      <div className="max-w-xl">
+        <p className="font-ctrl-system text-[9px] uppercase tracking-[0.18em] text-accent">Product fixture</p>
+        <h1 className="font-ctrl-display mt-3 text-3xl font-semibold">The real briefing drawer is open.</h1>
+        <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">This public QA fixture uses the production component and a silent local audio stub. Close the drawer to inspect its focus return and reopen the page to reset it.</p>
+      </div>
+      <BriefingSheet
+        learningPromptOverride={{
+          id: 'preview-team-model',
+          fact_key: 'team_model',
+          fact_category: 'business',
+          fact_label: 'Team model',
+          fact_value: 'A hybrid team of people and agents',
+          fact_context: 'Shared during Make Your Mind Up',
+          confidence_score: 0.82,
+        }}
+      />
+    </main>
+  );
+}
+
+function SettingsShellFixtureContent() {
+  const { openSheet } = useSettingsSheet();
+
+  useEffect(() => {
+    openSheet();
+  }, [openSheet]);
+
+  return (
+    <main className="min-h-screen bg-background px-6 py-8 text-foreground">
+      <p className="font-ctrl-system text-[9px] uppercase tracking-[0.18em] text-accent">Product fixture</p>
+      <h1 className="font-ctrl-display mt-3 text-3xl font-semibold">Settings stays within reach.</h1>
+      <SettingsSheet />
+    </main>
+  );
+}
+
+function SettingsShellFixture() {
+  return (
+    <SettingsSheetProvider>
+      <SettingsShellFixtureContent />
+    </SettingsSheetProvider>
+  );
+}
+
+function FirstLensFixture() {
+  const [state, setState] = useState<'ready' | 'confirmed' | 'dismissed'>('ready');
+  if (state !== 'ready') {
+    return (
+      <main className="grid min-h-screen place-items-center bg-background px-6 text-center text-foreground">
+        <div>
+          <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-accent">Fixture transition</p>
+          <h1 className="mt-3 text-2xl font-bold">{state === 'confirmed' ? 'Starting point saved.' : 'Normal Home resumes.'}</h1>
+          <button type="button" className="mt-5 min-h-11 rounded-xl px-4 text-sm text-muted-foreground underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setState('ready')}>Reset fixture</button>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-background px-4 py-4 md:px-8 md:py-6">
+      <div className="mx-auto md:hidden">
+        <FirstLens
+          variant="mobile"
+          signal={HANDOFF_SIGNAL}
+          saving={false}
+          error={null}
+          onConfirm={() => setState('confirmed')}
+          onDismiss={() => setState('dismissed')}
+          onWeigh={() => setState('confirmed')}
+        />
+      </div>
+      <div className="mx-auto hidden h-[calc(100vh-3rem)] max-w-[1160px] md:block">
+        <FirstLens
+          variant="desktop"
+          signal={HANDOFF_SIGNAL}
+          saving={false}
+          error={null}
+          onConfirm={() => setState('confirmed')}
+          onDismiss={() => setState('dismissed')}
+          onWeigh={() => setState('confirmed')}
+        />
+      </div>
+    </main>
+  );
+}
 
 const TRACK_FIXTURES: { label: string; row: TrackRecordRow }[] = [
   {
@@ -244,47 +386,6 @@ const BRIEFING_FIXTURES: { label: string; read: BriefingRead }[] = [
   },
 ];
 
-// ── Automator (Build a skill) fixtures ─────────────────────────────────────
-const AUTOMATOR_CANDIDATES: DeliverableCandidate[] = [
-  {
-    id: 'a1', title: 'Your weekly investor update', mined: true, archetype: 'report',
-    reasonLead: 'You write one most Mondays', reasonRest: ' - CTRL has seen it in 6 of your last 8 weeks.',
-    effortChip: '~45 min each', frequencyChip: 'repeats weekly',
-  },
-  {
-    id: 'a2', title: 'Turn a discovery call into a first proposal', mined: true, archetype: 'proposal',
-    reasonLead: 'You do this a few times a week', reasonRest: ' - same shape each time: notes in, proposal out.',
-    effortChip: '~30 min each', frequencyChip: 'several a week',
-  },
-  {
-    id: 'a3', title: 'Your monthly board one-pager', mined: false, archetype: 'report',
-    reasonLead: 'High effort, same structure', reasonRest: ' every month - the kind of slog a skill removes.',
-    effortChip: '~2 hrs', frequencyChip: 'repeats monthly',
-  },
-];
-
-// A proposal candidate drives the cascade content for the cascade fixtures.
-// The redesigned cascade is 3 steps: trigger -> steps -> output.
-const CASCADE_CANDIDATE = AUTOMATOR_CANDIDATES[1];
-const CASCADE_STEPS = cascadeFor(CASCADE_CANDIDATE);
-const CASCADE_PICKS: CascadePicks = {
-  trigger: CASCADE_STEPS[0].options[0].id,
-  steps: CASCADE_STEPS[1].options[0].id,
-  output: CASCADE_STEPS[2].options[0].id,
-};
-
-const READY_SKILL: SkillData = {
-  name: 'discovery-call-to-proposal',
-  description:
-    'Turns a discovery call transcript into a first proposal in your voice. Use whenever you say draft the proposal, write up the proposal, or turn this call into a proposal.',
-  body: '## When this skill activates\n...',
-  references: [],
-  test_prompts: [],
-  gotchas: [],
-  archetype: 'reporting-engine',
-};
-const READY_CHIPS = builtYourWayChips(CASCADE_STEPS, CASCADE_PICKS);
-
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-10">
@@ -295,7 +396,11 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export default function PreviewPage() {
+  const [searchParams] = useSearchParams();
   const [open, setOpen] = useState<Record<string, boolean>>({ c1: true, c4: true });
+  if (searchParams.get('surface') === 'first-lens') return <FirstLensFixture />;
+  if (searchParams.get('surface') === 'briefing-shell') return <BriefingShellFixture />;
+  if (searchParams.get('surface') === 'settings-shell') return <SettingsShellFixture />;
   return (
     // animated={false} renders each component at its final state (no entrance fade) so the
     // static screenshot is clean - headless Chrome pauses framer-motion entrance animations.
@@ -303,125 +408,6 @@ export default function PreviewPage() {
       <div className="mx-auto w-full max-w-md">
         <h1 className="mb-1 text-lg font-semibold text-foreground">Surface fixtures</h1>
         <p className="mb-8 text-xs text-muted-foreground">Every state each component must hold. Screenshot + check for cram / clip / overflow.</p>
-
-        <Section title="Automator - Suggestions (screen 1)">
-          <div>
-            <p className="mb-1 text-[10px] text-muted-foreground/70">mined + curated mix, brain badge on</p>
-            <div className="rounded-2xl border border-border bg-background p-3">
-              <AutomatorSuggestions
-                candidates={AUTOMATOR_CANDIDATES}
-                loading={false}
-                hasMined
-                onPick={noop}
-                onCustomDeliverable={noop}
-                animated={false}
-              />
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-[10px] text-muted-foreground/70">curated only (thin brain), no badge</p>
-            <div className="rounded-2xl border border-border bg-background p-3">
-              <AutomatorSuggestions
-                candidates={AUTOMATOR_CANDIDATES.map((c) => ({ ...c, mined: false }))}
-                loading={false}
-                hasMined={false}
-                onPick={noop}
-                onCustomDeliverable={noop}
-                animated={false}
-              />
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-[10px] text-muted-foreground/70">loading skeletons</p>
-            <div className="rounded-2xl border border-border bg-background p-3">
-              <AutomatorSuggestions
-                candidates={[]}
-                loading
-                hasMined={false}
-                onPick={noop}
-                onCustomDeliverable={noop}
-                animated={false}
-              />
-            </div>
-          </div>
-        </Section>
-
-        <Section title="Automator - Cascade (screen 2)">
-          <div>
-            <p className="mb-1 text-[10px] text-muted-foreground/70">step 1 (options): how do you do this now?</p>
-            <div className="h-[560px] rounded-2xl border border-border bg-background p-3">
-              <AutomatorCascade
-                candidate={CASCADE_CANDIDATE}
-                steps={CASCADE_STEPS}
-                stepIndex={0}
-                picks={{ how: CASCADE_STEPS[0].options[0].id }}
-                direction={1}
-                isGenerating={false}
-                onSelect={noop}
-                onBack={noop}
-                onNext={noop}
-                animated={false}
-              />
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-[10px] text-muted-foreground/70">step 4 (samples): which sounds most like you?</p>
-            <div className="h-[560px] rounded-2xl border border-border bg-background p-3">
-              <AutomatorCascade
-                candidate={CASCADE_CANDIDATE}
-                steps={CASCADE_STEPS}
-                stepIndex={3}
-                picks={{ tone: 'warm' }}
-                direction={1}
-                isGenerating={false}
-                onSelect={noop}
-                onBack={noop}
-                onNext={noop}
-                animated={false}
-              />
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-[10px] text-muted-foreground/70">last step, building (generating)</p>
-            <div className="h-[560px] rounded-2xl border border-border bg-background p-3">
-              <AutomatorCascade
-                candidate={CASCADE_CANDIDATE}
-                steps={CASCADE_STEPS}
-                stepIndex={4}
-                picks={CASCADE_PICKS}
-                direction={1}
-                isGenerating
-                onSelect={noop}
-                onBack={noop}
-                onNext={noop}
-                animated={false}
-              />
-            </div>
-          </div>
-        </Section>
-
-        <Section title="Automator - Skill ready (screen 3)">
-          <div>
-            <p className="mb-1 text-[10px] text-muted-foreground/70">payoff + built-your-way chips + library peek</p>
-            <div className="rounded-2xl border border-border bg-background p-3">
-              <AutomatorSkillReady
-                skill={READY_SKILL}
-                chips={READY_CHIPS}
-                whatItDoes="Turns a discovery call transcript into a first proposal in your voice."
-                library={[
-                  { id: 'new', label: 'Discovery -> proposal' },
-                  { id: 'l2', label: 'Weekly investor update' },
-                  { id: 'l3', label: 'Board one-pager' },
-                ]}
-                onRun={noop}
-                onExport={noop}
-                onSeeAll={noop}
-                onBuildAnother={noop}
-                animated={false}
-              />
-            </div>
-          </div>
-        </Section>
 
         <Section title="Home 2028 (mobile swipe feed) - HomeFeed">
           {COCKPIT_FIXTURES.map((f) => (

@@ -84,7 +84,7 @@ function findSampleKey(capability?: string): string | null {
   return 'strategy_doc'; // default fallback
 }
 
-// Pro-only lines only. Anything free (briefing, Automator, Memory, Voice)
+// Pro-only lines only. Anything free (briefing, Blind Spot, Memory, Voice)
 // belongs in FREE_INCLUDED; src/constants/planMatrix.ts and docs/PRICING.md
 // are the source of truth for which side a capability sits on.
 const BENEFITS = [
@@ -101,7 +101,7 @@ const BENEFITS = [
 const FREE_INCLUDED = [
   'Read-write Memory Web',
   'Voice profile',
-  'Automator skill builds and exports, unlimited',
+  'Blind Spot reflections',
   'Daily personalised briefing',
   '3 decision weighs a month',
 ];

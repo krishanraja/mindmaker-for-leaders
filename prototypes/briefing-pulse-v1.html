@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CTRL: Briefing Pulse v1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --pulse-bg: #0a0e12;
+      --pulse-panel: #0d1217;
+      --pulse-panel-2: #111820;
+      --pulse-line: #222c35;
+      --pulse-ink: #f4f1e9;
+      --pulse-muted: #97a2ad;
+      --pulse-quiet: #67727d;
+      --pulse-green: #25e1ba;
+      --pulse-green-soft: rgba(37, 225, 186, .12);
+      --pulse-warm: #f97316;
+      --pulse-pink: #ec4899;
+      --ctrl-display: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+      --ctrl-text: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+      --brief-sans: var(--ctrl-text);
+      --brief-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    .briefing-pulse,
+    .settings-trigger,
+    .prototype-drawer { font-family: var(--brief-sans); font-synthesis: none; }
+    body .app,
+    body .app button,
+    body .app input,
+    body .app textarea,
+    body .app select { font-family: var(--ctrl-text); font-synthesis: none; }
+    .prototype-drawer button,
+    .prototype-drawer textarea { font-family: inherit; }
+
+    /* CTRL typography canon: editorial serif is the complete human voice,
+       sans is operational chrome, mono is evidence and state. */
+    .brief,
+    #briefing-drawer .drawer-scroll {
+      font-family: var(--ctrl-text);
+      font-synthesis: none;
+    }
+
+    .brief button,
+    #briefing-drawer .drawer-scroll button,
+    #briefing-drawer .drawer-scroll textarea {
+      font-family: var(--ctrl-text);
+    }
+
+    #briefing-drawer .drawer-head h2 {
+      font-family: var(--ctrl-display);
+      font-weight: 600;
+      letter-spacing: -.014em;
+    }
+
+    .brief-head h1,
+    .lens-copy h2,
+    .call-copy h3,
+    .brief-player h3,
+    .learning-card h3,
+    .memory-proposal blockquote {
+      font-family: var(--ctrl-display);
+      font-synthesis: none;
+      text-wrap: balance;
+    }
+
+    .brief-head h1,
+    .lens-copy h2 { font-weight: 600; letter-spacing: -.032em; }
+    .call-copy h3 { font-weight: 600; letter-spacing: -.022em; }
+
+    .rail .nav-item .nav-dot {
+      display: grid;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      place-items: center;
+      border: 0;
+      border-radius: 0;
+      opacity: .86;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .rail .nav-dot svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.65;
+    }
+
+    .rail .nav-item:hover .nav-dot { opacity: 1; transform: translateY(-1px); }
+    .rail .nav-item[aria-current="page"] .nav-dot { opacity: 1; filter: drop-shadow(0 0 6px rgba(37,225,186,.38)); }
+
+    .topbar { gap: 18px !important; padding-right: 22px !important; }
+    .top-actions { gap: 10px !important; }
+    .top-actions .preview-badge { margin-left: 2px; }
+
+    .briefing-pulse {
+      position: relative;
+      display: grid;
+      min-width: 194px;
+      min-height: 44px;
+      grid-template-columns: 34px minmax(74px, auto) 42px;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(37, 225, 186, .24);
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 18% 50%, rgba(37, 225, 186, .14), transparent 34%),
+        linear-gradient(110deg, rgba(255,255,255,.035), rgba(255,255,255,.005));
+      padding: 5px 10px 5px 6px;
+      color: var(--pulse-ink);
+      box-shadow: inset 0 1px rgba(255,255,255,.035), 0 12px 34px -25px rgba(37,225,186,.8);
+      cursor: pointer;
+      isolation: isolate;
+    }
+
+    .briefing-pulse::after {
+      position: absolute;
+      right: 54px;
+      bottom: 0;
+      left: 49px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--pulse-green), rgba(37,225,186,.08));
+      transform: scaleX(var(--pulse-progress, .08));
+      transform-origin: left;
+      content: "";
+      transition: transform .4s ease;
+    }
+
+    .briefing-pulse:hover { border-color: rgba(37, 225, 186, .42); background-color: rgba(37,225,186,.035); }
+    .briefing-pulse[aria-expanded="true"] { border-color: rgba(37,225,186,.48); box-shadow: inset 0 0 0 1px rgba(37,225,186,.06), 0 0 26px -15px rgba(37,225,186,.8); }
+
+    .pulse-disc {
+      position: relative;
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid rgba(37,225,186,.34);
+      border-radius: 50%;
+      background: rgba(37,225,186,.1);
+      color: var(--pulse-green);
+    }
+
+    .pulse-disc::before {
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 8px solid currentColor;
+      margin-left: 2px;
+      content: "";
+    }
+
+    .briefing-pulse[data-state="playing"] .pulse-disc::before {
+      width: 8px;
+      height: 10px;
+      border: 0;
+      border-right: 3px solid currentColor;
+      border-left: 3px solid currentColor;
+      margin: 0;
+    }
+
+    .briefing-pulse[data-state="preparing"] .pulse-disc::before {
+      width: 11px;
+      height: 11px;
+      border: 1.5px solid rgba(37,225,186,.24);
+      border-top-color: var(--pulse-green);
+      border-radius: 50%;
+      margin: 0;
+      animation: pulse-spin 1s linear infinite;
+    }
+
+    .briefing-pulse[data-state="unavailable"] { border-color: rgba(255,255,255,.11); }
+    .briefing-pulse[data-state="unavailable"] .pulse-disc { border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.035); color: #79838e; }
+
+    .pulse-copy { min-width: 0; text-align: left; }
+    .pulse-copy strong,
+    .pulse-copy span { display: block; white-space: nowrap; }
+    .pulse-copy strong { color: #e5e3dc; font: 700 9px var(--brief-mono); letter-spacing: .14em; text-transform: uppercase; }
+    .pulse-copy span { margin-top: 3px; color: #7f8b96; font-size: 9px; }
+
+    .pulse-wave {
+      display: flex;
+      height: 22px;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 3px;
+    }
+
+    .pulse-wave i {
+      width: 2px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--pulse-green);
+      opacity: .42;
+      transform-origin: center;
+    }
+
+    .briefing-pulse[data-state="playing"] .pulse-wave i { opacity: .8; animation: wave 1s ease-in-out infinite alternate; }
+    .pulse-wave i:nth-child(2) { height: 12px; animation-delay: -.45s !important; }
+    .pulse-wave i:nth-child(3) { height: 18px; animation-delay: -.72s !important; }
+    .pulse-wave i:nth-child(4) { height: 9px; animation-delay: -.18s !important; }
+    .pulse-wave i:nth-child(5) { height: 14px; animation-delay: -.56s !important; }
+    .pulse-wave i:nth-child(6) { height: 6px; animation-delay: -.32s !important; }
+
+    .settings-trigger,
+    .drawer-close {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 13px;
+      background: rgba(255,255,255,.025);
+      color: #9da7b1;
+      cursor: pointer;
+    }
+
+    .settings-trigger:hover,
+    .drawer-close:hover { border-color: rgba(255,255,255,.2); color: var(--pulse-ink); }
+    .settings-trigger svg { width: 18px; height: 18px; }
+
+    .prototype-shade {
+      position: fixed;
+      z-index: 70;
+      inset: 0;
+      border: 0;
+      background: rgba(2, 4, 6, .69);
+      opacity: 0;
+      pointer-events: none;
+      backdrop-filter: blur(7px);
+      transition: opacity .26s ease;
+    }
+
+    .prototype-shade[data-open="true"] { opacity: 1; pointer-events: auto; }
+
+    .prototype-drawer {
+      position: fixed;
+      z-index: 80;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      width: min(462px, calc(100vw - 24px));
+      flex-direction: column;
+      border-left: 1px solid var(--pulse-line);
+      background:
+        radial-gradient(circle at 80% 8%, rgba(37,225,186,.07), transparent 27%),
+        linear-gradient(180deg, #0c1116, #080b0f 72%);
+      box-shadow: -36px 0 90px -54px rgba(0,0,0,.98);
+      transform: translateX(104%);
+      visibility: hidden;
+      transition: transform .34s cubic-bezier(.22,.8,.24,1), visibility 0s linear .34s;
+    }
+
+    .prototype-drawer[data-open="true"] {
+      transform: translateX(0);
+      visibility: visible;
+      transition-delay: 0s;
+    }
+
+    .drawer-head {
+      display: flex;
+      min-height: 68px;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid rgba(255,255,255,.065);
+      padding: 0 20px 0 24px;
+    }
+
+    .drawer-head-copy { min-width: 0; flex: 1; }
+    .drawer-kicker { color: var(--pulse-green); font: 700 9px var(--brief-mono); letter-spacing: .16em; text-transform: uppercase; }
+    .drawer-head h2 { overflow: hidden; margin: 5px 0 0; color: var(--pulse-ink); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+    .drawer-close { border: 0; background: transparent; font-size: 22px; }
+
+    .drawer-scroll {
+      min-height: 0;
+      flex: 1;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding: 18px;
+      scrollbar-color: #26303a transparent;
+    }
+
+    .drawer-scroll > *,
+    .brief-player > *,
+    .followup-module > *,
+    .learning-card > * { min-width: 0; max-width: 100%; }
+
+    .brief-player {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(37,225,186,.16);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(37,225,186,.12), transparent 42%),
+        linear-gradient(155deg, rgba(255,255,255,.045), rgba(255,255,255,.008));
+      padding: 22px 20px 18px;
+      box-shadow: inset 0 1px rgba(255,255,255,.045);
+    }
+
+    .brief-player::before {
+      position: absolute;
+      top: -96px;
+      left: 50%;
+      width: 210px;
+      height: 210px;
+      border: 1px solid rgba(37,225,186,.09);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      content: "";
+    }
+
+    .player-status { position: relative; color: #71808b; font: 700 9px var(--brief-mono); letter-spacing: .13em; text-align: center; text-transform: uppercase; }
+    .player-orb {
+      position: relative;
+      display: grid;
+      width: 90px;
+      height: 90px;
+      place-items: center;
+      margin: 16px auto 15px;
+      border-radius: 50%;
+      background: conic-gradient(var(--pulse-green) var(--player-deg, 9deg), rgba(255,255,255,.09) 0);
+      box-shadow: 0 0 52px -24px rgba(37,225,186,.95);
+    }
+
+    .player-orb::before {
+      position: absolute;
+      inset: 3px;
+      border-radius: inherit;
+      background: radial-gradient(circle at 40% 32%, #17232a, #090d11 68%);
+      content: "";
+    }
+
+    .player-toggle {
+      position: relative;
+      display: grid;
+      width: 58px;
+      height: 58px;
+      place-items: center;
+      border: 1px solid rgba(37,225,186,.3);
+      border-radius: 50%;
+      background: rgba(37,225,186,.1);
+      color: var(--pulse-green);
+      cursor: pointer;
+    }
+
+    .player-toggle::before { width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 11px solid currentColor; margin-left: 4px; content: ""; }
+    .player-toggle[data-playing="true"]::before { width: 12px; height: 15px; border: 0; border-right: 4px solid currentColor; border-left: 4px solid currentColor; margin: 0; }
+    .player-toggle[data-busy="true"]::before { width: 18px; height: 18px; border: 2px solid rgba(37,225,186,.18); border-top-color: currentColor; border-radius: 50%; margin: 0; animation: pulse-spin 1s linear infinite; }
+
+    .brief-player h3 { margin: 0; color: var(--pulse-ink); font: 600 22px/1.13 var(--ctrl-display); text-align: center; letter-spacing: -.025em; text-wrap: balance; }
+    .brief-player > p { margin: 10px auto 0; color: #929da7; font-family: var(--ctrl-text); font-size: 13px; line-height: 1.5; text-align: center; text-wrap: pretty; }
+    .timeline { margin-top: 18px; }
+    .timeline-track { height: 3px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.09); }
+    .timeline-track span { display: block; width: calc(var(--progress, .08) * 100%); height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--pulse-green), #9af5df); transition: width .4s ease; }
+    .timeline-time { display: flex; justify-content: space-between; margin-top: 8px; color: #5e6974; font: 9px var(--brief-mono); }
+
+    .spoken-note {
+      margin-top: 13px;
+      border-left: 2px solid rgba(37,225,186,.55);
+      padding: 2px 0 2px 14px;
+      color: #a9b2ba;
+      font: 400 13px/1.55 var(--ctrl-text);
+      text-wrap: pretty;
+    }
+
+    .followup-module {
+      overflow: hidden;
+      margin-top: 14px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+    }
+
+    .talk-strip {
+      display: flex;
+      min-height: 60px;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      border: 0;
+      border-bottom: 1px solid rgba(255,255,255,.075);
+      border-radius: 0;
+      background: transparent;
+      padding: 9px 10px 9px 15px;
+    }
+
+    .talk-strip svg { width: 18px; height: 18px; color: var(--pulse-green); }
+    .talk-copy { min-width: 0; flex: 1; }
+    .talk-copy strong { display: block; color: #d9d9d5; font-size: 12px; }
+    .talk-copy span { display: block; margin-top: 3px; color: #687581; font-size: 10px; }
+    .talk-button { min-height: 44px; border: 1px solid rgba(37,225,186,.22); border-radius: 12px; background: rgba(37,225,186,.08); padding: 0 13px; color: var(--pulse-green); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .learning-card {
+      position: relative;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 18px;
+    }
+
+    .learning-card::before { position: absolute; top: 0; left: 20px; width: 40px; height: 1px; background: linear-gradient(90deg, var(--pulse-pink), var(--pulse-warm)); content: ""; }
+    .learning-kicker { color: #b78283; font: 700 9px var(--brief-mono); letter-spacing: .14em; text-transform: uppercase; }
+    .learning-card h3 { margin: 9px 0 7px; color: var(--pulse-ink); font: 600 19px/1.22 var(--ctrl-display); letter-spacing: -.018em; overflow-wrap: normal; word-break: normal; hyphens: none; text-wrap: balance; }
+    .learning-card p { margin: 0; color: #87939d; font: 400 13px/1.5 var(--ctrl-text); overflow-wrap: normal; word-break: normal; hyphens: none; text-wrap: pretty; }
+    .micro-actions { display: grid; grid-template-columns: 1fr 1fr 44px; gap: 8px; margin-top: 17px; }
+    .micro-button { min-height: 44px; border: 1px solid rgba(255,255,255,.11); border-radius: 12px; background: rgba(255,255,255,.025); padding: 0 14px; color: #c4c8c8; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .micro-button:hover { border-color: rgba(37,225,186,.28); color: var(--pulse-green); }
+    .micro-button.voice { display: grid; width: 44px; place-items: center; padding: 0; color: var(--pulse-green); }
+    .micro-button.voice svg { width: 17px; height: 17px; }
+    .skip-button { min-height: 44px; border: 0; background: transparent; padding: 0; color: #68737d; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+    .capture-box { margin-top: 15px; }
+    .capture-box textarea { width: 100%; min-height: 82px; resize: vertical; border: 1px solid rgba(255,255,255,.11); border-radius: 13px; background: rgba(0,0,0,.2); padding: 12px 13px; color: var(--pulse-ink); font: 400 13px/1.5 var(--ctrl-text); }
+    .capture-actions { display: flex; align-items: center; gap: 9px; margin-top: 9px; }
+    .record-button { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid rgba(37,225,186,.27); border-radius: 50%; background: var(--pulse-green-soft); color: var(--pulse-green); cursor: pointer; }
+    .record-button[data-recording="true"] { border-color: rgba(236,72,153,.42); background: rgba(236,72,153,.11); color: #fb72b3; box-shadow: 0 0 0 5px rgba(236,72,153,.055); }
+    .record-button svg { width: 17px; height: 17px; }
+    .use-button { min-height: 44px; flex: 1; border: 0; border-radius: 12px; background: var(--pulse-green); color: #03100d; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+    .memory-proposal { margin-top: 15px; border: 1px solid rgba(37,225,186,.17); border-radius: 15px; background: rgba(37,225,186,.055); padding: 15px; }
+    .memory-proposal strong { display: block; color: var(--pulse-green); font: 700 9px var(--brief-mono); letter-spacing: .13em; text-transform: uppercase; }
+    .memory-proposal blockquote { margin: 10px 0 0; color: #d5d7d2; font: 500 15px/1.5 var(--ctrl-text); overflow-wrap: normal; word-break: normal; hyphens: none; text-wrap: pretty; }
+    .proposal-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-top: 14px; }
+    .proposal-actions button { min-height: 44px; border: 1px solid rgba(255,255,255,.11); border-radius: 11px; background: rgba(255,255,255,.025); color: #aeb6bd; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .proposal-actions button:first-child { border-color: transparent; background: var(--pulse-green); color: #03100d; font-weight: 800; }
+
+    .saved-state { display: flex; align-items: flex-start; gap: 12px; margin-top: 14px; border: 1px solid rgba(37,225,186,.17); border-radius: 14px; background: rgba(37,225,186,.055); padding: 13px 14px; }
+    .saved-mark { display: grid; width: 25px; height: 25px; flex: 0 0 25px; place-items: center; border-radius: 50%; background: var(--pulse-green); color: #03100d; font-weight: 900; }
+    .saved-state strong { display: block; color: #d9dcd7; font-size: 12px; }
+    .saved-state p { margin-top: 4px; font-size: 11px; }
+    .undo-button { margin-left: auto; border: 0; background: transparent; color: var(--pulse-green); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .private-state { margin-top: 14px; border: 1px solid rgba(255,255,255,.09); border-radius: 14px; background: rgba(255,255,255,.022); padding: 13px 14px; color: #77838e; font-size: 11px; line-height: 1.5; }
+
+    .settings-section + .settings-section { margin-top: 28px; }
+    .settings-section h3 { margin: 0 0 8px; color: var(--pulse-ink); font-size: 17px; }
+    .settings-section > p { margin: 0 0 14px; color: #77838d; font-size: 11px; line-height: 1.55; }
+    .setting-row { display: flex; min-height: 62px; align-items: center; gap: 14px; border-top: 1px solid rgba(255,255,255,.07); }
+    .setting-row:last-child { border-bottom: 1px solid rgba(255,255,255,.07); }
+    .setting-copy { min-width: 0; flex: 1; }
+    .setting-copy strong { display: block; color: #d0d3d0; font-size: 12px; }
+    .setting-copy span { display: block; margin-top: 4px; color: #68747f; font-size: 10px; }
+    .setting-link { min-height: 40px; border: 0; background: transparent; color: var(--pulse-green); font-size: 12px; font-weight: 650; cursor: pointer; }
+    .toggle { position: relative; width: 42px; height: 24px; border: 0; border-radius: 999px; background: #29313a; cursor: pointer; transition: background .2s ease; }
+    .toggle::after { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #88939e; content: ""; transition: transform .2s ease, background .2s ease; }
+    .toggle[aria-checked="true"] { background: rgba(37,225,186,.24); }
+    .toggle[aria-checked="true"]::after { background: var(--pulse-green); transform: translateX(18px); }
+    .settings-note { margin-top: 20px; border-left: 2px solid rgba(37,225,186,.4); padding-left: 13px; color: #7e8a95; font-size: 11px; line-height: 1.55; }
+
+    .state-note { margin-top: 14px; border: 1px dashed rgba(255,255,255,.12); border-radius: 13px; padding: 14px; color: #75808a; font-size: 11px; line-height: 1.55; text-align: center; }
+    .prototype-drawer [hidden] { display: none !important; }
+
+    @keyframes pulse-spin { to { transform: rotate(360deg); } }
+    @keyframes wave { from { transform: scaleY(.45); } to { transform: scaleY(1.08); } }
+
+    @media (max-width: 1040px) {
+      .handoff-state, .top-actions .preview-badge { display: none !important; }
+      .briefing-pulse { min-width: 176px; }
+    }
+
+    @media (max-width: 720px) {
+      .topbar { gap: 10px !important; padding: 0 12px 0 16px !important; }
+      .top-actions { gap: 7px !important; }
+      .briefing-pulse { min-width: 0; width: 120px; grid-template-columns: 32px minmax(0, 1fr); gap: 8px; padding-right: 8px; }
+      .pulse-copy strong { font-size: 8px; }
+      .pulse-copy span { overflow: hidden; max-width: 61px; text-overflow: ellipsis; }
+      .pulse-wave { display: none; }
+      .briefing-pulse::after { right: 8px; left: 46px; }
+      .settings-trigger { width: 44px; height: 44px; flex-basis: 44px; }
+      .rail .nav-item .nav-dot,
+      .rail .nav-dot svg { width: 19px; height: 19px; }
+      .prototype-drawer {
+        top: auto;
+        left: 0;
+        width: 100%;
+        max-height: min(calc(100dvh - 12px), 820px);
+        border-top: 1px solid var(--pulse-line);
+        border-left: 0;
+        border-radius: 24px 24px 0 0;
+        transform: translateY(104%);
+      }
+      .prototype-drawer[data-open="true"] { transform: translateY(0); }
+      .drawer-head { min-height: 62px; padding-left: 19px; }
+      .drawer-scroll { padding: 14px 14px 22px; }
+      .brief-player { padding: 19px 16px 16px; }
+      .player-orb { width: 80px; height: 80px; margin-top: 13px; }
+      .player-toggle { width: 54px; height: 54px; }
+      .brief-player h3 { font-size: 23px; }
+      .followup-module { margin-top: 12px; }
+      .learning-card { padding: 17px; }
+    }
+
+    @media (max-width: 360px) {
+      .briefing-pulse { width: 108px; }
+      .pulse-copy span { max-width: 50px; }
+      .micro-actions { grid-template-columns: 1fr 1fr 44px; }
+      .proposal-actions { grid-template-columns: 1fr; }
+      .proposal-actions button { min-height: 44px; }
+    }
+
+    @media (max-height: 740px) {
+      .drawer-head { min-height: 58px; }
+      .drawer-scroll { padding-top: 12px; }
+      .brief-player { padding-top: 16px; }
+      .player-orb { width: 72px; height: 72px; margin: 10px auto 11px; }
+      .player-toggle { width: 50px; height: 50px; }
+      .brief-player h3 { font-size: 21px; }
+      .brief-player > p { margin-top: 7px; font-size: 11px; }
+      .timeline { margin-top: 13px; }
+      .spoken-note { display: none; }
+      .followup-module { margin-top: 10px; }
+      .talk-strip { min-height: 56px; }
+      .learning-card { padding: 15px 16px; }
+      .learning-card h3 { font-size: 18px; }
+      .learning-card p { font-size: 11px; }
+      .micro-actions { margin-top: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <noscript>This design preview needs JavaScript to compose the locked First Lens with the new briefing shell.</noscript>
+  <script>
+    const ICONS = {
+      settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20.3h-3v-.08a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7 15a1.7 1.7 0 0 0-1.56-1.03h-.08v-3h.08A1.7 1.7 0 0 0 7 9.94a1.7 1.7 0 0 0-.34-1.88L6.6 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.03-1.56v-.08h3v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03h.08v3h-.08A1.7 1.7 0 0 0 19.4 15Z"/></svg>',
+      mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v4M9 21h6"/></svg>',
+      talk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4A2.5 2.5 0 0 1 4 12.5Z"/><path d="M8 8h8M8 11h5"/></svg>'
+    };
+
+    const NAV_ICONS = {
+      "Today": '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg>',
+      "Decide": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 7h14M5 7l-3 5h6L5 7ZM19 7l-3 5h6l-3-5ZM8 21h8"/></svg>',
+      "Blind spot": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12s3.4-5.7 9-5.7 9 5.7 9 5.7-3.4 5.7-9 5.7S3 12 3 12Z"/><circle cx="12" cy="12" r="2.7"/><circle cx="18.5" cy="6" r="1.35" fill="currentColor" stroke="none"/></svg>',
+      "Memory": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5l8 4.5 8-4.5"/></svg>',
+      "Profile": '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>',
+      "Compliance": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 6v5.6c0 4.7-3.2 7.8-8 9.6-4.8-1.8-8-4.9-8-9.6V6l8-3.2Z"/><path d="m8.6 12 2.2 2.2 4.7-4.7"/></svg>',
+      "Settings": '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h8M16 18h4"/><circle cx="16" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="14" cy="18" r="2"/></svg>'
+    };
+
+    const params = new URLSearchParams(location.search);
+    let playbackState = ["ready", "playing", "preparing", "unavailable"].includes(params.get("state")) ? params.get("state") : "ready";
+    let progress = playbackState === "playing" ? .18 : .08;
+    let memoryEnabled = params.get("privacy") !== "off";
+    let activeDrawer = null;
+    let lastTrigger = null;
+    let timer = null;
+
+    async function boot() {
+      const response = await fetch("./home-first-lens-v3.html");
+      const baseHtml = await response.text();
+      const base = new DOMParser().parseFromString(baseHtml, "text/html");
+      const baseStyle = base.head.querySelector("style");
+      if (baseStyle) document.head.prepend(baseStyle.cloneNode(true));
+      document.body.innerHTML = base.body.innerHTML;
+
+      installShell();
+      installDrawers();
+      restoreLockedInteractions();
+      updatePulse();
+
+      if (params.get("question") === "proposal") setLearningState("proposal");
+      if (params.get("open") === "1") openDrawer("briefing", document.querySelector("#briefing-pulse"));
+      if (playbackState === "playing") startProgress();
+    }
+
+    function installShell() {
+      const topActions = document.querySelector(".top-actions");
+      topActions.innerHTML = `
+        <button class="briefing-pulse" id="briefing-pulse" type="button" data-state="${playbackState}" aria-controls="briefing-drawer" aria-expanded="false">
+          <span class="pulse-disc" aria-hidden="true"></span>
+          <span class="pulse-copy"><strong>Briefing</strong><span class="pulse-detail">Starting brief · 2 min</span></span>
+          <span class="pulse-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </button>
+        <button class="settings-trigger" id="settings-trigger" type="button" aria-label="Open Settings" aria-controls="settings-drawer" aria-expanded="false">${ICONS.settings}</button>
+        <span class="preview-badge">Design preview</span>`;
+
+      document.querySelector("#briefing-pulse").addEventListener("click", event => {
+        if (playbackState === "ready") {
+          playbackState = "playing";
+          startProgress();
+          updatePulse();
+        }
+        openDrawer("briefing", event.currentTarget);
+      });
+      document.querySelector("#settings-trigger").addEventListener("click", event => openDrawer("settings", event.currentTarget));
+
+      document.querySelectorAll(".rail .nav-item").forEach(button => {
+        const label = button.textContent.trim();
+        const icon = NAV_ICONS[label];
+        const slot = button.querySelector(".nav-dot");
+        if (icon && slot) slot.innerHTML = icon;
+      });
+    }
+
+    function installDrawers() {
+      document.body.insertAdjacentHTML("beforeend", `
+        <button class="prototype-shade" id="prototype-shade" type="button" aria-label="Close panel" data-open="false"></button>
+        <aside class="prototype-drawer" id="briefing-drawer" role="dialog" aria-modal="true" aria-labelledby="briefing-title" data-open="false">
+          <header class="drawer-head">
+            <div class="drawer-head-copy"><span class="drawer-kicker">CTRL / Briefing</span><h2 id="briefing-title">Your starting brief</h2></div>
+            <button class="drawer-close" type="button" aria-label="Close briefing">×</button>
+          </header>
+          <div class="drawer-scroll">
+            <section class="brief-player" aria-label="Audio player">
+              <div class="player-status" id="player-status">Ready when you are</div>
+              <div class="player-orb" id="player-orb">
+                <button class="player-toggle" id="player-toggle" type="button" aria-label="Play briefing" data-playing="false"></button>
+              </div>
+              <h3 id="player-title">Your judgment stays in the loop.</h3>
+              <p id="player-description">Two useful minutes, built from the pattern you chose to carry into CTRL.</p>
+              <div class="timeline" id="player-timeline">
+                <div class="timeline-track"><span></span></div>
+                <div class="timeline-time"><span id="current-time">0:10</span><span>2:08</span></div>
+              </div>
+              <blockquote class="spoken-note" id="spoken-note">“You are not looking for AI to replace judgment. You are looking for the work to move, with humans still holding the consequential calls.”</blockquote>
+            </section>
+
+            <div class="followup-module">
+              <section class="talk-strip" id="talk-strip" aria-label="Talk to briefing">
+                ${ICONS.talk}
+                <div class="talk-copy"><strong>Talk to this briefing</strong><span>Ask, disagree, or add what changed</span></div>
+                <button class="talk-button" id="talk-button" type="button">Talk</button>
+              </section>
+
+              <section class="learning-card" id="learning-card" aria-live="polite"></section>
+            </div>
+          </div>
+        </aside>
+
+        <aside class="prototype-drawer" id="settings-drawer" role="dialog" aria-modal="true" aria-labelledby="settings-title" data-open="false">
+          <header class="drawer-head">
+            <div class="drawer-head-copy"><span class="drawer-kicker">CTRL</span><h2 id="settings-title">Settings</h2></div>
+            <button class="drawer-close" type="button" aria-label="Close Settings">×</button>
+          </header>
+          <div class="drawer-scroll">
+            <section class="settings-section">
+              <h3>What CTRL knows</h3>
+              <p>Your context stays useful only if you can see it, correct it and remove it.</p>
+              <div class="setting-row">
+                <div class="setting-copy"><strong>Useful facts</strong><span>12 current · 2 need a check</span></div>
+                <button class="setting-link" type="button">Review</button>
+              </div>
+              <div class="setting-row">
+                <div class="setting-copy"><strong>Briefing interests</strong><span>What earns space in your daily brief</span></div>
+                <button class="setting-link" type="button">Tune</button>
+              </div>
+            </section>
+            <section class="settings-section">
+              <h3>Conversation and memory</h3>
+              <p>You can talk to CTRL without letting the conversation become durable memory.</p>
+              <div class="setting-row">
+                <div class="setting-copy"><strong>Offer useful things to remember</strong><span>CTRL asks before keeping an inferred fact</span></div>
+                <button class="toggle" id="memory-toggle" type="button" role="switch" aria-label="Offer useful things to remember" aria-checked="${memoryEnabled}"></button>
+              </div>
+              <div class="setting-row">
+                <div class="setting-copy"><strong>Store voice transcripts</strong><span>Off · audio is discarded after processing</span></div>
+                <button class="toggle" type="button" role="switch" aria-label="Store voice transcripts" aria-checked="false"></button>
+              </div>
+            </section>
+            <section class="settings-section">
+              <h3>Briefing delivery</h3>
+              <div class="setting-row">
+                <div class="setting-copy"><strong>Email</strong><span>Weekdays · 7:00 AM</span></div>
+                <button class="setting-link" type="button">Change</button>
+              </div>
+              <div class="setting-row">
+                <div class="setting-copy"><strong>Slack and WhatsApp</strong><span>Not connected</span></div>
+                <button class="setting-link" type="button">Connect</button>
+              </div>
+            </section>
+            <p class="settings-note">Implicit reactions tune relevance. They do not silently become facts about you.</p>
+          </div>
+        </aside>`);
+
+      document.querySelectorAll(".drawer-close").forEach(button => button.addEventListener("click", closeDrawer));
+      document.querySelector("#prototype-shade").addEventListener("click", closeDrawer);
+      document.querySelector("#player-toggle").addEventListener("click", togglePlayback);
+      document.querySelector("#talk-button").addEventListener("click", () => setLearningState("capture"));
+      document.querySelector("#memory-toggle").addEventListener("click", event => {
+        memoryEnabled = !memoryEnabled;
+        event.currentTarget.setAttribute("aria-checked", String(memoryEnabled));
+        setLearningState("question");
+      });
+      document.querySelectorAll(".toggle:not(#memory-toggle)").forEach(toggle => toggle.addEventListener("click", event => {
+        const next = event.currentTarget.getAttribute("aria-checked") !== "true";
+        event.currentTarget.setAttribute("aria-checked", String(next));
+      }));
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && activeDrawer) closeDrawer();
+        if (event.key === "Tab" && activeDrawer) trapFocus(event, activeDrawer);
+      });
+      setLearningState("question");
+    }
+
+    function restoreLockedInteractions() {
+      const mobileLayout = window.matchMedia("(max-width: 720px)");
+      const appShell = document.querySelector(".app");
+      const navigationRail = document.querySelector(".rail");
+      const confirmLens = document.querySelector("#confirm-lens");
+      function placeNavigation() {
+        if (mobileLayout.matches) appShell.append(navigationRail);
+        else appShell.prepend(navigationRail);
+      }
+      confirmLens.addEventListener("click", () => {
+        const confirmed = confirmLens.getAttribute("aria-pressed") === "true";
+        confirmLens.setAttribute("aria-pressed", String(!confirmed));
+        confirmLens.innerHTML = confirmed ? 'Yes, start here <span aria-hidden="true">&rarr;</span>' : 'Starting here <span aria-hidden="true">&#10003;</span>';
+      });
+      placeNavigation();
+      mobileLayout.addEventListener("change", placeNavigation);
+    }
+
+    function openDrawer(kind, trigger) {
+      if (activeDrawer && activeDrawer !== kind) closeDrawer(false);
+      activeDrawer = kind;
+      lastTrigger = trigger;
+      const drawer = document.querySelector(`#${kind}-drawer`);
+      drawer.dataset.open = "true";
+      document.querySelector("#prototype-shade").dataset.open = "true";
+      trigger.setAttribute("aria-expanded", "true");
+      document.querySelector(".app").setAttribute("aria-hidden", "true");
+      setTimeout(() => drawer.querySelector(".drawer-close").focus(), 40);
+    }
+
+    function closeDrawer(restoreFocus = true) {
+      if (!activeDrawer) return;
+      document.querySelector(`#${activeDrawer}-drawer`).dataset.open = "false";
+      document.querySelector("#prototype-shade").dataset.open = "false";
+      if (lastTrigger) lastTrigger.setAttribute("aria-expanded", "false");
+      document.querySelector(".app").removeAttribute("aria-hidden");
+      const trigger = lastTrigger;
+      activeDrawer = null;
+      lastTrigger = null;
+      if (restoreFocus && trigger) trigger.focus();
+    }
+
+    function trapFocus(event, kind) {
+      const drawer = document.querySelector(`#${kind}-drawer`);
+      const focusable = [...drawer.querySelectorAll('button:not([disabled]), textarea, [href], [tabindex]:not([tabindex="-1"])')].filter(item => item.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+
+    function togglePlayback() {
+      if (playbackState === "preparing" || playbackState === "unavailable") return;
+      playbackState = playbackState === "playing" ? "ready" : "playing";
+      if (playbackState === "playing") startProgress(); else stopProgress();
+      updatePulse();
+    }
+
+    function startProgress() {
+      stopProgress();
+      timer = setInterval(() => {
+        progress = Math.min(.99, progress + .004);
+        updatePulse();
+      }, 1000);
+    }
+
+    function stopProgress() { if (timer) clearInterval(timer); timer = null; }
+
+    function updatePulse() {
+      const pulse = document.querySelector("#briefing-pulse");
+      if (!pulse) return;
+      const detail = pulse.querySelector(".pulse-detail");
+      const toggle = document.querySelector("#player-toggle");
+      const status = document.querySelector("#player-status");
+      const playerTitle = document.querySelector("#player-title");
+      const playerDescription = document.querySelector("#player-description");
+      const playerTimeline = document.querySelector("#player-timeline");
+      const spokenNote = document.querySelector("#spoken-note");
+      const talkStrip = document.querySelector("#talk-strip");
+      pulse.dataset.state = playbackState;
+      pulse.style.setProperty("--pulse-progress", progress);
+      document.documentElement.style.setProperty("--progress", progress);
+      document.documentElement.style.setProperty("--player-deg", `${Math.round(progress * 360)}deg`);
+      const elapsed = Math.round(128 * progress);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = String(elapsed % 60).padStart(2, "0");
+      const current = document.querySelector("#current-time");
+      if (current) current.textContent = `${minutes}:${seconds}`;
+
+      if (playbackState === "playing") {
+        detail.textContent = `${Math.max(1, Math.ceil((128 - elapsed) / 60))} min left`;
+        if (status) status.textContent = "Playing your starting brief";
+        if (playerTitle) playerTitle.textContent = "Your judgment stays in the loop.";
+        if (playerDescription) playerDescription.textContent = "Two useful minutes, built from the pattern you chose to carry into CTRL.";
+        if (playerTimeline) playerTimeline.hidden = false;
+        if (spokenNote) { spokenNote.hidden = false; spokenNote.textContent = "“You are not looking for AI to replace judgment. You are looking for the work to move, with humans still holding the consequential calls.”"; }
+        if (talkStrip) talkStrip.hidden = false;
+        if (toggle) { toggle.dataset.playing = "true"; toggle.dataset.busy = "false"; toggle.setAttribute("aria-label", "Pause briefing"); }
+      } else if (playbackState === "preparing") {
+        detail.textContent = "Preparing";
+        if (status) status.textContent = "Making this personal";
+        if (playerTitle) playerTitle.textContent = "Making this personal.";
+        if (playerDescription) playerDescription.textContent = "CTRL is turning your lens into a short starting brief. This usually takes less than a minute.";
+        if (playerTimeline) playerTimeline.hidden = true;
+        if (spokenNote) spokenNote.hidden = true;
+        if (talkStrip) talkStrip.hidden = true;
+        if (toggle) { toggle.dataset.playing = "false"; toggle.dataset.busy = "true"; toggle.setAttribute("aria-label", "Briefing is preparing"); }
+      } else if (playbackState === "unavailable") {
+        detail.textContent = "Not ready";
+        if (status) status.textContent = "Your brief is still forming";
+        if (playerTitle) playerTitle.textContent = "There is nothing honest to play yet.";
+        if (playerDescription) playerDescription.textContent = "Your lens is safe. CTRL will make the brief when it has enough useful context, without filling the gap with generic news.";
+        if (playerTimeline) playerTimeline.hidden = true;
+        if (spokenNote) spokenNote.hidden = true;
+        if (talkStrip) talkStrip.hidden = true;
+        if (toggle) { toggle.dataset.playing = "false"; toggle.dataset.busy = "false"; toggle.setAttribute("aria-label", "Briefing is not ready"); }
+      } else {
+        detail.textContent = "Starting brief · 2 min";
+        if (status) status.textContent = "Ready when you are";
+        if (playerTitle) playerTitle.textContent = "Your judgment stays in the loop.";
+        if (playerDescription) playerDescription.textContent = "Two useful minutes, built from the pattern you chose to carry into CTRL.";
+        if (playerTimeline) playerTimeline.hidden = false;
+        if (spokenNote) { spokenNote.hidden = false; spokenNote.textContent = "“You are not looking for AI to replace judgment. You are looking for the work to move, with humans still holding the consequential calls.”"; }
+        if (talkStrip) talkStrip.hidden = false;
+        if (toggle) { toggle.dataset.playing = "false"; toggle.dataset.busy = "false"; toggle.setAttribute("aria-label", "Play briefing"); }
+      }
+    }
+
+    function setLearningState(state) {
+      const card = document.querySelector("#learning-card");
+      if (!card) return;
+      if (!memoryEnabled && state !== "capture" && state !== "private-done") {
+        card.innerHTML = `
+          <span class="learning-kicker">Private conversation</span>
+          <h3>Talk without adding to memory.</h3>
+          <p>Your reply can help this conversation, but CTRL will not offer it as something to keep.</p>
+          <div class="micro-actions" style="grid-template-columns:1fr 44px"><button class="micro-button" id="private-talk" type="button">Type a reply</button><button class="micro-button voice" id="private-voice" type="button" aria-label="Talk privately">${ICONS.mic}</button></div>
+          <div class="private-state">Voice transcript storage is off. Audio is discarded after processing.</div>`;
+        card.querySelector("#private-talk").addEventListener("click", () => setLearningState("capture"));
+        card.querySelector("#private-voice").addEventListener("click", () => setLearningState("capture"));
+        return;
+      }
+
+      if (state === "capture") {
+        card.innerHTML = `
+          <span class="learning-kicker">Tell CTRL what changed</span>
+          <h3>What should I understand instead?</h3>
+          <p>${memoryEnabled ? "Say it naturally. I will show you exactly what I propose keeping." : "Say it naturally. I can use it for this conversation, but I will not offer it as memory."}</p>
+          <div class="capture-box">
+            <textarea id="capture-text" aria-label="What changed" placeholder="We are moving towards..."></textarea>
+            <div class="capture-actions"><button class="record-button" id="record-button" type="button" aria-label="Start voice reply">${ICONS.mic}</button><button class="use-button" id="use-answer" type="button">Use this</button></div>
+          </div>
+          <button class="skip-button" id="cancel-capture" type="button">Go back</button>`;
+        card.querySelector("#record-button").addEventListener("click", simulateVoice);
+        card.querySelector("#use-answer").addEventListener("click", () => setLearningState(memoryEnabled ? "proposal" : "private-done"));
+        card.querySelector("#cancel-capture").addEventListener("click", () => setLearningState("question"));
+        setTimeout(() => card.querySelector("#capture-text").focus(), 20);
+        return;
+      }
+
+      if (state === "proposal") {
+        card.innerHTML = `
+          <span class="learning-kicker">I heard a useful change</span>
+          <h3>I can remember this.</h3>
+          <p>Nothing becomes durable until you choose.</p>
+          <div class="memory-proposal"><strong>Proposed memory</strong><blockquote>“We are moving to a hybrid team, with agents taking repeatable work and humans owning judgment.”</blockquote><div class="proposal-actions"><button id="keep-memory" type="button">Keep it</button><button id="edit-memory" type="button">Edit</button><button id="reject-memory" type="button">Not this</button></div></div>`;
+        card.querySelector("#keep-memory").addEventListener("click", () => setLearningState("saved"));
+        card.querySelector("#edit-memory").addEventListener("click", () => setLearningState("capture"));
+        card.querySelector("#reject-memory").addEventListener("click", () => setLearningState("skipped"));
+        return;
+      }
+
+      if (state === "private-done") {
+        card.innerHTML = `<span class="learning-kicker">Conversation only</span><h3>Understood for this briefing.</h3><p>I used your reply here, but did not add it to memory or change your long-term profile.</p><div class="private-state">Nothing durable was saved. You can change this in Settings whenever you want.</div>`;
+        return;
+      }
+
+      if (state === "saved") {
+        card.innerHTML = `
+          <span class="learning-kicker">Current, not complete</span>
+          <h3>That is enough for today.</h3>
+          <div class="saved-state"><span class="saved-mark">✓</span><div><strong>Kept in your CTRL memory</strong><p>You can review or remove it in Settings.</p></div><button class="undo-button" id="undo-memory" type="button">Undo</button></div>`;
+        card.querySelector("#undo-memory").addEventListener("click", () => setLearningState("proposal"));
+        return;
+      }
+
+      if (state === "confirmed") {
+        card.innerHTML = `<span class="learning-kicker">Still current</span><h3>Good. I will keep using that lens.</h3><p>No new fact was added. You simply confirmed what CTRL already knew.</p><div class="saved-state"><span class="saved-mark">✓</span><div><strong>One useful check, done</strong><p>I will not ask another enrichment question today.</p></div></div>`;
+        return;
+      }
+
+      if (state === "skipped") {
+        card.innerHTML = `<span class="learning-kicker">Nothing saved</span><h3>Leave it with me for now.</h3><p>Skipping does not count against you, and CTRL will not use this as a negative signal.</p><button class="skip-button" id="ask-again" type="button">Show the question again</button>`;
+        card.querySelector("#ask-again").addEventListener("click", () => setLearningState("question"));
+        return;
+      }
+
+      card.innerHTML = `
+        <span class="learning-kicker">One thing before you go</span>
+        <h3>Are you still betting on a hybrid team?</h3>
+        <p>This is worth checking because it changes what CTRL recommends about agents, hiring and proof.</p>
+        <div class="micro-actions"><button class="micro-button" id="answer-yes" type="button">Yes</button><button class="micro-button" id="answer-changed" type="button">Changed</button><button class="micro-button voice" id="answer-voice" type="button" aria-label="Tell CTRL what changed">${ICONS.mic}</button></div>
+        <button class="skip-button" id="skip-question" type="button">Not now</button>`;
+      card.querySelector("#answer-yes").addEventListener("click", () => setLearningState("confirmed"));
+      card.querySelector("#answer-changed").addEventListener("click", () => setLearningState("capture"));
+      card.querySelector("#answer-voice").addEventListener("click", () => setLearningState("capture"));
+      card.querySelector("#skip-question").addEventListener("click", () => setLearningState("skipped"));
+    }
+
+    function simulateVoice(event) {
+      const button = event.currentTarget;
+      const textarea = document.querySelector("#capture-text");
+      const recording = button.dataset.recording === "true";
+      if (recording) {
+        button.dataset.recording = "false";
+        button.setAttribute("aria-label", "Start voice reply");
+        textarea.value = "We are moving to a hybrid team. Agents should take repeatable work, but people still own judgment.";
+        textarea.focus();
+      } else {
+        button.dataset.recording = "true";
+        button.setAttribute("aria-label", "Stop voice reply");
+        textarea.placeholder = "Listening... tap the microphone when you are done";
+      }
+    }
+
+    boot().catch(error => {
+      document.body.innerHTML = `<main style="padding:40px;color:#eee;background:#06080b;min-height:100vh;font-family:system-ui"><h1>Preview could not load</h1><p>${error.message}</p></main>`;
+    });
+  </script>
+</body>
+</html>

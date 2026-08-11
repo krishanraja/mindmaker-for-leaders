@@ -1,29 +1,34 @@
-import React, { useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useVisualViewport } from "@/hooks/useVisualViewport";
-import { X, Play, Pause, RefreshCw, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useBriefingContext } from "@/contexts/BriefingContext";
-import { useSubmitFeedback, useGenerateBriefing, usePollAudio } from "@/hooks/useBriefing";
-import { usePinnedDecision } from "@/hooks/usePinnedDecision";
-import { supabase } from "@/integrations/supabase/client";
-import { useWatchlist } from "@/hooks/useWatchlist";
-import { FRAMEWORK_TAG_CONFIG, BRIEFING_TYPES } from "@/types/briefing";
-import type { PlaybackSpeed, FrameworkTag } from "@/types/briefing";
-import { haptics } from "@/lib/haptics";
-import { SegmentCard } from "./SegmentCard";
-import { SeedBeatsPrompt } from "./SeedBeatsPrompt";
-import { BriefingVoiceButton } from "./BriefingVoiceButton";
+import { useEffect, useRef } from 'react';
+import { ChevronDown, Loader2, Pause, Play, RefreshCw, X } from 'lucide-react';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
+import { useBriefingContext } from '@/contexts/BriefingContext';
+import { useSubmitFeedback, usePollAudio } from '@/hooks/useBriefing';
+import { usePinnedDecision } from '@/hooks/usePinnedDecision';
+import { useWatchlist } from '@/hooks/useWatchlist';
+import { useDevice } from '@/hooks/useDevice';
+import { BRIEFING_TYPES } from '@/types/briefing';
+import type { PlaybackSpeed } from '@/types/briefing';
+import type { PendingVerification } from '@/types/memory';
+import { haptics } from '@/lib/haptics';
+import { cn } from '@/lib/utils';
+import { SegmentCard } from './SegmentCard';
+import { BriefingConversation } from './BriefingConversation';
+import { BriefingLearningPrompt } from './BriefingLearningPrompt';
 
 const SPEEDS: PlaybackSpeed[] = [1, 1.25, 1.5, 2];
 
 function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
+  if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.floor(seconds % 60);
+  return `${minutes}:${remainder.toString().padStart(2, '0')}`;
 }
 
-export function BriefingSheet() {
+interface BriefingSheetProps {
+  learningPromptOverride?: PendingVerification;
+}
+
+export function BriefingSheet({ learningPromptOverride }: BriefingSheetProps = {}) {
   const {
     briefing,
     setBriefing,
@@ -35,25 +40,16 @@ export function BriefingSheet() {
     seek,
     setSpeed,
   } = useBriefingContext();
-
+  const { isMobile } = useDevice();
   const { submitFeedback } = useSubmitFeedback();
-  const { regenerate, generating: regenerating } = useGenerateBriefing();
   const { matchesHeadline } = usePinnedDecision();
   const { watchedCompanies, watchCompany } = useWatchlist();
-  const { keyboardHeight } = useVisualViewport();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Audio is built on demand: the briefing row carries the script + segments,
-  // but the voice MP3 is synthesized separately. Opening the player means
-  // "play it", so we make sure the audio exists and start it - no second tap.
   const { audioUrl, polling, synthError, start, clearError } = usePollAudio();
   const synthStartedFor = useRef<string | null>(null);
   const wantAutoplay = useRef(false);
-  const preparingAudio = polling && !!briefing && !briefing.audio_url;
+  const preparingAudio = polling && Boolean(briefing && !briefing.audio_url);
 
-  // On open: intend to play. If the audio is already built, it plays; if not,
-  // kick synthesis once for this briefing and play the moment it lands.
   useEffect(() => {
     if (!isSheetOpen || !briefing) return;
     wantAutoplay.current = true;
@@ -63,26 +59,20 @@ export function BriefingSheet() {
       clearError();
       start(briefing.id);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSheetOpen, briefing?.id, briefing?.audio_url]);
+  }, [briefing, clearError, isSheetOpen, start]);
 
-  // Synthesis resolved -> attach the fresh URL so the <audio> element mounts.
   useEffect(() => {
     if (audioUrl && briefing && audioUrl !== briefing.audio_url) {
       setBriefing({ ...briefing, audio_url: audioUrl });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioUrl]);
+  }, [audioUrl, briefing, setBriefing]);
 
-  // Audio is ready and we opened with intent to listen -> play once.
   useEffect(() => {
-    if (isSheetOpen && briefing?.audio_url && wantAutoplay.current) {
-      wantAutoplay.current = false;
-      const t = setTimeout(() => play(), 80);
-      return () => clearTimeout(t);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [briefing?.audio_url, isSheetOpen]);
+    if (!isSheetOpen || !briefing?.audio_url || !wantAutoplay.current) return;
+    wantAutoplay.current = false;
+    const timer = setTimeout(() => play(), 80);
+    return () => clearTimeout(timer);
+  }, [briefing?.audio_url, isSheetOpen, play]);
 
   const retryAudio = () => {
     if (!briefing) return;
@@ -92,221 +82,172 @@ export function BriefingSheet() {
     start(briefing.id);
   };
 
-  // Auto-scroll to current segment
-  useEffect(() => {
-    const el = segmentRefs.current[playback.currentSegmentIndex];
-    if (el && scrollRef.current) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, [playback.currentSegmentIndex]);
-
   const handleSpeedToggle = () => {
-    const currentIdx = SPEEDS.indexOf(playback.speed);
-    const next = SPEEDS[(currentIdx + 1) % SPEEDS.length];
-    setSpeed(next);
+    const currentIndex = SPEEDS.indexOf(playback.speed);
+    setSpeed(SPEEDS[(currentIndex + 1) % SPEEDS.length]);
     haptics.light();
   };
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = (e.clientX - rect.left) / rect.width;
-    seek(pct * playback.duration);
-  };
-
-  const handleRegenerate = async () => {
-    const newId = await regenerate();
-    if (newId) {
-      // Fetch the fresh briefing and update context
-      const { data } = await supabase
-        .from("briefings")
-        .select("*")
-        .eq("id", newId)
-        .maybeSingle();
-      if (data) setBriefing(data);
-    }
+  const handleProgressClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    seek(((event.clientX - rect.left) / rect.width) * playback.duration);
   };
 
   const handleFeedback = (
     segmentIndex: number,
-    payload: { reaction: "useful" | "not_useful"; lens_item_id?: string | null; dwell_ms?: number },
+    payload: { reaction: 'useful' | 'not_useful'; lens_item_id?: string | null; dwell_ms?: number },
   ) => {
-    if (briefing) {
-      submitFeedback(briefing.id, segmentIndex, payload.reaction, {
-        lensItemId: payload.lens_item_id ?? null,
-        dwellMs: payload.dwell_ms,
-      });
-      haptics.light();
-    }
+    if (!briefing) return;
+    submitFeedback(briefing.id, segmentIndex, payload.reaction, {
+      lensItemId: payload.lens_item_id ?? null,
+      dwellMs: payload.dwell_ms,
+    });
+    haptics.light();
   };
-
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
 
   const progress = playback.duration > 0
     ? (playback.currentTime / playback.duration) * 100
     : 0;
+  const typeConfig = briefing
+    ? BRIEFING_TYPES.find((type) => type.type === (briefing.briefing_type || 'default'))
+    : null;
+  const title = typeConfig?.type === 'default'
+    ? "Today's brief"
+    : typeConfig?.label || 'Your brief';
 
   return (
-    <AnimatePresence>
-      {isSheetOpen && briefing && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSheetOpen(false)}
-            className="fixed inset-0 z-40 bg-black/50"
-          />
+    <Sheet open={Boolean(isSheetOpen && briefing)} onOpenChange={(open) => { if (!open) setSheetOpen(false); }}>
+      <SheetContent
+        side={isMobile ? 'bottom' : 'right'}
+        onCloseAutoFocus={(event) => {
+          const trigger = document.querySelector<HTMLButtonElement>('button[data-briefing-trigger]');
+          if (!trigger) return;
+          event.preventDefault();
+          window.requestAnimationFrame(() => trigger.focus());
+        }}
+        className={cn(
+          'flex gap-0 overflow-hidden border-border bg-background p-0 [&>button]:hidden',
+          isMobile
+            ? 'h-[calc(100svh-12px)] w-full max-w-none rounded-t-[22px] border-t'
+            : 'h-full w-[462px] max-w-[min(462px,100vw)] border-l sm:max-w-[462px]',
+        )}
+      >
+        {briefing && (
+          <div className="flex h-full min-h-0 w-full flex-col">
+            <header className="flex min-h-[58px] flex-shrink-0 items-center justify-between border-b border-border px-4 py-2.5">
+              <div className="min-w-0">
+                <p className="font-ctrl-system text-[8.5px] font-semibold uppercase tracking-[0.18em] text-accent">CTRL / Briefing</p>
+                <SheetTitle className="font-ctrl-display mt-1 truncate text-[15px] font-semibold text-foreground">{title}</SheetTitle>
+                <SheetDescription className="sr-only">Listen to your personalized briefing, ask a question, and verify one useful piece of context.</SheetDescription>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSheetOpen(false)}
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground"
+                aria-label="Close briefing"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </header>
 
-          {/* Sheet */}
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: keyboardHeight > 0 ? -keyboardHeight : 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 35, stiffness: 400, mass: 0.8 }}
-            className="fixed bottom-0 left-0 right-0 z-50 h-[85svh] bg-background rounded-t-2xl border-t border-border shadow-2xl flex flex-col"
-          >
-            {/* Handle */}
-            <div className="flex items-center justify-center pt-2 pb-1">
-              <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
-            </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                  {today}
-                </p>
-                <h2 className="text-lg font-semibold text-foreground">
-                  {(() => {
-                    const typeConfig = BRIEFING_TYPES.find(t => t.type === (briefing.briefing_type || 'default'));
-                    return typeConfig?.type === 'default' ? "Today's briefing" : typeConfig?.label || "Today's briefing";
-                  })()}
-                </h2>
-                {briefing.custom_context && (
-                  <p className="text-[10px] text-muted-foreground/70 italic mt-0.5 line-clamp-1">
-                    {briefing.custom_context}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 scrollbar-hide sm:px-4 sm:py-4">
+              <div className="space-y-3">
+                <section className="relative overflow-hidden rounded-[22px] border border-border bg-[radial-gradient(circle_at_50%_12%,hsl(var(--accent)/0.12),transparent_42%),linear-gradient(145deg,hsl(var(--card)),hsl(var(--background)))] px-4 py-4 text-center">
+                  <p className="font-ctrl-system text-[8.5px] uppercase tracking-[0.18em] text-muted-foreground">
+                    {preparingAudio ? 'Preparing your audio' : playback.isPlaying ? 'Playing your brief' : 'Your audio brief'}
                   </p>
+
+                  <div className="relative mx-auto mt-3 grid h-[68px] w-[68px] place-items-center rounded-full border border-accent/20 bg-background/80 shadow-[0_0_36px_-18px_hsl(var(--accent))]">
+                    <span
+                      className="absolute inset-1 rounded-full border border-accent/25"
+                      style={{ background: `conic-gradient(hsl(var(--accent)) ${Math.max(progress, 4)}%, transparent 0)` }}
+                      aria-hidden="true"
+                    />
+                    <button
+                      type="button"
+                      onClick={preparingAudio ? undefined : togglePlay}
+                      disabled={preparingAudio}
+                      aria-label={preparingAudio ? 'Preparing your audio' : playback.isPlaying ? 'Pause briefing' : 'Play briefing'}
+                      className="relative z-10 grid h-[54px] w-[54px] place-items-center rounded-full border border-accent/20 bg-card text-accent transition-transform active:scale-95 disabled:cursor-wait"
+                    >
+                      {preparingAudio ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : playback.isPlaying ? (
+                        <Pause className="h-5 w-5 fill-current" />
+                      ) : (
+                        <Play className="ml-0.5 h-5 w-5 fill-current" />
+                      )}
+                    </button>
+                  </div>
+
+                  <h3 className="font-ctrl-display mt-3 text-[20px] font-semibold leading-tight text-foreground">Your judgment stays in the loop.</h3>
+                  <p className="mx-auto mt-1 max-w-[34ch] text-[11.5px] leading-relaxed text-muted-foreground">
+                    A useful few minutes, shaped around what you are actually trying to move.
+                  </p>
+
+                  {synthError && (
+                    <button
+                      type="button"
+                      onClick={retryAudio}
+                      className="mx-auto mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-orange-400/25 bg-orange-400/[0.06] px-3 text-[11px] font-semibold text-orange-300"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" /> Try the audio again
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    className="group mt-1 h-11 w-full cursor-pointer py-5"
+                    onClick={handleProgressClick}
+                    aria-label={`Seek briefing, ${formatTime(playback.currentTime)} of ${formatTime(playback.duration)}`}
+                  >
+                    <div className="h-1 overflow-hidden rounded-full bg-muted">
+                      <div className="h-full rounded-full bg-gradient-to-r from-pink-500 via-orange-400 to-accent transition-[width] duration-150" style={{ width: `${progress}%` }} />
+                    </div>
+                  </button>
+                  <div className="font-ctrl-system flex justify-between text-[8.5px] text-muted-foreground">
+                    <span>{formatTime(playback.currentTime)}</span>
+                    <button type="button" onClick={handleSpeedToggle} className="-my-4 grid h-11 w-11 place-items-center rounded-lg text-[9px] font-semibold text-muted-foreground transition-colors hover:bg-white/[0.04] hover:text-foreground" aria-label={`Playback speed ${playback.speed} times`}>{playback.speed}x</button>
+                    <span>{formatTime(playback.duration)}</span>
+                  </div>
+                </section>
+
+                {!preparingAudio && !synthError && <BriefingConversation briefingId={briefing.id} />}
+                <BriefingLearningPrompt
+                  briefingId={briefing.id}
+                  promptOverride={learningPromptOverride}
+                  memoryEnabledOverride={learningPromptOverride ? true : undefined}
+                />
+
+                {briefing.segments.length > 0 && (
+                  <details className="group rounded-[18px] border border-border bg-card/40">
+                    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+                      <span>Briefing notes · {briefing.segments.length}</span>
+                      <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="space-y-3 border-t border-border px-2 py-3">
+                      {briefing.segments.map((segment, index) => (
+                        <SegmentCard
+                          key={`${briefing.id}-${index}`}
+                          segment={segment}
+                          index={index}
+                          isActive={index === playback.currentSegmentIndex}
+                          onFeedback={(payload) => handleFeedback(index, payload)}
+                          onWatchCompany={watchCompany}
+                          watchedCompanies={watchedCompanies}
+                          briefingId={briefing.id}
+                          relevantToPinnedDecision={matchesHeadline(segment.headline)}
+                        />
+                      ))}
+                    </div>
+                  </details>
                 )}
               </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRegenerate}
-                  disabled={regenerating}
-                  title="Regenerate briefing"
-                >
-                  <RefreshCw className={`h-4 w-4 ${regenerating ? "animate-spin" : ""}`} />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => setSheetOpen(false)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <div className="h-[env(safe-area-inset-bottom,0px)]" />
             </div>
-
-            {/* Player controls (fixed) */}
-            <div className="px-4 py-4 border-b border-border flex-shrink-0">
-              {synthError && (
-                <button
-                  type="button"
-                  onClick={retryAudio}
-                  className="mb-3 flex w-full items-center justify-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[12px] font-medium text-amber-500 transition-colors hover:bg-amber-500/15"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Couldn&apos;t load the audio - tap to try again.
-                </button>
-              )}
-              {/* Play button + speed */}
-              <div className="flex items-center justify-center gap-4 mb-3">
-                <button
-                  onClick={handleSpeedToggle}
-                  className="px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground hover:bg-muted/80 transition-colors min-w-[40px]"
-                >
-                  {playback.speed}x
-                </button>
-
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={preparingAudio ? undefined : togglePlay}
-                  disabled={preparingAudio}
-                  aria-label={preparingAudio ? "Getting your audio ready" : playback.isPlaying ? "Pause" : "Play"}
-                  className="w-14 h-14 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-lg shadow-accent/25 disabled:opacity-70"
-                >
-                  {preparingAudio ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : playback.isPlaying ? (
-                    <Pause className="w-6 h-6 fill-current" />
-                  ) : (
-                    <Play className="w-6 h-6 fill-current ml-0.5" />
-                  )}
-                </motion.button>
-
-                <BriefingVoiceButton />
-              </div>
-
-              {preparingAudio && (
-                <p className="mb-2 text-center text-[11px] text-muted-foreground">
-                  Getting your audio ready...
-                </p>
-              )}
-
-              {/* Progress bar */}
-              <div
-                className="w-full h-2 bg-muted rounded-full cursor-pointer relative group"
-                onClick={handleProgressClick}
-              >
-                <div
-                  className="h-full bg-accent rounded-full transition-all duration-100"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-
-              {/* Timestamp */}
-              <div className="flex justify-between mt-1">
-                <span className="text-xs text-muted-foreground">
-                  {formatTime(playback.currentTime)}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {formatTime(playback.duration)}
-                </span>
-              </div>
-            </div>
-
-            {/* Segment cards (scrollable) */}
-            <div
-              ref={scrollRef}
-              className="flex-1 min-h-0 overflow-y-auto scrollbar-hide overscroll-contain px-2 py-4 space-y-3"
-            >
-              {/* Cold-start seed prompt: only renders for users without enough */}
-              {/* declared interests. Self-manages dismissal via localStorage. */}
-              <SeedBeatsPrompt hidden={!isSheetOpen} />
-
-              {briefing.segments.map((segment, index) => (
-                <div
-                  key={index}
-                  ref={(el) => { segmentRefs.current[index] = el; }}
-                >
-                  <SegmentCard
-                    segment={segment}
-                    index={index}
-                    isActive={index === playback.currentSegmentIndex}
-                    onFeedback={(payload) => handleFeedback(index, payload)}
-                    onWatchCompany={watchCompany}
-                    watchedCompanies={watchedCompanies}
-                    briefingId={briefing.id}
-                    relevantToPinnedDecision={matchesHeadline(segment.headline)}
-                  />
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }

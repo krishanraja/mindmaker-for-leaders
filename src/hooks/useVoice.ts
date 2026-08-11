@@ -6,6 +6,8 @@ import type { PendingTranscriptReview } from '@/types/voice'
 interface UseVoiceOptions {
   maxDuration?: number // in seconds
   onTranscript?: (transcript: string) => void | Promise<void>
+  /** Store the raw recording for later product use. Defaults to true. */
+  persistRecording?: boolean
   /**
    * When true, transcription result is held in `pendingReview` until `confirmPendingTranscript` runs.
    * Use with TranscriptReviewPanel for editable preview on critical flows.
@@ -47,7 +49,7 @@ interface UseVoiceReturn {
 }
 
 export function useVoice(options: UseVoiceOptions = {}): UseVoiceReturn {
-  const { maxDuration = 120, deferTranscriptCallback = false } = options
+  const { maxDuration = 120, deferTranscriptCallback = false, persistRecording = true } = options
 
   const onTranscriptRef = useRef(options.onTranscript)
   useEffect(() => {
@@ -187,10 +189,12 @@ export function useVoice(options: UseVoiceOptions = {}): UseVoiceReturn {
             console.log(`[VOICE] Transcribed via ${result.provider}`, result.asr_model ?? '')
           }
 
-          const sessionId = crypto.randomUUID()
-          uploadVoiceRecordingToStorage(audioBlob, sessionId, 'voice-capture').catch((err) =>
-            console.warn('Audio storage failed (non-blocking):', err),
-          )
+          if (persistRecording) {
+            const sessionId = crypto.randomUUID()
+            uploadVoiceRecordingToStorage(audioBlob, sessionId, 'voice-capture').catch((err) =>
+              console.warn('Audio storage failed (non-blocking):', err),
+            )
+          }
 
           if (deferTranscriptCallback) {
             setPendingReview({
@@ -313,7 +317,7 @@ export function useVoice(options: UseVoiceOptions = {}): UseVoiceReturn {
       setErrorKind(kind)
       cleanup()
     }
-  }, [maxDuration, cleanup, deferTranscriptCallback])
+  }, [maxDuration, cleanup, deferTranscriptCallback, persistRecording])
 
   const resetRecording = useCallback(() => {
     cleanup()

@@ -19,7 +19,6 @@ import { DecisionRunning } from '@/components/operator/decision/DecisionRunning'
 import { DecisionResultView } from '@/components/operator/decision/DecisionResultView';
 import { DecisionAnatomy, SwitcherSheet } from '@/components/operator/decision/DecisionAnatomy';
 import { DecisionDemo } from '@/components/operator/decision/DecisionDemo';
-import { CriticalCallStep } from '@/components/operator/decision/CriticalCallStep';
 import { ResolveDecisionSheet } from '@/components/operator/decision/ResolveDecisionSheet';
 import { DecisionResolvedMoment } from '@/components/operator/decision/DecisionResolvedMoment';
 import { nextActiveCase } from '@/components/operator/decision/resolveFlow';
@@ -90,12 +89,6 @@ export function PressureTestPanel({
   // Now | History. The toggle only shows in the restful states; a fresh weigh
   // always snaps back to "now" so the new decision is what you land on.
   const [view, setView] = useState<'now' | 'history'>('now');
-
-  // B6 critical-evaluation gate: force the user's own call on a load-bearing claim
-  // before revealing the recommendation. Resets when the active case changes.
-  const [callDone, setCallDone] = useState(false);
-  const handleCallDone = useCallback(() => setCallDone(true), []);
-  useEffect(() => { setCallDone(false); }, [engine.decisionCase?.id]);
 
   // The "bank this call" closure moment on a freshly-weighed result.
   const [banking, setBanking] = useState(false);
@@ -226,7 +219,6 @@ export function PressureTestPanel({
     setView('now');
     setComposing(false);
     setStatement('');
-    setCallDone(false);
     autoLoadedRef.current = true; // the moment owns the surface; block the auto-load race
     engine.reset();
     setResolvedMoment({ caseId: c.id, statement: c.title || c.statement, playedOut });
@@ -253,9 +245,6 @@ export function PressureTestPanel({
 
   const hasActive = Boolean(engine.decisionCase) && (engine.isRunning || engine.isComplete || engine.decisionCase?.stage === 'error');
   const isErrored = engine.decisionCase?.stage === 'error';
-  // The critical-call gate only fires for a freshly-weighed case (justRan), so
-  // reviewing an existing decision opens straight into its anatomy.
-  const needsCall = justRan && engine.isComplete && engine.claims.some((c) => c.is_load_bearing) && !callDone;
   const activeStatement = engine.decisionCase?.title || engine.decisionCase?.statement || statement;
 
   // ---- pick the one "Now" surface in focus -------------------------------------
@@ -295,8 +284,6 @@ export function PressureTestPanel({
         isDesktop={isDesktop}
       />
     );
-  } else if (hasActive && needsCall) {
-    surface = <CriticalCallStep engine={engine} onDone={handleCallDone} />;
   } else if (hasActive && engine.isComplete && justRan) {
     // Fresh run: the focused result + closure (bank), then back to the anatomy.
     surface = <DecisionResultView engine={engine} onBack={newBlank} onBank={bankCall} banked={banked} banking={banking} isDesktop={isDesktop} />;
@@ -340,7 +327,6 @@ export function PressureTestPanel({
     && !engine.starting
     && !resolvedMoment
     && !(hasActive && (engine.isRunning || isErrored))
-    && !needsCall
     && !(hasActive && engine.isComplete && justRan);
   const effectiveView: 'now' | 'history' = showToggle && view === 'history' ? 'history' : 'now';
 
@@ -376,8 +362,7 @@ export function PressureTestPanel({
             type="button"
             onClick={() => { setView(v); haptics.light(); }}
             className={cn(
-              'flex-1 rounded-lg font-bold transition-colors',
-              compact ? 'px-3 py-1 text-[12px]' : 'px-3 py-1.5 text-[12px]',
+              'min-h-11 flex-1 rounded-lg px-3 text-[12px] font-bold transition-colors',
               on ? 'bg-gradient-to-b from-accent to-accent text-accent-foreground shadow-[0_8px_18px_-10px_hsl(var(--accent)/0.6)]' : 'text-muted-foreground hover:text-foreground',
             )}
           >

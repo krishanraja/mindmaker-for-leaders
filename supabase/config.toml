@@ -31,6 +31,9 @@ verify_jwt = true
 [functions.ai-assessment-chat]
 verify_jwt = true
 
+[functions.blind-spot]
+verify_jwt = true
+
 # User data functions - require auth
 [functions.create-leader-assessment]
 verify_jwt = true
@@ -107,6 +110,9 @@ verify_jwt = true
 [functions.synthesize-briefing]
 verify_jwt = true
 
+[functions.briefing-conversation]
+verify_jwt = true
+
 # === COMPLIANCE FUNCTIONS ===
 [functions.delete-account]
 verify_jwt = true
@@ -116,6 +122,24 @@ verify_jwt = false
 
 # Called by pg_cron (no JWT) to send the daily briefing email.
 [functions.send-daily-briefing]
+verify_jwt = false
+
+[functions.subscribe-briefing]
+verify_jwt = false
+
+[functions.unsubscribe-briefing]
+verify_jwt = false
+
+[functions.generate-result]
+verify_jwt = false
+
+[functions.track-fork]
+verify_jwt = false
+
+[functions.enrich-profile]
+verify_jwt = false
+
+[functions.send-result-email]
 verify_jwt = false
 
 # Called by pg_cron with the service role key; rejects everything else.
