@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-10 against `abd82b21639e9f0948477204f08c671930c2d8c7`
+Last verified: 2026-08-11 against application baseline `0f20baf2437667c3719c94f1c16d04bb08b42023`
 
 This directory is the shortest reliable path from product intent to safe operation. It describes CTRL as it exists now. Git history and the dated project records explain how it arrived here.
 
@@ -11,6 +11,7 @@ This directory is the shortest reliable path from product intent to safe operati
 | Job | Start here | Then read |
 |---|---|---|
 | Understand the product | [Product](./product.md) | [Features](./features.md) |
+| Market or sell CTRL | [Commercial authority](./commercial.md) | [Marketing and sales instructions](../agent-instructions/marketing-sales.md) |
 | Change the interface | [Product](./product.md) | [Architecture](./architecture.md), [frontend instructions](../agent-instructions/frontend.md) |
 | Resume material interface work | [Design delivery state](./design-state.md) | [Product](./product.md), [Architecture](./architecture.md) |
 | Change data or AI behavior | [Architecture](./architecture.md) | [Supabase instructions](../agent-instructions/supabase.md), [release guide](../../project-documentation/REPLICATION_GUIDE.md) |
@@ -24,7 +25,7 @@ When two sources disagree, use this order:
 
 1. Executable code, database readback, deployment readback, and `src/router.tsx`.
 2. `public/.well-known/product.json` for machine-readable product and pricing truth.
-3. This `docs/current/` set.
+3. This `docs/current/` set. [Commercial authority](./commercial.md) owns human-readable marketing and sales claims.
 4. [`project-documentation/DECISIONS_LOG.md`](../../project-documentation/DECISIONS_LOG.md) for accepted decisions.
 5. Subsystem references, compliance records, and runbooks.
 6. Dated delivery notes, prototypes, roadmaps, and Git history.
@@ -34,6 +35,7 @@ Code wins when prose drifts. Correct the prose in the same change.
 ## Current documents
 
 - [Product](./product.md): user, promise, value loop, experience laws, and non-goals.
+- [Commercial authority](./commercial.md): buyer, offer, proof, message, objections, claims, and freshness boundaries.
 - [Architecture](./architecture.md): system boundaries, data flows, trust boundaries, providers, and deployment shape.
 - [Features](./features.md): live, supporting, nested, and retired capabilities.
 - [Release state](./release-state.md): exact production baseline, verification evidence, and known debt.

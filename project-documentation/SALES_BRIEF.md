@@ -1,5 +1,7 @@
 # CTRL sales brief
 
+> **Historical commercial reference, not current guidance.** Use [`../docs/current/commercial.md`](../docs/current/commercial.md) for current buyer, offer, proof, and objection claims.
+
 Last reconciled: 2026-08-10
 
 ## Product

@@ -1,6 +1,10 @@
 # CTRL branding
 
-Last reconciled: 2026-08-10
+Status: Current brand reference
+Owner: Mindmaker
+Last verified: 2026-08-11
+
+Commercial claims and approved outward-facing copy live in [`../docs/current/commercial.md`](../docs/current/commercial.md). This file owns brand architecture, voice, visual language, and vocabulary.
 
 ## Brand architecture
 

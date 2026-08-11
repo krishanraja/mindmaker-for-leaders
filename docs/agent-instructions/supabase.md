@@ -1,7 +1,7 @@
 # Supabase, data, and AI
 
 Status: Current
-Last verified: 2026-08-10
+Last verified: 2026-08-11
 
 Read [`../current/architecture.md`](../current/architecture.md) and the [`REPLICATION_GUIDE`](../../project-documentation/REPLICATION_GUIDE.md) before changing this boundary.
 

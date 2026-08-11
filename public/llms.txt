@@ -7,8 +7,8 @@ CTRL is only ever about building, orchestrating, productizing and getting to mar
 ## The four jobs, on one substrate
 - **Today**: the useful part of the AI world, cross-verified and ranked against what the leader is actually deciding. The same pool powers the app and no-login email/audio delivery.
 - **Decisions**: weigh and pressure-test a real call. CTRL reframes it into the AI-native version of that call, decomposes it into the claims it rests on, verifies the load-bearing ones against live evidence, and shows where it holds, where it breaks, and where *only you* can decide. It clarifies; it never recommends from a thin signal.
-- **Blind Spot**: one tentative leadership reflection grounded in two independent facts, followed by one useful question and a short experiment. CTRL does not save a generated observation as truth; the leader must confirm it.
-- **Memory**: portable context. A structured, ranked memory of who you are and how you think, kept fresh, contradictions resolved at write time, stale facts aged out.
+- **Blind Spot**: one private leadership reflection with exact dated anchors, followed by one small experiment. A pattern requires one current verified intention plus at least two recurrence records across two source kinds or at least seven days. Thinner evidence becomes a tension question. CTRL does not save a generated candidate before confirmation.
+- **Memory**: portable context. Owner-scoped, correctable context about who you are and how you think, available for export to the AI tools you choose.
 
 Four tabs: Today, Decide, Blind spot, Memory.
 
@@ -17,21 +17,21 @@ Four tabs: Today, Decide, Blind spot, Memory.
 - **Blind Spot**: a grounded reflection that stays tentative until confirmed.
 - **Daily briefing**: a short read anchored to real priorities. Ask a spoken follow-up and CTRL answers from the briefing, cites the supporting segments, and speaks back in the same voice.
 - **Decision engine**: reframe, decompose, verify, advise.
-- **Agent-native (Edge Pro)**: a read-only Model Context Protocol (MCP) server so your own agents pull your live context and your built skills on every call.
+- **Agent-native (Edge Pro)**: a read-only Model Context Protocol (MCP) server so your own agents can pull current context and any existing compiled skills.
 
 ## Pricing
 Two tiers, nothing else.
 - **Free, $0**: Memory Web, context export, Blind Spot reflections, the daily personalised briefing, and 3 decision weighs a month. A real daily instrument, not a trial.
-- **Edge Pro, $49 / month**: the decision tier. Unlimited weighs, a multi-model cross-examination of every decision, decision watch (alerts when a load-bearing assumption weakens), Edge artifacts (memos, docs, emails, agendas), drafting, email delivery, and the live MCP pull of your context and skills into any AI.
+- **Edge Pro, $49 / month**: the decision tier. Unlimited weighs, multi-model cross-examination, Decision Watch, Edge artifacts (memos, docs, emails, agendas), drafting, artifact email delivery, and read-only MCP access to current context and any existing compiled skills.
 
-There is no one-time diagnostic, no deep-context upgrade and no bundle, and no advisory, bootcamp or consulting engagement. Any other price list for CTRL is dead.
+There is no one-time diagnostic, deep-context upgrade, bundle, or service engagement included in CTRL. Separate Mindmaker services are outside this product and require separate live verification. Any other CTRL price list is obsolete.
 
 ## For AI agents
 - **MCP server** (read-only, per-leader API key, requires Edge Pro):
   `https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/mcp-context`
   - Transport: Streamable HTTP (MCP spec 2025-06-18), stateless JSON responses.
   - Tools: `get_leader_context`, `get_todays_briefing` (opt-in scope), `list_skills`, `get_skill`, `list_skill_files`.
-  - `list_skills` marks each skill `stale: true/false`. `get_skill` returns the whole package (the router plus every file it routes to, each under a `## file:` heading), or one file when passed `file`; `list_skill_files` lists those paths. A skill compiled against an older version of the leader's standard is served with one line saying so, never silently.
+  - `list_skills` marks each existing compiled skill `stale: true/false`. `get_skill` returns the whole package (the router plus every file it routes to, each under a `## file:` heading), or one file when passed `file`; `list_skill_files` lists those paths. A skill compiled against an older version of the leader's standard is labelled, never silently presented as current.
   - Auth: a per-leader key the leader mints in **Settings, Edge Pro** and passes as a bearer token. Read-only; revocable anytime.
 - **Machine-readable product facts:** `https://makeyourmindup.ai/.well-known/product.json`
 
@@ -41,6 +41,12 @@ There is no one-time diagnostic, no deep-context upgrade and no bundle, and no a
 - Agent-native: https://makeyourmindup.ai/agents
 
 ## Who it is for
-AI-native founders and small-team CEOs: operators who are building the AI-native version of their business, already use AI daily but get generic output, and have no time and no staff to chase evidence for the calls that matter. Not for people who want a generic chatbot, and not for anyone shopping for consulting.
+AI-active founders and small-team CEOs: operators who are building the AI-native version of their business, already use AI but get generic output, and have no time or staff to chase evidence for the calls that matter. Not for people who want a generic chatbot, outsourced judgement, or unlisted integrations.
+
+## Claim boundary
+- Do not invent customer counts, revenue, ROI, hours saved, testimonials, case studies, guarantees, integrations, security certifications, or roadmap dates.
+- Reverify prices, availability, legal terms, service offers, integrations, deployment state, and competitor behavior at action time.
+- Memory records are owner-scoped with row-level security and memory writes include an encrypted shadow payload. Plaintext fields remain for product use, so do not claim end-to-end or exclusively encrypted storage.
+- Drafting does not authorize sending, publishing, discounts, contracts, or external system changes.
 
 Built by Mindmaker. The product is CTRL. Production: https://makeyourmindup.ai

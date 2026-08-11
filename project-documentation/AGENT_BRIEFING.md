@@ -1,5 +1,7 @@
 # CTRL agent briefing
 
+> **Historical commercial reference, not current guidance.** Use [`../docs/current/commercial.md`](../docs/current/commercial.md) and [`../docs/agent-instructions/marketing-sales.md`](../docs/agent-instructions/marketing-sales.md). This snapshot is retained only for provenance.
+
 Last reconciled: 2026-08-10
 
 Use this file to represent CTRL without additional context. Runtime product facts are also published at `https://makeyourmindup.ai/.well-known/product.json`.

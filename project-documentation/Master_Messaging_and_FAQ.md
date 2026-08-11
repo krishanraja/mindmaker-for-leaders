@@ -1,5 +1,7 @@
 # CTRL master messaging and FAQ
 
+> **Historical commercial reference, not current guidance.** Use [`../docs/current/commercial.md`](../docs/current/commercial.md) and the machine record at [`../public/.well-known/product.json`](../public/.well-known/product.json).
+
 Last reconciled: 2026-08-10
 
 ## Message hierarchy

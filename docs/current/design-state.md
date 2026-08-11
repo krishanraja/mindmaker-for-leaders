@@ -58,7 +58,7 @@ The second rubric pass reached the same winner. No hard-constraint or diversity 
 ### Feasibility evidence
 
 - Existing CTRL tokens already provide deep instrument surfaces, emerald navigation, the Segoe Variable family and a rose challenge signal.
-- Existing Blind Spot confirmation already reloads and re-grounds evidence idempotently; v2 must retain that boundary while replacing flattened strings with owner-scoped anchors.
+- Production Blind Spot confirmation reloads and re-grounds evidence idempotently, using owner-scoped anchors instead of flattened evidence strings.
 - Existing voice capture, transcription, recovery and TTS paths can serve the bounded advisor sheet without a second conversation stack.
 - Existing shared desktop rail, mobile navigation and public preview route can host the deterministic instrument and fixture range.
 
@@ -83,9 +83,9 @@ The second rubric pass reached the same winner. No hard-constraint or diversity 
 | 390×844 | No horizontal or vertical overflow, read, evidence overview and all response controls visible without scrolling |
 | 320×568 | No horizontal overflow, one natural page scroll, experiment and controls clear bottom navigation |
 
-Interactive evidence inspection, all three rejection reasons, stop-after-rejection, experiment acceptance, grounded talk sheet and dialog close behavior passed in the rendered fixture. Browser console returned no warnings or errors. Display, body and metadata resolve to the intended CTRL font roles. Visible controls meet the 44px minimum target in all four viewports. Keyboard focus styling resolves to a 2px light outline; production implementation still requires the full automated keyboard-order and reduced-motion suite.
+Interactive evidence inspection, all three rejection reasons, stop-after-rejection, experiment acceptance, grounded talk sheet and dialog close behavior passed in the rendered fixture. Browser console returned no warnings or errors. Display, body and metadata resolve to the intended CTRL font roles. Visible controls meet the 44px minimum target in all four viewports. Keyboard order, visible focus, reduced motion, wrapping, clipping, contrast, screen-reader names, and bottom-navigation clearance passed in the 37-case production suite.
 
-## Implemented candidate
+## Implemented release
 
 - Deterministic production instrument split from its data container
 - Structured source-ID evidence contract, server-held excerpts, qualification, signing, suppression, and confirmation adjudication

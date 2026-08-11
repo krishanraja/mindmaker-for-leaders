@@ -13,6 +13,7 @@ Repository: `krishanraja/mm-ctrl`
 | Need | Document |
 |---|---|
 | Product, user, and experience | [`docs/current/product.md`](./docs/current/product.md) |
+| Marketing, sales, buyer, and claims | [`docs/current/commercial.md`](./docs/current/commercial.md) |
 | System and data flow | [`docs/current/architecture.md`](./docs/current/architecture.md) |
 | Live, nested, and retired capabilities | [`docs/current/features.md`](./docs/current/features.md) |
 | Production baseline and known debt | [`docs/current/release-state.md`](./docs/current/release-state.md) |

@@ -1,4 +1,6 @@
-# CTRL - Build Roadmap
+# Historical CTRL build roadmap
+
+> **Historical build record, not current guidance.** The rewrite-or-retire decision is resolved: this file is retained for provenance and removed from the current authority path. Start at [`../docs/current/README.md`](../docs/current/README.md).
 
 > **RECONCILIATION BANNER (2026-06-21).** This roadmap is a dated build record (state as of 2026-06-17). Phases 0 to 4 shipped against the prior "clarity engine" positioning and the dark redesign. It predates the LOCKED AI-native positioning (2026-06-19) and the two halves that shipped after: the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Read it as a historical route, not the current plan. The current product/build truth is `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, and `CLAUDE.md`. TODO(founder): decide whether this roadmap is retired or rewritten to the AI-native build sequence.
 

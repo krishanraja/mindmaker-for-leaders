@@ -2,31 +2,28 @@
 
 Status: Current index
 Owner: Mindmaker
-Last verified: 2026-08-10
+Last verified: 2026-08-11
 
 The canonical current set lives in [`docs/current/`](../docs/current/README.md). This directory contains commercial context, operating references, compliance records, decisions, and history.
 
 ## Current authority path
 
 1. [`docs/current/product.md`](../docs/current/product.md)
-2. [`docs/current/architecture.md`](../docs/current/architecture.md)
-3. [`docs/current/features.md`](../docs/current/features.md)
-4. [`docs/current/release-state.md`](../docs/current/release-state.md)
-5. [`REPLICATION_GUIDE.md`](./REPLICATION_GUIDE.md)
-6. [`DECISIONS_LOG.md`](./DECISIONS_LOG.md)
+2. [`docs/current/commercial.md`](../docs/current/commercial.md)
+3. [`docs/current/architecture.md`](../docs/current/architecture.md)
+4. [`docs/current/features.md`](../docs/current/features.md)
+5. [`docs/current/release-state.md`](../docs/current/release-state.md)
+6. [`REPLICATION_GUIDE.md`](./REPLICATION_GUIDE.md)
+7. [`DECISIONS_LOG.md`](./DECISIONS_LOG.md)
 
-Measured in the current repository candidate on 2026-08-11: 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migrations. `npm run docs:check` prevents these quoted counts from drifting silently.
+Measured at the verified application baseline on 2026-08-11: 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migrations. `npm run docs:check` prevents these quoted counts from drifting silently.
 
 ## Commercial and brand context
 
 | Document | Use |
 |---|---|
-| [`AGENT_BRIEFING.md`](./AGENT_BRIEFING.md) | One-read product and go-to-market brief |
-| [`ICP.md`](./ICP.md) | Beachhead user and qualification |
-| [`VALUE_PROP.md`](./VALUE_PROP.md) | Value proposition |
-| [`OUTCOMES.md`](./OUTCOMES.md) | Intended customer outcomes |
-| [`SALES_BRIEF.md`](./SALES_BRIEF.md) | Sales context |
-| [`Master_Messaging_and_FAQ.md`](./Master_Messaging_and_FAQ.md) | Messaging and objections |
+| [`docs/current/commercial.md`](../docs/current/commercial.md) | Single human-readable buyer, offer, proof, messaging, objection, and claim authority |
+| [`docs/agent-instructions/marketing-sales.md`](../docs/agent-instructions/marketing-sales.md) | Safe operating procedure and evaluation set for commercial agents |
 | [`BRANDING.md`](./BRANDING.md) | Brand, voice, typography, and domain rules |
 | [`public/.well-known/product.json`](../public/.well-known/product.json) | Machine-readable product, tier, and price truth |
 
@@ -51,6 +48,14 @@ The following preserve chronology or prior implementation detail. They are not c
 - [`MASTER_INSTRUCTIONS.md`](./MASTER_INSTRUCTIONS.md)
 - [`CTRL-CORPUS.md`](./CTRL-CORPUS.md)
 - [`CTRL-BUILD-ROADMAP.md`](./CTRL-BUILD-ROADMAP.md)
+- [`AGENT_BRIEFING.md`](./AGENT_BRIEFING.md)
+- [`ICP.md`](./ICP.md)
+- [`VALUE_PROP.md`](./VALUE_PROP.md)
+- [`OUTCOMES.md`](./OUTCOMES.md)
+- [`SALES_BRIEF.md`](./SALES_BRIEF.md)
+- [`PURPOSE.md`](./PURPOSE.md)
+- [`Master_Messaging_and_FAQ.md`](./Master_Messaging_and_FAQ.md)
+- [`SPINE.md`](./SPINE.md)
 - [`HISTORY.md`](./HISTORY.md)
 - [`docs/KIT-REDESIGN-SPEC.md`](../docs/KIT-REDESIGN-SPEC.md)
 
