@@ -249,7 +249,7 @@ function TapeMarker({ label, compact, small = false }: { label: string; compact:
 }
 
 function LensVisual({ laneLabel, compact }: { laneLabel: string; compact: boolean }) {
-  const uid = useId().replaceAll(':', '');
+  const uid = useId().replace(/:/g, '');
   const gradient = `handoff-gradient-${uid}`;
   const glow = `handoff-glow-${uid}`;
   const largeGlow = `handoff-large-glow-${uid}`;

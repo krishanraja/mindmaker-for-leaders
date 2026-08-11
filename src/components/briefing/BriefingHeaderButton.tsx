@@ -23,6 +23,16 @@ interface BriefingHeaderButtonProps {
   briefingOverride?: Briefing;
 }
 
+type BriefingLookupClient = {
+  from: (table: 'briefings') => {
+    select: (columns: '*') => {
+      eq: (column: 'id', value: string) => {
+        maybeSingle: () => Promise<{ data: Briefing | null }>;
+      };
+    };
+  };
+};
+
 export function BriefingHeaderButton({ className, briefingOverride }: BriefingHeaderButtonProps) {
   const { briefing: todaysBriefing, refetch } = useTodaysBriefing();
   const { generate, generating, phase } = useGenerateBriefing();
@@ -55,13 +65,16 @@ export function BriefingHeaderButton({ className, briefingOverride }: BriefingHe
     try {
       const briefingId = await generate('default');
       if (!briefingId) return;
-      const { data } = await supabase
+      // `briefings` predates the generated Database type snapshot. Keep the
+      // temporary escape hatch narrow and make the returned row explicit.
+      const briefingLookup = supabase as unknown as BriefingLookupClient;
+      const { data } = await briefingLookup
         .from('briefings')
         .select('*')
         .eq('id', briefingId)
         .maybeSingle();
       if (data) {
-        setBriefing(data as Briefing);
+        setBriefing(data);
         setSheetOpen(true);
       } else {
         await refetch();

@@ -25,13 +25,16 @@ import { useHandoffWelcome } from '@/components/cockpit/HandoffWelcome';
 
 function lookupBuilder() {
   const builder = {
-    select: vi.fn(() => builder),
-    eq: vi.fn(() => builder),
-    limit: vi.fn(() => builder),
+    select: vi.fn(),
+    eq: vi.fn(),
+    limit: vi.fn(),
     maybeSingle: mocks.maybeSingle,
     update: mocks.update,
     insert: mocks.insert,
   };
+  builder.select.mockReturnValue(builder);
+  builder.eq.mockReturnValue(builder);
+  builder.limit.mockReturnValue(builder);
   return builder;
 }
 
