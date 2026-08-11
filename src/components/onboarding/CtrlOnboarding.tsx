@@ -11,6 +11,7 @@ import {
   delayedDecisionExamples,
   extraSelfOptions,
   fallbackResult,
+  sliderValueForKey,
   weekNeedsMeLabel,
   type CompanyFuture,
   type ExtraSelf,
@@ -404,7 +405,14 @@ function SliderStep({
           max="100"
           value={value}
           onChange={(event) => onChange(Number(event.target.value))}
+          onKeyDown={(event) => {
+            const nextValue = sliderValueForKey(value, event.key);
+            if (nextValue === null) return;
+            event.preventDefault();
+            onChange(nextValue);
+          }}
           aria-label={question}
+          aria-valuetext={label}
           className="mymu-range w-full"
         />
         <button type="button" onClick={onContinue} disabled={!touched} className="mt-10 ml-auto block min-h-11 rounded-lg pl-4 font-mymu-serif text-lg text-[#f5f1ea] underline underline-offset-8 transition-opacity disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ec4899]">Next</button>

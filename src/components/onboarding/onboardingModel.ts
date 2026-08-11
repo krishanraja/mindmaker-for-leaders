@@ -52,6 +52,33 @@ export function companyAiLabel(value: number): string {
   return 'Almost everything except the choices';
 }
 
+/**
+ * Keeps the branded range control fully keyboard-operable across browsers.
+ * Returning null lets unrelated keys retain their native behaviour.
+ */
+export function sliderValueForKey(value: number, key: string): number | null {
+  const clamp = (nextValue: number) => Math.min(100, Math.max(0, nextValue));
+
+  switch (key) {
+    case 'ArrowLeft':
+    case 'ArrowDown':
+      return clamp(value - 1);
+    case 'ArrowRight':
+    case 'ArrowUp':
+      return clamp(value + 1);
+    case 'PageDown':
+      return clamp(value - 10);
+    case 'PageUp':
+      return clamp(value + 10);
+    case 'Home':
+      return 0;
+    case 'End':
+      return 100;
+    default:
+      return null;
+  }
+}
+
 const archetypes: Record<ExtraSelf, Record<CompanyFuture, [string, string]>> = {
   think: {
     same: ['The operator who finally has time to think.', 'The leader who decides faster than the room expects.'],
