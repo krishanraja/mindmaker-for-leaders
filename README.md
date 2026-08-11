@@ -123,7 +123,7 @@ npm run build        # production build
 
 Supabase deploy + migration conventions live in [`CLAUDE.md`](./CLAUDE.md). Frontend auto-deploys to Vercel on push to `main`; edge functions deploy via `supabase functions deploy <name>`; migrations apply via the Supabase Management API.
 
-The optional Control Center adapter is disabled unless both `CONTROL_CENTER_URL` and the server-only `CONTROL_CENTER_SERVICE_ROLE_KEY` are present in the CTRL Edge Function secrets. Never expose either as a `VITE_*` variable.
+The optional Control Center adapter is disabled unless both `CONTROL_CENTER_URL` and `CONTROL_CENTER_PUBLISHABLE_KEY` are present in the CTRL Edge Function secrets. The source key is publishable and the Control Center table is RLS read-only for anonymous callers, but it stays server-injected so the cross-system boundary remains explicit. Never expose either as a `VITE_*` variable.
 
 ---
 

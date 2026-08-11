@@ -307,7 +307,10 @@ serve(async (req) => {
       aaKey: Deno.env.get("ARTIFICIALANALYSIS_API_KEY") ?? undefined,
       openaiKey: Deno.env.get("OPENAI_API_KEY") ?? undefined,
       controlCenterUrl: Deno.env.get("CONTROL_CENTER_URL") ?? undefined,
-      controlCenterKey: Deno.env.get("CONTROL_CENTER_SERVICE_ROLE_KEY") ?? undefined,
+      controlCenterKey:
+        Deno.env.get("CONTROL_CENTER_PUBLISHABLE_KEY") ??
+        Deno.env.get("CONTROL_CENTER_SERVICE_ROLE_KEY") ??
+        undefined,
     };
     const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 

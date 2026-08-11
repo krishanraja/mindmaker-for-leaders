@@ -600,8 +600,9 @@ export interface GatherKeys {
   newsApiKey?: string;
   exaKey?: string;
   /**
-   * Optional server-to-server bridge into Mindmaker's existing Control Center
-   * curation corpus. These values must only come from Edge Function secrets.
+   * Optional bridge into Mindmaker's existing Control Center curation corpus.
+   * The key is publishable and limited by Control Center RLS to reads; keeping
+   * it server-injected preserves a single explicit cross-system boundary.
    */
   controlCenterUrl?: string;
   controlCenterKey?: string;

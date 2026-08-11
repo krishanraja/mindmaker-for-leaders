@@ -26,10 +26,25 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const serviceRequest = authHeader === `Bearer ${supabaseServiceKey}`;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     });
+
+    let callerId: string | null = null;
+    if (!serviceRequest) {
+      const token = authHeader.replace(/^Bearer\s+/i, "");
+      const { data: authData, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authData.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      callerId = authData.user.id;
+    }
 
     const { briefing_id } = await req.json();
     if (!briefing_id) throw new Error("briefing_id required");
@@ -42,6 +57,12 @@ serve(async (req) => {
       .single();
 
     if (fetchError || !briefing) throw new Error("Briefing not found");
+    if (!serviceRequest && briefing.user_id !== callerId) {
+      return new Response(JSON.stringify({ error: "Briefing not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Cost-control rate limit per briefing-owner. Each TTS run is paid bytes;
     // 12/min/user bounds cost without throttling normal use. Re-sign-existing

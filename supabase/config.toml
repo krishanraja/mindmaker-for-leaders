@@ -113,6 +113,27 @@ verify_jwt = true
 [functions.briefing-conversation]
 verify_jwt = true
 
+# Authenticated briefing source; force/debug refreshes additionally require the
+# service-role credential inside the handler.
+[functions.live-headlines]
+verify_jwt = true
+
+# Authenticated, user-scoped briefing card generation.
+[functions.card-for-you]
+verify_jwt = true
+
+# Authenticated, user-scoped decision summary delivery.
+[functions.send-decision-summary]
+verify_jwt = true
+
+# Public aggregate only: emits anonymised lane counts, never source responses.
+[functions.portfolio-pulse]
+verify_jwt = false
+
+# Public branded image renderer; accepts only sanitized display text.
+[functions.share-card]
+verify_jwt = false
+
 # === COMPLIANCE FUNCTIONS ===
 [functions.delete-account]
 verify_jwt = true
