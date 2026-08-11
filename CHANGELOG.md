@@ -6,7 +6,7 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
-## [Unreleased] - 2026-08-11 - Blind Spot trusted-advisor instrument
+## [Released] - 2026-08-11 - Blind Spot trusted-advisor instrument
 
 ### Added
 
@@ -22,14 +22,14 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 - The model selects source IDs; the server owns displayed excerpts, labels, dates, independence checks, and content limits.
 - Rejection ends the session and suppresses the same evidence combination until its inputs change. Immediate alternative generation is removed.
 
-### Verified so far
+### Verified
 
 - 870 Vitest tests pass across 53 files, including 16 focused Blind Spot logic and component tests.
 - 37 Blind Spot Playwright checks pass inside the shared production shells at 1440x900, 1280x720, 390x844, and 320x568.
 - Typecheck reports zero new diagnostics against the existing baseline.
 - Standards, documentation checks, changed-file lint, the 2,789-module production build, and 3/3 prerender routes pass.
-- The pgTAP database contract is present; local execution is pending because Docker Desktop is not running.
-- Preview acceptance, reviewed PR, merge, and production release remain separate gates.
+- The pgTAP database contract is present and its setup syntax was corrected before merge. Local execution remains unavailable while Docker Desktop is stopped; the remote management connector is read-only for synthetic inserts.
+- PR #366 merged to `main` at `0f20baf2437667c3719c94f1c16d04bb08b42023`. Supabase migration and Edge Function v3 readbacks pass, Vercel production is READY, and all 37 Blind Spot checks pass on the canonical production host.
 
 ---
 

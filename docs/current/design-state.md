@@ -2,17 +2,17 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against accepted preview commit `4272276a5681064111bbd1efc2793afe47219041` and the locked prototype hash below
+Last verified: 2026-08-11 against production commit `0f20baf2437667c3719c94f1c16d04bb08b42023` and the locked prototype hash below
 
 This is the single resumable state route for material CTRL interface work. Product and architecture truth remain in the other `docs/current/` documents. Accepted product decisions remain in `project-documentation/DECISIONS_LOG.md`.
 
 ## Current phase
 
 - Surface: Blind Spot trusted-advisor redesign
-- Phase: Preview accepted
-- Gate: Reviewed pull request, merge, and separate exact production approval
-- Production implementation: Accepted on Vercel preview from `codex/blind-spot-trusted-advisor`
-- Data mode: Synthetic fixture only
+- Phase: Production verified
+- Gate: Complete
+- Production implementation: Live on `https://makeyourmindup.ai` from `main`
+- Data mode: Synthetic fixture for mutations; production metadata, security, deployment, and rendered-flow readback
 
 ## Design task contract
 
@@ -62,7 +62,7 @@ The second rubric pass reached the same winner. No hard-constraint or diversity 
 - Existing voice capture, transcription, recovery and TTS paths can serve the bounded advisor sheet without a second conversation stack.
 - Existing shared desktop rail, mobile navigation and public preview route can host the deterministic instrument and fixture range.
 
-## Artifact under review
+## Accepted source artifact
 
 - Revision: `BLIND-SPOT-INSTRUMENT-v1`
 - File: `prototypes/blind-spot-instrument-v1.html`
@@ -71,8 +71,8 @@ The second rubric pass reached the same winner. No hard-constraint or diversity 
 - Data: Synthetic and explicitly labelled
 - Approval state: Explicitly approved by Krish on 2026-08-11
 - Locked scope: Blind Spot instrument hierarchy, tension map, evidence treatment, experiment action, correction path, advisor sheet, responsive behavior and CTRL visual system
-- Downstream owner: `krish-build`
-- Next action: Complete PR #366 review, then hold at the exact production approval gate before merging to `main`
+- Downstream owner: Product engineering
+- Next action: Monitor real use and treat any changed evidence, persistence, or responsive contract as a new revision
 
 ### Rendered evidence
 
@@ -101,11 +101,12 @@ Interactive evidence inspection, all three rejection reasons, stop-after-rejecti
 - 37 Blind Spot Playwright checks pass against the freshly built production bundle at 1440x900, 1280x720, 390x844, and 320x568 inside the shared app shells.
 - Typecheck adds zero diagnostics to the 221-diagnostic baseline.
 - Changed-file ESLint, standards, documentation drift, production build, and 3/3 prerender checks pass.
-- GitHub CI and the Vercel preview are green for `4272276a5681064111bbd1efc2793afe47219041`; deployed browser readback and the correction/advisor sheets passed.
-- Krish explicitly accepted that preview on 2026-08-11.
-- Local pgTAP execution is blocked only because Docker Desktop is not running. No remote database was mutated to bypass that local environment constraint.
+- GitHub CI and Vercel are green for the reviewed head; PR #366 is merged and production is READY at `0f20baf2437667c3719c94f1c16d04bb08b42023`.
+- All 37 Blind Spot checks pass on the canonical production host across every fixture state and the four approved viewports. The advisor failure path preserves typed context.
+- Production Supabase readback confirms migration version `20260811165337`, ACTIVE `blind-spot` Edge Function version 3, JWT enforcement, RLS on all three new tables, no anonymous table grants, and service-role-only RPC execution.
+- Krish explicitly accepted the prototype, preview, implementation, and production release on 2026-08-11.
+- Local pgTAP execution is blocked because Docker Desktop is not running, and the remote management connector rejects transactional fixture inserts. No persistent production test rows were created to bypass either boundary.
 
 ## Remaining gates
 
-- Reviewed pull request and merge
-- Separate exact production deployment approval and deployed-revision verification
+- None for this revision. Future product or contract changes require a new approval and release cycle.

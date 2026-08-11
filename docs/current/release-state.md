@@ -10,28 +10,32 @@ Last verified: 2026-08-11
 |---|---|
 | Canonical host | `https://makeyourmindup.ai` |
 | Source branch | `main` |
-| Application baseline | `abd82b21639e9f0948477204f08c671930c2d8c7` |
-| Vercel deployment | READY at the same source revision |
-| Test suite at baseline | 859 tests in 52 files |
+| Application baseline | `0f20baf2437667c3719c94f1c16d04bb08b42023` |
+| Vercel deployment | `dpl_7QrzFfEBYCLgFRn9icCERQSzp2XD`, READY at the same source revision |
+| Test suite at baseline | 870 tests in 53 files |
 | Edge Function directories | 113 excluding `_shared` |
 | Hook files | 78 |
-| SQL migration files | 158 |
+| SQL migration files | 159 |
 
-Repository inventory at this production baseline is 113 Edge Function directories excluding `_shared`, 78 hook files, and 158 SQL migration files.
+Repository inventory at this production baseline is 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migration files.
 
-## Release candidate in review
+## Blind Spot production release
 
-The Blind Spot trusted-advisor redesign is built on `codex/blind-spot-trusted-advisor` at `4272276a5681064111bbd1efc2793afe47219041`. It is not merged or production-deployed. Its Vercel preview is READY and was explicitly accepted on 2026-08-11. The repository candidate contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migrations.
+The Blind Spot trusted-advisor redesign was merged through PR #366 and released from `main` at `0f20baf2437667c3719c94f1c16d04bb08b42023` after explicit prototype, preview, implementation, and production approval on 2026-08-11.
 
-Candidate evidence at the last local readback:
+Production readback:
 
 - 870 Vitest tests pass across 53 files, including 16 focused Blind Spot logic and component tests.
-- 37 Blind Spot Playwright checks pass against the freshly built production bundle in the desktop and mobile shells across 1440x900, 1280x720, 390x844, and 320x568.
+- All 37 Blind Spot Playwright checks pass on `https://makeyourmindup.ai` across 1440x900, 1280x720, 390x844, and 320x568, including every fixture state and advisor failure recovery.
 - Typecheck reports zero new diagnostics against the 221-diagnostic baseline.
 - Standards, documentation checks, changed-file lint, the 2,789-module production build, and 3/3 prerender routes pass.
 - The public fixture is `/preview?surface=blind-spot` with pattern, tension, loading, error, accepted, rejected, conversation, stale-evidence, and long-content states.
+- Supabase migration `blind_spot_trusted_advisor` is recorded remotely as version `20260811165337`; the repository source is `supabase/migrations/20260811144054_blind_spot_trusted_advisor.sql`.
+- The `blind-spot` Edge Function is ACTIVE at version 3 with JWT verification enabled. An unauthenticated production request returns HTTP 401.
+- All three Blind Spot tables have RLS enabled and no anonymous table grants. Both mutation RPCs are executable only by `service_role`, not `anon` or `authenticated`.
+- Vercel reports no runtime errors in the release window. The previous production deployment `dpl_36aick6kiVE3Z85QoAgzkugC7ChM` remains the rollback candidate.
 
-PR review, merge, database migration, Edge Function release, exact production approval, Vercel release, and production readback remain separate gates.
+The Supabase management connector permits metadata and read-only SQL but rejects transactional fixture inserts, and local pgTAP remains unavailable while Docker Desktop is stopped. The pgTAP contract is committed and its setup syntax was corrected before merge; production verification therefore uses migration, schema, RLS, ACL, JWT, function-version, HTTP, and rendered-flow readbacks without persistent synthetic rows.
 
 This file records the deployed application baseline that the current documentation was checked against. Documentation-only commits may advance Git without changing the application behavior described here.
 
@@ -48,7 +52,7 @@ This file records the deployed application baseline that the current documentati
 
 ## Verification evidence
 
-The baseline passed the repository CI jobs for standards, tests, typecheck, build, and changed-file lint where applicable. The exact-sha CI run reported 859 Vitest tests across 52 files.
+The baseline passed the repository CI jobs for standards, documentation, tests, typecheck, build, and changed-file lint. GitHub Actions run 31515642377 and the Vercel check are green for the reviewed head; the production deployment is READY at the squash-merge revision above.
 
 Release acceptance requirements are maintained in the [replication and release guide](../../project-documentation/REPLICATION_GUIDE.md). Local fixtures and prototypes are evidence for layout behavior only; they do not prove authenticated persistence or production parity.
 
