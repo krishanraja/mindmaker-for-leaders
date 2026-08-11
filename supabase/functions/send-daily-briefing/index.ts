@@ -18,10 +18,11 @@ import { sendEmail, getDefaultSender, getAppUrl } from "../_shared/email-utils.t
 import { brandedEmailShell } from "../_shared/email-shell.ts";
 import { synthesizeSpeech } from "../_shared/tts.ts";
 import { rankPoolForOnboarding } from "../_shared/onboarding-lens.ts";
+import { isCronRequest, isServiceRequest } from "../_shared/service-request.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-ctrl-cron-secret",
 };
 
 interface PrefRow {
@@ -130,7 +131,12 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    if (req.headers.get('Authorization') !== `Bearer ${supabaseServiceKey}`) {
+    const serviceRequest = isServiceRequest(req.headers.get("Authorization"), supabaseServiceKey);
+    const cronRequest = isCronRequest(
+      req.headers.get("X-CTRL-Cron-Secret"),
+      Deno.env.get("CTRL_CRON_SECRET") ?? "",
+    );
+    if (!serviceRequest && !cronRequest) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

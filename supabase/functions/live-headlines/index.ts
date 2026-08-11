@@ -42,11 +42,11 @@ import { getEditorialLens } from "../_shared/editorial-lens.ts";
 import { loadBrainProfile, brainSignature, toLensSource } from "../_shared/brain-profile.ts";
 import { buildImportanceLens } from "../_shared/briefing-lens.ts";
 import { scorePoolForUser, type EngineCandidate, type ScoredPoolItem } from "../_shared/personalization-core.ts";
-import { isServiceRequest } from "../_shared/service-request.ts";
+import { isCronRequest, isServiceRequest } from "../_shared/service-request.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-ctrl-cron-secret",
 };
 
 interface HeadlineCard {
@@ -319,11 +319,22 @@ serve(async (req) => {
     const force = url.searchParams.get("force") === "1";
     const debug = url.searchParams.get("debug") === "1";
     const serviceRequest = isServiceRequest(req.headers.get("Authorization"), serviceKey);
+    const cronRequest = isCronRequest(
+      req.headers.get("X-CTRL-Cron-Secret"),
+      Deno.env.get("CTRL_CRON_SECRET") ?? "",
+    );
+    const callerId = serviceRequest || cronRequest ? null : await resolveUserId(req, supabase);
+
+    // JWT verification is implemented here because modern publishable keys are
+    // not JWTs and the scheduled refresh uses a separate Vault-backed secret.
+    if (!serviceRequest && !cronRequest && !callerId) {
+      return json({ error: "Unauthorized" }, 401);
+    }
 
     // Rebuilding the shared cache and running source diagnostics are operator
     // actions, not public product actions. The daily pg_cron call already uses
     // the service credential; normal signed-in clients never need either flag.
-    if ((force || debug) && !serviceRequest) {
+    if ((force || debug) && !serviceRequest && !cronRequest) {
       return json({ error: "Forbidden" }, 403);
     }
 
@@ -366,7 +377,7 @@ serve(async (req) => {
     const genericCards = shared.map(toDisplayCard);
 
     // ---- TIER 2: personalize for the calling user (fallback-safe). ----
-    const userId = PERSONALIZE ? await resolveUserId(req, supabase) : null;
+    const userId = PERSONALIZE ? callerId : null;
     if (!userId || !env.openaiKey) {
       return json({ cards: genericCards, cached: !force, personalized: false });
     }

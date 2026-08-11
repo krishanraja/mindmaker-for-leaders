@@ -113,10 +113,10 @@ verify_jwt = true
 [functions.briefing-conversation]
 verify_jwt = true
 
-# Authenticated briefing source; force/debug refreshes additionally require the
-# service-role credential inside the handler.
+# Authentication is enforced in the handler so signed-in user JWTs and the
+# Vault-backed cron secret can coexist. Force/debug remain operator-only.
 [functions.live-headlines]
-verify_jwt = true
+verify_jwt = false
 
 # Authenticated, user-scoped briefing card generation.
 [functions.card-for-you]
