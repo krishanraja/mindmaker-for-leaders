@@ -25,7 +25,6 @@ insert into public.user_decisions (id, user_id, decision_text, status, source, c
 values ('30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'Keep product strategy with me for now.', 'active', 'manual', now() - interval '25 days', now() - interval '25 days');
 
 create temporary table first_confirmation as
-create temporary table second_confirmation as
 select * from public.confirm_blind_spot_candidate_v2(
   '10000000-0000-4000-8000-000000000001',
   'Strategy is outrunning ownership.',
