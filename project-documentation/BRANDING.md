@@ -15,6 +15,18 @@ Commercial claims and approved outward-facing copy live in [`../docs/current/com
 
 Use CTRL in product copy. Use Make Your Mind Up only for the warm onboarding experience or domain. Do not present them as separate products.
 
+### Onboarding brand handoff
+
+The public intake is the emotional bridge into CTRL, not a separate brand reveal.
+
+- It begins with the warm Make Your Mind Up pink-orange mark and near-black surface.
+- Each completed question moves the mark, accent, controls, and background one calibrated step toward CTRL.
+- The thinking and result states use the canonical Mindmaker CTRL icon, deep instrument surface, and emerald `#00D9B6` accent exactly.
+- The transition communicates growing usefulness, never a score or setup-completion demand.
+- Reduced-motion preferences remove decorative animation without removing the current visual state.
+
+Do not swap the icon abruptly, retain the Make Your Mind Up palette on the result, or introduce a second wordmark.
+
 ## Promise
 
 Tagline: **A quieter way through AI.**

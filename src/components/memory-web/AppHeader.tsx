@@ -56,7 +56,7 @@ export function AppHeader({ onAdd, onExport, center }: AppHeaderProps) {
         {onExport && (
           <button
             onClick={onExport}
-            className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent hover:bg-accent/20 transition-colors"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-accent/20 bg-accent/10 text-accent transition-colors hover:bg-accent/20"
             aria-label="Export to AI"
           >
             <ArrowUpRight className="h-4 w-4" />
@@ -65,7 +65,7 @@ export function AppHeader({ onAdd, onExport, center }: AppHeaderProps) {
         {onAdd && (
           <button
             onClick={onAdd}
-            className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white hover:bg-accent/90 transition-colors"
+            className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground transition-colors hover:bg-accent/90"
             aria-label="Add memory"
           >
             <Plus className="h-4 w-4" />

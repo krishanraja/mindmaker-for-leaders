@@ -314,9 +314,10 @@ function MobileHome({
               )}
             </>
           ))}
-        <AnimatePresence>
-          {loading && firstLoad && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
-        </AnimatePresence>
+        {/* Do not cross-fade the loading copy over live headlines. The previous
+            exit overlap briefly rendered two readable layers on top of each
+            other when data resolved, which looked like a broken card. */}
+        {loading && firstLoad && <GlobeLoader className="absolute inset-0 z-[5]" />}
         {loading && !firstLoad && (
           <div className="absolute inset-0 z-[5] flex flex-col">
             <SkeletonCard variant="feed" className="min-h-0 flex-1" />
@@ -543,9 +544,7 @@ function DesktopHome({
               <div className="pointer-events-none absolute inset-y-0 right-0 z-[2] w-[60px] bg-gradient-to-l from-background to-transparent" />
             </>
           ))}
-        <AnimatePresence>
-          {loading && firstLoad && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
-        </AnimatePresence>
+        {loading && firstLoad && <GlobeLoader className="absolute inset-0 z-[5]" />}
         {loading && !firstLoad && (
           <div className="absolute inset-0 z-[5] flex gap-[18px] overflow-hidden">
             <SkeletonCard variant="lead" className="h-full w-[400px] shrink-0 2xl:w-[460px]" />

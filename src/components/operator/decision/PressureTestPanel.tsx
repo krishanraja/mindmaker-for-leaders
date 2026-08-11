@@ -351,7 +351,7 @@ export function PressureTestPanel({
     <div
       className={cn(
         'flex shrink-0 gap-1 rounded-xl border border-border bg-foreground/[0.03] p-1',
-        compact ? 'w-[180px]' : 'mb-2.5',
+        compact ? 'w-[clamp(132px,44vw,180px)]' : 'mb-2.5',
       )}
     >
       {(['now', 'history'] as const).map((v) => {

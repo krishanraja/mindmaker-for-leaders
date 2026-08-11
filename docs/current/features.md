@@ -14,14 +14,14 @@ This inventory distinguishes the user-facing product from supporting and nested 
 | Daily briefing | A short personal read and listen, with grounded talk-back | `/briefing` and Today control | Free |
 | Decide | An AI-native reframe, verified claims, tensions, and advice | `/decision` | 3 per month free; unlimited Pro |
 | Blind Spot | One private mechanism-level read, exact evidence anchors, a small experiment, and bounded advisor talk-back | `/blind-spot` | Free |
-| Memory | Structured, corrected, portable context | `/memory` | Free |
+| Memory | Structured, corrected, portable context through Graph, All facts, and Library | `/memory` | Free |
 | Settings and privacy | Delivery, interests, memory, transcript, data, and account controls | `/settings`, `/compliance`, `/profile` | Free |
 
 Entitlements are defined by [`src/constants/planMatrix.ts`](../../src/constants/planMatrix.ts). Price is defined by [`supabase/functions/_shared/edge-pricing.ts`](../../supabase/functions/_shared/edge-pricing.ts).
 
 ## Supporting capabilities
 
-- Public one-question onboarding and future-memory result.
+- Public one-question onboarding and future-memory result, with a progressive Make Your Mind Up to CTRL visual handoff across the six questions.
 - Consented handoff into authenticated context and First Lens.
 - Nine AI-native news categories with stable visual motifs.
 - Shared-source clustering, corroboration, category balance, and role-aware ranking.
@@ -30,6 +30,7 @@ Entitlements are defined by [`src/constants/planMatrix.ts`](../../src/constants/
 - Context export for use in ChatGPT, Claude, Gemini, Cursor, and Claude Code.
 - Decision watch, outcomes, track record, and map.
 - Memory correction lineage, verification, encryption, expiry settings, and export.
+- Privacy, retention, import, and data export are configured from the single Settings surface; Memory does not duplicate those controls.
 - Blind Spot evidence qualification, rejection suppression, one active experiment, and a due briefing check-in.
 - Billing, account deletion, consent, and compliance controls.
 - Loading, stale-chunk, network, and retry recovery paths.

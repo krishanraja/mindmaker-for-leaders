@@ -46,9 +46,9 @@ export function TrackRecordHeaderButton() {
         onClick={() => setOpen(true)}
         aria-label="Your track record"
         title="Your track record"
-        className="relative flex h-8 w-8 items-center justify-center rounded-full bg-muted/60 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-card/70 text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground"
       >
-        <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
+        <svg viewBox="0 0 24 24" className="absolute inset-1.5 h-8 w-8 -rotate-90" aria-hidden="true">
           <circle cx="12" cy="12" r={R} fill="none" stroke="hsl(var(--border))" strokeWidth="2" />
           <circle
             cx="12"

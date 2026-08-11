@@ -43,7 +43,7 @@ function ChunkLoadError() {
         padding: '24px',
         background: '#0a0e12',
         color: '#e6edf3',
-        fontFamily: 'system-ui, sans-serif',
+        fontFamily: "'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif",
         textAlign: 'center',
       }}
     >
