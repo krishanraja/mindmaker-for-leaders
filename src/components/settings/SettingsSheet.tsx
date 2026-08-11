@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, X } from 'lucide-react'
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer'
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { useSettingsSheet } from '@/contexts/SettingsSheetContext'
 import { useDevice } from '@/hooks/useDevice'
@@ -77,6 +77,7 @@ export function SettingsSheet() {
     return (
       <Drawer open={open} onOpenChange={(next) => (next ? null : closeSheet())}>
         <DrawerContent className="h-[calc(100svh-12px)] max-h-[calc(100svh-12px)] rounded-t-[22px] p-0">
+          <DrawerDescription className="sr-only">Manage your CTRL account, briefing, memory, privacy and delivery preferences.</DrawerDescription>
           <SettingsPanel
             title={<DrawerTitle className="font-ctrl-display truncate text-base font-semibold">{label}</DrawerTitle>}
           />
