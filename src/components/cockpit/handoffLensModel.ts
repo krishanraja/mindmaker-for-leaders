@@ -9,6 +9,23 @@ export const handoffSignalSchema = z.object({
   companyDomain: z.string().nullish(),
   archetypeTitle: z.string().nullish(),
   source: z.string().nullish(),
+  personName: z.string().nullish(),
+  roleTitle: z.string().nullish(),
+  linkedinUrl: z.string().url().nullish(),
+  companyName: z.string().nullish(),
+  companySummary: z.string().nullish(),
+  companyLogoUrl: z.string().url().nullish(),
+  companySignals: z.array(z.object({
+    title: z.string(),
+    url: z.string().url(),
+    source: z.string(),
+    publishedAt: z.string().nullable().optional(),
+    excerpt: z.string().optional(),
+    sourceCount: z.number().optional(),
+    verified: z.boolean().optional(),
+  })).max(3).nullish(),
+  dossierStrength: z.record(z.string(), z.unknown()).nullish(),
+  dossierConfirmedAt: z.string().datetime().nullish(),
 });
 
 export type HandoffSignal = z.infer<typeof handoffSignalSchema>;

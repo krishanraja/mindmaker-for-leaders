@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { callLLMWithFallback } from '../_shared/llm-fallback.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
 import { cleanConversationText } from '../_shared/briefing-conversation-core.ts';
+import { dossierFromRow } from '../_shared/onboarding-dossier.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,6 +37,17 @@ function fallback(answers: { q2: string; q4: string; q5: string }) {
     twelve_months: `A year from now, you have made the call on ${answers.q5}. Your week has room for ${time}, because the repeatable middle no longer waits for you. The work still feels like yours. Far less of it depends on you being everywhere at once.`,
     three_years: `Three years from now, the company is ${company}. The system handles more of the drag, but the choices that shape the business stay human. Your attention goes where judgement matters.`,
   };
+}
+
+const DOSSIER_COLUMNS = 'enrichment_status, enrichment_name, enrichment_role, enrichment_company, enrichment_company_blurb, resolved_linkedin_url, company_domain, company_context, enrichment_signals, providers_hit';
+
+async function loadDossier(admin: ReturnType<typeof createClient>, id: string) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const { data } = await admin.from('cannes_responses').select(DOSSIER_COLUMNS).eq('id', id).maybeSingle();
+    if (data?.enrichment_status !== 'pending' || attempt === 2) return dossierFromRow(data);
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  }
+  return dossierFromRow(null);
 }
 
 serve(async (req) => {
@@ -104,10 +116,12 @@ serve(async (req) => {
       result_prose_12mo: prose.twelve_months,
       result_prose_3yr: prose.three_years,
     }).eq('id', id);
+    const dossier = await loadDossier(admin, id);
     return json({
       archetype_title: archetypeTitle,
       twelve_months: prose.twelve_months,
       three_years: prose.three_years,
+      dossier,
       fallback: usedFallback,
       model,
     });

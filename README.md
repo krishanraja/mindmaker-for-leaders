@@ -27,6 +27,8 @@ Executable code and authoritative environment readback outrank prose. When behav
 
 ```text
 one-question intake
+  -> optional company recognition and fresh evidence
+  -> one-click confirmation or correction
   -> consented context
   -> First Lens
   -> shared corroborated AI pool
@@ -48,7 +50,7 @@ Today, Decide, Blind Spot, Memory, Briefing, and Settings are the primary produc
 | Backend | Supabase PostgreSQL, Auth, Storage, Edge Functions, Vault, pg_cron |
 | AI | Capability-specific OpenAI, Anthropic, Gemini, and Grok paths |
 | Voice | OpenAI transcription, Gemini fallback, ElevenLabs speech |
-| Evidence | Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa, Artificial Analysis, RSS, GDELT, Hacker News |
+| Identity and evidence | PDL and Brandfetch for optional onboarding resolution; Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa, Artificial Analysis, RSS, GDELT, Hacker News |
 | Billing and email | Stripe and Resend |
 | Hosting | Vercel frontend and Supabase Cloud backend |
 

@@ -35,7 +35,7 @@ flowchart LR
 | Scheduled work | Prewarm, delivery, memory, watch, and lifecycle jobs | migrations using Vault, pg_cron, and pg_net |
 | Vercel | Static assets, SPA routing, canonical and redirect hosts | `vercel.json` and project configuration |
 
-The repository contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migrations at this verified baseline. These are measured inventory counts, not design targets.
+The repository contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 160 SQL migrations. These are measured source-tree inventory counts, not design targets.
 
 ## Frontend boundaries
 
@@ -55,7 +55,12 @@ The complete current route inventory lives in [features](./features.md) and is c
 
 ```text
 public answers
-  -> validated public function
+  -> optional work email or LinkedIn URL
+  -> person and company resolution
+  -> company-specific Tavily and Brave retrieval in parallel
+  -> deterministic company match, clustering, and source-strength contract
+  -> server-sanitised dossier with at most three linked signals
+  -> one-click confirmation or correction
   -> short-lived portfolio_handoff
   -> auth or email handoff token
   -> resolve-handoff ownership check
@@ -64,6 +69,10 @@ public answers
 ```
 
 Public retry paths converge on stable keys. Raw private sentences do not become authenticated facts without the handoff contract.
+
+`enrich-profile` owns the onboarding dossier. PDL may resolve a person from the supplied work email or LinkedIn profile; Brandfetch may add company identity; Tavily and Brave may return company-specific recent signals. Search providers receive a company query, not the leader's onboarding answers. The server owns URL safety, company matching, excerpts, dates, clustering, and the visible source counts. The browser parses one `OnboardingDossier` contract and never treats decorative progress as evidence that a provider succeeded.
+
+On confirmation, `track-fork` reloads the stored dossier, marks the source response, and copies only the bounded confirmed fields into the idempotent handoff. After authentication, the existing handoff confirmation writes company and role as verified Memory facts and keeps the leader's decision lane as an inferred fact. No generated dossier is accepted from the browser.
 
 ### Curation to delivery
 
@@ -126,7 +135,7 @@ rejected candidate
 | Curation | `live_headlines_cache`, `personal_pool_cache`, `news_preferences`, `briefing_interests` | Shared cache plus owner-scoped preference data |
 | Briefing | `briefings`, `briefing_feedback`, `user_briefing_directives` | Authenticated owner; delivery is server-mediated |
 | Blind Spot | `user_patterns`, `blind_spot_evidence_links`, `blind_spot_experiments`, `blind_spot_rejections` | Candidate remains client-held and signed; confirmation and outcomes are owner-checked service writes |
-| Public handoff and delivery | `portfolio_handoff`, `delivery_subscriptions`, `leader_notification_prefs` | Validated, consented, idempotent contracts |
+| Public intake, handoff, and delivery | `cannes_responses`, `portfolio_handoff`, `delivery_subscriptions`, `leader_notification_prefs` | Enrichment is provisional; transfer is validated, consented, bounded, and idempotent |
 | Billing | `edge_subscriptions` and Stripe event records | Server and signed webhook only |
 
 All schema truth comes from migrations plus production readback. A table list in prose is illustrative unless a check maintains it.
@@ -138,6 +147,7 @@ Provider routing is capability-specific. There is no truthful single sentence su
 | Capability | Current code path |
 |---|---|
 | Onboarding result and Blind Spot | OpenAI first, Gemini fallback through `_shared/llm-fallback.ts` |
+| Onboarding identity and company signals | PDL and Brandfetch for resolution; Tavily and Brave for recent company-specific evidence; deterministic server qualification |
 | Briefing script and curation | OpenAI chat-completions execution, default `gpt-4o-mini`; model selection metadata may be benchmark-assisted |
 | Briefing and Blind Spot conversation | OpenAI `gpt-4o-mini`, grounded only in the displayed briefing or signed Blind Spot anchors |
 | Decision reasoning | Anthropic Claude first, OpenAI GPT-4o fallback |

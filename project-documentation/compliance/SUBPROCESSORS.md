@@ -28,6 +28,8 @@ As of 2026-08-10, none of the DPAs below are marked "Signed". Formalizing signed
 | Perplexity | Daily-briefing web search | Briefing topics/queries (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
 | Tavily | Daily-briefing web search/enrichment | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
 | Brave Search | Daily-briefing web search | Briefing topics/queries | US | To confirm | SCCs (to confirm/sign) |
+| People Data Labs | Optional onboarding person and company resolution | Work email or public LinkedIn profile URL | US | To confirm | SCCs (to confirm/sign) |
+| Brandfetch | Optional onboarding company identity and logo resolution | Company domain | US | To confirm | SCCs (to confirm/sign) |
 | Jina | Business-context enrichment (company site reads) and briefing content retrieval | Company URLs/content, briefing topics | US | To confirm | SCCs (to confirm/sign) |
 | Apollo | Company enrichment | Company name/domain (business context) | US | To confirm | SCCs (to confirm/sign) |
 | Google (OAuth) | Sign-in / authentication | Email, name, OAuth identity | US | Standard terms | SCCs (to confirm/sign) |
@@ -38,7 +40,8 @@ As of 2026-08-10, none of the DPAs below are marked "Signed". Formalizing signed
 | PostHog | Product analytics (page views, in-app usage events) | Account/session identifiers, page and event metadata | US | To confirm | SCCs (to confirm/sign) |
 
 Notes:
-- Search/enrichment providers (Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa, Artificial Analysis) primarily receive briefing/decision topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
+- Search/enrichment providers (Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa, Artificial Analysis) primarily receive briefing, decision, or company topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
+- Optional public onboarding enrichment sends the work email or public LinkedIn URL to People Data Labs and the resolved company domain to Brandfetch. Tavily and Brave receive the company name/domain query, not the leader's private onboarding answers.
 - Apollo and Jina (company-site reads) receive company-level data used for enrichment; treat as processing of business context.
 - PostHog is loaded client-side (`index.html`) and tags events `product: mm_ctrl` so a shared Mindmaker-wide PostHog project can separate ventures; it captures page views and in-app usage, not Memory Web content.
 - Card data is never stored by Mindmaker; Stripe tokenizes it.

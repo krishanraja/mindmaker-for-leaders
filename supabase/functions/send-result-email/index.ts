@@ -54,7 +54,7 @@ serve(async (req) => {
     if (!rate.allowed) return json({ ok: true, already_sent: true });
 
     const { data: result } = await admin.from('cannes_responses').select(
-      'archetype_title, result_prose_12mo, result_prose_3yr, q2_extra_self, q4_company_future, q5_decision, email_sent_at',
+      'archetype_title, result_prose_12mo, result_prose_3yr, q2_extra_self, q4_company_future, q5_decision, email_sent_at, enrichment_company, enrichment_signals',
     ).eq('id', id).maybeSingle();
     if (!result) return json({ error: 'Result not found' }, 404);
     if (result.email_sent_at) return json({ ok: true, sent: true, already_sent: true });
@@ -85,12 +85,20 @@ serve(async (req) => {
     if (!claim) return json({ ok: true, processing: true });
     const { data: poolRow } = await admin.from('live_headlines_cache').select('payload').order('briefing_date', { ascending: false }).limit(1).maybeSingle();
     const pool = Array.isArray(poolRow?.payload) ? poolRow.payload as Card[] : [];
-    const cards = rankPoolForOnboarding(pool, {
+    const companyCards: Card[] = Array.isArray(result.enrichment_signals) ? result.enrichment_signals.slice(0, 3).map((signal: Record<string, unknown>) => ({
+      headline: String(signal.title ?? ''),
+      say: String(signal.excerpt ?? 'Worth checking against the decision on your plate.'),
+      source: String(signal.source ?? result.enrichment_company ?? ''),
+      url: String(signal.url ?? ''),
+    })).filter((card: Card) => card.headline && card.url?.startsWith('https://')) : [];
+    const generalCards = rankPoolForOnboarding(pool, {
       q5: result.q5_decision,
       q2: result.q2_extra_self,
       q4: result.q4_company_future,
-    }).slice(0, 3);
-    const reads = cards.length ? `<h2 style="font-size:16px;margin:26px 0 12px">Three things worth reading through your decision</h2><ol style="padding-left:20px">${cards.map((card) => {
+    });
+    const seen = new Set(companyCards.map((card) => card.url));
+    const cards = [...companyCards, ...generalCards.filter((card) => !seen.has(card.url))].slice(0, 3);
+    const reads = cards.length ? `<h2 style="font-size:16px;margin:26px 0 12px">${companyCards.length ? `What changed around ${escapeHtml(result.enrichment_company || 'your company')}` : 'Three things worth reading through your decision'}</h2><ol style="padding-left:20px">${cards.map((card) => {
       const title = escapeHtml(card.headline);
       const link = card.url?.startsWith('https://') ? `<a href="${escapeHtml(card.url)}">${title}</a>` : title;
       return `<li style="margin:0 0 14px">${link}${card.source ? ` <span style="color:#64748b">${escapeHtml(card.source)}</span>` : ''}<br/><span style="color:#4a5a52">${escapeHtml(card.say)}</span></li>`;

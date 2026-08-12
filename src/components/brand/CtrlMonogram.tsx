@@ -5,11 +5,12 @@ interface CtrlMonogramProps {
   size?: number;
   animated?: boolean;
   className?: string;
+  tone?: 'ctrl' | 'mymu';
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export function CtrlMonogram({ size = 32, animated = false, className }: CtrlMonogramProps) {
+export function CtrlMonogram({ size = 32, animated = false, className, tone = 'ctrl' }: CtrlMonogramProps) {
   const gradientId = useId();
   const reducedMotion = useReducedMotion();
   const shouldAnimate = animated && !reducedMotion;
@@ -36,8 +37,8 @@ export function CtrlMonogram({ size = 32, animated = false, className }: CtrlMon
     >
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#EC4899" />
-          <stop offset="100%" stopColor="#F97316" />
+          <stop offset="0%" stopColor={tone === 'ctrl' ? '#9DEDCB' : '#EC4899'} />
+          <stop offset="100%" stopColor={tone === 'ctrl' ? '#2D8B72' : '#F97316'} />
         </linearGradient>
       </defs>
       <motion.rect x="48" y="100" width="50" height="50" fill={`url(#${gradientId})`} {...motionProps(0)} />

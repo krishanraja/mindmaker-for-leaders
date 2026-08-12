@@ -1,3 +1,5 @@
+import type { OnboardingDossier } from './onboardingDossier';
+
 export type ExtraSelf = 'think' | 'do' | 'talk' | 'watch';
 export type CompanyFuture = 'same' | 'leaner' | 'hybrid' | 'autonomous';
 
@@ -15,6 +17,7 @@ export interface OnboardingResult {
   archetypeVariant: 'A' | 'B';
   twelveMonths: string;
   threeYears: string;
+  dossier: OnboardingDossier | null;
 }
 
 export const extraSelfOptions: Array<{ value: ExtraSelf; label: string }> = [
@@ -131,5 +134,6 @@ export function fallbackResult(responseId: string, answers: OnboardingAnswers): 
     archetypeVariant: variant,
     twelveMonths: `A year from now, you have ${leverage}. The work still feels like yours, but far less of it depends on you being everywhere at once.`,
     threeYears: `Three years from now, the company is ${answers.companyFuture === 'same' ? 'recognisably yours, only sharper' : answers.companyFuture === 'leaner' ? 'smaller, faster and clearer' : answers.companyFuture === 'hybrid' ? 'run by humans and agents as one team' : 'a system you direct rather than a machine you carry'}. The choices remain human. The drag does not.`,
+    dossier: null,
   };
 }

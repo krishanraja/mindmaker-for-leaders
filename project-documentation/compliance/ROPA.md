@@ -82,10 +82,10 @@ This record describes the processing activities Mindmaker carries out as control
 - Security: RLS owner-scoping, TLS.
 
 ### G. Daily briefings, enrichment, and notifications
-- Personal data: briefing preferences, interests, account identity; briefing topics/queries sent to search providers.
-- Data subjects: registered users.
-- Lawful basis: contract (transactional delivery); consent (optional channels and marketing).
-- Recipients/subprocessors: Supabase (US); Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa (web search/enrichment of briefing and news-feed topics, US); Artificial Analysis (model-benchmark validation of claims referenced in briefing content, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
+- Personal data: briefing preferences, interests, account identity; optional onboarding work email or public LinkedIn URL; resolved role and company; company and briefing queries sent to search providers; bounded public company signals.
+- Data subjects: visitors who choose onboarding enrichment and registered users.
+- Lawful basis: contract (company recognition and transactional delivery); consent (optional channels and marketing). The enrichment field may be skipped and its result is not transferred into an account until the leader confirms the handoff.
+- Recipients/subprocessors: Supabase (US); People Data Labs and Brandfetch (business identity and company resolution, US); Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa (web search/enrichment of company, briefing, and news-feed topics, US); Artificial Analysis (model-benchmark validation of claims referenced in briefing content, US); ElevenLabs (briefing audio, US); Resend (email delivery, US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: preferences for life of account; generated briefings per retention policy.
 - Security: RLS owner-scoping, TLS.
