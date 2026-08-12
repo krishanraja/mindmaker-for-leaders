@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against production commit `0f20baf2437667c3719c94f1c16d04bb08b42023` and the locked prototype hash below
+Last verified: 2026-08-11 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8` and the locked Blind Spot prototype hash below
 
 This is the single resumable state route for material CTRL interface work. Product and architecture truth remain in the other `docs/current/` documents. Accepted product decisions remain in `project-documentation/DECISIONS_LOG.md`.
 
@@ -101,7 +101,7 @@ Interactive evidence inspection, all three rejection reasons, stop-after-rejecti
 - 37 Blind Spot Playwright checks pass against the freshly built production bundle at 1440x900, 1280x720, 390x844, and 320x568 inside the shared app shells.
 - Typecheck adds zero diagnostics to the 221-diagnostic baseline.
 - Changed-file ESLint, standards, documentation drift, production build, and 3/3 prerender checks pass.
-- GitHub CI and Vercel are green for the reviewed head; PR #366 is merged and production is READY at `0f20baf2437667c3719c94f1c16d04bb08b42023`.
+- GitHub CI and Vercel remain green; the current production application baseline is `b5770194b4646302f47e36655e389f7ec2eb43f8`, and the Blind Spot implementation from PR #366 remains unchanged within it.
 - All 37 Blind Spot checks pass on the canonical production host across every fixture state and the four approved viewports. The advisor failure path preserves typed context.
 - Production Supabase readback confirms migration version `20260811165337`, ACTIVE `blind-spot` Edge Function version 3, JWT enforcement, RLS on all three new tables, no anonymous table grants, and service-role-only RPC execution.
 - Krish explicitly accepted the prototype, preview, implementation, and production release on 2026-08-11.

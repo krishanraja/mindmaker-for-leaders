@@ -10,14 +10,14 @@ Last verified: 2026-08-11
 |---|---|
 | Canonical host | `https://makeyourmindup.ai` |
 | Source branch | `main` |
-| Application baseline | `0f20baf2437667c3719c94f1c16d04bb08b42023` |
-| Vercel deployment | `dpl_7QrzFfEBYCLgFRn9icCERQSzp2XD`, READY at the same source revision |
-| Test suite at baseline | 870 tests in 53 files |
+| Application baseline | `b5770194b4646302f47e36655e389f7ec2eb43f8` |
+| Vercel deployment | `dpl_8pxe81bUS2A6dYsjkb9jyrNAdkJ8`, READY at the same source revision |
+| Test suite at baseline | 876 tests in 55 files |
 | Edge Function directories | 113 excluding `_shared` |
 | Hook files | 78 |
-| SQL migration files | 160 in the source tree; 159 at the deployed application baseline |
+| SQL migration files | 160 in the source tree and deployed baseline |
 
-Current source inventory is 113 Edge Function directories excluding `_shared`, 78 hook files, and 160 SQL migration files. The additional migration belongs to the onboarding company-recognition release candidate described below.
+Current source inventory is 113 Edge Function directories excluding `_shared`, 78 hook files, and 160 SQL migration files.
 
 ## Blind Spot production release
 
@@ -50,17 +50,17 @@ This file records the deployed application baseline that the current documentati
 - Lesson-kit routes redirect to the public demo.
 - Vault-backed prewarm and delivery jobs are represented by the release migrations and runbook.
 
-## Onboarding company-recognition release candidate
+## Onboarding company-recognition production release
 
-The source tree includes the next additive onboarding release: a 72px animated segmented loading instrument; work-email or LinkedIn resolution; a server-sanitised company dossier with fresh linked signals; one-click confirmation or correction; confirmed company and role handoff into Memory; and company-first no-login result and daily briefings. It uses the existing PDL, Brandfetch, Tavily, and Brave providers and introduces no second curation store.
+The onboarding company-recognition release was merged through PR #369 and is live from `main` at `b5770194b4646302f47e36655e389f7ec2eb43f8`. It includes a 72px animated segmented loading instrument; work-email or LinkedIn resolution; a server-sanitised company dossier with fresh linked signals; one-click confirmation or correction; confirmed company and role handoff into Memory; and company-first no-login result and daily briefings. It uses the existing PDL, Brandfetch, Tavily, and Brave providers and introduces no second curation store.
 
-Release-candidate verification: 876 Vitest tests pass across 55 files; the four public-onboarding Playwright journeys pass at 390x844, 320x568, desktop, and reduced motion; typecheck introduces zero diagnostics against the 221-diagnostic baseline; targeted lint, standards, documentation checks, the 2,791-module production build, and 3/3 prerender routes pass. The browser suite includes correction recovery, linked evidence, briefing consent, handoff navigation, 44px targets, and horizontal-overflow checks.
+Release verification: 876 Vitest tests pass across 55 files; the four public-onboarding Playwright journeys pass on `makeyourmindup.ai` at 390x844, 320x568, desktop, and reduced motion; typecheck introduces zero diagnostics against the 221-diagnostic baseline; targeted lint, standards, documentation checks, the 2,791-module production build, and 3/3 prerender routes pass. The production browser suite includes correction recovery, LinkedIn URL normalisation, linked evidence, briefing consent, handoff navigation, 44px targets, and horizontal-overflow checks.
 
-This section describes the reviewed release candidate only. It becomes part of the production baseline after the exact merged Git revision, Vercel deployment, Supabase migration, and six changed Edge Functions have separate deployed readback.
+Production readback confirms remote migration `20260812020209_onboarding_company_dossier_handoff`; all ten additive columns at their expected PostgreSQL types; and ACTIVE Edge Function versions `enrich-profile` 33, `generate-result` 36, `track-fork` 34, `send-result-email` 35, `send-daily-briefing` 24, and `resolve-handoff` 11. The public functions retain their bounded input and rate-limit contracts; `resolve-handoff` retains JWT verification. Required PDL, Brandfetch, Tavily, and Brave secret names are configured. The previous production deployment `dpl_Cmyhi9xwWi5ydGgsjmRzjYKFhxvU` remains the frontend rollback candidate; the additive database fields remain backward compatible.
 
 ## Verification evidence
 
-The baseline passed the repository CI jobs for standards, documentation, tests, typecheck, build, and changed-file lint. GitHub Actions run 31515642377 and the Vercel check are green for the reviewed head; the production deployment is READY at the squash-merge revision above.
+The baseline passed the repository CI jobs for standards, documentation, tests, typecheck, build, and changed-file lint. GitHub Actions run 31555421382 and the Vercel check are green for the reviewed head; the production deployment is READY at the squash-merge revision above.
 
 Release acceptance requirements are maintained in the [replication and release guide](../../project-documentation/REPLICATION_GUIDE.md). Local fixtures and prototypes are evidence for layout behavior only; they do not prove authenticated persistence or production parity.
 
