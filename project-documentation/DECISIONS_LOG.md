@@ -2,7 +2,7 @@
 
 Key architectural and product decisions with rationale.
 
-**Last reconciled:** 2026-08-11 (Decision 80 establishes one commercial authority and one bounded operating contract for autonomous commercial agents).
+**Last reconciled:** 2026-08-11 (Decision 81 restores truthful company recognition as the public onboarding payoff).
 
 > This is an append-only decision record. IDs are unique and never reused. Earlier framing may be superseded by a later decision; the current product and architecture sources are [`docs/current/`](../docs/current/README.md). Dated outcomes record what was true at that decision point, not the current release state.
 
@@ -622,3 +622,11 @@ Key architectural and product decisions with rationale.
 **Rationale**: A large set of plausible commercial briefs had become a hidden source of false confidence. They contradicted shipped Blind Spot evidence, overstated encryption and setup time, promised a precise Decision Watch cadence, and made a global claim about separate Mindmaker services. An agent needs less source material, clearer precedence, and an explicit authority boundary to be commercially useful without inventing certainty.
 **Trade-off**: Retire several familiar briefs from the current authority path and require action-time verification for volatile claims in exchange for one coherent product story, defensible evidence, and safer autonomous operation.
 **Outcome**: Current documentation, machine truth, agent instructions, public LLM guidance, indexes, and automated drift checks are aligned around the same contract.
+
+## Decision 81: Company Recognition Is the Onboarding Payoff, Not Hidden Homework (2026-08-11)
+**Date**: 2026-08-11
+**Decision**: Restore the public onboarding's company-recognition moment as one truthful CTRL instrument. One optional field accepts a work email or LinkedIn profile. The backend resolves person and company context, checks fresh company-specific signals, deterministically rejects mismatches, clusters corroborating coverage, and returns at most three linked signals with visible source strength. The loading state names work in progress but claims no provider success. The result offers one primary `Yes, this is my world` action and one quiet correction. Only the confirmed, server-held dossier crosses the idempotent handoff into Memory. No-login result and daily briefings use those company signals before filling from the single shared curation pool.
+**Rationale**: A generic future-memory result removed the surprising usefulness that made Make Your Mind Up feel intelligent. The oversized static loading mark also advertised waiting without revealing meaningful progress. The product should earn recognition through fresh, inspectable evidence while staying lighter than a profile form or research dashboard.
+**Trade-off**: More provider orchestration, qualification, privacy documentation, failure handling, and handoff fields behind the same simple screen in exchange for a stronger first-value moment and materially better downstream context.
+**Founder override**: Krish explicitly instructed autonomous implementation through merge after reviewing the diagnosis and desired magical company-recognition direction. This instruction is the scoped material-design approval for the release; no invented provider success, speculative company match, or unconfirmed Memory write is permitted.
+**Outcome**: Implemented as the onboarding company-recognition release candidate with additive database fields, bounded Edge contracts, deterministic fixtures, and release verification required before merge.

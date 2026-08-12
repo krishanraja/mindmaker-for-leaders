@@ -137,35 +137,51 @@ export function useHandoffWelcome(onComplete?: () => void): HandoffWelcomeState 
     setError(null);
     const lens = handoffLensFor(signal);
     try {
-      const payload = {
-        user_id: user.id,
-        fact_key: 'handoff_focus',
-        fact_category: 'blocker',
-        fact_label: "What you're weighing",
-        fact_value: lens.focusPhrase,
-        fact_context: `Confirmed from CTRL onboarding (${signal.entryVariant ?? 'fork'}); lane ${signal.anxietyLane ?? 'unknown'}`,
-        source_type: 'enrichment',
-        verification_status: 'inferred',
-        confidence_score: 0.75,
-        is_high_stakes: false,
-        is_current: true,
-      };
+      const confirmedContext = `Confirmed from CTRL onboarding (${signal.entryVariant ?? 'fork'}); lane ${signal.anxietyLane ?? 'unknown'}`;
+      const facts = [
+        {
+          fact_key: 'handoff_focus', fact_category: 'blocker', fact_label: "What you're weighing",
+          fact_value: lens.focusPhrase, fact_context: confirmedContext, verification_status: 'inferred', confidence_score: 0.75,
+        },
+        ...(signal.companyName || signal.companyDomain ? [{
+          fact_key: 'company', fact_category: 'business', fact_label: 'Company',
+          fact_value: signal.companyName ?? signal.companyDomain ?? '', fact_context: signal.companySummary ?? confirmedContext,
+          verification_status: 'verified', confidence_score: 1,
+        }] : []),
+        ...(signal.roleTitle ? [{
+          fact_key: 'role', fact_category: 'identity', fact_label: 'Role', fact_value: signal.roleTitle,
+          fact_context: signal.companyName ? `At ${signal.companyName}. Confirmed during onboarding.` : confirmedContext,
+          verification_status: 'verified', confidence_score: 1,
+        }] : []),
+        ...(signal.linkedinUrl ? [{
+          fact_key: 'linkedin_url', fact_category: 'identity', fact_label: 'LinkedIn', fact_value: signal.linkedinUrl,
+          fact_context: confirmedContext, verification_status: 'verified', confidence_score: 1,
+        }] : []),
+      ];
 
-      const { data: existing, error: lookupError } = await db
-        .from('user_memory')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('fact_key', 'handoff_focus')
-        .eq('is_current', true)
-        .limit(1)
-        .maybeSingle();
-      if (lookupError) throw lookupError;
-
-      const write = existing?.id
-        ? db.from('user_memory').update(payload).eq('id', existing.id).eq('user_id', user.id)
-        : db.from('user_memory').insert(payload);
-      const { error: writeError } = await write;
-      if (writeError) throw writeError;
+      for (const fact of facts) {
+        const payload = {
+          user_id: user.id,
+          ...fact,
+          source_type: 'enrichment',
+          is_high_stakes: false,
+          is_current: true,
+        };
+        const { data: existing, error: lookupError } = await db
+          .from('user_memory')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('fact_key', fact.fact_key)
+          .eq('is_current', true)
+          .limit(1)
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+        const write = existing?.id
+          ? db.from('user_memory').update(payload).eq('id', existing.id).eq('user_id', user.id)
+          : db.from('user_memory').insert(payload);
+        const { error: writeError } = await write;
+        if (writeError) throw writeError;
+      }
     } catch {
       setError('I could not save that starting point. Try once more.');
       setSaving(false);

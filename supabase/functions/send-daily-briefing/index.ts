@@ -53,6 +53,8 @@ interface SubscriberRow {
     q2_extra_self?: string | null;
     q4_company_future?: string | null;
     q5_decision?: string | null;
+    enrichment_company?: string | null;
+    enrichment_signals?: Array<Record<string, unknown>> | null;
   } | null;
 }
 
@@ -256,7 +258,7 @@ serve(async (req) => {
     // lens; no second news pipeline is created.
     const { data: subscriberData, error: subscriberError } = await supabase
       .from('delivery_subscriptions')
-      .select('id, destination, content_modes, unsubscribe_token, cannes_responses(q2_extra_self, q4_company_future, q5_decision)')
+      .select('id, destination, content_modes, unsubscribe_token, cannes_responses(q2_extra_self, q4_company_future, q5_decision, enrichment_company, enrichment_signals)')
       .eq('status', 'active')
       .eq('channel', 'email')
       .or(`last_sent_date.is.null,last_sent_date.lt.${today}`)
@@ -275,13 +277,22 @@ serve(async (req) => {
       const subscribers = subscriberData as unknown as SubscriberRow[];
       for (const subscriber of subscribers) {
         const email = subscriber.destination.trim().toLowerCase();
-        if (!email || sentEmails.has(email) || pool.length === 0) continue;
+        if (!email || sentEmails.has(email)) continue;
         const answers = subscriber.cannes_responses ?? {};
-        const cards = rankPoolForOnboarding(pool, {
+        const companyCards: SharedCard[] = Array.isArray(answers.enrichment_signals) ? answers.enrichment_signals.slice(0, 3).map((signal) => ({
+          headline: String(signal.title ?? ''),
+          say: String(signal.excerpt ?? 'Worth checking against the decision on your plate.'),
+          source: String(signal.source ?? answers.enrichment_company ?? ''),
+          url: String(signal.url ?? ''),
+        })).filter((card) => card.headline && card.url?.startsWith('https://')) : [];
+        const generalCards = rankPoolForOnboarding(pool, {
           q5: answers.q5_decision,
           q2: answers.q2_extra_self,
           q4: answers.q4_company_future,
-        }).slice(0, 3);
+        });
+        const seen = new Set(companyCards.map((card) => card.url));
+        const cards = [...companyCards, ...generalCards.filter((card) => !seen.has(card.url))].slice(0, 3);
+        if (cards.length === 0) continue;
         const staleClaim = new Date(Date.now() - 30 * 60 * 1000).toISOString();
         const { data: claim } = await supabase
           .from('delivery_subscriptions')

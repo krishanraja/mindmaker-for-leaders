@@ -6,11 +6,19 @@ const generatedResult = {
     'A year from now, the call on your operating model is made. The repeatable middle moves without waiting for you, while you stay close to the choices that shape the company. Your week has room to think, and your team knows where human judgement still matters.',
   three_years:
     'Three years from now, humans and agents work as one team. The system carries the drag and gives you a clearer view of where your judgement changes the outcome.',
+  dossier: {
+    status: 'ready',
+    person: { name: 'Ada Founder', role: 'CEO', linkedinUrl: 'https://linkedin.com/in/ada' },
+    company: { name: 'Signal Works', domain: 'signal.works', summary: 'AI operations.', logoUrl: null },
+    signals: [{ title: 'Signal Works launches a new agent platform', url: 'https://example.com/signal-works', source: 'example.com', publishedAt: '2026-08-11T12:00:00.000Z', excerpt: 'The company expanded its platform.', sourceCount: 2, verified: true }],
+    strength: { providerCount: 3, signalCount: 1, verifiedSignalCount: 1, newestSignalAt: '2026-08-11T12:00:00.000Z' },
+  },
 };
 
 test.describe('Public CTRL onboarding', () => {
   test('moves from one calm question to a useful result and consented handoff', async ({ page }) => {
     const functionCalls: string[] = [];
+    const enrichmentBodies: Array<Record<string, unknown>> = [];
     const consoleErrors: string[] = [];
     page.on('console', (message) => {
       if (message.type() === 'error') consoleErrors.push(message.text());
@@ -38,6 +46,11 @@ test.describe('Public CTRL onboarding', () => {
           contentType: 'application/json',
           body: JSON.stringify({ ok: true, handoff: '11111111-1111-4111-8111-111111111111' }),
         });
+        return;
+      }
+      if (functionName === 'enrich-profile') {
+        enrichmentBodies.push(JSON.parse(route.request().postData() ?? '{}'));
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, dossier: generatedResult.dossier }) });
         return;
       }
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
@@ -96,16 +109,26 @@ test.describe('Public CTRL onboarding', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(generatedResult.archetype_title);
     await recordBrandProgress('result', '1.00');
     expect(observedProgress).toEqual([...observedProgress].sort((a, b) => a - b));
-    await expect(page.locator('[data-brand-progress="1.00"] img')).toHaveCSS('opacity', '1');
+    await expect(page.getByRole('img', { name: 'Mindmaker CTRL' })).toHaveAttribute('data-brand-progress', '1.00');
     await expect(onboardingSurface).toHaveCSS('background-color', 'rgb(8, 9, 12)');
     await expect(page.getByText('One email each morning, with audio. No login needed. One click to stop.')).toBeVisible();
     await expect(page.getByText('Blind spots surfaced gently, when they matter')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Signal Works' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Company context found' })).toContainText('1 signal');
+    await expect(page.getByRole('region', { name: 'Company context found' })).toContainText('3 sources');
     if (process.env.E2E_CAPTURE_DIR) {
       await page.screenshot({ path: `${process.env.E2E_CAPTURE_DIR}/ctrl-onboarding-result.png`, fullPage: true });
     }
 
+    await page.getByRole('button', { name: 'Not quite? Correct my starting point' }).click();
+    await page.getByLabel('Work email or LinkedIn profile').fill('linkedin.com/in/ada');
+    await page.getByRole('button', { name: 'Check again' }).click();
+    await expect(page.getByLabel('Work email or LinkedIn profile')).toHaveCount(0);
+    await expect.poll(() => functionCalls.filter((name) => name === 'enrich-profile')).toHaveLength(1);
+    expect(enrichmentBodies[0]).toMatchObject({ kind: 'linkedin', linkedin: 'https://linkedin.com/in/ada' });
+
     await page.getByPlaceholder('Where should the morning brief go?').fill('leader@example.com');
-    await page.getByRole('button', { name: 'Start it' }).click();
+    await page.getByRole('button', { name: 'Start morning brief' }).click();
     await expect(page.getByRole('button', { name: 'Briefing on' })).toBeVisible();
     await expect.poll(() => functionCalls.filter((name) => name === 'subscribe-briefing')).toHaveLength(1);
     await expect.poll(() => functionCalls.filter((name) => name === 'send-result-email')).toHaveLength(1);
@@ -115,7 +138,7 @@ test.describe('Public CTRL onboarding', () => {
     );
     expect(hasHorizontalOverflow).toBe(false);
 
-    await page.getByRole('button', { name: 'Let CTRL start here' }).click();
+    await page.getByRole('button', { name: 'Yes, this is my world' }).click();
     await expect(page).toHaveURL(/\/auth\?mode=signup&h=11111111-1111-4111-8111-111111111111$/);
     await expect.poll(() => page.evaluate(() => sessionStorage.getItem('handoff_token'))).toBe(
       '11111111-1111-4111-8111-111111111111',
@@ -160,7 +183,7 @@ test.describe('Public CTRL onboarding', () => {
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(generatedResult.archetype_title);
     await expect(page.locator('main[data-onboarding-step]')).toHaveAttribute('data-brand-progress', '1.00');
-    const primaryAction = page.getByRole('button', { name: 'Let CTRL start here' });
+    const primaryAction = page.getByRole('button', { name: 'Yes, this is my world' });
     await primaryAction.scrollIntoViewIfNeeded();
     const actionBox = await primaryAction.boundingBox();
     expect(actionBox?.height ?? 0).toBeGreaterThanOrEqual(44);

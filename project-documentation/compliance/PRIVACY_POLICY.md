@@ -1,7 +1,7 @@
 # CTRL Privacy Policy
 
 Effective date: 2026-06-02
-Last reviewed: 2026-08-11 (Blind Spot evidence, experiment, correction, and advisor handling reconciled)
+Last reviewed: 2026-08-11 (public onboarding company recognition and evidence handling reconciled)
 
 This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://makeyourmindup.ai. CTRL is an AI decision-support and advisory tool for busy leaders. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 
@@ -23,7 +23,7 @@ This policy covers personal data processed through the CTRL web application and 
 | Category | Examples | Source |
 |----------|----------|--------|
 | Account identity | Email address, name, display name | You, at sign-up; Google OAuth if used |
-| Business / work context | Company, industry, company size, website, primary challenges, AI-readiness score, communication style, thinking style | You, during onboarding and use |
+| Business / work context | Company, industry, company size, website, role, public LinkedIn profile URL, recent public company signals, primary challenges, AI-readiness score, communication style, thinking style | You during onboarding and use; business-data and search providers when you ask onboarding to identify your company |
 | Memory Web facts | Thoughts and statements you voice that are extracted into structured facts (encrypted at rest with AES-256-GCM) | Derived from your inputs |
 | Blind Spot records | Confirmed pattern text, exact evidence snapshots, experiment and outcome; rejection reason and evidence fingerprint when you reject a read | Derived from your stored records and your explicit response |
 | Conversation / chat messages | Messages you send to and receive from CTRL's assistants | You, during use |
@@ -41,7 +41,7 @@ For users in the EU/UK, the GDPR requires a lawful basis for each purpose. The t
 
 | Purpose | Data categories used | GDPR lawful basis |
 |---------|----------------------|-------------------|
-| Provide the Service (auth, core features) | Account identity, business context, chat, assessments | Contract (Art 6(1)(b)) |
+| Provide the Service (auth, core features, optional onboarding company recognition) | Account identity, business context, public company signals, chat, assessments | Contract (Art 6(1)(b)); the optional enrichment input may be skipped |
 | Build and maintain your Memory Web | Memory Web facts, chat, voice transcripts | Contract (Art 6(1)(b)); consent where you enable optional memory features |
 | Offer and follow up a Blind Spot reflection | Business context, verified intentions, decisions, check-ins, confirmed pattern evidence, experiment outcome | Contract (Art 6(1)(b)); the pattern is stored only after your confirmation |
 | Generate AI responses, briefings, and assessments | Business context, chat, assessments, preferences, transcripts | Contract (Art 6(1)(b)) |

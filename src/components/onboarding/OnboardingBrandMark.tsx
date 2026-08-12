@@ -1,5 +1,4 @@
 import { useReducedMotion } from 'framer-motion';
-import mindmakerIcon from '@/assets/mindmaker-icon.png';
 import { CtrlMonogram } from '@/components/brand/CtrlMonogram';
 
 interface OnboardingBrandMarkProps {
@@ -36,15 +35,15 @@ export function OnboardingBrandMark({
         aria-hidden="true"
         style={{ opacity: onboardingOpacity, transition }}
       >
-        <CtrlMonogram size={size} animated={animated} />
+        <CtrlMonogram size={size} animated={animated} tone="mymu" />
       </span>
-      <img
-        src={mindmakerIcon}
-        alt=""
+      <span
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-contain"
+        className="absolute inset-0"
         style={{ opacity: ctrlOpacity, transition }}
-      />
+      >
+        <CtrlMonogram size={size} animated={animated} tone="ctrl" />
+      </span>
     </span>
   );
 }

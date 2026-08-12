@@ -2,6 +2,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { fetchWithTimeout } from '../_shared/with-timeout.ts';
 import { checkRateLimit } from '../_shared/rate-limit.ts';
+import { gatherCompanySignals } from '../_shared/company-signals.ts';
+import { dossierFromRow } from '../_shared/onboarding-dossier.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +11,7 @@ const corsHeaders = {
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const LINKEDIN_RE = /^https:\/\/(?:[a-z]{2,3}\.)?(?:www\.)?linkedin\.com\/in\/[a-z0-9_%-]+\/?(?:\?.*)?$/i;
 const FREE_DOMAINS = new Set(['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'icloud.com', 'proton.me', 'protonmail.com']);
 
 function json(body: unknown, status = 200) {
@@ -27,8 +30,12 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const id = String(body?.id ?? '').trim();
+    const kind = body?.kind === 'linkedin' ? 'linkedin' : 'email';
     const email = String(body?.email ?? '').trim().toLowerCase().slice(0, 320);
-    if (!id || body?.kind !== 'email' || !EMAIL_RE.test(email)) return json({ error: 'Invalid enrichment request' }, 400);
+    const linkedinInput = String(body?.linkedin ?? '').trim().slice(0, 1000);
+    if (!id || (kind === 'email' ? !EMAIL_RE.test(email) : !LINKEDIN_RE.test(linkedinInput))) {
+      return json({ error: 'Invalid enrichment request' }, 400);
+    }
 
     const admin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -43,15 +50,16 @@ serve(async (req) => {
     if (!rate.allowed) return json({ ok: true, status: 'recent' });
 
     await admin.from('cannes_responses').update({
-      email,
-      email_captured_at: new Date().toISOString(),
-      enrichment_kind: 'email',
+      ...(kind === 'email' ? { email, email_captured_at: new Date().toISOString() } : {}),
+      enrichment_kind: kind,
       enrichment_status: 'pending',
       enrichment_started_at: new Date().toISOString(),
-      enrichment_raw_input: { kind: 'email', domain: email.split('@')[1] },
+      enrichment_raw_input: kind === 'email'
+        ? { kind, domain: email.split('@')[1] }
+        : { kind, linkedin: linkedinInput },
     }).eq('id', id);
 
-    const domainFromEmail = email.split('@')[1] ?? '';
+    const domainFromEmail = kind === 'email' ? email.split('@')[1] ?? '' : '';
     const businessDomain = FREE_DOMAINS.has(domainFromEmail) ? null : domainFromEmail;
     const providers: string[] = [];
     let name: string | null = null;
@@ -67,7 +75,7 @@ serve(async (req) => {
     if (pdlKey) {
       try {
         const pdl = await fetchJson(
-          `https://api.peopledatalabs.com/v5/person/enrich?email=${encodeURIComponent(email)}&min_likelihood=6&titlecase=true`,
+          `https://api.peopledatalabs.com/v5/person/enrich?${kind === 'email' ? `email=${encodeURIComponent(email)}` : `profile=${encodeURIComponent(linkedinInput)}`}&min_likelihood=6&titlecase=true`,
           { 'X-Api-Key': pdlKey, accept: 'application/json' },
           'pdl',
         );
@@ -106,8 +114,18 @@ serve(async (req) => {
       }
     }
 
-    const ready = Boolean(name || role || company || companyBlurb);
-    await admin.from('cannes_responses').update({
+    const signalResult = company
+      ? await gatherCompanySignals({
+          companyName: company,
+          domain: companyDomain,
+          tavilyKey: Deno.env.get('TAVILY_API_KEY'),
+          braveKey: Deno.env.get('BRAVE_SEARCH_API'),
+        }).catch(() => ({ signals: [], providers: [] }))
+      : { signals: [], providers: [] };
+    providers.push(...signalResult.providers.filter((provider) => !providers.includes(provider)));
+
+    const ready = Boolean(name || role || company || companyBlurb || signalResult.signals.length);
+    const update = {
       enrichment_status: ready ? 'ready' : 'thin',
       enrichment_name: name,
       enrichment_role: role,
@@ -115,13 +133,15 @@ serve(async (req) => {
       enrichment_company_blurb: companyBlurb,
       resolved_linkedin_url: linkedinUrl,
       resolution_confidence: providers.includes('pdl') ? 'high' : ready ? 'medium' : 'low',
-      resolution_provenance: { identity: providers.includes('pdl') ? 'pdl' : null, company: providers.includes('brandfetch') ? 'brandfetch' : 'email_domain' },
+      resolution_provenance: { identity: providers.includes('pdl') ? 'pdl' : null, company: providers.includes('brandfetch') ? 'brandfetch' : providers.includes('pdl') ? 'pdl' : businessDomain ? 'email_domain' : null },
       providers_hit: providers,
       company_domain: companyDomain,
       company_context: { logoUrl, brandColors },
+      enrichment_signals: signalResult.signals,
       enrichment_completed_at: new Date().toISOString(),
-    }).eq('id', id);
-    return json({ ok: true, status: ready ? 'ready' : 'thin' });
+    };
+    await admin.from('cannes_responses').update(update).eq('id', id);
+    return json({ ok: true, status: ready ? 'ready' : 'thin', dossier: dossierFromRow(update) });
   } catch {
     return json({ ok: false, status: 'failed' }, 200);
   }

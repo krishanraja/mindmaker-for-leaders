@@ -15,9 +15,9 @@ Last verified: 2026-08-11
 | Test suite at baseline | 870 tests in 53 files |
 | Edge Function directories | 113 excluding `_shared` |
 | Hook files | 78 |
-| SQL migration files | 159 |
+| SQL migration files | 160 in the source tree; 159 at the deployed application baseline |
 
-Repository inventory at this production baseline is 113 Edge Function directories excluding `_shared`, 78 hook files, and 159 SQL migration files.
+Current source inventory is 113 Edge Function directories excluding `_shared`, 78 hook files, and 160 SQL migration files. The additional migration belongs to the onboarding company-recognition release candidate described below.
 
 ## Blind Spot production release
 
@@ -49,6 +49,14 @@ This file records the deployed application baseline that the current documentati
 - Decide, Blind Spot, Memory, context export, delivery, and Edge Pro billing paths are present.
 - Lesson-kit routes redirect to the public demo.
 - Vault-backed prewarm and delivery jobs are represented by the release migrations and runbook.
+
+## Onboarding company-recognition release candidate
+
+The source tree includes the next additive onboarding release: a 72px animated segmented loading instrument; work-email or LinkedIn resolution; a server-sanitised company dossier with fresh linked signals; one-click confirmation or correction; confirmed company and role handoff into Memory; and company-first no-login result and daily briefings. It uses the existing PDL, Brandfetch, Tavily, and Brave providers and introduces no second curation store.
+
+Release-candidate verification: 876 Vitest tests pass across 55 files; the four public-onboarding Playwright journeys pass at 390x844, 320x568, desktop, and reduced motion; typecheck introduces zero diagnostics against the 221-diagnostic baseline; targeted lint, standards, documentation checks, the 2,791-module production build, and 3/3 prerender routes pass. The browser suite includes correction recovery, linked evidence, briefing consent, handoff navigation, 44px targets, and horizontal-overflow checks.
+
+This section describes the reviewed release candidate only. It becomes part of the production baseline after the exact merged Git revision, Vercel deployment, Supabase migration, and six changed Edge Functions have separate deployed readback.
 
 ## Verification evidence
 

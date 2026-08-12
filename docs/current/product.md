@@ -19,6 +19,8 @@ The product succeeds when the leader can make a better call with less interface 
 
 ```text
 one-question intake
+  -> optional company recognition and fresh evidence
+  -> one-click confirmation or correction
   -> consented context
   -> one useful First Lens
   -> shared, corroborated AI intelligence
@@ -48,6 +50,8 @@ Memory keeps only three facets: Graph, All facts, and Library. Privacy, retentio
 ## Entry and delivery
 
 - The public intake asks one warm question at a time and requires no account.
+- A work email or LinkedIn URL may resolve a company dossier in the background. The result shows the company, role, source strength, and at most three fresh linked signals before the leader confirms it.
+- Thin or failed enrichment stays quiet and honest. It never fabricates a company, news item, or completed search step.
 - Only consented, bounded context crosses the handoff into CTRL.
 - First Lens must make the handoff feel immediately useful, not like another setup step.
 - Email and audio are first-class delivery modes. A user can receive value without opening the dashboard.
@@ -78,6 +82,7 @@ The audio briefing follows the same voice. Spoken follow-up must remain grounded
 ## Learning and consent
 
 - Explicit facts may enter durable memory after a clear user action.
+- Company and role enrichment remain provisional until the leader chooses the result-state action. `Not quite` replaces the starting identity with one work email or LinkedIn URL and reruns the same pipeline.
 - Tentative inferences remain candidates until confirmed.
 - Content reactions tune ranking; they do not become personality facts.
 - Skipping is neutral.

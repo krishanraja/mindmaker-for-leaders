@@ -44,6 +44,8 @@ CTRL promises a quieter way through both. The mechanism is one connected loop:
 
 ```text
 one-question intake
+  -> optional company recognition with linked current evidence
+  -> one-click confirmation or correction
   -> consented context
   -> First Lens
   -> corroborated AI signals ranked to the leader
@@ -73,6 +75,7 @@ Entitlements are owned by [`src/constants/planMatrix.ts`](../../src/constants/pl
 Use these mechanics as proof. Do not convert them into unsupported outcome statistics.
 
 - Today, briefing, and no-login delivery use the same curated and personally ranked pool.
+- Optional onboarding enrichment accepts one work email or public LinkedIn URL, shows the resolved company and fresh linked signals, and transfers the bounded dossier only after the leader confirms it. Search failure or thin evidence is shown as thin rather than filled with invented context.
 - Decide decomposes a call into claims, verifies load-bearing claims, and exposes the evidence trail and judgement boundary.
 - A Blind Spot pattern requires one current user-authored or verified intention plus at least two distinct recurrence records. The recurrence must span two source kinds or at least seven days. Anything weaker is labelled a tension and asks one low-cost question.
 - Blind Spot displays server-owned excerpts, source labels, dates, and evidence strength. A generated candidate is not saved before confirmation.

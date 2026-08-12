@@ -22,11 +22,13 @@ Entitlements are defined by [`src/constants/planMatrix.ts`](../../src/constants/
 ## Supporting capabilities
 
 - Public one-question onboarding and future-memory result, with a progressive Make Your Mind Up to CTRL visual handoff across the six questions.
+- Optional one-field company recognition from a work email or LinkedIn URL. It resolves a bounded company dossier, checks fresh company-specific news, shows source strength and linked evidence, and offers one quiet correction before the confirmed context follows the leader into CTRL.
 - Consented handoff into authenticated context and First Lens.
 - Nine AI-native news categories with stable visual motifs.
 - Shared-source clustering, corroboration, category balance, and role-aware ranking.
 - One feed-tuning control reused by Today and Settings.
 - Email and audio delivery without a dashboard visit.
+- No-login briefings use confirmed company signals first and fill remaining space from the same shared curation pool rather than creating a company-news feed.
 - Context export for use in ChatGPT, Claude, Gemini, Cursor, and Claude Code.
 - Decision watch, outcomes, track record, and map.
 - Memory correction lineage, verification, encryption, expiry settings, and export.

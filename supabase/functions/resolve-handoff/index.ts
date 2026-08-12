@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
   const { data: row, error } = await supabase
     .from("portfolio_handoff")
     .select(
-      "entry_variant, q2, q4, anxiety_lane, company_domain, archetype_title, source, consumed_at, expires_at",
+      "entry_variant, q2, q4, anxiety_lane, company_domain, archetype_title, source, consumed_at, expires_at, person_name, role_title, linkedin_url, company_name, company_summary, company_logo_url, company_signals, dossier_strength, dossier_confirmed_at",
     )
     .eq("id", token)
     .single();
@@ -70,6 +70,15 @@ Deno.serve(async (req) => {
       companyDomain: row.company_domain,
       archetypeTitle: row.archetype_title,
       source: row.source,
+      personName: row.person_name,
+      roleTitle: row.role_title,
+      linkedinUrl: row.linkedin_url,
+      companyName: row.company_name,
+      companySummary: row.company_summary,
+      companyLogoUrl: row.company_logo_url,
+      companySignals: row.company_signals,
+      dossierStrength: row.dossier_strength,
+      dossierConfirmedAt: row.dossier_confirmed_at,
     },
   });
 });
