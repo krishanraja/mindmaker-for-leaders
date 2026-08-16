@@ -2,7 +2,7 @@
 
 Status: Current index
 Owner: Mindmaker
-Last verified: 2026-08-11
+Last verified: 2026-08-16
 
 The canonical current set lives in [`docs/current/`](../docs/current/README.md). This directory contains commercial context, operating references, compliance records, decisions, and history.
 
@@ -36,6 +36,8 @@ Measured in the current source tree on 2026-08-11: 113 Edge Function directories
 | [`docs/CTRL-SYSTEM-SPEC.md`](../docs/CTRL-SYSTEM-SPEC.md) | Historical product-system design record |
 | [`docs/MAIN-APP-POLISH-SPEC.md`](../docs/MAIN-APP-POLISH-SPEC.md) | Historical interface design plan |
 | [`COMMON_ISSUES.md`](./COMMON_ISSUES.md) | Historical incidents and troubleshooting clues |
+| [`docs/PRICING.md`](../docs/PRICING.md) | Tier and capability reference kept in sync with the pricing code constants |
+| [`docs/VOICE_PROFILE.md`](../docs/VOICE_PROFILE.md) | Dormant voice-profile capture subsystem reference |
 | [`compliance/`](./compliance/README.md) | Policies, records, controls, and open legal work |
 
 ## Historical records

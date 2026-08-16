@@ -1,7 +1,7 @@
 # CTRL agent instructions
 
 Status: Current
-Last verified: 2026-08-11
+Last verified: 2026-08-16
 
 Read only the guide that matches the task:
 

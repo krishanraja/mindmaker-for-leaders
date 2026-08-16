@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-08-10
+Last reviewed: 2026-08-16 (BuiltWith and Tranco added after a code-level retriever audit; see the note below)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).
@@ -32,6 +32,8 @@ As of 2026-08-10, none of the DPAs below are marked "Signed". Formalizing signed
 | Brandfetch | Optional onboarding company identity and logo resolution | Company domain | US | To confirm | SCCs (to confirm/sign) |
 | Jina | Business-context enrichment (company site reads) and briefing content retrieval | Company URLs/content, briefing topics | US | To confirm | SCCs (to confirm/sign) |
 | Apollo | Company enrichment | Company name/domain (business context) | US | To confirm | SCCs (to confirm/sign) |
+| BuiltWith | Decision-engine evidence retrieval: detected technology stack for a claim's company domain, when configured | Company domain | US | To confirm | SCCs (to confirm/sign) |
+| Tranco | Decision-engine evidence retrieval: public domain-popularity ranking for a claim's company domain | Company domain | EU | To confirm | SCCs (to confirm/sign) |
 | Google (OAuth) | Sign-in / authentication | Email, name, OAuth identity | US | Standard terms | SCCs (to confirm/sign) |
 | Google Sheets | Operations sync | Minimized account/usage data | US | Standard terms | SCCs (to confirm/sign) |
 | NewsAPI.org | News aggregation for the daily briefing and the Home news feed | Briefing/news topics (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
@@ -43,6 +45,7 @@ Notes:
 - Search/enrichment providers (Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa, Artificial Analysis) primarily receive briefing, decision, or company topics and queries rather than direct account identifiers, but topics can be personal where you have personalized them; they are treated as subprocessors.
 - Optional public onboarding enrichment sends the work email or public LinkedIn URL to People Data Labs and the resolved company domain to Brandfetch. Tavily and Brave receive the company name/domain query, not the leader's private onboarding answers.
 - Apollo and Jina (company-site reads) receive company-level data used for enrichment; treat as processing of business context.
+- BuiltWith and Tranco (`supabase/functions/decision-engine/retrievers.ts`) receive only a company domain extracted from a decision claim, alongside Apollo and PDL in the same structured-retriever pipeline. BuiltWith is gated by `BUILTWITH_API_KEY` and returns nothing when the key is absent; whether that key is currently set in production has not been confirmed from code alone. Tranco requires no API key and runs whenever a domain is present.
 - PostHog is loaded client-side (`index.html`) and tags events `product: mm_ctrl` so a shared Mindmaker-wide PostHog project can separate ventures; it captures page views and in-app usage, not Memory Web content.
 - Card data is never stored by Mindmaker; Stripe tokenizes it.
 
@@ -58,5 +61,6 @@ Notes:
 - Execute and file signed DPAs and SCCs with each subprocessor above.
 - Capture, for each AI provider, written confirmation that API content is excluded from model training.
 - Record each provider's sub-subprocessor list and security posture (e.g., the provider's own SOC 2 report) as vendor evidence.
+- Founder to confirm whether `BUILTWITH_API_KEY` is currently set in the production Supabase project; if it is not, BuiltWith is dormant code rather than an active subprocessor and this register should say so explicitly.
 
 See [CONTROL_MATRIX.md](./CONTROL_MATRIX.md) (CC9 / vendor management) for status tracking.

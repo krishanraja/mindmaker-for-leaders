@@ -1,6 +1,6 @@
 # Voice profile subsystem
 
-Last reconciled: 2026-08-10
+Last reconciled: 2026-08-16
 
 Voice Profile is a dormant, unmounted capture subsystem retained for compatibility with existing memory records and the nested skill-generation harness. It is not a primary CTRL surface and must not be marketed as a current user capability until a one-tap, tested entry point exists.
 

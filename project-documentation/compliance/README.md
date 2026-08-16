@@ -1,6 +1,6 @@
 # CTRL Compliance Documentation Pack
 
-Last reviewed: 2026-08-10 (canonical host, unified product, and retired lesson-kit status reconciled)
+Last reviewed: 2026-08-16 (subprocessor register audited against decision-engine code; two undocumented domain-lookup retrievers, BuiltWith and Tranco, added)
 Owner: Krish Raja, Mindmaker
 Contact: privacy@themindmaker.ai
 Product: CTRL (AI decision-support and advisory tool for busy leaders)

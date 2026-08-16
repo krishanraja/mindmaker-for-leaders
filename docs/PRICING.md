@@ -1,6 +1,6 @@
 # CTRL pricing
 
-Last reconciled: 2026-08-10
+Last reconciled: 2026-08-16
 
 CTRL has two self-serve tiers. Free is a useful daily instrument, not a trial. Edge Pro deepens the decision engine and makes CTRL's context available to the leader's own agents.
 

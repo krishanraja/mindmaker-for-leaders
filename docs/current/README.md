@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
+Last verified: 2026-08-16 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
 
 This directory is the shortest reliable path from product intent to safe operation. It describes CTRL as it exists now. Git history and the dated project records explain how it arrived here.
 

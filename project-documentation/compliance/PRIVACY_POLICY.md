@@ -1,7 +1,7 @@
 # CTRL Privacy Policy
 
 Effective date: 2026-06-02
-Last reviewed: 2026-08-11 (public onboarding company recognition and evidence handling reconciled)
+Last reviewed: 2026-08-16 (Section 6 named-subprocessor list reconciled with SUBPROCESSORS.md; People Data Labs and Brandfetch added)
 
 This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://makeyourmindup.ai. CTRL is an AI decision-support and advisory tool for busy leaders. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 
@@ -62,7 +62,7 @@ CTRL sends your inputs (chat, business context, assessment answers, briefing top
 
 ## 6. How we share your data
 
-We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), Anthropic and xAI when configured for decision review, ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa, Artificial Analysis, Apollo, Google (OAuth and Sheets), PostHog, and Vercel.
+We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), Anthropic and xAI when configured for decision review, ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa, Artificial Analysis, Apollo, People Data Labs, Brandfetch, Google (OAuth and Sheets), PostHog, and Vercel.
 
 ## 7. Voice and audio
 

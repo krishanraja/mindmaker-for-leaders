@@ -1,6 +1,6 @@
 # CTRL replication and release guide
 
-Last reconciled: 2026-08-10
+Last reconciled: 2026-08-16
 
 This is the operational guide for a fresh CTRL instance and for releasing the canonical production instance. Do not copy credentials from documentation or chat.
 

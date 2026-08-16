@@ -2,7 +2,7 @@
 
 Status: Current brand reference
 Owner: Mindmaker
-Last verified: 2026-08-11
+Last verified: 2026-08-16
 
 Commercial claims and approved outward-facing copy live in [`../docs/current/commercial.md`](../docs/current/commercial.md). This file owns brand architecture, voice, visual language, and vocabulary.
 

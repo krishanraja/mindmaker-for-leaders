@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
+Last verified: 2026-08-16 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
 
 This is the single human-readable authority for marketing and selling CTRL. The machine-readable companion is [`public/.well-known/product.json`](../../public/.well-known/product.json). Agents must use both and may not upgrade an inference into a claim.
 
