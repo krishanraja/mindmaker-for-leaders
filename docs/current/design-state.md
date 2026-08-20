@@ -2,17 +2,21 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8` and the locked Blind Spot prototype hash below
+Last verified: 2026-08-20 against the merged positioning and data-class change
 
 This is the single resumable state route for material CTRL interface work. Product and architecture truth remain in the other `docs/current/` documents. Accepted product decisions remain in `project-documentation/DECISIONS_LOG.md`.
 
 ## Current phase
 
-- Surface: Blind Spot trusted-advisor redesign
-- Phase: Production verified
-- Gate: Complete
-- Production implementation: Live on `https://makeyourmindup.ai` from `main`
-- Data mode: Synthetic fixture for mutations; production metadata, security, deployment, and rendered-flow readback
+- Surface: privacy and disclosure surfaces, plus the repository cleanup that followed
+- Phase: Merged to `main`, not yet deployed
+- Gate: Two migrations await application to production. See [release state](./release-state.md).
+- Production implementation: The prior baseline is still live. This change is committed, not released.
+- Data mode: Production readback through the Supabase management API for functions, cron jobs, and schema objects
+
+**The one next action:** apply `20260820120000_retention_cleanup_cron.sql` and `20260820130000_blind_spot_burn.sql` through the reviewed production migration path, then confirm the `retention-cleanup` job and the `burn_blind_spot_pattern` function by object readback.
+
+The Blind Spot trusted-advisor redesign that previously occupied this slot is complete and live; its verification record is preserved in [release state](./release-state.md).
 
 ## Design task contract
 

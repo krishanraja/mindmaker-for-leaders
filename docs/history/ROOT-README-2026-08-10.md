@@ -1,5 +1,7 @@
 # Historical CTRL root README
 
+Status: Historical
+
 > Historical record only. This was the repository entry point before the current documentation refactor. Start at [`../../README.md`](../../README.md).
 
 > A quieter way through AI.

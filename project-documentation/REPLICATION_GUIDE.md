@@ -1,5 +1,11 @@
 # CTRL replication and release guide
 
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
+
+The release and recovery runbook. [`docs/current/release-state.md`](../docs/current/release-state.md) owns what is currently deployed; this file owns how to get there and how to get back.
+
 Last reconciled: 2026-08-10
 
 This is the operational guide for a fresh CTRL instance and for releasing the canonical production instance. Do not copy credentials from documentation or chat.
@@ -13,7 +19,7 @@ This is the operational guide for a fresh CTRL instance and for releasing the ca
 - ElevenLabs for audio, Resend for email, Stripe for Edge Pro.
 - Vercel for frontend deployment.
 
-Recounted 2026-08-20: 114 Edge Function directories excluding `_shared`, 78 hook files, and 163 SQL migrations. Re-count before quoting.
+Recounted 2026-08-20: 114 Edge Function directories excluding `_shared`, 51 hook files, and 163 SQL migrations. Re-count before quoting.
 
 ## Local setup
 

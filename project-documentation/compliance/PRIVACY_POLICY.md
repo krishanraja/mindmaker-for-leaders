@@ -1,5 +1,7 @@
 # CTRL Privacy Policy
 
+Status: Reference
+
 Effective date: 2026-06-02
 Last reviewed: 2026-08-11 (public onboarding company recognition and evidence handling reconciled)
 

@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11
+Last verified: 2026-08-20
 
 Documentation is part of the release. Its job is to let a new engineer, operator, or agent find current truth without reading chronology or guessing which overlay wins.
 
@@ -37,6 +37,12 @@ Only `docs/current/` may claim to be the general current product, commercial, an
 - Decisions use append-only, unique numeric IDs. A later decision may supersede an earlier one but may not reuse its ID.
 - Delivery state records evidence, not a conversation transcript or unapproved next action.
 - Compliance claims name the capability and provider path. Do not describe one global primary model unless code actually has one.
+
+## Where history lives
+
+One archive location: [`docs/history/`](../history/). A superseded document moves there, keeps its body verbatim, and gains a class header, an archive date, and a line naming what replaced it. Do not create a second archive directory; `project-documentation/_archive/` was consolidated into `docs/history/` on 2026-08-20.
+
+A dated record that is still operationally useful is Reference, not Historical. The test is whether someone doing today's work needs to read it: a log of recurring failure modes is Reference, a superseded design system is Historical.
 
 ## Freshness
 

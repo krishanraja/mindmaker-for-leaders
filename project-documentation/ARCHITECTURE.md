@@ -1,5 +1,7 @@
 # Historical architecture record
 
+Status: Historical
+
 > Historical reference only. This file preserves phase-by-phase architecture notes and superseded paths. Current architecture lives in [`../docs/current/architecture.md`](../docs/current/architecture.md). Do not use the “current overlay” language below as operating guidance.
 
 Complete system architecture and data flow documentation.

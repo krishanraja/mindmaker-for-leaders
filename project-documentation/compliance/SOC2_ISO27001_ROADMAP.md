@@ -1,5 +1,7 @@
 # SOC 2 and ISO/IEC 27001:2022 Roadmap
 
+Status: Reference
+
 Last reviewed: 2026-07-26 (verified: still forward-looking, no code claims to check; TODO(founder) confirm current engagement/vendor status, unverifiable from code)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 

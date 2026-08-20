@@ -1,5 +1,7 @@
 # CTRL agent briefing
 
+Status: Historical
+
 > **Historical commercial reference, not current guidance.** Use [`../docs/current/commercial.md`](../docs/current/commercial.md) and [`../docs/agent-instructions/marketing-sales.md`](../docs/agent-instructions/marketing-sales.md). This snapshot is retained only for provenance.
 
 Last reconciled: 2026-08-10

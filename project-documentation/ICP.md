@@ -1,5 +1,7 @@
 # Ideal customer profile
 
+Status: Historical
+
 > **Historical commercial reference, not current guidance.** Current qualification lives in [`../docs/current/commercial.md`](../docs/current/commercial.md).
 
 Last reconciled: 2026-08-10

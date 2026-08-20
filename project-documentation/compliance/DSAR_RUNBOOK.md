@@ -1,5 +1,7 @@
 # Data Subject Access Request (DSAR) Runbook
 
+Status: Reference
+
 Last reviewed: 2026-08-11 (Blind Spot confirmed evidence, experiments, and rejection fingerprints added)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 

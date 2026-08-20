@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11
+Last verified: 2026-08-20 against production readback through the Supabase management API
 
 ## Production baseline
 
@@ -12,12 +12,51 @@ Last verified: 2026-08-11
 | Source branch | `main` |
 | Application baseline | `b5770194b4646302f47e36655e389f7ec2eb43f8` |
 | Vercel deployment | `dpl_8pxe81bUS2A6dYsjkb9jyrNAdkJ8`, READY at the same source revision |
-| Test suite at baseline | 876 tests in 55 files |
-| Edge Function directories | 114 excluding `_shared` |
-| Hook files | 78 |
-| SQL migration files | 163 in the source tree. 161 are applied to production. `20260820120000_retention_cleanup_cron.sql` and `20260820130000_blind_spot_burn.sql` are committed and not yet applied; they are the open production gate for this change. `20260820090000_revoke_anon_definer_reads.sql` was applied on 2026-08-20 and verified by live grant readback and an unauthenticated REST call returning 401. |
+| Test suite | 891 tests in 55 files |
+| Edge Function directories | 114 excluding `_shared`, of 177 deployed on the shared project |
+| Hook files | 51 |
+| SQL migration files | 163 in the source tree |
 
-Current source inventory is 114 Edge Function directories excluding `_shared`, 78 hook files, and 163 SQL migration files.
+Current source inventory is 114 Edge Function directories excluding `_shared`, 51 hook files, and 163 SQL migration files.
+
+## Applied migration state, and why the ledger is not the answer
+
+Do not use `supabase_migrations.schema_migrations` to decide what is applied. Read back on 2026-08-20 it holds 85 rows, 79 of which have no corresponding file in this repository, while 157 repository files do not appear in it at all. The project predates this repository's migration history and has been changed through more than one path, so the ledger records neither side faithfully.
+
+Object readback is the reliable check. Query for the specific function, table, policy, or cron job a migration creates, and treat its presence as the evidence.
+
+Verified this way on 2026-08-20:
+
+| Object | Owning migration | Present in production |
+|---|---|---|
+| `confirm_blind_spot_candidate_v2` | `20260811144054_blind_spot_trusted_advisor.sql` | Yes |
+| `cleanup_expired_memories` | `20260125000001_memory_encryption.sql` | Yes |
+| `burn_blind_spot_pattern` | `20260820130000_blind_spot_burn.sql` | **No** |
+| `retention-cleanup` cron job | `20260820120000_retention_cleanup_cron.sql` | **No** |
+
+The last two are the open production gate for this change. Everything else this repository depends on was confirmed present by object readback rather than inferred from the ledger.
+
+`20260820090000_revoke_anon_definer_reads.sql` was applied on 2026-08-20 and verified by live grant readback and an unauthenticated REST call returning 401.
+
+## Scheduled work actually running
+
+Eleven cron jobs are active on the production database. This is the real schedule contract; a `cron.schedule` call in a migration file is only a claim until it appears here.
+
+| Job | Schedule (UTC) |
+|---|---|
+| `brain-adapt-nightly` | `30 3 * * *` |
+| `briefing-aggregate-feedback-nightly` | `7 3 * * *` |
+| `capture-week` | `0 20 * * 0` |
+| `daily-briefing-email` | `0 12 * * *` |
+| `decision-watch-hourly` | `17 * * * *` |
+| `detect-trends-weekly` | `0 11 * * 1` |
+| `google-sheets-sync-processor` | `*/5 * * * *` |
+| `live-headlines-prewarm` | `30 10 * * *` |
+| `memory-sweep-nightly` | `0 3 * * *` |
+| `north-star-daily-snapshot` | `0 6 * * *` |
+| `reactivation-nudge` | `0 13 * * *` |
+
+`retention-cleanup` is absent and will appear here once its migration is applied.
 
 ## Blind Spot production release
 

@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, plan constants, and deployed onboarding and Blind Spot contracts
+Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, plan constants, and deployed onboarding and Blind Spot contracts
 
 This inventory distinguishes the user-facing product from supporting and nested harnesses. It does not treat every route or Edge Function as a feature.
 
@@ -34,8 +34,22 @@ Entitlements are defined by [`src/constants/planMatrix.ts`](../../src/constants/
 - Memory correction lineage, verification, encryption, expiry settings, and export.
 - Privacy, retention, import, and data export are configured from the single Settings surface; Memory does not duplicate those controls.
 - Blind Spot evidence qualification, rejection suppression, one active experiment, and a due briefing check-in.
-- Billing, account deletion, consent, and compliance controls.
+- Blind Spot burn: a confirmed pattern, its evidence links, and its experiment can be deleted outright. Only a content-free anchor fingerprint is retained, so the same read is not regenerated the next day, and the surface says exactly that.
+- Off the record: a session-scoped mode that writes nothing durable. No memory, no evidence, no influence on the next briefing. It is not persisted, so it resets on reload, and the product states plainly when a session saved nothing.
+- Third-party minimisation at the Memory boundary. A person named next to a role is stored as the role; a fact whose subject is another person is not stored at all.
+- Retention enforcement on a daily schedule, applying the 30-day, 90-day, or indefinite window chosen in Settings.
+- Billing, account deletion including subscription cancellation, consent, and compliance controls.
 - Loading, stale-chunk, network, and retry recovery paths.
+
+## Public surfaces
+
+These are static pages served ahead of the SPA by rewrites in `vercel.json`, not React routes.
+
+| Surface | Path | Job |
+|---|---|---|
+| Pricing | `/pricing` | The two tiers and what each includes |
+| Questions | `/faq` | Tier 1 answers to what CTRL is, who it is for, and where a leader's thinking lives |
+| Security and privacy | `/trust` | The full posture: what is in place, in progress, and not done |
 
 ## Edge Pro
 

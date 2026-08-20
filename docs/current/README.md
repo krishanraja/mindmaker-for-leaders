@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
+Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8` and live Supabase readback
 
 This directory is the shortest reliable path from product intent to safe operation. It describes CTRL as it exists now. Git history and the dated project records explain how it arrived here.
 
@@ -44,10 +44,21 @@ Code wins when prose drifts. Correct the prose in the same change.
 
 ## Reference, not competing truth
 
+Each of these is authoritative inside its own named boundary and nowhere else. Every reference document in the repository is listed here; if a file is not in this list and not marked Historical, that is a documentation defect.
+
 - [`docs/CURATION-SYSTEM-SPEC.md`](../CURATION-SYSTEM-SPEC.md) is the detailed curation implementation reference.
+- [`docs/PORTFOLIO-HIVE-MIND.md`](../PORTFOLIO-HIVE-MIND.md) records the three-product portfolio that shares one Supabase project, and is the deeper background to the shared-project boundary in [architecture](./architecture.md#the-supabase-project-is-shared).
+- [`docs/ENRICHMENT-CONVERGENCE.md`](../ENRICHMENT-CONVERGENCE.md) records why the two enrichment waterfalls were deliberately kept separate.
+- [`docs/HARNESS-CHAIN-STATE.md`](../HARNESS-CHAIN-STATE.md) is what is live, deferred, and open in the harness chain, with [`docs/PHASE-0.5-HANDRUN.md`](../PHASE-0.5-HANDRUN.md) as its by-hand protocol.
+- [`docs/AGENTIC_UI_TESTING.md`](../AGENTIC_UI_TESTING.md) is the agent-driven UI testing approach.
+- [`docs/UX-PRINCIPLES.md`](../UX-PRINCIPLES.md) is the reasoning behind the experience laws that [product](./product.md) owns.
+- [`docs/VOICE_PROFILE.md`](../VOICE_PROFILE.md) is the dormant voice-profile subsystem: capture removed, read path live.
+- [`project-documentation/NORTH_STAR.md`](../../project-documentation/NORTH_STAR.md) is the flywheel metric and its instrumentation.
+- [`docs/BRIEFING_GENERATION_HISTORY.md`](../BRIEFING_GENERATION_HISTORY.md) is the running log of briefing-generation failure modes. Read it before changing that path.
 - [`project-documentation/REPLICATION_GUIDE.md`](../../project-documentation/REPLICATION_GUIDE.md) is the release and recovery runbook.
 - [`project-documentation/compliance/`](../../project-documentation/compliance/README.md) contains legal and control records. Their status labels are authoritative for compliance claims.
 - [`project-documentation/HISTORY.md`](../../project-documentation/HISTORY.md) and [`APP-DELIVERY-STATE.md`](../../project-documentation/APP-DELIVERY-STATE.md) are historical records, not current instructions.
+- [`docs/history/`](../history/) is the single archive location for superseded documents.
 
 ## Freshness rule
 

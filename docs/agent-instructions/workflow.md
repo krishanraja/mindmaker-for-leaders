@@ -1,14 +1,14 @@
 # Workflow and Git
 
 Status: Current
-Last verified: 2026-08-11
+Last verified: 2026-08-20
 
 ## Before editing
 
 1. Read the root instructions and the current document for the boundary being changed.
 2. Inspect `git status`, the active branch, and overlapping user changes.
 3. State the target, source of truth, pass signals, rollback, and any external approval gate.
-4. Create a `codex/` branch. Never push directly to `main`.
+4. Work on an agent-prefixed branch, `claude/` or `codex/` by convention. An agent never pushes directly to `main`; only the repository owner may choose to merge locally.
 
 ## Editing
 

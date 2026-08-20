@@ -1,8 +1,10 @@
 # Historical CTRL system design record
 
+Status: Historical
+
 > Historical reference only. This file records the product-system design sequence and contains superseded navigation and lifecycle language. Current product truth lives in [`current/product.md`](./current/product.md); current architecture lives in [`current/architecture.md`](./current/architecture.md).
 
-> **Current release overlay, 2026-08-10.** CTRL is one product at `makeyourmindup.ai`. Make Your Mind Up is its warm, one-question-at-a-time intake. The stable primary surfaces are Today, Briefing, Decide, Blind Spot, Memory, and Settings. Today presents one ranked First Lens over a shared curation pool, retaining the premium category visual system. Blind Spot replaces Automator/Skill Builder as the promoted development experience. No-login email/audio delivery is a primary mode, not a secondary add-on. User overwhelm is poison: one useful ask at a time, common actions in one tap, and no duplicated feeds or setup chores. This overlay supersedes conflicting phase-era surface names and navigation below; the dated detail remains design history.
+> The current product surfaces, navigation, and delivery contract are owned by [`current/product.md`](./current/product.md) and [`current/features.md`](./current/features.md). An earlier revision of this file carried a "current release overlay" above the dated body, which the documentation standard forbids because it preserves stale prose under a fresh heading. The overlay was removed on 2026-08-20; everything below is design history.
 
 Status: founder-locked. The canonical rule for making CTRL feel like ONE coherent system. It sits above the surface specs (`MAIN-APP-POLISH-SPEC.md`, `KIT-REDESIGN-SPEC.md`): those say what each surface does; this says how they all cohere into one thing.
 

@@ -1,5 +1,7 @@
 # Historical Claude release notes
 
+Status: Historical
+
 > Historical record only. This file preserves the former root instruction file and its dated implementation notes. It is not current agent guidance. Start at [`../../CLAUDE.md`](../../CLAUDE.md).
 
 ## Current product truth (2026-08-10)

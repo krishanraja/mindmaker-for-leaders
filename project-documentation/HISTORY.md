@@ -1,5 +1,7 @@
 # History
 
+Status: Historical
+
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
 **Last reconciled:** 2026-08-10.

@@ -1,5 +1,13 @@
 # CTRL pricing
 
+Status: Historical
+Superseded: 2026-08-20
+Owner: Mindmaker
+
+> **Not current guidance.** This file is retained because `CHALLENGE.md` cites it as the pricing record of the 2026-08-04 ruling, and that citation must keep resolving. It is no longer canon.
+>
+> Current authority: [`docs/current/commercial.md`](./current/commercial.md) for the human-readable offer, [`public/.well-known/product.json`](../public/.well-known/product.json) for the machine record, `supabase/functions/_shared/edge-pricing.ts` for the price, and `src/constants/planMatrix.ts` for entitlements. Where this file and those disagree, they win.
+
 Last reconciled: 2026-08-10
 
 CTRL has two self-serve tiers. Free is a useful daily instrument, not a trial. Edge Pro deepens the decision engine and makes CTRL's context available to the leader's own agents.

@@ -1,5 +1,11 @@
 # Harness chain: where things stand, and where to pick up
 
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
+
+What is live, deferred, and open in the harness chain. The ruled register is [`CHALLENGE.md`](../CHALLENGE.md) and is not relitigated.
+
 One page. Read this before touching any of the nine stages.
 
 The ruled register is `CHALLENGE.md` at the repo root. Everything in it was accepted on 2026-08-04 and **is not relitigated**. This file says what is live, what was deferred and why, and what is genuinely still open.

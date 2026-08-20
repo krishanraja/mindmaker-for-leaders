@@ -1,5 +1,11 @@
 # Phase 0.5: the hand run
 
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
+
+The by-hand protocol for running the harness chain before the sort UI existed. Mandated by CH-17 in [`CHALLENGE.md`](../CHALLENGE.md).
+
 One person (you), one day, zero code. This runs the whole chain by hand using the five `skills/ctrl-*` skills, so the two largest assumptions in the design get measured BEFORE the sort UI is built, and the [U] thresholds get tuned on real data instead of guesses. CH-17 in CHALLENGE.md is the mandate; `skills/ctrl-intake/leaves/sort.md` is the protocol this follows.
 
 **The one rule that makes this a valid test:** generate the items with PROMPT 2 below, exactly as written, in a fresh Claude chat. That prompt is what `build-sort` will ship in Phase 2, verbatim. If a pair comes out bad, do not quietly fix it; grade it as it came out and note it. A curated item set would measure you as a facilitator, not the generator, and the result would be thrown away.

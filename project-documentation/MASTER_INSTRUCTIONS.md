@@ -1,5 +1,7 @@
 # Historical engineering instruction set
 
+Status: Historical
+
 > Historical reference only. This file predates the current product and repository workflow. Current agent guidance lives in [`../CLAUDE.md`](../CLAUDE.md), with current system rules in [`../docs/current/`](../docs/current/README.md).
 
 > **PERMANENT PROJECT KNOWLEDGE** - These instructions define how the AI assistant must behave for this project. Reference this document for all development decisions.

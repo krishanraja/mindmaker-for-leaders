@@ -1,5 +1,7 @@
 # Common Issues
 
+Status: Reference
+
 Recurring bugs, architectural pain points, and solutions.
 
 **Last reconciled:** 2026-07-26 (drift-check pass: clarified the V3 checklist's light-mode line, which read as a positive item on a literal read; no other changes needed - this is a historical bug log, not a current-state doc).

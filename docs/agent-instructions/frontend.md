@@ -1,7 +1,7 @@
 # Frontend and product UX
 
 Status: Current
-Last verified: 2026-08-11
+Last verified: 2026-08-20
 
 Read [`../current/product.md`](../current/product.md) and [`../current/features.md`](../current/features.md) before changing a user-facing surface.
 

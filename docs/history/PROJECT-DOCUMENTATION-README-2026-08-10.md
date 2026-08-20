@@ -1,5 +1,7 @@
 # Historical project-documentation index
 
+Status: Historical
+
 > Historical record only. Start at [`../current/README.md`](../current/README.md).
 
 Last reconciled: 2026-08-10

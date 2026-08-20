@@ -1,5 +1,7 @@
 # CTRL user outcomes
 
+Status: Historical
+
 > **Historical commercial reference, not current guidance.** Current outcome language and claim boundaries live in [`../docs/current/commercial.md`](../docs/current/commercial.md).
 
 Last reconciled: 2026-08-10

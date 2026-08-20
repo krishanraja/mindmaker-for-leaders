@@ -1,14 +1,22 @@
 # Supabase, data, and AI
 
 Status: Current
-Last verified: 2026-08-11
+Last verified: 2026-08-20
 
 Read [`../current/architecture.md`](../current/architecture.md) and the [`REPLICATION_GUIDE`](../../project-documentation/REPLICATION_GUIDE.md) before changing this boundary.
+
+## The project is shared
+
+Project `bkyuxvschuwngtcdhsyg` hosts CTRL alongside other Mindmaker surfaces. It carries 177 deployed Edge Functions; CTRL accounts for 113. Before you change anything server-side:
+
+- Only the directories under `supabase/functions/` belong to this repository. A function in the dashboard may be another product's.
+- Every function here is live. Several have no caller in this repository because cron, an external webhook, or an email link invokes them. Never treat "nothing imports it" as evidence a function is unused.
+- Scope migrations to objects CTRL owns. Other products have tables and cron jobs in the same database.
 
 ## Data
 
 - Migrations are append-only and additive by default.
-- Production has historical migration-ledger drift. Never run a blanket production `supabase db push`.
+- Production has historical migration-ledger drift, so `schema_migrations` cannot tell you what is applied. Confirm by reading the object a migration creates. Never run a blanket production `supabase db push`.
 - Preflight the exact schema and ledger, apply only the reviewed migration, read the objects and policies back, then record only the applied version.
 - Every retryable public or scheduled write must converge on a stable key.
 - Explicit facts, tentative inferences, and behavioral feedback remain separate data types.

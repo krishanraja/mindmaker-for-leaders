@@ -1,5 +1,11 @@
 # Design System
 
+Status: Historical
+Owner: Mindmaker
+Archived: 2026-08-20
+
+> **Not current guidance.** Superseded by [`project-documentation/BRANDING.md`](../../project-documentation/BRANDING.md) and the `ctrl-ds` tokens in `src/index.css`. Retained as a record of the prior visual system.
+
 > Superseded 2026-06-21; kept for history. This describes the OLD light design system (warm off-white `#faf9f7`, ink, Mint, Apple-like shadows). The app is now globally DARK on the `ctrl-ds` instrument palette (emerald `#00D9B6`). The live design tokens are in the code (`src/styles/tokens.css`, `index.css`) and the cross-app token contract is in `project-documentation/SPINE.md`. Do not use the values below.
 
 **Last Updated:** 2026-04-26 (archived 2026-06-21)

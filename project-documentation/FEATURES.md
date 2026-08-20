@@ -1,5 +1,7 @@
 # Historical feature inventory
 
+Status: Historical
+
 > Historical reference only. This file preserves shipped, retired, and superseded feature detail. The current inventory lives in [`../docs/current/features.md`](../docs/current/features.md).
 
 Complete feature inventory.

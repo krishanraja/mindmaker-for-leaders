@@ -1,5 +1,7 @@
 # CTRL value proposition
 
+Status: Historical
+
 > **Historical commercial reference, not current guidance.** Current positioning and approved copy live in [`../docs/current/commercial.md`](../docs/current/commercial.md).
 
 Last reconciled: 2026-08-10

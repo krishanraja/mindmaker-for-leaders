@@ -1,5 +1,7 @@
 # CTRL Data Retention Policy
 
+Status: Reference
+
 Last reviewed: 2026-08-20 (retention cleanup scheduled; Google Sheets ops sync narrowed to aggregate metrics)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 

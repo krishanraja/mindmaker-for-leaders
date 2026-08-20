@@ -1,11 +1,13 @@
 # CTRL Compliance Documentation Pack
 
-Last reviewed: 2026-08-10 (canonical host, unified product, and retired lesson-kit status reconciled)
+Status: Reference
+
+Last reviewed: 2026-08-20 (shared-project scope recorded; CONTROL_MATRIX, ROPA, SUBPROCESSORS and DATA_RETENTION_POLICY reconciled against production readback)
 Owner: Krish Raja, Mindmaker
 Contact: privacy@themindmaker.ai
 Product: CTRL (AI decision-support and advisory tool for busy leaders)
 Production URL: https://makeyourmindup.ai
-Supabase project ref: bkyuxvschuwngtcdhsyg
+Supabase project ref: bkyuxvschuwngtcdhsyg (shared: CTRL runs alongside other Mindmaker surfaces in this project, so database-wide figures in this pack cover the whole project rather than CTRL alone)
 
 ## Honest posture statement
 

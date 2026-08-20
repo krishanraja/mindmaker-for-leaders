@@ -1,5 +1,11 @@
 # Changelog
 
+Status: Historical
+Owner: Mindmaker
+Last reconciled: 2026-08-20
+
+> A running record of shipped changes, newest first. It explains how the product arrived here; it is not a description of current behaviour. For that, see [`docs/current/`](./docs/current/README.md).
+
 ## 2026-08-11 - Shared shell and typography stability
 
 - Corrected the shared desktop page-title line box so Segoe Variable Display no longer clips in compact top bars.

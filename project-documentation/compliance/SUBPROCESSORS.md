@@ -1,5 +1,7 @@
 # CTRL Subprocessor Register
 
+Status: Reference
+
 Last reviewed: 2026-08-20 (Google Sheets narrowed to aggregate metrics)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 

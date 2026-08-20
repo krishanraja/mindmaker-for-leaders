@@ -1,5 +1,7 @@
 # Decisions Log
 
+Status: Reference
+
 Key architectural and product decisions with rationale.
 
 **Last reconciled:** 2026-08-20 (Decision 85 makes outward copy affirmational and sets the disclosure ladder; Decisions 82 to 84 hold the personal frame structurally).

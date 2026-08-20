@@ -1,5 +1,7 @@
 # CTRL by Mindmaker
 
+Status: Current
+
 > A quieter way through AI.
 
 CTRL is a calm AI briefing and decision partner for founders and small-team CEOs building the AI-native version of their business. Make Your Mind Up is its warm, one-question-at-a-time intake. The interface stays small while curation, memory, evidence, delivery, and AI orchestration do the heavy lifting.
@@ -7,6 +9,7 @@ CTRL is a calm AI briefing and decision partner for founders and small-team CEOs
 Production: [makeyourmindup.ai](https://makeyourmindup.ai)
 Product: CTRL
 Repository: `krishanraja/mm-ctrl`
+Last verified: 2026-08-20 against production readback
 
 ## Start here
 
@@ -22,6 +25,12 @@ Repository: `krishanraja/mm-ctrl`
 | Complete documentation map | [`docs/current/README.md`](./docs/current/README.md) |
 
 Executable code and authoritative environment readback outrank prose. When behavior changes, update the current document in the same pull request.
+
+## Read this before touching the backend
+
+The Supabase project is **shared**. CTRL runs alongside other Mindmaker surfaces in project `bkyuxvschuwngtcdhsyg`, which carries 177 deployed Edge Functions of which CTRL accounts for 113. A function you can see in the dashboard may belong to another product, and the database has tables and cron jobs this repository does not own.
+
+Two rules follow. Only the directories under `supabase/functions/` are yours to change. And every one of them is live, including the ones with no caller anywhere in this repository, because they are triggered by cron, by an external webhook, or by a link in an email. See [architecture](./docs/current/architecture.md#the-supabase-project-is-shared).
 
 ## Product in one loop
 
@@ -45,7 +54,7 @@ Today, Decide, Blind Spot, Memory, Briefing, and Settings are the primary produc
 | Layer | Technology |
 |---|---|
 | Frontend | React 18, TypeScript 5.5, Vite 5.4, React Router 6 |
-| UI | Tailwind CSS, Radix/shadcn, Framer Motion, `ctrl-ds` tokens |
+| UI | Tailwind CSS, Radix primitives via shadcn, Framer Motion, `ctrl-ds` tokens |
 | Client data | TanStack Query, React Context, Supabase client |
 | Backend | Supabase PostgreSQL, Auth, Storage, Edge Functions, Vault, pg_cron |
 | AI | Capability-specific OpenAI, Anthropic, Gemini, and Grok paths |
@@ -107,7 +116,7 @@ Use focused tests while iterating, then run the applicable full gates. Start `np
 
 - Frontend releases flow through a pull request to `main`; Vercel is Git-connected.
 - Edge Functions deploy independently and must preserve the auth contract in `supabase/config.toml`.
-- Canonical production has historical migration-ledger drift. Never run a blanket production `supabase db push`.
+- Canonical production has historical migration-ledger drift, so the ledger cannot tell you what is applied. Verify by object readback instead, per [release state](./docs/current/release-state.md#applied-migration-state-and-why-the-ledger-is-not-the-answer). Never run a blanket production `supabase db push`.
 - Scheduled prewarm and delivery use a Vault-backed cron secret, not a database service-role setting.
 - The Control Center bridge is a read-only source adapter inside the shared curation pool, not a second feed.
 - A release is not verified until the source revision, deployment revision, canonical host, and real user path agree.

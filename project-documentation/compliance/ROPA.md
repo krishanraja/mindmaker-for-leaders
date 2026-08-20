@@ -1,5 +1,7 @@
 # Record of Processing Activities (ROPA)
 
+Status: Reference
+
 GDPR Article 30 record for CTRL.
 Last reviewed: 2026-08-20 (Google Sheets ops sync narrowed to aggregate metrics; no personal data transferred)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai

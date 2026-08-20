@@ -1,5 +1,7 @@
 # Purpose
 
+Status: Historical
+
 > **Historical commercial reference, not current guidance.** Current product purpose lives in [`../docs/current/product.md`](../docs/current/product.md) and current commercial framing in [`../docs/current/commercial.md`](../docs/current/commercial.md).
 
 Last reconciled: 2026-08-10

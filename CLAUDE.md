@@ -1,5 +1,7 @@
 # CTRL coding instructions
 
+Status: Current
+
 CTRL is a Vite React application with a Supabase backend. Make Your Mind Up is its public intake; the product and canonical host are CTRL at `https://makeyourmindup.ai`.
 
 ## Commands

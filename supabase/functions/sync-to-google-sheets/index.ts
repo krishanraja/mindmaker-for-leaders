@@ -68,7 +68,7 @@ async function decryptToken(encryptedToken: string): Promise<string> {
 }
 
 // Get or refresh Google OAuth token with service account authentication
-async function getGoogleToken(supabase: any): Promise<string> {
+async function getGoogleToken(): Promise<string> {
   try {
     // Try service account approach first (preferred for server-to-server)
     const serviceAccountKey = Deno.env.get('GOOGLE_OAUTH_CREDENTIALS');
@@ -111,7 +111,12 @@ async function getGoogleToken(supabase: any): Promise<string> {
 }
 
 // Generate Google OAuth token using service account JWT (similar to Vertex AI)
-async function getGoogleOAuthToken(credentials: any): Promise<{ success: boolean; token?: string }> {
+interface ServiceAccountCredentials {
+  client_email: string;
+  private_key: string;
+}
+
+async function getGoogleOAuthToken(credentials: ServiceAccountCredentials): Promise<{ success: boolean; token?: string }> {
   try {
     // Google Sheets API requires spreadsheets scope
     const jwtHeader = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
@@ -205,7 +210,7 @@ async function getOrCreateSpreadsheet(accessToken: string): Promise<string> {
     }
     
     const spreadsheetData = await getResponse.json();
-    const existingSheets = spreadsheetData.sheets.map((sheet: any) => sheet.properties.title);
+    const existingSheets = (spreadsheetData.sheets as Array<{ properties: { title: string } }>).map(sheet => sheet.properties.title);
     
     // Required tabs for our data
     const requiredTabs = ['Bookings', 'Lead Scores', 'Analytics'];
@@ -255,7 +260,7 @@ async function getOrCreateSpreadsheet(accessToken: string): Promise<string> {
 }
 
 // Sync data to Google Sheets with proper headers and append functionality
-async function syncToGoogleSheets(spreadsheetId: string, accessToken: string, sheetName: string, data: any[]): Promise<void> {
+async function syncToGoogleSheets(spreadsheetId: string, accessToken: string, sheetName: string, data: MetricRow[]): Promise<void> {
   if (data.length === 0) return;
   
   // Aggregate-only columns. One row is one metric, never one person. Adding a
@@ -385,7 +390,7 @@ serve(async (req) => {
       console.error('Error creating sync log:', logError);
     }
 
-    let sheetData: any[] = [];
+    let sheetData: MetricRow[] = [];
     let sheetName = '';
 
     switch (type) {
@@ -411,7 +416,7 @@ serve(async (req) => {
     if (sheetData.length > 0) {
       try {
         // Get Google access token
-        const accessToken = await getGoogleToken(supabase);
+        const accessToken = await getGoogleToken();
         
         if (accessToken.includes('test_token') || accessToken.includes('error_fallback')) {
           // For testing: simulate successful sync without actual Google API calls
@@ -559,11 +564,35 @@ function metric(type: string, name: string, value: number): MetricRow {
   };
 }
 
+/** One row as returned by Supabase: named columns whose types we narrow at use. */
+type Row = Record<string, unknown>;
+
+/**
+ * The narrow slice of the Supabase client these aggregates use. Typing the
+ * shape we actually call keeps the builders honest without pulling the full
+ * generated database types into an edge function.
+ */
+interface SupabaseLike {
+  from(table: string): {
+    select(columns: string): {
+      order(column: string, opts: { ascending: boolean }): {
+        limit(count: number): Promise<{ data: Row[] | null; error: { message: string } | null }>;
+      };
+    };
+  };
+}
+
+/** Reads a numeric column, treating anything non-numeric as absent. */
+function num(row: Row, field: string): number | null {
+  const v = row[field];
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
 /** Counts occurrences of a field, emitting one metric row per distinct value. */
-function distribution(rows: any[], field: string, type: string, label: string): MetricRow[] {
+function distribution(rows: Row[], field: string, type: string, label: string): MetricRow[] {
   const counts = new Map<string, number>();
   for (const row of rows) {
-    const raw = row?.[field];
+    const raw = row[field];
     const key = raw === null || raw === undefined || raw === '' ? 'unspecified' : String(raw);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
@@ -578,7 +607,7 @@ function band(score: number): string {
   return 'low';
 }
 
-async function formatBookingData(supabase: any, _additionalData?: any): Promise<MetricRow[]> {
+async function formatBookingData(supabase: SupabaseLike, _additionalData?: unknown): Promise<MetricRow[]> {
   const { data: bookings, error } = await supabase
     .from('booking_requests')
     .select('status, priority, service_type, lead_score, created_at')
@@ -590,10 +619,10 @@ async function formatBookingData(supabase: any, _additionalData?: any): Promise<
     return [];
   }
 
-  const rows = bookings ?? [];
-  const scored = rows.filter((r: any) => typeof r.lead_score === 'number');
-  const averageScore = scored.length
-    ? Math.round(scored.reduce((sum: number, r: any) => sum + r.lead_score, 0) / scored.length)
+  const rows: Row[] = bookings ?? [];
+  const scores = rows.map(r => num(r, 'lead_score')).filter((v): v is number => v !== null);
+  const averageScore = scores.length
+    ? Math.round(scores.reduce((sum, v) => sum + v, 0) / scores.length)
     : 0;
 
   return [
@@ -602,16 +631,11 @@ async function formatBookingData(supabase: any, _additionalData?: any): Promise<
     ...distribution(rows, 'status', 'booking', 'status'),
     ...distribution(rows, 'priority', 'booking', 'priority'),
     ...distribution(rows, 'service_type', 'booking', 'service'),
-    ...distribution(
-      scored.map((r: any) => ({ band: band(r.lead_score) })),
-      'band',
-      'booking',
-      'lead quality',
-    ),
+    ...distribution(scores.map(v => ({ band: band(v) })), 'band', 'booking', 'lead quality'),
   ];
 }
 
-async function formatAnalyticsData(supabase: any): Promise<MetricRow[]> {
+async function formatAnalyticsData(supabase: SupabaseLike): Promise<MetricRow[]> {
   const { data: analytics, error } = await supabase
     .from('conversion_analytics')
     .select('conversion_type, service_type, source_channel, session_duration, messages_exchanged, created_at')
@@ -623,9 +647,9 @@ async function formatAnalyticsData(supabase: any): Promise<MetricRow[]> {
     return [];
   }
 
-  const rows = analytics ?? [];
-  const totalMinutes = rows.reduce((sum: number, r: any) => sum + Math.round((r.session_duration || 0) / 60), 0);
-  const totalMessages = rows.reduce((sum: number, r: any) => sum + (r.messages_exchanged || 0), 0);
+  const rows: Row[] = analytics ?? [];
+  const totalMinutes = rows.reduce((sum, r) => sum + Math.round((num(r, 'session_duration') ?? 0) / 60), 0);
+  const totalMessages = rows.reduce((sum, r) => sum + (num(r, 'messages_exchanged') ?? 0), 0);
 
   return [
     metric('analytics', 'total conversions', rows.length),
@@ -637,7 +661,7 @@ async function formatAnalyticsData(supabase: any): Promise<MetricRow[]> {
   ];
 }
 
-async function formatLeadScoreData(supabase: any): Promise<MetricRow[]> {
+async function formatLeadScoreData(supabase: SupabaseLike): Promise<MetricRow[]> {
   // Industry and company size are business attributes rather than personal
   // ones, but they are only ever emitted here as counts across the cohort.
   const { data: scores, error } = await supabase
@@ -651,10 +675,10 @@ async function formatLeadScoreData(supabase: any): Promise<MetricRow[]> {
     return [];
   }
 
-  const rows = scores ?? [];
+  const rows: Row[] = scores ?? [];
   const average = (field: string) =>
     rows.length
-      ? Math.round(rows.reduce((sum: number, r: any) => sum + (r[field] || 0), 0) / rows.length)
+      ? Math.round(rows.reduce((sum, r) => sum + (num(r, field) ?? 0), 0) / rows.length)
       : 0;
 
   return [
@@ -663,11 +687,6 @@ async function formatLeadScoreData(supabase: any): Promise<MetricRow[]> {
     metric('lead_scores', 'average engagement score', average('engagement_score')),
     metric('lead_scores', 'average business readiness', average('business_readiness_score')),
     metric('lead_scores', 'average implementation readiness', average('implementation_readiness')),
-    ...distribution(
-      rows.map((r: any) => ({ band: band(r.total_score || 0) })),
-      'band',
-      'lead_scores',
-      'quality band',
-    ),
+    ...distribution(rows.map(r => ({ band: band(num(r, 'total_score') ?? 0) })), 'band', 'lead_scores', 'quality band'),
   ];
 }

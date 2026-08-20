@@ -1,8 +1,13 @@
-# CTRL UX Principles — designing for the ADHD CEO
+# CTRL UX principles
 
-These are the load-bearing principles for every CTRL surface. When a screen
-gets cluttered, when a flow grows a step, or when we are unsure how to present a
-choice, we come back here.
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
+
+The enumerated experience laws are owned by [`docs/current/product.md`](./current/product.md). This file is the reasoning and the worked examples behind them: why the rule exists, and what following it looks like on a real screen. When the two differ, product.md wins on the rule and this file explains it.
+
+Read this when a screen gets cluttered, when a flow grows a step, or when it is
+not obvious how to present a choice.
 
 ## Who we design for
 
@@ -73,5 +78,5 @@ so the primary input is never clipped behind the nav on short devices.
 
 ---
 
-*Last reviewed 2026-06-08. If a new surface violates one of these, fix the
-surface — do not weaken the principle.*
+*If a new surface violates one of these, fix the surface. Do not weaken the
+principle.*

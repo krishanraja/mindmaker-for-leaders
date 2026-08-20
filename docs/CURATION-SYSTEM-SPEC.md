@@ -1,5 +1,11 @@
 # CTRL Curation System Spec
 
+Document class: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
+
+(The bold **Status:** line below is the implementation status of the work described, not the class of this document.)
+
 **Status:** IMPLEMENTED + LIVE (PRs #287, #293-296; 2026-06-28). The single source of truth for how CTRL decides what a leader reads and hears: the Home news deck, the Tune controls, the role/business scoring, the loading experience, and the audio Briefing. Sits under `docs/CTRL-SYSTEM-SPEC.md` (the system-level rule) and is the deep-dive for the Home area.
 
 ---
