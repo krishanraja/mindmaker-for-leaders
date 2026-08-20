@@ -142,7 +142,7 @@ export const complianceFrameworks: ComplianceFramework[] = [
         name: 'Security of Processing',
         description: 'Implement appropriate technical measures to ensure data security',
         status: 'implemented',
-        implementation: 'RLS, AES-256-GCM encryption, JWT authentication, security headers on all endpoints, rate limiting on AI functions.',
+        implementation: 'RLS, AES-256-GCM encryption, JWT authentication, baseline security headers on the web application, and rate limiting on AI functions. The shared security-header helper is applied to a subset of edge functions, not all of them.',
       },
     ],
   },

@@ -36,7 +36,8 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 // docs/current/commercial.md sets on security claims. CTRL holds no SOC 2
 // report and no ISO 27001 certificate, and does not process PHI, so no
 // certification mark belongs on this page. /trust carries the full posture,
-// including what is only in progress and what we have not done.
+// including what is only in progress and what we have not done, so the hero
+// links there rather than stating the absence in the copy.
 const heroTrustSignals = [
   'Row-level security',
   'Field-level encryption',
@@ -429,7 +430,7 @@ function Intro({
             className="-mx-1 inline-flex min-h-11 items-center rounded-lg px-1 font-mymu-serif text-[0.95rem] text-[var(--onboarding-fg-55)] underline-offset-4 transition-colors hover:text-[var(--onboarding-fg)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--onboarding-accent-a)]"
           >
             <span>
-              No SOC 2 or ISO certificate yet, and we say so
+              How your data is protected
               <ArrowRight className="ml-1.5 inline h-3.5 w-3.5 align-[-0.1em]" aria-hidden="true" />
             </span>
           </a>
