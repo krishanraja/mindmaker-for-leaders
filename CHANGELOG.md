@@ -22,7 +22,7 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 - A public `/trust` page stating the security posture in three parts: controls in place, controls in progress, and controls absent. It names the missing SOC 2 report and ISO/IEC 27001 certificate rather than implying either exists.
 - A quiet signal strip on the marketing hero listing three controls recorded as in place, linking to `/trust`.
-- Baseline security headers on the web application: HSTS, nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy, and Cross-Origin-Opener-Policy. `Permissions-Policy` allows `microphone=(self)` because voice entry needs it. A Content-Security-Policy is deliberately deferred until it is tested against Supabase, PostHog, and Stripe.
+- Baseline security headers on the web application: nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy, and Cross-Origin-Opener-Policy. `Permissions-Policy` allows `microphone=(self)` because voice entry needs it. Strict-Transport-Security is deliberately not set here: Vercel already serves `max-age=63072000` on the apex domain, so an explicit one-year header would shorten it, and `includeSubDomains` is cached by browsers for the full max-age and would be hard to reverse if any subdomain is not HTTPS. A Content-Security-Policy is deferred until it is tested against Supabase, PostHog, and Stripe.
 
 ### Fixed
 
