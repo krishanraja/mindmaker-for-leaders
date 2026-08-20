@@ -116,6 +116,7 @@ Do not use hype, fear, fake intimacy, corporate filler, or a barrage of features
 | Will it decide for me? | No. CTRL checks evidence and clarifies tensions, then makes the judgement boundary visible. The call stays with the leader. |
 | Is this consulting? | CTRL is a self-serve software product with Free and Edge Pro tiers. Separate Mindmaker services are outside this product and require separate live verification. |
 | Is my data encrypted? | Sensitive memory writes include a field-level encrypted shadow and records are owner-scoped with row-level security. Plaintext fields are retained for product use, so do not describe the system as end-to-end or exclusively encrypted. |
+| Are you SOC 2, ISO 27001, or HIPAA compliant? | No. CTRL holds no SOC 2 report and no ISO/IEC 27001 certificate, and has completed no third-party audit. HIPAA is out of scope because CTRL does not process protected health information. Point the buyer at `https://makeyourmindup.ai/trust`, which states the controls in place, the ones in progress, and the ones absent. Never place a certification mark on any surface. |
 | How long does setup take? | The public intake asks one question at a time by voice or text. Do not promise a completion time unless a current measured result is supplied. |
 | Does it integrate with Slack or WhatsApp? | Not as a shipped current channel. Today, web, email, audio, context export, and Edge Pro MCP are the current paths. |
 
@@ -138,6 +139,7 @@ Published website copy is a marketing surface, not an authority for new claims. 
 - Primary: `https://makeyourmindup.ai/`
 - Pricing: `https://makeyourmindup.ai/pricing`
 - Agent-native detail: `https://makeyourmindup.ai/agents`
+- Security posture: `https://makeyourmindup.ai/trust`
 
 For approved campaign work, preserve the supported attribution fields: `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `agent`, and `campaign_id`. Never put personal, confidential, or sensitive information in a URL. Link generation does not authorize publishing or sending.
 

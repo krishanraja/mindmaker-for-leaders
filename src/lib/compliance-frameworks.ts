@@ -1,8 +1,12 @@
 /**
  * Compliance Frameworks - Static Control Definitions
  *
- * Maps SOC2, HIPAA, GDPR, CCPA, and ISO 27001 controls
- * to their technical implementations in the MindMaker platform.
+ * Maps SOC 2, GDPR, CCPA, and ISO 27001 controls to their technical
+ * implementations in the MindMaker platform.
+ *
+ * HIPAA is deliberately absent. CTRL does not process protected health
+ * information, so HIPAA is out of scope; see
+ * project-documentation/compliance/README.md.
  */
 
 export type ControlStatus = 'implemented' | 'partial' | 'planned';
