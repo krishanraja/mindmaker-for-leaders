@@ -54,6 +54,7 @@ Nested harnesses support a specific job or portability outcome. They must not be
 | Agents | `/agents` | Public MCP/context explanation |
 | Public demo | `/try` | Pre-login shaped example |
 | Upgrade | `/upgrade`; public `/pricing` rewrite | Plan comparison and checkout entry |
+| Trust and security | Public `/trust` rewrite | Honest security posture: controls in place, in progress, and absent |
 | Preview | `/preview` | Unlinked deterministic QA fixtures |
 | Skill and MCP generation | Backend functions and exports | Portability substrate only |
 
@@ -63,7 +64,7 @@ Nested harnesses support a specific job or portability outcome. They must not be
 
 `/`, `/auth`, `/auth/callback`, `/preview`, `/agents`, `/try`, `/download`, and `/upgrade`.
 
-`/build` redirects to `/`. `/download` is feature-flagged. Vercel rewrites public `/pricing` to the static pricing page.
+`/build` redirects to `/`. `/download` is feature-flagged. Vercel rewrites public `/pricing` to the static pricing page and public `/trust` to the static trust page.
 
 ### Authenticated
 

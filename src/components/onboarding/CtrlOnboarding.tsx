@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { ArrowRight, Check, ExternalLink, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, ExternalLink, Loader2, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { haptics } from '@/lib/haptics';
 import { OnboardingBrandMark } from './OnboardingBrandMark';
@@ -30,6 +30,19 @@ const db = supabase as unknown as SupabaseClient;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LINKEDIN_RE = /^https:\/\/(?:[a-z]{2,3}\.)?(?:www\.)?linkedin\.com\/in\/[a-z0-9_%-]+\/?(?:\?.*)?$/i;
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+// Hero trust signals. Every entry must be a control that is IN PLACE in
+// project-documentation/compliance/CONTROL_MATRIX.md, phrased within the limits
+// docs/current/commercial.md sets on security claims. CTRL holds no SOC 2
+// report and no ISO 27001 certificate, and does not process PHI, so no
+// certification mark belongs on this page. /trust carries the full posture,
+// including what is only in progress and what we have not done, so the hero
+// links there rather than stating the absence in the copy.
+const heroTrustSignals = [
+  'Row-level security',
+  'Field-level encryption',
+  'Export or delete',
+] as const;
 
 function normalizeIdentity(value: string): string {
   const trimmed = value.trim();
@@ -374,13 +387,13 @@ function Intro({
   onSignIn: () => void;
 }) {
   return (
-    <section className="flex flex-1 flex-col px-6 pb-10 pt-[max(8vh,4.5rem)] sm:px-10">
+    <section className="flex flex-1 flex-col px-6 pb-8 pt-[max(5vh,3.5rem)] sm:px-10">
       <div className="flex items-center gap-3">
         <OnboardingBrandMark progress={brandProgress} size={34} animated />
         <span className="font-mymu-mono text-[11px] uppercase tracking-[0.24em] text-[var(--onboarding-fg-55)]">CTRL</span>
       </div>
 
-      <div className="my-auto py-12">
+      <div className="my-auto py-2">
         <p className="font-mymu-mono text-[11px] uppercase tracking-[0.22em] text-[var(--onboarding-fg-45)]">A quieter way through AI</p>
         <h1 className="mt-6 max-w-[18ch] font-mymu-serif text-[clamp(2.35rem,9vw,4.35rem)] font-semibold leading-[1.02] tracking-[-0.035em]">
           What if you did not need to hold all of this in your head?
@@ -399,6 +412,29 @@ function Intro({
           I already use CTRL
         </button>
         <p className="font-mymu-mono text-[10px] uppercase tracking-[0.15em] text-[var(--onboarding-fg-32)]">About three minutes. No account needed.</p>
+
+        <div className="mt-1 border-t border-[var(--onboarding-fg-08)] pt-4">
+          <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {heroTrustSignals.map((signal) => (
+              <li
+                key={signal}
+                className="flex items-center gap-1.5 font-mymu-mono text-[10px] uppercase tracking-[0.15em] text-[var(--onboarding-fg-45)]"
+              >
+                <ShieldCheck className="h-3 w-3 shrink-0 text-[var(--onboarding-accent-a)]" aria-hidden="true" />
+                {signal}
+              </li>
+            ))}
+          </ul>
+          <a
+            href="/trust"
+            className="-mx-1 inline-flex min-h-11 items-center rounded-lg px-1 font-mymu-serif text-[0.95rem] text-[var(--onboarding-fg-55)] underline-offset-4 transition-colors hover:text-[var(--onboarding-fg)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--onboarding-accent-a)]"
+          >
+            <span>
+              How your data is protected
+              <ArrowRight className="ml-1.5 inline h-3.5 w-3.5 align-[-0.1em]" aria-hidden="true" />
+            </span>
+          </a>
+        </div>
       </div>
     </section>
   );

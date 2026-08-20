@@ -35,7 +35,7 @@ flowchart LR
 | Scheduled work | Prewarm, delivery, memory, watch, and lifecycle jobs | migrations using Vault, pg_cron, and pg_net |
 | Vercel | Static assets, SPA routing, canonical and redirect hosts | `vercel.json` and project configuration |
 
-The repository contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 160 SQL migrations. These are measured source-tree inventory counts, not design targets.
+The repository contains 113 Edge Function directories excluding `_shared`, 78 hook files, and 161 SQL migrations. These are measured source-tree inventory counts, not design targets.
 
 ## Frontend boundaries
 

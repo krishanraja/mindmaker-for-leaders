@@ -16,6 +16,28 @@ For the full design narrative behind each phase, see [`project-documentation/HIS
 
 ---
 
+## [Unreleased] - 2026-08-20 - Trust surface and access hardening
+
+### Added
+
+- A public `/trust` page stating the security posture in three parts: controls in place, controls in progress, and controls absent. It names the missing SOC 2 report and ISO/IEC 27001 certificate rather than implying either exists.
+- A quiet signal strip on the marketing hero listing three controls recorded as in place, linking to `/trust`.
+- Baseline security headers on the web application: nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy, and Cross-Origin-Opener-Policy. `Permissions-Policy` allows `microphone=(self)` because voice entry needs it. Strict-Transport-Security is deliberately not set here: Vercel already serves `max-age=63072000` on the apex domain, so an explicit one-year header would shorten it, and `includeSubDomains` is cached by browsers for the full max-age and would be hard to reverse if any subdomain is not HTTPS. A Content-Security-Policy is deferred until it is tested against Supabase, PostHog, and Stripe.
+
+### Fixed
+
+- Closed an unauthenticated cross-tenant read. `export_user_memory`, `get_user_memory_context`, `get_memory_by_temperature`, and `get_track_record` are `SECURITY DEFINER`, take the target user id as an argument, and held EXECUTE through `PUBLIC`, which PostgREST exposes to the `anon` role. `get_track_record` guarded itself only when `auth.uid()` was non-null, so anonymous callers skipped the guard; the other three carried no caller check. Migration `20260820090000_revoke_anon_definer_reads.sql` revokes those grants.
+- Corrected a customer-facing compliance claim that read "security headers on all endpoints" while the shared helper was imported by 3 of 114 Edge Functions.
+- Removed a stale HIPAA reference from the compliance framework definitions. CTRL does not process protected health information.
+
+### Verified
+
+- Live grant readback confirms `anon` EXECUTE is false on all four functions and `service_role` is unchanged.
+- Unauthenticated REST calls to each of the four endpoints return HTTP 401 with SQLSTATE 42501.
+- Supabase security advisors fell from 268 findings to 258, and anon-executable `SECURITY DEFINER` functions from 55 to 48. The remaining 48 are recorded as an outstanding sweep.
+- `memory-export` and `delete-account` do not call the revoked functions, so data export and erasure are unaffected.
+- Rendered readback of the hero at 1440x900, 1280x720, 390x844, and 320x568 with no horizontal overflow and 44px minimum targets.
+
 ## [Unreleased] - 2026-08-11 - Progressive onboarding brand handoff
 
 ### Changed
