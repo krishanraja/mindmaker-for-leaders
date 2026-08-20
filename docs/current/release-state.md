@@ -15,9 +15,9 @@ Last verified: 2026-08-20 against production readback through the Supabase manag
 | Test suite | 891 tests in 55 files |
 | Edge Function directories | 114 excluding `_shared`, of 177 deployed on the shared project |
 | Hook files | 51 |
-| SQL migration files | 163 in the source tree |
+| SQL migration files | 165 in the source tree |
 
-Current source inventory is 114 Edge Function directories excluding `_shared`, 51 hook files, and 163 SQL migration files.
+Current source inventory is 114 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migration files.
 
 ## Applied migration state, and why the ledger is not the answer
 
@@ -31,16 +31,37 @@ Verified this way on 2026-08-20:
 |---|---|---|
 | `confirm_blind_spot_candidate_v2` | `20260811144054_blind_spot_trusted_advisor.sql` | Yes |
 | `cleanup_expired_memories` | `20260125000001_memory_encryption.sql` | Yes |
-| `burn_blind_spot_pattern` | `20260820130000_blind_spot_burn.sql` | **No** |
-| `retention-cleanup` cron job | `20260820120000_retention_cleanup_cron.sql` | **No** |
+| `user_memory.retention_expires_at` | `20260820140000_repair_memory_retention_column.sql` | Yes, applied 2026-08-20 |
+| `set_memory_retention_trigger` | `20260820140000_repair_memory_retention_column.sql` | Yes, applied 2026-08-20 |
+| `burn_blind_spot_pattern` | `20260820130000_blind_spot_burn.sql` | Yes, applied 2026-08-20 |
+| `retention-cleanup` cron job | `20260820120000_retention_cleanup_cron.sql` | Yes, applied 2026-08-20 |
 
-The last two are the open production gate for this change. Everything else this repository depends on was confirmed present by object readback rather than inferred from the ledger.
+### The partial migration this readback uncovered
 
-`20260820090000_revoke_anon_definer_reads.sql` was applied on 2026-08-20 and verified by live grant readback and an unauthenticated REST call returning 401.
+Preparing to schedule the retention sweep exposed a defect the ledger could never have shown. `20260125000001_memory_encryption.sql` had been applied to production only in part: the encryption columns landed, but `user_memory.retention_expires_at` and its BEFORE INSERT trigger did not, while all three functions that reference the column did.
+
+The retention control was therefore not merely dormant, as previously recorded here. It was broken:
+
+- `cleanup_expired_memories()` raised `42703 column does not exist` on any call.
+- `update_user_memory_retention()` is a live trigger on `user_memory_settings`, so a leader changing their retention window in Settings raised the same error and the setting failed to save.
+- `set_memory_retention_expiration()` existed but was attached to nothing, so no row was ever stamped.
+
+`20260820140000_repair_memory_retention_column.sql` adds the column, its partial index, and the missing trigger. It was safe to apply because all 109 `user_memory_settings` rows hold `retention_days IS NULL`, so no row gained an expiry and nothing became eligible for deletion. Verified after applying: 196 memory rows, 0 with an expiry.
+
+### Grants closed on 2026-08-20
+
+`20260820090000_revoke_anon_definer_reads.sql` was applied and verified by live grant readback and an unauthenticated REST call returning 401.
+
+`20260820150000_revoke_anon_memory_maintenance.sql` closes two more of the same class that the first sweep missed because it searched for read-shaped names:
+
+- `get_memory_sweep_batch` is SECURITY DEFINER, bypasses RLS, and returned every account's `user_id` with its activity timestamps to any anonymous caller. A cross-tenant disclosure.
+- `cleanup_expired_memories` is SECURITY DEFINER and deletes across all accounts. Any caller could force a global retention sweep.
+
+Both are now `service_role` only, confirmed by `has_function_privilege` readback for `anon`, `authenticated`, and `service_role`. Both are invoked only by edge functions holding the service role, so application behaviour is unchanged.
 
 ## Scheduled work actually running
 
-Eleven cron jobs are active on the production database. This is the real schedule contract; a `cron.schedule` call in a migration file is only a claim until it appears here.
+Twelve cron jobs are active on the production database. This is the real schedule contract; a `cron.schedule` call in a migration file is only a claim until it appears here.
 
 | Job | Schedule (UTC) |
 |---|---|
@@ -55,8 +76,9 @@ Eleven cron jobs are active on the production database. This is the real schedul
 | `memory-sweep-nightly` | `0 3 * * *` |
 | `north-star-daily-snapshot` | `0 6 * * *` |
 | `reactivation-nudge` | `0 13 * * *` |
+| `retention-cleanup` | `15 3 * * *` |
 
-`retention-cleanup` is absent and will appear here once its migration is applied.
+`retention-cleanup` was added on 2026-08-20 at `15 3 * * *` and is active, bringing the total to twelve.
 
 ## Blind Spot production release
 

@@ -2,7 +2,7 @@
 
 Status: Reference
 
-Key architectural and product decisions with rationale.
+**Last reconciled:** 2026-08-20 (Decision 87 closes two anonymous definer paths; Decision 86 makes object readback the proof of production state).
 
 **Last reconciled:** 2026-08-20 (Decision 85 makes outward copy affirmational and sets the disclosure ladder; Decisions 82 to 84 hold the personal frame structurally).
 
@@ -662,3 +662,18 @@ Key architectural and product decisions with rationale.
 **Trade-off**: Less pre-emptive reassurance for a security-minded visitor who never asks, in exchange for a front door that sells the product and a complete honest answer for anyone who digs.
 **Founder lock**: Krish ruled on 2026-08-20 that outward copy is affirmational only with no exclusion block, that `/trust` is kept and reordered rather than removed, and that public copy is edited additively rather than rewritten.
 **Outcome**: New `public/faq.html` with its `vercel.json` rewrite and sitemap entry, reordered `public/trust.html`, additive changes in `publicCopy.ts` rendered through `PublicFooter`, personal-email and personal-card lines at signup and checkout, public-information naming on the onboarding recognition card, and the ladder recorded in `docs/current/commercial.md` and `docs/agent-instructions/marketing-sales.md`.
+
+## Decision 86: Production State Is Proved by Object Readback, Never by the Migration Ledger (2026-08-20)
+**Date**: 2026-08-20
+**Decision**: Treat `supabase_migrations.schema_migrations` as unusable evidence for this project and prove applied state by querying the object a migration creates. Apply migrations through the reviewed management-API path, which records a named version, rather than raw SQL. Record every applied object, its owning migration, and the readback that confirmed it in `docs/current/release-state.md`.
+**Rationale**: The ledger holds 85 rows, 79 of which have no file in this repository, while 157 repository files are absent from it. Preparing to schedule the retention sweep exposed what that hides: `20260125000001_memory_encryption.sql` had been applied only in part. The encryption columns landed; `user_memory.retention_expires_at` and its BEFORE INSERT trigger did not, while all three functions that reference the column did. The retention control was therefore not dormant, as the previous entry in release state recorded, but raising `42703` on every call, including through a live trigger that made a leader's retention setting fail to save. No amount of reading the ledger, the repository, or the previous documentation would have surfaced that. One query against `information_schema.columns` did.
+**Trade-off**: Every release now carries a readback step per object rather than a single ledger check, in exchange for a documented state that is true rather than plausible.
+**Founder lock**: Krish instructed on 2026-08-20 to complete the migrations against production using the management API.
+**Outcome**: Four migrations applied and verified by object readback: `repair_memory_retention_column`, `blind_spot_burn`, `retention_cleanup_cron`, and `revoke_anon_memory_maintenance`. The retention repair was safe because all 109 `user_memory_settings` rows hold `retention_days IS NULL`, so no row gained an expiry and nothing became eligible for deletion; 196 memory rows, 0 with an expiry, confirmed after applying. Twelve cron jobs now active. The application bundle and Edge Functions remain on the prior revision and are the open delivery gate.
+
+## Decision 87: Two Anonymous Definer Paths Closed, and the Sweep That Missed Them Corrected (2026-08-20)
+**Date**: 2026-08-20
+**Decision**: Revoke `EXECUTE` from `PUBLIC`, `anon`, and `authenticated` on `get_memory_sweep_batch` and `cleanup_expired_memories`, granting only `service_role`. Widen the audit that finds this class of defect from read-shaped function names to every SECURITY DEFINER function reachable through PostgREST.
+**Rationale**: `20260820090000_revoke_anon_definer_reads.sql` closed four SECURITY DEFINER functions that returned a named user's rows, but it searched by read-shaped names and so missed two functions named for maintenance. `get_memory_sweep_batch` bypasses row-level security and returned every account's `user_id` with `last_fact_change` and `last_synthesized_at`, so an unauthenticated POST enumerated the user base and its per-account activity timing. `cleanup_expired_memories` deletes across every account, so any caller could force a global retention sweep; no row was eligible only because every retention window was still null, which would have stopped being true the moment one leader chose 30 or 90 days. Both are the same class as the May to June 2026 RLS incident.
+**Trade-off**: None material. Both functions are invoked only by Edge Functions holding the service role, so application behaviour is unchanged.
+**Outcome**: `20260820150000_revoke_anon_memory_maintenance.sql` applied 2026-08-20 and verified by `has_function_privilege` readback for `anon`, `authenticated`, and `service_role` on all three maintenance and mutation functions.

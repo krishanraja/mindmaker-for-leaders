@@ -9,12 +9,12 @@ This is the single resumable state route for material CTRL interface work. Produ
 ## Current phase
 
 - Surface: privacy and disclosure surfaces, plus the repository cleanup that followed
-- Phase: Merged to `main`, not yet deployed
-- Gate: Two migrations await application to production. See [release state](./release-state.md).
-- Production implementation: The prior baseline is still live. This change is committed, not released.
+- Phase: Merged to `main`; database applied, application not yet deployed
+- Gate: Edge Functions and frontend await deployment. All database migrations are applied.
+- Production implementation: The schema is current. The application bundle and Edge Functions still run the prior revision.
 - Data mode: Production readback through the Supabase management API for functions, cron jobs, and schema objects
 
-**The one next action:** apply `20260820120000_retention_cleanup_cron.sql` and `20260820130000_blind_spot_burn.sql` through the reviewed production migration path, then confirm the `retention-cleanup` job and the `burn_blind_spot_pattern` function by object readback.
+**The one next action:** deploy the Edge Functions and the frontend. The database is ahead of the application: `burn_blind_spot_pattern` exists but the `blind-spot` function that calls it is not deployed, and `cleanup-expired-data` runs nightly without the auth gate that is committed for it. Neither is harmful, but the change is not delivered until both ship.
 
 The Blind Spot trusted-advisor redesign that previously occupied this slot is complete and live; its verification record is preserved in [release state](./release-state.md).
 
