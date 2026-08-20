@@ -15,7 +15,7 @@ Last verified: 2026-08-11
 | Test suite at baseline | 876 tests in 55 files |
 | Edge Function directories | 113 excluding `_shared` |
 | Hook files | 78 |
-| SQL migration files | 161 in the source tree; 160 in the deployed baseline. The pending file is `20260820090000_revoke_anon_definer_reads.sql`, not yet applied to production. |
+| SQL migration files | 161 in the source tree and applied to production. `20260820090000_revoke_anon_definer_reads.sql` was applied on 2026-08-20 and verified by live grant readback and an unauthenticated REST call returning 401. |
 
 Current source inventory is 113 Edge Function directories excluding `_shared`, 78 hook files, and 161 SQL migration files.
 
