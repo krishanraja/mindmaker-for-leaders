@@ -72,6 +72,15 @@ export default function Auth() {
 
           {isSignIn ? <SignInForm /> : <SignUpForm />}
 
+          {/* The single cheapest thing that keeps CTRL out of a procurement
+              conversation. A personal address means the account is the
+              leader's own, and it never lands on an IT asset register. */}
+          {!isSignIn && (
+            <p className="mt-5 max-w-[38ch] font-mymu-serif text-sm leading-relaxed text-[#f5f1ea]/45">
+              Your personal email works best here. CTRL is yours, not your company's.
+            </p>
+          )}
+
           <button type="button" onClick={() => navigate('/')} className="mt-7 font-mymu-serif text-sm text-[#f5f1ea]/42 underline-offset-4 hover:text-[#f5f1ea] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5f1ea]">
             I only want the no-login daily brief
           </button>

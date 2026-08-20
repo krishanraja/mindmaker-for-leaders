@@ -7,6 +7,7 @@
   "rewrites": [
     { "source": "/pricing", "destination": "/pricing.html" },
     { "source": "/trust", "destination": "/trust.html" },
+    { "source": "/faq", "destination": "/faq.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

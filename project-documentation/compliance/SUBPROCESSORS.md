@@ -1,6 +1,6 @@
 # CTRL Subprocessor Register
 
-Last reviewed: 2026-08-10
+Last reviewed: 2026-08-20 (Google Sheets narrowed to aggregate metrics)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 
 This register lists the third parties that process personal data on Mindmaker's behalf when you use CTRL. It supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) (Section 6) and [ROPA.md](./ROPA.md).
@@ -33,7 +33,7 @@ As of 2026-08-10, none of the DPAs below are marked "Signed". Formalizing signed
 | Jina | Business-context enrichment (company site reads) and briefing content retrieval | Company URLs/content, briefing topics | US | To confirm | SCCs (to confirm/sign) |
 | Apollo | Company enrichment | Company name/domain (business context) | US | To confirm | SCCs (to confirm/sign) |
 | Google (OAuth) | Sign-in / authentication | Email, name, OAuth identity | US | Standard terms | SCCs (to confirm/sign) |
-| Google Sheets | Operations sync | Minimized account/usage data | US | Standard terms | SCCs (to confirm/sign) |
+| Google Sheets | Operations sync | Aggregate metrics only; no personal data | US | Standard terms | Not applicable while the sync stays aggregate |
 | NewsAPI.org | News aggregation for the daily briefing and the Home news feed | Briefing/news topics (not directly identity) | US | To confirm | SCCs (to confirm/sign) |
 | Exa | Neural/semantic search for the daily briefing, the Home news feed, and decision-engine evidence retrieval | Briefing/decision topics and queries | US | To confirm | SCCs (to confirm/sign) |
 | Artificial Analysis | AI-model benchmark data used to validate news/decision claims about specific models | Model names/claims referenced in briefing or decision content (not account identity) | US | To confirm | SCCs (to confirm/sign) |

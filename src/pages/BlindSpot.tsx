@@ -40,10 +40,12 @@ function QuietState({ title, body, retry }: { title: string; body: string; retry
 
 function BlindSpotContent() {
   const [signed, setSigned] = useState<SignedCandidate | null>(null);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'confirming' | 'accepted' | 'rejected' | 'suppressed' | 'error' | 'stale-evidence'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'confirming' | 'accepted' | 'rejected' | 'suppressed' | 'error' | 'stale-evidence' | 'burned'>('loading');
   const [error, setError] = useState<string | null>(null);
   const [rejectionOpen, setRejectionOpen] = useState(false);
   const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [patternId, setPatternId] = useState<string | null>(null);
+  const [burning, setBurning] = useState(false);
   const confirmationKey = useRef(crypto.randomUUID());
 
   const load = useCallback(async () => {
@@ -83,13 +85,34 @@ function BlindSpotContent() {
       setError(message || 'I could not save that reflection. The read is still here.');
       return;
     }
+    setPatternId(typeof data?.pattern_id === 'string' ? data.pattern_id : null);
     setStatus('accepted');
+  };
+
+  // Burn removes the saved pattern, its evidence and its experiment. The
+  // fingerprint stays so the same read is not simply regenerated tomorrow,
+  // and the copy below says exactly that rather than implying more.
+  const burn = async () => {
+    if (!patternId || burning) return;
+    setBurning(true);
+    setError(null);
+    const { data, error: invokeError } = await supabase.functions.invoke('blind-spot', {
+      body: { action: 'burn', patternId },
+    });
+    setBurning(false);
+    if (invokeError || !data?.burned) {
+      setError('I could not burn that read. Nothing changed.');
+      return;
+    }
+    setPatternId(null);
+    setStatus('burned');
   };
 
   if (status === 'loading') return <BlindSpotLoading />;
   if (status === 'error') return <QuietState title="The read can wait." body={error || 'Nothing was saved.'} retry={() => void load()} />;
   if (status === 'suppressed') return <QuietState title="Nothing to press on today." body="You corrected the last read. I’ll leave it alone until the underlying evidence changes." />;
   if (status === 'rejected') return <QuietState title="Understood." body="I’ll leave that read alone until the evidence changes. Your correction remains private to your account." />;
+  if (status === 'burned') return <QuietState title="Gone." body="That read, its evidence and its experiment are deleted. I’ve kept nothing but a note not to raise the same thing again, so it will not come back tomorrow." />;
   if (!signed) return null;
 
   return (
@@ -101,6 +124,8 @@ function BlindSpotContent() {
         onConfirm={() => void confirm()}
         onReject={() => setRejectionOpen(true)}
         onTalk={() => setAdvisorOpen(true)}
+        onBurn={patternId ? () => void burn() : undefined}
+        burning={burning}
       />
       <BlindSpotRejectionSheet open={rejectionOpen} onOpenChange={setRejectionOpen} signed={signed} onRejected={() => setStatus('rejected')} />
       <BlindSpotAdvisorSheet open={advisorOpen} onOpenChange={setAdvisorOpen} signed={signed} />

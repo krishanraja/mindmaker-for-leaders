@@ -8,6 +8,7 @@ import { haptics } from '@/lib/haptics'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useVoice } from '@/hooks/useVoice'
 import { supabase } from '@/integrations/supabase/client'
+import { useOffTheRecord } from '@/contexts/OffTheRecordContext'
 
 /**
  * GlobalFAB - the app-wide voice brain-dump.
@@ -51,6 +52,7 @@ const HIDE_ON = [
 
 export function GlobalFAB() {
   const isMobile = useIsMobile()
+  const { isOffTheRecord } = useOffTheRecord()
   const location = useLocation()
   const [saving, setSaving] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
@@ -64,9 +66,14 @@ export function GlobalFAB() {
       try {
         // Same brain-dump -> structured facts pipeline the Brain tab uses.
         const { data, error } = await supabase.functions.invoke('extract-user-context', {
-          body: { transcript: trimmed, source_type: 'voice' },
+          body: { transcript: trimmed, source_type: 'voice', off_the_record: isOffTheRecord },
         })
         if (error) throw error
+        if (isOffTheRecord) {
+          haptics.success()
+          toast.success('Off the record. Nothing was saved.')
+          return
+        }
         const d = (data ?? {}) as { stored_count?: number; pending_verifications?: unknown[] }
         const n = d.stored_count ?? d.pending_verifications?.length ?? 0
         haptics.success()

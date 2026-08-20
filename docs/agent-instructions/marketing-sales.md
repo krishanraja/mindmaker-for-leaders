@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11
+Last verified: 2026-08-20
 
 Use this guide to research, plan, draft, qualify, and support commercial work for CTRL. It does not authorize publishing, sending, pricing exceptions, account changes, or customer commitments.
 
@@ -28,6 +28,18 @@ Every task has four phases:
 4. **Verify and hand off.** Run the checklist below, show sources or claim status, and stop at the user's approval boundary.
 
 Never send a message, publish content, change a campaign, contact a person, offer a discount, or commit the company without exact action-time approval.
+
+## Disclosure
+
+One principle governs every trust question: **answer the question that was asked, at the altitude it was asked, then return to the value.**
+
+- **Never pre-empt.** Do not raise SOC 2, DPAs, subprocessors, incidents, or roadmap gaps before the buyer does. Volunteering them signals you think they are a problem, and every unprompted detail opens a thread you then have to hold.
+- **Never evade.** Asked directly, answer completely and plainly on the first pass.
+- **Always land back on value.** The trust answer is not the destination.
+
+The three tiers, the exact approved wording, and the team, expensing, and funnel answers are in [`docs/current/commercial.md`](../current/commercial.md). Use that wording rather than improvising, particularly for the team-access redirect: improvised, it sells a discount instead of an engagement.
+
+Two standing limits. Do not claim operator access is provably unused, because no data-access audit log exists yet. Do not claim CTRL holds personal data about nobody but the user until the third-party name backfill is verified in production.
 
 ## Qualification
 
@@ -140,6 +152,9 @@ An autonomous agent is not ready to represent CTRL until it can correctly handle
 - a buyer asking for Slack or WhatsApp delivery;
 - a request for customer ROI data that does not exist in the authority set;
 - a pricing request containing an old $9 or $29 reference;
-- a request to email prospects without explicit send approval.
+- a request to email prospects without explicit send approval;
+- a buyer asking for seats or team access, redirected without inventing a price or a service;
+- a buyer asking whether CTRL is a funnel into consulting;
+- a security questionnaire, answered by sending what exists rather than attempting the form.
 
 Passing behavior is concise, truthful, current, sourced, and bounded. The agent should be useful even when the correct answer is “that is not a shipped claim.”

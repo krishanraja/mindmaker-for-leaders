@@ -258,15 +258,10 @@ async function getOrCreateSpreadsheet(accessToken: string): Promise<string> {
 async function syncToGoogleSheets(spreadsheetId: string, accessToken: string, sheetName: string, data: any[]): Promise<void> {
   if (data.length === 0) return;
   
-  // Define systematic column headers for lead tracking
-  const systematicHeaders = [
-    'Lead ID', 'Date Created', 'Source', 'Full Name', 'Email', 'Company', 'Role/Title', 'Phone', 'LinkedIn',
-    'AI Readiness Score', 'Current AI Usage Level', 'Decision Authority', 'Budget Range', 'Implementation Timeline',
-    'Team Readiness', 'Top 3 Productivity Bottlenecks', 'Pain Point Severity', 'Time Spent (minutes)',
-    'Questions Answered', 'Messages Exchanged', 'Insight Categories Generated', 'Booking Request Status',
-    'Business Readiness Score', 'Implementation Readiness', 'Lead Quality Score', 'Recommended Service Type',
-    'Follow-up Priority', 'Scheduled Date', 'Notes'
-  ];
+  // Aggregate-only columns. One row is one metric, never one person. Adding a
+  // per-user column here would reintroduce the personal-data export this sync
+  // was narrowed to remove.
+  const systematicHeaders = ['Snapshot Date', 'Sync Type', 'Metric', 'Value'];
   
   // Check if headers exist
   const checkHeadersResponse = await fetch(
@@ -328,7 +323,11 @@ async function syncToGoogleSheets(spreadsheetId: string, accessToken: string, sh
   }
   
   // Format data to match systematic headers
-  const formattedData = data.map(row => systematicHeaders.map(header => row[header] || ''));
+  // Keep a zero as 0. `|| ''` would blank every legitimately zero metric and
+  // make an empty cohort indistinguishable from a failed read.
+  const formattedData = data.map(row =>
+    systematicHeaders.map(header => (row[header] === undefined || row[header] === null ? '' : row[header])),
+  );
   
   // Append the new data
   const appendResponse = await fetch(
@@ -530,155 +529,145 @@ serve(async (req) => {
   }
 });
 
-async function formatBookingData(supabase: any, additionalData?: any) {
-  // Get all booking requests with related data
+/**
+ * Aggregate builders.
+ *
+ * This sync used to write one row per person, carrying full name, email,
+ * company, role, phone and free-text business context into a Google Sheet.
+ * That is a large amount of personal data leaving the database for an
+ * operational convenience, and it is the kind of thing a leader reads in a
+ * privacy notice and quietly decides against.
+ *
+ * Everything below produces counts and distributions only. One row is one
+ * metric, never one person, so no identifier can reach the sheet even if a
+ * new column is added upstream.
+ */
+
+interface MetricRow {
+  'Snapshot Date': string;
+  'Sync Type': string;
+  'Metric': string;
+  'Value': number;
+}
+
+function metric(type: string, name: string, value: number): MetricRow {
+  return {
+    'Snapshot Date': new Date().toISOString().slice(0, 10),
+    'Sync Type': type,
+    'Metric': name,
+    'Value': value,
+  };
+}
+
+/** Counts occurrences of a field, emitting one metric row per distinct value. */
+function distribution(rows: any[], field: string, type: string, label: string): MetricRow[] {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const raw = row?.[field];
+    const key = raw === null || raw === undefined || raw === '' ? 'unspecified' : String(raw);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, count]) => metric(type, `${label}: ${key}`, count));
+}
+
+function band(score: number): string {
+  if (score >= 70) return 'high';
+  if (score >= 50) return 'medium';
+  return 'low';
+}
+
+async function formatBookingData(supabase: any, _additionalData?: any): Promise<MetricRow[]> {
   const { data: bookings, error } = await supabase
     .from('booking_requests')
-    .select(`
-      *,
-      conversation_sessions (
-        session_title,
-        started_at,
-        completed_at,
-        status,
-        business_context
-      ),
-      lead_qualification_scores (
-        total_score,
-        engagement_score,
-        business_readiness_score,
-        implementation_readiness
-      )
-    `)
+    .select('status, priority, service_type, lead_score, created_at')
     .order('created_at', { ascending: false })
-    .limit(100);
+    .limit(1000);
 
   if (error) {
     console.error('Error fetching booking data:', error);
     return [];
   }
 
-  return bookings.map((booking: any) => {
-    // Parse assessment data from specific_needs field
-    let assessmentData = {};
-    try {
-      if (booking.specific_needs && booking.specific_needs.includes('Assessment data:')) {
-        const jsonMatch = booking.specific_needs.match(/Assessment data: ({.*})/);
-        if (jsonMatch) {
-          assessmentData = JSON.parse(jsonMatch[1]);
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to parse assessment data:', e);
-    }
+  const rows = bookings ?? [];
+  const scored = rows.filter((r: any) => typeof r.lead_score === 'number');
+  const averageScore = scored.length
+    ? Math.round(scored.reduce((sum: number, r: any) => sum + r.lead_score, 0) / scored.length)
+    : 0;
 
-    // Extract key metrics from assessment data
-    const qualificationData = (assessmentData as any).qualificationData || {};
-    const phaseResponses = (assessmentData as any).phaseResponses || {};
-    
-    return {
-      'Lead ID': booking.id.substring(0, 8),
-      'Date Created': new Date(booking.created_at).toLocaleDateString(),
-      'Source': booking.session_id ? 'Rich AI Assessment' : 'Quick Form Assessment',
-      'Full Name': booking.contact_name,
-      'Email': booking.contact_email,
-      'Company': booking.company_name,
-      'Role/Title': booking.role,
-      'Phone': booking.phone || '',
-      'LinkedIn': '', // Could be extracted from contact info if available
-      'AI Readiness Score': booking.lead_score || (assessmentData as any).totalScore || 0,
-      'Current AI Usage Level': phaseResponses.aiUseCases ? `${phaseResponses.aiUseCases.length} use cases identified` : 'Not assessed',
-      'Decision Authority': booking.role && (booking.role.toLowerCase().includes('ceo') || booking.role.toLowerCase().includes('cto') || booking.role.toLowerCase().includes('founder')) ? 'High' : 'Medium',
-      'Budget Range': 'Not specified', // Could be derived from company size and role
-      'Implementation Timeline': booking.preferred_time || 'Not specified',
-      'Team Readiness': phaseResponses.upskillPercentage ? `${phaseResponses.upskillPercentage}% ready for upskilling` : 'Not assessed',
-      'Top 3 Productivity Bottlenecks': phaseResponses.dailyFrictions ? phaseResponses.dailyFrictions.join(', ').substring(0, 100) : booking.specific_needs?.substring(0, 100) || '',
-      'Pain Point Severity': booking.priority || 'medium',
-      'Time Spent (minutes)': qualificationData.meetingHours ? qualificationData.meetingHours * 60 : 0,
-      'Questions Answered': Object.keys(phaseResponses).length || 0,
-      'Messages Exchanged': booking.conversation_sessions?.[0]?.business_context?.message_count || 0,
-      'Insight Categories Generated': phaseResponses.stakeholderAudiences ? phaseResponses.stakeholderAudiences.join(', ') : '',
-      'Booking Request Status': booking.status,
-      'Business Readiness Score': booking.lead_qualification_scores?.[0]?.business_readiness_score || 0,
-      'Implementation Readiness': booking.lead_qualification_scores?.[0]?.implementation_readiness || 0,
-      'Lead Quality Score': booking.lead_score >= 70 ? 'High' : booking.lead_score >= 50 ? 'Medium' : 'Low',
-      'Recommended Service Type': booking.service_type,
-      'Follow-up Priority': booking.priority || 'medium',
-      'Scheduled Date': booking.scheduled_date ? new Date(booking.scheduled_date).toLocaleDateString() : '',
-      'Notes': `Service: ${booking.service_title}. Skills gaps: ${phaseResponses.skillGaps ? phaseResponses.skillGaps.join(', ') : 'Not specified'}`
-    };
-  });
+  return [
+    metric('booking', 'total bookings', rows.length),
+    metric('booking', 'average lead score', averageScore),
+    ...distribution(rows, 'status', 'booking', 'status'),
+    ...distribution(rows, 'priority', 'booking', 'priority'),
+    ...distribution(rows, 'service_type', 'booking', 'service'),
+    ...distribution(
+      scored.map((r: any) => ({ band: band(r.lead_score) })),
+      'band',
+      'booking',
+      'lead quality',
+    ),
+  ];
 }
 
-async function formatAnalyticsData(supabase: any) {
-  // Get conversion analytics data
+async function formatAnalyticsData(supabase: any): Promise<MetricRow[]> {
   const { data: analytics, error } = await supabase
     .from('conversion_analytics')
-    .select('*')
+    .select('conversion_type, service_type, source_channel, session_duration, messages_exchanged, created_at')
     .order('created_at', { ascending: false })
-    .limit(500);
+    .limit(1000);
 
   if (error) {
     console.error('Error fetching analytics data:', error);
     return [];
   }
 
-  return analytics.map((record: any) => ({
-    'Date': record.created_at,
-    'Conversion Type': record.conversion_type,
-    'Service Type': record.service_type || '',
-    'Lead Score': record.lead_score || 0,
-    'Session Duration (min)': Math.round((record.session_duration || 0) / 60),
-    'Messages Exchanged': record.messages_exchanged || 0,
-    'Topics Explored': record.topics_explored || 0,
-    'Insights Generated': record.insights_generated || 0,
-    'Conversion Value': record.conversion_value || 0,
-    'Source Channel': record.source_channel || 'ai_chat'
-  }));
+  const rows = analytics ?? [];
+  const totalMinutes = rows.reduce((sum: number, r: any) => sum + Math.round((r.session_duration || 0) / 60), 0);
+  const totalMessages = rows.reduce((sum: number, r: any) => sum + (r.messages_exchanged || 0), 0);
+
+  return [
+    metric('analytics', 'total conversions', rows.length),
+    metric('analytics', 'median session minutes', rows.length ? Math.round(totalMinutes / rows.length) : 0),
+    metric('analytics', 'average messages exchanged', rows.length ? Math.round(totalMessages / rows.length) : 0),
+    ...distribution(rows, 'conversion_type', 'analytics', 'conversion'),
+    ...distribution(rows, 'source_channel', 'analytics', 'channel'),
+    ...distribution(rows, 'service_type', 'analytics', 'service'),
+  ];
 }
 
-async function formatLeadScoreData(supabase: any) {
-  // Get lead qualification scores with session data and business context
+async function formatLeadScoreData(supabase: any): Promise<MetricRow[]> {
+  // Industry and company size are business attributes rather than personal
+  // ones, but they are only ever emitted here as counts across the cohort.
   const { data: scores, error } = await supabase
     .from('lead_qualification_scores')
-    .select(`
-      *,
-      conversation_sessions (
-        session_title,
-        started_at,
-        business_context
-      ),
-      user_business_context!inner (
-        context_data,
-        business_name,
-        industry,
-        company_size
-      )
-    `)
+    .select('total_score, engagement_score, business_readiness_score, implementation_readiness, created_at')
     .order('created_at', { ascending: false })
-    .limit(300);
+    .limit(1000);
 
   if (error) {
     console.error('Error fetching lead score data:', error);
     return [];
   }
 
-  return scores.map((score: any) => ({
-    'Date': new Date(score.created_at).toLocaleDateString(),
-    'Session ID': score.session_id?.substring(0, 8) || 'N/A',
-    'Source': score.session_id ? 'AI Chat Assessment' : 'Quick Form Assessment',
-    'Total AI Readiness Score': score.total_score || 0,
-    'Engagement Score': score.engagement_score || 0,
-    'Business Readiness Score': score.business_readiness_score || 0,
-    'Pain Point Severity': score.pain_point_severity || 0,
-    'Implementation Readiness': score.implementation_readiness || 0,
-    'Company': score.user_business_context?.business_name || '',
-    'Industry': score.user_business_context?.industry || '',
-    'Company Size': score.user_business_context?.company_size || '',
-    'Lead Quality': score.total_score >= 70 ? 'High Priority' : score.total_score >= 50 ? 'Medium Priority' : 'Low Priority',
-    'Session Duration (min)': Math.round((score.conversation_sessions?.[0]?.business_context?.session_duration || 0) / 60),
-    'Qualification Notes': score.qualification_notes || '',
-    'Business Context Summary': score.user_business_context?.context_data ? 
-      JSON.stringify(score.user_business_context.context_data).substring(0, 200) + '...' : ''
-  }));
+  const rows = scores ?? [];
+  const average = (field: string) =>
+    rows.length
+      ? Math.round(rows.reduce((sum: number, r: any) => sum + (r[field] || 0), 0) / rows.length)
+      : 0;
+
+  return [
+    metric('lead_scores', 'total scored sessions', rows.length),
+    metric('lead_scores', 'average total score', average('total_score')),
+    metric('lead_scores', 'average engagement score', average('engagement_score')),
+    metric('lead_scores', 'average business readiness', average('business_readiness_score')),
+    metric('lead_scores', 'average implementation readiness', average('implementation_readiness')),
+    ...distribution(
+      rows.map((r: any) => ({ band: band(r.total_score || 0) })),
+      'band',
+      'lead_scores',
+      'quality band',
+    ),
+  ];
 }

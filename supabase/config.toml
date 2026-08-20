@@ -141,6 +141,10 @@ verify_jwt = true
 [functions.cleanup-expired-data]
 verify_jwt = false
 
+# One-off third-party name backfill. Service-role only, enforced internally.
+[functions.backfill-pseudonymise]
+verify_jwt = false
+
 # Called by pg_cron (no JWT) to send the daily briefing email.
 [functions.send-daily-briefing]
 verify_jwt = false

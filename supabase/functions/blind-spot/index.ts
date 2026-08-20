@@ -372,6 +372,26 @@ serve(async (req) => {
       return json({ ok: true, suppressed: true });
     }
 
+    if (action === 'burn') {
+      // Burn takes a saved pattern id rather than a signed candidate: the
+      // pattern is already stored, so there is no evidence snapshot to
+      // revalidate. Ownership is enforced inside the RPC.
+      const patternId = cleanBlindSpotText(body.patternId, 40);
+      if (!/^[0-9a-f-]{36}$/i.test(patternId)) {
+        return json({ error: 'Invalid pattern reference.' }, 400);
+      }
+      const { data, error } = await admin.rpc('burn_blind_spot_pattern', {
+        p_user_id: userId,
+        p_pattern_id: patternId,
+      });
+      if (error) throw error;
+      const result = Array.isArray(data) ? data[0] : data;
+      if (!result?.burned) {
+        return json({ error: 'That read is no longer here.' }, 404);
+      }
+      return json({ ok: true, burned: true });
+    }
+
     if (action === 'confirm') {
       const signed = await validateSignedCandidate(body, serviceKey);
       if (!signed || signed.fingerprint !== anchorFingerprint || signed.candidate.kind !== 'pattern' || !signed.candidate.experiment) {

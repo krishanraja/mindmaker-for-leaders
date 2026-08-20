@@ -9,6 +9,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { isCronRequest, isServiceRequest } from '../_shared/service-request.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,9 +22,24 @@ serve(async (req) => {
   }
 
   try {
+    // This endpoint deletes and redacts data, so it is server-to-server only.
+    // It previously accepted any caller, which meant an unauthenticated POST
+    // could force a retention sweep. pg_cron presents the Vault-held shared
+    // secret; an operator presents the service role key.
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const authorized =
+      isServiceRequest(req.headers.get('Authorization'), serviceRoleKey) ||
+      isCronRequest(req.headers.get('X-CTRL-Cron-Secret'), Deno.env.get('CTRL_CRON_SECRET') ?? '');
+    if (!authorized) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      serviceRoleKey,
     );
 
     const results: Record<string, unknown> = {};

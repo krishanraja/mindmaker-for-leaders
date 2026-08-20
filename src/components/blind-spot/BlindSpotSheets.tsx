@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { useVoice } from '@/hooks/useVoice';
 import { supabase } from '@/integrations/supabase/client';
 import type { BlindSpotCandidateV2, BlindSpotRejectionReason } from '@/types/blindSpot';
+import { useOffTheRecord } from '@/contexts/OffTheRecordContext';
 
 interface SignedCandidateProps {
   candidate: BlindSpotCandidateV2;
@@ -20,6 +21,7 @@ export function BlindSpotRejectionSheet({ open, onOpenChange, signed, onRejected
   const [saving, setSaving] = useState(false);
   const [correction, setCorrection] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const { isOffTheRecord } = useOffTheRecord();
   const onTranscript = useCallback((value: string) => setCorrection(value), []);
   const voice = useVoice({ maxDuration: 90, persistRecording: false, onTranscript });
 
@@ -35,7 +37,7 @@ export function BlindSpotRejectionSheet({ open, onOpenChange, signed, onRejected
       return;
     }
     if (correction.trim()) {
-      await supabase.functions.invoke('extract-user-context', { body: { transcript: correction.trim(), source: 'blind_spot_correction' } });
+      await supabase.functions.invoke('extract-user-context', { body: { transcript: correction.trim(), source: 'blind_spot_correction', off_the_record: isOffTheRecord } });
     }
     setSaving(false);
     onOpenChange(false);

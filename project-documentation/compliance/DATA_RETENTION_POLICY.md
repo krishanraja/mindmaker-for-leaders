@@ -1,6 +1,6 @@
 # CTRL Data Retention Policy
 
-Last reviewed: 2026-08-11 (Blind Spot evidence, rejection, and experiment records added)
+Last reviewed: 2026-08-20 (retention cleanup scheduled; Google Sheets ops sync narrowed to aggregate metrics)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Defines how long CTRL keeps each category of personal data and how it is deleted. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 12 and [ROPA.md](./ROPA.md).
@@ -17,7 +17,7 @@ Defines how long CTRL keeps each category of personal data and how it is deleted
 |---------------|-----------|--------------------|
 | Account identity (email, name, display name) | Life of account | `delete-account` (cascading) on account deletion |
 | Business / work context | Life of account | `delete-account` cascade |
-| Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` enforces per-user retention window when invoked; `delete-account` cascade on closure |
+| Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` enforces the per-user retention window on a daily `retention-cleanup` schedule; `delete-account` cascade on closure |
 | Confirmed Blind Spot patterns, evidence snapshots, and experiment outcomes | Life of account; an active experiment stops prompting after 14 days | `delete-account` cascade; expiry changes the experiment state but does not erase the confirmed record |
 | Rejected Blind Spot evidence fingerprints | Life of account or until account deletion; generated diagnosis text is not stored | `delete-account` cascade; a new evidence fingerprint naturally permits a new read |
 | Conversation / chat messages | Life of account (subject to any configured retention) | `delete-account` cascade; retention cleanup where applicable |
@@ -38,7 +38,7 @@ Where a row says "in progress," see [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_R
 ## Deletion mechanisms in detail
 
 - Account deletion: `delete-account` edge function performs a cascading delete of the user's records across CTRL tables. Triggered by the user in-app or by an operator fulfilling an erasure DSAR (see [DSAR_RUNBOOK.md](./DSAR_RUNBOOK.md)).
-- Retention enforcement: `cleanup-expired-data` removes Memory data older than the user's `user_memory_settings.retention_days` and sweeps the `ai_cache` table when it runs. GAP (confirmed 2026-07-26): unlike `send-daily-briefing`, `memory-sweep`, `send-reactivation-nudge`, and `live-headlines-prewarm`, there is no `cron.schedule(...)` migration wiring `cleanup-expired-data` to a recurring job, so it is not actually invoked automatically today; it exists as deployable, correct code without a schedule. There is also no automated cleanup of the `briefings` table itself (only full account deletion removes it). TODO(founder/dev): either add the missing pg_cron schedule for `cleanup-expired-data` (and a briefings rolling-window job) or stop describing Memory/briefing retention as "scheduled" in this and related compliance documents until it is.
+- Retention enforcement: `cleanup-expired-data` removes Memory data older than the user's `user_memory_settings.retention_days`, sweeps the `ai_cache` table, and redacts expired evidence quotes. CLOSED (2026-08-20): the missing schedule was added as the `retention-cleanup` job in `supabase/migrations/20260820120000_retention_cleanup_cron.sql`, running daily at 03:15 UTC and authenticated with the Vault-held `ctrl_cron_secret`. The prior gap, recorded 2026-07-26, was that the function was correct and deployable but nothing invoked it, so the user-facing 30 and 90 day retention choice in Settings did not actually take effect. REMAINING GAP: there is still no automated cleanup of the `briefings` table itself (only full account deletion removes it). TODO(founder/dev): add a briefings rolling-window job, or keep describing briefing retention as account-lifetime rather than scheduled.
 - Stripe: subscription objects are canceled; card data is never stored by Mindmaker (tokenized by Stripe).
 
 ## Backups

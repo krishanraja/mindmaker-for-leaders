@@ -9,9 +9,11 @@ export interface BlindSpotInstrumentProps {
   onConfirm: () => void;
   onReject: () => void;
   onTalk: () => void;
+  onBurn?: () => void;
+  burning?: boolean;
 }
 
-export function BlindSpotInstrument({ candidate, status = 'ready', error, onConfirm, onReject, onTalk }: BlindSpotInstrumentProps) {
+export function BlindSpotInstrument({ candidate, status = 'ready', error, onConfirm, onReject, onTalk, onBurn, burning }: BlindSpotInstrumentProps) {
   const experiment = candidate.experiment;
   const isPattern = candidate.kind === 'pattern' && experiment !== null;
   return (
@@ -43,7 +45,7 @@ export function BlindSpotInstrument({ candidate, status = 'ready', error, onConf
               <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{experiment.instruction}</p>
             </div>
             <div className="flex flex-wrap items-center gap-1 sm:justify-end">
-              {status === 'accepted' ? <ConfirmedState /> : status === 'rejected' ? (
+              {status === 'accepted' ? <ConfirmedState onBurn={onBurn} burning={burning} /> : status === 'rejected' ? (
                 <p role="status" className="max-w-sm text-xs leading-relaxed text-muted-foreground">I’ll leave this alone until the evidence changes.</p>
               ) : (
                 <>

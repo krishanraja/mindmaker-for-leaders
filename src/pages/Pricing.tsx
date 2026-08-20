@@ -97,6 +97,7 @@ export default function Pricing() {
           </div>
 
           <p className="mt-5 text-[13px] leading-relaxed text-muted-foreground">{PRICING.note}</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{PRICING.card}</p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground/70">{PRICING.fine}</p>
         </div>
       </section>

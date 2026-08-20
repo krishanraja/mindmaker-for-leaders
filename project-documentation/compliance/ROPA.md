@@ -1,7 +1,7 @@
 # Record of Processing Activities (ROPA)
 
 GDPR Article 30 record for CTRL.
-Last reviewed: 2026-08-11 (Blind Spot trusted-advisor processing reconciled)
+Last reviewed: 2026-08-20 (Google Sheets ops sync narrowed to aggregate metrics; no personal data transferred)
 Controller: Mindmaker (Krish Raja) - privacy@themindmaker.ai
 System: CTRL, https://makeyourmindup.ai; Supabase project ref bkyuxvschuwngtcdhsyg
 
@@ -127,10 +127,10 @@ This record describes the processing activities Mindmaker carries out as control
 - Security: structured JSON logging with CI gate against console.log; no secrets in logs.
 
 ### L. Operations sync and product analytics
-- Personal data: minimized account and usage data; ops sync to Google Sheets; page-view and in-app usage events sent to PostHog.
+- Personal data: page-view and in-app usage events sent to PostHog. The Google Sheets ops sync carries aggregate counts and distributions only (one row is one metric, never one person) and transfers no personal data as of 2026-08-20.
 - Data subjects: registered users.
 - Lawful basis: legitimate interests (Art 6(1)(f)).
-- Recipients/subprocessors: Google Sheets (ops sync, US); PostHog (product analytics, US); Supabase (US).
+- Recipients/subprocessors: Google Sheets (aggregate ops metrics, US); PostHog (product analytics, US); Supabase (US).
 - Transfers: EU/UK to US, SCCs (in progress).
 - Retention: minimized; reviewed periodically.
 - Security: scoped service credentials, TLS.

@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, and the deployed onboarding and Blind Spot contracts
+Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, and the deployed onboarding and Blind Spot contracts
 
 CTRL is a calm AI decision partner for founders and small-team CEOs building the AI-native version of their business. Make Your Mind Up is its warm public intake. The product lives at [makeyourmindup.ai](https://makeyourmindup.ai).
 
@@ -98,6 +98,17 @@ The machine-readable authority is [`public/.well-known/product.json`](../../publ
 
 Free is a useful daily instrument. Edge Pro is the decision tier. Documentation must never duplicate a mutable Stripe amount without a validation check.
 
+## Shape
+
+CTRL is a private thinking instrument for one person. The enterprise conversation is triggered by the data class a user puts into the product, not by who pays for it, so the only durable answer is structural. These four boundaries are product contract, not backlog order:
+
+1. **One person, one account.** No seats, no invites, no shared workspaces.
+2. **No admin console, no SSO, no company directory.**
+3. **If an IT administrator has to approve it, we do not build it.** This rules out Google Workspace, Microsoft Graph and workspace-level Slack scopes, calendar read scopes, and anything with an admin consent screen. Delivery reaches the leader through paths they control on their own: email, downloads, clipboard, `.ics` files, and read-only MCP that runs inside their own client.
+4. **No meeting recording.** Recording is a multi-party consent problem and the fastest route from personal notebook to company system.
+
+A leader who wants their team to decide differently is describing an engagement, not a product tier. Redirect rather than build seats.
+
 ## Non-goals
 
 - A generic business chatbot.
@@ -107,6 +118,9 @@ Free is a useful daily instrument. Edge Pro is the decision tier. Documentation 
 - An advisory-services funnel.
 - The retired lesson-kit product.
 - Skill Builder as a primary destination. Export and MCP generation may exist only as nested portability harnesses.
+- Teams, seats, shared workspaces, an admin console, SSO, or a company directory.
+- Meeting recording or transcription of a call.
+- Any integration that requires an IT administrator to approve a scope.
 
 ## Product acceptance
 

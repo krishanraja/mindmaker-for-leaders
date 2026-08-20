@@ -48,12 +48,7 @@
   <body>
     <main class="wrap">
       <h1>Security and privacy at CTRL</h1>
-      <p class="sub">CTRL holds your thinking. This page says plainly what protects it, what we are still building, and what we have not done. No badges we have not earned.</p>
-
-      <div class="posture">
-        <p><b>We are not certified.</b> CTRL holds no SOC 2 report and no ISO/IEC 27001 certificate, and has not completed a third-party security audit. Work toward them is at the planning stage.</p>
-        <p>HIPAA does not apply to CTRL. We do not process protected health information, and CTRL is not intended for it.</p>
-      </div>
+      <p class="sub">CTRL holds your thinking, so this page says plainly what protects it, what we are still building, and what we have not done. Everything below is checkable, and there are no badges we have not earned.</p>
       <p class="rev">Last reviewed 2026-08-20</p>
 
       <h2>In place today</h2>
@@ -62,7 +57,10 @@
         <li><b>Field-level AES-256-GCM on stored facts<span class="tag t-live">Live</span></b><span>Sensitive memory writes carry an encrypted payload at rest, alongside Supabase-managed disk encryption. Plaintext fields are retained so the product can display and search your memory, so this is not end-to-end encryption and we will not describe it as such.</span></li>
         <li><b>TLS in transit<span class="tag t-live">Live</span></b><span>Everything between your browser and CTRL is encrypted in flight, behind a CDN and edge boundary with rate limiting on AI endpoints.</span></li>
         <li><b>Export everything, any time<span class="tag t-live">Live</span></b><span>Your profile, memory, assessments and conversations download as structured JSON, Markdown, or a format your other AI tools read directly.</span></li>
-        <li><b>Delete your account for real<span class="tag t-live">Live</span></b><span>A server-side cascade removes your data rather than flagging it hidden. Backups age out on their retention schedule.</span></li>
+        <li><b>Delete your account for real<span class="tag t-live">Live</span></b><span>A server-side cascade removes your data rather than flagging it hidden, and cancels any active subscription on the way out. Backups age out on their retention schedule.</span></li>
+        <li><b>Retention you choose, enforced on a schedule<span class="tag t-live">Live</span></b><span>Keep your memory for 30 days, 90 days, or indefinitely. A nightly job applies the window you picked, and changing it re-stamps what is already stored.</span></li>
+        <li><b>Only your own personal data<span class="tag t-live">Live</span></b><span>When you mention someone else, CTRL stores their role rather than their name. A fact whose subject is another person is not stored at all.</span></li>
+        <li><b>Off the record<span class="tag t-live">Live</span></b><span>Think something through without any of it being kept. No memory, no evidence, no influence on tomorrow's briefing, and CTRL says plainly when a session saved nothing.</span></li>
         <li><b>Consent you can change<span class="tag t-live">Live</span></b><span>Granular, timestamped consent toggles with an audit record. We do not sell personal data.</span></li>
         <li><b>Published privacy notice and processing record<span class="tag t-live">Live</span></b><span>A GDPR Article 13/14 and CCPA/CPRA notice, an Article 30 record of processing, and a maintained subprocessor register.</span></li>
         <li><b>Versioned, reviewed change history<span class="tag t-live">Live</span></b><span>Every schema change ships as a git-versioned migration, so the state of the database has a written history.</span></li>
@@ -77,6 +75,12 @@
       </ul>
 
       <h2>Not done yet</h2>
+
+      <div class="posture">
+        <p><b>We are not certified.</b> CTRL holds no SOC 2 report and no ISO/IEC 27001 certificate, and has not completed a third-party security audit. Work toward them is at the planning stage.</p>
+        <p>HIPAA does not apply to CTRL. We do not process protected health information, and CTRL is not intended for it.</p>
+      </div>
+
       <ul>
         <li><b>SOC 2 Type I or Type II report<span class="tag t-no">None</span></b><span>SOC 2 is an attestation issued by a licensed CPA firm, not a certification. We have not engaged one.</span></li>
         <li><b>ISO/IEC 27001:2022 certificate<span class="tag t-no">None</span></b><span>No accredited certification body has audited CTRL.</span></li>
@@ -89,7 +93,7 @@
         <li><b>Row-level security misconfiguration, May to June 2026<span class="tag t-live">Remediated</span></b><span>An over-permissive policy on several profile and chat tables was found and fixed. It is written up as a worked example in our incident response plan rather than quietly dropped.</span></li>
       </ul>
 
-      <p class="foot">Questions, a data processing agreement, or the current subprocessor list: <a href="mailto:privacy@themindmaker.ai">privacy@themindmaker.ai</a>. Signed in? Your live control status is at <a href="/compliance">/compliance</a>. Back to <a href="/">makeyourmindup.ai</a>.</p>
+      <p class="foot">Questions, a data processing agreement, or the current subprocessor list: <a href="mailto:privacy@themindmaker.ai">privacy@themindmaker.ai</a>. Common questions are answered at <a href="/faq">/faq</a>. Signed in? Your live control status is at <a href="/compliance">/compliance</a>. Back to <a href="/">makeyourmindup.ai</a>.</p>
     </main>
   </body>
 </html>

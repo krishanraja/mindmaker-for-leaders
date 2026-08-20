@@ -13,11 +13,11 @@ Last verified: 2026-08-11
 | Application baseline | `b5770194b4646302f47e36655e389f7ec2eb43f8` |
 | Vercel deployment | `dpl_8pxe81bUS2A6dYsjkb9jyrNAdkJ8`, READY at the same source revision |
 | Test suite at baseline | 876 tests in 55 files |
-| Edge Function directories | 113 excluding `_shared` |
+| Edge Function directories | 114 excluding `_shared` |
 | Hook files | 78 |
-| SQL migration files | 161 in the source tree and applied to production. `20260820090000_revoke_anon_definer_reads.sql` was applied on 2026-08-20 and verified by live grant readback and an unauthenticated REST call returning 401. |
+| SQL migration files | 163 in the source tree. 161 are applied to production. `20260820120000_retention_cleanup_cron.sql` and `20260820130000_blind_spot_burn.sql` are committed and not yet applied; they are the open production gate for this change. `20260820090000_revoke_anon_definer_reads.sql` was applied on 2026-08-20 and verified by live grant readback and an unauthenticated REST call returning 401. |
 
-Current source inventory is 113 Edge Function directories excluding `_shared`, 78 hook files, and 161 SQL migration files.
+Current source inventory is 114 Edge Function directories excluding `_shared`, 78 hook files, and 163 SQL migration files.
 
 ## Blind Spot production release
 

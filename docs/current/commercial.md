@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-11 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
+Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
 
 This is the single human-readable authority for marketing and selling CTRL. The machine-readable companion is [`public/.well-known/product.json`](../../public/.well-known/product.json). Agents must use both and may not upgrade an inference into a claim.
 
@@ -119,6 +119,60 @@ Do not use hype, fear, fake intimacy, corporate filler, or a barrage of features
 | Are you SOC 2, ISO 27001, or HIPAA compliant? | No. CTRL holds no SOC 2 report and no ISO/IEC 27001 certificate, and has completed no third-party audit. HIPAA is out of scope because CTRL does not process protected health information. Point the buyer at `https://makeyourmindup.ai/trust`, which states the controls in place, the ones in progress, and the ones absent. Never place a certification mark on any surface. |
 | How long does setup take? | The public intake asks one question at a time by voice or text. Do not promise a completion time unless a current measured result is supplied. |
 | Does it integrate with Slack or WhatsApp? | Not as a shipped current channel. Today, web, email, audio, context export, and Edge Pro MCP are the current paths. |
+| Can I get this for my leadership team? | No. CTRL is built for one person: no seats, no shared workspace, no admin console. A team-level ask is a separate Mindmaker engagement and must be verified live, never quoted from this repository. |
+| Can my assistant have access? | No. One person, one account. Delivery by email and export exists so a leader can share an output without sharing the account. |
+| Can I think something through without it being kept? | Yes. Off the record writes nothing durable for that session, and the product says so when a session saved nothing. |
+
+## Disclosure ladder
+
+The operating principle for every trust question: **answer the question that was asked, at the altitude it was asked, then return to the value.**
+
+Three rules follow. **Never pre-empt:** do not raise SOC 2, DPAs, subprocessors, incidents, or roadmap gaps before the buyer does, because raising them yourself signals that you think they are a problem. **Never evade:** if asked directly, answer completely and plainly on the first pass, because a buyer who has to ask twice stops believing the first answer. **Always land back on value.**
+
+Move to the next tier only when asked.
+
+### Tier 1: the default answer
+
+| Question | Answer |
+|---|---|
+| Where does my data live? | On your own account, encrypted, and only you can see it. You can export the whole thing or delete it whenever you want. |
+| Is it private? | Yours alone. There is no team view, no shared workspace, and no other account can reach it. |
+| Do you train on it? | No. Your content is not used to train models. |
+| Does it connect to my systems? | No, and that is deliberate. It works from a browser and sends what is useful to your inbox. Nothing to approve. |
+
+These four are published at `https://makeyourmindup.ai/faq` alongside the notebook test: *if you would write it in a notebook you carry home, put it in CTRL; if it belongs in your company's systems, put it there.* That sentence hands the judgement back to the buyer instead of treating them as a compliance risk.
+
+### Tier 2: a real follow-up
+
+Full, plain, complete. No hedging.
+
+- **Who else touches it?** It runs on Supabase in the United States and uses the major model providers to do the thinking, under API terms that exclude your content from training. The full subprocessor register is in the privacy policy and I am happy to walk you through it.
+- **How is it protected?** Every account is isolated at the database level, sensitive memory carries an AES-256-GCM encrypted payload at rest, everything is encrypted in transit, and card details never touch us. Plaintext fields are retained for display and search, so this is not end-to-end encryption and must never be described as such.
+- **Can I get my data out?** Yes, in JSON or markdown, formatted for ChatGPT, Claude, Gemini, Cursor, or Claude Code.
+- **Do you read it?** The founder has operator access to the database, the way any founder of a small product does. Client memory is not read. There is no data-access audit log that proves it yet, and an agent must not pretend otherwise. Until that log ships, never claim operator access is provably unused.
+
+### Tier 3: a technical or legal reviewer is in the room
+
+The goal is a clean, warm exit from the process rather than a win inside it.
+
+- **Security questionnaire.** Send exactly what exists: the privacy policy, the subprocessor register, and a straight note on what is in place and what is on the roadmap, all of which `https://makeyourmindup.ai/trust` already states. There is no SOC 2 report. CTRL is a personal tool rather than a company system, so if their process requires a certified vendor, the right answer is that company material should not go in it. Do not attempt the questionnaire.
+- **Incidents.** Answer only if asked directly, and never volunteer it. One: in mid-2026 a database policy misconfiguration was found during a review, fixed, and written up in the incident record.
+
+### The three conversations that decide the frame
+
+| Question | Answer |
+|---|---|
+| Can I get this for my leadership team? | CTRL is built for one person, so there is no team version. If the real aim is to change how the team decides, that is a Mindmaker engagement rather than the app. Verify any service offer live before describing it. |
+| Can I expense it? | You can, though most people use a personal card and keep it out of the company tooling conversation entirely. It is yours either way. |
+| Is this just a way to sell me consulting? | Some people who use CTRL end up working with Krish. Most do not. It has to be worth using on its own or it is not worth building. |
+
+## Vocabulary
+
+**Use:** your account, yours alone, private, portable, export, one person, works the moment you sign in, nothing to approve, your thinking, the decision you are carrying, take it with you.
+
+**Avoid:** enterprise, platform, deployment, rollout, seats, team, workspace, admin, integration, security posture, compliant, data governance. Each one invites a buyer to imagine a procurement process.
+
+**Never claim** that CTRL holds no personal data. It holds email, name, company, role, voice transcripts, chat, and behavioural patterns. Once the third-party name backfill has run in production, the accurate and stronger line becomes available: *CTRL holds personal data about you, and about nobody else.* Do not use it before that backfill is verified.
 
 ## Claim policy
 

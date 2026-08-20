@@ -43,7 +43,9 @@ NEVER EXTRACT (these are NOT user facts):
 - META-INSTRUCTIONS to the assistant: "don't use em dashes", "write it shorter", "avoid jargon", "give me bullet points", "make sure you...". These shape the OUTPUT and are not facts about the user.
 - NEGATIONS on their own: "I don't like X" alone is not a positive preference. Only capture positive statements of what the user DOES prefer or use.
 - TRANSIENT CONTEXT: "I'm tired today", "running late", "feeling off". Not durable.
-- THIRD-PARTY IDENTITY: "my cofounder is the CEO" does NOT make the speaker the CEO. Capture the cofounder as a relationship fact only if clearly relevant.
+- OTHER PEOPLE'S NAMES: never write another person's name into a fact. CTRL holds personal data about the speaker and about nobody else. Someone mentioned in passing has not consented to being recorded here and cannot correct or delete what you write. Refer to them by role instead: "the CFO", "my co-founder", "a board member". If you cannot name a role, leave the person out entirely.
+- FACTS ABOUT SOMEONE ELSE: if the SUBJECT of the fact is another person rather than the speaker, do not extract it at all. "Sarah is not coping" is a fact about Sarah, not about the speaker. "I am worried about my CFO's pace" is a fact about the speaker and is fine.
+- THIRD-PARTY IDENTITY: "my cofounder is the CEO" does NOT make the speaker the CEO.
 - COPY-EDIT, FORMATTING, OR TYPOGRAPHIC RULES under ANY category. Em dashes, bullet points, markdown, tone, voice, word count, brevity - these are style rules, never user facts.
 - HYPOTHETICALS: "if I had more time I'd...", "I would like to...". Not current facts.
 - SELF-ADDRESSED DIRECTIVES: "you should", "please avoid", "can you". These are for the assistant.
@@ -52,7 +54,9 @@ EXAMPLES of what to REJECT:
 - "Don't ever use em dashes in my briefings." -> REJECT, this is a style rule for the assistant
 - "Keep it under 200 words." -> REJECT, formatting instruction
 - "I'm a bit tired today, running late." -> REJECT tired/running-late (transient); keep "has a meeting today" ONLY if named
-- "My cofounder Jake is the CEO." -> REJECT "user is CEO"; keep "cofounder is named Jake" only if durable
+- "My cofounder Jake is the CEO." -> REJECT "user is CEO"; REJECT the name Jake. If anything is durable here it is "works with a co-founder who is CEO", with no name
+- "Sarah Patel is dragging her feet on the budget." -> REJECT, the subject is Sarah, not the speaker
+- "I keep having to chase my CFO Sarah for numbers." -> KEEP as "chases the CFO for numbers", with no name
 
 For each fact you extract:
 - fact_key: snake_case identifier (e.g., "role", "company_name", "main_blocker")
@@ -85,12 +89,24 @@ serve(async (req) => {
   }
 
   try {
-    const { transcript, session_id, source_type } = await req.json();
+    const { transcript, session_id, source_type, off_the_record } = await req.json();
 
     if (!transcript || typeof transcript !== 'string') {
       return new Response(
         JSON.stringify({ error: 'transcript is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Off the record: return before the model is called, so nothing is
+    // extracted, nothing is logged, and there is no rejection record either.
+    // Every good advisor has a version of this. The flag can only ever cause
+    // fewer writes, so trusting the client with it is safe in the direction
+    // that matters.
+    if (off_the_record === true) {
+      return new Response(
+        JSON.stringify({ facts: [], stored: 0, off_the_record: true, saved_nothing: true }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

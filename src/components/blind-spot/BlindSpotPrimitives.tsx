@@ -1,4 +1,4 @@
-import { ArrowRight, LockKeyhole, MessageCircle, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Flame, LockKeyhole, MessageCircle, ShieldCheck } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import type { BlindSpotAnchor, BlindSpotEvidenceStrength } from '@/types/blindSpot';
@@ -89,12 +89,33 @@ export function AdvisorAction({ onClick }: { onClick: () => void }) {
   );
 }
 
-export function ConfirmedState() {
+export function ConfirmedState({ onBurn, burning }: { onBurn?: () => void; burning?: boolean } = {}) {
   return (
-    <div role="status" className="flex min-h-14 items-center gap-3 rounded-xl border border-accent/25 bg-accent/[0.06] px-4 text-sm text-foreground">
-      <ShieldCheck className="h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
-      <span><strong>Kept in view.</strong> I’ll bring the experiment back in a future briefing.</span>
-      <ArrowRight className="ml-auto h-4 w-4 text-accent" aria-hidden="true" />
+    <div className="grid gap-2">
+      <div role="status" className="flex min-h-14 items-center gap-3 rounded-xl border border-accent/25 bg-accent/[0.06] px-4 text-sm text-foreground">
+        <ShieldCheck className="h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
+        <span><strong>Kept in view.</strong> I’ll bring the experiment back in a future briefing.</span>
+        <ArrowRight className="ml-auto h-4 w-4 text-accent" aria-hidden="true" />
+      </div>
+      {/* A saved pattern is a dated, evidenced record of something a leader
+          finds hard. Saying where it lives, and offering to remove it, is the
+          difference between a private instrument and a permanent file. */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          This stays in your account. No one else can see it.
+        </p>
+        {onBurn && (
+          <button
+            type="button"
+            onClick={onBurn}
+            disabled={burning}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-[11px] font-semibold text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Flame className="h-3.5 w-3.5" aria-hidden="true" />
+            {burning ? 'Burning...' : 'Burn this read'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

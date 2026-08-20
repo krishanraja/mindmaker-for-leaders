@@ -14,6 +14,7 @@ import { OfflineIndicator } from '@/components/ui/offline-indicator'
 import { InitializationLoader } from '@/components/ui/InitializationLoader'
 import { AppStateProvider, useAppState } from '@/contexts/AppStateContext'
 import { BriefingProvider } from '@/contexts/BriefingContext'
+import { OffTheRecordProvider } from '@/contexts/OffTheRecordContext'
 import { DiagnosticsPanel } from '@/components/dev/DiagnosticsPanel'
 import { initMobileViewport } from '@/utils/mobileViewport'
 import { onHomeReady } from '@/lib/bootGate'
@@ -118,11 +119,13 @@ export default function App() {
     <ThemeProvider defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <BriefingProvider>
-            <AppStateProvider>
-              <AppContent />
-            </AppStateProvider>
-          </BriefingProvider>
+          <OffTheRecordProvider>
+            <BriefingProvider>
+              <AppStateProvider>
+                <AppContent />
+              </AppStateProvider>
+            </BriefingProvider>
+          </OffTheRecordProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

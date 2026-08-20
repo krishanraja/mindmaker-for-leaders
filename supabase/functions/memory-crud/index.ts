@@ -180,6 +180,20 @@ serve(async (req) => {
           );
         }
 
+        // Off the record is the per-session sibling of the persistent
+        // store_memory_enabled switch above. Same refusal, different scope:
+        // this one lasts for one conversation and is not stored anywhere.
+        if (body?.off_the_record === true) {
+          return new Response(
+            JSON.stringify({
+              error: 'off_the_record',
+              message: 'This session is off the record, so nothing was saved.',
+              saved_nothing: true,
+            }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
         // Hygiene guardrails: reject style-rules / negations / transient / third-party
         // identity even for user-asserted (1.0 confidence) facts. The MIN_CONFIDENCE
         // gate does not fire at 1.0; the pattern-based rejects still do.

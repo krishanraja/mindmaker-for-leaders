@@ -455,7 +455,7 @@ function IdentityStep({
   return (
     <QuestionFrame
       question="Where should I start looking?"
-      aside="A work email or your LinkedIn profile is enough. I will use it to find your company, check what changed, and show you what I found before anything follows you into CTRL."
+      aside="A work email or your LinkedIn profile is enough. I will read what is already public about your company, check what changed recently, and show you everything I found before any of it follows you into CTRL."
     >
       <div className="mt-auto pb-[max(2.5rem,env(safe-area-inset-bottom))]">
         <input
@@ -741,6 +741,14 @@ function CompanyRecognition({ dossier }: { dossier: OnboardingDossier }) {
         <div className="mt-5 flex flex-wrap gap-x-2 gap-y-1 font-mymu-mono text-[10px] uppercase tracking-[0.12em] text-[#7f8997]">
           <span>{signalLabel}</span><span aria-hidden="true">·</span><span>{providerLabel}</span>{newest && <><span aria-hidden="true">·</span><span>fresh to {newest}</span></>}
         </div>
+
+        {/* Saying where this came from turns the strongest suspicion in the
+            product ("how did you know all that about me?") into the proof
+            point it should be. All of it is public, and none of it is kept
+            unless the leader confirms it below. */}
+        <p className="mt-3 font-mymu-serif text-[13px] leading-relaxed text-[#7f8997]">
+          All of this is public information. Nothing is kept until you say it is right.
+        </p>
       </div>
 
       {dossier.signals.length > 0 && (
