@@ -1,10 +1,14 @@
 # CTRL North Star
 
-**Verified 2026-07-26:** definition, view/table/function names, and cron cadence confirmed still current against `supabase/migrations/20260704120000_north_star_flywheel.sql`; no drift found.
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
+
+Definition, view, table, and function names confirmed against `supabase/migrations/20260704120000_north_star_flywheel.sql`. The `north-star-daily-snapshot` cron job was confirmed active at `0 6 * * *` by production readback on 2026-08-20, so the trend line is genuinely being populated.
 
 ## The outcome
 
-CTRL exists to help a time-poor senior leader build, orchestrate, productize, and get to market the AI-native version of their business, acting as their AI-native chief of staff. See `docs/CTRL-SYSTEM-SPEC.md` and `docs/MAIN-APP-POLISH-SPEC.md`.
+CTRL exists to give a time-poor founder or small-team CEO a quieter way through AI: notice what matters, weigh a real decision against evidence, and compound useful context without surrendering judgement. See [`docs/current/product.md`](../docs/current/product.md) and [`docs/current/commercial.md`](../docs/current/commercial.md).
 
 ## The moat metric (founder-signed 2026-07-04): the flywheel
 

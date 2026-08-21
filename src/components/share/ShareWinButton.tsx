@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
 const SHARE_CARD = `${import.meta.env.VITE_SUPABASE_URL || 'https://bkyuxvschuwngtcdhsyg.supabase.co'}/functions/v1/share-card`;
-const LANDING = 'https://ctrl.themindmaker.ai/agents';
+const LANDING = 'https://makeyourmindup.ai/agents';
 
 export interface ShareWin {
   title: string; // the headline on the card

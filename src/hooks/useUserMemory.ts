@@ -6,6 +6,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useOffTheRecord } from '@/contexts/OffTheRecordContext';
 import type {
   UserMemoryFact,
   PendingVerification,
@@ -33,6 +34,7 @@ interface UseUserMemoryReturn {
 
 export function useUserMemory(): UseUserMemoryReturn {
   const { user } = useAuth();
+  const { isOffTheRecord } = useOffTheRecord();
   const [memory, setMemory] = useState<UserMemoryFact[]>([]);
   const [pendingVerifications, setPendingVerifications] = useState<PendingVerification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,6 +90,13 @@ export function useUserMemory(): UseUserMemoryReturn {
     sessionId?: string,
     sourceType?: MemorySourceType
   ): Promise<ExtractionResult> => {
+    // Off the record short-circuits before the request leaves the browser.
+    // The server refuses too, but not sending the transcript at all is the
+    // stronger promise and the one a user would assume we are making.
+    if (isOffTheRecord) {
+      return { success: true, facts: [], facts_stored: 0, pending_verifications: [], saved_nothing: true };
+    }
+
     setIsExtracting(true);
     setError(null);
 
@@ -102,7 +111,7 @@ export function useUserMemory(): UseUserMemoryReturn {
       for (let attempt = 0; attempt < delays.length; attempt++) {
         if (delays[attempt]) await new Promise((r) => setTimeout(r, delays[attempt]));
         const res = await supabase.functions.invoke('extract-user-context', {
-          body: { transcript, session_id: sessionId, source_type: sourceType },
+          body: { transcript, session_id: sessionId, source_type: sourceType, off_the_record: false },
         });
         if (!res.error) {
           data = res.data;
@@ -140,7 +149,7 @@ export function useUserMemory(): UseUserMemoryReturn {
     } finally {
       setIsExtracting(false);
     }
-  }, [user?.id, refreshMemory]);
+  }, [user?.id, refreshMemory, isOffTheRecord]);
 
   // Verify a fact (confirm as correct)
   const verifyFact = useCallback(async (

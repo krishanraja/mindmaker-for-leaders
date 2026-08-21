@@ -60,9 +60,13 @@ const FALLBACK: TrainingMaterial = {
     { id: "meta_instruction", pattern: "^(don'?t|do not|avoid|never|stop|please stop|make sure you|you should)\\b", reason: "output-shaping instruction", field: "fact_context" },
     { id: "style_rule", pattern: "(em[\\s-]?dash|en[\\s-]?dash|bullet|markdown|format|tone|voice|word\\s*count)", reason: "typography/style rule", field: "both" },
     { id: "transient_state", pattern: "(i'?m tired|running late|feeling \\w+ today)", reason: "transient context", field: "both" },
-    { id: "third_party_identity", pattern: "(my (cofounder|co-founder|partner|cto|ceo)(?: is| was)|our (cto|ceo|vp))", reason: "third party", field: "both" },
+    { id: "third_party_identity", pattern: "(my (cofounder|co-founder|partner|cto|ceo|cfo|coo|boss|manager|colleague|assistant)(?: is| was)|our (cto|ceo|cfo|coo|vp|head of|director)|^[A-Z][a-z]{1,20}( [A-Z][a-z]{1,20})? (?:(?:is|was|has been) (?:not |never )?(?:coping|struggling|dragging|slipping|stalling|underperforming|overwhelmed|resistant|difficult|unhappy|unhappy with|frustrated|checked out|burnt out|burned out|out of their depth|not up to)|keeps |refuses |struggles |resents |avoids |hesitates |dislikes |worries ))", reason: "third party", field: "both" },
     { id: "self_addressed_directive", pattern: "(you should|can you|please (use|write|make))", reason: "addressed to app", field: "fact_context" },
   ],
+  // Empty here on purpose: guardrails-core falls back to
+  // DEFAULT_PSEUDONYMISATION when the roles list is empty, so the role
+  // lexicon lives in exactly one place rather than being duplicated.
+  third_party_pseudonymisation: { roles: [], allowlist: [] },
   preference_subtypes: {
     communication_style: { keywords: ["bullet", "summary", "tldr", "async", "sync"], examples: [] },
     decision_style: { keywords: ["data", "gut", "deliberate"], examples: [] },

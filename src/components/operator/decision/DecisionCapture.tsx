@@ -174,7 +174,7 @@ export function DecisionCapture({
           aria-label={listening ? 'Stop listening' : 'Say it out loud'}
           aria-pressed={listening}
           className={cn(
-            'grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[14px] border transition-colors',
+            'grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border transition-colors',
             listening ? 'border-transparent bg-accent text-accent-foreground' : 'border-border bg-foreground/[0.03] text-muted-foreground hover:border-accent/30 hover:text-accent',
           )}
         >

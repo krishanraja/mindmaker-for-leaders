@@ -1,87 +1,161 @@
-// BriefingHeaderButton - the unmistakable "your audio digest" control, in the
-// top bar so the daily briefing is reachable from any tab.
-//
-// A labelled pill (icon + word), never a bare icon, so it is obvious what it
-// does. Two honest, explicit clicks:
-//   1st click (no briefing yet) : MAKE it - generates today's briefing in the
-//      background; the pill shows "Building..." with a spinner.
-//   2nd click (once ready)      : PLAY it - opens the audio drawer and plays.
-// When ready it turns accent-green and reads "Play", with a soft pulse so the
-// eye lands on it. No app jargon.
-
 import { useRef } from 'react';
-import { Headphones, Loader2, Play } from 'lucide-react';
+import { AudioLines, Loader2, Pause, Play } from 'lucide-react';
 import { useTodaysBriefing, useGenerateBriefing } from '@/hooks/useBriefing';
 import { useBriefingContext } from '@/contexts/BriefingContext';
-import { isBriefingGenerating, isBriefingReady } from '@/types/briefing';
+import { supabase } from '@/integrations/supabase/client';
+import { isBriefingGenerating, isBriefingReady, type Briefing } from '@/types/briefing';
 import { cn } from '@/lib/utils';
 
-export function BriefingHeaderButton({ className }: { className?: string }) {
-  const { briefing: defaultBriefing, refetch } = useTodaysBriefing();
-  const { generate, generating } = useGenerateBriefing();
-  const { setBriefing, setSheetOpen } = useBriefingContext();
+const PHASE_COPY = {
+  idle: 'Getting ready',
+  scanning: 'Scanning what moved',
+  personalising: 'Making it yours',
+  preparing: 'Shaping the brief',
+} as const;
 
-  const ready = isBriefingReady(defaultBriefing);
-  const busy = generating || isBriefingGenerating(defaultBriefing);
+function durationLabel(seconds: number | null | undefined): string {
+  if (!seconds || seconds < 1) return 'Audio ready';
+  return `${Math.max(1, Math.round(seconds / 60))} min`;
+}
 
-  // Guard so a double-tap on "Build" doesn't fire two generations.
+interface BriefingHeaderButtonProps {
+  className?: string;
+  briefingOverride?: Briefing;
+}
+
+type BriefingLookupClient = {
+  from: (table: 'briefings') => {
+    select: (columns: '*') => {
+      eq: (column: 'id', value: string) => {
+        maybeSingle: () => Promise<{ data: Briefing | null }>;
+      };
+    };
+  };
+};
+
+export function BriefingHeaderButton({ className, briefingOverride }: BriefingHeaderButtonProps) {
+  const { briefing: todaysBriefing, refetch } = useTodaysBriefing();
+  const { generate, generating, phase } = useGenerateBriefing();
+  const {
+    briefing: activeBriefing,
+    playback,
+    setBriefing,
+    setSheetOpen,
+  } = useBriefingContext();
   const startedRef = useRef(false);
 
-  const handleClick = () => {
-    // Ready -> play (open the drawer; it plays + synthesizes audio if needed).
-    if (ready && defaultBriefing) {
-      setBriefing(defaultBriefing);
+  const availableBriefing = briefingOverride ?? todaysBriefing;
+  const ready = isBriefingReady(availableBriefing);
+  const busy = !briefingOverride && (generating || isBriefingGenerating(availableBriefing));
+  const isActiveBriefing = ready && activeBriefing?.id === availableBriefing?.id;
+  const isPlaying = isActiveBriefing && playback.isPlaying;
+  const progress = isActiveBriefing && playback.duration > 0
+    ? Math.min(100, (playback.currentTime / playback.duration) * 100)
+    : 0;
+
+  const handleClick = async () => {
+    if (ready && availableBriefing) {
+      setBriefing(availableBriefing);
       setSheetOpen(true);
       return;
     }
-    // Building -> nothing to do; the spinner already shows progress.
-    if (busy) return;
-    // Idle -> first click MAKES today's briefing.
-    if (startedRef.current) return;
+    if (busy || startedRef.current) return;
+
     startedRef.current = true;
-    void generate('default')
-      .then(() => refetch())
-      .finally(() => { startedRef.current = false; });
+    try {
+      const briefingId = await generate('default');
+      if (!briefingId) return;
+      // `briefings` predates the generated Database type snapshot. Keep the
+      // temporary escape hatch narrow and make the returned row explicit.
+      const briefingLookup = supabase as unknown as BriefingLookupClient;
+      const { data } = await briefingLookup
+        .from('briefings')
+        .select('*')
+        .eq('id', briefingId)
+        .maybeSingle();
+      if (data) {
+        setBriefing(data);
+        setSheetOpen(true);
+      } else {
+        await refetch();
+      }
+    } finally {
+      startedRef.current = false;
+    }
   };
 
-  const label = busy ? 'Building' : ready ? 'Play' : 'Briefing';
-  const Icon = busy ? Loader2 : ready ? Play : Headphones;
+  const detail = busy
+    ? PHASE_COPY[phase]
+    : ready
+      ? isPlaying
+        ? `${durationLabel(playback.duration)} · playing`
+        : durationLabel(availableBriefing?.audio_duration_seconds)
+      : 'Start today\'s brief';
 
   return (
     <button
       type="button"
       onClick={handleClick}
+      disabled={busy}
       aria-label={
         busy
           ? 'Building your audio briefing'
           : ready
-          ? 'Play your audio briefing'
-          : 'Make your audio briefing'
+            ? 'Open your audio briefing'
+            : 'Start your audio briefing'
       }
+      aria-busy={busy}
+      data-briefing-trigger
       title="Your audio briefing"
       className={cn(
-        'relative flex h-8 items-center gap-1.5 rounded-full pl-2.5 pr-3 text-[12.5px] font-semibold transition-colors',
+        'group relative grid h-11 w-[148px] shrink-0 grid-cols-[32px_minmax(0,1fr)] items-center gap-2 overflow-hidden rounded-xl border px-2 text-left transition-colors sm:w-[194px] sm:grid-cols-[34px_minmax(0,1fr)_34px] sm:gap-2.5 sm:px-2.5',
         ready
-          ? 'bg-accent text-accent-foreground shadow-[0_0_0_3px_hsl(var(--accent)/0.18)] hover:brightness-110'
-          : 'border border-border bg-card/60 text-foreground hover:border-accent/40 hover:text-accent',
+          ? 'border-accent/35 bg-accent/[0.045] shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.04),0_0_24px_-18px_hsl(var(--accent))] hover:border-accent/55'
+          : 'border-border bg-card/70 hover:border-accent/30',
+        busy && 'cursor-wait',
         className,
       )}
     >
-      <Icon
-        className={cn(
-          'h-[15px] w-[15px]',
-          busy && 'animate-spin',
-          ready && 'translate-x-px fill-current',
+      <span className="grid h-8 w-8 place-items-center rounded-full border border-accent/25 bg-accent/[0.09] text-accent shadow-[0_0_18px_-10px_hsl(var(--accent))] sm:h-[34px] sm:w-[34px]">
+        {busy ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : isPlaying ? (
+          <Pause className="h-3.5 w-3.5 fill-current" />
+        ) : ready ? (
+          <Play className="ml-px h-3.5 w-3.5 fill-current" />
+        ) : (
+          <AudioLines className="h-3.5 w-3.5" />
         )}
-        strokeWidth={ready ? 0 : 2}
-      />
-      <span>{label}</span>
-      {ready && (
-        <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+      </span>
+
+      <span className="min-w-0">
+        <strong className="font-ctrl-display block text-[10px] font-semibold leading-4 tracking-[-0.01em] text-foreground">
+          Briefing
+        </strong>
+        <span className="block truncate text-[10px] leading-4 text-muted-foreground sm:text-[10.5px]">
+          {detail}
         </span>
-      )}
+      </span>
+
+      <span className="hidden h-6 items-end justify-center gap-[2px] text-accent sm:flex" aria-hidden="true">
+        {[8, 14, 20, 11, 17, 8].map((height, index) => (
+          <i
+            key={`${height}-${index}`}
+            className={cn(
+              'block w-[2px] rounded-full bg-current opacity-45',
+              isPlaying && 'animate-pulse opacity-85',
+            )}
+            style={{ height }}
+          />
+        ))}
+      </span>
+
+      <span className="absolute inset-x-2 bottom-0 h-px overflow-hidden bg-border sm:inset-x-2.5">
+        <span
+          className="block h-full bg-accent transition-[width] duration-150"
+          style={{ width: ready ? `${Math.max(progress, 4)}%` : busy ? '28%' : '0%' }}
+        />
+      </span>
     </button>
   );
 }

@@ -4,132 +4,275 @@
   "name": "CTRL",
   "legal_entity": "Mindmaker LLC",
   "stripe_account": "mindmaker_llc",
-  "url": "https://ctrl.themindmaker.ai",
+  "url": "https://makeyourmindup.ai",
   "status": "live",
-  "last_updated": "2026-08-04",
-  "source_of_truth": "https://ctrl.themindmaker.ai/.well-known/product.json",
-  "tagline": "Your AI-native chief of staff.",
-  "one_liner": "CTRL is an AI-native chief of staff for founders and small-team CEOs: it pressure-tests the calls only you can make against live evidence, keeps one portable memory of you that every AI tool can read, and gives you a daily read anchored to what actually matters.",
+  "last_updated": "2026-08-20",
+  "source_of_truth": "https://makeyourmindup.ai/.well-known/product.json",
+  "human_commercial_authority": "https://github.com/krishanraja/mm-ctrl/blob/main/docs/current/commercial.md",
+  "tagline": "A quieter way through AI.",
+  "one_liner": "CTRL is a calm AI decision partner for founders and small-team CEOs. It filters the AI world through what they are actually deciding, weighs a real call against evidence, keeps portable context, and sends a short daily read or listen.",
   "positioning": {
-    "spine": "CTRL is your AI-native chief of staff.",
+    "spine": "CTRL is your calm AI decision partner.",
     "frame": "Build the AI-native version of your business.",
-    "lens": "CTRL is only ever about building, orchestrating, productizing and getting to market the AI-native version of your business. It reframes general business inputs into that lens; it is not a general business advisor.",
-    "areas": [
-      {
-        "name": "Home",
-        "what": "An AI-native curated read: the industry headlines worth a look, cross-verified across sources, plus three doors (your daily briefing, weigh a decision, build a skill)."
-      },
-      {
-        "name": "Decisions",
-        "what": "Weigh and pressure-test a real call: reframe it into its AI-native version, decompose it into the claims it rests on, verify the load-bearing ones against live evidence, and show where only you can decide."
-      },
-      {
-        "name": "Brain / Memory",
-        "what": "Portable context: a structured, ranked memory of who you are, what you are building, and how you think, readable by any AI tool you use."
-      }
+    "boundary": "CTRL is not a generic chatbot, news feed, outsourced decision maker, implementation platform, or consulting engagement.",
+    "tabs": [
+      "Today",
+      "Decide",
+      "Blind spot",
+      "Memory"
     ],
-    "tabs": ["Home", "Decisions", "Brain", "You"],
-    "voice": "Warm, advisory, first person. It clarifies; it never recommends from a thin signal. The call stays with the leader."
+    "voice": "Warm, direct, curious, specific, and economical. CTRL shows its evidence and keeps the final judgement with the leader."
+  },
+  "non_goals": {
+    "statement": "CTRL is a private thinking instrument for one person, not a company system of record.",
+    "boundaries": [
+      "One person, one account. No seats, invites, or shared workspaces.",
+      "No admin console, no SSO, no company directory.",
+      "If an IT administrator has to approve it, we do not build it. No Google Workspace, Microsoft Graph, workspace-level Slack, or calendar read scopes.",
+      "No meeting recording or call transcription."
+    ],
+    "team_request": "A leader asking for team access is describing an engagement, not a product tier. There is no team version of CTRL."
   },
   "icp": {
-    "who": "AI-native founders and small-team CEOs. Ratified beachhead as of 2026-08-04.",
-    "company_size": "Small teams, where the founder or CEO is still close to the work.",
-    "markets": "English-speaking",
-    "qualifiers": "Industry agnostic. The qualifier is not the vertical, it is that they are actively building the AI-native version of their business, already use at least one AI tool daily (ChatGPT, Claude, Gemini, Cursor, Claude Code) but keep getting generic output, and have no time and no staff to chase evidence for the calls that matter.",
-    "not_a_fit": "People who want a generic chatbot, enterprise procurement cycles, and anyone looking for consulting or advisory services (Mindmaker retired all advisory business in July 2026)."
+    "who": "AI-active founders and small-team CEOs who are still close to the work and the important calls.",
+    "qualifiers": [
+      "Actively building the AI-native version of the business",
+      "Uses AI regularly but still receives generic output",
+      "Has more AI information, decisions, and context than they can hold",
+      "Lacks time or staff to monitor changes and check important assumptions",
+      "Values evidence, control, privacy, and portability"
+    ],
+    "not_a_fit": [
+      "Generic chatbot shoppers",
+      "Enterprise procurement or implementation-platform requirements",
+      "People who want the product to make the final decision",
+      "Buyers requiring integrations that are not listed as shipped"
+    ]
   },
   "problem": {
-    "headline": "You are building the AI-native version of your business with no staff and no time.",
-    "detail": "Two taxes. The zero-context tax: every AI conversation starts from zero, so you re-explain who you are, your company and your priorities to every tool, many times a day, and the output stays generic because the AI never has depth. The evidence tax: the calls that actually matter get made on gut and a half-read feed, because nobody has time to check what the call is really resting on."
-  },
-  "magic_moment": "The first weigh. You hand CTRL a real call, it reframes it into the AI-native version of that call, breaks it into the claims it rests on, checks the load-bearing ones against live evidence, and hands back where the call holds, where it breaks, and the part only you can decide. The second moment is portability: pasting your context into ChatGPT or Claude and getting an answer that is unmistakably about you.",
-  "pitch": {
-    "short": "An AI-native chief of staff for the calls only you can make. CTRL tests your real decisions against live evidence, carries one portable memory of you into every AI tool, and gives you a daily read that is actually yours.",
-    "long": "CTRL is your AI-native chief of staff. Talk or type, and it builds a Memory Web: a structured, ranked model of who you are, what you are building, and how you think. That memory is portable, exported into any LLM in one click or pulled live by your own agents over a read-only MCP server, so ChatGPT, Claude, Gemini, Cursor and Claude Code answer as if they already know you. When a real decision lands, CTRL reframes it into the AI-native version of that call, decomposes it into its claims, verifies the load-bearing ones against live evidence, and shows where it holds, where it breaks, and where only you can decide. Each morning it delivers a short read anchored to your real priorities, with the evidence trail for every item. Free is a genuine daily instrument. Edge Pro at $49 per month is the decision tier."
+    "context_tax": "Every AI tool starts without enough knowledge of the leader, company, priorities, and judgement.",
+    "evidence_tax": "Important calls are made with incomplete research because checking the assumptions takes too long."
   },
   "features": [
-    { "name": "Memory Web", "tier": "free", "what": "A structured, ranked, encrypted memory of you and your business, built from voice or text, kept fresh, contradictions resolved at write time." },
-    { "name": "Context export", "tier": "free", "what": "One-click export of your context, or a my-ai-context.md file, formatted for ChatGPT, Claude, Gemini, Cursor and Claude Code." },
-    { "name": "Voice profile", "tier": "free", "what": "Eight dimensions of how you actually write and speak, captured by recognition picks or extracted from a sample of your real writing, so generated output sounds like you." },
-    { "name": "Automator (skill builder)", "tier": "free", "what": "Turns something you do over and over into an agentskills.io-compliant skill you can install in your own AI. Unlimited builds and exports." },
-    { "name": "Daily briefing", "tier": "free", "what": "A short personalised read anchored to your real priorities, with the evidence trail for every item." },
-    { "name": "Decision engine (weigh and verify)", "tier": "free_capped_pro_unlimited", "what": "Reframe to the AI-native version of the call, decompose into claims, verify against live evidence, advise. Free includes 3 full weighs per month; Edge Pro is unlimited." },
-    { "name": "Multi-model cross-examination", "tier": "edge_pro", "what": "A second, independent pass that argues against the first on every decision." },
-    { "name": "Decision watch", "tier": "edge_pro", "what": "Hourly re-verification of the load-bearing assumptions behind calls you already made, raising an alert when the ground shifts." },
-    { "name": "Edge artifacts and drafting", "tier": "edge_pro", "what": "Board memos, strategy docs, emails and agendas generated in your voice." },
-    { "name": "Live MCP pull", "tier": "edge_pro", "what": "A read-only Model Context Protocol server so your own agents pull your live context and your built skills on every call, never a stale paste." },
-    { "name": "Email delivery", "tier": "edge_pro", "what": "Generated artifacts delivered to your inbox." }
+    {
+      "name": "Today",
+      "tier": "free",
+      "what": "A small set of corroborated AI signals ranked against the leader's real priorities, with a short read or listen."
+    },
+    {
+      "name": "Decide",
+      "tier": "free_capped_pro_unlimited",
+      "what": "An AI-native reframe, claim decomposition, evidence verification, tensions, and an explicit judgement boundary. Free includes 3 full weighs per month; Edge Pro is unlimited."
+    },
+    {
+      "name": "Blind Spot",
+      "tier": "free",
+      "what": "One private mechanism-level read with dated evidence anchors, one small experiment, and bounded advisor talk-back. A candidate is not saved before confirmation.",
+      "pattern_qualification": "One current user-authored or verified intention plus at least two distinct recurrence records, with recurrence across two source kinds or records at least seven days apart. Anything weaker is labelled a tension and asks one low-cost question."
+    },
+    {
+      "name": "Memory",
+      "tier": "free",
+      "what": "Owner-scoped, correctable, portable context for the leader and the AI tools they choose."
+    },
+    {
+      "name": "Context export",
+      "tier": "free",
+      "what": "Exported context for use in ChatGPT, Claude, Gemini, Cursor, Claude Code, or a Markdown file."
+    },
+    {
+      "name": "Decision Watch",
+      "tier": "edge_pro",
+      "what": "A scheduled review path for load-bearing assumptions behind active decisions, raising an alert when the evidence changes materially."
+    },
+    {
+      "name": "Multi-model cross-examination",
+      "tier": "edge_pro",
+      "what": "An independent challenge pass on a decision."
+    },
+    {
+      "name": "Edge artifacts and drafting",
+      "tier": "edge_pro",
+      "what": "Memos, documents, emails, and agendas generated from the leader's context."
+    },
+    {
+      "name": "Live MCP pull",
+      "tier": "edge_pro",
+      "what": "Read-only access to the leader's current context and any existing compiled skills through a revocable per-leader token."
+    },
+    {
+      "name": "Artifact email delivery",
+      "tier": "edge_pro",
+      "what": "Generated artifacts delivered by email."
+    }
   ],
+  "delivery": {
+    "current_channels": [
+      "web",
+      "email",
+      "audio"
+    ],
+    "no_dashboard_visit": "A delivery subscription can send the useful briefing by email and link to audio without requiring a dashboard visit.",
+    "not_shipped": [
+      "Slack",
+      "WhatsApp"
+    ],
+    "rule": "Do not promise an unlisted channel or integration."
+  },
   "pricing": {
     "currency": "usd",
-    "canonical_source": "supabase/functions/_shared/edge-pricing.ts (EDGE_PRO_UNIT_AMOUNT_CENTS = 4900), surfaced to the UI via src/constants/billing.ts. Trust the code over any doc.",
+    "canonical_source": "supabase/functions/_shared/edge-pricing.ts",
     "tiers": [
       {
         "id": "free",
         "name": "Free",
         "amount": 0,
         "cadence": "forever",
-        "includes": ["Memory Web", "context export", "voice profile", "unlimited Automator skill builds and exports", "daily personalised briefing", "3 decision weighs per month"]
+        "includes": [
+          "Memory",
+          "context export",
+          "Blind Spot",
+          "daily personalised briefing",
+          "3 decision weighs per month"
+        ]
       },
       {
         "id": "edge_pro",
         "name": "Edge Pro",
         "amount": 49,
         "cadence": "monthly",
-        "includes": ["unlimited decision weighs", "multi-model cross-examination of every decision", "decision watch", "Edge artifacts (memos, docs, emails, agendas)", "drafting", "live MCP pull of your context and skills into any AI", "email delivery of artifacts"]
+        "includes": [
+          "unlimited decision weighs",
+          "multi-model cross-examination",
+          "Decision Watch",
+          "Edge artifacts and drafting",
+          "live MCP pull",
+          "artifact email delivery"
+        ]
       }
     ],
-    "checkout": "Stripe Checkout via the create-edge-subscription edge function. Two tiers only. Free is a real daily instrument, not a trial; Edge Pro is the decision tier."
+    "checkout": "Stripe Checkout through create-edge-subscription.",
+    "prohibited": [
+      "old $9 or $29 prices",
+      "annual pricing without live verification",
+      "discounts",
+      "bundles",
+      "one-time diagnostics",
+      "guarantees"
+    ]
   },
-  "primary_cta": { "label": "Start free", "url": "https://ctrl.themindmaker.ai/auth" },
-  "secondary_cta": { "label": "See pricing", "url": "https://ctrl.themindmaker.ai/pricing" },
-  "differentiators": [
-    "AI-native lens by default: CTRL only helps you build the AI-native version of your business, and reframes general inputs into that lens.",
-    "Portable: your context works across every LLM, never locked to one chat app.",
-    "Evidence-backed decisions: load-bearing claims are verified against live sources, and the evidence trail is shown.",
-    "Honest by construction: it shows where a call holds and where it breaks, and never recommends from a thin signal.",
-    "Voice-first capture: talk instead of filling in forms. No integrations, no plugins.",
-    "Agent-native: a read-only MCP server so your own agents read your live context, not a stale paste (Edge Pro)."
-  ],
+  "data_and_privacy": {
+    "verified": [
+      "User records are owner-scoped with row-level security.",
+      "Memory writes include an AES-256-GCM encrypted shadow payload.",
+      "Plaintext memory fields remain for product display and search.",
+      "The Edge Pro MCP server is read-only and uses a revocable per-leader token.",
+      "Generated Blind Spot candidates are not stored before confirmation."
+    ],
+    "prohibited_claims": [
+      "end-to-end encryption",
+      "exclusively encrypted storage",
+      "no plaintext storage",
+      "a security certification not named in current compliance records",
+      "a legal or regulatory conclusion"
+    ]
+  },
   "agent_access": {
     "mcp_server": "https://bkyuxvschuwngtcdhsyg.supabase.co/functions/v1/mcp-context",
-    "transport": "Streamable HTTP (MCP spec 2025-06-18), stateless JSON responses.",
-    "tools": ["get_leader_context", "get_todays_briefing (opt-in scope)", "list_skills", "get_skill", "list_skill_files"],
-    "auth": "A per-leader read-only key minted in Settings, Edge Pro tab, passed as a bearer token. Revocable anytime.",
+    "transport": "Streamable HTTP, stateless JSON responses.",
+    "tools": [
+      "get_leader_context",
+      "get_todays_briefing",
+      "list_skills",
+      "get_skill",
+      "list_skill_files"
+    ],
+    "auth": "A revocable per-leader read-only bearer token minted in Settings, Edge Pro. Briefing access requires its opt-in scope.",
     "requires": "Edge Pro"
   },
   "objections": [
-    { "q": "Why not just use ChatGPT memory?", "a": "ChatGPT memory is locked to ChatGPT. CTRL is portable across ChatGPT, Claude, Gemini, Cursor and Claude Code, it is structured and ranked, and it can be pulled live by your own agents." },
-    { "q": "Is this consulting?", "a": "No. CTRL is a product with two self-serve tiers. Mindmaker retired all advisory and consulting engagements in July 2026." },
-    { "q": "Is my data safe?", "a": "Your context is encrypted and you control it. CTRL is privacy-first and built for operators who guard sensitive context." },
-    { "q": "How long does setup take?", "a": "A few minutes. Tell CTRL what you do and what you are building, by voice or text. No integrations, no plugins." },
-    { "q": "Will it decide for me?", "a": "No. It clarifies and shows the evidence. It never recommends from a thin signal, and it always surfaces the part only you can decide." }
+    {
+      "q": "Why not use a general AI chat product?",
+      "a": "CTRL is designed as portable, structured context and evidence-backed decision support across tools. Do not speculate about another product's current behavior without a current primary source."
+    },
+    {
+      "q": "Will it decide for me?",
+      "a": "No. CTRL checks evidence and clarifies tensions, then makes the judgement boundary visible. The call stays with the leader."
+    },
+    {
+      "q": "Is this consulting?",
+      "a": "CTRL is a self-serve software product with Free and Edge Pro tiers. Separate Mindmaker services are outside this product and require separate live verification."
+    },
+    {
+      "q": "Is all my data encrypted?",
+      "a": "Sensitive memory writes include a field-level encrypted shadow and records are owner-scoped with row-level security. Plaintext fields are retained for product use, so CTRL must not be described as end-to-end or exclusively encrypted."
+    },
+    {
+      "q": "How long does setup take?",
+      "a": "The public intake asks one question at a time by voice or text. No completion-time claim is approved without current measurement."
+    }
   ],
-  "guardrails": [
-    "No em dashes in any copy.",
-    "Two tiers only: Free at $0 and Edge Pro at $49 per month. Older Edge Pro prices ($9, $29) are dead; never quote them.",
-    "There is no one-time diagnostic, no deep-context upgrade and no bundle. Any one-time price list you have seen for CTRL is dead.",
-    "Mindmaker retired all advisory business in July 2026. Never quote a bootcamp, portfolio, workshop or consulting engagement for CTRL.",
-    "Do not promise integrations CTRL does not have: context is exported or pulled over MCP, it is not a plugin into your other tools.",
-    "Do not overstate outcomes. CTRL accelerates clarity and decision speed; it does not replace judgment.",
-    "Positioning is the AI-native chief of staff. Earlier lines (\"Clarity for Leaders\", \"your portable AI double\") are retired."
-  ],
-  "attribution": {
-    "scheme": "Append UTM params to every fleet-driven link. CTRL captures first-touch on landing, persists through signup into user metadata, and stamps onto the Stripe customer and checkout session at purchase.",
-    "params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "agent", "campaign_id"],
-    "example": "https://ctrl.themindmaker.ai/?utm_source=linkedin&utm_medium=social&utm_campaign=ai_native_cos&agent=hunter&campaign_id=q3_founders",
-    "warehouse": "Lifecycle events (landed, signed_up, activated, purchased, refunded) are forwarded to the central MindmakerOS attribution warehouse (project gojpffsrxybbpbdzzrvs) by the track-event edge function. The forwarder is live only when both WAREHOUSE_INGEST_URL and ATTRIBUTION_INGEST_SECRET are set on this project; without them it no-ops."
+  "claim_policy": {
+    "allowed_sources": [
+      "live readback",
+      "executable owner source",
+      "this machine record",
+      "docs/current"
+    ],
+    "must_reverify_at_action_time": [
+      "price",
+      "availability",
+      "domain",
+      "Mindmaker service offers",
+      "legal terms",
+      "integrations",
+      "deployment state",
+      "competitor behavior"
+    ],
+    "never_invent": [
+      "customer counts",
+      "revenue",
+      "conversion",
+      "retention",
+      "ROI",
+      "hours saved",
+      "testimonials",
+      "case studies",
+      "logos",
+      "endorsements",
+      "guaranteed outcomes",
+      "security certifications",
+      "roadmap dates"
+    ],
+    "authority_boundary": "Drafting and link creation do not authorize publishing, sending, discounts, contracts, or external system changes."
   },
-  "content_assets": {
-    "daily_briefing": "Personal and private per user; not a public feed.",
-    "note": "CTRL has no public content feed by design (briefings contain personal operator context). Fleet content should use the positioning, pitch, differentiators and objections in this document."
+  "attribution": {
+    "params": [
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_content",
+      "utm_term",
+      "agent",
+      "campaign_id"
+    ],
+    "rule": "Preserve approved fields and never put personal, confidential, or sensitive information in a URL.",
+    "pipeline": "Selected client lifecycle events and server-side Stripe events can be forwarded to the central attribution warehouse when both server-side warehouse variables are configured. Verify live event convergence before claiming end-to-end measurement."
+  },
+  "primary_cta": {
+    "label": "Start",
+    "url": "https://makeyourmindup.ai/"
+  },
+  "secondary_cta": {
+    "label": "See pricing",
+    "url": "https://makeyourmindup.ai/pricing"
   },
   "links": {
-    "site": "https://ctrl.themindmaker.ai",
-    "signup": "https://ctrl.themindmaker.ai/auth",
-    "pricing": "https://ctrl.themindmaker.ai/pricing",
-    "agents": "https://ctrl.themindmaker.ai/agents",
-    "llms_txt": "https://ctrl.themindmaker.ai/llms.txt",
+    "site": "https://makeyourmindup.ai",
+    "signup": "https://makeyourmindup.ai/auth",
+    "pricing": "https://makeyourmindup.ai/pricing",
+    "agents": "https://makeyourmindup.ai/agents",
+    "llms_txt": "https://makeyourmindup.ai/llms.txt",
     "parent": "https://themindmaker.ai"
   }
 }

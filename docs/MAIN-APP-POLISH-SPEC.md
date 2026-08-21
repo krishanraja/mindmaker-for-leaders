@@ -1,6 +1,11 @@
-# Main CTRL App Polish Spec
+# Historical main-app polish plan
 
-Status: DRAFT, founder-locked on the three forks below. This is the canonical rule for polishing the main CTRL app experience (not the `/kit` section, which is covered by `docs/KIT-REDESIGN-SPEC.md`). Build against this.
+> Historical reference only. This file records the surface plan that preceded the current build. Use [`current/product.md`](./current/product.md) and [`current/features.md`](./current/features.md) for present work.
+
+> The current product surfaces and delivery contract are owned by [`current/product.md`](./current/product.md) and [`current/features.md`](./current/features.md). A prior revision carried a "current release overlay" above this dated body; it was removed on 2026-08-20 because the documentation standard forbids preserving stale prose under a fresh heading.
+
+Status: Historical
+Lifecycle: Superseded baseline. Use [`current/product.md`](./current/product.md) and [`current/features.md`](./current/features.md) for present work; the Kit plan referenced below is retired.
 
 Founder-locked decisions (2026-06-19):
 1. AI-native enforcement = **reframe** general-business inputs into the AI-native lens (never refuse, never stay general).

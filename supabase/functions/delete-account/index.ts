@@ -9,6 +9,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import Stripe from 'https://esm.sh/stripe@18.5.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -75,6 +76,58 @@ serve(async (req) => {
     }).then(() => {}, () => {});
 
     const deletionErrors: string[] = [];
+
+    // 0. Cancel billing before the rows that point at it are deleted.
+    //
+    // Deletion used to drop edge_subscriptions and leave the Stripe
+    // subscription live, so a user who asked to be forgotten kept being
+    // charged and the only fix was a manual operator step. Cancel first,
+    // while stripe_subscription_id is still readable.
+    //
+    // A billing failure must never strand the erasure request: Art. 17 is not
+    // conditional on Stripe being reachable. So this records the failure for
+    // an operator and lets the cascade continue.
+    try {
+      const { data: subscriptions } = await supabaseAdmin
+        .from('edge_subscriptions')
+        .select('stripe_subscription_id')
+        .eq('user_id', userId);
+
+      const subscriptionIds = (subscriptions ?? [])
+        .map((row: { stripe_subscription_id: string | null }) => row.stripe_subscription_id)
+        .filter((id: string | null): id is string => Boolean(id));
+
+      if (subscriptionIds.length > 0) {
+        const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+        if (!stripeSecretKey) {
+          throw new Error('STRIPE_SECRET_KEY is not configured');
+        }
+        const stripe = new Stripe(stripeSecretKey, { apiVersion: '2025-08-27.basil' });
+
+        for (const subscriptionId of subscriptionIds) {
+          try {
+            await stripe.subscriptions.cancel(subscriptionId);
+          } catch (cancelError) {
+            // Already cancelled or already gone is the desired end state, so
+            // treat it as done rather than as an error to chase.
+            const code = (cancelError as { code?: string })?.code;
+            const status = (cancelError as { statusCode?: number })?.statusCode;
+            if (code === 'resource_missing' || status === 404) continue;
+            throw cancelError;
+          }
+        }
+      }
+    } catch (billingError) {
+      const message = billingError instanceof Error ? billingError.message : String(billingError);
+      deletionErrors.push(`stripe_cancellation: ${message}`);
+      await supabaseAdmin.from('security_audit_log').insert({
+        action: 'ACCOUNT_DELETION_BILLING_CANCEL_FAILED',
+        resource_type: 'user',
+        resource_id: userId,
+        user_id: userId,
+        details: { email: userEmail, error: message, timestamp: new Date().toISOString() },
+      }).then(() => {}, () => {});
+    }
 
     // 1. Delete assessment-related data (respecting FK constraints).
     //

@@ -9,37 +9,14 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
-import { fetchWithTimeout, ProviderUnavailableError } from "../_shared/with-timeout.ts";
+import { ProviderUnavailableError } from "../_shared/with-timeout.ts";
+import { synthesizeSpeech, TTSResponseError } from "../_shared/tts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
-
-const DEFAULT_VOICE_ID = "7ApmIXLoWa0cKUtJqfHc";
-const DEFAULT_MODEL_ID = "eleven_multilingual_v2";
-
-/**
- * Load TTS config from database (allows admin-configurable provider switching).
- * Falls back to hardcoded defaults if the table doesn't exist or has no rows.
- */
-async function loadTTSConfig(supabase: any): Promise<{ voiceId: string; modelId: string }> {
-  try {
-    const { data } = await supabase
-      .from("tts_config")
-      .select("voice_id, model_id")
-      .eq("is_active", true)
-      .limit(1)
-      .single();
-    if (data?.voice_id && data?.model_id) {
-      return { voiceId: data.voice_id, modelId: data.model_id };
-    }
-  } catch {
-    // Table may not exist yet; fall through to defaults
-  }
-  return { voiceId: DEFAULT_VOICE_ID, modelId: DEFAULT_MODEL_ID };
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -49,15 +26,25 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const elevenLabsKey = Deno.env.get("ELEVENLABS_API_KEY");
-
-    if (!elevenLabsKey) throw new Error("ELEVENLABS_API_KEY not configured");
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const serviceRequest = authHeader === `Bearer ${supabaseServiceKey}`;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     });
 
-    const ttsConfig = await loadTTSConfig(supabase);
+    let callerId: string | null = null;
+    if (!serviceRequest) {
+      const token = authHeader.replace(/^Bearer\s+/i, "");
+      const { data: authData, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authData.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      callerId = authData.user.id;
+    }
 
     const { briefing_id } = await req.json();
     if (!briefing_id) throw new Error("briefing_id required");
@@ -70,6 +57,12 @@ serve(async (req) => {
       .single();
 
     if (fetchError || !briefing) throw new Error("Briefing not found");
+    if (!serviceRequest && briefing.user_id !== callerId) {
+      return new Response(JSON.stringify({ error: "Briefing not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Cost-control rate limit per briefing-owner. Each TTS run is paid bytes;
     // 12/min/user bounds cost without throttling normal use. Re-sign-existing
@@ -143,31 +136,11 @@ serve(async (req) => {
     // failure surface `provider_unavailable` so the frontend renders a
     // recoverable "audio temporarily unavailable" prompt instead of a stuck
     // spinner.
-    const elevenlabsUrl = `https://api.elevenlabs.io/v1/text-to-speech/${ttsConfig.voiceId}`;
-    let ttsResponse: Response;
+    let audioBytes: Uint8Array;
     try {
-      ttsResponse = await fetchWithTimeout(elevenlabsUrl, {
-        method: "POST",
-        provider: "elevenlabs",
-        timeoutMs: 20_000,
-        headers: {
-          "xi-api-key": elevenLabsKey,
-          "Content-Type": "application/json",
-          Accept: "audio/mpeg",
-        },
-        body: JSON.stringify({
-          text: briefing.script_text,
-          model_id: ttsConfig.modelId,
-          voice_settings: {
-            stability: 0.4,
-            similarity_boost: 0.75,
-            style: 0.45,
-            use_speaker_boost: true,
-          },
-        }),
-      });
+      audioBytes = await synthesizeSpeech(supabase, briefing.script_text);
     } catch (e) {
-      if (e instanceof ProviderUnavailableError) {
+      if (e instanceof ProviderUnavailableError || (e instanceof TTSResponseError && e.status >= 500)) {
         return new Response(
           JSON.stringify({
             error: "provider_unavailable",
@@ -179,33 +152,6 @@ serve(async (req) => {
       }
       throw e;
     }
-
-    if (!ttsResponse.ok) {
-      const errText = await ttsResponse.text().catch(() => "");
-      // Persistent 5xx after retry: surface as provider_unavailable so the
-      // frontend renders the categorised "TTS unavailable" affordance
-      // instead of a generic 500 stuck-spinner. 4xx is genuinely our bug
-      // (bad payload, bad key) and stays a hard error.
-      if (ttsResponse.status >= 500) {
-        console.error(
-          `ElevenLabs persistent 5xx: ${ttsResponse.status} ${errText.substring(0, 200)}`
-        );
-        return new Response(
-          JSON.stringify({
-            error: "provider_unavailable",
-            provider: "elevenlabs",
-            message: "Audio service is temporarily unavailable. Try again in a moment.",
-          }),
-          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      throw new Error(
-        `ElevenLabs error: ${ttsResponse.status} ${errText.substring(0, 200)}`
-      );
-    }
-
-    const audioBuffer = await ttsResponse.arrayBuffer();
-    const audioBytes = new Uint8Array(audioBuffer);
 
     console.log(`Audio generated: ${audioBytes.length} bytes`);
 

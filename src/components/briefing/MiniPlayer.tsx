@@ -58,11 +58,13 @@ export function MiniPlayer() {
 
           {/* Play/Pause */}
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               togglePlay();
             }}
-            className="flex-shrink-0 p-1.5 rounded-full hover:bg-muted transition-colors"
+            className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-full transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={playback.isPlaying ? 'Pause briefing' : 'Play briefing'}
           >
             {playback.isPlaying ? (
               <Pause className="w-4 h-4 text-foreground fill-current" />

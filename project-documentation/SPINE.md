@@ -1,6 +1,9 @@
 # MindmakerOS Standards Spine (authored from CTRL)
 
-Status: foundation authored 2026-05-30 from mm-ctrl (the most documented app). Unify the SYSTEM, never the SKIN. Each app themes these tokens differently and keeps its own palette, typography personality, motion flavor, voice, and density.
+> **Historical cross-product reference, not current CTRL guidance.** It preserves an earlier standards discussion. Use [`../docs/current/product.md`](../docs/current/product.md), [`../docs/current/architecture.md`](../docs/current/architecture.md), and [`../docs/current/design-state.md`](../docs/current/design-state.md) for CTRL now.
+
+Status: Historical
+Authored: 2026-05-30 from mm-ctrl (the most documented app). Unify the SYSTEM, never the SKIN. Each app themes these tokens differently and keeps its own palette, typography personality, motion flavor, voice, and density.
 
 > Reconciliation note (2026-06-21, re-verified 2026-07-26): the token-contract structure below is still correct. CTRL's own live SKIN is now the globally dark `ctrl-ds` instrument palette (emerald `#00D9B6`), not a light/"mint" skin; any "mint palette" reference below means CTRL's accent, which is now emerald. The live tokens are in the code (`src/styles/tokens.css`, `index.css`); confirmed `--mint: 171 100% 43%` still matches on this pass.
 

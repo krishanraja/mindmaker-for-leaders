@@ -14,6 +14,7 @@ import { OfflineIndicator } from '@/components/ui/offline-indicator'
 import { InitializationLoader } from '@/components/ui/InitializationLoader'
 import { AppStateProvider, useAppState } from '@/contexts/AppStateContext'
 import { BriefingProvider } from '@/contexts/BriefingContext'
+import { OffTheRecordProvider } from '@/contexts/OffTheRecordContext'
 import { DiagnosticsPanel } from '@/components/dev/DiagnosticsPanel'
 import { initMobileViewport } from '@/utils/mobileViewport'
 import { onHomeReady } from '@/lib/bootGate'
@@ -31,7 +32,7 @@ const queryClient = new QueryClient({
 
 function AppContent() {
   const { appState, advanceToReady } = useAppState()
-  const { isLoading: authLoading } = useAuth()
+  const { isLoading: authLoading, isAuthenticated } = useAuth()
   // The ONE branded boot splash (rotating ring + Mindmaker icon) stays up until BOTH a short
   // minimum brand time has passed AND auth has resolved, then content is revealed in a single
   // swap. Holding one static splash - instead of fading it out on a fixed timer into a second
@@ -75,6 +76,10 @@ function AppContent() {
   // hold the boot splash overlay until Home's first data settles (capped 2.5s).
   useEffect(() => {
     if (appState !== 'READY') return
+    if (!isAuthenticated) {
+      setBootRevealed(true)
+      return
+    }
     prefetchAuthedRoutes()
     if (bootRevealed) return
     const off = onHomeReady(() => setBootRevealed(true))
@@ -83,7 +88,7 @@ function AppContent() {
       off()
       clearTimeout(cap)
     }
-  }, [appState, bootRevealed])
+  }, [appState, bootRevealed, isAuthenticated])
 
   // Hold the single branded splash for the whole boot, then swap straight to content.
   if (appState !== 'READY') {
@@ -96,14 +101,13 @@ function AppContent() {
   return (
     <>
       <RouterProvider router={router} />
-      {!bootRevealed && <InitializationLoader />}
+      {isAuthenticated && !bootRevealed && <InitializationLoader />}
       <Toaster />
       <SonnerToaster position="top-center" />
       <OfflineIndicator />
-      {/* Dev-only diagnostics. Mount only when actually shown so its data
-          hooks never run (and never 406 on empty tables) for real users. */}
-      {(import.meta.env.DEV ||
-        new URLSearchParams(window.location.search).get('diagnostics') === 'true') && (
+      {/* Diagnostics are deliberately opt-in, including in development. A
+          fixed debug control must never cover the public one-question flow. */}
+      {new URLSearchParams(window.location.search).get('diagnostics') === 'true' && (
         <DiagnosticsPanel />
       )}
     </>
@@ -115,11 +119,13 @@ export default function App() {
     <ThemeProvider defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <BriefingProvider>
-            <AppStateProvider>
-              <AppContent />
-            </AppStateProvider>
-          </BriefingProvider>
+          <OffTheRecordProvider>
+            <BriefingProvider>
+              <AppStateProvider>
+                <AppContent />
+              </AppStateProvider>
+            </BriefingProvider>
+          </OffTheRecordProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

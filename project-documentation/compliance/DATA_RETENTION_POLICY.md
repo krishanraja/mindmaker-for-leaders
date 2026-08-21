@@ -1,6 +1,8 @@
 # CTRL Data Retention Policy
 
-Last reviewed: 2026-07-26 (updated 2026-07-26: corrected the Memory-retention automation claim and the generated-briefings cleanup claim; resolved the kit_builds cascade question)
+Status: Reference
+
+Last reviewed: 2026-08-20 (retention cleanup scheduled; Google Sheets ops sync narrowed to aggregate metrics)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Defines how long CTRL keeps each category of personal data and how it is deleted. Supports [PRIVACY_POLICY.md](./PRIVACY_POLICY.md) Section 12 and [ROPA.md](./ROPA.md).
@@ -17,14 +19,17 @@ Defines how long CTRL keeps each category of personal data and how it is deleted
 |---------------|-----------|--------------------|
 | Account identity (email, name, display name) | Life of account | `delete-account` (cascading) on account deletion |
 | Business / work context | Life of account | `delete-account` cascade |
-| Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` enforces per-user retention window when invoked; `delete-account` cascade on closure |
+| Memory Web facts | User-configurable via `user_memory_settings.retention_days`; otherwise life of account | `cleanup-expired-data` enforces the per-user retention window on a daily `retention-cleanup` schedule; `delete-account` cascade on closure |
+| Confirmed Blind Spot patterns, evidence snapshots, and experiment outcomes | Life of account; an active experiment stops prompting after 14 days | `delete-account` cascade; expiry changes the experiment state but does not erase the confirmed record |
+| Rejected Blind Spot evidence fingerprints | Life of account or until account deletion; generated diagnosis text is not stored | `delete-account` cascade; a new evidence fingerprint naturally permits a new read |
 | Conversation / chat messages | Life of account (subject to any configured retention) | `delete-account` cascade; retention cleanup where applicable |
 | Assessment / diagnostic responses | Life of account | `delete-account` cascade |
 | Kit builds / lesson-kit inputs (`kit_builds.intake`) | Life of account | `delete-account` cascade, confirmed: `kit_builds.user_id` has an `ON DELETE CASCADE` FK to `auth.users`, so the Postgres-level cascade covers it even though it is not in the edge function's explicit sweep list |
 | Daily-briefing preferences and interests | Life of account | `delete-account` cascade |
 | Generated briefings | Not retained indefinitely by design; no automated rolling-window cleanup job currently runs (see gap below) | `delete-account` cascade only today |
 | Voice transcripts | Treated as user content; life of account or per Memory retention if stored as Memory | `delete-account` cascade; retention cleanup where applicable |
-| Raw voice audio | Not maintained as a long-term store; handled transiently by transcription provider | Provider-side per OpenAI Whisper terms |
+| Raw voice audio | Not maintained as a long-term store; handled transiently by transcription providers | Provider-side under OpenAI terms or Google terms when the Gemini fallback is used |
+| Blind Spot advisor exchange | Not persisted by the Blind Spot feature; an optional correction is stored only when the user submits it into Memory | Transient client and provider processing; submitted correction follows Memory retention |
 | Billing metadata (Stripe customer ID, subscription status) | Life of account for service; financial records retained as required by tax/accounting law (commonly up to 6-7 years) | Subscription canceled on deletion; financial records retained then deleted at legal expiry |
 | Consent records (consent_audit, marketing consent) | Life of account plus a limited evidentiary period after closure to prove lawful consent handling | Aged out after the evidentiary period |
 | Operational / edge-function logs | Short operational window (current default short retention on provider log surfaces) | Provider log rotation; centralized aggregation with defined retention is in progress |
@@ -35,7 +40,7 @@ Where a row says "in progress," see [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_R
 ## Deletion mechanisms in detail
 
 - Account deletion: `delete-account` edge function performs a cascading delete of the user's records across CTRL tables. Triggered by the user in-app or by an operator fulfilling an erasure DSAR (see [DSAR_RUNBOOK.md](./DSAR_RUNBOOK.md)).
-- Retention enforcement: `cleanup-expired-data` removes Memory data older than the user's `user_memory_settings.retention_days` and sweeps the `ai_cache` table when it runs. GAP (confirmed 2026-07-26): unlike `send-daily-briefing`, `memory-sweep`, `send-reactivation-nudge`, and `live-headlines-prewarm`, there is no `cron.schedule(...)` migration wiring `cleanup-expired-data` to a recurring job, so it is not actually invoked automatically today; it exists as deployable, correct code without a schedule. There is also no automated cleanup of the `briefings` table itself (only full account deletion removes it). TODO(founder/dev): either add the missing pg_cron schedule for `cleanup-expired-data` (and a briefings rolling-window job) or stop describing Memory/briefing retention as "scheduled" in this and related compliance documents until it is.
+- Retention enforcement: `cleanup-expired-data` removes Memory data older than the user's `user_memory_settings.retention_days`, sweeps the `ai_cache` table, and redacts expired evidence quotes. CLOSED (2026-08-20): the missing schedule was added as the `retention-cleanup` job in `supabase/migrations/20260820120000_retention_cleanup_cron.sql`, running daily at 03:15 UTC and authenticated with the Vault-held `ctrl_cron_secret`. The prior gap, recorded 2026-07-26, was that the function was correct and deployable but nothing invoked it, so the user-facing 30 and 90 day retention choice in Settings did not actually take effect. REMAINING GAP: there is still no automated cleanup of the `briefings` table itself (only full account deletion removes it). TODO(founder/dev): add a briefings rolling-window job, or keep describing briefing retention as account-lifetime rather than scheduled.
 - Stripe: subscription objects are canceled; card data is never stored by Mindmaker (tokenized by Stripe).
 
 ## Backups

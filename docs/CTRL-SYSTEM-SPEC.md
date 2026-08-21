@@ -1,4 +1,10 @@
-# CTRL System Spec (one holistic instrument, not separate parts)
+# Historical CTRL system design record
+
+Status: Historical
+
+> Historical reference only. This file records the product-system design sequence and contains superseded navigation and lifecycle language. Current product truth lives in [`current/product.md`](./current/product.md); current architecture lives in [`current/architecture.md`](./current/architecture.md).
+
+> The current product surfaces, navigation, and delivery contract are owned by [`current/product.md`](./current/product.md) and [`current/features.md`](./current/features.md). An earlier revision of this file carried a "current release overlay" above the dated body, which the documentation standard forbids because it preserves stale prose under a fresh heading. The overlay was removed on 2026-08-20; everything below is design history.
 
 Status: founder-locked. The canonical rule for making CTRL feel like ONE coherent system. It sits above the surface specs (`MAIN-APP-POLISH-SPEC.md`, `KIT-REDESIGN-SPEC.md`): those say what each surface does; this says how they all cohere into one thing.
 

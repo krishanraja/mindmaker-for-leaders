@@ -1,8 +1,10 @@
 # CTRL Information Security Policy (ISMS-lite)
 
-Last reviewed: 2026-07-26 (verified against code: technical controls still match; PLANNED items remain PLANNED)
+Status: Reference
+
+Last reviewed: 2026-08-20 (shared-project scope recorded; PLANNED items remain PLANNED)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
-Applies to: CTRL (https://ctrl.themindmaker.ai), its codebase, Supabase backend (ref bkyuxvschuwngtcdhsyg), Vercel frontend, and all personnel/contractors with access.
+Applies to: CTRL (https://makeyourmindup.ai), its codebase, Supabase backend (ref bkyuxvschuwngtcdhsyg), Vercel frontend, and all personnel/contractors with access. That Supabase project is shared with other Mindmaker surfaces; this policy governs CTRL's use of it, and project-wide figures quoted in the control matrix cover every tenant of the project.
 
 This is the policy backbone an auditor will ask for. It states what is in place today and clearly flags what is planned/in-progress. Status tags: [IN PLACE], [PARTIAL], [PLANNED]. Control mapping is in [CONTROL_MATRIX.md](./CONTROL_MATRIX.md).
 

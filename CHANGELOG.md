@@ -1,8 +1,148 @@
 # Changelog
 
+Status: Historical
+Owner: Mindmaker
+Last reconciled: 2026-08-21
+
+> A running record of shipped changes, newest first. It explains how the product arrived here; it is not a description of current behaviour. For that, see [`docs/current/`](./docs/current/README.md).
+
+## 2026-08-21 - Positioning, cleanup, and release
+
+Released to production: Vercel `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci`, 24 Edge Functions redeployed, four migrations applied, training material at global version 3.
+
+- CTRL is a private thinking instrument for one person. Four boundaries are product contract now: no seats, no admin console or SSO, no meeting recording, and nothing that needs an IT administrator to approve it.
+- Retention actually runs. The `retention-cleanup` job is scheduled nightly, and applying it exposed that production had never received `user_memory.retention_expires_at`, so the control had been raising `42703` rather than lying dormant.
+- Account deletion cancels the Stripe subscription before the cascade.
+- Memory refuses other people's names: a person beside a role is stored as the role, and a fact about someone else is not stored. The sweep over existing memory found nothing to rewrite.
+- Off the record: a session that writes nothing durable and says so.
+- Blind Spot burn: delete a confirmed pattern, its evidence, and its experiment.
+- New `/faq`, and `/trust` reordered to open on what is in place.
+- Two anonymous SECURITY DEFINER paths closed: `get_memory_sweep_batch`, which returned every account's id and activity timing, and `cleanup_expired_memories`, which deletes across all accounts.
+- Removed 238 unreachable source files and 28 unused dependencies; all 67 documents classed and dated.
+
+**`vite-configuration-fix` was not merged.** It set `allowedHosts: true`, disabling Vite's DNS-rebinding guard on the dev server. `main` already solved that case more narrowly in `081ebe9` with `allowedHosts: [".vercel.run"]`, and the branch was 24 commits behind. It is superseded, and merging it would have widened an allowlist for no gain. Delete the branch rather than revisiting it.
+
+## 2026-08-11 - Shared shell and typography stability
+
+- Corrected the shared desktop page-title line box so Segoe Variable Display no longer clips in compact top bars.
+- Widened the mobile briefing control, aligned its label with CTRL display typography, and removed the legacy rose-orange progress gradient.
+- Raised compact header actions and Memory facets to 44px touch targets, and made the Decisions header switch responsive at 320px.
+- Removed duplicated Privacy and Data facets from Memory; those controls remain available from their canonical Settings surface.
+- Removed the repeated mobile briefing heading and aligned emergency and graph labels to the canonical Segoe Variable stack.
+- Removed the Home loading-to-content cross-fade that could briefly layer loading copy over a live headline, and raised the remaining Memory pill and zoom controls to 44px targets.
+- Expanded the compact desktop decision email and closing links to 44px interaction areas without making them visually heavier.
+
 All notable changes to this project. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) with phase-grouped entries.
 
 For the full design narrative behind each phase, see [`project-documentation/HISTORY.md`](./project-documentation/HISTORY.md).
+
+---
+
+## [Unreleased] - 2026-08-20 - Trust surface and access hardening
+
+### Added
+
+- A public `/trust` page stating the security posture in three parts: controls in place, controls in progress, and controls absent. It names the missing SOC 2 report and ISO/IEC 27001 certificate rather than implying either exists.
+- A quiet signal strip on the marketing hero listing three controls recorded as in place, linking to `/trust`.
+- Baseline security headers on the web application: nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy, and Cross-Origin-Opener-Policy. `Permissions-Policy` allows `microphone=(self)` because voice entry needs it. Strict-Transport-Security is deliberately not set here: Vercel already serves `max-age=63072000` on the apex domain, so an explicit one-year header would shorten it, and `includeSubDomains` is cached by browsers for the full max-age and would be hard to reverse if any subdomain is not HTTPS. A Content-Security-Policy is deferred until it is tested against Supabase, PostHog, and Stripe.
+
+### Fixed
+
+- Closed an unauthenticated cross-tenant read. `export_user_memory`, `get_user_memory_context`, `get_memory_by_temperature`, and `get_track_record` are `SECURITY DEFINER`, take the target user id as an argument, and held EXECUTE through `PUBLIC`, which PostgREST exposes to the `anon` role. `get_track_record` guarded itself only when `auth.uid()` was non-null, so anonymous callers skipped the guard; the other three carried no caller check. Migration `20260820090000_revoke_anon_definer_reads.sql` revokes those grants.
+- Corrected a customer-facing compliance claim that read "security headers on all endpoints" while the shared helper was imported by 3 of 114 Edge Functions.
+- Removed a stale HIPAA reference from the compliance framework definitions. CTRL does not process protected health information.
+
+### Verified
+
+- Live grant readback confirms `anon` EXECUTE is false on all four functions and `service_role` is unchanged.
+- Unauthenticated REST calls to each of the four endpoints return HTTP 401 with SQLSTATE 42501.
+- Supabase security advisors fell from 268 findings to 258, and anon-executable `SECURITY DEFINER` functions from 55 to 48. The remaining 48 are recorded as an outstanding sweep.
+- `memory-export` and `delete-account` do not call the revoked functions, so data export and erasure are unaffected.
+- Rendered readback of the hero at 1440x900, 1280x720, 390x844, and 320x568 with no horizontal overflow and 44px minimum targets.
+
+## [Unreleased] - 2026-08-11 - Progressive onboarding brand handoff
+
+### Changed
+
+- The public intake now moves through seven calibrated visual phases from Make Your Mind Up warmth to the canonical CTRL icon and emerald instrument palette.
+- Onboarding focus states, progress indicators, sliders, selected choices, and primary actions now follow the same phase instead of retaining a disconnected pink-orange accent.
+- The result state now uses the exact main-app brand asset and CTRL instrument card treatment.
+
+### Verified
+
+- Brand-phase unit contracts pin monotonic progression and exact palette endpoints.
+- Public onboarding E2E covers every phase, the final canonical icon and background, and reduced-motion behavior.
+
+## [Unreleased] - 2026-08-11 - Commercial documentation authority
+
+### Added
+
+- One current commercial authority for buyer, problem, offer, proof, message, objections, claim boundaries, and freshness.
+- One operating manual and evaluation set for autonomous marketing and sales agents.
+
+### Changed
+
+- Rebuilt the public machine-readable product record around executable facts and explicit action-time verification rules.
+- Corrected Blind Spot qualification, data protection, Decision Watch, setup-time, delivery-channel, and separate Mindmaker-service claims.
+- Reclassified superseded commercial briefs as historical inputs instead of competing current truth.
+- Extended documentation navigation and drift checks so the commercial authority and agent safety contract cannot disappear silently.
+
+### Verified
+
+- Documentation links, inventory, routes, decision IDs, pricing, commercial authority, machine truth, and historical boundaries pass the expanded drift gate.
+- Standards and changed-file ESLint pass. Typecheck remains at the 221-diagnostic baseline with zero new diagnostics.
+- All 870 Vitest tests across 53 files pass. The 2,789-module production build and 3/3 prerender routes pass.
+
+---
+
+## [Released] - 2026-08-11 - Blind Spot trusted-advisor instrument
+
+### Added
+
+- One CTRL Blind Spot instrument with a private-state label, short mechanism-level read, visible evidence strength, exact dated anchors, tension map, one 15-minute experiment, one-tap correction, and bounded voice or text advisor.
+- Structured `BlindSpotCandidateV2` qualification, candidate signing, evidence fingerprint suppression, source ownership and freshness reload, and confirmation support adjudication.
+- Additive owner-scoped evidence-link, experiment, and rejection tables plus atomic, idempotent confirmation and experiment-outcome functions.
+- Due Blind Spot experiment check-ins in the existing briefing learning slot.
+- Public `/preview?surface=blind-spot` fixtures for the complete state range and responsive contract coverage at four approved viewports.
+
+### Changed
+
+- Thin evidence now produces an honest tension question instead of a Blind Spot claim.
+- The model selects source IDs; the server owns displayed excerpts, labels, dates, independence checks, and content limits.
+- Rejection ends the session and suppresses the same evidence combination until its inputs change. Immediate alternative generation is removed.
+
+### Verified
+
+- 870 Vitest tests pass across 53 files, including 16 focused Blind Spot logic and component tests.
+- 37 Blind Spot Playwright checks pass inside the shared production shells at 1440x900, 1280x720, 390x844, and 320x568.
+- Typecheck reports zero new diagnostics against the existing baseline.
+- Standards, documentation checks, changed-file lint, the 2,789-module production build, and 3/3 prerender routes pass.
+- The pgTAP database contract is present and its setup syntax was corrected before merge. Local execution remains unavailable while Docker Desktop is stopped; the remote management connector is read-only for synthetic inserts.
+- PR #366 merged to `main` at `0f20baf2437667c3719c94f1c16d04bb08b42023`. Supabase migration and Edge Function v3 readbacks pass, Vercel production is READY, and all 37 Blind Spot checks pass on the canonical production host.
+
+---
+
+## [Unreleased] - 2026-08-10 - Documentation authority and drift gate
+
+### Added
+
+- A six-document current set under `docs/current/` for product, architecture, features, release state, documentation standards, and navigation.
+- Four task-specific agent guides under `docs/agent-instructions/`.
+- `npm run docs:check`, with CI enforcement for local links, metadata, inventory counts, route coverage, decision IDs, pricing consistency, size budgets, and known contradictory claims.
+
+### Changed
+
+- Rebuilt the root README as a new-engineer and operator entry point.
+- Reduced `CLAUDE.md` to universal instructions and progressive links; preserved the former release journal under `docs/history/`.
+- Reclassified phase architecture, feature, delivery, corpus, kit, and polish records as historical instead of placing current overlays above stale bodies.
+- Corrected capability-specific AI-provider documentation across architecture, privacy, retention, the ROPA, the subprocessor register, and `.env.example`.
+- Renumbered the duplicated August decision block to preserve unique append-only IDs.
+- Added documentation verification to the release guide and CI.
+
+### Verified
+
+- Documentation links, metadata, counts, routes, decision IDs, pricing, and known drift checks pass.
+- Standards and changed-file ESLint pass. Typecheck reports 221 baseline diagnostics and zero new diagnostics. The full Vitest suite, production build, and 3/3 prerender routes pass.
 
 ---
 

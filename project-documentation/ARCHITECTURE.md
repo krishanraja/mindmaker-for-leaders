@@ -1,8 +1,14 @@
-# Architecture
+# Historical architecture record
+
+Status: Historical
+
+> Historical reference only. This file preserves phase-by-phase architecture notes and superseded paths. Current architecture lives in [`../docs/current/architecture.md`](../docs/current/architecture.md). Do not use the “current overlay” language below as operating guidance.
 
 Complete system architecture and data flow documentation.
 
-**Last reconciled:** 2026-07-26 (drift-check pass: re-counted edge functions/hooks/migrations, fixed dead component/page references, and added the note below for everything shipped after 2026-06-21).
+**Last reconciled:** 2026-08-10.
+
+> **Current release overlay. This supersedes conflicting historical detail below.** CTRL is one product at `makeyourmindup.ai`; Make Your Mind Up is its public intake, not a second application. Recounted at this release: **113 Edge Function directories** excluding `_shared`, **78 hook files**, and **158 SQL migrations**. The primary runtime chain is `public intake -> consented handoff -> First Lens -> shared curation pool -> per-user rank -> Today / briefing / delivery -> reactions and corrections -> memory`. Control Center enters the existing shared pool through a publishable key constrained by read-only RLS. Daily prewarm and email delivery use a Vault-generated shared secret, not the absent legacy Postgres service-role setting. The fifteen release-critical functions have explicit JWT/custom-auth contracts; paid audio synthesis also verifies briefing ownership. The Kit is retired. Automator/Skill Builder is not a primary surface; Blind Spot is the leadership-development experience. Sections below remain a deep historical reference and are not a current product map where they disagree with this overlay, the root README, or code.
 
 > **Positioning (LOCKED 2026-06-19)**: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general business advisor. General-business inputs are reframed into the AI-native lens. The canonical product/build specs are `docs/MAIN-APP-POLISH-SPEC.md` (the main app) and `docs/KIT-REDESIGN-SPEC.md` (the lesson kits); trust those + the root `README.md` + `CLAUDE.md` over this doc where they disagree. This file is technically current on the dark redesign, the brain engine, the routes, and the kit engine plumbing; the LATEST layer it predates in prose is the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222: the AI-native decision reframe, the 9 AI-native news category motifs + AI-native-filtered briefing pipeline, the brain-canvas squash fix, and the no-scroll/one-ask sweep). For those, see the two specs and `CLAUDE.md`. The counts below have been re-counted as of 2026-07-26 (see next note).
 
@@ -24,7 +30,7 @@ Complete system architecture and data flow documentation.
 >
 > **Phase 11 additions (2026-06-10, PR #141)**: Kit Engine class follow-up portal. +5 edge functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`), +6 tables (`kit_codes`, `kit_redemptions`, `kit_builds`, `kit_artifacts`, `kit_journey_events`, `kit_nudges`), +3 hooks (`useKitRedemption`, `useKitBuild`, `useKitArtifacts`), +4 public routes (`/kit`, `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`), +1 shared preset module (`_shared/kit-presets/`), +1 pg_cron job (`kit-nudges-email`).
 >
-> **Re-counted 2026-07-26 (current totals, supersede every earlier count in this file): 104 edge functions** in `supabase/functions/` (excluding `_shared/`), **148 PostgreSQL migrations** in `supabase/migrations/`, **77 custom hooks** in `src/hooks/`. These are live counts, not a lower bound; re-count directly from the repo rather than trusting any older figure in this document.
+> **Re-counted 2026-08-10: 113 Edge Function directories** in `supabase/functions/` excluding `_shared`, **158 SQL migrations**, and **78 hook files**. Re-count before quoting; counts are descriptive, not contracts.
 
 ---
 
@@ -266,7 +272,7 @@ src/
 ├── contexts/
 │   ├── AppStateContext.tsx    # Global app state management
 │   └── AssessmentContext.tsx  # Assessment flow state
-├── hooks/                     # 77 custom hooks (re-counted 2026-07-26)
+├── hooks/                     # 78 hook files (re-counted 2026-08-10)
 │   ├── useStructuredAssessment.ts
 │   ├── useRealtimeAssessment.ts
 │   ├── useAILiteracyAssessment.ts
@@ -949,7 +955,7 @@ kit_nudges                              -- day-3 / day-7 send-dedupe ledger
 
 **Location**: `supabase/functions/`
 
-**Total**: 104 edge functions in `supabase/functions/` (re-counted 2026-07-26) plus a `_shared/` module directory. The Briefing subsystem (Phase 6) added seven functions (`generate-briefing`, `synthesize-briefing`, `briefing-diagnose`, `get-industry-seeds`, `briefing-kill-lens-item`, `briefing-aggregate-feedback`, `infer-briefing-interests`, `nudge-briefing`) plus shared modules (`briefing-lens`, `briefing-scoring`, `briefing-curation`, `user-context`, `lens-signature`, `with-timeout`, `logger`). Phase 8 added one function (`generate-skill-export`, four internal files) backing the Skill Builder pipeline. Phase 9 added the Decision Engine trio (`decision-engine` orchestrator, `decision-watch` hourly WATCH loop, `decision-eval` admin calibration harness) plus the unauthenticated `track-event` attribution proxy (deployed `--no-verify-jwt`). Phase 11 added five functions (`kit-redeem`, `kit-compose`, `kit-capsule-ingest`, `send-kit-pack`, `send-kit-nudges`) backing the Kit Engine portal, plus the shared `_shared/kit-presets/` registry. PR #204 added one function (`extract-voice-profile`: paste real writing -> derive the 8 voice dimensions in one LLM pass; anonymous-session safe; does not store raw text) and redeployed `generate-skill-export` (prompt tightened) and `mcp-context` (gained `list_skills` + `get_skill`) to prod (`bkyuxvschuwngtcdhsyg`); no DB migrations were needed.
+**Total**: 113 Edge Function directories in `supabase/functions/` excluding `_shared` as of 2026-08-10. Re-count the tree for a current total. The narrative below records when subsystems were added; it is historical, not a list of promoted user-facing features.
 
 **Production hardening (Audit Weeks 1-6, April 2026):**
 - All external API calls now wrapped with `_shared/with-timeout.ts` (timeouts + retries, tested)
@@ -1465,7 +1471,7 @@ Warehouse ingest (dormant until WAREHOUSE_INGEST_URL env var is set)
 
 ## Runtime Product-Truth Source (2026-05-30)
 
-`https://ctrl.themindmaker.ai/.well-known/product.json`
+`https://makeyourmindup.ai/.well-known/product.json`
 
 A machine-readable JSON document served at this well-known path. It is the single authoritative source of pricing, ICP, and offer data for the entire MindmakerOS agent fleet. Any agent that needs to quote CTRL pricing or describe the offer fetches this endpoint rather than reading from training data.
 
@@ -1476,7 +1482,7 @@ A machine-readable JSON document served at this well-known path. It is the singl
 ```json
 {
   "product": "CTRL",
-  "url": "https://ctrl.themindmaker.ai",
+  "url": "https://makeyourmindup.ai",
   "pricing": {
     "free": "$0",
     "full_diagnostic": "$49 one-time",
@@ -1500,7 +1506,7 @@ Agents must treat this endpoint as the ground truth and ignore any conflicting f
 The CTRL landing page (`/`) and any other public routes are pre-rendered at build time (or via Vercel's edge prerendering) to ensure:
 
 1. **SEO**: Crawlers see fully-rendered HTML with correct meta tags, OG images, and structured data without executing client-side JavaScript
-2. **Agent-readable surfaces**: AI agents scraping `ctrl.themindmaker.ai` for product context get complete HTML rather than a blank SPA shell
+2. **Agent-readable surfaces**: AI agents scraping `makeyourmindup.ai` for product context get complete HTML rather than a blank SPA shell
 3. **Performance**: First Contentful Paint is not blocked on the React bundle
 
 **Implementation**: Vite SSR prerender pass generates static HTML for public routes at build time. The `/.well-known/product.json` endpoint is served as a standalone static file, not part of the React app.
@@ -1666,6 +1672,6 @@ The Phase 11 portal (above) was a 2-preset engine. The kit program has since gro
 ### Constraints
 
 - **No backend code execution**: Only edge functions (Deno runtime)
-- **Node.js requirement**: >=22 <24
+- **Node.js requirement**: >=22 <25; Vercel production uses 24.x
 - **LLM rate limits**: Vertex AI quotas, OpenAI tier limits
 - **AI API costs**: ~$0.01-0.02 per assessment (Vertex AI primary)

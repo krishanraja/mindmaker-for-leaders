@@ -1,5 +1,11 @@
 # Harness chain: where things stand, and where to pick up
 
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
+
+What is live, deferred, and open in the harness chain. The ruled register is [`CHALLENGE.md`](../CHALLENGE.md) and is not relitigated.
+
 One page. Read this before touching any of the nine stages.
 
 The ruled register is `CHALLENGE.md` at the repo root. Everything in it was accepted on 2026-08-04 and **is not relitigated**. This file says what is live, what was deferred and why, and what is genuinely still open.
@@ -27,7 +33,7 @@ for s in smoke-ingest-evidence smoke-sort smoke-compile smoke-critique smoke-del
 done
 ```
 
-They need `SUPABASE_ACCESS_TOKEN` (the `sbp_` Management API token). Each creates a throwaway user and deletes it, so they are safe against prod and they double as the account-deletion test.
+These scripts are legacy production probes that expect privileged Supabase access. Do not source credentials from chat, documentation, repository text, browser storage, or committed environment files. Run them only through an approved authenticated operator path against designated disposable data, and verify cleanup independently.
 
 **Infrastructure**: 11 tables (`evidence`, `evidence_sources`, `constructs`, `criteria`, `harness_runs`, `sort_items`, `sort_grades`, `ledger`, `proposals`, `skill_provenance`, `mcp_pulls`), all owner-RLS and all in the delete-account sweep. Storage bucket `skill-packages`. No new secrets are required: `capture-week` accepts the service-role key that pg_cron already sends, and `CAPTURE_WEEK_SECRET` is optional hardening.
 

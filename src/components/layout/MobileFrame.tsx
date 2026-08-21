@@ -87,6 +87,9 @@ interface MobileFrameProps {
    * page-level sheets / dialogs). Mounted persistently, like the chrome.
    */
   extras?: ReactNode;
+  /** Reduce Home chrome to the one useful audio action during the one-time
+      Make Your Mind Up handoff. */
+  handoff?: boolean;
 }
 
 export function MobileFrame({
@@ -100,6 +103,7 @@ export function MobileFrame({
   padding = 'px-4',
   mainClassName,
   extras,
+  handoff = false,
 }: MobileFrameProps) {
   const { isMiniPlayerVisible } = useBriefingContext();
   const derivedMainClass = cn(
@@ -116,7 +120,7 @@ export function MobileFrame({
         style={isMiniPlayerVisible ? { paddingBottom: MINI_PLAYER_CLEARANCE } : undefined}
       >
         <div className="min-h-0">
-          <MobileFrameHeader onAdd={onAdd} onExport={onExport} />
+          <MobileFrameHeader onAdd={onAdd} onExport={onExport} handoff={handoff} />
           {banner}
         </div>
         <main className={mainClassName ?? derivedMainClass}>
@@ -140,7 +144,7 @@ export function MobileFrame({
  * header slot (for example the Decisions "Now | History" toggle). Lives inside
  * MobileHeaderSlotProvider so it re-renders when the slot changes.
  */
-function MobileFrameHeader({ onAdd, onExport }: { onAdd?: () => void; onExport?: () => void }) {
+function MobileFrameHeader({ onAdd, onExport, handoff }: { onAdd?: () => void; onExport?: () => void; handoff: boolean }) {
   const slot = useMobileHeaderSlotValue();
-  return <AppHeader onAdd={onAdd} onExport={onExport} center={slot} />;
+  return <AppHeader onAdd={onAdd} onExport={onExport} center={slot} handoff={handoff} />;
 }

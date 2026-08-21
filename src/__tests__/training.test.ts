@@ -23,6 +23,7 @@ import {
   applyTypographyRulesCore,
   stripBannedPhrasesCore,
   findBannedPhrasesCore,
+  pseudonymiseThirdParties,
   type IncomingFact,
 } from '../../supabase/functions/_shared/guardrails-core';
 
@@ -161,4 +162,108 @@ describe('briefing corpus - synthetic post-processing', () => {
       }
     });
   }
+});
+
+describe('third-party pseudonymisation', () => {
+  test('the training file carries a role lexicon', () => {
+    expect(training.third_party_pseudonymisation.roles.length).toBeGreaterThan(0);
+    expect(training.third_party_pseudonymisation.roles).toContain('CFO');
+  });
+
+  test.each([
+    ['my CFO Sarah Patel is dragging her feet', 'my CFO is dragging her feet'],
+    ['Sarah Patel, our CFO, keeps missing the numbers', 'our CFO, keeps missing the numbers'],
+    ['Sarah Patel (CFO) wants a bigger budget', 'the CFO wants a bigger budget'],
+    ['my chief of staff Dan Rowe runs the weekly', 'my chief of staff runs the weekly'],
+  ])('rewrites %j to the role', (input, expected) => {
+    const { text, replacements } = pseudonymiseThirdParties(input, training);
+    expect(text).toBe(expected);
+    expect(replacements).toBeGreaterThan(0);
+  });
+
+  test('prefers the longest role so "head of product" is not reduced to "product"', () => {
+    const { text } = pseudonymiseThirdParties('my head of product Ana Diaz shipped it', training);
+    expect(text).toBe('my head of product shipped it');
+  });
+
+  test('leaves the user\'s own facts untouched', () => {
+    for (const input of [
+      'I prefer bullet summaries before a decision',
+      'We ship on Friday',
+      'I run the Monday review myself',
+    ]) {
+      const { text, replacements } = pseudonymiseThirdParties(input, training);
+      expect(text).toBe(input);
+      expect(replacements).toBe(0);
+    }
+  });
+
+  // Both of these were found by the 2026-08-21 production dry run, where the
+  // only two rows the backfill wanted to change were false positives.
+  test('keeps a department qualifier that follows a role', () => {
+    const { text, replacements } = pseudonymiseThirdParties(
+      '4 - VP Eng, Head of Design, Head of Growth, Ops Lead',
+      training,
+    );
+    expect(text).toBe('4 - VP Eng, Head of Design, Head of Growth, Ops Lead');
+    expect(replacements).toBe(0);
+  });
+
+  test('does not treat a name after a comma as the role holder', () => {
+    const { text, replacements } = pseudonymiseThirdParties(
+      'No Head of Product, Krish doing PM and CEO simultaneously',
+      training,
+    );
+    expect(text).toBe('No Head of Product, Krish doing PM and CEO simultaneously');
+    expect(replacements).toBe(0);
+  });
+
+  test('does not rewrite an allowlisted capitalised token', () => {
+    const { replacements } = pseudonymiseThirdParties('our director May reviewed it', training);
+    expect(replacements).toBe(0);
+  });
+
+  test('a fact whose subject is a bare named third party is rejected', () => {
+    const { kept, rejected } = runGuardrailsPure(
+      [factFromInput('Sarah Patel is not coping with the workload', 'observation')],
+      training,
+    );
+    expect(kept).toHaveLength(0);
+    expect(rejected[0].reason_id).toBe('third_party_identity');
+  });
+
+  test('a user fact naming a third party by role survives, without the name', () => {
+    const { kept } = runGuardrailsPure(
+      [factFromInput('I escalate to my CFO Sarah Patel before signing off', 'observation')],
+      training,
+    );
+    expect(kept).toHaveLength(1);
+    expect(kept[0].fact_value).not.toMatch(/Sarah|Patel/);
+    expect(kept[0].fact_value).toContain('my CFO');
+  });
+
+  // The bare-name reject once used a generic verb ("Name is ..."), which also
+  // matched "Acme is scaling" and silently deleted most business facts. These
+  // hold the rule narrow.
+  test.each([
+    'Acme is scaling to 200 people',
+    'Stripe is our payment processor',
+    'Northgate was acquired last year',
+    'Revenue is growing 14 per cent',
+  ])('keeps the business fact %j', (input) => {
+    const { kept, rejected } = runGuardrailsPure([factFromInput(input, 'business')], training);
+    expect(rejected.map(r => r.reason_id)).not.toContain('third_party_identity');
+    expect(kept).toHaveLength(1);
+  });
+
+  test('existing reject ids still fire', () => {
+    const cases: Array<[string, string]> = [
+      ['my cofounder is very detail oriented', 'third_party_identity'],
+      ["i'm tired", 'transient_state'],
+    ];
+    for (const [input, expectedId] of cases) {
+      const { rejected } = runGuardrailsPure([factFromInput(input, 'observation')], training);
+      expect(rejected.map(r => r.reason_id)).toContain(expectedId);
+    }
+  });
 });

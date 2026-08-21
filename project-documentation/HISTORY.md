@@ -1,8 +1,10 @@
 # History
 
+Status: Historical
+
 Evolution of CTRL (originally Mindmaker) and major product pivots.
 
-**Last reconciled:** 2026-07-26 (drift-check pass: added Phase 18, covering everything shipped after Phase 17 through this pass).
+**Last reconciled:** 2026-08-10.
 
 > This is a historical record, kept on purpose. Early phases below describe positioning and visuals that are now RETIRED: the "Clarity for Leaders" tagline, the light/Apple-like design system (warm off-white, ink, Mint). Those are accurate as history but are not the current product. The current state is: globally DARK (the `ctrl-ds` instrument palette, emerald `#00D9B6`), and the LOCKED positioning is **building the AI-native version of your business** (locked 2026-06-19, after the latest phase recorded here). The two halves that post-date this timeline are the kit redesign (PRs #206-212) and the main-app polish (PRs #215-222). Canonical: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
 
@@ -769,6 +771,37 @@ Typecheck/build green, 225 unit tests pass. Backend (column migration, `send-rea
 
 ### Verification
 Each item above shipped with its own typecheck/build/unit-test/lint verification per its PR; the money-path repair was additionally verified end to end with a signed synthetic Stripe webhook event, and the North Star instrumentation was verified live against a real baseline snapshot (10 brain-rich, 1 active decider, 6 weekly-active) at ship time.
+
+---
+
+## Phase 19: Make Your Mind Up and CTRL become one production system (2026-08-08 to 2026-08-10)
+
+### Product
+
+- CTRL remained the product while Make Your Mind Up became its warm public onboarding and `makeyourmindup.ai` became the canonical domain.
+- First Lens became the immediate post-handoff payoff.
+- Today retained premium category visualization and one useful next move rather than collapsing into a text feed.
+- Audio became a signature conversational surface with playback, read mode, spoken/text follow-up, and voice response.
+- Blind Spot replaced Skill Builder as the promoted leadership-development experience.
+- Settings returned as a permanent, reachable utility.
+- Option E, Segoe UI Variable Display/Text with mono metadata, became the product-wide typography canon.
+
+### Data and AI
+
+- Public onboarding, handoff, profile enrichment, briefing, decision support, Blind Spot, Memory, and no-login delivery were connected as one data loop.
+- Control Center became a read-only, fail-closed source adapter inside the existing curation pool.
+- Subscription, handoff, result-email, active-interest, Blind Spot, and daily-delivery retries were made convergent.
+- Paid audio synthesis gained explicit briefing ownership enforcement.
+- The missing legacy scheduler credential was replaced by one Vault-generated cron secret mirrored into Edge Function secrets.
+
+### Production proof
+
+- Three initial additive migrations plus the Vault-backed cron migration were applied and recorded after object-level readback.
+- Fifteen release-critical Edge Functions were deployed ACTIVE with explicit auth contracts.
+- Public contracts returned expected 200/400 responses; cron-only and user-scoped handlers rejected anonymous calls with 401.
+- A count-only production probe gathered 267 source items, 211 AI-native items, and 11 Control Center items.
+- A forced production prewarm returned 10 cards with status 200 and no timeout, and the cache read back fresh.
+- The responsive UI contract passed 11/11 journeys across desktop, mobile, and 320px; 856 unit tests, build, standards, prerender, and CI gates passed.
 
 ---
 

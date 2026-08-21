@@ -26,7 +26,7 @@ export const LANDING = {
   toolsLbl: 'Works with',
 
   // judgement
-  judgeEy: 'don’t hire another AI consultant, take ctrl.',
+  judgeEy: 'the sharpest advisor you have is already you.',
   judgeH: 'A new era of AI advisory is here, and it’s in your pocket.',
   judgeBody:
     'CTRL builds your private AI brain to power your decision making on all things AI. Backed up by decades of practical expertise, world class memory-theory and leadership knowledge from across the globe, verify or counter your next business idea and sharpen your mind, ready for you to be an AI-native leader.',
@@ -61,17 +61,28 @@ export const LANDING = {
     'AI’s first rule is that it generates, and hallucinates. If you just chat to Claude or ChatGPT like you use Google, you’re training it and not levelling your brain up in return. Leaving your memory inside an AI tool disrespects your unique mind. CTRL is privatized and portable; you deserve your second brain to compound and stay yours only.',
   portCta: 'Integrated safely with where you work',
 
+  // The privacy of it, as a benefit rather than a defence. This is the reason
+  // a leader uses CTRL rather than a shared doc, and the footer is the one
+  // public surface that carries it on every page.
+  privLead: 'The one place you can think out loud about a decision before it is a proposal.',
+  // The notebook test hands the judgement back to the leader instead of
+  // treating them as a compliance problem. It is the most useful single
+  // sentence in the product when someone asks what belongs in here.
+  privTest:
+    'If you would write it in a notebook you carry home, put it in CTRL. If it belongs in your company’s systems, put it there.',
+
+
   // what we count
   countEy: 'Years of expertise, built in to the product',
-  countH: 'Hiring consultants is over. Take CTRL.',
+  countH: 'Judgement compounds. Take CTRL.',
   countBody:
     'When intelligence is everywhere, the value of a consultant lies in how they help you compound your intelligence. CTRL is a fact based, evidenced and trusted AI advisor. It doesn’t give you the answer to your next big business challenge, it helps you find it. Leaders holding at least five current facts about their business in here, who weighed at least one real decision in the last seven days. Context in, judgement out, weekly.',
 
   // price
   priceH: 'Free is free forever.',
-  priceBody: 'Memory, voice, unlimited skill builds, the daily read, three full weighs a month.',
+  priceBody: 'Memory, Blind Spot reflections, the daily read, three full weighs a month.',
   freeDesc:
-    'Memory web, voice profile, unlimited skill builds, the daily read, and three decision weighs a month.',
+    'Memory web, Blind Spot reflections, the daily read, and three decision weighs a month.',
   proDesc:
     'Unlimited weighs, a second model arguing against the first, decision watch, Edge artifacts, and the live MCP that sends your brain where it needs to be.',
   // The approved deck ended this on a half sentence ("...has made him realize
@@ -85,7 +96,11 @@ export const LANDING = {
   closeH: 'Your mind is an asset. Treat it as one.',
   closeCta: 'Start free',
   footMani: 'Your context is the most valuable thing you own. It should not live inside someone else’s product.',
-  footMM: 'If you would rather have this built with you, Mindmaker works with a small number of teams directly.',
+  footMM: 'Mindmaker works with your company. CTRL works with you. If you would rather have this built with you, Mindmaker works with a small number of teams directly.',
+  // Named first, and lightly. A sharp buyer works it out inside a week, and
+  // hearing it from us costs nothing while hearing it from themselves costs
+  // the trust.
+  footFunnel: 'Some people who use CTRL end up working with Krish. Most do not, and it works fine either way.',
 } as const;
 
 export const TRY = {
@@ -112,7 +127,12 @@ export const PRICING = {
   sub: 'No add-ons, no one-time upsells. The daily instrument is free and stays free. Edge Pro is for when weighing becomes the way you think.',
   cta: 'Upgrade to Edge Pro',
   note: 'The cap is three weighs a month. If you are not hitting it, free is the right tier.',
-  fine: 'Cancel anytime. Your daily read, memory and skill builds stay free.',
+  // Said lightly, next to the button, and it is the line that stops a
+  // personal tool turning into a vendor. An expense line brings in finance,
+  // finance eventually brings in procurement, and none of that improves the
+  // product for the person actually using it.
+  card: 'Most people put this on a personal card and keep it out of the company tooling conversation. It is yours either way.',
+  fine: 'Cancel anytime. Your daily read, memory and Blind Spot reflections stay free.',
 } as const;
 
 export const AGENTS = {
@@ -127,14 +147,6 @@ export const AGENTS = {
   t3: 'The skills you have built in CTRL.',
   t4: 'One skill in full, pulled live, never a stale copy.',
   cta: 'See pricing',
-} as const;
-
-export const AUTH_COPY = {
-  h1: 'Start building yours.',
-  sub: 'Two minutes. Then weigh a real call.',
-  google: 'Continue with Google',
-  email: 'Create account',
-  foot: 'Self-contained. No integrations. Your data stays yours.',
 } as const;
 
 /** The AI tools a leader already runs, named under the hero. */

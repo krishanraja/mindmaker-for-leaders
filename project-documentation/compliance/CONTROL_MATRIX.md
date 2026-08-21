@@ -1,11 +1,15 @@
 # CTRL Control Matrix (SOC 2 + ISO 27001:2022)
 
-Last reviewed: 2026-07-26 (updated 2026-07-26: C1.2 and P5 corrected against current code)
+Status: Reference
+
+Last reviewed: 2026-08-21 (deployed state verified; third-party backfill run with 0 rewrites, retention scheduled, two anon-executable definer functions revoked)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Maps the SOC 2 Trust Services Criteria (Common Criteria CC1-CC9 plus Availability, Confidentiality, Privacy) and key ISO/IEC 27001:2022 Annex A controls to CTRL's honest current status, the specific implementation or gap, and where evidence lives. This is a gap analysis, not a claim of conformance.
 
-Status legend: IN PLACE / PARTIAL / PLANNED.
+Status legend: IN PLACE / PARTIAL / PLANNED. A control is IN PLACE only when the mechanism is running in production, not when the code exists. Two entries below were previously marked from the code alone and are corrected.
+
+Scope note: CTRL shares Supabase project `bkyuxvschuwngtcdhsyg` with other Mindmaker surfaces, so database-wide figures quoted here cover the whole project, not CTRL alone.
 
 Cross-references: [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY.md), [INCIDENT_RESPONSE_PLAN.md](./INCIDENT_RESPONSE_PLAN.md), [SUBPROCESSORS.md](./SUBPROCESSORS.md), [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md), [SOC2_ISO27001_ROADMAP.md](./SOC2_ISO27001_ROADMAP.md).
 
@@ -18,9 +22,9 @@ Cross-references: [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY
 | CC3 | Risk assessment | Clause 6.1; A.5.7 | PLANNED | No formal documented risk assessment / treatment plan / SoA yet | Roadmap Phase 0/4 |
 | CC4 | Monitoring of controls | Clause 9.1; A.8.16 | PARTIAL | Ad hoc review via logs/code review. Continuous monitoring + alerting PLANNED (depends on log aggregation) | INFORMATION_SECURITY_POLICY.md s7 |
 | CC5 | Control activities | A.5, A.8 | PARTIAL | Technical controls exist (RLS, encryption, webhook verification); formal control-activity catalog maturing | CONTROL_MATRIX.md (this file) |
-| CC6.1 | Logical access - authentication and authorization | A.5.15-5.18, A.8.2-8.5 | PARTIAL | Supabase Auth; per-user RLS on all 108 tables; profiles/unified_profiles/profile_insights/user_business_context/chat_messages owner-scoped or service-role-only after May-June 2026 RLS remediation. MFA, password policy + HIBP, access reviews PLANNED | Migrations (git); INCIDENT_RESPONSE_PLAN.md s7 |
+| CC6.1 | Logical access - authentication and authorization | A.5.15-5.18, A.8.2-8.5 | PARTIAL | Supabase Auth. Row-level security is enabled on 157 of 157 public tables, verified by readback on 2026-08-20. Two SECURITY DEFINER functions that bypass RLS were still anon-executable through PostgREST and were revoked the same day: `get_memory_sweep_batch`, which returned every account's user id and activity timestamps, and `cleanup_expired_memories`, which deletes across all accounts. Profiles, unified_profiles, profile_insights, user_business_context and chat_messages are owner-scoped or service-role-only after the May to June 2026 RLS remediation. MFA, password policy + HIBP, and access reviews PLANNED | Production readback; migrations (git); INCIDENT_RESPONSE_PLAN.md s7 |
 | CC6.2/6.3 | Provisioning/deprovisioning, least privilege | A.5.18, A.8.2 | PARTIAL | Service-role keys server-side only; least privilege partial. Formal joiner/mover/leaver + periodic reviews PLANNED | INFORMATION_SECURITY_POLICY.md s4 |
-| CC6.6 | Boundary protection | A.8.20-8.23 | IN PLACE | TLS in transit; CDN/edge boundary; rate limiting on AI endpoints | Edge function config; ISP s7 |
+| CC6.6 | Boundary protection | A.8.20-8.23 | IN PLACE | TLS in transit; CDN/edge boundary; rate limiting on AI endpoints. The retention sweep endpoint previously accepted an unauthenticated POST that could force a deletion run; it now requires the service role key or the Vault-held cron secret. Separately, the underlying RPC was also reachable anonymously through PostgREST and was revoked to `service_role` on 2026-08-20 | Edge function config; ISP s7; `cleanup-expired-data`; `20260820150000_revoke_anon_memory_maintenance.sql` |
 | CC6.7 | Data in transit/at rest protection | A.8.24 | IN PLACE | TLS in transit; AES-256-GCM for Memory facts; Supabase-managed disk encryption | ISP s5; ROPA Activity C |
 | CC6.8 | Malicious/unauthorized software | A.8.7, A.8.19 | PARTIAL | Managed platforms (Supabase/Vercel) reduce surface; CI SAST/SCA PLANNED | Roadmap Phase 1 |
 | CC7.1 | Vulnerability detection | A.8.8 | PLANNED | No recurring dependency/SAST scanning or pen test yet | Roadmap Phase 1 |
@@ -43,16 +47,16 @@ Cross-references: [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY
 | Ref | Criterion | ISO overlap | Status | Implementation or gap | Evidence |
 |-----|-----------|-------------|--------|-----------------------|----------|
 | C1.1 | Identify/protect confidential data | A.5.12-5.13, A.8.24 | IN PLACE | Data classification in ISP; AES-256-GCM for Memory; owner-scoped RLS | ISP s3/s5 |
-| C1.2 | Disposal of confidential data | A.8.10 | PARTIAL | cleanup-expired-data (code exists, correct; NOT currently wired to a pg_cron schedule, so it does not run automatically) + delete-account cascade (in place); backups age out | DATA_RETENTION_POLICY.md |
+| C1.2 | Disposal of confidential data | A.8.10 | IN PLACE | `delete-account` performs a cascading deletion and cancels any active Stripe subscription before it runs, so erasure no longer leaves billing active. The daily `retention-cleanup` job was applied on 2026-08-20 and is active at 03:15 UTC. Applying it also required repairing `user_memory.retention_expires_at`, which production had never received, so the retention path raised `42703` on every call before that date. Backups age out on the platform schedule | DATA_RETENTION_POLICY.md; release-state.md |
 
 ## SOC 2 - Privacy (P)
 
 | Ref | Criterion | ISO overlap | Status | Implementation or gap | Evidence |
 |-----|-----------|-------------|--------|-----------------------|----------|
 | P1 Notice | Privacy notice | A.5.34 | IN PLACE | Public privacy policy (GDPR Art 13/14 + CCPA) | PRIVACY_POLICY.md |
-| P2 Choice/Consent | Consent capture | A.5.34 | IN PLACE | upsert-sharing-consent; consent_audit table; marketing consent flag | ROPA Activity J |
-| P3 Collection | Lawful, minimized collection | A.5.34 | IN PLACE | Lawful bases mapped per category | PRIVACY_POLICY.md s4; ROPA.md |
-| P4 Use/Retention/Disposal | Retention and deletion | A.8.10 | IN PLACE | Configurable retention + scheduled cleanup + cascading deletion | DATA_RETENTION_POLICY.md |
+| P2 Choice/Consent | Consent capture | A.5.34 | IN PLACE | upsert-sharing-consent; consent_audit table; marketing consent flag. A session-scoped off-the-record mode lets a user converse with no durable write at all, and the product states when a session saved nothing | ROPA Activity J; `OffTheRecordContext` |
+| P3 Collection | Lawful, minimized collection | A.5.34 | IN PLACE | Lawful bases mapped per category. Third-party minimisation runs at the Memory write boundary: a person named beside a role is stored as the role, and a fact whose subject is another person is rejected, so CTRL does not accumulate personal data about people who never interacted with it. The backfill over pre-existing rows ran on 2026-08-21: 196 scanned, 0 requiring rewriting, so stored memory holds no detected third-party names. Note the boundary honestly: this is a heuristic guard, not a proof. It catches a name adjacent to a role and a bare name carrying a person-state predicate; it cannot catch every possible phrasing, and its own dry run on 2026-08-21 exposed two over-matching defects that were fixed before anything was written | PRIVACY_POLICY.md s4; ROPA.md; `_shared/guardrails-core.ts`; release-state.md |
+| P4 Use/Retention/Disposal | Retention and deletion | A.8.10 | IN PLACE | Corrected twice on 2026-08-20. It was first marked IN PLACE on the strength of code that had no schedule, then downgraded to PARTIAL, and is now genuinely in place: the schedule and the missing database column were both applied and verified by object readback. The lesson is recorded rather than tidied away, because the original error was crediting a control from source rather than from production | DATA_RETENTION_POLICY.md; release-state.md |
 | P5 Access | Subject access/portability | A.5.34 | IN PLACE | memory-export (chatgpt/claude/gemini/cursor/claude-code/markdown formats), the client-side JSON/CSV export path, generate-custom-export (Edge Pro only); DSAR runbook | DSAR_RUNBOOK.md |
 | P6 Disclosure/Transfers | Third-party disclosure and transfers | A.5.34 | PARTIAL | Subprocessors registered; "we do not sell". SCCs/DPAs PLANNED | SUBPROCESSORS.md |
 | P7 Quality | Accuracy/rectification | A.5.34 | IN PLACE | In-app edit + rectification path | DSAR_RUNBOOK.md |
@@ -76,6 +80,7 @@ Cross-references: [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY
 
 ## Summary of biggest open gaps
 
+0. Closed 2026-08-21. `backfill-pseudonymise` is deployed and has run: 196 rows scanned, 0 requiring rewriting. The retention and Blind Spot burn migrations were applied 2026-08-20.
 1. Audit logging: data_audit_log and ai_usage_audit (IN PROGRESS) - needed for monitoring and forensic impact assessment.
 2. Risk assessment + SoA (CC3 / ISO 6.1) - not started.
 3. MFA, password policy + HIBP, formal access reviews (CC6).

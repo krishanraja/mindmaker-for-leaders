@@ -314,9 +314,10 @@ function MobileHome({
               )}
             </>
           ))}
-        <AnimatePresence>
-          {loading && firstLoad && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
-        </AnimatePresence>
+        {/* Do not cross-fade the loading copy over live headlines. The previous
+            exit overlap briefly rendered two readable layers on top of each
+            other when data resolved, which looked like a broken card. */}
+        {loading && firstLoad && <GlobeLoader className="absolute inset-0 z-[5]" />}
         {loading && !firstLoad && (
           <div className="absolute inset-0 z-[5] flex flex-col">
             <SkeletonCard variant="feed" className="min-h-0 flex-1" />
@@ -494,8 +495,12 @@ function DesktopHome({
         )}
       </div>
 
-      {/* THE RAIL - the one browsable zone. min-h-0 so the doors keep their place. */}
-      <div className="relative mt-3.5 flex min-h-0 flex-1 flex-col">
+      {/* THE RAIL - the one browsable zone. It may shrink on a short laptop,
+          but it never stretches into a wall of empty card on a tall desktop. */}
+      <div
+        data-testid="desktop-home-rail"
+        className="relative mt-3.5 flex min-h-0 max-h-[520px] flex-1 flex-col"
+      >
         {/* The real rail renders underneath once data is ready; the globe loader
             overlays on top and cross-fades out (no abrupt swap). */}
         {!loading &&
@@ -514,10 +519,18 @@ function DesktopHome({
                 className="scrollbar-hide flex min-h-0 flex-1 gap-[18px] overflow-x-auto overflow-y-hidden pb-1"
               >
                 {deck.map((card, i) => (
-                  // h-full min-h-0 declares the uniform height bound explicitly
-                  // (was an items-stretch accident): every rail card fills the
-                  // rail's bounded height exactly, never its content's height.
-                  <div key={card.id} className={cn('flex h-full min-h-0 flex-col', i === 0 ? 'w-[480px] shrink-0' : 'w-[330px] shrink-0')}>
+                  // h-full min-h-0 declares the uniform height bound explicitly.
+                  // The narrower default widths let a 1280-1440 desktop see the
+                  // whole lead and two supporting reads instead of a cut-off wall.
+                  <div
+                    key={card.id}
+                    className={cn(
+                      'flex h-full min-h-0 flex-col',
+                      i === 0
+                        ? 'w-[400px] shrink-0 2xl:w-[460px]'
+                        : 'w-[270px] shrink-0 2xl:w-[320px]',
+                    )}
+                  >
                     {card.kind === 'kickstart' ? (
                       <KickstartCard card={card} variant={i === 0 ? 'lead' : 'feed'} onOpen={onOpenCard} />
                     ) : card.kind === 'trend' ? (
@@ -531,14 +544,12 @@ function DesktopHome({
               <div className="pointer-events-none absolute inset-y-0 right-0 z-[2] w-[60px] bg-gradient-to-l from-background to-transparent" />
             </>
           ))}
-        <AnimatePresence>
-          {loading && firstLoad && <GlobeLoader key="globe" className="absolute inset-0 z-[5]" />}
-        </AnimatePresence>
+        {loading && firstLoad && <GlobeLoader className="absolute inset-0 z-[5]" />}
         {loading && !firstLoad && (
           <div className="absolute inset-0 z-[5] flex gap-[18px] overflow-hidden">
-            <SkeletonCard variant="lead" className="h-full w-[480px] shrink-0" />
-            <SkeletonCard variant="feed" className="h-full w-[330px] shrink-0" />
-            <SkeletonCard variant="feed" className="h-full w-[330px] shrink-0" />
+            <SkeletonCard variant="lead" className="h-full w-[400px] shrink-0 2xl:w-[460px]" />
+            <SkeletonCard variant="feed" className="h-full w-[270px] shrink-0 2xl:w-[320px]" />
+            <SkeletonCard variant="feed" className="h-full w-[270px] shrink-0 2xl:w-[320px]" />
           </div>
         )}
       </div>

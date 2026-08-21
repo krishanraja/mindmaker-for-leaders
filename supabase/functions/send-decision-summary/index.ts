@@ -17,7 +17,7 @@ import { createLogger } from "../_shared/logger.ts";
 // The button must always land on the live production app, not the marketing apex. Hardcode the
 // canonical CTRL host (same convention as the kit emails' KIT_URL) so an unset/misconfigured
 // APP_URL env can never point the leader at the wrong place.
-const DECISION_URL = "https://ctrl.themindmaker.ai/decision";
+const DECISION_URL = "https://makeyourmindup.ai/decision";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
       bodyHtml: parts.join("\n"),
       buttonLabel: "Open in CTRL",
       actionUrl: DECISION_URL,
-      eyebrow: "CTRL - your chief of staff",
+      eyebrow: "CTRL - your decision partner",
     });
 
     const subject = `Your decision: ${decisionLine}`.slice(0, 180);

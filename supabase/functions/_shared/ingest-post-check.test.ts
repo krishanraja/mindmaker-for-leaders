@@ -246,12 +246,12 @@ function repoFile(relative: string): string {
 }
 
 describe('PROMPT 1 drift guard', () => {
-  const doc = readFileSync(repoFile('docs/PHASE-0.5-HANDRUN.md'), 'utf8');
+  const doc = readFileSync(repoFile('docs/PHASE-0.5-HANDRUN.md'), 'utf8').replace(/\r\n?/g, '\n');
 
   it('carries the hand-run rules block character for character', () => {
-    // Byte identity, both directions: the constant appears verbatim in the doc,
-    // and it is what the doc's Step 1 fence opens with. Edit either copy alone
-    // and this fails, which is the point.
+    // Character identity after canonicalising platform newlines: the constant
+    // appears verbatim in the doc and opens the Step 1 fence. Wording drift in
+    // either copy still fails on every operating system.
     expect(doc).toContain(HANDRUN_PROMPT_1_RULES);
 
     const step1 = doc.slice(doc.indexOf('## Step 1'));

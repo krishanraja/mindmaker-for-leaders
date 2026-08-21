@@ -8,12 +8,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pencil, Trash2, Check, AlertCircle, User, Building, Target, AlertTriangle, Settings, Zap, Anchor } from 'lucide-react';
+import { Pencil, Trash2, Check, AlertCircle, User, Building, Target, AlertTriangle, Settings, Eye, Anchor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { haptics } from '@/lib/haptics';
 import { IMPORTANCE_HOT_TIER, type UserMemoryFact, type FactCategory } from '@/types/memory';
-import type { SkillSeed } from '@/types/skill';
 
 interface MemoryItemCardProps {
   memory: UserMemoryFact;
@@ -70,21 +69,12 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
     setTimeout(() => setShowFlash(false), 600);
   };
 
-  // For declared blockers, surface a one-tap path into the Skill Builder
-  // pre-anchored to this specific pain. Only blockers - objectives/preferences
-  // are different shapes (aspirations, settings) that don't translate to a
-  // weekly procedure as cleanly.
+  // A confirmed blocker is a useful doorway into the one-card reflection loop.
   const isBlocker = memory.fact_category === 'blocker';
-  const handleAutomate = (e: React.MouseEvent) => {
+  const handleReflect = (e: React.MouseEvent) => {
     e.stopPropagation();
     haptics.light();
-    const seed: SkillSeed = {
-      kind: 'blocker',
-      text: memory.fact_value,
-      fact_id: memory.id,
-      label: memory.fact_label,
-    };
-    navigate('/context', { state: { seed } });
+    navigate('/blind-spot');
   };
 
   const CategoryIcon = categoryIcons[memory.fact_category] || User;
@@ -171,17 +161,17 @@ export const MemoryItemCard: React.FC<MemoryItemCardProps> = ({
           {isBlocker && (
             <motion.button
               whileTap={{ scale: 0.85 }}
-              onClick={handleAutomate}
+              onClick={handleReflect}
               className={cn(
                 "p-2 rounded-lg min-h-[44px] min-w-[44px]",
                 "flex items-center justify-center",
                 "hover:bg-amber-500/10 transition-colors",
                 "text-amber-500 hover:text-amber-600"
               )}
-              aria-label="Automate this pain"
-              title="Turn this pain into a Claude skill"
+              aria-label="Reflect on this blocker"
+              title="Look for a related blind spot"
             >
-              <Zap className="w-4 h-4" />
+              <Eye className="w-4 h-4" />
             </motion.button>
           )}
           <button

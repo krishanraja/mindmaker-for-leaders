@@ -177,7 +177,7 @@ export function SegmentCard({
           <button
             type="button"
             onClick={() => navigate('/decision-map')}
-            className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent transition-colors hover:bg-accent/20"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[10px] font-semibold text-accent transition-colors hover:bg-accent/20"
           >
             <Scale className="h-3 w-3" />
             Relevant to your decision
@@ -220,10 +220,12 @@ export function SegmentCard({
         <div className="flex items-center gap-2 pt-1 overflow-x-auto">
           {/* Feedback buttons */}
           <button
+            type="button"
             onClick={() => handleFeedback("useful")}
             disabled={feedback !== null}
+            aria-label="Useful briefing note"
             className={cn(
-              "p-1.5 rounded-md transition-colors",
+              "grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-colors",
               feedback === "useful"
                 ? "text-accent bg-accent/10"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -232,10 +234,12 @@ export function SegmentCard({
             <ThumbsUp className="w-3.5 h-3.5" />
           </button>
           <button
+            type="button"
             onClick={() => handleFeedback("not_useful")}
             disabled={feedback !== null}
+            aria-label="Not useful briefing note"
             className={cn(
-              "p-1.5 rounded-md transition-colors",
+              "grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-colors",
               feedback === "not_useful"
                 ? "text-muted-foreground bg-muted"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -247,11 +251,13 @@ export function SegmentCard({
           {/* v2: pin the lens anchor as a persistent beat. */}
           {pinnable.length > 0 && (
             <button
+              type="button"
               onClick={handlePin}
               disabled={alreadyPinned || pinning}
               title={alreadyPinned ? `Already a beat: ${pinnable}` : `Keep beat: ${pinnable}`}
+              aria-label={alreadyPinned ? `Already following ${pinnable}` : `Follow ${pinnable}`}
               className={cn(
-                "p-1.5 rounded-md transition-colors",
+                "grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-colors",
                 alreadyPinned
                   ? "text-accent bg-accent/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted",
@@ -268,6 +274,7 @@ export function SegmentCard({
           {/* v2: persistent kill - "don't show me stories like this". */}
           {canKill && (
             <button
+              type="button"
               onClick={handleKill}
               disabled={killed || isKilling}
               title={
@@ -275,8 +282,9 @@ export function SegmentCard({
                   ? "Killed - this lens item won't appear in future briefings"
                   : `Don't show me stories like this (${pinnable || "this topic"})`
               }
+              aria-label={killed ? "Topic removed from future briefings" : "Remove this topic from future briefings"}
               className={cn(
-                "p-1.5 rounded-md transition-colors",
+                "grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-colors",
                 killed
                   ? "text-red-500 bg-red-500/10"
                   : "text-muted-foreground hover:text-red-500 hover:bg-red-500/10",
@@ -296,10 +304,11 @@ export function SegmentCard({
               <div className="w-px h-3.5 bg-border" />
               {unwatchedCompanies.slice(0, 2).map((company) => (
                 <button
+                  type="button"
                   key={company}
                   onClick={() => handleWatch(company)}
                   className={cn(
-                    "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all",
+                    "flex min-h-11 items-center gap-1 rounded-xl px-3 py-1 text-[10px] font-medium transition-all",
                     justWatched === company
                       ? "text-accent bg-accent/10"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"

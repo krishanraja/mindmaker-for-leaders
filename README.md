@@ -1,120 +1,130 @@
 # CTRL by Mindmaker
 
-> Build the AI-native version of your business.
+Status: Current
 
-CTRL is the tool for leaders building, orchestrating, productizing, and getting to market the **AI-native version of their business**. It is not a general business advisor. Every decision, headline, and nudge in the app pulls toward one question: how do you make your business more AI-native, here? When a leader brings a general-business call ("should I hire a VP of Sales?"), CTRL reframes it into its AI-native version ("before you hire, should an agent own part of that motion first, and what does the human role become?") and works it from there.
+> A quieter way through AI.
 
-Production: **ctrl.themindmaker.ai**. Globally dark, instrument-grade UI (the `ctrl-ds` palette, emerald `#00D9B6`). Mobile-first and no-scroll: every key surface fits the viewport with one clear action per screen.
+CTRL is a calm AI briefing and decision partner for founders and small-team CEOs building the AI-native version of their business. Make Your Mind Up is its warm, one-question-at-a-time intake. The interface stays small while curation, memory, evidence, delivery, and AI orchestration do the heavy lifting.
 
----
+Production: [makeyourmindup.ai](https://makeyourmindup.ai)
+Product: CTRL
+Repository: `krishanraja/mm-ctrl`
+Last verified: 2026-08-20 against production readback
 
-## Documentation
+## Start here
 
-The deeper source of truth lives in [`project-documentation/`](./project-documentation/README.md). The two canonical product/build specs are:
-- [`docs/MAIN-APP-POLISH-SPEC.md`](./docs/MAIN-APP-POLISH-SPEC.md) - the main-app standard: the AI-native North Star, the decision model, the news categories, the no-scroll/one-ask laws, the approachable-language rules.
-- [`docs/KIT-REDESIGN-SPEC.md`](./docs/KIT-REDESIGN-SPEC.md) - the lesson-kit program.
+| Need | Document |
+|---|---|
+| Product, user, and experience | [`docs/current/product.md`](./docs/current/product.md) |
+| Marketing, sales, buyer, and claims | [`docs/current/commercial.md`](./docs/current/commercial.md) |
+| System and data flow | [`docs/current/architecture.md`](./docs/current/architecture.md) |
+| Live, nested, and retired capabilities | [`docs/current/features.md`](./docs/current/features.md) |
+| Production baseline and known debt | [`docs/current/release-state.md`](./docs/current/release-state.md) |
+| Setup, release, and rollback | [`project-documentation/REPLICATION_GUIDE.md`](./project-documentation/REPLICATION_GUIDE.md) |
+| Coding-agent instructions | [`CLAUDE.md`](./CLAUDE.md) |
+| Complete documentation map | [`docs/current/README.md`](./docs/current/README.md) |
 
-For sales, marketing, and ops AI agents: start at [`project-documentation/README.md`](./project-documentation/README.md), then `SALES_BRIEF.md`, `ICP.md`, `VALUE_PROP.md`, `OUTCOMES.md`, `Master_Messaging_and_FAQ.md`. (Note: those sales docs are mid-reconciliation to the AI-native positioning; trust this README and the two specs above where they disagree.)
+Executable code and authoritative environment readback outrank prose. When behavior changes, update the current document in the same pull request.
 
-For developers: [`CLAUDE.md`](./CLAUDE.md) (workflow + the current architecture quick-reference), then `project-documentation/ARCHITECTURE.md`, `FEATURES.md`, `COMMON_ISSUES.md`.
+## Read this before touching the backend
 
----
+The Supabase project is **shared**. CTRL runs alongside other Mindmaker surfaces in project `bkyuxvschuwngtcdhsyg`, which carries 177 deployed Edge Functions of which CTRL accounts for 113. A function you can see in the dashboard may belong to another product, and the database has tables and cron jobs this repository does not own.
 
-## The two halves of the product
+Two rules follow. Only the directories under `supabase/functions/` are yours to change. And every one of them is live, including the ones with no caller anywhere in this repository, because they are triggered by cron, by an external webhook, or by a link in an email. See [architecture](./docs/current/architecture.md#the-supabase-project-is-shared).
 
-### 1. The lesson kits (`/kit`)
-A leader finishes a Mindmaker lightning lesson, scans a code, and walks a guided, build-it-with-you kit. Four kits, each about one thing:
-- **Vibe Coding** - a *solution*: teach any AI how you work and what has burned you, then ship one real build.
-- **Autonomous Business** - a *process*: take one recurring workflow off your plate.
-- **Agentic Org Chart** - the *company*: map divisions to tasks to handoffs, each tagged green (AI runs it) / amber (AI assists, you approve the handoff) / red (you only), with a ranked place to start.
-- **Memory & Identity** - the *person*: make the AI know you across sessions, in your voice.
+## Product in one loop
 
-Each kit is strictly sequential (one action per screen), no-scroll on mobile, a native two-pane on desktop with a live "your kit is taking shape" panel, an honest build trace, and one branded, personalized hero PDF. See `docs/KIT-REDESIGN-SPEC.md`.
+```text
+one-question intake
+  -> optional company recognition and fresh evidence
+  -> one-click confirmation or correction
+  -> consented context
+  -> First Lens
+  -> shared corroborated AI pool
+  -> personal ranking and briefing
+  -> decision weighed against evidence
+  -> explicit confirmation or correction
+  -> stronger memory
+```
 
-### 2. The main app (the leader's daily instrument)
-Every authenticated surface is no-scroll on all devices, one ask per screen, and locked to the AI-native frame:
-- **Home / cockpit** - a daily deck of "worth a look" headlines, AI-native only.
-- **News deck** - nine AI-native news categories (model & capability, AI economics, tools & vendors, orchestration & agent reliability, AI-native product & GTM, governance, security & agent risk, org & talent, proof & adoption), each with a branded SVG motif. The briefing pipeline filters out anything that is not about deploying, building, or selling AI, and tags every story to a category.
-- **Decision engine** (`/decision`) - pressure-tests a decision (decompose, verify against live evidence, cross-examine, advise), with an honest AI-native reframe shown as a banner.
-- **Brain / Memory Web** (`/memory`) - your context as a four-world rope canvas that fills the frame, with zoom and pan; the substrate that makes any AI know your business.
-- **Daily Briefing** (`/briefing`) - a short audio read of the AI world, tuned to your chosen AI-native categories.
-- **Context Export** (`/context`) - your context, portable into ChatGPT, Claude, Gemini, Cursor, Claude Code, or raw markdown; plus the Automator, which turns something you do every week into an AI skill.
-- **Compliance** (`/compliance`) - an honest, calm view of how your data is protected (no overclaiming of certifications).
+Today, Decide, Blind Spot, Memory, Briefing, and Settings are the primary product. Context export and deeper review/build chains remain nested harnesses. The lesson-kit product is retired and `/kit*` redirects to `/try`.
 
----
-
-## Active routes
-
-| Route | Surface | Auth |
-|---|---|---|
-| `/` | Landing | No |
-| `/auth`, `/auth/callback` | Auth (Email + Google OAuth) | No |
-| `/build` | Skill Builder (full-page) | No |
-| `/try` | Public "watch it work" demo | No |
-| `/kit` (+ `/kit/me`, `/kit/me/intake`, `/kit/reading/:pageId`, `/kit/pdf[/:redemptionId]`) | The lesson-kit program | No (anonymous session) |
-| `/dashboard` | Home hub (cockpit / memory) | Yes |
-| `/memory` | Brain / Memory Web | Yes |
-| `/context` | Context Export + Automator | Yes |
-| `/briefing` | Daily Briefing | Yes |
-| `/decision`, `/decision-map` | Decision engine + map | Yes |
-| `/goals`, `/track-record` | Goals + track record | Yes |
-| `/enrich` | Inbound enrich loop | Yes |
-| `/agents` | Agents | Yes |
-| `/settings`, `/compliance`, `/profile` | Settings, Compliance, Profile | Yes |
-
-Legacy routes (`/today`, `/voice`, `/pulse`, `/diagnostic`) redirect to `/dashboard`; `/think` redirects to `/dashboard?view=edge`. (Source of truth: `src/router.tsx`.)
-
----
-
-## Pricing
-
-Pricing constants are canonical in `src/constants/billing.ts` (and the shared edge-pricing module); the app reads them, so trust the code over any doc. Edge Pro is a monthly subscription (`EDGE_PRO_PRICE_LABEL`); there is a paid AI-literacy diagnostic. TODO(founder): confirm the current full price list for the AI-native product before any sales doc quotes exact numbers.
-
----
-
-## Design philosophy
-
-- **Build the AI-native business** - never general business advice; reframe, never refuse.
-- **Globally dark, instrument-grade** - the `ctrl-ds` palette, emerald `#00D9B6`, the `BrandLockup` (Mindmaker icon + `ctrl-logo` wordmark). Not light mode.
-- **No-scroll, one ask per screen** - on every device.
-- **Voice-first** where it fits; **honest in the renderer** (the quiet/empty state is intentional, never faked; confidence tracks evidence).
-- **Approachable** - warm, first-timer-friendly language; no insider jargon presented cold; no em dashes.
-
----
-
-## Tech stack
+## Architecture at a glance
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18 + TypeScript 5.5 + Vite 5.4 + Framer Motion |
-| Routing | React Router 6 (`createBrowserRouter`, lazy routes) |
-| Styling | Tailwind CSS + shadcn/ui (Radix), globally dark |
-| State | React Context + TanStack Query |
-| Backend | Supabase (PostgreSQL + Edge Functions, Deno runtime) |
-| AI | Vertex AI (Gemini 2.0 Flash) primary, OpenAI GPT-4o fallback |
-| Voice / Audio | OpenAI Whisper / ElevenLabs |
-| Embeddings | OpenAI `text-embedding-3-small` (pgvector) |
-| Auth / Payments / Email | Supabase Auth / Stripe / Resend |
-| Tests | Vitest (unit) + Playwright (e2e) |
-| Hosting | Vercel (frontend) + Supabase Cloud (backend) |
-| Node.js | `>=22 <24` |
+| Frontend | React 18, TypeScript 5.5, Vite 5.4, React Router 6 |
+| UI | Tailwind CSS, Radix primitives via shadcn, Framer Motion, `ctrl-ds` tokens |
+| Client data | TanStack Query, React Context, Supabase client |
+| Backend | Supabase PostgreSQL, Auth, Storage, Edge Functions, Vault, pg_cron |
+| AI | Capability-specific OpenAI, Anthropic, Gemini, and Grok paths |
+| Voice | OpenAI transcription, Gemini fallback, ElevenLabs speech |
+| Identity and evidence | PDL and Brandfetch for optional onboarding resolution; Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa, Artificial Analysis, RSS, GDELT, Hacker News |
+| Billing and email | Stripe and Resend |
+| Hosting | Vercel frontend and Supabase Cloud backend |
 
-For current edge-function / hook / migration counts and the live architecture, see `CLAUDE.md` (kept current).
+There is no truthful single global “primary AI provider.” See the capability matrix in the [current architecture](./docs/current/architecture.md#ai-and-external-provider-routing).
 
----
+## Local development
 
-## Local dev
+### Prerequisites
 
-```bash
-npm install
-npm run dev          # dev server
-npm run test         # vitest
-npm run test:e2e     # playwright
-npm run build        # production build
+- Node.js `>=22 <25`
+- npm
+- A local `.env.local` with publishable frontend values
+- Supabase access only for work that crosses the backend boundary
+
+### Install and run
+
+PowerShell:
+
+```powershell
+npm ci
+Copy-Item .env.example .env.local
+npm run dev
 ```
 
-Supabase deploy + migration conventions live in [`CLAUDE.md`](./CLAUDE.md). Frontend auto-deploys to Vercel on push to `main`; edge functions deploy via `supabase functions deploy <name>`; migrations apply via the Supabase Management API.
+macOS or Linux:
 
----
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
+```
 
-Built by Krish Raja. Live at **ctrl.themindmaker.ai**.
+Minimum browser variables:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY` or `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+Never expose service-role, provider, payment, email, encryption, or cron secrets through `VITE_*` variables.
+
+## Verification
+
+```bash
+npm run docs:check
+npm run standards:check
+npm run typecheck
+npm test -- --run
+npm run build
+npm run test:e2e     # requires a running local or preview target
+```
+
+Use focused tests while iterating, then run the applicable full gates. Start `npm run dev` in another terminal or set `E2E_BASE_URL` to the authorised preview before Playwright. Most authenticated specs remain skipped until the documented auth seed helper is wired. Typecheck and changed-file lint are baseline-scoped because the repository carries disclosed historical debt. New or worsened diagnostics fail the gate.
+
+## Release safety
+
+- Frontend releases flow through a pull request to `main`; Vercel is Git-connected.
+- Edge Functions deploy independently and must preserve the auth contract in `supabase/config.toml`.
+- Canonical production has historical migration-ledger drift, so the ledger cannot tell you what is applied. Verify by object readback instead, per [release state](./docs/current/release-state.md#applied-migration-state-and-why-the-ledger-is-not-the-answer). Never run a blanket production `supabase db push`.
+- Scheduled prewarm and delivery use a Vault-backed cron secret, not a database service-role setting.
+- The Control Center bridge is a read-only source adapter inside the shared curation pool, not a second feed.
+- A release is not verified until the source revision, deployment revision, canonical host, and real user path agree.
+
+Follow the exact process in the [replication and release guide](./project-documentation/REPLICATION_GUIDE.md).
+
+## Documentation governance
+
+Current documents carry status, owner, and verification metadata. Dated roadmaps, delivery traces, old specs, and release journals are retained as history but do not compete with the current set. Run `npm run docs:check` to validate links, counts, decision IDs, pricing consistency, and known drift traps.
+
+Built by Krish Raja.

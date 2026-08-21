@@ -92,9 +92,9 @@ function WatchlistSection({
           placeholder={placeholder}
           disabled={submitting}
           maxLength={120}
-          className="h-9 flex-1 text-[13px]"
+          className="h-11 flex-1 text-[13px]"
         />
-        <Button type="submit" size="sm" disabled={!input.trim() || submitting} className="h-9 px-3">
+        <Button type="submit" size="sm" disabled={!input.trim() || submitting} className="h-11 w-11 px-0" aria-label={`Add to ${title}`}>
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         </Button>
       </form>
@@ -105,7 +105,7 @@ function WatchlistSection({
             <span
               key={item.id}
               className={cn(
-                'inline-flex items-center gap-1 rounded-full border py-1 pl-2.5 pr-1 text-[12px] font-semibold',
+                'inline-flex min-h-11 items-center gap-1 rounded-full border py-0 pl-2.5 pr-1 text-[12px] font-semibold',
                 chipClass,
               )}
             >
@@ -114,7 +114,7 @@ function WatchlistSection({
                 type="button"
                 onClick={() => handleRemove(item.id)}
                 disabled={removingId === item.id}
-                className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-background/40"
+                className="ml-0.5 grid h-11 w-11 place-items-center rounded-full transition-colors hover:bg-background/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={`Remove ${item.text}`}
               >
                 {removingId === item.id ? (
@@ -191,6 +191,7 @@ export function NewsPreferencesPanel({ showHeader = true }: { showHeader?: boole
               key={g.id}
               type="button"
               onClick={() => toggleGroup(g.id)}
+              aria-pressed={on}
               className={cn(
                 'flex items-start gap-3 rounded-2xl border px-4 py-3 text-left transition-colors',
                 on ? 'border-accent/50 bg-accent/[0.08]' : 'border-border bg-card/40 hover:border-accent/30',
@@ -223,6 +224,7 @@ export function NewsPreferencesPanel({ showHeader = true }: { showHeader?: boole
               key={b.id}
               type="button"
               onClick={() => selectBias(b.id)}
+              aria-pressed={on}
               className={cn(
                 'flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors',
                 on ? 'border-accent/50 bg-accent/[0.08]' : 'border-border bg-card/40 hover:border-accent/30',

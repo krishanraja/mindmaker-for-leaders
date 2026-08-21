@@ -1,8 +1,12 @@
 /**
  * Compliance Frameworks - Static Control Definitions
  *
- * Maps SOC2, HIPAA, GDPR, CCPA, and ISO 27001 controls
- * to their technical implementations in the MindMaker platform.
+ * Maps SOC 2, GDPR, CCPA, and ISO 27001 controls to their technical
+ * implementations in the MindMaker platform.
+ *
+ * HIPAA is deliberately absent. CTRL does not process protected health
+ * information, so HIPAA is out of scope; see
+ * project-documentation/compliance/README.md.
  */
 
 export type ControlStatus = 'implemented' | 'partial' | 'planned';
@@ -28,6 +32,12 @@ export interface ComplianceFramework {
  * technical and organizational controls we have designed and the practices we
  * follow. They are not claims of completed third-party certification or audit.
  */
+// RELEASE COUPLING: the storage-limitation and operations-security entries
+// above describe the daily `retention-cleanup` job. That job is created by
+// supabase/migrations/20260820120000_retention_cleanup_cron.sql, which was
+// not yet applied at the time of writing. Shipping this frontend without
+// applying that migration puts an untrue claim back on /compliance, which is
+// exactly the defect this wording was written to remove.
 export const complianceDisclaimer =
   'This page describes how our security and privacy controls map to widely used frameworks. ' +
   'It reflects our design intent and current practices, not completed third-party audits or certifications. ' +
@@ -131,14 +141,14 @@ export const complianceFrameworks: ComplianceFramework[] = [
         name: 'Storage Limitation',
         description: 'Keep personal data only as long as necessary for the processing purpose',
         status: 'implemented',
-        implementation: 'Configurable retention policies (30 days, 90 days, or indefinite). Automated cleanup via cleanup-expired-data edge function.',
+        implementation: 'Configurable retention policies (30 days, 90 days, or indefinite). A daily retention-cleanup job removes memory past the chosen window, and changing the window re-stamps what is already stored.',
       },
       {
         id: 'gdpr-art32',
         name: 'Security of Processing',
         description: 'Implement appropriate technical measures to ensure data security',
         status: 'implemented',
-        implementation: 'RLS, AES-256-GCM encryption, JWT authentication, security headers on all endpoints, rate limiting on AI functions.',
+        implementation: 'RLS, AES-256-GCM encryption, JWT authentication, baseline security headers on the web application, and rate limiting on AI functions. The shared security-header helper is applied to a subset of edge functions, not all of them.',
       },
     ],
   },
@@ -224,7 +234,7 @@ export const complianceFrameworks: ComplianceFramework[] = [
         name: 'Operations Security',
         description: 'Ensure correct and secure operations of information processing facilities',
         status: 'partial',
-        implementation: 'Rate limiting on AI endpoints, AI response caching with TTL, automated data-retention cleanup, and structured edge-function logging. Centralized log aggregation and event auditing are in progress.',
+        implementation: 'Rate limiting on AI endpoints, AI response caching with TTL, a daily retention-cleanup job, and structured edge-function logging. Centralized log aggregation and event auditing are in progress.',
       },
       {
         id: 'iso-a16',

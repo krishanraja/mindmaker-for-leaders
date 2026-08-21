@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { STARTER_DECISIONS, starterDecisionsFor, pickStarterDecision } from '@/lib/starterDecisions';
+import { STARTER_DECISIONS, starterDecisionsFor, pickStarterDecision, starterDecisionForLane } from '@/lib/starterDecisions';
 
 describe('starterDecisions', () => {
   it('always returns the full set, just reordered (never drops an option)', () => {
@@ -22,5 +22,12 @@ describe('starterDecisions', () => {
 
   it('falls back to a sensible generic lead when the role is unknown', () => {
     expect(pickStarterDecision(null)).toBe(STARTER_DECISIONS[1]); // "Where should AI take work off my team first?"
+  });
+
+  it('uses the same canonical decisions for onboarding lanes', () => {
+    expect(starterDecisionForLane('economics')).toBe(STARTER_DECISIONS[0]);
+    expect(starterDecisionForLane('tools')).toBe(STARTER_DECISIONS[2]);
+    expect(starterDecisionForLane('orchestration')).toBe(STARTER_DECISIONS[1]);
+    expect(starterDecisionForLane(null)).toBe(STARTER_DECISIONS[1]);
   });
 });

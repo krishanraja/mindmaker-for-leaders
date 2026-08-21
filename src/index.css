@@ -1,12 +1,106 @@
-@font-face {
-  font-family: 'Gobold Bold';
-  src: url('/fonts/Gobold-Bold.woff2') format('woff2');
-  font-weight: 700;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* CTRL typography canon: one Segoe family for every human-facing surface.
+   Display and Text are optical cuts of the same family, so hierarchy comes
+   from weight, scale and spacing rather than a competing second typeface.
+   The system face is reserved for compact evidence and machine metadata. */
+:root {
+  --font-ctrl-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-ctrl-text: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-ctrl-system: SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+}
+
+.mymu-surface {
+  --onboarding-bg: #0a0908;
+  --onboarding-fg: #f5f1ea;
+  --onboarding-accent-a: #ec4899;
+  --onboarding-accent-b: #f97316;
+  --onboarding-action: #f5f1ea;
+  --onboarding-action-ink: #0a0908;
+  --onboarding-fg-03: color-mix(in srgb, var(--onboarding-fg) 3%, transparent);
+  --onboarding-fg-08: color-mix(in srgb, var(--onboarding-fg) 8%, transparent);
+  --onboarding-fg-15: color-mix(in srgb, var(--onboarding-fg) 15%, transparent);
+  --onboarding-fg-20: color-mix(in srgb, var(--onboarding-fg) 20%, transparent);
+  --onboarding-fg-25: color-mix(in srgb, var(--onboarding-fg) 25%, transparent);
+  --onboarding-fg-28: color-mix(in srgb, var(--onboarding-fg) 28%, transparent);
+  --onboarding-fg-32: color-mix(in srgb, var(--onboarding-fg) 32%, transparent);
+  --onboarding-fg-35: color-mix(in srgb, var(--onboarding-fg) 35%, transparent);
+  --onboarding-fg-38: color-mix(in srgb, var(--onboarding-fg) 38%, transparent);
+  --onboarding-fg-45: color-mix(in srgb, var(--onboarding-fg) 45%, transparent);
+  --onboarding-fg-48: color-mix(in srgb, var(--onboarding-fg) 48%, transparent);
+  --onboarding-fg-52: color-mix(in srgb, var(--onboarding-fg) 52%, transparent);
+  --onboarding-fg-55: color-mix(in srgb, var(--onboarding-fg) 55%, transparent);
+  --onboarding-fg-68: color-mix(in srgb, var(--onboarding-fg) 68%, transparent);
+  --onboarding-fg-75: color-mix(in srgb, var(--onboarding-fg) 75%, transparent);
+  --onboarding-fg-78: color-mix(in srgb, var(--onboarding-fg) 78%, transparent);
+  --onboarding-fg-80: color-mix(in srgb, var(--onboarding-fg) 80%, transparent);
+  --onboarding-fg-85: color-mix(in srgb, var(--onboarding-fg) 85%, transparent);
+  --onboarding-fg-88: color-mix(in srgb, var(--onboarding-fg) 88%, transparent);
+  color-scheme: dark;
+  font-feature-settings: 'kern', 'liga', 'calt';
+  overscroll-behavior: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mymu-surface {
+    transition-duration: 0s !important;
+  }
+}
+
+.font-ctrl-display,
+.font-mymu-serif {
+  font-family: var(--font-ctrl-display);
+}
+
+.font-ctrl-text {
+  font-family: var(--font-ctrl-text);
+}
+
+.font-ctrl-system,
+.font-mymu-mono {
+  font-family: var(--font-ctrl-system);
+}
+
+.mymu-range {
+  height: 32px;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mymu-range::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--onboarding-fg, #f5f1ea) 24%, transparent);
+}
+
+.mymu-range::-webkit-slider-thumb {
+  width: 28px;
+  height: 28px;
+  margin-top: -13px;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--onboarding-accent-a, #ec4899), var(--onboarding-accent-b, #f97316));
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--onboarding-accent-a, #ec4899) 12%, transparent);
+}
+
+.mymu-range::-moz-range-track {
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--onboarding-fg, #f5f1ea) 24%, transparent);
+}
+
+.mymu-range::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--onboarding-accent-a, #ec4899), var(--onboarding-accent-b, #f97316));
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--onboarding-accent-a, #ec4899) 12%, transparent);
+}
 
 @layer base {
   /* ============================================================
@@ -90,14 +184,14 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-ctrl-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
   }
   
   .brand-ctrl {
-    font-family: 'Space Grotesk', 'Gobold Bold', sans-serif;
+    font-family: var(--font-ctrl-display);
     letter-spacing: 0.08em;
     font-weight: 600;
   }

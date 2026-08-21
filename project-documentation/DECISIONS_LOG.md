@@ -1,10 +1,54 @@
 # Decisions Log
 
-Key architectural and product decisions with rationale.
+Status: Reference
 
-**Last reconciled:** 2026-07-26 (drift-check pass: added Decisions 61-68, covering everything shipped after Decision 60).
+**Last reconciled:** 2026-08-20 (Decision 87 closes two anonymous definer paths; Decision 86 makes object readback the proof of production state).
 
-> This is a decision record kept on purpose. Architectural decisions below remain accurate. Two product decisions are now SUPERSEDED by later ones: any early decision framing CTRL as "Clarity for Leaders / decision speed" is superseded by the LOCKED AI-native positioning (2026-06-19: build/orchestrate/productize/go-to-market the AI-native version of your business), and any decision specifying the light/Apple design system is superseded by the globally dark `ctrl-ds` instrument palette (PR #186). Canonical current sources: `docs/MAIN-APP-POLISH-SPEC.md`, `docs/KIT-REDESIGN-SPEC.md`, root `README.md`.
+**Last reconciled:** 2026-08-20 (Decision 85 makes outward copy affirmational and sets the disclosure ladder; Decisions 82 to 84 hold the personal frame structurally).
+
+> This is an append-only decision record. IDs are unique and never reused. Earlier framing may be superseded by a later decision; the current product and architecture sources are [`docs/current/`](../docs/current/README.md). Dated outcomes record what was true at that decision point, not the current release state.
+
+---
+
+## Decision 72: The Briefing Is One Premium Door with One Optional Learning Loop (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Make the audio briefing a signature one-click product surface. The header control shows honest briefing state, duration or progress, and opens or generates the real briefing without an intermediate workflow. The responsive briefing uses a 462px desktop drawer and a near-full-height mobile sheet, keeps playback and talk-back primary, and collapses detailed segment notes by default. At most one real pending memory verification appears per meaningful session. A correction can be spoken or typed, is mirrored back before persistence, and is written through the existing verified-memory path only after explicit confirmation, with a short undo window. Settings remains permanently reachable and exposes the existing privacy, memory, transcript, delivery, and tuning controls.
+**Rationale**: The product serves overwhelmed leaders. Backend sophistication should appear as a calm, high-quality instrument rather than more destinations, forms, or duplicate training surfaces. Briefing playback earns the primary visual treatment; conversation and one high-value clarification enrich CTRL without interrupting consumption or turning the product into profile administration.
+**Trade-off**: Lower-priority transcript detail and memory management are progressively disclosed, and the product asks fewer questions, in exchange for a clearer daily habit, higher trust, and cleaner signals when the user does contribute judgment.
+**Founder lock**: Krish approved the fitted briefing direction, selected typography Option E, and then said `go` to port the approved interaction into the product.
+**Outcome**: The real product shell now includes the premium briefing control and responsive sheet, existing briefing conversation pipeline, one-question verified-memory loop, permanent Settings access, and product-wide Option E tokens. Browser verification passed at 1280x720, 390x844, and 320x568 with zero horizontal overflow, 44px actions, keyboard Escape and focus restoration, correction proposal, keep, and undo states. Targeted ESLint, typecheck with zero current errors, focused conversation tests, standards, the 2,782-module production build, and 3/3 prerender routes pass. Commit, preview deployment, and production remain separate gates.
+
+---
+
+## Decision 71: CTRL Uses One Segoe Family for Its Human-Facing Voice (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Adopt Option E from `TYPOGRAPHY-COMBINATIONS-v1`. Use `Segoe UI Variable Display` for headings and display statements, and `Segoe UI Variable Text` for body copy, navigation, inputs and actions. These are optical cuts of one family, so hierarchy comes from scale, weight and spacing rather than a competing typeface. Reserve the system-mono token for evidence, state, timestamps and compact metadata. Keep the CTRL wordmark as a brand-mark exception. Existing Make Your Mind Up typography utility names remain migration aliases but resolve to this selected canon.
+**Rationale**: The founder rejected both a serif and sans pairing and an all-serif system because the page felt visually divided or strange. Option E keeps the warmth and clarity of the preferred briefing treatment without asking two unrelated families to coexist. The display and text cuts provide enough hierarchy while preserving one visual grammar from onboarding through the briefing and into CTRL.
+**Trade-off**: Less overt editorial contrast in exchange for stronger coherence, more reliable wrapping, broader native rendering, and a simpler system to carry across every surface.
+**Founder lock**: After reviewing six controlled combinations with identical copy, spacing, color and hierarchy, Krish replied `e`.
+**Outcome**: `BRIEFING-PULSE-v1` and the canonical product tokens now use the selected system. Browser verification passed at 1440x900, 1280x720, 390x844 and 320x568 with zero horizontal overflow, 44px actions, coherent dynamic memory states and empty console logs. Standards, production build and prerender pass. Commit, deployment and production remain separate gates.
+**Supersedes**: Decision 70. Its reopened review note remains the historical record of why the serif canon was rejected.
+
+---
+
+## Decision 70: CTRL Uses the Editorial Serif as Its Complete Human Voice (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Lock one semantic typography hierarchy across Make Your Mind Up and CTRL. Georgia is the editorial voice for questions, explanations, recommendations, reflections, proposed memories and conversational actions. Inter/system sans is reserved for operational chrome such as navigation, Settings and utility controls. SF Mono or the system-mono token is reserved for evidence, state, timestamps and compact metadata. Do not use the serif as a headline accent directly paired with sans inside the same advisory thought.
+**Rationale**: The warm serif in the audio briefing carried the human, curious quality the founder wanted to preserve from Make Your Mind Up. A headline-only application made it look pasted onto an Inter interface. Giving the serif ownership of the complete human voice makes the product feel intentional and continuous, while the sans and mono families retain clear operational jobs.
+**Trade-off**: Tighter semantic discipline and less freedom to mix type for decoration, in exchange for a recognizable CTRL voice that stays coherent across onboarding, briefings, decisions and reflection.
+**Founder lock**: Krish said, "I still feel like the fonts you used in the audio briefing 'your judgement stays in the loop' was a nice aesthetic, can you make that the canon?" He rejected the first headline-only pairing because the fonts did not work together visually; the locked rule therefore applies the serif to the full human-language surface, not headings alone.
+**Outcome**: Canonical tokens and utility aliases are defined in `src/index.css`; `BRIEFING-PULSE-v1` applies the rule across the First Lens and audio briefing. Production build and prerender pass. Full app-surface adoption belongs to the implementation pass; commit, deployment and production remain separate gates.
+**REOPENED REVIEW NOTE**: The founder rejected the full-serif application immediately after rendered review: "no, now it all looks weird. the entire font system looks totally off." Decision 70 is therefore not operative and no typography canon is currently locked. The provisional product tokens were removed. `TYPOGRAPHY-COMBINATIONS-v1` now presents six controlled systems for selection; the eventual founder choice must supersede this decision explicitly.
+
+---
+
+## Decision 69: The First CTRL Landing Proves the Make Your Mind Up Handoff with One Personal Lens (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Lock `HOME-FIRST-LENS-v3` as the first authenticated Home state after the public Make Your Mind Up flow. The state shows one premium relationship visual, reflects only the consented handoff fields (`q2`, `q4`, `anxietyLane`, and `archetypeTitle`), asks for one-tap confirmation, and offers one relevant starter decision. The user's raw delayed-decision sentence remains private and does not cross the handoff. Once confirmed or dismissed, the stable Home returns to its normal daily state.
+**Rationale**: The clearer Attention Tape hierarchy was directionally right, but a text-first feed made the transition feel like a downgrade from personal reflection to an RSS reader. The stabilized CTRL visual language earns its place when it proves interpretation, not when it decorates equal-weight cards. The first landing should make the user feel that CTRL understood the useful shape of what they shared and immediately put it to work.
+**Trade-off**: A distinct one-time Home state and a reusable lens renderer to maintain vs forcing the normal returning-user feed to carry an onboarding job it cannot honestly perform.
+**Founder lock**: Krish reviewed the rendered desktop and mobile revision on 2026-08-10 and responded, "looks great".
+**Outcome**: Approved for local implementation and preview verification. Production release remains a separate gate.
 
 ---
 
@@ -523,3 +567,113 @@ Key architectural and product decisions with rationale.
 **Rationale**: Settings had drifted from the rest of the app's polish and had a genuine functional bug (two tuning UIs, two tables, no sync).
 **Trade-off**: A shared panel component + new design primitives (`Surface`/`Eyebrow`/`SettingRow`/`SheetFooterBar`) to build vs eliminating a duplicate-source-of-truth bug and a broken navigation.
 **Outcome**: ✅ Live. Typecheck 0 new errors, 337 unit tests pass, build + prerender green.
+
+## Decision 73: One Product, One Domain, One Warm Front Door (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: CTRL is the product; Make Your Mind Up is its warm public onboarding experience; `makeyourmindup.ai` is the canonical domain. The former CTRL hostname permanently redirects to it.
+**Rationale**: Two names and two destinations made the user reconstruct the product boundary immediately after an intentionally simple intake. The data and experience are one journey.
+**Trade-off**: Retire the separate onboarding product identity and move its domain versus preserve two independently legible products that duplicate context and navigation.
+**Outcome**: Implemented across metadata, public copy, handoff, documentation, and the production cutover.
+
+## Decision 74: First Lens Is the Onboarding Payoff; Blind Spot Replaces Skill Builder as the Promoted Development Surface (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: A consented handoff lands on one premium First Lens and one useful first decision. Blind Spot becomes the promoted leadership-development experience. The Kit is retired and skill-building remains only as nested portability machinery where still useful.
+**Rationale**: Overwhelmed leaders should not finish a calm onboarding flow and meet a feature grid, setup project, or workflow builder. One grounded reflection compounds judgement without asking the leader to design the tool.
+**Trade-off**: Remove promotional surface area for already-built machinery versus preserve more visible features that make the product harder to understand.
+**Outcome**: First Lens, Blind Spot, navigation, routes, copy, and plan matrix aligned. `/kit*` redirects to `/try`.
+
+## Decision 75: One Curated Pool, with Control Center as a Read-Only Source Adapter (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Control Center contributes high-fit, source-backed items inside `live-headlines`; it does not create another feed. The bridge uses a publishable key constrained by read-only RLS, never a cross-project service-role key.
+**Rationale**: CTRL already has ranking, clustering, provenance, category motifs, personalization, audio, and feedback. Duplicating any of those around Control Center would create competing truth and UI.
+**Trade-off**: A deliberately narrow adapter and fail-closed boundary versus privileged server access and a broader but riskier integration.
+**Outcome**: Production probe gathered 267 items, retained 211 AI-native items, and included 11 Control Center items. A forced prewarm produced a fresh 10-card cache.
+
+## Decision 76: Audio Is a Conversational Product Surface, Not a Play Button (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: The briefing has a premium persistent control, read and listen states, human error recovery, and spoken or typed follow-up answered from the current briefing with citations and voice response.
+**Rationale**: Audio is the lowest-friction way for a busy leader to receive value. Treating it as plain text in the header undersold a signature capability and broke the human feeling inherited from Make Your Mind Up.
+**Trade-off**: More state, accessibility, TTS, and ownership contracts to maintain versus a briefing users can genuinely converse with.
+**Outcome**: Shipped with ownership checks on paid synthesis, rate limits, signed URL reuse, and responsive verified states.
+
+## Decision 77: Delivery Must Converge on Retry and Cron Must Not Depend on a Hidden Service-Role Setting (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Normalize and deduplicate subscriptions and interests; claim emails and daily deliveries atomically; reuse audio; serialize Blind Spot confirmation; and authenticate pg_cron through a Vault-generated shared secret mirrored to Edge Function secrets.
+**Rationale**: No-login delivery is a core product mode. Retries, concurrent tabs, and scheduler overlap cannot create duplicate sends or learning records. Production inspection also proved the legacy Postgres service-role setting was absent, leaving the old scheduler unable to authenticate.
+**Trade-off**: More explicit claims, indexes, RPCs, and secret synchronization versus silent duplicate delivery or a scheduler that only appears armed.
+**Outcome**: Additive migrations and fifteen reviewed functions deployed. Two repaired jobs are active, the Vault and Edge secret are synchronized, and live contract checks pass.
+
+## Decision 78: Option E Is Applied Across the Product (2026-08-10)
+**Date**: 2026-08-10
+**Decision**: Operationalise Decision 71 across active product, pricing, email, generated share cards, prototypes, and design tokens. Use Segoe UI Variable Display and Text as optical cuts of one family. Reserve mono for compact evidence metadata.
+**Rationale**: Mixed display, body, and monospace families made briefing questions, navigation, and learning prompts feel assembled rather than designed. One optical family preserves the human display character without visual conflict.
+**Trade-off**: Give up more visibly eclectic font pairings versus a coherent, native, fast-loading product system.
+**Outcome**: Applied across active app, pricing, email, generated share cards, prototypes, and design tokens.
+
+## Decision 79: Blind Spot Is a Private Evidence Instrument, Not an AI Diagnosis (2026-08-11)
+**Date**: 2026-08-11
+**Decision**: Replace the long Make Your Mind Up result card with one CTRL trusted-advisor instrument. It leads with `Between us`, one direct `My read` headline of eight words or fewer, visible evidence strength, exact dated anchors, one tension relationship, one 15-minute experiment, `Not quite`, and a bounded voice or text advisor. A pattern requires one current verified intention and two independent recurrence records. Anything thinner is a tension, not a diagnosis. Confirmation reloads and requalifies every owner-scoped source before one atomic pattern, evidence-link, and experiment write. Rejection stores only a reason and evidence fingerprint and suppresses the unchanged read. The experiment returns once through the existing briefing learning slot; Memory remains the only history surface.
+**Rationale**: The old surface was text-heavy, visually disconnected from CTRL, overly polite, and weak about why it had reached its conclusion. The product needs the candour of a trusted private advisor while making its evidence boundary obvious. Backend sophistication should create confidence and follow-through without adding another dashboard, score, or workflow.
+**Trade-off**: More qualification, signing, ownership, persistence, expiry, and fixture machinery behind one screen in exchange for a simpler front end, honest evidence claims, safe correction, and one learning loop instead of duplicate features.
+**Founder lock**: Krish explicitly approved `BLIND-SPOT-INSTRUMENT-v1` on 2026-08-11.
+**Outcome**: Live from PR #366 at production source revision `0f20baf2437667c3719c94f1c16d04bb08b42023`. The migration and Edge Function v3 are deployed with owner-scoped RLS, service-role-only mutation RPCs, and JWT enforcement. The full 37-case Blind Spot suite passes on `makeyourmindup.ai` across the four approved viewports.
+
+## Decision 80: Commercial Agents Use One Current Authority and Stop at the Action Boundary (2026-08-11)
+**Date**: 2026-08-11
+**Decision**: Consolidate the buyer, offer, proof, messaging, objections, and claim rules in `docs/current/commercial.md`, with `public/.well-known/product.json` as its machine-readable companion. Autonomous marketing and sales agents may research, qualify, plan, draft, and generate attributed links from those sources. Drafting never authorizes sending, publishing, discounts, contracts, or external system changes. Volatile facts are reverified at action time, unsupported proof is omitted, and superseded commercial files are historical only.
+**Rationale**: A large set of plausible commercial briefs had become a hidden source of false confidence. They contradicted shipped Blind Spot evidence, overstated encryption and setup time, promised a precise Decision Watch cadence, and made a global claim about separate Mindmaker services. An agent needs less source material, clearer precedence, and an explicit authority boundary to be commercially useful without inventing certainty.
+**Trade-off**: Retire several familiar briefs from the current authority path and require action-time verification for volatile claims in exchange for one coherent product story, defensible evidence, and safer autonomous operation.
+**Outcome**: Current documentation, machine truth, agent instructions, public LLM guidance, indexes, and automated drift checks are aligned around the same contract.
+
+## Decision 81: Company Recognition Is the Onboarding Payoff, Not Hidden Homework (2026-08-11)
+**Date**: 2026-08-11
+**Decision**: Restore the public onboarding's company-recognition moment as one truthful CTRL instrument. One optional field accepts a work email or LinkedIn profile. The backend resolves person and company context, checks fresh company-specific signals, deterministically rejects mismatches, clusters corroborating coverage, and returns at most three linked signals with visible source strength. The loading state names work in progress but claims no provider success. The result offers one primary `Yes, this is my world` action and one quiet correction. Only the confirmed, server-held dossier crosses the idempotent handoff into Memory. No-login result and daily briefings use those company signals before filling from the single shared curation pool.
+**Rationale**: A generic future-memory result removed the surprising usefulness that made Make Your Mind Up feel intelligent. The oversized static loading mark also advertised waiting without revealing meaningful progress. The product should earn recognition through fresh, inspectable evidence while staying lighter than a profile form or research dashboard.
+**Trade-off**: More provider orchestration, qualification, privacy documentation, failure handling, and handoff fields behind the same simple screen in exchange for a stronger first-value moment and materially better downstream context.
+**Founder override**: Krish explicitly instructed autonomous implementation through merge after reviewing the diagnosis and desired magical company-recognition direction. This instruction is the scoped material-design approval for the release; no invented provider success, speculative company match, or unconfirmed Memory write is permitted.
+**Outcome**: Live from PR #369 at production source revision `b5770194b4646302f47e36655e389f7ec2eb43f8`. The additive migration is recorded remotely as `20260812020209`; all six Edge Functions are ACTIVE at their released versions; the exact-SHA Vercel deployment is READY; and the four synthetic production onboarding journeys pass on `makeyourmindup.ai` across mobile, 320px, desktop, and reduced motion.
+
+## Decision 82: CTRL Is a Private Thinking Instrument for One Person (2026-08-20)
+**Date**: 2026-08-20
+**Decision**: Hold CTRL's shape structurally rather than by positioning. Four boundaries become product contract: one person and one account with no seats, invites, or shared workspaces; no admin console, SSO, or company directory; no meeting recording; and the governing engineering rule that if an IT administrator has to approve it, we do not build it. That rule excludes Google Workspace, Microsoft Graph, workspace-level Slack, calendar read scopes, and anything with an admin consent screen. Delivery reaches the leader only through paths they control alone: email, downloads, clipboard, `.ics`, and read-only MCP running inside their own client. A team-access request is redirected to a Mindmaker engagement, never answered with seats.
+**Rationale**: The enterprise conversation is triggered by the data class a user pours into the product, not by who pays for it. The moment a leader voices an unannounced acquisition, a churn number, or a judgement about a named colleague, CTRL holds confidential company information and third-party personal data, and their employment contract and IT policy bite regardless of marketing. A solo build cannot win a procurement process, and attempting enterprise-ready-lite legitimises the frame it is trying to escape. The absence of what enterprise needs is the only durable answer.
+**Trade-off**: Permanently caps CTRL's account expansion and forecloses the integration surface most competitors lead with, in exchange for a product that never enters a procurement cycle and a category sentence a general counsel can accept without joining the call.
+**Founder lock**: Krish selected the full product scope including the medium items on 2026-08-20, and separately ruled that outward copy carries no exclusion lists or negative framing.
+**Outcome**: Boundaries written into `docs/current/product.md` and into a new `non_goals` block in `public/.well-known/product.json`. Not yet deployed; production remains a separate gate.
+
+## Decision 83: Retention, Billing, and the Ops Sync Match What the Product Claims (2026-08-20)
+**Date**: 2026-08-20
+**Decision**: Close three gaps between shipped claims and shipped behaviour. Schedule `cleanup-expired-data` as the daily `retention-cleanup` pg_cron job and require the Vault-held `ctrl_cron_secret` or the service role key before it runs, since the endpoint previously accepted an unauthenticated POST that could force a retention sweep. Cancel any active Stripe subscription inside `delete-account` before the table cascade, without letting a billing failure block the erasure. Narrow the Google Sheets ops sync to aggregate counts and distributions, so one row is one metric and never one person.
+**Rationale**: Settings offered a 30 or 90 day retention choice and the machinery behind it was complete and correct, but no schedule ever invoked it, so "memories older than N days will be automatically deleted" was false on the live surface. Account deletion left the Stripe subscription running, so a user who asked to be forgotten kept being charged and only a manual operator step fixed it. The ops sync exported full name, email, company, role, phone, and free-text business context for an operational convenience. A product whose case rests on trust cannot carry claims that outrun its code.
+**Trade-off**: The ops sheet stops being a lead list and becomes a metrics surface, and the retention job now deletes data that previously survived by accident, in exchange for three claims that are true when a buyer checks them.
+**Outcome**: `supabase/migrations/20260820120000_retention_cleanup_cron.sql`, the auth gate in `cleanup-expired-data`, the cancellation step in `delete-account`, and aggregate-only formatters in `sync-to-google-sheets`. ROPA activity L, the subprocessor register, and the data retention policy are reconciled. Migration not yet applied to production.
+
+## Decision 84: Memory Holds Personal Data About Its User and Nobody Else (2026-08-20)
+**Date**: 2026-08-20
+**Decision**: Refuse another person's name at the Memory boundary. The extraction prompt instructs the model to refer to third parties by role and to skip any fact whose subject is not the speaker. A new pure `pseudonymiseThirdParties` transform in `guardrails-core.ts` runs before the reject pass on both write paths, rewriting a named person adjacent to a role into the role. The `third_party_identity` reject is widened to drop a fact whose subject is a bare named third party. A service-role `backfill-pseudonymise` function applies the same transform to rows already stored, re-encrypting the shadow payload so the removed name does not survive in ciphertext. Add a session-scoped off the record mode that writes nothing durable and says so, and a Blind Spot burn that deletes a confirmed pattern, its evidence links, and its experiment while keeping only the content-free anchor fingerprint.
+**Rationale**: A leader who says "my CFO is not up to this" hands CTRL personal data about someone who does not know the product exists and cannot exercise any right over it. That was the cleanest legal exposure in the product and the largest part of any general-counsel conversation. Blind Spot separately stored a named, dated, evidenced record of a leader's weaknesses for the life of the account, and rejection only ever suppressed a candidate that had not been saved; the existence of the artifact was the threat, and there was no way to remove it. The guardrail layer was reject-only, so pseudonymisation required a real transform stage rather than a new rule.
+**Trade-off**: More machinery on the write path, a backfill that rewrites stored rows, and a burn that lets a leader delete evidence a future read might have used, in exchange for a defensible answer about whose personal data is held and a Blind Spot a leader is not afraid to confirm.
+**Outcome**: Shipped in `_shared/guardrails-core.ts`, `_shared/training-schema.ts`, `_shared/training-loader.ts`, `training/anchor.yaml`, `extract-user-context`, `memory-crud`, `blind-spot`, the new `backfill-pseudonymise` function, `supabase/migrations/20260820130000_blind_spot_burn.sql`, and `OffTheRecordContext`. Twenty-seven cases pass in `src/__tests__/training.test.ts`. The claim that CTRL holds personal data about its user and nobody else may not be published until the backfill is verified in production.
+
+## Decision 85: Outward Copy Is Affirmational, and Disclosure Answers at the Altitude Asked (2026-08-20)
+**Date**: 2026-08-20
+**Decision**: Adopt one disclosure principle across every commercial surface: answer the question that was asked, at the altitude it was asked, then return to the value. Never pre-empt a trust topic, never evade one asked directly, always land back on value. Publish Tier 1 answers and the notebook test at `/faq`; keep Tier 2 and Tier 3, including the incident account and the security-questionnaire exit, in `docs/current/commercial.md` for use on request. Reorder `/trust` to open on the controls in place, keeping every absence, the incident, and the DPA gap on the page below. Public copy carries no exclusion list and no negative framing; the anti-consultant lines are retired because they collide with the engagement redirect.
+**Rationale**: A pre-emptive disclosure opens a thread that then has to be held, and raising SOC 2 or a subprocessor register before a buyer does signals that we think it is a problem. A buyer who has to ask twice, though, stops believing the first answer, so evasion costs more than disclosure. Precise positive qualification filters exactly as hard as a list of exclusions and reads as confidence rather than defensiveness. The privacy of the product is a benefit and the reason a leader would use CTRL rather than a shared doc, so it belongs in the pitch rather than in a policy page.
+**Trade-off**: Less pre-emptive reassurance for a security-minded visitor who never asks, in exchange for a front door that sells the product and a complete honest answer for anyone who digs.
+**Founder lock**: Krish ruled on 2026-08-20 that outward copy is affirmational only with no exclusion block, that `/trust` is kept and reordered rather than removed, and that public copy is edited additively rather than rewritten.
+**Outcome**: New `public/faq.html` with its `vercel.json` rewrite and sitemap entry, reordered `public/trust.html`, additive changes in `publicCopy.ts` rendered through `PublicFooter`, personal-email and personal-card lines at signup and checkout, public-information naming on the onboarding recognition card, and the ladder recorded in `docs/current/commercial.md` and `docs/agent-instructions/marketing-sales.md`.
+
+## Decision 86: Production State Is Proved by Object Readback, Never by the Migration Ledger (2026-08-20)
+**Date**: 2026-08-20
+**Decision**: Treat `supabase_migrations.schema_migrations` as unusable evidence for this project and prove applied state by querying the object a migration creates. Apply migrations through the reviewed management-API path, which records a named version, rather than raw SQL. Record every applied object, its owning migration, and the readback that confirmed it in `docs/current/release-state.md`.
+**Rationale**: The ledger holds 85 rows, 79 of which have no file in this repository, while 157 repository files are absent from it. Preparing to schedule the retention sweep exposed what that hides: `20260125000001_memory_encryption.sql` had been applied only in part. The encryption columns landed; `user_memory.retention_expires_at` and its BEFORE INSERT trigger did not, while all three functions that reference the column did. The retention control was therefore not dormant, as the previous entry in release state recorded, but raising `42703` on every call, including through a live trigger that made a leader's retention setting fail to save. No amount of reading the ledger, the repository, or the previous documentation would have surfaced that. One query against `information_schema.columns` did.
+**Trade-off**: Every release now carries a readback step per object rather than a single ledger check, in exchange for a documented state that is true rather than plausible.
+**Founder lock**: Krish instructed on 2026-08-20 to complete the migrations against production using the management API.
+**Outcome**: Four migrations applied and verified by object readback: `repair_memory_retention_column`, `blind_spot_burn`, `retention_cleanup_cron`, and `revoke_anon_memory_maintenance`. The retention repair was safe because all 109 `user_memory_settings` rows hold `retention_days IS NULL`, so no row gained an expiry and nothing became eligible for deletion; 196 memory rows, 0 with an expiry, confirmed after applying. Twelve cron jobs now active. The application bundle and Edge Functions remain on the prior revision and are the open delivery gate.
+
+## Decision 87: Two Anonymous Definer Paths Closed, and the Sweep That Missed Them Corrected (2026-08-20)
+**Date**: 2026-08-20
+**Decision**: Revoke `EXECUTE` from `PUBLIC`, `anon`, and `authenticated` on `get_memory_sweep_batch` and `cleanup_expired_memories`, granting only `service_role`. Widen the audit that finds this class of defect from read-shaped function names to every SECURITY DEFINER function reachable through PostgREST.
+**Rationale**: `20260820090000_revoke_anon_definer_reads.sql` closed four SECURITY DEFINER functions that returned a named user's rows, but it searched by read-shaped names and so missed two functions named for maintenance. `get_memory_sweep_batch` bypasses row-level security and returned every account's `user_id` with `last_fact_change` and `last_synthesized_at`, so an unauthenticated POST enumerated the user base and its per-account activity timing. `cleanup_expired_memories` deletes across every account, so any caller could force a global retention sweep; no row was eligible only because every retention window was still null, which would have stopped being true the moment one leader chose 30 or 90 days. Both are the same class as the May to June 2026 RLS incident.
+**Trade-off**: None material. Both functions are invoked only by Edge Functions holding the service role, so application behaviour is unchanged.
+**Outcome**: `20260820150000_revoke_anon_memory_maintenance.sql` applied 2026-08-20 and verified by `has_function_privilege` readback for `anon`, `authenticated`, and `service_role` on all three maintenance and mutation functions.

@@ -9,8 +9,6 @@ import { MemoryErrorBoundary } from '@/components/memory/MemoryErrorBoundary';
 import { MemoryList } from '@/components/memory/MemoryList';
 import { MemoryDetailSheet } from '@/components/memory/MemoryDetailSheet';
 import { AddMemorySheet } from '@/components/memory/AddMemorySheet';
-import { PrivacyControlsPanel } from '@/components/memory/PrivacyControlsPanel';
-import { ExportImportPanel } from '@/components/memory/ExportImportPanel';
 import { VerificationSwipeStack } from '@/components/memory/VerificationSwipeStack';
 import { ContextFileButton } from '@/components/memory/ContextFileButton';
 import { LibraryTab } from '@/components/library/LibraryTab';
@@ -174,7 +172,7 @@ export default function MemoryCenter() {
           <button
             type="button"
             onClick={openFlow}
-            className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.07] px-2.5 py-1.5 text-[11.5px] text-foreground transition-colors hover:bg-accent/[0.12]"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.07] px-3 py-2 text-[11.5px] text-foreground transition-colors hover:bg-accent/[0.12]"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent))]" />
             <span>
@@ -284,13 +282,11 @@ export default function MemoryCenter() {
               { v: 'brain', label: 'Graph' },
               { v: 'memories', label: 'All facts' },
               { v: 'library', label: `Library${libraryArtifacts.length > 0 ? ` (${libraryArtifacts.length})` : ''}` },
-              { v: 'privacy', label: 'Privacy' },
-              { v: 'data', label: 'Data' },
             ].map((t) => (
               <TabsTrigger
                 key={t.v}
                 value={t.v}
-                className="rounded-lg px-2.5 py-1.5 text-[11.5px] font-[550] text-muted-foreground data-[state=active]:bg-secondary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                className="min-h-11 rounded-lg px-3 py-2 text-xs font-[550] text-muted-foreground data-[state=active]:bg-secondary data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
                 {t.label}
               </TabsTrigger>
@@ -313,13 +309,6 @@ export default function MemoryCenter() {
             <LibraryTab />
           </TabsContent>
 
-          <TabsContent value="privacy" className="scrollbar-hide mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
-            <PrivacyControlsPanel />
-          </TabsContent>
-
-          <TabsContent value="data" className="scrollbar-hide mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
-            <ExportImportPanel />
-          </TabsContent>
         </Tabs>
       </div>
 

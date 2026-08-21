@@ -1,9 +1,9 @@
 /**
  * MindmakerOS shared semantic token contract (portfolio source of truth).
  *
- * Three sibling products share this contract: CTRL (ctrl.themindmaker.ai, the
- * dark cockpit), Mindmaker (themindmaker.ai, the light consulting room), and
- * Make Your Mind Up (makeyourmindup.ai, the front door). Each app keeps the
+ * CTRL and Mindmaker share this contract. CTRL lives at makeyourmindup.ai as
+ * the dark cockpit, while Mindmaker (themindmaker.ai) remains the light
+ * consulting room. Each app keeps the
  * SEMANTIC names and overrides only the brand PRIMITIVE values + theme mode.
  * Values are HSL triplets (no hsl() wrapper) so Tailwind wraps them as
  * hsl(var(--token)). Every token a Tailwind theme references must be defined

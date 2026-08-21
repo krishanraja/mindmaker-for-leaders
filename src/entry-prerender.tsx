@@ -4,12 +4,12 @@
 // The output HTML is for crawlers/LLM fetchers; the client app still mounts on top.
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticRouter } from 'react-router-dom/server';
-import { ClarityHome } from '@/components/landing/ClarityHome';
+import { CtrlOnboarding } from '@/components/onboarding/CtrlOnboarding';
 import AgentsPage from '@/pages/Agents';
 import TryPage from '@/pages/Try';
 
 const ROUTES: Record<string, () => JSX.Element> = {
-  '/': ClarityHome,
+  '/': CtrlOnboarding,
   '/agents': AgentsPage,
   '/try': TryPage,
 };

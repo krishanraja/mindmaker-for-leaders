@@ -1,21 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   Home,
-  Zap,
   Brain,
   Scale,
-  Radio,
-  ArrowUpRight,
-  Target,
-  Map as MapIcon,
   Settings,
   Shield,
   LogOut,
   User,
-  History,
-  ChevronRight,
+  Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -26,32 +20,22 @@ import { PageTransition } from './PageTransition';
 import { BriefingHeaderButton } from '@/components/briefing/BriefingHeaderButton';
 import { TrackRecordHeaderButton } from '@/components/track-record/TrackRecordHeaderButton';
 import { useBriefingContext } from '@/contexts/BriefingContext';
+import { useSettingsSheet } from '@/contexts/SettingsSheetContext';
 
 // The audio mini-player floats `fixed` near the bottom; reserve its height on the
 // content column so no page's content hides under it (mirrors MobileFrame).
 const MINI_PLAYER_CLEARANCE = '60px';
 
-// PRIMARY nav: the SAME 3 stable tabs as the mobile BottomNav cockpit model
-// (Home / Decisions / Memory), in the same order and with the same icons, so
+// PRIMARY nav: the SAME four plain jobs as the mobile BottomNav cockpit model
+// (Today / Decide / Blind spot / Memory), in the same order and with the same icons, so
 // desktop and mobile read as one system (CTRL-SYSTEM-SPEC s1). Track record is
-// folded into Decisions (a Now|History toggle), so the spine is now three tabs.
+// folded into Decisions (a Now|History toggle), so the spine stays four jobs.
 // Plain names: every tab says exactly what it is.
 const primaryNavItems = [
-  { path: '/dashboard', search: '', icon: Home, label: 'Home', shortcut: 'H' },
-  { path: '/decision', search: '', icon: Scale, label: 'Decisions', shortcut: 'D' },
+  { path: '/dashboard', search: '', icon: Home, label: 'Today', shortcut: 'H' },
+  { path: '/decision', search: '', icon: Scale, label: 'Decide', shortcut: 'D' },
+  { path: '/blind-spot', search: '', icon: Eye, label: 'Blind spot', shortcut: 'S' },
   { path: '/memory', search: '', icon: Brain, label: 'Memory', shortcut: 'B' },
-];
-
-// SECONDARY surfaces: still one click away, just demoted out of the primary spine.
-// No routes removed; everything stays reachable. Track record keeps its own route
-// here for deep links even though it now also lives inside the Decisions tab.
-const secondaryNavItems = [
-  { path: '/dashboard', search: '?view=edge', icon: Zap, label: 'Edge', shortcut: 'E' },
-  { path: '/briefing', search: '', icon: Radio, label: 'Briefing', shortcut: 'R' },
-  { path: '/track-record', search: '', icon: History, label: 'Track record', shortcut: 'Y' },
-  { path: '/context', search: '', icon: ArrowUpRight, label: 'Export', shortcut: 'X' },
-  { path: '/goals', search: '', icon: Target, label: 'Goals', shortcut: 'G' },
-  { path: '/decision-map', search: '', icon: MapIcon, label: 'Decision Map', shortcut: 'M' },
 ];
 
 const accountItems = [
@@ -76,20 +60,6 @@ function DesktopRail() {
   const firstName = displayName ?? 'You';
   const initials = firstName.slice(0, 2).toUpperCase();
 
-  // Radical focus: the default sidebar is the 3 primary tabs; the secondary
-  // surfaces sit behind a collapsed "More" (they are also all reachable via the
-  // command palette). Auto-open More when the leader is already on one of them so
-  // the active item is never hidden.
-  const onSecondary = secondaryNavItems.some((item) =>
-    item.search
-      ? location.pathname + location.search === item.path + item.search
-      : location.pathname === item.path && !location.search,
-  );
-  const [moreOpen, setMoreOpen] = useState(onSecondary);
-  useEffect(() => {
-    if (onSecondary) setMoreOpen(true);
-  }, [onSecondary]);
-
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-card/30 backdrop-blur-md border-r border-border/60 flex flex-col z-40">
       {/* Brand */}
@@ -101,8 +71,8 @@ function DesktopRail() {
         <BrandLockup />
       </button>
 
-      {/* Nav. The PRIMARY group is the 4 stable tabs (matches mobile); the
-          secondary + account groups are demoted but always one click away. */}
+      {/* Four stable jobs. Specialist routes still accept deep links and
+          contextual entry, but they do not compete for attention here. */}
       <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto scrollbar-hide">
         {primaryNavItems.map((item) => {
           const Icon = item.icon;
@@ -125,7 +95,7 @@ function DesktopRail() {
                 }
               }}
               className={cn(
-                'group relative w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium',
+                'group relative min-h-11 w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium',
                 'transition-colors duration-100',
                 isActive
                   ? 'bg-accent/15 text-accent'
@@ -167,46 +137,6 @@ function DesktopRail() {
           );
         })}
 
-        {/* SECONDARY surfaces (demoted out of the primary 3, still reachable):
-            collapsed by default so the sidebar stays focused. */}
-        <button
-          type="button"
-          onClick={() => setMoreOpen((v) => !v)}
-          aria-expanded={moreOpen}
-          className="w-full flex items-center justify-between px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-        >
-          <span>More</span>
-          <ChevronRight className={cn('h-3 w-3 transition-transform', moreOpen && 'rotate-90')} />
-        </button>
-        {moreOpen && secondaryNavItems.map((item) => {
-          const Icon = item.icon;
-          const fullPath = item.path + item.search;
-          const isActive = item.search
-            ? location.pathname + location.search === fullPath
-            : location.pathname === item.path && !location.search;
-          return (
-            <button
-              key={item.label}
-              onClick={() => {
-                if (location.pathname === item.path) {
-                  setSearchParams(item.search ? new URLSearchParams(item.search) : {});
-                } else {
-                  navigate({ pathname: item.path, search: item.search });
-                }
-              }}
-              className={cn(
-                'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-accent/15 text-accent'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50',
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-
         <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
           Account
         </p>
@@ -218,7 +148,7 @@ function DesktopRail() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                'min-h-11 w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-accent/15 text-accent'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50',
@@ -250,7 +180,7 @@ function DesktopRail() {
           <button
             type="button"
             onClick={signOut}
-            className="p-1.5 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             aria-label="Sign out"
             title="Sign out"
           >
@@ -266,10 +196,12 @@ type DesktopTopBarProps = {
   title?: React.ReactNode;
   eyebrow?: React.ReactNode;
   actions?: React.ReactNode;
+  showCommandPalette?: boolean;
 };
 
-function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
+function DesktopTopBar({ title, eyebrow, actions, showCommandPalette = true }: DesktopTopBarProps) {
   const location = useLocation();
+  const { openSheet } = useSettingsSheet();
   // Play belongs to Home (the daily-read door), matching the mobile header. Off
   // Home the top bar carries only that page's own actions; the briefing stays
   // reachable from Home and the "Briefing" rail item.
@@ -286,15 +218,17 @@ function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
               </p>
             )}
             {title && (
-              <h1 className="text-sm font-semibold text-foreground leading-none truncate">
+              <h1 className="font-ctrl-display truncate text-[15px] font-semibold leading-[1.2] tracking-[-0.01em] text-foreground">
                 {title}
               </h1>
             )}
           </div>
         )}
-        <div className="flex-1 max-w-md">
-          <CommandPaletteTrigger />
-        </div>
+        {showCommandPalette && (
+          <div className="flex-1 max-w-md">
+            <CommandPaletteTrigger />
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         {/* Your audio digest lives on Home (matches the mobile header). */}
@@ -302,6 +236,15 @@ function DesktopTopBar({ title, eyebrow, actions }: DesktopTopBarProps) {
         {/* The track-record ring lives on the Decisions tab (matches mobile). */}
         {isDecision && <TrackRecordHeaderButton />}
         {actions}
+        <button
+          type="button"
+          onClick={openSheet}
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border bg-card/70 text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground"
+          aria-label="Open settings"
+          title="Settings"
+        >
+          <Settings className="h-[18px] w-[18px]" />
+        </button>
       </div>
     </header>
   );
@@ -324,6 +267,9 @@ type DesktopShellProps = {
    * overflow is reachable without ever producing a page/body scrollbar.
    */
   fit?: boolean;
+  /** Keep the command trigger out of one-time focused states such as the
+      Make Your Mind Up handoff, while preserving it everywhere else. */
+  showCommandPalette?: boolean;
 };
 
 /**
@@ -343,6 +289,7 @@ export function DesktopShell({
   rightRailWidth = 360,
   bleed = false,
   fit = true,
+  showCommandPalette = true,
   children,
 }: DesktopShellProps) {
   // Lock the body/window scroll only while an authed app surface is mounted.
@@ -365,7 +312,7 @@ export function DesktopShell({
         className="ml-[220px] flex flex-col h-full min-h-0"
         style={isMiniPlayerVisible ? { paddingBottom: MINI_PLAYER_CLEARANCE } : undefined}
       >
-        <DesktopTopBar title={title} eyebrow={eyebrow} actions={actions} />
+        <DesktopTopBar title={title} eyebrow={eyebrow} actions={actions} showCommandPalette={showCommandPalette} />
         <div className="flex-1 flex min-h-0">
           <main
             className={cn(

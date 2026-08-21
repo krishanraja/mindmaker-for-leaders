@@ -1,99 +1,105 @@
-import { useState, useEffect } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { motion } from "framer-motion"
-import { SignInForm } from "@/components/auth/SignInForm"
-import { SignUpForm } from "@/components/auth/SignUpForm"
-import { useAuth } from "@/components/auth/AuthProvider"
-import { HeroBackdrop } from "@/components/public/HeroBackdrop"
-import { PublicHeader } from "@/components/public/PublicHeader"
-import { AUTH_COPY } from "@/components/public/publicCopy"
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import { SignInForm } from '@/components/auth/SignInForm';
+import { SignUpForm } from '@/components/auth/SignUpForm';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { CtrlMonogram } from '@/components/brand/CtrlMonogram';
 
-/**
- * The last front door.
- *
- * SIGN IN LEADS on a bare /auth, and that is deliberate rather than tidy. This
- * page briefly defaulted to Sign up, on the reasoning that every marketing CTA
- * landing here is an invitation to start. It is, but the people who reach /auth
- * WITHOUT a CTA are the returning ones: they type the URL or arrive by bookmark.
- * Handing them the signup form hands them its 12-character minimum, so a leader
- * with an older, shorter password gets stopped at their own front door by a rule
- * that only applies to new passwords. That happened to Krish on 2026-08-06.
- *
- * The intent is kept where it belongs: a CTA that means "start" links to
- * /auth?mode=signup and gets the signup form. Nobody else does.
- *
- * A visitor who weighed something on /try arrives with an anonymous session,
- * which AuthProvider.signUp converts in place, so their weigh is waiting for
- * them on the other side rather than orphaned behind a second account.
- */
 export default function Auth() {
-  const [searchParams] = useSearchParams()
-  // Read once on mount. The tabs own the state afterwards, so a tap is never
-  // fought by the URL it arrived on.
-  const [isSignIn, setIsSignIn] = useState(() => searchParams.get('mode') !== 'signup')
-  const navigate = useNavigate()
-  const { isAuthenticated, isLoading } = useAuth()
+  const [searchParams] = useSearchParams();
+  const [isSignIn, setIsSignIn] = useState(() => searchParams.get('mode') !== 'signup');
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate('/dashboard', { replace: true })
+    const handoff = searchParams.get('h');
+    if (!handoff) return;
+    try {
+      sessionStorage.setItem('handoff_token', handoff);
+    } catch {
+      /* The URL remains the fallback while this page is open. */
     }
-  }, [isAuthenticated, isLoading, navigate])
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) navigate('/dashboard', { replace: true });
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
     return (
-      <div className="h-screen-safe bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent" />
+      <div className="mymu-surface flex h-screen-safe items-center justify-center bg-[#0a0908]">
+        <CtrlMonogram size={38} animated={!reducedMotion} />
       </div>
-    )
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <PublicHeader variant="back" />
+    <main className="mymu-surface min-h-[100dvh] bg-[#0a0908] px-6 pb-12 pt-[max(1.25rem,env(safe-area-inset-top))] text-[#f5f1ea] sm:px-10">
+      <div className="mx-auto flex w-full max-w-[520px] items-center justify-between">
+        <button type="button" onClick={() => navigate('/')} className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5f1ea]">
+          <CtrlMonogram size={30} />
+          <span className="font-mymu-mono text-[10px] uppercase tracking-[0.24em] text-[#f5f1ea]/55">CTRL</span>
+        </button>
+        <button type="button" onClick={() => navigate('/')} className="flex min-h-11 items-center gap-2 font-mymu-serif text-sm text-[#f5f1ea]/50 transition-colors hover:text-[#f5f1ea] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5f1ea]">
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
+      </div>
 
-      <main className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:py-16">
-        <HeroBackdrop weight="quiet" />
-
+      <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-[520px] items-center py-10">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="relative z-10 w-full max-w-[400px] rounded-2xl border border-border bg-card p-6 sm:p-7"
+          className="w-full"
         >
-          {/* No mark in here: the header two inches above already carries it,
-              and one lockup twice on one screen reads as a mistake. */}
-          <div className="flex gap-1 rounded-xl border border-border bg-popover p-1">
-            <button
-              onClick={() => setIsSignIn(true)}
-              className={`flex-1 rounded-lg px-4 py-2 font-display text-[12.5px] font-bold transition-all ${
-                isSignIn ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Sign in
-            </button>
-            <button
-              onClick={() => setIsSignIn(false)}
-              className={`flex-1 rounded-lg px-4 py-2 font-display text-[12.5px] font-bold transition-all ${
-                !isSignIn ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Sign up
-            </button>
-          </div>
-
-          <h1 className="mt-5 text-center font-display text-xl font-bold tracking-tight text-foreground">
-            {isSignIn ? 'Welcome back.' : AUTH_COPY.h1}
-          </h1>
-          <p className="mt-1.5 mb-5 text-center text-sm text-muted-foreground">
-            {isSignIn ? 'Everything is where you left it.' : AUTH_COPY.sub}
+          <p className="font-mymu-mono text-[10px] uppercase tracking-[0.2em] text-[#f5f1ea]/38">
+            {isSignIn ? 'Pick up where you left off' : 'Keep your starting point'}
           </p>
+          <h1 className="mt-5 max-w-[12ch] font-mymu-serif text-[clamp(2.5rem,9vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.035em]">
+            {isSignIn ? 'Welcome back.' : 'Let CTRL remember what matters.'}
+          </h1>
+          <p className="mb-8 mt-5 max-w-[34ch] font-mymu-serif text-lg leading-relaxed text-[#f5f1ea]/58">
+            {isSignIn ? 'Your brief, decisions and memory are waiting.' : 'Save what CTRL learns, and let it get more useful each morning.'}
+          </p>
+
+          <div className="mb-8 flex gap-6 border-b border-[#f5f1ea]/12">
+            <AuthModeButton active={isSignIn} onClick={() => setIsSignIn(true)}>Sign in</AuthModeButton>
+            <AuthModeButton active={!isSignIn} onClick={() => setIsSignIn(false)}>New here</AuthModeButton>
+          </div>
 
           {isSignIn ? <SignInForm /> : <SignUpForm />}
 
-          <p className="mt-5 text-center text-[11.5px] text-muted-foreground">{AUTH_COPY.foot}</p>
+          {/* The single cheapest thing that keeps CTRL out of a procurement
+              conversation. A personal address means the account is the
+              leader's own, and it never lands on an IT asset register. */}
+          {!isSignIn && (
+            <p className="mt-5 max-w-[38ch] font-mymu-serif text-sm leading-relaxed text-[#f5f1ea]/45">
+              Your personal email works best here. CTRL is yours, not your company's.
+            </p>
+          )}
+
+          <button type="button" onClick={() => navigate('/')} className="mt-7 font-mymu-serif text-sm text-[#f5f1ea]/42 underline-offset-4 hover:text-[#f5f1ea] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5f1ea]">
+            I only want the no-login daily brief
+          </button>
         </motion.div>
-      </main>
-    </div>
-  )
+      </div>
+    </main>
+  );
+}
+
+function AuthModeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: string }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`relative min-h-11 pb-3 font-mymu-serif text-base transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f5f1ea] ${active ? 'text-[#f5f1ea]' : 'text-[#f5f1ea]/38 hover:text-[#f5f1ea]/70'}`}
+    >
+      {children}
+      {active && <span className="absolute inset-x-0 bottom-0 h-px bg-[#f5f1ea]" />}
+    </button>
+  );
 }

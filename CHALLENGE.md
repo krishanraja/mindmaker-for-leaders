@@ -1,5 +1,11 @@
 # CHALLENGE.md
 
+Status: Historical
+Owner: Mindmaker
+Ruled: 2026-08-04
+
+> A dated decision register, preserved as written. It records what was ruled on 2026-08-04 and is not relitigated. For current product, architecture, and commercial truth see [`docs/current/`](./docs/current/README.md). Superseded pointers are listed in the editorial note below.
+
 **Against:** CTRL Harness Chain build specification, revision 3 (2026-08-04)
 **Phase:** -1, per the spec's own section 0.6
 **Date:** 2026-08-04
@@ -10,6 +16,13 @@
 - CH-21 offered two coherent options with no recommendation; resolved as **session-first as specced, drip kept as the 6.3 fallback**, because the reveal beats and the item-30 number are the product moments. The drip inverts only if session completion fails in practice (the falsification test in CH-21 stands).
 - CH-23's skills home: the five ctrl-* skills are committed to the repo under `skills/` as the versioned canonical copy (the runtime skills directory is ephemeral in remote sessions); registry lives beside them.
 - Reserved calls (section 4): 1 = yes, demote the trait model to labelled-cosmetic cold start. 2 and 3 = resolved by CH-20 and CH-07 (one door; org layer cut). 4 = the chain lives in the app; the kit remains the wedge. 5 = pricing position 2 locked, PRICING.md is canon.
+
+## Editorial note, 2026-08-20
+
+The rulings below stand and are not relitigated. Two of the pointers they cite have since been superseded, recorded here so a reader does not follow a stale authority:
+
+- **`docs/PRICING.md` is no longer canon.** Price now lives in `supabase/functions/_shared/edge-pricing.ts`, entitlements in `src/constants/planMatrix.ts`, and the human-readable offer in `docs/current/commercial.md`. The 2026-08-04 ruling on pricing position 2 is unchanged; only the location of the record moved. `docs/PRICING.md` is retained, marked historical, so the citations below still resolve.
+- **The current product and architecture layer is `docs/current/`**, established by Decision 80 on 2026-08-11, after this register was ruled.
 
 ## How this was produced
 

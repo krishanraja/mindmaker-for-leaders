@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => ({
   // with the primary checkout's `node_modules/.vite`). No-op for normal builds.
   ...(process.env.VITE_CACHE_DIR ? { cacheDir: process.env.VITE_CACHE_DIR } : {}),
   server: {
+    allowedHosts: [".vercel.run"],
     host: "::",
     port: 8080,
   },

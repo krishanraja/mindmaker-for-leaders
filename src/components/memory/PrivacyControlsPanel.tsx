@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Mic, Brain, Clock, Trash2, Loader2, AlertCircle, Check } from 'lucide-react';
+import { Shield, Mic, Brain, Clock, Trash2, Loader2, AlertCircle, Check, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMemorySettings, useUpdateMemorySettings, useClearLocalCache } from '@/hooks/useMemoryQueries';
 import { RETENTION_OPTIONS, retentionDaysToOption, optionToRetentionDays, type RetentionOption } from '@/types/memory-settings';
+import { useOffTheRecord } from '@/contexts/OffTheRecordContext';
 
 interface PrivacyControlsPanelProps {
   className?: string;
@@ -25,6 +26,8 @@ export const PrivacyControlsPanel: React.FC<PrivacyControlsPanelProps> = ({
   className,
 }) => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const { isOffTheRecord, hasEnded, setOffTheRecord, acknowledgeEnded } = useOffTheRecord();
 
   const { data: settings, isLoading, error } = useMemorySettings();
   const updateSettings = useUpdateMemorySettings();
@@ -118,6 +121,51 @@ export const PrivacyControlsPanel: React.FC<PrivacyControlsPanelProps> = ({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Off the record. Sits above the durable switches on purpose: it is
+              the one a leader reaches for mid-thought, and it is the only
+              control here that is not written down anywhere. */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-secondary/50">
+                <EyeOff className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <div>
+                <Label htmlFor="off-the-record" className="text-sm font-medium">
+                  Off the record
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {isOffTheRecord
+                    ? 'Nothing from this session will be kept.'
+                    : 'Think out loud without any of it being kept. Lasts until you turn it off.'}
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="off-the-record"
+              checked={isOffTheRecord}
+              onCheckedChange={setOffTheRecord}
+              className="min-h-[24px]"
+            />
+          </div>
+
+          {hasEnded && !isOffTheRecord && (
+            <div className="flex items-start gap-2 rounded-lg border border-border bg-secondary/30 p-3">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+              <div className="flex-1">
+                <p className="text-xs text-foreground">
+                  That session was off the record. Nothing was saved.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={acknowledgeEnded}
+                className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+              >
+                Got it
+              </button>
+            </div>
+          )}
+
           {/* Store Memory Toggle */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

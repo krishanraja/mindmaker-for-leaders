@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>CTRL Security and Privacy</title>
+    <meta name="description" content="How CTRL protects your data: row-level security, field-level AES-256-GCM on stored facts, TLS in transit, and export or delete on demand. An honest account of what is in place, what is in progress, and what we have not done." />
+    <link rel="canonical" href="https://makeyourmindup.ai/trust" />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" />
+    <meta name="theme-color" content="#0A0908" />
+
+    <meta property="og:title" content="CTRL Security and Privacy" />
+    <meta property="og:description" content="What is actually in place, what is in progress, and what we have not done. No certification claims." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://makeyourmindup.ai/trust" />
+    <meta property="og:image" content="https://makeyourmindup.ai/mindmaker-og-image.png" />
+    <meta property="og:site_name" content="CTRL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CTRL Security and Privacy" />
+    <meta name="twitter:description" content="What is actually in place, what is in progress, and what we have not done." />
+    <meta name="twitter:image" content="https://makeyourmindup.ai/mindmaker-og-image.png" />
+
+    <style>
+      :root{--ink:#f2f2f2;--bg:#0a0a0a;--mut:#9a9a9a;--mint:#00D9B6;--card:#161616;--line:#262626;--amber:#E0A458;--dim:#6f6f6f}
+      *{box-sizing:border-box}
+      body{font-family:'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;color:var(--ink);background:var(--bg);margin:0;line-height:1.55}
+      .wrap{max-width:820px;margin:0 auto;padding:56px 24px}
+      h1{font-family:'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif;font-size:2.2rem;margin:0 0 8px;letter-spacing:-0.02em}
+      h2{font-family:'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif;font-size:1.15rem;margin:40px 0 14px;letter-spacing:-0.01em}
+      .sub{color:var(--mut);font-size:1.05rem;margin:0 0 32px}
+      .posture{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:12px;padding:20px 22px;margin:0 0 8px}
+      .posture p{margin:0;color:var(--ink);font-size:.98rem}
+      .posture p + p{margin-top:10px;color:var(--mut)}
+      ul{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+      li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:.94rem}
+      li b{display:block;font-weight:600;margin-bottom:3px}
+      li span{color:var(--mut)}
+      .tag{font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border-radius:5px;vertical-align:middle;margin-left:8px;font-weight:600}
+      .t-live{background:rgba(0,217,182,.13);color:var(--mint);border:1px solid rgba(0,217,182,.3)}
+      .t-prog{background:rgba(224,164,88,.12);color:var(--amber);border:1px solid rgba(224,164,88,.3)}
+      .t-no{background:rgba(154,154,154,.1);color:var(--mut);border:1px solid var(--line)}
+      .foot{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);color:var(--mut);font-size:.9rem}
+      a{color:var(--ink)}
+      a:hover{color:var(--mint)}
+      .rev{font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;font-size:.7rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin:0 0 28px}
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Security and privacy at CTRL</h1>
+      <p class="sub">CTRL holds your thinking, so this page says plainly what protects it, what we are still building, and what we have not done. Everything below is checkable, and there are no badges we have not earned.</p>
+      <p class="rev">Last reviewed 2026-08-20</p>
+
+      <h2>In place today</h2>
+      <ul>
+        <li><b>Row-level security on every table<span class="tag t-live">Live</span></b><span>Records are scoped to their owner in the database itself, not only in application code. A query that is not yours returns nothing.</span></li>
+        <li><b>Field-level AES-256-GCM on stored facts<span class="tag t-live">Live</span></b><span>Sensitive memory writes carry an encrypted payload at rest, alongside Supabase-managed disk encryption. Plaintext fields are retained so the product can display and search your memory, so this is not end-to-end encryption and we will not describe it as such.</span></li>
+        <li><b>TLS in transit<span class="tag t-live">Live</span></b><span>Everything between your browser and CTRL is encrypted in flight, behind a CDN and edge boundary with rate limiting on AI endpoints.</span></li>
+        <li><b>Export everything, any time<span class="tag t-live">Live</span></b><span>Your profile, memory, assessments and conversations download as structured JSON, Markdown, or a format your other AI tools read directly.</span></li>
+        <li><b>Delete your account for real<span class="tag t-live">Live</span></b><span>A server-side cascade removes your data rather than flagging it hidden, and cancels any active subscription on the way out. Backups age out on their retention schedule.</span></li>
+        <li><b>Retention you choose, enforced on a schedule<span class="tag t-live">Live</span></b><span>Keep your memory for 30 days, 90 days, or indefinitely. A nightly job applies the window you picked, and changing it re-stamps what is already stored.</span></li>
+        <li><b>Only your own personal data<span class="tag t-live">Live</span></b><span>When you mention someone else, CTRL stores their role rather than their name. A fact whose subject is another person is not stored at all.</span></li>
+        <li><b>Off the record<span class="tag t-live">Live</span></b><span>Think something through without any of it being kept. No memory, no evidence, no influence on tomorrow's briefing, and CTRL says plainly when a session saved nothing.</span></li>
+        <li><b>Consent you can change<span class="tag t-live">Live</span></b><span>Granular, timestamped consent toggles with an audit record. We do not sell personal data.</span></li>
+        <li><b>Published privacy notice and processing record<span class="tag t-live">Live</span></b><span>A GDPR Article 13/14 and CCPA/CPRA notice, an Article 30 record of processing, and a maintained subprocessor register.</span></li>
+        <li><b>Versioned, reviewed change history<span class="tag t-live">Live</span></b><span>Every schema change ships as a git-versioned migration, so the state of the database has a written history.</span></li>
+      </ul>
+
+      <h2>In progress</h2>
+      <ul>
+        <li><b>Data-access and AI-usage audit logging<span class="tag t-prog">Building</span></b><span>Structured edge logging is live. Comprehensive per-record access trails are being built out.</span></li>
+        <li><b>Enforced MFA and a stronger password policy<span class="tag t-prog">Building</span></b><span>Including a breached-password check at sign-up.</span></li>
+        <li><b>Centralized log aggregation and alerting<span class="tag t-prog">Building</span></b><span>With retention, monitoring, and a tested restore drill.</span></li>
+        <li><b>Automated dependency and secret scanning in CI<span class="tag t-prog">Building</span></b><span>Alongside regression tests that prove row-level security stays enforced.</span></li>
+      </ul>
+
+      <h2>Not done yet</h2>
+
+      <div class="posture">
+        <p><b>We are not certified.</b> CTRL holds no SOC 2 report and no ISO/IEC 27001 certificate, and has not completed a third-party security audit. Work toward them is at the planning stage.</p>
+        <p>HIPAA does not apply to CTRL. We do not process protected health information, and CTRL is not intended for it.</p>
+      </div>
+
+      <ul>
+        <li><b>SOC 2 Type I or Type II report<span class="tag t-no">None</span></b><span>SOC 2 is an attestation issued by a licensed CPA firm, not a certification. We have not engaged one.</span></li>
+        <li><b>ISO/IEC 27001:2022 certificate<span class="tag t-no">None</span></b><span>No accredited certification body has audited CTRL.</span></li>
+        <li><b>Independent penetration test<span class="tag t-no">None</span></b><span>Not yet commissioned.</span></li>
+        <li><b>Signed DPAs and SCCs with every subprocessor<span class="tag t-no">Partial</span></b><span>The register is maintained and current. The paperwork is not complete across all vendors.</span></li>
+      </ul>
+
+      <h2>Something went wrong once</h2>
+      <ul>
+        <li><b>Row-level security misconfiguration, May to June 2026<span class="tag t-live">Remediated</span></b><span>An over-permissive policy on several profile and chat tables was found and fixed. It is written up as a worked example in our incident response plan rather than quietly dropped.</span></li>
+      </ul>
+
+      <p class="foot">Questions, a data processing agreement, or the current subprocessor list: <a href="mailto:privacy@themindmaker.ai">privacy@themindmaker.ai</a>. Common questions are answered at <a href="/faq">/faq</a>. Signed in? Your live control status is at <a href="/compliance">/compliance</a>. Back to <a href="/">makeyourmindup.ai</a>.</p>
+    </main>
+  </body>
+</html>

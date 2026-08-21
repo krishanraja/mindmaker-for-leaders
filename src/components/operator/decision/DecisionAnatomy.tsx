@@ -149,7 +149,7 @@ function AnswerBody({
             type="button"
             onClick={() => { checklist.emailSummary(); haptics.light(); }}
             disabled={checklist.emailing || checklist.emailSent}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/[0.06] px-3 py-2 text-[11.5px] font-semibold text-accent transition-colors hover:bg-accent/[0.1] disabled:opacity-60"
+            className="mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/[0.06] px-3 py-2 text-[11.5px] font-semibold text-accent transition-colors hover:bg-accent/[0.1] disabled:opacity-60"
           >
             {checklist.emailing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
             {checklist.emailSent ? 'Sent - check your inbox' : checklist.emailing ? 'Sending...' : 'Email this to me'}
@@ -511,19 +511,19 @@ export function DecisionAnatomy({
       </button>
       <div className="flex items-center justify-center gap-3 text-[11.5px] text-muted-foreground">
         <button type="button" onClick={() => { onCompose(); haptics.light(); }}
-          className="font-semibold transition-colors hover:text-foreground">
+          className="inline-flex min-h-11 items-center font-semibold transition-colors hover:text-foreground">
           Weigh a new one
         </button>
         <span aria-hidden className="text-muted-foreground/40">&middot;</span>
         <button type="button" onClick={handleCopyMemo}
-          className={cn('font-semibold transition-colors hover:text-foreground', memoCopied && 'text-accent')}>
+          className={cn('inline-flex min-h-11 items-center font-semibold transition-colors hover:text-foreground', memoCopied && 'text-accent')}>
           {memoCopied ? 'Memo copied' : 'Copy the memo'}
         </button>
         {cases.length > 1 && (
           <>
             <span aria-hidden className="text-muted-foreground/40">&middot;</span>
             <button type="button" onClick={() => { setSwitcherOpen(true); haptics.light(); }}
-              className="font-semibold transition-colors hover:text-foreground">
+              className="inline-flex min-h-11 items-center font-semibold transition-colors hover:text-foreground">
               Switch decision ({cases.length})
             </button>
           </>

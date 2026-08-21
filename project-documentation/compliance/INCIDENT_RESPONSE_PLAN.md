@@ -1,5 +1,7 @@
 # CTRL Incident Response Plan
 
+Status: Reference
+
 Last reviewed: 2026-07-26 (verified against code: the RLS worked example still matches the shipped migration; no changes needed)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 

@@ -71,8 +71,7 @@ function BriefingPlayEntry({
           <Play className="h-7 w-7 translate-x-0.5 fill-current" strokeWidth={0} />
         )}
       </button>
-      <h2 className="mt-4 text-lg font-semibold text-foreground">Today&apos;s briefing</h2>
-      <p className="mt-1 text-xs text-muted-foreground">{status}</p>
+      <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">{status}</p>
       {hasPast && onOpenPast && (
         <button
           type="button"
@@ -307,7 +306,7 @@ function BriefingPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setInterestsSheetOpen(true)}
-                className="gap-1.5 text-xs h-8"
+                className="h-11 gap-1.5 px-3 text-xs"
               >
                 <Settings2 className="w-3.5 h-3.5" />
                 Topics

@@ -106,6 +106,19 @@ export interface EvaluationCorpusEntry {
   expect: Record<string, unknown>;
 }
 
+/**
+ * Configuration for rewriting a named third party into their role before a
+ * fact is stored. CTRL should hold personal data about its own user and about
+ * nobody else, so "Sarah Patel is dragging her feet" becomes "the CFO is
+ * dragging her feet" on the way in.
+ */
+export interface ThirdPartyPseudonymisation {
+  /** Role nouns that may stand in for a name, longest matched first. */
+  roles: string[];
+  /** Words that look like names but are never people. */
+  allowlist: string[];
+}
+
 export interface TrainingMaterial {
   version: number;
   scope: "global" | "cohort" | "user";
@@ -114,6 +127,7 @@ export interface TrainingMaterial {
   dont_phrases: string[];
   typography_rules: TypographyRules;
   extraction_rejects: ExtractionReject[];
+  third_party_pseudonymisation: ThirdPartyPseudonymisation;
   preference_subtypes: PreferenceSubtypes;
   briefing_exemplars: BriefingExemplars;
   hot_signal_taxonomy: HotSignalTaxonomy;
@@ -195,6 +209,18 @@ export function validateTrainingMaterial(raw: unknown): TrainingMaterial {
         field: (assertString(er.field, `extraction_rejects[${i}].field`) as ExtractionReject["field"]),
       };
     }),
+    // Optional so a training row written before this field existed still
+    // parses. An absent block yields empty lists, and the caller falls back to
+    // the in-code defaults rather than throwing.
+    third_party_pseudonymisation: (() => {
+      const raw = obj.third_party_pseudonymisation;
+      if (raw === undefined || raw === null) return { roles: [], allowlist: [] };
+      const tp = assertObject(raw, "third_party_pseudonymisation");
+      return {
+        roles: assertArray<string>(tp.roles ?? [], "third_party_pseudonymisation.roles"),
+        allowlist: assertArray<string>(tp.allowlist ?? [], "third_party_pseudonymisation.allowlist"),
+      };
+    })(),
     preference_subtypes: {
       communication_style: normalizeSubtype(preferenceSubtypes.communication_style, "communication_style"),
       decision_style: normalizeSubtype(preferenceSubtypes.decision_style, "decision_style"),

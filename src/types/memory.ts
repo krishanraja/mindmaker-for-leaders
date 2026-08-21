@@ -73,6 +73,8 @@ export interface ExtractionResult {
   facts?: ExtractedFact[];
   pending_verifications: PendingVerification[];
   error?: string;
+  /** Set when the session was off the record, so the caller can say so plainly. */
+  saved_nothing?: boolean;
 }
 
 export interface MemoryContext {

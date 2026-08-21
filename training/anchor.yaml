@@ -122,8 +122,24 @@ extraction_rejects:
     reason: "transient context, not durable fact"
     field: both
 
+  # Widened 2026-08-20. The role-possessive form ("my CFO is") was the only
+  # shape caught before, so a bare named subject ("Sarah is not coping")
+  # walked straight through and CTRL ended up holding personal data about a
+  # person who does not know it exists and cannot exercise any right over it.
+  #
+  # Facts whose subject is a named third party are dropped outright. Where a
+  # role is present the pseudonymiser rewrites the name to the role first, so
+  # a fact that is genuinely about the user survives with the third party
+  # reduced to "the CFO". Only a fact that is really about someone else
+  # reaches this rule.
+  #
+  # The bare-name arm is deliberately narrow: it requires a person-state
+  # predicate rather than a generic verb. An earlier draft matched
+  # "Name is ...", which also swallowed "Acme is scaling to 200 people" and
+  # "Stripe is our payment processor", quietly deleting most business facts.
+  # The extraction prompt does the semantic work; this is only the backstop.
   - id: third_party_identity
-    pattern: "(my (cofounder|co-founder|partner|cto|ceo|cfo|coo|boss|manager|colleague|assistant)(?: is| was)|our (cto|ceo|cfo|coo|vp|head of|director))"
+    pattern: "(my (cofounder|co-founder|partner|cto|ceo|cfo|coo|boss|manager|colleague|assistant)(?: is| was)|our (cto|ceo|cfo|coo|vp|head of|director)|^[A-Z][a-z]{1,20}( [A-Z][a-z]{1,20})? (?:(?:is|was|has been) (?:not |never )?(?:coping|struggling|dragging|slipping|stalling|underperforming|overwhelmed|resistant|difficult|unhappy|unhappy with|frustrated|checked out|burnt out|burned out|out of their depth|not up to)|keeps |refuses |struggles |resents |avoids |hesitates |dislikes |worries ))"
     reason: "describes third party, not the speaker"
     field: both
 
@@ -141,6 +157,124 @@ extraction_rejects:
     pattern: "^(i do(?:n'?t| not)|i don'?t|i never|i won'?t|i'?m not) (like|want|use|prefer|do)"
     reason: "pure negation, not a positive preference"
     field: fact_context
+
+# ─────────────────────────────────────────────────────────────────────────
+# THIRD PARTY PSEUDONYMISATION
+# Applied before the reject pass. A named person adjacent to a role is
+# rewritten to the role, so "my CFO Sarah Patel is dragging her feet" is
+# stored as "my CFO is dragging her feet". The fact about the user survives;
+# the other person's name does not enter the database.
+# ─────────────────────────────────────────────────────────────────────────
+third_party_pseudonymisation:
+  roles:
+    - chief of staff
+    - co-founder
+    - cofounder
+    - board member
+    - head of product
+    - head of sales
+    - head of people
+    - head of engineering
+    - general counsel
+    - executive assistant
+    - product manager
+    - account manager
+    - CTO
+    - CEO
+    - CFO
+    - COO
+    - CMO
+    - CRO
+    - CISO
+    - VP
+    - EA
+    - chair
+    - chairman
+    - chairwoman
+    - investor
+    - founder
+    - partner
+    - manager
+    - director
+    - assistant
+    - advisor
+    - accountant
+    - lawyer
+  # Capitalised tokens that are not people. Without these the role-adjacent
+  # matcher would rewrite a weekday, a department, or a product name.
+  # The department qualifiers come first: a 2026-08-21 production dry run
+  # found "VP Eng" being rewritten to "VP", deleting the department.
+  allowlist:
+    - Eng
+    - Engineering
+    - Ops
+    - Operations
+    - Product
+    - Design
+    - Growth
+    - Sales
+    - Marketing
+    - Finance
+    - Legal
+    - People
+    - Data
+    - Platform
+    - Infra
+    - Infrastructure
+    - Support
+    - Success
+    - Comms
+    - Brand
+    - Revenue
+    - Strategy
+    - Research
+    - Security
+    - Delivery
+    - Partnerships
+    - Content
+    - Lead
+    - Team
+    - Group
+    - Division
+    - Office
+    - Board
+    - Council
+    - I
+    - We
+    - The
+    - A
+    - An
+    - It
+    - They
+    - My
+    - Our
+    - Their
+    - Monday
+    - Tuesday
+    - Wednesday
+    - Thursday
+    - Friday
+    - Saturday
+    - Sunday
+    - January
+    - February
+    - March
+    - April
+    - May
+    - June
+    - July
+    - August
+    - September
+    - October
+    - November
+    - December
+    - AI
+    - API
+    - CTRL
+    - Q1
+    - Q2
+    - Q3
+    - Q4
 
 # ─────────────────────────────────────────────────────────────────────────
 # PREFERENCE SUBTYPES

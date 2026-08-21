@@ -1,9 +1,11 @@
 # CTRL Privacy Policy
 
-Effective date: 2026-06-02
-Last reviewed: 2026-07-26 (updated 2026-07-26: disclosed PostHog product analytics and added NewsAPI.org/Exa/Artificial Analysis to the subprocessor list, all already live in the product; TODO(founder): PostHog has been running in production since 2026-07-18 without a corresponding policy disclosure until this pass - confirm whether affected users need direct notice, not just an updated policy page)
+Status: Reference
 
-This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://ctrl.themindmaker.ai. CTRL is an executive leadership-clarity tool. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
+Effective date: 2026-06-02
+Last reviewed: 2026-08-11 (public onboarding company recognition and evidence handling reconciled)
+
+This Privacy Policy explains how Mindmaker ("Mindmaker", "we", "us") collects, uses, and shares personal data when you use CTRL (the "Service") at https://makeyourmindup.ai. CTRL is an AI decision-support and advisory tool for busy leaders. This notice is written to satisfy the transparency obligations of the EU/UK General Data Protection Regulation (GDPR Articles 13 and 14) and the California Consumer Privacy Act as amended by the CPRA.
 
 Related internal documents: [ROPA.md](./ROPA.md), [SUBPROCESSORS.md](./SUBPROCESSORS.md), [DATA_RETENTION_POLICY.md](./DATA_RETENTION_POLICY.md), [DSAR_RUNBOOK.md](./DSAR_RUNBOOK.md).
 
@@ -23,11 +25,12 @@ This policy covers personal data processed through the CTRL web application and 
 | Category | Examples | Source |
 |----------|----------|--------|
 | Account identity | Email address, name, display name | You, at sign-up; Google OAuth if used |
-| Business / work context | Company, industry, company size, website, primary challenges, AI-readiness score, communication style, thinking style | You, during onboarding and use |
+| Business / work context | Company, industry, company size, website, role, public LinkedIn profile URL, recent public company signals, primary challenges, AI-readiness score, communication style, thinking style | You during onboarding and use; business-data and search providers when you ask onboarding to identify your company |
 | Memory Web facts | Thoughts and statements you voice that are extracted into structured facts (encrypted at rest with AES-256-GCM) | Derived from your inputs |
+| Blind Spot records | Confirmed pattern text, exact evidence snapshots, experiment and outcome; rejection reason and evidence fingerprint when you reject a read | Derived from your stored records and your explicit response |
 | Conversation / chat messages | Messages you send to and receive from CTRL's assistants | You, during use |
 | AI-literacy diagnostic / assessment responses | Answers to AI-fluency and leadership assessments | You, during assessments |
-| Kit builds / lesson-kit inputs | Org/team/workflow intake you provide when forking a lesson kit (boxes, pathway, profile, time sinks, guardrails, grind, what work involves, team maturity), stored in `kit_builds.intake` | You, during a kit build |
+| Legacy lesson-kit records | Org/team/workflow intake previously provided when the retired lesson-kit flow was active, stored in `kit_builds.intake` | You, during a historical kit build |
 | Daily-briefing preferences and interests | Topics, interests, briefing settings | You; inferred from your stated interests |
 | Voice recordings and transcripts | Audio you record, transcribed to text (transcripts retained; audio handled per the transcription provider, see Section 7) | You, during voice use |
 | Billing data | Stripe customer ID, subscription status | Created when you subscribe |
@@ -40,10 +43,11 @@ For users in the EU/UK, the GDPR requires a lawful basis for each purpose. The t
 
 | Purpose | Data categories used | GDPR lawful basis |
 |---------|----------------------|-------------------|
-| Provide the Service (auth, core features) | Account identity, business context, chat, assessments | Contract (Art 6(1)(b)) |
+| Provide the Service (auth, core features, optional onboarding company recognition) | Account identity, business context, public company signals, chat, assessments | Contract (Art 6(1)(b)); the optional enrichment input may be skipped |
 | Build and maintain your Memory Web | Memory Web facts, chat, voice transcripts | Contract (Art 6(1)(b)); consent where you enable optional memory features |
+| Offer and follow up a Blind Spot reflection | Business context, verified intentions, decisions, check-ins, confirmed pattern evidence, experiment outcome | Contract (Art 6(1)(b)); the pattern is stored only after your confirmation |
 | Generate AI responses, briefings, and assessments | Business context, chat, assessments, preferences, transcripts | Contract (Art 6(1)(b)) |
-| Build and compose lesson kits you fork | Kit builds / lesson-kit inputs | Contract (Art 6(1)(b)) |
+| Retain and support legacy lesson-kit records until deletion | Legacy lesson-kit records | Contract (Art 6(1)(b)) |
 | Daily briefings and notifications | Briefing preferences, interests, account identity | Contract for transactional delivery; consent for optional channels |
 | Process payments and manage subscriptions | Billing data, account identity | Contract (Art 6(1)(b)); legal obligation for tax/accounting records (Art 6(1)(c)) |
 | Transactional email (confirmations, security, billing) | Account identity | Contract (Art 6(1)(b)) |
@@ -60,11 +64,11 @@ CTRL sends your inputs (chat, business context, assessment answers, briefing top
 
 ## 6. How we share your data
 
-We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa, Artificial Analysis, Apollo, Google (OAuth and Sheets), PostHog, and Vercel.
+We share personal data only with subprocessors that help us operate the Service, and where required by law. We do not sell your personal data. The full subprocessor register, including purpose, data shared, and location, is maintained in [SUBPROCESSORS.md](./SUBPROCESSORS.md). Subprocessors include Supabase, OpenAI, Google Cloud (Vertex AI / Gemini), Anthropic and xAI when configured for decision review, ElevenLabs, Stripe, Resend, Perplexity, Tavily, Brave Search, Jina, NewsAPI.org, Exa, Artificial Analysis, Apollo, Google (OAuth and Sheets), PostHog, and Vercel.
 
 ## 7. Voice and audio
 
-When you use voice features, your audio is transcribed to text. We retain the resulting transcripts as part of your data. The audio itself is handled by our transcription provider (OpenAI Whisper) under that provider's terms; we do not maintain a long-term store of raw audio as a product feature.
+When you use voice features, your audio is transcribed to text. Transcript retention follows the feature and your settings. The Blind Spot advisor does not persist its exchange as a separate conversation record; an optional correction becomes Memory only when you submit it. Audio is handled by OpenAI as the primary transcription provider and may be sent to Google Gemini if the primary path fails. We do not maintain a long-term store of raw audio as a product feature.
 
 ## 8. International data transfers
 

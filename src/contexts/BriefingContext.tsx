@@ -55,7 +55,11 @@ export function BriefingProvider({ children }: { children: React.ReactNode }) {
     };
 
     const onLoadedMetadata = () => {
-      setPlayback(prev => ({ ...prev, duration: audio.duration }));
+      const measured = Number.isFinite(audio.duration) ? audio.duration : 0;
+      const duration = measured > 0
+        ? measured
+        : briefing?.audio_duration_seconds ?? 0;
+      setPlayback(prev => ({ ...prev, duration }));
     };
 
     const onPlay = () => {

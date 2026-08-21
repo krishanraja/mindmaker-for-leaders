@@ -24,6 +24,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import process from 'node:process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -35,12 +36,23 @@ const update = process.argv.includes('--update');
 const ERROR_RE = /^(.+?\.tsx?)\((\d+),(\d+)\): error (TS\d+): (.+)$/;
 
 function runTsc() {
+  // Invoke the project-local compiler through Node. Spawning `npx` directly is
+  // not portable on Windows (`npx` is a cmd/PowerShell shim there), and a spawn
+  // failure previously produced empty output that the gate misread as a clean
+  // typecheck.
+  const tscBin = join(root, 'node_modules', 'typescript', 'bin', 'tsc');
   const res = spawnSync(
-    'npx',
-    ['tsc', '--noEmit', '-p', 'tsconfig.app.json'],
+    process.execPath,
+    [tscBin, '--noEmit', '-p', 'tsconfig.app.json'],
     { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
   );
-  return `${res.stdout || ''}\n${res.stderr || ''}`;
+  if (res.error) {
+    throw new Error(`TypeScript compiler could not start: ${res.error.message}`);
+  }
+  return {
+    output: `${res.stdout || ''}\n${res.stderr || ''}`,
+    status: res.status,
+  };
 }
 
 // Key an error stably: file + code + message (drop line/col so line shifts do
@@ -57,8 +69,25 @@ function keysFrom(output) {
   return keys;
 }
 
-const output = runTsc();
+let run;
+try {
+  run = runTsc();
+} catch (error) {
+  console.error(`[typecheck] ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
+
+const { output, status } = run;
 const current = keysFrom(output);
+
+// TypeScript exits non-zero when it reports diagnostics. A non-zero exit with
+// no parseable diagnostics means the compiler or config failed, so fail closed
+// instead of certifying an empty result.
+if (status !== 0 && current.size === 0) {
+  console.error('[typecheck] compiler failed without parseable TypeScript diagnostics');
+  if (output.trim()) console.error(output.trim());
+  process.exit(1);
+}
 
 if (update) {
   const sorted = [...current].sort();

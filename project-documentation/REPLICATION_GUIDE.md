@@ -1,361 +1,148 @@
-# Replication Guide
+# CTRL replication and release guide
 
-Step-by-step instructions to replicate CTRL from scratch.
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
 
-**Last reconciled:** 2026-07-26 (drift-check pass: re-counted edge functions/hooks/migrations and expanded the parity gap list).
+The release and recovery runbook. [`docs/current/release-state.md`](../docs/current/release-state.md) owns what is currently deployed; this file owns how to get there and how to get back.
 
-> This is a technical setup guide (env, Supabase, Stripe, deploy). The steps are still valid. Counts re-verified 2026-07-26: **104 edge functions, 77 hooks, 148 migrations**, pgvector + pgcrypto + pg_cron; re-count directly from the repo rather than trusting a frozen figure here. This guide gets you to a runnable instance; full feature parity also requires everything that has shipped since this guide was written, roughly: the kit redesign (PRs #206-212), the main-app polish (PRs #215-222), the CTRL System / coherence campaign (PRs #228-232), the 2028 radical-focus refactor (PRs #234-241), the unified onboarding->decisions->engagement loop (PR #298), evidence-corpus sharpening (PR #321), the settings audit (PR #325), the Edge Pro money-path repair + $49/decision-tier reposition (PRs #326-327), the decision-engine reframe fix (PR #328), craft+growth (PR #329), North Star instrumentation (PR #330), the pricing/upgrade route split (PR #331), news trend surfacing (PR #332), `/download` (PR #333), Home card UX fixes (PR #334), and PostHog analytics - see `CLAUDE.md`'s Architecture Quick Reference for the current detail on all of these. The product is globally dark and AI-native positioned; see the root `README.md` + the two `docs/` specs.
+Last reconciled: 2026-08-10
 
----
+This is the operational guide for a fresh CTRL instance and for releasing the canonical production instance. Do not copy credentials from documentation or chat.
 
-## Prerequisites
+## Stack
 
-- Node.js >=22 <24 (the `package.json` engines field enforces this)
-- npm or bun
-- Supabase CLI (linked to a project; for the canonical CTRL instance, project ref = `bkyuxvschuwngtcdhsyg`)
-- OpenAI API key (embeddings + fallback LLM + Whisper)
-- Vertex AI service account JSON (primary LLM)
-- Perplexity / Tavily / Brave API keys (briefing news providers - at least one required)
-- ElevenLabs API key (briefing audio)
-- Resend API key (transactional email)
-- Stripe account + webhook secret (Edge Pro subscription + Diagnostic / Deep Context one-time)
+- Node.js `>=22 <25`; Vercel production uses 24.x.
+- React, TypeScript, Vite, Tailwind, Radix/shadcn.
+- Supabase Auth, PostgreSQL, Storage, Edge Functions, Vault, pg_cron, pg_net, pgvector, and pgcrypto.
+- Capability-specific AI providers. See the current architecture provider matrix; do not assume one global primary model.
+- ElevenLabs for audio, Resend for email, Stripe for Edge Pro.
+- Vercel for frontend deployment.
 
----
+Recounted 2026-08-20: 114 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migrations. Re-count before quoting.
 
-## Step 1: Initialize Project
-
-```bash
-# Create React + TypeScript + Vite project
-npm create vite@latest mindmaker -- --template react-ts
-cd mindmaker
-
-# Install core dependencies
-npm install @supabase/supabase-js @tanstack/react-query
-npm install react-router-dom zod
-npm install tailwindcss postcss autoprefixer
-npm install lucide-react class-variance-authority clsx tailwind-merge
-
-# Install shadcn/ui
-npx shadcn-ui@latest init
-```
-
----
-
-## Step 2: Configure Tailwind + Design System
-
-**tailwind.config.ts**:
-```ts
-import type { Config } from "tailwindcss"
-
-export default {
-  darkMode: ["class"],
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
-  theme: {
-    extend: {
-      colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: "hsl(var(--primary))",
-        // ... (see the live dark tokens in src/styles/tokens.css + index.css; the cross-app contract is in SPINE.md)
-      }
-    }
-  },
-  plugins: [require("tailwindcss-animate")]
-} satisfies Config
-```
-
-**src/index.css** + **src/styles/tokens.css**: the live dark `ctrl-ds` CSS variables (globally dark, emerald `#00D9B6`). The old light token doc is archived at `_archive/DESIGN_SYSTEM.md`; do not use its values.
-
----
-
-## Step 3: Set Up Supabase
+## Local setup
 
 ```bash
-# Initialize Supabase project
-supabase init
-
-# Link to remote project
-supabase link --project-ref YOUR_PROJECT_REF
-
-# Apply migrations
-supabase db push
-```
-
-**Create `.env`**:
-```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
-```
-
-**src/integrations/supabase/client.ts**:
-```ts
-import { createClient } from '@supabase/supabase-js'
-
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
-```
-
----
-
-## Step 4: Database Schema
-
-Run migrations in `supabase/migrations/`:
-1. Create `leaders` table
-2. Create `leader_assessments` table
-3. Create dimension/insights/prompts tables
-4. Create `index_participant_data` table
-5. Set up RLS policies
-
-(See ARCHITECTURE.md for full schema)
-
----
-
-## Step 5: Install shadcn Components
-
-```bash
-npx shadcn-ui@latest add button card badge input label
-npx shadcn-ui@latest add tabs dialog select checkbox
-npx shadcn-ui@latest add progress skeleton tooltip
-```
-
----
-
-## Step 6: Create Core Files
-
-**src/types/pipeline.ts**: (see project-documentation/ARCHITECTURE.md)
-
-**src/utils/pipelineGuards.ts**: Input validation
-
-**src/utils/orchestrateAssessmentV2.ts**: Main orchestration logic
-
-**src/utils/aggregateLeaderResults.ts**: Data aggregation
-
-**src/utils/edgeFunctionClient.ts**: Edge function wrapper
-
----
-
-## Step 7: Build UI Components
-
-**src/components/HeroSection.tsx**: Landing page
-
-**src/components/UnifiedAssessment.tsx**: Quiz + voice flow
-
-**src/components/UnifiedResults.tsx**: Results with tabs
-
-**src/components/LeadershipBenchmarkV2.tsx**: Overview tab
-
-**src/components/TensionsView.tsx**: Tensions tab
-
-**src/components/PromptLibraryV2.tsx**: Tools tab
-
----
-
-## Step 8: Edge Functions
-
-**supabase/functions/create-leader-assessment/index.ts**:
-```ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-serve(async (req) => {
-  // Parse request body
-  // Create assessment record
-  // Calculate scores
-  // Return assessmentId
-})
-```
-
-Create similar functions for:
-- generate-personalized-insights
-- generate-prompt-library
-- compute-tensions
-- compute-risk-signals
-- derive-org-scenarios
-
-**Deploy**:
-```bash
-supabase functions deploy function-name
-```
-
----
-
-## Step 9: Configure Secrets
-
-In Supabase dashboard, add secrets:
-- `OPENAI_API_KEY`
-- `RESEND_API_KEY`
-- `STRIPE_SECRET_KEY`
-
----
-
-## Step 10: Set Up Routing
-
-**src/main.tsx**:
-```tsx
-import { BrowserRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-const queryClient = new QueryClient()
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </BrowserRouter>
-)
-```
-
-**src/App.tsx**:
-```tsx
-import { Routes, Route } from 'react-router-dom'
-import Index from './pages/Index'
-import NotFound from './pages/NotFound'
-
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  )
-}
-```
-
----
-
-## Step 11: Test Locally
-
-```bash
-# Start dev server
+npm ci
+cp .env.example .env.local
 npm run dev
-
-# In separate terminal, start Supabase locally
-supabase start
-
-# Test edge functions locally
-supabase functions serve
 ```
 
----
+Required frontend variables:
 
-## Step 12: Deploy
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY` or a modern Supabase publishable key
 
-**Frontend** (Lovable Cloud):
+Never place service-role, secret, provider, email, payment, or cron credentials in `VITE_*` variables.
+
+## Supabase setup
+
+For a new project:
+
+1. Link the CLI to the intended project.
+2. Enable the extensions referenced by migrations.
+3. Review migrations in order and apply them to a branch or disposable project first.
+4. Apply the complete migration set.
+5. Deploy only the functions needed by the release, using `supabase/config.toml` as the auth contract.
+6. Set server-only provider secrets.
+7. Run security and performance advisors.
+
+The canonical production database has historical migration-ledger drift from changes applied outside the ledger. Do not run an unreviewed blanket `supabase db push` against it. For canonical production, preflight the target schema, execute reviewed additive migration files exactly, read back the resulting objects and policies, then record only the successfully applied versions.
+
+## Server-only secrets
+
+Core production capabilities use:
+
+- `OPENAI_API_KEY`
+- `ELEVENLABS_API_KEY`
+- `RESEND_API_KEY`
+- Stripe secrets used by the existing billing functions
+- Search/news provider keys used by `live-headlines`
+
+The Control Center bridge uses:
+
+- `CONTROL_CENTER_URL`
+- `CONTROL_CENTER_PUBLISHABLE_KEY`
+
+The key must be publishable and constrained by Control Center RLS to reads. Never use a cross-project service-role key for this adapter.
+
+## Vault-backed delivery cron
+
+Migration `20260810220000_vault_backed_briefing_cron.sql` creates one random `ctrl_cron_secret` inside Supabase Vault and schedules:
+
+- `live-headlines-prewarm` at 10:30 UTC
+- `daily-briefing-email` at 12:00 UTC
+
+Deployment tooling must read that value through an authenticated management session and set the matching Edge Function secret `CTRL_CRON_SECRET` without printing or persisting it. The functions receive it only in `X-CTRL-Cron-Secret`. Do not restore `app.supabase_service_role_key`.
+
+Verify with value-free checks:
+
+- one Vault secret named `ctrl_cron_secret`;
+- two active jobs whose commands use `X-CTRL-Cron-Secret` and not the legacy setting;
+- an Edge Function secret named `CTRL_CRON_SECRET`;
+- a successful count-only `live-headlines?debug=1` probe;
+- a fresh `live_headlines_cache` row after `force=1` prewarm.
+
+## Function auth matrix
+
+- User-scoped AI, memory, Blind Spot, briefing conversation, audio synthesis, cards, and decision summary require a signed-in user or explicit ownership check.
+- Cron/webhook/public-onboarding functions disable platform JWT verification only when the handler performs custom authentication or exposes a deliberately public, validated contract.
+- `live-headlines` implements auth in the handler so user JWTs and the Vault cron secret can coexist.
+- Public inputs must validate, rate-limit where costly, and converge idempotently on retry.
+
+## Control Center data boundary
+
+Control Center is a source adapter inside `live-headlines`, not a second product or feed. Only source-backed, high-fit items enter the pool. The published article host remains the source identity. The adapter fails closed if either bridge setting is absent.
+
+## Frontend release
+
+Vercel is Git-connected. A merge to `main` creates the production deployment.
+
+Canonical domains:
+
+- `makeyourmindup.ai`
+- `www.makeyourmindup.ai`
+
+Retired domains should remain attached only as permanent redirects to the canonical host:
+
+- `ctrl.themindmaker.ai` (retired redirect)
+- `www.ctrl.themindmaker.ai` (retired redirect)
+
+Do not move the canonical domain until the candidate deployment is READY and accepted. Keep the prior production deployment and pre-release commit recorded for rollback.
+
+## Verification gates
+
+Before merge:
+
 ```bash
-git push origin main  # Auto-deploys
+npm run docs:check
+npm run standards:check
+npm run typecheck
+npm test -- --run
+npm run build
 ```
 
-**Edge Functions**:
-```bash
-supabase functions deploy --project-ref YOUR_REF
-```
+Also run changed-file ESLint, bundle every altered Edge Function, and inspect the Vercel preview at desktop, mobile, and 320px. Run `npm run test:e2e` against an active local server or an authorised preview through `E2E_BASE_URL`; report the current skipped authenticated specs until the auth seed helper is wired.
 
-**Database**:
-```bash
-supabase db push --project-ref YOUR_REF
-```
+Production acceptance must prove:
 
----
+- public onboarding, authentication boundary, and First Lens;
+- Today hierarchy, premium category visuals, briefing control, and Settings access;
+- briefing play/pause/read/talk-back behavior;
+- Decide, Blind Spot confirmation, and Memory entry;
+- no horizontal overflow, clipped visible copy, broken fonts, or sub-44px signature controls;
+- public functions reject malformed input, cron-only handlers reject anonymous calls, and user-scoped handlers reject anonymous calls;
+- Control Center contributes through the shared pool;
+- scheduled prewarm creates a fresh cache;
+- canonical host serves the release and retired host redirects;
+- no new frontend, Edge Function, database, auth, or Vercel runtime errors.
 
-## Verification Checklist
+## Rollback
 
-- [ ] Landing page loads
-- [ ] Quiz assessment completes
-- [ ] Voice assessment completes
-- [ ] Results display correctly
-- [ ] All tabs work (Overview, Tensions, Tools)
-- [ ] Dark mode works
-- [ ] Mobile responsive
-- [ ] Edge functions don't timeout
-- [ ] Payment flow works
-- [ ] Email confirmations send
+- Frontend: revert the release merge on `main` and let Vercel deploy the revert.
+- Edge Functions: redeploy the function set from the recorded pre-release commit.
+- Additive schema: leave new tables and columns dormant unless a separately reviewed destructive rollback is necessary.
+- Domain: move the canonical domains back only if the previous deployment is known-good and the production acceptance failure requires it.
 
----
-
-## Daily Briefing Subsystem Setup (v2, Apr 2026)
-
-Running the Briefing in its v2 / evidence-based form requires three things in addition to the base app: extensions, migrations, and edge functions.
-
-**1. Enable PostgreSQL extensions**
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;    -- embeddings (text-embedding-3-small, 1536 dims)
-CREATE EXTENSION IF NOT EXISTS pgcrypto;  -- digest('sha256', ...) for lens signatures
-CREATE EXTENSION IF NOT EXISTS pg_cron;   -- nightly aggregator schedule
-```
-
-**2. Apply migrations in order**
-```
-supabase/migrations/20260418000000_briefing_v2_pgvector_schema.sql   -- schema_version + feedback extension
-supabase/migrations/20260419000000_briefing_interests.sql            -- user-declared beats/entities/excludes
-supabase/migrations/20260419000001_industry_beat_library.sql         -- cold-start seeds (11 industries)
-supabase/migrations/20260419000002_briefing_lens_feedback.sql        -- persistent negative feedback
-supabase/migrations/20260419000003_briefing_aggregate_feedback_cron.sql  -- plpgsql aggregator + pg_cron schedule
-```
-All migrations are idempotent (`IF NOT EXISTS`, `ON CONFLICT DO UPDATE`).
-
-**3. Deploy briefing edge functions**
-```bash
-supabase functions deploy \
-  generate-briefing synthesize-briefing \
-  briefing-diagnose get-industry-seeds \
-  briefing-kill-lens-item briefing-aggregate-feedback
-```
-
-**4. Required secrets** (Supabase → Settings → Secrets)
-- `OPENAI_API_KEY` - embeddings + curation LLM
-- `PERPLEXITY_API_KEY`, `TAVILY_API_KEY`, `BRAVE_SEARCH_API` - at least one required; more = better recall
-- `ELEVENLABS_API_KEY` - audio synthesis
-
-**5. Optional env vars**
-- `BRIEFING_V2_ENABLED_DEFAULT=true` - flip every user to v2. Leave unset (false) to roll out per-user via `user_memory.briefing_v2_enabled`.
-- `BRIEFING_DEDUPE_THRESHOLD=0.87` - cosine threshold for headline dedupe
-- `BRIEFING_EXCLUDE_THRESHOLD=0.80` - cosine threshold for user-exclude post-filter
-
-**6. Verify cron job**
-```sql
-SELECT jobid, jobname, schedule, active FROM cron.job WHERE jobname = 'briefing-aggregate-feedback-nightly';
--- Expected: schedule='7 3 * * *', active=true
-```
-
-**7. Smoke test**
-From an authenticated browser console:
-```js
-const r = await supabase.functions.invoke('briefing-diagnose')
-console.log({
-  lensSize: r.data.lens.length,
-  interests: r.data.interests.length,
-  lastSchema: r.data.last_briefing?.schema_version,
-})
-```
-A healthy v2-ready user: `lensSize > 0`, `lastSchema === 2` (after first v2 generation).
-
----
-
-## Common Setup Issues
-
-**Issue**: Supabase client returns 401
-**Fix**: Check VITE_SUPABASE_ANON_KEY is correct
-
-**Issue**: Edge functions timeout
-**Fix**: Increase timeout in Supabase dashboard, check OpenAI API key
-
-**Issue**: Types out of sync
-**Fix**: Run `supabase gen types typescript > src/integrations/supabase/types.ts`
-
-**Issue**: CSS variables not applying
-**Fix**: Ensure index.css imported in main.tsx
-
----
-
-## Time Estimate
-
-- Initial setup: 2 hours
-- Database schema: 3 hours
-- UI components: 8 hours
-- Edge functions: 6 hours
-- Testing & debugging: 4 hours
-
-**Total**: ~23 hours for experienced developer
+A release is not complete until documentation describes the deployed state, not the intended state.

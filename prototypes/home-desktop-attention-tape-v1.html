@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CTRL Home: Attention Tape v1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07090c;
+      --panel: #0a0d11;
+      --line: #20262e;
+      --line-soft: #151b21;
+      --ink: #f1efe9;
+      --muted: #929aa5;
+      --quiet: #606873;
+      --signal: #25e1ba;
+      --signal-soft: rgba(37, 225, 186, 0.1);
+      --cream: #f3efe6;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 74% 28%, rgba(37, 225, 186, 0.035), transparent 30%),
+        var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 206px minmax(0, 1fr);
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .rail {
+      display: flex;
+      min-height: 0;
+      flex-direction: column;
+      border-right: 1px solid var(--line-soft);
+      background: rgba(9, 12, 16, 0.9);
+    }
+
+    .brand {
+      display: flex;
+      height: 58px;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 0 18px;
+    }
+
+    .mark {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      transform: rotate(2deg);
+    }
+
+    .mark span { border-radius: 1px; background: var(--signal); }
+    .mark span:first-child { opacity: .35; transform: translateY(4px); }
+    .mark span:nth-child(2) { opacity: .7; }
+    .mark span:nth-child(3) { opacity: .75; }
+    .mark span:nth-child(4) { background: var(--cream); opacity: .9; }
+
+    .brand-name,
+    .eyebrow,
+    .meta,
+    .section-label,
+    .rank {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: .15em;
+    }
+
+    .brand-name { font-size: 10px; color: #adb5bf; letter-spacing: .24em; }
+
+    nav { padding: 14px 10px; }
+
+    .nav-label {
+      margin: 16px 10px 7px;
+      color: #4f5863;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      display: flex;
+      min-height: 40px;
+      align-items: center;
+      gap: 11px;
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      padding: 0 12px;
+      color: #8f98a4;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav-item[aria-current="page"] {
+      background: rgba(37, 225, 186, .105);
+      color: var(--signal);
+      box-shadow: inset 2px 0 0 var(--signal);
+    }
+
+    .nav-dot {
+      width: 13px;
+      height: 13px;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      opacity: .78;
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: auto;
+      border-top: 1px solid var(--line-soft);
+      padding: 14px 16px 17px;
+    }
+
+    .avatar {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--signal-soft);
+      color: var(--signal);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .person strong { display: block; font-size: 12px; }
+    .person span { display: block; margin-top: 2px; color: var(--quiet); font-size: 10px; }
+
+    .workspace {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      grid-template-rows: 58px minmax(0, 1fr);
+    }
+
+    .topbar {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 22px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 0 32px;
+      background: rgba(7, 9, 12, .82);
+    }
+
+    .top-title { flex: 0 0 auto; }
+    .top-title .eyebrow { color: #515a65; font-size: 8px; }
+    .top-title strong { display: block; margin-top: 3px; font-size: 12px; }
+
+    .command {
+      display: flex;
+      width: min(430px, 42vw);
+      min-height: 36px;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 0 12px;
+      color: #727b87;
+      font-size: 12px;
+    }
+
+    .command kbd {
+      border: 1px solid #29303a;
+      border-radius: 6px;
+      padding: 3px 6px;
+      color: #7f8995;
+      font: 9px "SFMono-Regular", Consolas, monospace;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-left: auto;
+    }
+
+    .quiet-action {
+      border: 0;
+      background: transparent;
+      color: #7f8995;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .preview-badge {
+      border: 1px solid #28303a;
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: #69727d;
+      font: 8px "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    main {
+      display: flex;
+      min-width: 0;
+      min-height: 0;
+      align-items: center;
+      padding: clamp(22px, 3vh, 40px) clamp(28px, 3.2vw, 52px);
+    }
+
+    .brief {
+      position: relative;
+      display: grid;
+      width: 100%;
+      height: min(760px, calc(100dvh - 112px));
+      min-height: 0;
+      grid-template-rows: auto minmax(240px, 1.5fr) minmax(118px, .72fr) minmax(118px, .72fr) auto;
+      overflow: hidden;
+    }
+
+    .brief::before {
+      position: absolute;
+      top: 82px;
+      bottom: 42px;
+      left: 17px;
+      width: 1px;
+      background: linear-gradient(var(--signal), rgba(37, 225, 186, .1));
+      content: "";
+    }
+
+    .brief-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 28px;
+      padding: 0 0 20px 54px;
+    }
+
+    .brief-head .eyebrow { color: var(--signal); font-size: 9px; }
+    .brief-head h1 { margin: 8px 0 0; font-size: clamp(28px, 2.5vw, 40px); line-height: 1.05; letter-spacing: -.035em; }
+    .brief-head p { max-width: 42ch; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; text-align: right; }
+
+    .signal {
+      position: relative;
+      display: grid;
+      min-height: 0;
+      grid-template-columns: 54px minmax(0, 1fr);
+      border-top: 1px solid var(--line);
+    }
+
+    .signal-marker {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      align-content: start;
+      justify-items: center;
+      padding-top: 25px;
+    }
+
+    .signal-marker::before {
+      width: 11px;
+      height: 11px;
+      border: 2px solid var(--panel);
+      border-radius: 50%;
+      background: var(--signal);
+      box-shadow: 0 0 0 1px var(--signal), 0 0 20px rgba(37, 225, 186, .36);
+      content: "";
+    }
+
+    .signal-marker .rank { margin-top: 13px; color: var(--quiet); font-size: 8px; writing-mode: vertical-rl; }
+
+    .primary-body {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      grid-template-columns: minmax(0, 1.45fr) minmax(230px, .55fr);
+      gap: clamp(34px, 5vw, 84px);
+      align-items: center;
+      padding: 30px 4px 32px 0;
+    }
+
+    .section-label { color: var(--signal); font-size: 9px; }
+
+    .lead h2 {
+      max-width: 23ch;
+      margin: 13px 0 0;
+      font-size: clamp(36px, 4.1vw, 62px);
+      line-height: .99;
+      letter-spacing: -.045em;
+      text-wrap: balance;
+    }
+
+    .lead p {
+      max-width: 56ch;
+      margin: 20px 0 0;
+      color: #b6bec8;
+      font-size: clamp(15px, 1.2vw, 18px);
+      line-height: 1.58;
+    }
+
+    .next {
+      align-self: end;
+      border-left: 1px solid var(--line);
+      padding-left: 26px;
+    }
+
+    .next .meta { color: #5f6873; font-size: 8px; }
+    .next p { margin: 10px 0 22px; color: #9fa8b3; font-size: 13px; line-height: 1.55; }
+
+    .primary-action {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: var(--cream);
+      color: #101316;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .supporting .signal-marker { padding-top: 22px; }
+    .supporting .signal-marker::before { width: 7px; height: 7px; border-width: 1px; box-shadow: 0 0 0 1px rgba(37,225,186,.55); }
+
+    .support-body {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      grid-template-columns: minmax(135px, .34fr) minmax(330px, 1.22fr) minmax(220px, .88fr) auto;
+      gap: clamp(20px, 2.5vw, 42px);
+      align-items: center;
+      padding: 17px 4px 18px 0;
+    }
+
+    .category {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--signal);
+      font: 9px "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .category-icon {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(37, 225, 186, .25);
+      border-radius: 50%;
+    }
+
+    .category-icon::before,
+    .category-icon::after {
+      position: absolute;
+      content: "";
+    }
+
+    .category-icon::before { inset: 9px 7px; border-bottom: 1px solid var(--signal); transform: skewY(-18deg); }
+    .category-icon::after { right: 7px; bottom: 8px; width: 4px; height: 4px; border-radius: 50%; background: var(--signal); }
+
+    .support-copy { min-width: 0; }
+    .support-copy h3 { margin: 0; font-size: clamp(18px, 1.7vw, 25px); line-height: 1.13; letter-spacing: -.026em; text-wrap: balance; }
+    .support-copy p { margin: 7px 0 0; color: #8f98a4; font-size: 13px; line-height: 1.46; }
+
+    .supporting + .supporting { border-bottom: 1px solid var(--line); }
+
+    .evidence {
+      color: #7c8591;
+      font-size: 11px;
+      line-height: 1.52;
+    }
+
+    .evidence strong { display: block; margin-bottom: 3px; color: #aeb6c0; font-weight: 650; }
+
+    .row-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 0;
+      background: transparent;
+      color: var(--signal);
+      font-size: 11px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .lower-register {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      border-top: 1px solid var(--line);
+      padding: 17px 4px 0 54px;
+      color: var(--quiet);
+      font-size: 11px;
+    }
+
+    .lower-register strong { color: #8d96a1; font-weight: 650; }
+
+    button:focus-visible {
+      outline: 2px solid var(--cream);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 1320px) {
+      .app { grid-template-columns: 188px minmax(0, 1fr); }
+      .support-body { grid-template-columns: 130px minmax(300px, 1.15fr) minmax(190px, .7fr) auto; gap: 20px; }
+      .lead h2 { font-size: clamp(34px, 4vw, 50px); }
+      .primary-body { gap: 34px; }
+    }
+
+    @media (max-height: 780px) {
+      main { padding-top: 18px; padding-bottom: 18px; }
+      .brief {
+        height: calc(100dvh - 94px);
+        grid-template-rows: auto minmax(205px, 1.35fr) minmax(100px, .66fr) minmax(100px, .66fr);
+      }
+      .brief::before { top: 64px; bottom: 0; }
+      .brief-head { padding-bottom: 13px; }
+      .brief-head h1 { font-size: 28px; }
+      .brief-head p { max-width: 34ch; line-height: 1.35; }
+      .primary-body { gap: 28px; padding-top: 18px; padding-bottom: 18px; }
+      .lead h2 { margin-top: 9px; font-size: clamp(31px, 3.5vw, 44px); }
+      .lead p { margin-top: 12px; font-size: 14px; line-height: 1.45; }
+      .next p { margin-bottom: 14px; line-height: 1.4; }
+      .support-body { padding-top: 12px; padding-bottom: 12px; }
+      .support-copy h3 { font-size: 18px; }
+      .support-copy p { margin-top: 4px; }
+      .lower-register { display: none; }
+    }
+
+    @media (max-width: 1150px) {
+      .support-body { grid-template-columns: 125px minmax(0, 1fr) auto; }
+      .evidence { display: none; }
+      .command { width: 330px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail" aria-label="CTRL navigation">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <span class="brand-name">CTRL</span>
+      </div>
+      <nav aria-label="Primary">
+        <button class="nav-item" aria-current="page"><span class="nav-dot" aria-hidden="true"></span>Today</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Decide</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Blind spot</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Memory</button>
+        <div class="nav-label">Account</div>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Profile</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Compliance</button>
+        <button class="nav-item"><span class="nav-dot" aria-hidden="true"></span>Settings</button>
+      </nav>
+      <div class="person">
+        <div class="avatar">KR</div>
+        <div><strong>Krish</strong><span>Personal workspace</span></div>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="top-title"><span class="eyebrow">Home</span><strong>Today</strong></div>
+        <div class="command" aria-label="Command menu"><span>Jump anywhere or ask CTRL</span><kbd>Ctrl K</kbd></div>
+        <div class="top-actions">
+          <button class="quiet-action">Tune</button>
+          <button class="quiet-action">Listen</button>
+          <span class="preview-badge">Design preview</span>
+        </div>
+      </header>
+
+      <main>
+        <div class="brief">
+          <header class="brief-head">
+            <div>
+              <span class="eyebrow">Your brief · updated just now</span>
+              <h1>Good evening, Krish.</h1>
+            </div>
+            <p>Three things moved. One deserves your attention.</p>
+          </header>
+
+          <section class="signal primary" aria-labelledby="primary-heading">
+            <div class="signal-marker"><span class="rank">First</span></div>
+            <div class="primary-body">
+              <div class="lead">
+                <span class="section-label">Your next move</span>
+                <h2 id="primary-heading">Teach CTRL how you sound.</h2>
+                <p>Give me one piece of writing you trust. I’ll learn the patterns and use them across every draft.</p>
+              </div>
+              <div class="next">
+                <span class="meta">Why this now</span>
+                <p>You have already calibrated real decisions. Voice is the missing layer.</p>
+                <button class="primary-action">Set up my voice <span aria-hidden="true">→</span></button>
+              </div>
+            </div>
+          </section>
+
+          <section class="signal supporting" aria-labelledby="shift-heading">
+            <div class="signal-marker"><span class="rank">Second</span></div>
+            <div class="support-body">
+              <div class="category"><span class="category-icon" aria-hidden="true"></span>The shift</div>
+              <div class="support-copy">
+                <h3 id="shift-heading">Execution is cheap. Judgment is the moat.</h3>
+                <p>As anything cloneable loses its edge, judgment, taste, distribution and context become the scarce assets.</p>
+              </div>
+              <div class="evidence"><strong>Recurring pattern</strong>Proof and adoption · ongoing</div>
+              <button class="row-action" aria-label="Read Execution is cheap. Judgment is the moat">Read <span aria-hidden="true">→</span></button>
+            </div>
+          </section>
+
+          <section class="signal supporting" aria-labelledby="hark-heading">
+            <div class="signal-marker"><span class="rank">Third</span></div>
+            <div class="support-body">
+              <div class="category"><span class="category-icon" aria-hidden="true"></span>AI economics</div>
+              <div class="support-copy">
+                <h3 id="hark-heading">Hark launches affordable computer-use agent Hark Handoff.</h3>
+                <p>Lower-cost computer use makes advanced agent workflows available to smaller teams.</p>
+              </div>
+              <div class="evidence"><strong>VentureBeat</strong>4 days ago · ranked for you</div>
+              <button class="row-action" aria-label="Read Hark launches affordable computer-use agent Hark Handoff">Read <span aria-hidden="true">→</span></button>
+            </div>
+          </section>
+
+          <div class="lower-register">
+            <span><strong>Two more changes</strong> are in your full brief. Neither needs you now.</span>
+            <span class="meta">Next scan tomorrow morning</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

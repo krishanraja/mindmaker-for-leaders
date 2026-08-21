@@ -1,76 +1,27 @@
-# Voice Profile
+# Voice profile subsystem
 
-The Voice Profile is the leader's self-identified style fingerprint. It tells the Automator (and any future skill-building surface) how the output should sound, so generated skills produce text that reads like the leader wrote it rather than generic AI prose.
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
 
-## Why self-identification, not document collection
+Voice Profile is a dormant, unmounted capture subsystem retained for compatibility with existing memory records and the nested skill-generation harness. It is not a primary CTRL surface and must not be marketed as a current user capability until a one-tap, tested entry point exists.
 
-Recognition is far cheaper than recall. Asking a leader to "describe your communication style" forces three jobs (build a mental model of the question, introspect, articulate) before they can answer. Showing them concrete chips ("Cheers, mate" vs "Sincerely") and asking "which is closer to you?" reduces the decision to seconds and produces behaviorally specific data. See `_upgrade/APPENDIX-A-intake-theory.md` for the full theory.
+Existing profiles live as one owner-scoped `user_memory` fact:
 
-`VoiceStyleProfileSheet` (in `src/components/edge/`) captures the profile via FIVE recognition picks (how / structure / sentence / first-person / sign-off, roughly 90 seconds) OR a paste-extract power path: the leader pastes real writing they already wrote, and the `extract-voice-profile` edge function derives all 8 dimensions in one LLM pass. No document collection, no introspection essay.
-
-## Data model
-
-The voice profile is a SINGLE JSON fact in `user_memory`. No new table, no new column, and NOT a set of `voice_profile.*` rows.
-
-| Column | Value |
+| Field | Value |
 |---|---|
 | `fact_key` | `ctrl_voice_profile` |
-| `fact_category` | `'preference'` |
-| `fact_subtype` | `'communication_style'` |
-| `fact_value` | a JSON object holding all 8 dimensions (see below) |
-| `verification_status` | `'verified'` (leader picked it or pasted their own writing) |
+| `fact_category` | `preference` |
+| `fact_subtype` | `communication_style` |
+| `verification_status` | `verified` |
 | `is_current` | `true` |
 
-RLS owner-scopes by `user_id`, which is satisfied for both authenticated and anonymous (Kit) sessions because `auth.uid()` is the same key.
+The capture UI and its hook were removed on 2026-08-20 as unreachable code: `src/hooks/useVoiceProfile.ts` and `src/components/edge/VoiceStyleProfileSheet.tsx` were imported by no route and are gone. Nothing writes a new `ctrl_voice_profile` fact today.
 
-## The eight dimensions
+The read path survives and still matters. `supabase/functions/_shared/memory-context-builder.ts` appends an existing profile to generated context, `generate-skill-export` consumes it for the nested skill harness, and `src/hooks/useCapabilitySignals.ts` reads it to report capability state. The memory-context heading and the skill-export scrape expression are coupled and must change together.
 
-The `fact_value` JSON object carries these keys. Types in `src/types/voiceProfile.ts`; read/write via `src/hooks/useVoiceProfile.ts`.
+Restoring capture means building a new, tested entry point, not resurrecting the deleted sheet.
 
-| JSON key | Dimension | Example value | Used in the skill body |
-|---|---|---|---|
-| `signoff` | Sign-off | `Cheers, Krish` | `## Voice and tone` end-of-message rule |
-| `disagreement` | Disagreement style | `context-first` | How the output handles pushback |
-| `contentArchetype` | Content archetype | `story-lesson` | Macro-structure of the generated text |
-| `sentenceLength` | Sentence length | `short-punchy` | Per-sentence target inside the body |
-| `firstPerson` | First-person preference | `heavy-I` | Perspective anchor in the body |
-| `punctuationStyle` | Punctuation signature | `em-dash` | Micropattern rule + voice-regression gotcha |
-| `hardRules[]` | Never-say rules (array) | `never start with "I hope this finds you well"` | Verbatim hard rules in the body |
-| `sampleVoice?` | Free-text sample (optional) | 2-3 sentences the leader actually wrote | Fenced code block under `// target voice register` |
+The old anonymous Kit flow is retired and `/kit*` redirects to `/try`. Historical `ctrl_voice_profile` facts remain attached to their owners and continue to be protected by Row-Level Security.
 
-## Consumption pipeline
-
-1. `useVoiceProfile.save(profile)` upserts the single `ctrl_voice_profile` fact on the client.
-2. `buildMemoryContext(supabase, userId, ...)` in `supabase/functions/_shared/memory-context-builder.ts` reads the `ctrl_voice_profile` fact from `user_memory` and appends it to the markdown context as a `## Voice profile (self-identified)` section (`formatVoiceProfileSection`, line 94; the fallback heading is `## Voice profile` when the JSON will not parse). There is no separate voice field on the result: `MemoryContextResult` is `{ context, tokenCount, factCount, patternCount, decisionCount, lastUpdated, artefacts?, touchedFactIds? }` and nothing else. There is no opt-in either: the section is appended to the context unconditionally (lines 171-176), so every caller pays the tokens. The only things that drop it are a `useCase` filter that excludes `preference` facts (meeting, strategy, delegation, board, decision_journal) and the token-budget trim.
-3. `generate-skill-export/index.ts` scrapes that section back out of the context string with `/## Voice profile[\s\S]*?(?=\n## |\n*$)/` (line 157) and passes the match into `buildSkillUserPrompt({ voiceProfileContext, ... })` as the `VOICE_PROFILE` field. The section also stays in `memoryContext`.
-4. The prompt (`prompt.ts`) requires the body to include a `## Voice and tone` section when `VOICE_PROFILE` is non-empty, and the references array to include a structured 8-dimension `voice-profile.md` companion file. It forbids fabricated voice samples: reproduce the leader's real sample verbatim, otherwise describe the register, never invent a quote.
-5. `quality-gate.ts` runs the full gate (17 checks, including a required `## Learning loop` section) plus the `body.voiceLockSurfaced` check. That check is live, not aspirational: `index.ts` builds `skillData` with `voice_profile_present` (true when the scraped block was non-empty) and the model's `archetype`, so the gate knows when a `## Voice and tone` section was expected and reports its absence. It stays advisory: the export still ships, and the UI can offer a regenerate.
-
-> Coupling warning: the heading emitted at `memory-context-builder.ts:94` and the scrape regex at `generate-skill-export/index.ts:157` are load-bearing for each other. Rename the heading on its own and skill builds silently lose their voice block with no error anywhere. Change the two together.
-
-## Voice-lock triage
-
-The Four Honest Tests in the prompt include VOICE-LOCK as the fourth passing category. A workflow that says "draft LinkedIn posts in my voice" passes:
-
-- REPEATABLE (LinkedIn posts are a recurring output)
-- BOUNDED (the trigger is "LinkedIn post")
-- VOICE-LOCK (the output must be in the leader's voice)
-
-Result: archetype `voice-lock`, not `saved_style`. The skill body carries the verbatim voice rules; the saved_style routing is reserved for genuinely universal preferences with no bounded trigger ("make everything I write more confident").
-
-## Anonymous Kit flow
-
-Kit students enter via `/kit?code=...`, which auto-creates an anonymous Supabase session. They redeem, complete intake, ship their kit, then see `KitVoiceProfileCard`. The voice profile saves as the `ctrl_voice_profile` fact under the anonymous `user_id`. When they upgrade, `upgradeAnonymousSession()` converts the anonymous user into a named CTRL Free account - all `user_memory` rows (including `ctrl_voice_profile`) and `kit_redemptions` rows stay linked because `auth.uid()` is preserved across upgrade.
-
-## Touchpoints
-
-| File | Role |
-|---|---|
-| `src/types/voiceProfile.ts` | The `VoiceProfile` type holding the 8 dimensions |
-| `src/hooks/useVoiceProfile.ts` | Read + upsert hook for the single `ctrl_voice_profile` fact |
-| `src/components/edge/VoiceStyleProfileSheet.tsx` | The five-pick recognition sheet plus the paste-extract power path |
-| `src/components/kit/KitVoiceProfileCard.tsx` | Kit entry point that triggers the sheet |
-| `supabase/functions/extract-voice-profile/index.ts` | Derives the 8 dimensions from pasted real writing in one LLM pass |
-| `supabase/functions/_shared/memory-context-builder.ts` | Appends the `## Voice profile (self-identified)` section to `context` (heading coupled to the skill-export scrape regex) |
-| `supabase/functions/generate-skill-export/prompt.ts` | Four Honest Tests + `## Voice and tone` requirement + structured `voice-profile.md` + no-fabricated-samples rule |
-| `supabase/functions/generate-skill-export/quality-gate.ts` | Full 17-check gate (incl. required `## Learning loop`) + the live `body.voiceLockSurfaced` advisory check |
+The human voice of the audio briefing is a separate product contract. It is governed by the briefing script, conversational follow-up, and speech synthesis settings, not by this dormant writing-style profile.

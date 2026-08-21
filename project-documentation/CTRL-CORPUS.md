@@ -1,4 +1,8 @@
-# The CTRL Corpus - What This App Must Be
+# Historical CTRL corpus
+
+Status: Historical
+
+> Historical product research and philosophy only. It is retained as provenance, not as a competing source of current product truth. Start at [`../docs/current/product.md`](../docs/current/product.md). The earlier rewrite-or-retire TODO is resolved: this corpus is retired from the current authority path.
 
 > **RECONCILIATION BANNER (2026-06-21).** This Corpus was written under the earlier "clarity engine" positioning. That headline is now SUPERSEDED. The LOCKED positioning (2026-06-19) is: CTRL is the tool for building, orchestrating, productizing, and getting to market **the AI-native version of your business**, not a general clarity engine and not a general business advisor. General-business inputs are reframed into the AI-native lens. Read this Corpus for its product philosophy and the intelligence-layer thinking (still valuable), but where it frames CTRL as "clarity / see one step clearer", substitute the AI-native positioning. Canonical: `docs/MAIN-APP-POLISH-SPEC.md` (esp. section 0), `docs/KIT-REDESIGN-SPEC.md`, root `README.md`. TODO(founder): decide whether this Corpus is rewritten to the AI-native positioning or retired in favour of the two specs.
 

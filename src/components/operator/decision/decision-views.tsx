@@ -562,7 +562,7 @@ export function DecisionCold({
             <button
               type="button"
               onClick={onOpenDecisions}
-              className="text-[11.5px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              className="min-h-11 rounded-lg px-4 text-[11.5px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Open decisions ({openCount})
             </button>

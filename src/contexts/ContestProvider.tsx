@@ -1,11 +1,9 @@
 /* eslint-disable react-refresh/only-export-components -- provider module legitimately exports the provider, a context hook, and a small wrapper */
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { toast } from 'sonner';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { ContestPanel } from '@/components/contest/ContestPanel';
-import { useContest } from '@/hooks/useContest';
+import { createContext, lazy, Suspense, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useLongPress } from '@/hooks/useLongPress';
-import type { ContestKind, ContestResult, ContestTarget } from '@/types/contest';
+import type { ContestTarget } from '@/types/contest';
+
+const ContestDrawer = lazy(() => import('@/components/contest/ContestDrawer').then((module) => ({ default: module.ContestDrawer })))
 
 interface ContestContextValue {
   openContest: (target: ContestTarget) => void;
@@ -35,53 +33,24 @@ export function ContestLongPress({ target, children, className }: { target: Cont
 }
 
 export function ContestProvider({ children }: { children: ReactNode }) {
-  const { submitContest, submitting } = useContest();
   const [open, setOpen] = useState(false);
   const [target, setTarget] = useState<ContestTarget | null>(null);
-  const [kind, setKind] = useState<ContestKind | null>(null);
-  const [note, setNote] = useState('');
-  const [result, setResult] = useState<ContestResult | null>(null);
 
   const openContest = useCallback((t: ContestTarget) => {
     setTarget(t);
-    setKind(null);
-    setNote('');
-    setResult(null);
     setOpen(true);
   }, []);
-
-  const handleSubmit = useCallback(async () => {
-    if (!target || !kind) return;
-    try {
-      const r = await submitContest(target, kind, note);
-      setResult(r);
-    } catch (err) {
-      console.error('contest submit failed', err);
-      toast.error('Could not send that. Try again.');
-    }
-  }, [target, kind, note, submitContest]);
 
   const value = useMemo(() => ({ openContest }), [openContest]);
 
   return (
     <ContestContext.Provider value={value}>
       {children}
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="mx-auto max-w-md">
-          <DrawerTitle className="sr-only">Contest this</DrawerTitle>
-          <ContestPanel
-            target={target}
-            selectedKind={kind}
-            onSelectKind={setKind}
-            note={note}
-            onNoteChange={setNote}
-            onSubmit={handleSubmit}
-            submitting={submitting}
-            result={result}
-            onClose={() => setOpen(false)}
-          />
-        </DrawerContent>
-      </Drawer>
+      {target && (
+        <Suspense fallback={null}>
+          <ContestDrawer open={open} target={target} onOpenChange={setOpen} />
+        </Suspense>
+      )}
     </ContestContext.Provider>
   );
 }

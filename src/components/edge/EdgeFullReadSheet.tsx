@@ -15,15 +15,15 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { AutomatePainCard } from './AutomatePainCard';
+import { BlindSpotEntryCard } from './BlindSpotEntryCard';
 import type { EdgeStrength, EdgeWeakness, FeedbackType } from '@/types/edge';
 
 /**
  * The Full Read: the demoted home for strengths and gaps.
  *
  * Read-only rows, full labels (no truncation), summary always visible. One
- * quiet correction per row, no per-row capability buttons. The Skill Builder
- * lives here as a secondary value prop, not above the identity read.
+ * quiet correction per row, no per-row capability buttons. Blind Spot is the
+ * one reflective next step below the identity read.
  */
 
 interface EdgeFullReadSheetProps {
@@ -33,8 +33,6 @@ interface EdgeFullReadSheetProps {
   weaknesses: EdgeWeakness[];
   onReject: (feedbackType: FeedbackType, key: string) => void;
   onMakeNextMove: () => void;
-  isPaid: boolean;
-  onUpgrade: () => void;
 }
 
 function Row({
@@ -127,8 +125,7 @@ function FullReadBody({
         )}
       </section>
 
-      {/* Secondary value prop, demoted below the identity read */}
-      <AutomatePainCard />
+      <BlindSpotEntryCard />
 
       <Button onClick={onMakeNextMove} className="w-full">
         Make my next move

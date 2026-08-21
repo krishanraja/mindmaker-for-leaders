@@ -31,6 +31,9 @@ verify_jwt = true
 [functions.ai-assessment-chat]
 verify_jwt = true
 
+[functions.blind-spot]
+verify_jwt = true
+
 # User data functions - require auth
 [functions.create-leader-assessment]
 verify_jwt = true
@@ -107,6 +110,30 @@ verify_jwt = true
 [functions.synthesize-briefing]
 verify_jwt = true
 
+[functions.briefing-conversation]
+verify_jwt = true
+
+# Authentication is enforced in the handler so signed-in user JWTs and the
+# Vault-backed cron secret can coexist. Force/debug remain operator-only.
+[functions.live-headlines]
+verify_jwt = false
+
+# Authenticated, user-scoped briefing card generation.
+[functions.card-for-you]
+verify_jwt = true
+
+# Authenticated, user-scoped decision summary delivery.
+[functions.send-decision-summary]
+verify_jwt = true
+
+# Public aggregate only: emits anonymised lane counts, never source responses.
+[functions.portfolio-pulse]
+verify_jwt = false
+
+# Public branded image renderer; accepts only sanitized display text.
+[functions.share-card]
+verify_jwt = false
+
 # === COMPLIANCE FUNCTIONS ===
 [functions.delete-account]
 verify_jwt = true
@@ -114,8 +141,30 @@ verify_jwt = true
 [functions.cleanup-expired-data]
 verify_jwt = false
 
+# One-off third-party name backfill. Service-role only, enforced internally.
+[functions.backfill-pseudonymise]
+verify_jwt = false
+
 # Called by pg_cron (no JWT) to send the daily briefing email.
 [functions.send-daily-briefing]
+verify_jwt = false
+
+[functions.subscribe-briefing]
+verify_jwt = false
+
+[functions.unsubscribe-briefing]
+verify_jwt = false
+
+[functions.generate-result]
+verify_jwt = false
+
+[functions.track-fork]
+verify_jwt = false
+
+[functions.enrich-profile]
+verify_jwt = false
+
+[functions.send-result-email]
 verify_jwt = false
 
 # Called by pg_cron with the service role key; rejects everything else.
