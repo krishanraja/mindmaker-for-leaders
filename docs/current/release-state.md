@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production readback through the Supabase management API
+Last verified: 2026-08-21 against production readback through the Supabase management API
 
 ## Production baseline
 
@@ -10,10 +10,10 @@ Last verified: 2026-08-20 against production readback through the Supabase manag
 |---|---|
 | Canonical host | `https://makeyourmindup.ai` |
 | Source branch | `main` |
-| Application baseline | `b5770194b4646302f47e36655e389f7ec2eb43f8` |
-| Vercel deployment | `dpl_8pxe81bUS2A6dYsjkb9jyrNAdkJ8`, READY at the same source revision |
+| Application baseline | `19d80f36ecda990bce4c3e1e6d18c97387d9ed33` |
+| Vercel deployment | `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci`, READY in production at `19d80f36` |
 | Test suite | 891 tests in 55 files |
-| Edge Function directories | 114 excluding `_shared`, of 177 deployed on the shared project |
+| Edge Function directories | 114 excluding `_shared`, of 178 deployed on the shared project |
 | Hook files | 51 |
 | SQL migration files | 165 in the source tree |
 
@@ -58,6 +58,31 @@ The retention control was therefore not merely dormant, as previously recorded h
 - `cleanup_expired_memories` is SECURITY DEFINER and deletes across all accounts. Any caller could force a global retention sweep.
 
 Both are now `service_role` only, confirmed by `has_function_privilege` readback for `anon`, `authenticated`, and `service_role`. Both are invoked only by edge functions holding the service role, so application behaviour is unchanged.
+
+## Edge Function release, 2026-08-21
+
+Twenty-four functions were redeployed: the seven changed directly, plus seventeen that bundle the changed `_shared` modules. Every one was confirmed ACTIVE at an incremented version by management-API readback, not by trusting a deploy response. Deployed total moved 177 to 178 with the new `backfill-pseudonymise`.
+
+The Supabase CLI cannot reach `api.supabase.com` from the delivery environment; its Go HTTP client fails with `TransportError` behind the agent proxy while curl and Node traverse it. `scripts/deploy-edge-function.mjs` does what the CLI does, walking the relative import graph from each entrypoint and posting the bundle as multipart, and reads `verify_jwt` from `supabase/config.toml` rather than guessing it.
+
+Live contract checks after deployment: `cleanup-expired-data`, `blind-spot`, and `backfill-pseudonymise` each return 401 to an unauthenticated POST, and `/faq`, `/trust`, `/pricing`, and `/` return 200 with the new content present.
+
+## Training material
+
+The active global `training_material` row is version 3. Version 1 predated this work and carried the narrow `third_party_identity` pattern with no pseudonymisation block, and `loadGlobalTraining` prefers the stored row over the in-code fallback, so the widened reject was inert until re-ingested. Version 2 shipped the widened rule; version 3 added the department qualifiers described below.
+
+## The backfill, and what its dry run caught
+
+`backfill-pseudonymise` scanned all 196 memory rows and changed none. Production memory holds no third-party names requiring rewriting.
+
+That result only became trustworthy after the dry run rejected the first attempt. Against the original transform it wanted to change exactly two rows, and both were wrong:
+
+- `4 - VP Eng, Head of Design, Head of Growth, Ops Lead` would have become `4 - VP, ...`, reading the department `Eng` as a surname.
+- `No Head of Product, Krish doing PM and CEO simultaneously` would have become `No Head of Product doing PM and CEO simultaneously`, deleting the account holder's own name and inverting the sentence.
+
+Two fixes followed. The role-then-name rule no longer spans a comma, because a real role-name pair is adjacent while a comma usually marks apposition or a list. Department and function qualifiers were added to the allowlist. Both cases are pinned by regression tests in `src/__tests__/training.test.ts`, which now holds 33 cases.
+
+The same transform runs on the live extraction path, so these were live defects, not just backfill defects.
 
 ## Scheduled work actually running
 

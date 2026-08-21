@@ -2,19 +2,21 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against the merged positioning and data-class change
+Last verified: 2026-08-21 against the released positioning and data-class change
 
 This is the single resumable state route for material CTRL interface work. Product and architecture truth remain in the other `docs/current/` documents. Accepted product decisions remain in `project-documentation/DECISIONS_LOG.md`.
 
 ## Current phase
 
 - Surface: privacy and disclosure surfaces, plus the repository cleanup that followed
-- Phase: Merged to `main`; database applied, application not yet deployed
-- Gate: Edge Functions and frontend await deployment. All database migrations are applied.
-- Production implementation: The schema is current. The application bundle and Edge Functions still run the prior revision.
+- Phase: Released. Database, Edge Functions, and frontend are all current.
+- Gate: Complete. Nothing in this change is waiting.
+- Production implementation: Live on `https://makeyourmindup.ai`. Vercel deployment `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci` from `19d80f36`; 24 Edge Functions redeployed and read back ACTIVE; training material at global version 3.
 - Data mode: Production readback through the Supabase management API for functions, cron jobs, and schema objects
 
-**The one next action:** deploy the Edge Functions and the frontend. The database is ahead of the application: `burn_blind_spot_pattern` exists but the `blind-spot` function that calls it is not deployed, and `cleanup-expired-data` runs nightly without the auth gate that is committed for it. Neither is harmful, but the change is not delivered until both ship.
+**The one next action:** none for this change. The next material design surface has not been chosen.
+
+The production dry run of the third-party backfill is worth carrying forward as a method note: it found two rows to rewrite and both were wrong, which is how the two false-positive classes in the pseudonymiser were caught before anything was written. Dry-run any transform that rewrites user content, and read the samples rather than the counts.
 
 The Blind Spot trusted-advisor redesign that previously occupied this slot is complete and live; its verification record is preserved in [release state](./release-state.md).
 

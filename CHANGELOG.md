@@ -2,9 +2,25 @@
 
 Status: Historical
 Owner: Mindmaker
-Last reconciled: 2026-08-20
+Last reconciled: 2026-08-21
 
 > A running record of shipped changes, newest first. It explains how the product arrived here; it is not a description of current behaviour. For that, see [`docs/current/`](./docs/current/README.md).
+
+## 2026-08-21 - Positioning, cleanup, and release
+
+Released to production: Vercel `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci`, 24 Edge Functions redeployed, four migrations applied, training material at global version 3.
+
+- CTRL is a private thinking instrument for one person. Four boundaries are product contract now: no seats, no admin console or SSO, no meeting recording, and nothing that needs an IT administrator to approve it.
+- Retention actually runs. The `retention-cleanup` job is scheduled nightly, and applying it exposed that production had never received `user_memory.retention_expires_at`, so the control had been raising `42703` rather than lying dormant.
+- Account deletion cancels the Stripe subscription before the cascade.
+- Memory refuses other people's names: a person beside a role is stored as the role, and a fact about someone else is not stored. The sweep over existing memory found nothing to rewrite.
+- Off the record: a session that writes nothing durable and says so.
+- Blind Spot burn: delete a confirmed pattern, its evidence, and its experiment.
+- New `/faq`, and `/trust` reordered to open on what is in place.
+- Two anonymous SECURITY DEFINER paths closed: `get_memory_sweep_batch`, which returned every account's id and activity timing, and `cleanup_expired_memories`, which deletes across all accounts.
+- Removed 238 unreachable source files and 28 unused dependencies; all 67 documents classed and dated.
+
+**`vite-configuration-fix` was not merged.** It set `allowedHosts: true`, disabling Vite's DNS-rebinding guard on the dev server. `main` already solved that case more narrowly in `081ebe9` with `allowedHosts: [".vercel.run"]`, and the branch was 24 commits behind. It is superseded, and merging it would have widened an allowlist for no gain. Delete the branch rather than revisiting it.
 
 ## 2026-08-11 - Shared shell and typography stability
 

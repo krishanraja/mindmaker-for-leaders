@@ -2,7 +2,7 @@
 
 Status: Reference
 
-Last reviewed: 2026-08-20 (verified against production readback; retention repaired and scheduled, two anon-executable definer functions revoked, C1.2 and P4 reconciled)
+Last reviewed: 2026-08-21 (deployed state verified; third-party backfill run with 0 rewrites, retention scheduled, two anon-executable definer functions revoked)
 Owner: Krish Raja, Mindmaker - privacy@themindmaker.ai
 
 Maps the SOC 2 Trust Services Criteria (Common Criteria CC1-CC9 plus Availability, Confidentiality, Privacy) and key ISO/IEC 27001:2022 Annex A controls to CTRL's honest current status, the specific implementation or gap, and where evidence lives. This is a gap analysis, not a claim of conformance.
@@ -55,7 +55,7 @@ Cross-references: [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY
 |-----|-----------|-------------|--------|-----------------------|----------|
 | P1 Notice | Privacy notice | A.5.34 | IN PLACE | Public privacy policy (GDPR Art 13/14 + CCPA) | PRIVACY_POLICY.md |
 | P2 Choice/Consent | Consent capture | A.5.34 | IN PLACE | upsert-sharing-consent; consent_audit table; marketing consent flag. A session-scoped off-the-record mode lets a user converse with no durable write at all, and the product states when a session saved nothing | ROPA Activity J; `OffTheRecordContext` |
-| P3 Collection | Lawful, minimized collection | A.5.34 | IN PLACE | Lawful bases mapped per category. Third-party minimisation runs at the Memory write boundary: a person named beside a role is stored as the role, and a fact whose subject is another person is rejected, so CTRL does not accumulate personal data about people who never interacted with it. A backfill over rows written before this control exists but has not yet run | PRIVACY_POLICY.md s4; ROPA.md; `_shared/guardrails-core.ts` |
+| P3 Collection | Lawful, minimized collection | A.5.34 | IN PLACE | Lawful bases mapped per category. Third-party minimisation runs at the Memory write boundary: a person named beside a role is stored as the role, and a fact whose subject is another person is rejected, so CTRL does not accumulate personal data about people who never interacted with it. The backfill over pre-existing rows ran on 2026-08-21: 196 scanned, 0 requiring rewriting, so stored memory holds no detected third-party names. Note the boundary honestly: this is a heuristic guard, not a proof. It catches a name adjacent to a role and a bare name carrying a person-state predicate; it cannot catch every possible phrasing, and its own dry run on 2026-08-21 exposed two over-matching defects that were fixed before anything was written | PRIVACY_POLICY.md s4; ROPA.md; `_shared/guardrails-core.ts`; release-state.md |
 | P4 Use/Retention/Disposal | Retention and deletion | A.8.10 | IN PLACE | Corrected twice on 2026-08-20. It was first marked IN PLACE on the strength of code that had no schedule, then downgraded to PARTIAL, and is now genuinely in place: the schedule and the missing database column were both applied and verified by object readback. The lesson is recorded rather than tidied away, because the original error was crediting a control from source rather than from production | DATA_RETENTION_POLICY.md; release-state.md |
 | P5 Access | Subject access/portability | A.5.34 | IN PLACE | memory-export (chatgpt/claude/gemini/cursor/claude-code/markdown formats), the client-side JSON/CSV export path, generate-custom-export (Edge Pro only); DSAR runbook | DSAR_RUNBOOK.md |
 | P6 Disclosure/Transfers | Third-party disclosure and transfers | A.5.34 | PARTIAL | Subprocessors registered; "we do not sell". SCCs/DPAs PLANNED | SUBPROCESSORS.md |
@@ -80,7 +80,7 @@ Cross-references: [INFORMATION_SECURITY_POLICY.md](./INFORMATION_SECURITY_POLICY
 
 ## Summary of biggest open gaps
 
-0. Run the third-party name backfill (`backfill-pseudonymise`), which is committed but not yet deployed. Until it runs, P3 covers new writes only and the "personal data about you and nobody else" claim may not be published. The retention and Blind Spot burn migrations were applied on 2026-08-20.
+0. Closed 2026-08-21. `backfill-pseudonymise` is deployed and has run: 196 rows scanned, 0 requiring rewriting. The retention and Blind Spot burn migrations were applied 2026-08-20.
 1. Audit logging: data_audit_log and ai_usage_audit (IN PROGRESS) - needed for monitoring and forensic impact assessment.
 2. Risk assessment + SoA (CC3 / ISO 6.1) - not started.
 3. MFA, password policy + HIBP, formal access reviews (CC6).

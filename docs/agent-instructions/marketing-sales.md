@@ -39,7 +39,7 @@ One principle governs every trust question: **answer the question that was asked
 
 The three tiers, the exact approved wording, and the team, expensing, and funnel answers are in [`docs/current/commercial.md`](../current/commercial.md). Use that wording rather than improvising, particularly for the team-access redirect: improvised, it sells a discount instead of an engagement.
 
-Two standing limits. Do not claim operator access is provably unused, because no data-access audit log exists yet. Do not claim CTRL holds personal data about nobody but the user until the third-party name backfill is verified in production.
+Two standing limits. Do not claim operator access is provably unused, because no data-access audit log exists yet. The third-party claim is now released: the backfill ran on 2026-08-21 with 196 rows scanned and 0 rewritten, so *CTRL holds personal data about you, and about nobody else* may be used as a statement of design and current state. Do not upgrade it into a guarantee; the guard is a heuristic, not a proof.
 
 ## Qualification
 

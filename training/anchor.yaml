@@ -201,8 +201,44 @@ third_party_pseudonymisation:
     - accountant
     - lawyer
   # Capitalised tokens that are not people. Without these the role-adjacent
-  # matcher would rewrite a weekday or a product name.
+  # matcher would rewrite a weekday, a department, or a product name.
+  # The department qualifiers come first: a 2026-08-21 production dry run
+  # found "VP Eng" being rewritten to "VP", deleting the department.
   allowlist:
+    - Eng
+    - Engineering
+    - Ops
+    - Operations
+    - Product
+    - Design
+    - Growth
+    - Sales
+    - Marketing
+    - Finance
+    - Legal
+    - People
+    - Data
+    - Platform
+    - Infra
+    - Infrastructure
+    - Support
+    - Success
+    - Comms
+    - Brand
+    - Revenue
+    - Strategy
+    - Research
+    - Security
+    - Delivery
+    - Partnerships
+    - Content
+    - Lead
+    - Team
+    - Group
+    - Division
+    - Office
+    - Board
+    - Council
     - I
     - We
     - The

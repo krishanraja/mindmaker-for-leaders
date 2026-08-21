@@ -198,6 +198,26 @@ describe('third-party pseudonymisation', () => {
     }
   });
 
+  // Both of these were found by the 2026-08-21 production dry run, where the
+  // only two rows the backfill wanted to change were false positives.
+  test('keeps a department qualifier that follows a role', () => {
+    const { text, replacements } = pseudonymiseThirdParties(
+      '4 - VP Eng, Head of Design, Head of Growth, Ops Lead',
+      training,
+    );
+    expect(text).toBe('4 - VP Eng, Head of Design, Head of Growth, Ops Lead');
+    expect(replacements).toBe(0);
+  });
+
+  test('does not treat a name after a comma as the role holder', () => {
+    const { text, replacements } = pseudonymiseThirdParties(
+      'No Head of Product, Krish doing PM and CEO simultaneously',
+      training,
+    );
+    expect(text).toBe('No Head of Product, Krish doing PM and CEO simultaneously');
+    expect(replacements).toBe(0);
+  });
+
   test('does not rewrite an allowlisted capitalised token', () => {
     const { replacements } = pseudonymiseThirdParties('our director May reviewed it', training);
     expect(replacements).toBe(0);

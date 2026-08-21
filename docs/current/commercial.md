@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
+Last verified: 2026-08-21 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
 
 This is the single human-readable authority for marketing and selling CTRL. The machine-readable companion is [`public/.well-known/product.json`](../../public/.well-known/product.json). Agents must use both and may not upgrade an inference into a claim.
 
@@ -172,7 +172,11 @@ The goal is a clean, warm exit from the process rather than a win inside it.
 
 **Avoid:** enterprise, platform, deployment, rollout, seats, team, workspace, admin, integration, security posture, compliant, data governance. Each one invites a buyer to imagine a procurement process.
 
-**Never claim** that CTRL holds no personal data. It holds email, name, company, role, voice transcripts, chat, and behavioural patterns. Once the third-party name backfill has run in production, the accurate and stronger line becomes available: *CTRL holds personal data about you, and about nobody else.* Do not use it before that backfill is verified.
+**Never claim** that CTRL holds no personal data. It holds email, name, company, role, voice transcripts, chat, and behavioural patterns.
+
+The stronger line is now supportable and may be used: *CTRL holds personal data about you, and about nobody else.* The evidence, as of 2026-08-21, is that the extraction guard is live on every Memory write path and the backfill over existing rows scanned all 196 and found none requiring rewriting.
+
+State it as the design and the current state, which is what it is. Do not upgrade it into a guarantee: the guard is a heuristic that reduces third-party capture, not a proof that no name can ever be stored. If a buyer presses on how it works, the honest Tier 2 answer is that a person named beside a role is stored as the role, a fact whose subject is someone else is refused, and stored memory was swept and found clean.
 
 ## Claim policy
 

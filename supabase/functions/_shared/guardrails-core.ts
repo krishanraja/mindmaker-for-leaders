@@ -174,6 +174,13 @@ export const DEFAULT_PSEUDONYMISATION: ThirdPartyPseudonymisation = {
   // Words that are capitalised mid-sentence but are not people. Without this
   // the role-adjacent matcher would happily rewrite a product or a weekday.
   allowlist: [
+    // Qualifiers that follow a role. Without these, "VP Eng" reads as a person
+    // called Eng and the department is deleted.
+    "Eng", "Engineering", "Ops", "Operations", "Product", "Design", "Growth",
+    "Sales", "Marketing", "Finance", "Legal", "People", "Data", "Platform",
+    "Infra", "Infrastructure", "Support", "Success", "Comms", "Brand", "Revenue",
+    "Strategy", "Research", "Security", "Delivery", "Partnerships", "Content",
+    "Lead", "Team", "Group", "Division", "Office", "Board", "Council",
     "I", "We", "The", "A", "An", "It", "They", "My", "Our", "Their",
     "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
     "January", "February", "March", "April", "May", "June", "July",
@@ -233,10 +240,15 @@ export function pseudonymiseThirdParties(
     name.split(/\s+/).every(part => !allow.has(part.toLowerCase()));
 
   // 1. role then name: "my CFO Sarah Patel" -> "my CFO"
+  //
+  // Deliberately does NOT span a comma. "No Head of Product, Krish doing PM"
+  // is apposition or a list, not a role-name pair, and an earlier revision that
+  // allowed the comma deleted the account holder's own name and inverted the
+  // sentence. A real role-name pair is adjacent.
   out = out.replace(
-    new RegExp(`\\b(${rolePattern})\\b(,?\\s+(?:${NAME_TOKEN})(?:\\s+${NAME_TOKEN})?)`, "g"),
+    new RegExp(`\\b(${rolePattern})\\b(\\s+(?:${NAME_TOKEN})(?:\\s+${NAME_TOKEN})?)`, "g"),
     (match, role: string, trailing: string) => {
-      const name = trailing.replace(/^,?\s+/, "");
+      const name = trailing.replace(/^\s+/, "");
       if (!notAllowed(name)) return match;
       replacements += 1;
       return role;
