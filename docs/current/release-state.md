@@ -12,7 +12,7 @@ Last verified: 2026-08-21 against production readback through the Supabase manag
 | Source branch | `main` |
 | Application baseline | `19d80f36ecda990bce4c3e1e6d18c97387d9ed33` |
 | Vercel deployment | `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci`, READY in production at `19d80f36` |
-| Test suite | 891 tests in 55 files |
+| Test suite | 893 tests in 55 files |
 | Edge Function directories | 114 excluding `_shared`, of 178 deployed on the shared project |
 | Hook files | 51 |
 | SQL migration files | 165 in the source tree |
