@@ -19,7 +19,7 @@ This is the operational guide for a fresh CTRL instance and for releasing the ca
 - ElevenLabs for audio, Resend for email, Stripe for Edge Pro.
 - Vercel for frontend deployment.
 
-Recounted 2026-08-20: 114 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migrations. Re-count before quoting.
+Recounted 2026-08-28: 115 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migrations. Re-count before quoting.
 
 ## Local setup
 

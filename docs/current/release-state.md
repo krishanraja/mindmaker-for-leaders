@@ -13,11 +13,11 @@ Last verified: 2026-08-21 against production readback through the Supabase manag
 | Application baseline | `19d80f36ecda990bce4c3e1e6d18c97387d9ed33` |
 | Vercel deployment | `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci`, READY in production at `19d80f36` |
 | Test suite | 891 tests in 55 files |
-| Edge Function directories | 114 excluding `_shared`, of 178 deployed on the shared project |
+| Edge Function directories | 115 excluding `_shared`, of 178 deployed on the shared project |
 | Hook files | 51 |
 | SQL migration files | 165 in the source tree |
 
-Current source inventory is 114 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migration files.
+Current source inventory is 115 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migration files.
 
 ## Applied migration state, and why the ledger is not the answer
 

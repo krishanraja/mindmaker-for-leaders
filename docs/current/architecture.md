@@ -35,7 +35,7 @@ flowchart LR
 | Scheduled work | Prewarm, delivery, memory, watch, and lifecycle jobs | migrations using Vault, pg_cron, and pg_net |
 | Vercel | Static assets, SPA routing, canonical and redirect hosts | `vercel.json` and project configuration |
 
-The repository contains 114 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migrations. These are measured source-tree inventory counts, not design targets.
+The repository contains 115 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migrations. These are measured source-tree inventory counts, not design targets.
 
 ## The Supabase project is shared
 
@@ -45,7 +45,7 @@ CTRL does not have a Supabase project to itself. Project `bkyuxvschuwngtcdhsyg`,
 
 Three consequences that matter more than anything else on this page:
 
-1. **Deployed does not mean CTRL's.** A function visible in the Supabase dashboard may belong to another product. Only the 114 directories under `supabase/functions/` are this repository's to change, redeploy, or roll back.
+1. **Deployed does not mean CTRL's.** A function visible in the Supabase dashboard may belong to another product. Only the 115 directories under `supabase/functions/` are this repository's to change, redeploy, or roll back.
 2. **Every function in this repository is live.** All 114 directories are deployed and ACTIVE except one, noted below. Several have no caller anywhere in this repository because they are invoked by cron, by an external webhook, or by a link in an email: `stripe-webhook` and `resend-webhook` are called by their providers, `decision-watch` and `capture-week` by pg_cron, `unsubscribe-briefing` by a recipient clicking a footer link. Absence of an in-repo caller is not evidence that a function is unused, and deleting one on that basis would remove production code that this repository is the only source for.
 3. **The database is shared too.** Tables, roles, and cron jobs outside CTRL's own migrations exist and are not this repository's to alter. Scope every migration to the objects CTRL owns.
 

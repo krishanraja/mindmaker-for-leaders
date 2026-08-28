@@ -118,6 +118,11 @@ verify_jwt = true
 [functions.live-headlines]
 verify_jwt = false
 
+# Dedicated read-only export for the local Mindmaker video studio. The handler
+# validates VIDEO_STUDIO_EXPORT_TOKEN and never returns service credentials.
+[functions.video-radar-export]
+verify_jwt = false
+
 # Authenticated, user-scoped briefing card generation.
 [functions.card-for-you]
 verify_jwt = true
