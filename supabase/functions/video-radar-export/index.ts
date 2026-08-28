@@ -56,7 +56,7 @@ serve(async (req) => {
     provider: "mm_ctrl",
     provider_version: Deno.env.get("DENO_DEPLOYMENT_ID") || "video-radar-export-v1",
     generated_at: generatedAt.toISOString(),
-    source_age_seconds: Number.isFinite(cacheCreatedAt) ? Math.max(0, Math.round((generatedAt.getTime() - cacheCreatedAt) / 1000)) : 0,
+    source_age: Number.isFinite(cacheCreatedAt) ? Math.max(0, Math.round((generatedAt.getTime() - cacheCreatedAt) / 1000)) : 0,
     candidates,
   });
 });

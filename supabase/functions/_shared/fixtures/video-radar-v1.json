@@ -3,7 +3,7 @@
   "provider": "mm_ctrl",
   "provider_version": "fixture",
   "generated_at": "2026-08-28T10:00:00.000Z",
-  "source_age_seconds": 3600,
+  "source_age": 3600,
   "candidates": [
     {
       "id": "mm:fixture",
