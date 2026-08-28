@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "provider": "mm_ctrl",
+  "provider_version": "fixture",
+  "generated_at": "2026-08-28T10:00:00.000Z",
+  "source_age_seconds": 3600,
+  "candidates": [
+    {
+      "id": "mm:fixture",
+      "title": "Agent costs move into workflow design",
+      "summary": "The model bill is no longer the expensive part.",
+      "source_kind": "public_signal",
+      "sensitivity": "public",
+      "occurred_at": "2026-08-28T09:00:00.000Z",
+      "source_urls": ["https://example.com/story"],
+      "corroboration": 3,
+      "evidence_status": "public_grounded",
+      "category": "economics",
+      "source_ref_hash": "fixture-hash",
+      "provider_score": 12
+    }
+  ]
+}
