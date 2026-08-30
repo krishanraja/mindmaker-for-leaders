@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8` and live readback through the Supabase management API
+Last verified: 2026-08-30 against production application baseline `19d80f36ecda990bce4c3e1e6d18c97387d9ed33`, live readback through the Supabase management API on 2026-08-21, and source-tree inventory through commit `5e86b92`
 
 CTRL is a Vite React application on Vercel with Supabase Auth, PostgreSQL, Edge Functions, Storage, Vault, and scheduled jobs. The architecture has one personal context substrate and one curation pool. Product surfaces are views over those shared systems.
 
@@ -41,15 +41,15 @@ The repository contains 115 Edge Function directories excluding `_shared`, 51 ho
 
 Read this before changing anything server-side.
 
-CTRL does not have a Supabase project to itself. Project `bkyuxvschuwngtcdhsyg`, named "Mindmaker AI", hosts CTRL alongside other Mindmaker surfaces. Verified on 2026-08-20, it carries **177 deployed Edge Functions, and CTRL accounts for 113 of them.** The other 64 belong to workshop and prework tooling, exec-pulse email, the Mindmaker site assistants (`mindy-chat`, `chat-with-krish`), lead capture, and document generation.
+CTRL does not have a Supabase project to itself. Project `bkyuxvschuwngtcdhsyg`, named "Mindmaker AI", hosts CTRL alongside other Mindmaker surfaces. Verified on 2026-08-21, it carries **178 deployed Edge Functions, and CTRL accounts for 115 of them.** The other 63 belong to workshop and prework tooling, exec-pulse email, the Mindmaker site assistants (`mindy-chat`, `chat-with-krish`), lead capture, and document generation.
 
 Three consequences that matter more than anything else on this page:
 
 1. **Deployed does not mean CTRL's.** A function visible in the Supabase dashboard may belong to another product. Only the 115 directories under `supabase/functions/` are this repository's to change, redeploy, or roll back.
-2. **Every function in this repository is live.** All 114 directories are deployed and ACTIVE except one, noted below. Several have no caller anywhere in this repository because they are invoked by cron, by an external webhook, or by a link in an email: `stripe-webhook` and `resend-webhook` are called by their providers, `decision-watch` and `capture-week` by pg_cron, `unsubscribe-briefing` by a recipient clicking a footer link. Absence of an in-repo caller is not evidence that a function is unused, and deleting one on that basis would remove production code that this repository is the only source for.
+2. **Every function in this repository is live.** All 115 directories are deployed and ACTIVE, including `backfill-pseudonymise`, the operator tool that closed the last gap on 2026-08-21. Several have no caller anywhere in this repository because they are invoked by cron, by an external webhook, or by a link in an email: `stripe-webhook` and `resend-webhook` are called by their providers, `decision-watch` and `capture-week` by pg_cron, `unsubscribe-briefing` by a recipient clicking a footer link. Absence of an in-repo caller is not evidence that a function is unused, and deleting one on that basis would remove production code that this repository is the only source for.
 3. **The database is shared too.** Tables, roles, and cron jobs outside CTRL's own migrations exist and are not this repository's to alter. Scope every migration to the objects CTRL owns.
 
-The one exception to "everything here is deployed" is `backfill-pseudonymise`, a one-off operator tool committed but not yet deployed.
+`video-radar-export`, added in commit `5e86b92` on 2026-08-28, is counted in the 115 source-tree directories above. Its live deployment to the shared project has not been confirmed by management-API readback and is unverified as of this check.
 
 The live cron schedule is recorded in [release state](./release-state.md), which is the authority for what is actually running rather than what a migration file requests.
 

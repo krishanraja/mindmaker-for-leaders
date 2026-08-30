@@ -1,7 +1,7 @@
 # Verification and release evidence
 
 Status: Current
-Last verified: 2026-08-20
+Last verified: 2026-08-30
 
 ## Repository gates
 

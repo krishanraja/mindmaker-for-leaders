@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, and the deployed onboarding and Blind Spot contracts
+Last verified: 2026-08-30 against production application baseline `19d80f36ecda990bce4c3e1e6d18c97387d9ed33`, `src/router.tsx`, and the deployed onboarding and Blind Spot contracts
 
 CTRL is a calm AI decision partner for founders and small-team CEOs building the AI-native version of their business. Make Your Mind Up is its warm public intake. The product lives at [makeyourmindup.ai](https://makeyourmindup.ai).
 

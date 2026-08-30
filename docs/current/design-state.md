@@ -107,7 +107,7 @@ Interactive evidence inspection, all three rejection reasons, stop-after-rejecti
 - 37 Blind Spot Playwright checks pass against the freshly built production bundle at 1440x900, 1280x720, 390x844, and 320x568 inside the shared app shells.
 - Typecheck adds zero diagnostics to the 221-diagnostic baseline.
 - Changed-file ESLint, standards, documentation drift, production build, and 3/3 prerender checks pass.
-- GitHub CI and Vercel remain green; the current production application baseline is `b5770194b4646302f47e36655e389f7ec2eb43f8`, and the Blind Spot implementation from PR #366 remains unchanged within it.
+- GitHub CI and Vercel were green at merge; the Blind Spot implementation from PR #366 remained unchanged through the `b5770194` and `19d80f36` production releases that followed it.
 - All 37 Blind Spot checks pass on the canonical production host across every fixture state and the four approved viewports. The advisor failure path preserves typed context.
 - Production Supabase readback confirms migration version `20260811165337`, ACTIVE `blind-spot` Edge Function version 3, JWT enforcement, RLS on all three new tables, no anonymous table grants, and service-role-only RPC execution.
 - Krish explicitly accepted the prototype, preview, implementation, and production release on 2026-08-11.

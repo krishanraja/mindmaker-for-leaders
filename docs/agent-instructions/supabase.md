@@ -1,13 +1,13 @@
 # Supabase, data, and AI
 
 Status: Current
-Last verified: 2026-08-20
+Last verified: 2026-08-30
 
 Read [`../current/architecture.md`](../current/architecture.md) and the [`REPLICATION_GUIDE`](../../project-documentation/REPLICATION_GUIDE.md) before changing this boundary.
 
 ## The project is shared
 
-Project `bkyuxvschuwngtcdhsyg` hosts CTRL alongside other Mindmaker surfaces. It carries 177 deployed Edge Functions; CTRL accounts for 113. Before you change anything server-side:
+Project `bkyuxvschuwngtcdhsyg` hosts CTRL alongside other Mindmaker surfaces. It carries 178 deployed Edge Functions; CTRL accounts for 115. Before you change anything server-side:
 
 - Only the directories under `supabase/functions/` belong to this repository. A function in the dashboard may be another product's.
 - Every function here is live. Several have no caller in this repository because cron, an external webhook, or an email link invokes them. Never treat "nothing imports it" as evidence a function is unused.

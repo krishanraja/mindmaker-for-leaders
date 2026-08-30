@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20
+Last verified: 2026-08-30
 
 Use this guide to research, plan, draft, qualify, and support commercial work for CTRL. It does not authorize publishing, sending, pricing exceptions, account changes, or customer commitments.
 

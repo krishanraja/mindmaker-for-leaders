@@ -2,7 +2,7 @@
 
 Status: Reference
 Owner: Mindmaker
-Last verified: 2026-08-20
+Last verified: 2026-08-30
 
 The release and recovery runbook. [`docs/current/release-state.md`](../docs/current/release-state.md) owns what is currently deployed; this file owns how to get there and how to get back.
 

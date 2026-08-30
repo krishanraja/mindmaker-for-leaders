@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20
+Last verified: 2026-08-30
 
 Documentation is part of the release. Its job is to let a new engineer, operator, or agent find current truth without reading chronology or guessing which overlay wins.
 

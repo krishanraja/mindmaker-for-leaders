@@ -9,7 +9,7 @@ CTRL is a calm AI briefing and decision partner for founders and small-team CEOs
 Production: [makeyourmindup.ai](https://makeyourmindup.ai)
 Product: CTRL
 Repository: `krishanraja/mm-ctrl`
-Last verified: 2026-08-20 against production readback
+Last verified: 2026-08-30 against production readback through 2026-08-21
 
 ## Start here
 
@@ -28,7 +28,7 @@ Executable code and authoritative environment readback outrank prose. When behav
 
 ## Read this before touching the backend
 
-The Supabase project is **shared**. CTRL runs alongside other Mindmaker surfaces in project `bkyuxvschuwngtcdhsyg`, which carries 177 deployed Edge Functions of which CTRL accounts for 113. A function you can see in the dashboard may belong to another product, and the database has tables and cron jobs this repository does not own.
+The Supabase project is **shared**. CTRL runs alongside other Mindmaker surfaces in project `bkyuxvschuwngtcdhsyg`, which carries 178 deployed Edge Functions of which CTRL accounts for 115. A function you can see in the dashboard may belong to another product, and the database has tables and cron jobs this repository does not own.
 
 Two rules follow. Only the directories under `supabase/functions/` are yours to change. And every one of them is live, including the ones with no caller anywhere in this repository, because they are triggered by cron, by an external webhook, or by a link in an email. See [architecture](./docs/current/architecture.md#the-supabase-project-is-shared).
 

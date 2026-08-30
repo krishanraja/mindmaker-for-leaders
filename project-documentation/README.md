@@ -2,7 +2,7 @@
 
 Status: Current index
 Owner: Mindmaker
-Last verified: 2026-08-11
+Last verified: 2026-08-30
 
 The canonical current set lives in [`docs/current/`](../docs/current/README.md). This directory contains commercial context, operating references, compliance records, decisions, and history.
 
