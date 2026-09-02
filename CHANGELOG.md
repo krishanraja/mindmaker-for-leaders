@@ -6,7 +6,13 @@ Last reconciled: 2026-08-21
 
 > A running record of shipped changes, newest first. It explains how the product arrived here; it is not a description of current behaviour. For that, see [`docs/current/`](./docs/current/README.md).
 
-## 2026-08-21 - Positioning, cleanup, and release
+## 2026-09-02 - Audience axis and stance on the daily headline pool
+
+Merged to `main`; the `live-headlines` function is not yet redeployed, so the new fields reach the cache on the next deploy.
+
+- Each card in the shared daily pool now also carries two optional, additive fields: `affects` (which of eight business divisions the story lands on, answering "whose week does this change?" rather than "what is this about?") and `stance` (`opportunity`, `shift`, `risk`, or `damage`). The single `category` field records a story's subject, and the subject always wins, which is why only 23 of the 488 cached items carried `org` while roughly 15% of stories were about people and work by their own text. Both fields are validated against fixed allowlists shared with a downstream consumer; every existing payload field keeps its name, type and meaning, and old cache rows keep working.
+- The editorial rule ships with the fields: an item whose stance is `damage` only reports harm with no move in it for the reader, and it is dropped before caching. Bad news with an action attached stays a `risk` or a `shift`.
+- A service-gated `?backfill=1` operator action classifies the retained cached days in place, idempotently, without rewriting any headline, say or pov, so the audience filter is useful immediately after one run rather than after a full retention window.
 
 Released to production: Vercel `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci`, 24 Edge Functions redeployed, four migrations applied, training material at global version 3.
 
