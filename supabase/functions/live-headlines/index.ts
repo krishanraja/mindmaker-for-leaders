@@ -37,7 +37,15 @@ import {
   type RawArticle,
 } from "../_shared/news-cluster.ts";
 import { gatherAll, fetchAaModelIndex, matchAaModel, type AaModel } from "../_shared/news-sources.ts";
-import { synthesizeReads, type SynthInput } from "../_shared/news-synthesis.ts";
+import {
+  classifyAudience,
+  dropDamage,
+  sanitizeStance,
+  synthesizeReads,
+  type AffectsId,
+  type StanceId,
+  type SynthInput,
+} from "../_shared/news-synthesis.ts";
 import { getEditorialLens } from "../_shared/editorial-lens.ts";
 import { loadBrainProfile, brainSignature, toLensSource } from "../_shared/brain-profile.ts";
 import { buildImportanceLens } from "../_shared/briefing-lens.ts";
@@ -73,6 +81,15 @@ interface HeadlineCard {
     pricePer1m: number | null;
     rank: number | null;
   } | null;
+  // The audience axis: which business divisions the story lands on (zero or
+  // more of the eight shared AFFECTS_IDS). Additive and OPTIONAL: rows cached
+  // before this field existed lack it, and consumers fall back to their own
+  // category projection when it is absent or empty.
+  affects?: AffectsId[];
+  // What the story asks of a leader: opportunity, shift or risk. "damage"
+  // exists in the classifier but such an item is dropped before caching, so a
+  // cached or served card never carries it. Optional for the same reason.
+  stance?: StanceId;
 }
 
 /**
@@ -185,7 +202,7 @@ async function buildSharedPool(
   }));
   const reads = await synthesizeReads(openaiKey ?? "", synthInputs, getEditorialLens());
 
-  return picked.map((c, i) => {
+  const cards = picked.map((c, i) => {
     const id = `live-${today}-${i}`;
     const desc = c.rep.description ?? "";
     const fallbackSay = desc ? (desc.length > 170 ? `${desc.slice(0, 167)}...` : desc) : null;
@@ -211,12 +228,20 @@ async function buildSharedPool(
       timeAgo: relativeTimeAgo(c.bestPublishedIso),
       score: Math.round((c.score + (benchmark ? 1.5 : 0)) * 100) / 100,
       benchmark,
+      affects: read?.affects,
+      stance: read?.stance,
       snippet: desc,
       externalScore: c.score,
       freshness: freshnessScore(c.bestPublishedIso, Date.now()),
       aaMatched: !!aa,
     };
   });
+  // The editorial rule: a "damage" item (only reports harm, no move in it for
+  // the reader) is never cached or served. Dropping AFTER selection can leave
+  // the pool a card or two under POOL_SIZE; that is the intended trade. An
+  // item the classifier missed keeps no stance and is kept, so an LLM outage
+  // never empties the feed.
+  return dropDamage(cards);
 }
 
 /** Strip the per-user re-score fields back down to the display card. */
@@ -318,6 +343,7 @@ serve(async (req) => {
     const today = new Date().toISOString().split("T")[0];
     const force = url.searchParams.get("force") === "1";
     const debug = url.searchParams.get("debug") === "1";
+    const backfill = url.searchParams.get("backfill") === "1";
     const serviceRequest = isServiceRequest(req.headers.get("Authorization"), serviceKey);
     const cronRequest = isCronRequest(
       req.headers.get("X-CTRL-Cron-Secret"),
@@ -331,10 +357,11 @@ serve(async (req) => {
       return json({ error: "Unauthorized" }, 401);
     }
 
-    // Rebuilding the shared cache and running source diagnostics are operator
-    // actions, not public product actions. The daily pg_cron call already uses
-    // the service credential; normal signed-in clients never need either flag.
-    if ((force || debug) && !serviceRequest && !cronRequest) {
+    // Rebuilding the shared cache, running source diagnostics, and backfilling
+    // the retained days are operator actions, not public product actions. The
+    // daily pg_cron call already uses the service credential; normal signed-in
+    // clients never need any of these flags.
+    if ((force || debug || backfill) && !serviceRequest && !cronRequest) {
       return json({ error: "Forbidden" }, 403);
     }
 
@@ -349,6 +376,91 @@ serve(async (req) => {
         keysPresent: { brave: !!env.braveKey, newsapi: !!env.newsApiKey, exa: !!env.exaKey, aa: !!env.aaKey, openai: !!env.openaiKey, controlCenter: !!(env.controlCenterUrl && env.controlCenterKey) },
         personalize: PERSONALIZE,
       });
+    }
+
+    // ---- Ops backfill: classify affects/stance onto every retained cached ----
+    // day, so the audience filter downstream is useful immediately rather than
+    // in a retention window's time. Additive and idempotent: only cards WITHOUT
+    // a validated stance go to the classifier (stance is always emitted when
+    // classification ran, so its absence marks "not yet classified"; affects
+    // alone cannot mark it because [] is a real answer), and re-runs converge
+    // on the stable briefing_date key. Headline/say/pov are never rewritten,
+    // created_at is preserved because this is a classification pass rather than
+    // a fresh gather, and "damage" cards are removed from the stored payload,
+    // which is the editorial rule applied retroactively.
+    if (backfill) {
+      if (!env.openaiKey) return json({ error: "backfill needs OPENAI_API_KEY" }, 500);
+      const { data: rows, error: readError } = await supabase
+        .from("live_headlines_cache")
+        .select("briefing_date, payload, created_at")
+        .order("briefing_date", { ascending: true });
+      if (readError) return json({ error: readError.message }, 500);
+      const summary = {
+        days: 0,
+        updated: 0,
+        converged: 0,
+        failed: 0,
+        dropped: 0,
+        items: 0,
+        itemsWithAffects: 0,
+        stances: {} as Record<string, number>,
+        affects: {} as Record<string, number>,
+      };
+      // Tally the post-pass state of a day so the response doubles as the
+      // verification readout (people share, stance mix, damage removals).
+      const tally = (cards: SharedCard[]) => {
+        for (const card of cards) {
+          summary.items += 1;
+          if (card.stance) summary.stances[card.stance] = (summary.stances[card.stance] ?? 0) + 1;
+          if (Array.isArray(card.affects) && card.affects.length > 0) {
+            summary.itemsWithAffects += 1;
+            for (const division of card.affects) {
+              summary.affects[division] = (summary.affects[division] ?? 0) + 1;
+            }
+          }
+        }
+      };
+      await Promise.all((rows ?? []).map(async (row) => {
+        summary.days += 1;
+        const day = row as { briefing_date: string; payload: unknown; created_at: string };
+        const cards = Array.isArray(day.payload) ? day.payload as SharedCard[] : [];
+        const pending = cards.filter((c) => sanitizeStance(c.stance) === undefined);
+        if (pending.length === 0) {
+          summary.converged += 1;
+          tally(cards);
+          return;
+        }
+        const reads = await classifyAudience(
+          env.openaiKey,
+          pending.map((c) => ({ id: c.id, headline: c.headline, snippet: c.snippet || c.say || "" })),
+        );
+        if (reads.size === 0) {
+          summary.failed += 1;
+          tally(cards);
+          return;
+        }
+        // AudienceRead only carries validated keys, so the spread never
+        // overwrites an existing value with undefined; a card the model
+        // skipped stays untouched and the next run picks it up.
+        const next = cards.map((c) => {
+          const read = sanitizeStance(c.stance) === undefined ? reads.get(c.id) : undefined;
+          return read ? { ...c, ...read } : c;
+        });
+        const kept = dropDamage(next);
+        const { error: writeError } = await supabase
+          .from("live_headlines_cache")
+          .upsert({ briefing_date: day.briefing_date, payload: kept, created_at: day.created_at });
+        if (writeError) {
+          console.warn(`backfill upsert failed for ${day.briefing_date}:`, writeError.message);
+          summary.failed += 1;
+          tally(cards);
+          return;
+        }
+        summary.updated += 1;
+        summary.dropped += next.length - kept.length;
+        tally(kept);
+      }));
+      return json({ backfill: summary });
     }
 
     // ---- TIER 1: the shared daily pool (cache, or build on miss/force). ----
@@ -443,6 +555,8 @@ serve(async (req) => {
         timeAgo: item.timeAgo,
         score: Math.round(item.finalScore * 100) / 100,
         benchmark: item.benchmark,
+        affects: item.affects,
+        stance: item.stance,
       } as HeadlineCard));
 
       // Empty after scoring (e.g. nothing cleared the relevance gate today):
