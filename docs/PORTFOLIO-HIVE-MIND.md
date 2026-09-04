@@ -1,11 +1,5 @@
 # Portfolio Hive Mind + Brand Cohesion
 
-Document class: Reference
-Owner: Mindmaker
-Last verified: 2026-08-20
-
-(The bold **Status:** line below is the implementation status of the work described, not the class of this document.)
-
 **Status:** COMPLETE + LIVE in production (2026-06-30). Brand cohesion, the one-pool/three-surfaces news engine, the consent-gated handoff, the cohort-anxiety curation prior, the aggregate engine, and the public Cohort Signal widget are all shipped; the enrichment-convergence unit is closed to an evidenced keep-separate decision (see below). This is the canonical record of the cross-product effort spanning the three sibling repos: **Make Your Mind Up** (`makeyourmindup`), **Mindmaker** (`mindmaker`), and **CTRL** (`mm-ctrl`). They share ONE Supabase project (`bkyuxvschuwngtcdhsyg`).
 
 ## North star: one operator, three rooms, one brain

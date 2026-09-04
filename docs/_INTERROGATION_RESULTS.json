@@ -1,0 +1,803 @@
+{
+  "meta": {
+    "tool": "CTRL Experience Compass",
+    "version": "1.0",
+    "exportedAt": "2026-06-12T14:08:15.362Z",
+    "answeredCount": 22
+  },
+  "finalThoughts": "",
+  "answers": {
+    "1": {
+      "theme": "The first five seconds (morning open)",
+      "scene": "It's 7:42am. A time-poor CEO who barely reads the news opens CTRL one-handed on the train. Before they tap anything, here's what the screen could greet them with.",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "D",
+          "label": "The digest",
+          "text": "A crisp, scannable 3-item digest: the top 3 AI/market signals relevant to their business, readable in 15 seconds, each tappable for more.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "C",
+          "label": "The living decision",
+          "text": "Their own decision from last week, resurfaced because something changed: 'One assumption behind your hiring call just shifted. Want to re-examine it?'",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "B",
+          "label": "The open prompt",
+          "text": "A warm, open question: 'Morning, Sarah. What's the biggest decision on your mind today?' — the app hands them the wheel and waits.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "A",
+          "label": "The synthesized signal",
+          "text": "One beautiful, already-made visual card: 'Here's the single thing moving against your move upmarket this morning' — a fresh real-world signal tied to a priority they told you mattered, with one clear move beneath it.",
+          "note": ""
+        }
+      ],
+      "why": "The open prompt is a really vague open question that most busy people will just get stressed by, rather than enjoy. But it does encourage fast data collection which I like. I just think open ended questions that force the user to think are not the way forward. Presenting them with options to choose from, and those options being as personalized as possible - that is a much better call. The Living Decision is a pretty good idea because it highlights how quickly things move and can probably be turned into the chronology or the time lapse of a decision based on everything that changes around it. That's obviously super complex, but I like that idea. The digest is probably, in one hand, the most easy to consume based on current consumer behavior. Everyone knows what a digest is. Everyone reads newsletters and has them in their inbox, so this could just be positioned as a better version of that. And the briefing ties into the Digest probably the most closely. The synthesized signal reads like the best one, but in practical reality, I can't imagine us getting that kind of thing 100% correct enough of the time that it would be worth that real estate. We have to presume that there's not going to be as much data as we want in the app.",
+      "intensity": 3
+    },
+    "2": {
+      "theme": "What 'one step forward' feels like",
+      "scene": "They have five minutes. What should the session actually DO so they leave feeling they moved forward on what matters to them?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "C",
+          "label": "Learned something sharp",
+          "text": "They learned one specific, useful thing about their business they didn't know this morning.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "B",
+          "label": "Offloaded a task",
+          "text": "They handed one recurring task to AI and saw it's now handled.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "A",
+          "label": "Made a call",
+          "text": "They committed one real decision they'd been putting off.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "D",
+          "label": "Taught the app",
+          "text": "They corrected/taught the app one thing and watched it visibly get smarter about them.",
+          "note": ""
+        }
+      ],
+      "why": "I don't know if any of these actually are what my answer would be. I think one step forward would feel like they feel like the intuition or their hunch is correct on a business decision relating to AI. Or that they've identified what they need to hand off in their own world or their team's world that currently sucks time. And perhaps getting an idea of how to sharpen their own judgment",
+      "intensity": 4
+    },
+    "3": {
+      "theme": "The app's role / who it is to you",
+      "scene": "If CTRL were a person on your leadership team, who are they?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "A",
+          "label": "Chief of Staff",
+          "text": "A razor-sharp chief of staff who pre-digests everything and surfaces only what needs you.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "B",
+          "label": "Coach",
+          "text": "An executive coach who asks the hard question and makes you think, rarely hands you answers.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "C",
+          "label": "Sparring partner",
+          "text": "A sparring partner who argues the other side so your decision gets stress-tested.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "D",
+          "label": "Operator / governor",
+          "text": "A quiet operator who runs your agents and asks approval only on the ~20 calls that truly need a human.",
+          "note": ""
+        }
+      ],
+      "why": "Definitely not an operator for now. Sparring partner yes but not just for the sake of it, it comes to the table with evidence, facts, case studies and proof from other decision makers making similar calls",
+      "intensity": 4
+    },
+    "4": {
+      "theme": "Proof it's working (earning trust)",
+      "scene": "How should CTRL prove it's genuinely valuable, not theatre, to a skeptical CEO?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "B",
+          "label": "Let quality speak",
+          "text": "Just deliver an uncannily relevant, synthesized answer — no plumbing shown.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "C",
+          "label": "Reflect them back",
+          "text": "'Because you told me X and you're betting on Y, this matters' — visibly personal.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "A",
+          "label": "Show the receipts",
+          "text": "'I read 47 sources; here are the 3 that matter and why' — transparent reasoning on tap.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "D",
+          "label": "Show momentum",
+          "text": "'Your context is 12% sharper than last week; here's what changed.'",
+          "note": ""
+        }
+      ],
+      "why": "There  is so much complexity in the methodology because the user is complex, the data is complex and fast moving, the end objective is complex. Quality needs to be real",
+      "intensity": 3
+    },
+    "5": {
+      "theme": "How 'it learns from me' should FEEL",
+      "scene": "The app is meant to compound over time. What's the felt experience of it learning?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "D",
+          "label": "Thickening memory",
+          "text": "You watch a living map of 'what CTRL knows about you' grow and sharpen.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "B",
+          "label": "Quietly better",
+          "text": "Fewer dumb suggestions over time, no announcement — you just notice it.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "A",
+          "label": "Visible rules forming",
+          "text": "'Got it — I'll never recommend that again' appears the instant you correct it.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Weekly recap",
+          "text": "A periodic 'here's what I learned about you this week' you confirm or correct.",
+          "note": ""
+        }
+      ],
+      "why": "The visual memory web on the current Home tab is a hook, it's a nice visual way of seeing your digital brain build which is satisfying",
+      "intensity": 4
+    },
+    "6": {
+      "theme": "The feeling of being known (memory)",
+      "scene": "How should your context get INTO CTRL so it feels like it truly knows you?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "D",
+          "label": "Fast hybrid",
+          "text": "A 2-minute guided 'tell me who you are,' then it infers and asks as it goes.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "A",
+          "label": "You curate it",
+          "text": "You deliberately tell it your role, voice, standards, never-do's — like onboarding a hire.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "B",
+          "label": "It infers",
+          "text": "It watches what you do and say, builds the picture, and you just confirm.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Import once",
+          "text": "You import your history (chats, docs) once; it extracts the picture; you tidy it.",
+          "note": ""
+        }
+      ],
+      "why": "We should ask them questions to capture the basic deterministic data that things need to anchor around and MUST exist in the app, and then we could get them to copy paste a non sensitive reply from their AI tool if they use one extensively, which would give the app immediate rich high quality inferences across lots of topics. And then the rest of the data collection should be subtly and covertly tied to the outputs - a user should have already made the decision to retrieve a specific output from the app and then the app asks them for the information required in a user friendly way (pick from these intelligently synthesized options).",
+      "intensity": 5
+    },
+    "7": {
+      "theme": "Drafting in your voice",
+      "scene": "CTRL drafts a board memo 'in your voice.' When is that great vs uncanny?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "B",
+          "label": "Sharp scaffold",
+          "text": "An 80% scaffold in a neutral-professional voice you make yours in 2 minutes.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "A",
+          "label": "Nails it",
+          "text": "It matches your phrasing so well you barely edit — like you wrote it on a good day.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "C",
+          "label": "Generic exec",
+          "text": "A confident 'executive' voice that's good but generic — not specifically you.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "D",
+          "label": "Over-mimics",
+          "text": "It copies your tics and all, tipping into uncanny or embarrassing.",
+          "note": ""
+        }
+      ],
+      "why": "the whole point of mindmaker is to sharpen their judgement, so we need to ensure they do the first and last 20% themselves, ideally they can iterate magically and easily in the tool so we capture the data for self learning",
+      "intensity": 5
+    },
+    "8": {
+      "theme": "Helped to a hard call WITHOUT being handed the answer",
+      "scene": "You're facing a genuinely hard decision. What's the ideal CTRL interaction?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "B",
+          "label": "Options + bands",
+          "text": "It lays out options with confidence bands and trade-offs; you pick.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "D",
+          "label": "Socratic",
+          "text": "It asks three reframing questions, then steps back.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "C",
+          "label": "Tells you",
+          "text": "It tells you what it would do, with reasoning; you take it or leave it.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "A",
+          "label": "Commit then stress-test",
+          "text": "It makes YOU commit a first call, then stress-tests it — counter-case + the single breakpoint assumption.",
+          "note": ""
+        }
+      ],
+      "why": "sharper decisioning based on better, more relevant and fresher curated information streams is the main goal",
+      "intensity": 5
+    },
+    "9": {
+      "theme": "Handing work off + the reinvestment moment",
+      "scene": "You just automated something that used to eat your time. What should happen next?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "A",
+          "label": "Offer the next rung",
+          "text": "'That's handled — now point the time you freed at amplifying [a strength].'",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "D",
+          "label": "Nudge later",
+          "text": "A day later: 'Your automation ran twice — want to aim that saved time at your big bet?'",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "B",
+          "label": "Bank the reclaim",
+          "text": "'You just saved ~3 hrs/week' — celebrated and left there.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Silent",
+          "text": "It quietly files the automation and says nothing; you move on.",
+          "note": ""
+        }
+      ],
+      "why": "We need to be really clear as to what 'automated', means. Right now, that's just words. We need to tie that into action, which is what the product actually does.\n\nRight Now, in the simplest form, the app builds skills and personalized markdown files that can be used to train any tool that they're using. I don't want this app to be where they do their content writing, or their board memos, or their decks. That would make this app too complicated. This app is purely designed to help them level up their AI usage week over week so that they form the right habits to use it and also to save time to invest in sharper skills. I'm quite confused on the vision for this one, because in reality, we can't have an app that is just there to make custom claude skills that they have to copy paste manually - thats no long term value. But at the same time, it is the most tangible way to have a leader see their own skills sharpen and  improve the skills they will need when AI has automated all their boring/administrative/hated tasks away. I think this entire concept probably needs to be rethought end to end as it feels like a completely different track from the other thesis, which is surfacing the right external signals + user signals to curate whats important so the leader can think critically and use the tool to explore and ideate in private. Perhaps this entire concept moves in to the Kit area, and the app forks more cleanly than is does right now? This piece is more about the small wins day to day actually getting better at using AI for little outputs, which is where my cohort students need to go. it could also be a pretty great data collection for the other fork",
+      "intensity": 5
+    },
+    "10": {
+      "theme": "The give/take ratio",
+      "scene": "How much should CTRL ask of you before it gives value?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "B",
+          "label": "Fair trade",
+          "text": "Answer 2 quick things, get something visibly better back, immediately.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "D",
+          "label": "Continuous",
+          "text": "Little prompts throughout, always trading input for sharper output.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "C",
+          "label": "Invest upfront",
+          "text": "A proper 10-minute setup that makes everything afterward excellent.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "A",
+          "label": "Give first",
+          "text": "Instant value cold — it earns the right to ask for more later.",
+          "note": ""
+        }
+      ],
+      "why": "There are universal wins and truths that can be surfaced if we know certain things like company, role, where they are at with AI personally, what they'd like to accomplish in their role when it comes to the topic of AI and the big decisions their business is needing to make in the next 6 months as a result of AI. No value in completely generic outputs at all",
+      "intensity": 4
+    },
+    "11": {
+      "theme": "What's worth interrupting you for",
+      "scene": "CTRL can send a push notification or claim the top of the screen. What earns it?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "B",
+          "label": "Move against a bet",
+          "text": "A major real-world move directly against one of your named bets.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "C",
+          "label": "Artifact ready",
+          "text": "Something you requested is ready — a memo, brief, or skill.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "A",
+          "label": "Assumption broke",
+          "text": "A watched assumption behind a live decision just broke — your call may now be wrong.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "D",
+          "label": "Streak nudge",
+          "text": "'You haven't sharpened your context in 3 days.'",
+          "note": ""
+        }
+      ],
+      "why": "My answers here are not helpful, as I think this question relates to how we structure the two hypotheses (a user wants to get a bit better at using AI themselves now VS the executive briefing & decision partner).",
+      "intensity": 1
+    },
+    "12": {
+      "theme": "Closure (end of a 5-minute session)",
+      "scene": "The five minutes are up. What's the ideal closing beat?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "D",
+          "label": "Hand back agency",
+          "text": "A tiny 'what should I keep an eye on?' that sets up next time.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "A",
+          "label": "Completion",
+          "text": "A crisp 'here's the one thing you moved forward today.'",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "B",
+          "label": "Teaser",
+          "text": "'I'm watching X overnight — check back tomorrow.'",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "No ceremony",
+          "text": "It just ends; they got what they came for and close the app.",
+          "note": ""
+        }
+      ],
+      "why": "hand back is a good idea, as well as reinforcement",
+      "intensity": 3
+    },
+    "13": {
+      "theme": "Mobile vs desktop register",
+      "scene": "Same user, two contexts. Rank these as the RIGHT division of labor.",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "D",
+          "label": "Consume vs create",
+          "text": "Mobile = consume (read/listen the brief). Desktop = create (decide, draft, curate).",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "B",
+          "label": "Triage vs build",
+          "text": "Mobile = capture & triage on the go. Desktop = where you actually decide and build.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "A",
+          "label": "Decide vs command",
+          "text": "Mobile = one decision/move, calm and finished in 5 min. Desktop = the deep command center.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Same, bigger",
+          "text": "Both do the same things; desktop is just larger.",
+          "note": ""
+        }
+      ],
+      "why": "mobile seems like a good place to consume and capture",
+      "intensity": 3
+    },
+    "14": {
+      "theme": "Tone & personality",
+      "scene": "How should CTRL talk to you?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "A",
+          "label": "Warm & personal",
+          "text": "Uses your name, feels on your side, a touch of humanity.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "C",
+          "label": "Provocative",
+          "text": "Challenges you, a bit of edge, makes you sit up.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "B",
+          "label": "Crisp & executive",
+          "text": "Minimal words, respects your time, zero fluff.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "D",
+          "label": "Neutral & invisible",
+          "text": "Just the information, no personality at all.",
+          "note": ""
+        }
+      ],
+      "why": "(skipped)",
+      "intensity": 3
+    },
+    "15": {
+      "theme": "Pace",
+      "scene": "How should CTRL move you through anything multi-step?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "D",
+          "label": "Adaptive",
+          "text": "Guided when you're unsure, out of the way when you're decisive.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "A",
+          "label": "One per screen",
+          "text": "Sequenced — it decides the path, you take each step.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "B",
+          "label": "Guided but free",
+          "text": "A clear path you can also jump around in.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Open canvas",
+          "text": "Everything available; you self-direct.",
+          "note": ""
+        }
+      ],
+      "why": "I like the idea of it adapting to whether the user feels inadequately armed and needs help, or feels very convicted and wants to act on it",
+      "intensity": 5
+    },
+    "16": {
+      "theme": "Density",
+      "scene": "On any given screen, how much should be present?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "D",
+          "label": "Adaptive density",
+          "text": "Sparse on mobile, rich on desktop.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "B",
+          "label": "A focused few",
+          "text": "About three related things.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "A",
+          "label": "One hero + one action",
+          "text": "Everything else a tap away.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Rich dashboard",
+          "text": "Lots visible; you scan and pick.",
+          "note": ""
+        }
+      ],
+      "why": "I think this question depends on answers to others",
+      "intensity": 1
+    },
+    "17": {
+      "theme": "Agency (tell vs help-decide)",
+      "scene": "The core stance of the product:",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "B",
+          "label": "Informs",
+          "text": "'Here are the forces; you decide' — you own the call.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "C",
+          "label": "Co-reason",
+          "text": "'Let's figure it out together' — neither leads.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "A",
+          "label": "Opinionated",
+          "text": "'Here's what I'd do and why' — decisive, you can override.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "D",
+          "label": "You lead, it challenges",
+          "text": "'You decide, then I'll pressure-test it.'",
+          "note": ""
+        }
+      ],
+      "why": "(skipped)",
+      "intensity": 3
+    },
+    "18": {
+      "theme": "The felt outcome",
+      "scene": "After weeks of using CTRL, the feeling you most want them to have:",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "C",
+          "label": "Sharper edge",
+          "text": "'I'm visibly becoming a better, more future-proofed leader.'",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "D",
+          "label": "Time freedom",
+          "text": "'I got hours back and my business runs without me in the weeds.'",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "A",
+          "label": "Earned conviction",
+          "text": "'I make my big calls with more certainty and less second-guessing.'",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "B",
+          "label": "Calm command",
+          "text": "'The chaos is handled; I only touch what matters.'",
+          "note": ""
+        }
+      ],
+      "why": "(skipped)",
+      "intensity": 5
+    },
+    "19": {
+      "theme": "Status / identity reflection",
+      "scene": "Does using CTRL change how the leader sees themselves?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "A",
+          "label": "Loudly",
+          "text": "It should make them feel like an elite, AI-native operator ahead of peers.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "D",
+          "label": "Reflects growth",
+          "text": "It shows them becoming the leader they're trying to be.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "B",
+          "label": "Quietly",
+          "text": "Competence without ego — they just feel more on top of things.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Just a tool",
+          "text": "No identity story; it simply works.",
+          "note": ""
+        }
+      ],
+      "why": "(skipped)",
+      "intensity": 5
+    },
+    "20": {
+      "theme": "The correction moment ('this isn't me')",
+      "scene": "CTRL got something wrong about you. How should fixing it feel?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "D",
+          "label": "Thumbs-down",
+          "text": "You just thumbs-down and it figures out the fix silently.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "A",
+          "label": "One tap, final",
+          "text": "Correct in one tap + instant 'got it, that's now a permanent rule.'",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "B",
+          "label": "Short dialogue",
+          "text": "It asks one clarifying question so it learns the principle, not just the fact.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Edit directly",
+          "text": "You edit it like a doc — full manual control.",
+          "note": ""
+        }
+      ],
+      "why": "(skipped)",
+      "intensity": 3
+    },
+    "21": {
+      "theme": "A decision's life over time",
+      "scene": "You made a call last month. CTRL has been watching it. What's the ideal 'living decision'?",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "A",
+          "label": "Only if it breaks",
+          "text": "It pings you only when a load-bearing assumption actually breaks — otherwise silence.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "B",
+          "label": "Scoreboard",
+          "text": "A visible board of your decisions and how they're tracking.",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "C",
+          "label": "Periodic re-exam",
+          "text": "A short 'still holds / here's a wobble' update now and then.",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "D",
+          "label": "Silent log",
+          "text": "It quietly logs everything; you check in when you want.",
+          "note": ""
+        }
+      ],
+      "why": "Again, \"made a call\" is just words in a vibe coding app, lets think about the reality of the user making a call. They are unlikely to let CTRL \"Watch\" anything. The best we can hope for is they log in again and the app can ask if it was resolved & if we helped, with a \"how\" question optional. Humans are not wired to report back to an app like its their manager, people will just need to move to the next thing",
+      "intensity": 5
+    },
+    "22": {
+      "theme": "The 'borrowed conviction' moment",
+      "scene": "The leader is hesitating on a big move. CTRL's single highest-value moment is:",
+      "ranked": [
+        {
+          "rank": 1,
+          "key": "B",
+          "label": "The missing piece",
+          "text": "Surfacing the one thing they're missing that changes everything.",
+          "note": ""
+        },
+        {
+          "rank": 2,
+          "key": "A",
+          "label": "The spine to act",
+          "text": "'You've stress-tested this; the evidence backs you — go.'",
+          "note": ""
+        },
+        {
+          "rank": 3,
+          "key": "D",
+          "label": "Tie to their goal",
+          "text": "'This IS the upmarket bet you committed to.'",
+          "note": ""
+        },
+        {
+          "rank": 4,
+          "key": "C",
+          "label": "Remove the fear",
+          "text": "Showing the downside is survivable and the counter-case is weak.",
+          "note": ""
+        }
+      ],
+      "why": "It's going to be really important to narrow the field of vision as to the types of decisions this app actually helps with, I can't see this app working if it becomes a complete catch all. Can you log that we need to surface a few different options for me to choose from here?",
+      "intensity": 5
+    }
+  }
+}

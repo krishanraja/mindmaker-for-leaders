@@ -1,11 +1,5 @@
 # Enrichment Convergence (Unit C)
 
-Document class: Reference
-Owner: Mindmaker
-Last verified: 2026-08-20
-
-(The bold **Status:** line below is the implementation status of the work described, not the class of this document.)
-
 **Status:** DESIGN + DECISION (2026-06-29). The two enrichment waterfalls are documented, the shared-core contract is specified, and a deliberate incremental migration path is defined. The blind big-bang collapse is intentionally NOT done - see "Why not a big-bang" below.
 
 This is the canonical record for the last open hive-mind unit: collapsing the portfolio's two enrichment services toward one shared core WITHOUT vanilla-merging away what each one is for.

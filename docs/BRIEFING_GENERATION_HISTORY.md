@@ -1,11 +1,5 @@
 # Briefing Generation - Known Failure Modes & Fix History
 
-Status: Reference
-Owner: Mindmaker
-Last verified: 2026-08-20
-
-Read this before changing briefing generation. It is a running log of failure modes that have recurred in new disguises, kept so the next person sees the whole shape before touching it.
-
 > **Purpose.** Every "generate/refresh briefing hangs / silently fails /
 > shows Generate CTA mid-flight" bug we've shipped has come back in a new
 > disguise. This file is the running log so the next person (or session)

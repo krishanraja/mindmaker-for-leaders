@@ -2,8 +2,7 @@
 
 > **Historical only.** The Kit product was retired on 2026-08-07. `/kit*` permanently redirects to `/try`, and the former UI/routes are deleted. Do not build this draft. It remains solely as design provenance.
 
-Status: Historical
-Lifecycle: Retired 2026-08-07. No implementation is planned.
+Status: RETIRED. No implementation is planned.
 
 Author note: this replaces the assumptions baked into the current kit flow. The current reveal page (`KitHome.tsx`) stacks ~10 competing actions into one long scroll (Send My Pack, Set My Voice, I Shipped It, Copy x N, Tune, Paste Homework, the 7-day plan, artifact groups, the dashboard bridge). The intake is mostly sequential already; everything after the build is a dumping ground, the homework prompt flashes past during the loading spinner so it can never be done, and outputs ship generic enough to need a "Tune" button and offer copy buttons for text that was never personalized.
 
