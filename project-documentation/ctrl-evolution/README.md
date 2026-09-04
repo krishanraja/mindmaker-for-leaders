@@ -21,6 +21,7 @@ Private rationale, user excerpts, restricted risks, random identifiers, operatio
 | Audit and extend the theoretical foundation | Complete |
 | Create and verify durable Supabase ledger | Complete |
 | Generate and verify redacted Git snapshot | Complete |
+| Audit live trust and erasure lifecycle | In progress |
 | Complete founder product interview | In progress |
 | Produce decision-complete product plan | Pending |
 | Implement product evolution | Pending |
@@ -44,8 +45,8 @@ Private rationale, user excerpts, restricted risks, random identifiers, operatio
 
 `ledger.snapshot.jsonl` is sorted by `record_key` using bytewise ordering and then by version. Every object is recursively key-sorted and encoded as UTF-8 with LF endings. It contains no generation/export timestamp or other volatile field.
 
-- Rows: 70
-- SHA-256: `6c0390098c86d1506a21db27def72affdb47119b74ffebd9cf5d4447e3120f1f`
+- Rows: 114
+- SHA-256: `91af99954b0943640424e6ef35b69423ca78b4a5c2bebef58398223ec686d78e`
 - Sidecar: `ledger.snapshot.sha256`
 
 Every completed interview batch is appended to Supabase as an idempotent data migration, read back, then regenerated here. Existing history is never rewritten.
