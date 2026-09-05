@@ -57,16 +57,6 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 **NEXT_ACTION:** Krish answers G2: the strongest seven-day proof signals, the most valuable insufficient-evidence behavior, and where value should be felt during the thirty-day engagement. Codex preserves exact selections and nuance before routing G3.
 
-## Pending canonical append
-
-This is a recovery marker, not a second ledger and not permission to edit the redacted snapshot by hand. It exists only because the correctly targeted Supabase connector rejected the append in a read-only transaction on 2026-09-05 at 08:06 BST. Remove this section only after the canonical row is appended, read back, and the deterministic snapshot is regenerated and verified.
-
-- Proposed record: `D-017` — Founder-alignment ranking and selection questions use genuine interactive controls rather than prose-formatted option lists.
-- Scope: the ongoing founder interview. This does not establish compulsory ranking as the target-user default.
-- Required nuance: ties, contextual dependence, optional explanation, `none`, and `skip` remain valid; qualified-user testing can still show that a lighter interaction is better.
-- Source: Krish explicitly asked for proper interactive questions and then asked for the G2 batch to be redone that way.
-- Idempotency key reserved: `decision:D-017:interactive-founder-questions:v1`.
-
 ## Progress
 
 | Milestone | State |
@@ -104,13 +94,14 @@ This is a recovery marker, not a second ledger and not permission to edit the re
 - `D-014` Begin with work; invite personal context only when its relevance is clear.
 - `D-015` Choose the first recognition from the strongest supported hidden criterion, missed tension or sharper choice; abstain rather than manufacture one.
 - `D-016` Apply staged production trust containment within the recorded non-deletion and secure-rollback boundary.
+- `D-017` Use genuine interactive controls for founder-alignment ranking and selection questions; target-user defaults remain subject to testing.
 
 ## Snapshot contract
 
 `ledger.snapshot.jsonl` is sorted by `record_key` using bytewise ordering and then by version. Every object is recursively key-sorted and encoded as UTF-8 with LF endings. It contains no export timestamp or other volatile field.
 
-- Rows: 132
-- SHA-256: `ee13e0d616b465ff7ad3ed2373fb507c42a742f57b60bb6ca6d3304931af2b78`
+- Rows: 133
+- SHA-256: `7c0016fabcbecb569064cbeb7139b6e0344b0ffec04a532543eb793bb25888ee`
 - Sidecar: `ledger.snapshot.sha256`
 
 Every answered interview batch is appended to Supabase as an idempotent version, read back with generated hashes, then regenerated here. Existing history is never rewritten.
