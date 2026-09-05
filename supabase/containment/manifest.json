@@ -64,8 +64,8 @@
       "name": "synthesize-briefing",
       "action": "exact_service_credential_or_authenticated_owner",
       "verify_jwt": true,
-      "forbidden_source_markers": ["Bearer ${supabaseServiceKey}"],
-      "required_source_markers": ["hasExactServiceCredential("]
+      "forbidden_source_markers": ["Bearer ${supabaseServiceKey}", "throw new Error(\"Briefing not found\")"],
+      "required_source_markers": ["hasExactServiceCredential(", "if (fetchError || !briefing) return briefingNotFound()"]
     },
     {
       "name": "sharpen-analyze",

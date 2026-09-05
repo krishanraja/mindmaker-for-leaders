@@ -19,6 +19,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const briefingNotFound = () => new Response(JSON.stringify({ error: "Briefing not found" }), {
+  status: 404,
+  headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -57,12 +62,9 @@ serve(async (req) => {
       .eq("id", briefing_id)
       .single();
 
-    if (fetchError || !briefing) throw new Error("Briefing not found");
+    if (fetchError || !briefing) return briefingNotFound();
     if (!serviceRequest && briefing.user_id !== callerId) {
-      return new Response(JSON.stringify({ error: "Briefing not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return briefingNotFound();
     }
 
     // Cost-control rate limit per briefing-owner. Each TTS run is paid bytes;
