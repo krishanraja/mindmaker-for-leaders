@@ -11,6 +11,20 @@
     "cross_user_target_probe": "infer-briefing-interests rejected the signed public client credential plus an arbitrary target_user_id before provider or database work",
     "positive_machine_credential_probe": "pending next scheduled run; no production service credential was exposed to the verifier"
   },
+  "database": {
+    "source_commit": "9a40615a252fa3cdc25e074ac98a43557c049581",
+    "migration_ledger_version": "20260905060515",
+    "migration_name": "emergency_trust_containment_20260905",
+    "migration_sha256": "0987078C6567AC6430B3DDC4A7FFE4F16507D348881C230BA304B2CF3AB68FAA",
+    "preflight_artifact_sha256": "9799FF528B7DA3BD6DC5F4219517C6579802FF1B4E2E54288BC688B66F5EFC50",
+    "post_artifact_sha256": "F1052EF49D5F6481B471608783AFFC3A8A82AC0260ECDBA82EFFE2FA8CB512E0",
+    "post_observed_at": "2026-09-05 06:05:49.822163+00",
+    "containment_status": "PASS",
+    "violation_count": 0,
+    "policy_fingerprints_equal": true,
+    "service_role_preservation_fingerprint": "57dd0937d6b2439f800c5deccb8868fa",
+    "kit_nudges_email_matching_jobs": 0
+  },
   "functions": [
     {
       "name": "aa-tts-monitor",

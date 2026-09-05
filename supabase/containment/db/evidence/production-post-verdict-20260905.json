@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "project_ref": "bkyuxvschuwngtcdhsyg",
+  "status": "LIVE_VERIFIED",
+  "migration": {
+    "ledger_version": "20260905060515",
+    "name": "emergency_trust_containment_20260905",
+    "source_file": "supabase/migrations/20260905063000_emergency_trust_containment.sql",
+    "source_sha256": "0987078C6567AC6430B3DDC4A7FFE4F16507D348881C230BA304B2CF3AB68FAA"
+  },
+  "observed_at": "2026-09-05 06:05:49.822163+00",
+  "database_name": "postgres",
+  "database_user": "supabase_read_only_user",
+  "server_version": "17.4",
+  "post_sections_artifact": {
+    "path": "production-post-sections-20260905.json",
+    "sha256": "F1052EF49D5F6481B471608783AFFC3A8A82AC0260ECDBA82EFFE2FA8CB512E0",
+    "bytes": 271431,
+    "result_sets": 15
+  },
+  "exact_script_artifact": {
+    "path": "production-post-readback-20260905.json",
+    "sha256": "F9B309D2C048AD000176AD529D1646E2619A229B749A04965AEB1E3B15C18E5B",
+    "bytes": 713
+  },
+  "gates": {
+    "containment_status": "PASS",
+    "violation_count": 0,
+    "policy_fingerprint_rows_pre": 23,
+    "policy_fingerprint_rows_post": 23,
+    "policy_fingerprint_differences": 0,
+    "service_role_preservation_fingerprint_pre": "57dd0937d6b2439f800c5deccb8868fa",
+    "service_role_preservation_fingerprint_post": "57dd0937d6b2439f800c5deccb8868fa",
+    "service_role_preservation_equal": true,
+    "kit_nudges_email_matching_jobs": 0
+  },
+  "honest_residuals": [
+    "Positive scheduled exact-machine credential reachability still awaits a normal scheduled observation.",
+    "Affected application journeys still require owner-merged frontend and preview regression testing; catalog PASS is not a whole-product usability verdict."
+  ]
+}
