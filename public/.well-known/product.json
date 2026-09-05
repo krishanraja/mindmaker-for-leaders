@@ -6,11 +6,12 @@
   "stripe_account": "mindmaker_llc",
   "url": "https://makeyourmindup.ai",
   "status": "live",
-  "last_updated": "2026-08-20",
+  "last_updated": "2026-09-05",
   "source_of_truth": "https://makeyourmindup.ai/.well-known/product.json",
   "human_commercial_authority": "https://github.com/krishanraja/mm-ctrl/blob/main/docs/current/commercial.md",
   "tagline": "A quieter way through AI.",
   "one_liner": "CTRL is a calm AI decision partner for founders and small-team CEOs. It filters the AI world through what they are actually deciding, weighs a real call against evidence, keeps portable context, and sends a short daily read or listen.",
+  "magic_moment": "The first weigh. You hand CTRL a real call, it reframes it into the AI-native version of that call, breaks it into the claims it rests on, checks the load-bearing ones against live evidence, and hands back where the call holds, where it breaks, and the part only you can decide. The second moment is portability: pasting your context into ChatGPT or Claude and getting an answer that is unmistakably about you.",
   "positioning": {
     "spine": "CTRL is your calm AI decision partner.",
     "frame": "Build the AI-native version of your business.",
@@ -22,6 +23,39 @@
       "Memory"
     ],
     "voice": "Warm, direct, curious, specific, and economical. CTRL shows its evidence and keeps the final judgement with the leader."
+  },
+  "availability": {
+    "as_of": "2026-09-05",
+    "authenticated_product": {
+      "status": "live_with_route_level_containment",
+      "current_core_features": [
+        "Today",
+        "Decide",
+        "Blind Spot",
+        "Memory",
+        "Context export",
+        "authenticated briefing"
+      ],
+      "note": "The feature records below describe current authenticated product capabilities and entitlements. They do not assert that every repository function is enabled."
+    },
+    "public_onboarding": {
+      "status": "partially_available_under_trust_containment",
+      "available": [
+        "one-question text intake",
+        "browser-supported speech where the browser provides it",
+        "deterministic local result",
+        "ordinary signup"
+      ],
+      "temporarily_unavailable": [
+        "server voice transcription",
+        "company and profile recognition",
+        "server-generated onboarding result",
+        "persisted handoff token",
+        "new no-login briefing subscription",
+        "onboarding result email"
+      ],
+      "frontend_note": "A clearer failed-subscription recovery message exists on the trust-containment branch only and is not production frontend behavior until merged and deployed."
+    }
   },
   "non_goals": {
     "statement": "CTRL is a private thinking instrument for one person, not a company system of record.",
@@ -112,7 +146,7 @@
       "email",
       "audio"
     ],
-    "no_dashboard_visit": "A delivery subscription can send the useful briefing by email and link to audio without requiring a dashboard visit.",
+    "no_dashboard_visit": "An existing delivery subscription can send the useful briefing by email and link to audio without requiring a dashboard visit. Public onboarding cannot create a new no-login subscription during trust containment.",
     "not_shipped": [
       "Slack",
       "WhatsApp"
@@ -209,7 +243,7 @@
     },
     {
       "q": "How long does setup take?",
-      "a": "The public intake asks one question at a time by voice or text. No completion-time claim is approved without current measurement."
+      "a": "The public intake asks one question at a time. Text remains available, and browser-supported speech may be available; server voice transcription is temporarily unavailable. No completion-time claim is approved without current measurement."
     }
   ],
   "claim_policy": {

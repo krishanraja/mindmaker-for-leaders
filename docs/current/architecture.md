@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8` and live readback through the Supabase management API
+Last verified: 2026-09-05 against live Supabase containment readback; the Vercel frontend remains on the earlier `main` baseline and does not yet contain the branch-only recovery copy
 
 CTRL is a Vite React application on Vercel with Supabase Auth, PostgreSQL, Edge Functions, Storage, Vault, and scheduled jobs. The architecture has one personal context substrate and one curation pool. Product surfaces are views over those shared systems.
 
@@ -12,9 +12,9 @@ CTRL is a Vite React application on Vercel with Supabase Auth, PostgreSQL, Edge 
 flowchart LR
   U["Leader"] --> W["Make Your Mind Up intake"]
   U --> A["CTRL web app"]
-  W --> H["Consented handoff"]
-  H --> S["Supabase data and Edge Functions"]
-  A <--> S
+  W --> L["Deterministic local result"]
+  L --> A
+  A <--> S["Supabase data and Edge Functions"]
   C["Control Center source adapter"] --> P["Shared curation pool"]
   X["Search and evidence providers"] --> P
   P --> S
@@ -35,21 +35,21 @@ flowchart LR
 | Scheduled work | Prewarm, delivery, memory, watch, and lifecycle jobs | migrations using Vault, pg_cron, and pg_net |
 | Vercel | Static assets, SPA routing, canonical and redirect hosts | `vercel.json` and project configuration |
 
-The repository contains 115 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migrations. These are measured source-tree inventory counts, not design targets.
+The repository contains 115 Edge Function directories excluding `_shared`, 51 hook files, and 167 SQL migrations. These are measured source-tree inventory counts, not design targets.
 
 ## The Supabase project is shared
 
 Read this before changing anything server-side.
 
-CTRL does not have a Supabase project to itself. Project `bkyuxvschuwngtcdhsyg`, named "Mindmaker AI", hosts CTRL alongside other Mindmaker surfaces. Verified on 2026-08-20, it carries **177 deployed Edge Functions, and CTRL accounts for 113 of them.** The other 64 belong to workshop and prework tooling, exec-pulse email, the Mindmaker site assistants (`mindy-chat`, `chat-with-krish`), lead capture, and document generation.
+CTRL does not have a Supabase project to itself. Project `bkyuxvschuwngtcdhsyg`, named "Mindmaker AI", hosts CTRL alongside other Mindmaker surfaces. Production readback on 2026-09-05 found 183 live Edge Functions. This repository contains 115 function directories; ownership must be established by name and source, not inferred from either count.
 
 Three consequences that matter more than anything else on this page:
 
-1. **Deployed does not mean CTRL's.** A function visible in the Supabase dashboard may belong to another product. Only the 115 directories under `supabase/functions/` are this repository's to change, redeploy, or roll back.
-2. **Every function in this repository is live.** All 114 directories are deployed and ACTIVE except one, noted below. Several have no caller anywhere in this repository because they are invoked by cron, by an external webhook, or by a link in an email: `stripe-webhook` and `resend-webhook` are called by their providers, `decision-watch` and `capture-week` by pg_cron, `unsubscribe-briefing` by a recipient clicking a footer link. Absence of an in-repo caller is not evidence that a function is unused, and deleting one on that basis would remove production code that this repository is the only source for.
+1. **Deployed does not mean CTRL's.** A function visible in the Supabase dashboard may belong to another product. Establish ownership from the repository source and an exact live-name readback before changing, redeploying, or rolling back it.
+2. **Treat every repository function as production-significant.** The 44-route containment is a reviewed subset, not the complete deployment inventory. A missing in-repo caller is not evidence that a route is unused; providers, cron, and links in sent email can be callers too.
 3. **The database is shared too.** Tables, roles, and cron jobs outside CTRL's own migrations exist and are not this repository's to alter. Scope every migration to the objects CTRL owns.
 
-The one exception to "everything here is deployed" is `backfill-pseudonymise`, a one-off operator tool committed but not yet deployed.
+The 2026-09-05 emergency release contains 44 server routes: 35 return side-effect-free containment responses, seven require an exact non-empty service credential, one is bound to the authenticated user, and one permits only an exact service credential or authenticated owner. All 44 were ACTIVE with expected JWT settings and matching runtime source at readback. The exact contract lives in [`supabase/containment/manifest.json`](../../supabase/containment/manifest.json) and its production receipt in [`release-lock.production.json`](../../supabase/containment/release-lock.production.json).
 
 The live cron schedule is recorded in [release state](./release-state.md), which is the authority for what is actually running rather than what a migration file requests.
 
@@ -67,28 +67,16 @@ The complete current route inventory lives in [features](./features.md) and is c
 
 ## Data flows
 
-### Intake to First Lens
+### Public intake during containment
 
 ```text
 public answers
-  -> optional work email or LinkedIn URL
-  -> person and company resolution
-  -> company-specific Tavily and Brave retrieval in parallel
-  -> deterministic company match, clustering, and source-strength contract
-  -> server-sanitised dossier with at most three linked signals
-  -> one-click confirmation or correction
-  -> short-lived portfolio_handoff
-  -> auth or email handoff token
-  -> resolve-handoff ownership check
-  -> verified user_memory facts and preferences
-  -> First Lens
+  -> deterministic local result
+  -> optional ordinary signup
+  -> authenticated CTRL
 ```
 
-Public retry paths converge on stable keys. Raw private sentences do not become authenticated facts without the handoff contract.
-
-`enrich-profile` owns the onboarding dossier. PDL may resolve a person from the supplied work email or LinkedIn profile; Brandfetch may add company identity; Tavily and Brave may return company-specific recent signals. Search providers receive a company query, not the leader's onboarding answers. The server owns URL safety, company matching, excerpts, dates, clustering, and the visible source counts. The browser parses one `OnboardingDossier` contract and never treats decorative progress as evidence that a provider succeeded.
-
-On confirmation, `track-fork` reloads the stored dossier, marks the source response, and copies only the bounded confirmed fields into the idempotent handoff. After authentication, the existing handoff confirmation writes company and role as verified Memory facts and keeps the leader's decision lane as an inferred fact. No generated dossier is accepted from the browser.
+During containment, `enrich-profile`, `generate-result`, `subscribe-briefing`, and `send-result-email` return 503 without side effects. `track-fork` returns a neutral 200 without a handoff token. No company dossier or onboarding handoff is created, and direct anonymous insertion into `cannes_responses` is revoked. The richer server-backed recognition and handoff flow is a restoration target, not current production behavior.
 
 ### Curation to delivery
 
@@ -151,7 +139,7 @@ rejected candidate
 | Curation | `live_headlines_cache`, `personal_pool_cache`, `news_preferences`, `briefing_interests` | Shared cache plus owner-scoped preference data |
 | Briefing | `briefings`, `briefing_feedback`, `user_briefing_directives` | Authenticated owner; delivery is server-mediated |
 | Blind Spot | `user_patterns`, `blind_spot_evidence_links`, `blind_spot_experiments`, `blind_spot_rejections` | Candidate remains client-held and signed; confirmation and outcomes are owner-checked service writes |
-| Public intake, handoff, and delivery | `cannes_responses`, `portfolio_handoff`, `delivery_subscriptions`, `leader_notification_prefs` | Enrichment is provisional; transfer is validated, consented, bounded, and idempotent |
+| Public intake, handoff, and delivery | `cannes_responses`, `portfolio_handoff`, `delivery_subscriptions`, `leader_notification_prefs` | Direct public table writes are contained. `cannes_responses` rejects anonymous inserts; handoff and subscription writes are service-mediated, and current onboarding creates neither |
 | Billing | `edge_subscriptions` and Stripe event records | Server and signed webhook only |
 
 All schema truth comes from migrations plus production readback. A table list in prose is illustrative unless a check maintains it.
@@ -162,14 +150,14 @@ Provider routing is capability-specific. There is no truthful single sentence su
 
 | Capability | Current code path |
 |---|---|
-| Onboarding result and Blind Spot | OpenAI first, Gemini fallback through `_shared/llm-fallback.ts` |
-| Onboarding identity and company signals | PDL and Brandfetch for resolution; Tavily and Brave for recent company-specific evidence; deterministic server qualification |
+| Onboarding result and Blind Spot | Blind Spot keeps its configured route. Server-generated onboarding results are temporarily unavailable; the browser renders a deterministic local result |
+| Onboarding identity and company signals | PDL, Brandfetch, Tavily, and Brave remain configured but the onboarding provider path is temporarily unavailable |
 | Briefing script and curation | OpenAI chat-completions execution, default `gpt-4o-mini`; model selection metadata may be benchmark-assisted |
 | Briefing and Blind Spot conversation | OpenAI `gpt-4o-mini`, grounded only in the displayed briefing or signed Blind Spot anchors |
 | Decision reasoning | Anthropic Claude first, OpenAI GPT-4o fallback |
 | Decision claim adjudication | OpenAI `gpt-4o-mini` |
 | Edge Pro cross-examination | Available panel members from Claude, GPT-4o, Gemini, and Grok; failures are dropped, not fabricated |
-| Voice transcription | OpenAI transcription first, Gemini fallback |
+| Voice transcription | Server transcription is temporarily unavailable; typing and browser-supported speech are the fallback |
 | Briefing speech | ElevenLabs |
 | Embeddings | OpenAI `text-embedding-3-small` |
 | Legacy/general AI generation | Function-specific routing; inspect the called function before making a provider claim |
@@ -178,13 +166,15 @@ Search and evidence paths use a bounded mix of Perplexity, Tavily, Brave, Jina, 
 
 ## Trust boundaries
 
+The 2026-09-05 database migration removes direct client privileges from 21 tables, removes all Data API privileges from `ai_response_cache`, narrows `cannes_responses` insertion, and closes direct Data API execution on six SECURITY DEFINER functions. Independent post-readback passed with zero violations, all 23 policy fingerprints unchanged, and the intended service-role capability fingerprint preserved.
+
 - Browser code receives only publishable Supabase credentials.
 - Service-role and provider credentials remain Edge Function secrets.
 - RLS is the default data boundary; service-role functions must independently establish user ownership.
 - `supabase/config.toml` is the function JWT contract. A `verify_jwt=false` function must validate a webhook signature, cron secret, service role, or deliberately public bounded input in its handler.
 - Stripe webhooks are signature-verified and idempotent.
 - Cron calls use the Vault-backed `CTRL_CRON_SECRET`, not a database service-role setting.
-- Public inputs validate size and shape, rate-limit costly paths, and converge on retry.
+- Do not infer safety from `verify_jwt` or a generic public-input rule. For contained routes, the exact live authority is the manifest plus runtime readback.
 - Logs must not contain secrets or unbounded private content.
 
 ## Deployment shape

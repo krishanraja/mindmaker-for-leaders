@@ -2,9 +2,23 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, and the deployed onboarding and Blind Spot contracts
+Last verified: 2026-09-05 for emergency public-entry availability against production containment release `trust-containment-2026-09-05`, its production database readback, and branch commit `7c48e6fc3f33fff0baa3ce0029f95e38381da258` for the pending recovery copy. The remaining product contract was last verified on 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, and the deployed Blind Spot contracts
 
 CTRL is a calm AI decision partner for founders and small-team CEOs building the AI-native version of their business. Make Your Mind Up is its warm public intake. The product lives at [makeyourmindup.ai](https://makeyourmindup.ai).
+
+## Current public-entry availability
+
+Emergency trust containment is active. A new visitor can complete the one-question-at-a-time public intake, receive a deterministic result rendered in the browser, and continue to the ordinary CTRL signup route.
+
+The following public-entry capabilities are temporarily unavailable while their trust boundaries are rebuilt and verified:
+
+- company recognition and enrichment;
+- a server-generated result;
+- persisted portfolio handoff into the new account;
+- result email;
+- creation or reactivation of a no-login briefing subscription.
+
+No result email or briefing subscription is created during this contained path. The containment branch includes an inline recovery message that says this plainly and keeps the CTRL signup action available, but that frontend change is not live until the repository owner merges the branch and the Vercel deployment is verified. The product contract below remains the restoration target, not a claim that these paused capabilities are available now.
 
 ## The user and the job
 
@@ -15,7 +29,17 @@ The core user is already using AI but has no time to assemble context, follow th
 
 The product succeeds when the leader can make a better call with less interface time.
 
-## One value loop
+## Restoration value loop
+
+The currently available public-entry path is deliberately smaller:
+
+```text
+one-question intake
+  -> deterministic local result
+  -> ordinary CTRL signup
+```
+
+The intended full loop remains:
 
 ```text
 one-question intake
@@ -49,7 +73,15 @@ Memory keeps only three facets: Graph, All facts, and Library. Privacy, retentio
 
 ## Entry and delivery
 
+### Current public-entry path
+
 - The public intake asks one warm question at a time and requires no account.
+- The browser renders a deterministic local result when the contained result service declines the request.
+- Continue into CTRL opens ordinary signup without a persisted handoff token.
+- Company recognition, enrichment, server-generated results, result email, and new no-login briefing subscriptions remain unavailable during containment.
+
+### Restoration contract
+
 - A work email or LinkedIn URL may resolve a company dossier in the background. The result shows the company, role, source strength, and at most three fresh linked signals before the leader confirms it.
 - Thin or failed enrichment stays quiet and honest. It never fabricates a company, news item, or completed search step.
 - Only consented, bounded context crosses the handoff into CTRL.
@@ -82,7 +114,7 @@ The audio briefing follows the same voice. Spoken follow-up must remain grounded
 ## Learning and consent
 
 - Explicit facts may enter durable memory after a clear user action.
-- Company and role enrichment remain provisional until the leader chooses the result-state action. `Not quite` replaces the starting identity with one work email or LinkedIn URL and reruns the same pipeline.
+- When enrichment is restored, company and role enrichment remain provisional until the leader chooses the result-state action. `Not quite` replaces the starting identity with one work email or LinkedIn URL and reruns the same pipeline.
 - Tentative inferences remain candidates until confirmed.
 - Content reactions tune ranking; they do not become personality facts.
 - Skipping is neutral.

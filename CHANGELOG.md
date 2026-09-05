@@ -2,9 +2,18 @@
 
 Status: Historical
 Owner: Mindmaker
-Last reconciled: 2026-08-21
+Last reconciled: 2026-09-05
 
 > A running record of shipped changes, newest first. It explains how the product arrived here; it is not a description of current behaviour. For that, see [`docs/current/`](./docs/current/README.md).
+
+## 2026-09-05 - Emergency trust containment
+
+Production status: the Supabase function and database controls are live and independently read back. The frontend recovery copy is committed on `codex/trust-containment-2026-09-05`; it is not merged or deployed.
+
+- Deployed and source-verified a 44-route containment manifest. Thirty-five routes now return side-effect-free retired, unavailable, forbidden, neutral, no-op, or empty responses. Nine routes were repaired in place: seven exact-service credential paths, `synthesize-briefing` with exact-service or authenticated-owner access, and `infer-briefing-interests` bound to the signed-in user.
+- Management readback found 44/44 ACTIVE with the expected `verify_jwt` setting and matching runtime source. No-authorisation probes passed 44/44. Invalid service-claim probes were rejected 8/8. `decision-eval` is v36, `infer-briefing-interests` v41, and `synthesize-briefing` v57. Positive scheduled-service execution remains pending the next real run.
+- Applied `supabase/migrations/20260905063000_emergency_trust_containment.sql`, recorded in production as `emergency_trust_containment_20260905` at version `20260905060515`. Fresh post-readback returned PASS with zero violations, all 23 policy fingerprints unchanged, service-role preservation fingerprint `57dd0937d6b2439f800c5deccb8868fa`, and no `kit-nudges-email` cron job.
+- Containment intentionally pauses public onboarding enrichment, AI result generation, result email, and new no-login briefing subscription. The browser still produces its deterministic local result and can continue to ordinary signup; `track-fork` returns no handoff token. The branch now explains the morning-brief failure inline, but production will not show that repair until the owner merges and Vercel deploys it.
 
 ## 2026-09-02 - Audience axis and stance on the daily headline pool
 

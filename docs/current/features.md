@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, plan constants, and deployed onboarding and Blind Spot contracts
+Last verified: 2026-09-05 against live Supabase containment readback, the earlier Vercel frontend baseline, `src/router.tsx`, and plan constants
 
 This inventory distinguishes the user-facing product from supporting and nested harnesses. It does not treat every route or Edge Function as a feature.
 
@@ -21,14 +21,13 @@ Entitlements are defined by [`src/constants/planMatrix.ts`](../../src/constants/
 
 ## Supporting capabilities
 
-- Public one-question onboarding and future-memory result, with a progressive Make Your Mind Up to CTRL visual handoff across the six questions.
-- Optional one-field company recognition from a work email or LinkedIn URL. It resolves a bounded company dossier, checks fresh company-specific news, shows source strength and linked evidence, and offers one quiet correction before the confirmed context follows the leader into CTRL.
-- Consented handoff into authenticated context and First Lens.
+- Public onboarding currently yields a deterministic local future-memory result and can continue to ordinary signup.
+- Company recognition, server-generated onboarding results, persisted handoff, result email, and new no-login briefing subscription are temporarily unavailable under trust containment.
 - Nine AI-native news categories with stable visual motifs.
 - Shared-source clustering, corroboration, category balance, and role-aware ranking.
 - One feed-tuning control reused by Today and Settings.
 - Email and audio delivery without a dashboard visit.
-- No-login briefings use confirmed company signals first and fill remaining space from the same shared curation pool rather than creating a company-news feed.
+- Existing briefing surfaces remain in the product; public onboarding cannot currently create a new no-login briefing subscription.
 - Context export for use in ChatGPT, Claude, Gemini, Cursor, and Claude Code.
 - Decision watch, outcomes, track record, and map.
 - Memory correction lineage, verification, encryption, expiry settings, and export.
@@ -39,7 +38,7 @@ Entitlements are defined by [`src/constants/planMatrix.ts`](../../src/constants/
 - Third-party minimisation at the Memory boundary. A person named next to a role is stored as the role; a fact whose subject is another person is not stored at all.
 - Retention enforcement on a daily schedule, applying the 30-day, 90-day, or indefinite window chosen in Settings.
 - Billing, account deletion including subscription cancellation, consent, and compliance controls.
-- Loading, stale-chunk, network, and retry recovery paths.
+- Loading and recovery paths exist broadly. The honest inline morning-brief failure state is committed on the containment branch and is not yet live.
 
 ## Public surfaces
 

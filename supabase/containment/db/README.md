@@ -1,14 +1,44 @@
-# Database containment candidate
+# Database containment release
 
-Status: local design artifact only. Not applied, committed, deployed, or copied
-into the shared repository.
+Status: applied to the shared production project on 2026-09-05 and independently
+verified by fresh catalog readback. This record does not authorize a rerun.
 
 This package contains a forward-only containment migration and two independent
 read-only evidence scripts. It changes ACLs and idempotently removes one exact
 legacy pg_cron schedule. It does not change application rows, policies, owners,
-triggers, function bodies, or production from this workspace.
+triggers, or function bodies.
 
-## Required execution contract
+## Production application record
+
+The exact [canonical migration](../../migrations/20260905063000_emergency_trust_containment.sql),
+SHA-256 `0987078C6567AC6430B3DDC4A7FFE4F16507D348881C230BA304B2CF3AB68FAA`,
+was applied to project `bkyuxvschuwngtcdhsyg`. Supabase recorded production
+ledger name `emergency_trust_containment_20260905` at version
+`20260905060515`. The repository timestamp and production ledger version are
+separate provenance fields and are preserved exactly rather than normalized.
+
+Fresh-session post-readback and an independent evidence cross-check confirmed:
+
+- `containment_status = PASS` and `violation_count = 0`.
+- All 23 policy fingerprint rows were unchanged, with zero differences.
+- The service-role preservation fingerprint was unchanged at
+  `57dd0937d6b2439f800c5deccb8868fa`.
+- The number of matching `kit-nudges-email` jobs was `0`.
+
+Repository evidence:
+
+- [Preflight verdict](./evidence/production-preflight-verdict-20260905.json)
+- [Complete preflight result sets](./evidence/production-preflight-sections-20260905.json)
+- [Exact post-readback result](./evidence/production-post-readback-20260905.json)
+- [Complete post-readback result sets](./evidence/production-post-sections-20260905.json)
+- [Post-readback verdict](./evidence/production-post-verdict-20260905.json)
+- [Combined function and database production release lock](../release-lock.production.json)
+
+## Execution contract and any future reuse
+
+Production followed this contract. Any later replacement or environment-specific
+application must repeat it from the beginning; the existing PASS receipt is not
+portable authority.
 
 1. Verify the exact Supabase project reference, database name, and environment
    out of band. Do not infer the target from a locally linked CLI directory.
@@ -22,9 +52,10 @@ triggers, function bodies, or production from this workspace.
 4. Review the raw `relacl`, `attacl`, and `proacl` rows, including grantor and
    grant-option state. Record the preflight policy fingerprints and the single
    `service_role_preservation_fingerprint`.
-5. Apply `01_forward_containment.sql` once through the approved migration path.
-   Its transaction aborts on a missing required object, unexpected function
-   owner or security mode, residual client privilege, or failed service-role
+5. Apply the exact canonical migration, which is byte-identical to
+   `01_forward_containment.sql`, once through the approved migration path. Its
+   transaction aborts on a missing required object, unexpected function owner
+   or security mode, residual client privilege, or failed service-role
    preservation assertion.
 6. Run `02_post_readback.sql` in a fresh database session.
 7. Require all three catalog gates:
@@ -201,9 +232,12 @@ post-readback `violations` CTE as an allowlisted containment manifest. CI should
 
 ## Evidence boundary
 
-Names and signatures come from independently captured live catalog evidence.
+Names and signatures came from independently captured live catalog evidence.
 Repository revision `9d23e92c189ee304c983e36123c10022bea8c556`
 supplied historical definitions, the latent claim RPC evidence, and migration
-`20260610000003_kit_nudge_cron.sql`. The live cron readback returned no matching
-`kit-nudges-email` row on 2026-09-05. No production SQL was executed while
-producing or reviewing this package.
+`20260610000003_kit_nudge_cron.sql`. Repository commit `9a40615` sealed the
+canonical forward migration before production application, and commit `7c48e6f`
+sealed the post-readback evidence. The live cron readback returned no matching
+`kit-nudges-email` row on 2026-09-05. The exact production migration and the
+fresh post-readback are recorded above; broader application-journey health is a
+separate verification boundary.

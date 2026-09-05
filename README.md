@@ -9,7 +9,7 @@ CTRL is a calm AI briefing and decision partner for founders and small-team CEOs
 Production: [makeyourmindup.ai](https://makeyourmindup.ai)
 Product: CTRL
 Repository: `krishanraja/mm-ctrl`
-Last verified: 2026-08-20 against production readback
+Last verified: 2026-09-05 against live Supabase containment readback. The clearer public briefing recovery copy remains branch-only until it is merged and deployed.
 
 ## Start here
 
@@ -28,11 +28,13 @@ Executable code and authoritative environment readback outrank prose. When behav
 
 ## Read this before touching the backend
 
-The Supabase project is **shared**. CTRL runs alongside other Mindmaker surfaces in project `bkyuxvschuwngtcdhsyg`, which carries 177 deployed Edge Functions of which CTRL accounts for 113. A function you can see in the dashboard may belong to another product, and the database has tables and cron jobs this repository does not own.
+The Supabase project is **shared**. CTRL runs alongside other Mindmaker surfaces in project `bkyuxvschuwngtcdhsyg`. Production readback on 2026-09-05 found 183 live Edge Functions. This repository contains 115 Edge Function directories excluding `_shared`; neither number establishes which shared-project functions CTRL owns. The database also has tables and cron jobs this repository does not own.
 
-Two rules follow. Only the directories under `supabase/functions/` are yours to change. And every one of them is live, including the ones with no caller anywhere in this repository, because they are triggered by cron, by an external webhook, or by a link in an email. See [architecture](./docs/current/architecture.md#the-supabase-project-is-shared).
+Two rules follow. Establish ownership and the exact live name before changing, deploying, or rolling back any function. Treat every directory under `supabase/functions/` as production-significant even when this repository has no caller, because cron, external webhooks, and links in sent email may invoke it. Directory presence alone does not prove that a function is currently deployed. See [architecture](./docs/current/architecture.md#the-supabase-project-is-shared).
 
-## Product in one loop
+## Product loop and current containment
+
+The intended full loop is:
 
 ```text
 one-question intake
@@ -46,6 +48,8 @@ one-question intake
   -> explicit confirmation or correction
   -> stronger memory
 ```
+
+Under the 2026-09-05 trust containment, the public intake still supports text, a deterministic local result, and ordinary signup. Server voice transcription, company and profile recognition, the server-generated result, persisted handoff, result email, and creation of a new no-login briefing subscription are temporarily unavailable. The authenticated core product remains separate from those public onboarding limits.
 
 Today, Decide, Blind Spot, Memory, Briefing, and Settings are the primary product. Context export and deeper review/build chains remain nested harnesses. The lesson-kit product is retired and `/kit*` redirects to `/try`.
 
@@ -62,6 +66,8 @@ Today, Decide, Blind Spot, Memory, Briefing, and Settings are the primary produc
 | Identity and evidence | PDL and Brandfetch for optional onboarding resolution; Perplexity, Tavily, Brave, Jina, NewsAPI.org, Exa, Artificial Analysis, RSS, GDELT, Hacker News |
 | Billing and email | Stripe and Resend |
 | Hosting | Vercel frontend and Supabase Cloud backend |
+
+Measured source inventory on 2026-09-05: 115 Edge Function directories excluding `_shared`, 51 hook files, and 167 SQL migrations. The shared project had 183 live functions; that deployment count is not an ownership map.
 
 There is no truthful single global “primary AI provider.” See the capability matrix in the [current architecture](./docs/current/architecture.md#ai-and-external-provider-routing).
 

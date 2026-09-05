@@ -2,7 +2,7 @@
 
 Status: Current index
 Owner: Mindmaker
-Last verified: 2026-08-11
+Last verified: 2026-09-05
 
 The canonical current set lives in [`docs/current/`](../docs/current/README.md). This directory contains commercial context, operating references, compliance records, decisions, and history.
 
@@ -16,7 +16,7 @@ The canonical current set lives in [`docs/current/`](../docs/current/README.md).
 6. [`REPLICATION_GUIDE.md`](./REPLICATION_GUIDE.md)
 7. [`DECISIONS_LOG.md`](./DECISIONS_LOG.md)
 
-Measured in the current source tree on 2026-08-28: 115 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migrations. `npm run docs:check` prevents these quoted counts from drifting silently.
+Measured in the current source tree on 2026-09-05: 115 Edge Function directories excluding `_shared`, 51 hook files, and 167 SQL migrations. `npm run docs:check` prevents these quoted counts from drifting silently.
 
 ## Commercial and brand context
 
