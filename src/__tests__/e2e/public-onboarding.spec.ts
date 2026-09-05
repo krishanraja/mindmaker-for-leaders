@@ -20,6 +20,7 @@ test.describe('Public CTRL onboarding', () => {
     const functionCalls: string[] = [];
     const enrichmentBodies: Array<Record<string, unknown>> = [];
     const consoleErrors: string[] = [];
+    let subscribeAttempts = 0;
     page.on('console', (message) => {
       if (message.type() === 'error') consoleErrors.push(message.text());
     });
@@ -52,6 +53,13 @@ test.describe('Public CTRL onboarding', () => {
         enrichmentBodies.push(JSON.parse(route.request().postData() ?? '{}'));
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, dossier: generatedResult.dossier }) });
         return;
+      }
+      if (functionName === 'subscribe-briefing') {
+        subscribeAttempts += 1;
+        if (subscribeAttempts === 1) {
+          await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'temporarily_unavailable' }) });
+          return;
+        }
       }
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
     });
@@ -129,8 +137,18 @@ test.describe('Public CTRL onboarding', () => {
 
     await page.getByPlaceholder('Where should the morning brief go?').fill('leader@example.com');
     await page.getByRole('button', { name: 'Start morning brief' }).click();
+    await expect(page.getByRole('status')).toHaveText("I can't start your morning brief just now. Nothing was subscribed or sent. You can still continue into CTRL.");
+    await expect(page.getByPlaceholder('Where should the morning brief go?')).toHaveValue('leader@example.com');
+    await expect(page.getByRole('button', { name: 'Yes, this is my world' })).toBeEnabled();
+    await expect.poll(() => functionCalls.filter((name) => name === 'send-result-email')).toHaveLength(0);
+    if (process.env.E2E_CAPTURE_DIR) {
+      await page.screenshot({ path: `${process.env.E2E_CAPTURE_DIR}/ctrl-onboarding-brief-error.png`, fullPage: true });
+    }
+
+    await page.getByRole('button', { name: 'Start morning brief' }).click();
     await expect(page.getByRole('button', { name: 'Briefing on' })).toBeVisible();
-    await expect.poll(() => functionCalls.filter((name) => name === 'subscribe-briefing')).toHaveLength(1);
+    await expect(page.getByRole('status')).toHaveCount(0);
+    await expect.poll(() => functionCalls.filter((name) => name === 'subscribe-briefing')).toHaveLength(2);
     await expect.poll(() => functionCalls.filter((name) => name === 'send-result-email')).toHaveLength(1);
 
     const hasHorizontalOverflow = await page.evaluate(
@@ -144,7 +162,8 @@ test.describe('Public CTRL onboarding', () => {
       '11111111-1111-4111-8111-111111111111',
     );
     expect(functionCalls.filter((name) => name === 'track-fork')).toHaveLength(1);
-    expect(consoleErrors).toEqual([]);
+    expect(consoleErrors.some((message) => message.includes('status of 503'))).toBe(true);
+    expect(consoleErrors.filter((message) => !message.includes('status of 503'))).toEqual([]);
   });
 
   test('removes decorative transition motion when reduced motion is requested', async ({ page }) => {
