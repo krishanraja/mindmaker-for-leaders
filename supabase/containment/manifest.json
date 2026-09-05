@@ -61,6 +61,13 @@
       "required_source_markers": ["auth.getUser("]
     },
     {
+      "name": "synthesize-briefing",
+      "action": "exact_service_credential_or_authenticated_owner",
+      "verify_jwt": true,
+      "forbidden_source_markers": ["Bearer ${supabaseServiceKey}"],
+      "required_source_markers": ["hasExactServiceCredential("]
+    },
+    {
       "name": "sharpen-analyze",
       "action": "retired",
       "template": "templates/retired-410.ts",
