@@ -2,12 +2,12 @@
   "schema_version": 1,
   "release_id": "trust-containment-2026-09-05",
   "project_ref": "bkyuxvschuwngtcdhsyg",
-  "source_commit": "d9f40f27ea3cac04a863d3ab5b90f0b64f1ace14",
-  "observed_at": "2026-09-05T05:51:28.6921351Z",
+  "source_commit": "fadc10288d097c6168912c1212db0c3d2f3e1684",
+  "observed_at": "2026-09-05T05:56:56.4659759Z",
   "evidence": {
-    "management_readback": "43/43 ACTIVE with expected verify_jwt and downloaded runtime source matched",
-    "no_authorization_probe": "43/43 returned the exact contained or gateway-denied status",
-    "forged_service_role_probe": "7/7 exact-service routes denied unsigned or invalid service claims before data access",
+    "management_readback": "44/44 ACTIVE with expected verify_jwt and downloaded runtime source matched",
+    "no_authorization_probe": "44/44 returned the exact contained or gateway-denied status",
+    "forged_service_role_probe": "8/8 exact-service routes denied unsigned or invalid service claims before data access",
     "cross_user_target_probe": "infer-briefing-interests rejected the signed public client credential plus an arbitrary target_user_id before provider or database work",
     "positive_machine_credential_probe": "pending next scheduled run; no production service credential was exposed to the verifier"
   },
@@ -270,6 +270,13 @@
       "verify_jwt": false,
       "status": "ACTIVE",
       "ezbr_sha256": "c5d3de3d1319150bafece1498629e79e48ec25c618d7d400b157f80e30178350"
+    },
+    {
+      "name": "synthesize-briefing",
+      "version": 57,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "5a37aa539b8efa5b281d1f8377aa7773bb28f4526f45e0cfc784460d4c72ca7e"
     },
     {
       "name": "synthesize-interview-audio",
