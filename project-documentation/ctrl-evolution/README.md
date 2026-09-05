@@ -16,7 +16,7 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 **STATE_ROUTE:** `project-documentation/ctrl-evolution/README.md`
 
-**CURRENT_PHASE:** Founder alignment (Build Apps with Krish, Phase 2), complete through G10. Broader product implementation and material visual work remain paused until the first-loop, delivery, export and validation choices are closed.
+**CURRENT_PHASE:** Founder alignment (Build Apps with Krish, Phase 2), G11 real-decision loop in progress. Broader product implementation and material visual work remain paused until the first-loop, delivery, export and validation choices are closed.
 
 **SOURCE_LAYERS:**
 
@@ -57,7 +57,9 @@ The first wedge is leader adaptation, followed by organisation now/next/not-yet 
 
 **AUTHORITY:** D-016 authorised the exact production trust containment, which is now live and independently verified. Append-only discovery and redacted snapshot maintenance remain authorised. Broader product implementation, material visual construction, main-branch merge, capability restoration and public release require their own scoped gates.
 
-**NEXT_ACTION:** Continue founder alignment with the first actual five-minute decision loop, the thirty-day delivery and commercial experience, the portable export end-state, and the held-out validation design. Present questions immediately; never delay them for persistence or bespoke interaction QA.
+**ACTIVE_CASE:** Whether to reorient marketing completely around AI and redesign the division around high-agency, high-taste judgement and systems-administration capabilities. Treat marketing strategy, future operating model and current-team transition as three coupled but distinct decisions. Evidence for the first two must not be used as a shortcut to named-person evaluation or employment action.
+
+**NEXT_ACTION:** Capture Krish's provisional answer and its evidence before CTRL reveals its independent view (`Q-050`). Present the question immediately; never delay it for persistence or bespoke interaction QA.
 
 ## Current strategic synthesis through G10
 
@@ -136,8 +138,8 @@ The remaining decision-critical tensions are explicit rather than smoothed over:
 
 `ledger.snapshot.jsonl` is sorted by `record_key` using bytewise ordering and then by version. Every object is recursively key-sorted and encoded as UTF-8 with LF endings. It contains no export timestamp or other volatile field.
 
-- Rows: 186
-- SHA-256: `6b70cf61db593aa9ca42170ec200fad2b8f3f45f80cab40c10d1d1aed7865c07`
+- Rows: 191
+- SHA-256: `49a7cd16b28873cbe59b4c54548c8e7e03abbb9331b6faf5195c6a6dde2d4f4f`
 - Sidecar: `ledger.snapshot.sha256`
 
 Every answered interview batch is appended to Supabase as an idempotent version, read back with generated hashes, then regenerated here. Existing history is never rewritten.
