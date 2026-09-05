@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "release_id": "trust-containment-2026-09-05",
+  "project_ref": "bkyuxvschuwngtcdhsyg",
+  "source_commit": "d9f40f27ea3cac04a863d3ab5b90f0b64f1ace14",
+  "observed_at": "2026-09-05T05:51:28.6921351Z",
+  "evidence": {
+    "management_readback": "43/43 ACTIVE with expected verify_jwt and downloaded runtime source matched",
+    "no_authorization_probe": "43/43 returned the exact contained or gateway-denied status",
+    "forged_service_role_probe": "7/7 exact-service routes denied unsigned or invalid service claims before data access",
+    "cross_user_target_probe": "infer-briefing-interests rejected the signed public client credential plus an arbitrary target_user_id before provider or database work",
+    "positive_machine_credential_probe": "pending next scheduled run; no production service credential was exposed to the verifier"
+  },
+  "functions": [
+    {
+      "name": "aa-tts-monitor",
+      "version": 45,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "e4fb4177f0c8db4ce98f1a79086e5d05f682f354c534166ba0aaf18ad151f1bd"
+    },
+    {
+      "name": "ai-assessment-chat",
+      "version": 250,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "e9e59c8baea0ab6e3bc451364036311ae59f629e2780837b1d4ed9bc1cabad65"
+    },
+    {
+      "name": "ai-generate",
+      "version": 101,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "0165df9ab42af56ad1984a1076595ab0a705bd648ca3b9f03ab899b269cdf0ae"
+    },
+    {
+      "name": "batch-compute-drift",
+      "version": 83,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "85d4f002b888db8ff78a8844d3f32b3b6395e65b3dcf41af56277bb2fdef8c6f"
+    },
+    {
+      "name": "batch-process-pending-syncs",
+      "version": 199,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "442e53a1fdc23808dc0ecba9d3c49b0b8001712564026e38f98fc84173ea2fe9"
+    },
+    {
+      "name": "capture-week",
+      "version": 13,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "d3932a82200bd96b034956e831c34e80bbfa99f5a97be4a317b8268563f8e972"
+    },
+    {
+      "name": "claim-history",
+      "version": 85,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "3df76bcc8cec4f5a36cd2b3f27b8fd3f2d918e1d803c00a0743dd593028b3d08"
+    },
+    {
+      "name": "compass-analyze",
+      "version": 162,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "0a4fef9904afdb28f3f80abbab3bc078c63434f51eef01da53e1a53711252338"
+    },
+    {
+      "name": "create-diagnostic-payment",
+      "version": 137,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "57895f7e71809e4f502b9e79080a14bb3757efd786faa67497f6fabe9746a3d4"
+    },
+    {
+      "name": "create-leader-assessment",
+      "version": 142,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "531bc6e53a0c630214963e956e3e2443ba724cc0b8a3c496163cfcec70e5e128"
+    },
+    {
+      "name": "decision-eval",
+      "version": 36,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "f0287008ead71d233f4a9d734915ab0d51a61a51b07e9e3ec9a33cf22591cd4d"
+    },
+    {
+      "name": "decision-watch",
+      "version": 34,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "1c7518001ed3cf38a03bebcdb974c737d2c9a14bb893b0d3a4ec9821f54160d2"
+    },
+    {
+      "name": "detect-trends",
+      "version": 15,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "7c0acb9c7991c7342120a200b92108952a5a2616f4ae25e4ecb96c8c0bb7fccc"
+    },
+    {
+      "name": "enrich-company-context",
+      "version": 65,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "0f554e90fa6c9d54897c8a4883da234a32d61b9898bb38b9ca0c132eb490c15f"
+    },
+    {
+      "name": "enrich-profile",
+      "version": 43,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "3b52767175c98428ec80822a3eaf413b0df093b38b6e6c17dc4e68ffe63662a8"
+    },
+    {
+      "name": "generate-meeting-prep",
+      "version": 64,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "772c7c10301b8784bad1ff721d6ad43306bc52fd58e56701a21161257a0ea0b8"
+    },
+    {
+      "name": "generate-progress-snapshot",
+      "version": 50,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "910db601271f24c275a97b7acfe72fcf8edbdd6b1a30de665b2f38e157f3c472"
+    },
+    {
+      "name": "generate-quarterly-index",
+      "version": 157,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "382dfc21fdafd1fe472f5a4419d55f0eb568fa3e4dcfc416ba5a0a4ede8cfc00"
+    },
+    {
+      "name": "generate-result",
+      "version": 46,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "b207158762e4002321374b004272e4f8f4d24a8a68cad95514242d71dea19d3f"
+    },
+    {
+      "name": "infer-briefing-interests",
+      "version": 41,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "07067acf6e2968813c44c1234c62689eda250be5e902928d8edcd66e1cd3376f"
+    },
+    {
+      "name": "memory-lifecycle",
+      "version": 54,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "0c8f95ee9e23be66f766c4dae92d907eddb5414ab86069aaf12b04cef684143f"
+    },
+    {
+      "name": "memory-sweep",
+      "version": 27,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "eb89ab3089fa63715dc396fc73c6f0ccbad71109800ed4b910520f4a61e171f4"
+    },
+    {
+      "name": "memory-synthesize",
+      "version": 54,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "3cca22cda6a95070cd09301e062880e62802d2084ffe1887258e4d8b18c95e96"
+    },
+    {
+      "name": "populate-index-participant",
+      "version": 161,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "9060b3b74bcf467b1d4ea33ba30a0c69163df6d596abd00aa9643b46ed6dec97"
+    },
+    {
+      "name": "portfolio-pulse",
+      "version": 21,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "50dddf44909653b8b406ead9796106bc0db285ffedec206f317f8ae23a4c4de7"
+    },
+    {
+      "name": "resend-webhook",
+      "version": 88,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "b75d143521b60b7ef3d143347ae251b61182e11c334551986857d31eaf1d3bff"
+    },
+    {
+      "name": "roi-estimate",
+      "version": 163,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "f049b0ec81dc8e022ef22002b89f55fe36fd8f083bb7d7b4c0857b64a03655f7"
+    },
+    {
+      "name": "send-advisory-sprint-notification",
+      "version": 194,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "101697f2f4108d4f97f082fcc76e11181062e97438e16c0265da79cfd0ffdd49"
+    },
+    {
+      "name": "send-booking-notification",
+      "version": 253,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "ccd0624917dd54a608a3a5f188b7ab83d3edacc4de43f48da1a109b6b5359d32"
+    },
+    {
+      "name": "send-feedback",
+      "version": 80,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "4e8affb9180657487fa947b7eed39b752065911a209ed80aaeefd8762bfd85b1"
+    },
+    {
+      "name": "send-mission-check-in",
+      "version": 50,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "15a5a76ebb2dcc8f1e52d783b88b069dc3ac193ac54a792df25bcad19abddb3f"
+    },
+    {
+      "name": "send-reactivation-nudge",
+      "version": 20,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "06eda4f4a0e975b16e4cde755ec8652071e90edbc105301535978b447d2d23be"
+    },
+    {
+      "name": "send-result-email",
+      "version": 45,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "b796d51c766501c6236c312372068a4e5c6c5d23ef93791df70a7e8a363474e2"
+    },
+    {
+      "name": "sharpen-analyze",
+      "version": 96,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "493c4ca6d4967f2b95343d2fc0580da62daa76ce58c40693bb19d2ea55c756f6"
+    },
+    {
+      "name": "subscribe-briefing",
+      "version": 12,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "8a7c2fb0d9e28a1210eb2ded77032e5340eea2f8c8261fd6ea87d7266ee407e3"
+    },
+    {
+      "name": "swap-profile-data",
+      "version": 42,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "ce39b0c72739812aca50a78303c5e809d4860808f47f35b6752e7f82262f7aed"
+    },
+    {
+      "name": "sync-to-google-sheets",
+      "version": 340,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "c5d3de3d1319150bafece1498629e79e48ec25c618d7d400b157f80e30178350"
+    },
+    {
+      "name": "synthesize-interview-audio",
+      "version": 42,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "ff50afedf9ff9f18d9c2c0a5f6b2505131ab7233458589cfe3197c960ac5d2b3"
+    },
+    {
+      "name": "track-event",
+      "version": 42,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "82e01f833366b487c867be469c9ca86671d6caad5cb280acc8b1b7abe9842968"
+    },
+    {
+      "name": "track-fork",
+      "version": 44,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "1716e1da74a7d2aeeb693d855da922a676b38ae0a20174494d28ba1ceee4e2cc"
+    },
+    {
+      "name": "update-adoption-momentum",
+      "version": 160,
+      "verify_jwt": false,
+      "status": "ACTIVE",
+      "ezbr_sha256": "c46a20500e41e0e2949c03f00c896b819a482fdb081d0a9581d6b4f2875afe90"
+    },
+    {
+      "name": "verify-diagnostic-payment",
+      "version": 135,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "9d5167b443a39da393d683765698c1f6010434c665e38199fa972f732850bea7"
+    },
+    {
+      "name": "voice-transcribe",
+      "version": 166,
+      "verify_jwt": true,
+      "status": "ACTIVE",
+      "ezbr_sha256": "47ddff1f2d8e69dfdccd5977da5a9f0673a50f8c30e9c4efe622f14ffec03668"
+    }
+  ]
+}

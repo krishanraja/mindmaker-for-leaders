@@ -1,10 +1,28 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const manifest = JSON.parse(readFileSync('supabase/containment/manifest.json', 'utf8'));
 const errors = [];
 const names = new Set();
+
+function collectTypeScriptFiles(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return collectTypeScriptFiles(path);
+    return entry.isFile() && entry.name.endsWith('.ts') ? [path] : [];
+  });
+}
+
+for (const target of collectTypeScriptFiles(join('supabase', 'functions'))) {
+  const current = readFileSync(target, 'utf8');
+  if (/\broleFromJwt\s*\(/.test(current)) {
+    errors.push(`${target}: JWT payload roles must never be trusted as authentication`);
+  }
+  if (/JSON\.parse\s*\(\s*atob\s*\(/.test(current)) {
+    errors.push(`${target}: decoded JWT payload text must never authorize a request`);
+  }
+}
 
 for (const entry of manifest.functions) {
   if (names.has(entry.name)) errors.push(`duplicate manifest function: ${entry.name}`);
