@@ -16,7 +16,7 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 **STATE_ROUTE:** `project-documentation/ctrl-evolution/README.md`
 
-**CURRENT_PHASE:** Founder alignment (Build Apps with Krish, Phase 2), awaiting G2. Broader product implementation and material visual work are paused.
+**CURRENT_PHASE:** Founder alignment (Build Apps with Krish, Phase 2), complete through G10. Broader product implementation and material visual work remain paused until the first-loop, delivery, export and validation choices are closed.
 
 **SOURCE_LAYERS:**
 
@@ -26,7 +26,9 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 - External evidence: primary provenance, memory, personalization, decision-quality, reliance and human-feedback research.
 - Obsolete or quarantined: static assessment as default, value-after-data-extraction, answer vending, static persona as a sufficient brain, ownerless persistence, global personalized cache, silent self-rewrite and unearned diagnostic claims.
 
-**PRODUCT_TRUTH (locked through G1):** CTRL helps a decision-owning leader see something materially sharper about one real consequential decision within five useful minutes, own the call, and let a portable, inspectable working model of their judgement grow as useful residue. Strategic forks are the first proving domain, product and quality calls second, and people decisions third. It begins as the client engine inside Mindmake's thirty-day proof, not a third public offer.
+**PRODUCT_TRUTH (locked through G10):** CTRL is a relationship-embedded AI-transition decision companion for decision-owning leaders. It helps a leader see something materially sharper about how AI changes their category, organisation, staff or own role within five useful minutes, own the call, and let a portable, inspectable model of their judgement grow as useful residue. Personal capability is the mechanism; better category and organisational outcomes are the company-funded value. It begins inside Mindmake's thirty-day proof, where it should improve client–Krish work and strengthen Krish backstage before asking the client to form a standalone product habit.
+
+The first wedge is leader adaptation, followed by organisation now/next/not-yet pacing; live AI-initiative triage remains conditional. CTRL may support work and role design but must not evaluate named people or recommend employment actions. A leader-owned Private Leader Brain and a company transition map remain separately permissioned assets.
 
 **NON_GOALS:**
 
@@ -55,7 +57,23 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 **AUTHORITY:** D-016 authorised the exact production trust containment, which is now live and independently verified. Append-only discovery and redacted snapshot maintenance remain authorised. Broader product implementation, material visual construction, main-branch merge, capability restoration and public release require their own scoped gates.
 
-**NEXT_ACTION:** Krish answers G2: the strongest seven-day proof signals, the most valuable insufficient-evidence behavior, and where value should be felt during the thirty-day engagement. Codex preserves exact selections and nuance before routing G3.
+**NEXT_ACTION:** Continue founder alignment with the first actual five-minute decision loop, the thirty-day delivery and commercial experience, the portable export end-state, and the held-out validation design. Present questions immediately; never delay them for persistence or bespoke interaction QA.
+
+## Current strategic synthesis through G10
+
+| Choice | Current call | Why it matters |
+|---|---|---|
+| Where to play | AI-transition decisions for decision-owning leaders inside the Mindmake thirty-day proof | A bounded domain is commercially coherent and can be evaluated; CTRL is not a generic business-decision chatbot. |
+| Value creation | Better category and organisational outcomes through a more capable leader | This stitches company-funded value to the leader-owned AI-brain promise. |
+| First wedge | Leader stop/start/delegate/learn/excellence, then organisation now/next/not-yet; live initiative triage conditional | It creates reusable capability before expanding into a broader decision portfolio. |
+| Operating model | Client-plus-Krish and backstage value first; solo use only when exceptionally fast, obvious and additive | The existing trusted relationship is the fastest route to value and better evidence. |
+| Evidence model | Flexible, consented, claim-type-specific orchestration; transcripts retain speaker, time, decision, context and provenance | The AI does the preparation without treating convenient context as reliable truth. |
+| Brain model | Learn all nine judgement dimensions progressively through real work | The brain becomes rich without an exhaustive or invasive upfront intake. |
+| Ownership | Separate Private Leader Brain and company transition map; ambiguity stays private; genuine off-record leaves no durable trace | This reconciles personal ownership, company value and advisor continuity without pretending undo can unshare. |
+| Signature experience | Anticipate the next tension, remember what mattered, improve the human session, turn thought into action, retain corrections, connect category/company/self, sharpen the decision | “Magic” comes from earned continuity and consequence, not confident guessing or simulated personhood. |
+| Proof | Held-back new-decision performance first; reinvested capacity, transition-map quality and staff agency second; return pull is an adoption signal | This resists hindsight, luck, artifact completion and engagement vanity. |
+
+The remaining decision-critical tensions are explicit rather than smoothed over: adaptive magic versus reproducible evaluation; proactive “interestingness” versus protection of attention; automatic usefulness versus genuine privacy; and founder appetite for rich ranked elicitation versus target-user overwhelm. Each now has a test or flip rule in the canonical ledger.
 
 ## Progress
 
@@ -94,14 +112,32 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 - `D-014` Begin with work; invite personal context only when its relevance is clear.
 - `D-015` Choose the first recognition from the strongest supported hidden criterion, missed tension or sharper choice; abstain rather than manufacture one.
 - `D-016` Apply staged production trust containment within the recorded non-deletion and secure-rollback boundary.
-- `D-017` Use genuine interactive controls for founder-alignment ranking and selection questions; target-user defaults remain subject to testing.
+- `D-017` Questions must appear immediately in a reliably visible format; use native interactive controls only when dependable, and never delay a question for persistence or QA.
+- `D-018` Early value is an unarticulated criterion or tension plus genuine return pull; return desire is not outcome proof.
+- `D-019` Insufficient evidence produces the precise gap and the smallest uncertainty-reducing experiment; abstention remains the safety fallback.
+- `D-020` Thirty-day value is felt first in client–Krish sessions and backstage support; solo use must be nearly effortless and additive.
+- `D-021` Return is earned through continuity, a better next Mindmake session and a tiny useful action or experiment.
+- `D-022` CTRL v1 is bounded to AI-transition decisions, not general business decision support.
+- `D-023` Personal capability is the mechanism for category and organisational outcomes paid for by the company.
+- `D-024` Initial decision families are work allocation, role redesign, leader adaptation, pace and AI-initiative triage; no named-person evaluation or employment recommendations.
+- `D-025` The first wedge and proof model centre leader adaptation, organisation pacing and held-back decision performance.
+- `D-026` Maintain separately permissioned leader-owned and company-owned assets.
+- `D-027` Orchestrate available consented evidence adaptively and ask only the lowest-friction route-changing question.
+- `D-028` Treat transcript context quality as sacrosanct, with provenance, third-party minimisation and source recheck.
+- `D-029` Only deliberate non-personal company outputs cross automatically; ambiguity stays private and off-record leaves no durable trace.
+- `D-030` Prove repeatable held-back decision quality before making improved-judgement or diagnostic claims.
+- `D-031` Learn all nine judgement dimensions progressively through real work rather than upfront intake.
+- `D-032` Separate quiet consented evidence capture, provisional inference and confidence/consequence-gated durable truth.
+- `D-033` Preserve contradictions, ask precisely, test minimally, escalate when needed and repair every downstream effect of correction without apology theatre.
+- `D-034` Use the minimum helpful interruption; “interesting” alone does not earn the right to interrupt.
+- `D-035` Orchestrate the ranked signature-magic sequence adaptively rather than forcing every moment into every interaction.
 
 ## Snapshot contract
 
 `ledger.snapshot.jsonl` is sorted by `record_key` using bytewise ordering and then by version. Every object is recursively key-sorted and encoded as UTF-8 with LF endings. It contains no export timestamp or other volatile field.
 
-- Rows: 134
-- SHA-256: `bdf1b84c43ced60b517a01ec1205e43dcae1bb83d6eb59277696a844138390c5`
+- Rows: 186
+- SHA-256: `6b70cf61db593aa9ca42170ec200fad2b8f3f45f80cab40c10d1d1aed7865c07`
 - Sidecar: `ledger.snapshot.sha256`
 
 Every answered interview batch is appended to Supabase as an idempotent version, read back with generated hashes, then regenerated here. Existing history is never rewritten.
