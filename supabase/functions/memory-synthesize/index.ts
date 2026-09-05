@@ -2,6 +2,28 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { fetchWithTimeout } from "../_shared/with-timeout.ts";
 import { hasExactServiceCredential } from "../_shared/service-auth.ts";
 
+type MemoryFact = {
+  id: string;
+  fact_category: string;
+  fact_value: string;
+};
+
+type DetectedPattern = {
+  pattern_type: string;
+  pattern_text: string;
+  confidence: number;
+  supporting_fact_ids?: string[];
+};
+
+type ExistingPattern = {
+  id: string;
+  pattern_type: string;
+  pattern_text: string;
+  evidence_count: number;
+  confidence: number;
+  status: string;
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -73,7 +95,7 @@ Deno.serve(async (req) => {
     }
 
     // Build facts summary for LLM
-    const factsSummary = facts.map((f: any) =>
+    const factsSummary = facts.map((f: MemoryFact) =>
       `[${f.id}] (${f.fact_category}) ${f.fact_value}`
     ).join("\n");
 
@@ -139,7 +161,7 @@ Be specific and actionable, not generic. Max 10 patterns.`,
       throw new Error("No content in OpenAI response");
     }
 
-    const parsed = JSON.parse(content);
+    const parsed = JSON.parse(content) as { patterns?: DetectedPattern[] };
     const detectedPatterns = parsed.patterns || [];
 
     let patternsNew = 0;
@@ -155,7 +177,7 @@ Be specific and actionable, not generic. Max 10 patterns.`,
 
     for (const detected of detectedPatterns) {
       // Check if a similar pattern already exists (fuzzy match by type + text similarity)
-      const existing = (existingPatterns || []).find((ep: any) =>
+      const existing = (existingPatterns || []).find((ep: ExistingPattern) =>
         ep.pattern_type === detected.pattern_type &&
         (ep.pattern_text.toLowerCase().includes(detected.pattern_text.toLowerCase().slice(0, 30)) ||
          detected.pattern_text.toLowerCase().includes(ep.pattern_text.toLowerCase().slice(0, 30)))
@@ -163,9 +185,9 @@ Be specific and actionable, not generic. Max 10 patterns.`,
 
       if (existing) {
         // Update existing pattern
-        const newEvidence = (existing as any).evidence_count + 1;
-        const newConfidence = Math.min(1, Math.max(detected.confidence, (existing as any).confidence));
-        const newStatus = newConfidence > 0.8 && newEvidence > 3 ? "confirmed" : (existing as any).status;
+        const newEvidence = existing.evidence_count + 1;
+        const newConfidence = Math.min(1, Math.max(detected.confidence, existing.confidence));
+        const newStatus = newConfidence > 0.8 && newEvidence > 3 ? "confirmed" : existing.status;
 
         await supabase
           .from("user_patterns")
@@ -176,10 +198,10 @@ Be specific and actionable, not generic. Max 10 patterns.`,
             source_facts: detected.supporting_fact_ids || [],
             status: newStatus,
           })
-          .eq("id", (existing as any).id);
+          .eq("id", existing.id);
 
         patternsUpdated++;
-        if (newStatus === "confirmed" && (existing as any).status !== "confirmed") {
+        if (newStatus === "confirmed" && existing.status !== "confirmed") {
           patternsConfirmed++;
         }
       } else {
