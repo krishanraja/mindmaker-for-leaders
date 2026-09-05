@@ -23,8 +23,8 @@
  * pg_cron calls this over net.http_post with a bearer secret, not a user JWT,
  * so the platform's JWT verification has to be off and the gate below IS the
  * auth. Same shape as memory-sweep and decision-watch: a dedicated shared
- * secret, OR the service-role key, OR a JWT whose role is service_role.
- * Anything else is 403 before a single row is read.
+ * secret or the exact service-role key. Unverified JWT payload claims are never
+ * trusted. Anything else is 403 before a single row is read.
  *
  *   supabase functions deploy capture-week --no-verify-jwt
  *
@@ -72,6 +72,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createLogger } from "../_shared/logger.ts";
 import { withTimeout } from "../_shared/with-timeout.ts";
+import { hasExactServiceCredential } from "../_shared/service-auth.ts";
 import {
   buildProposal,
   isoWeekOf,
@@ -120,17 +121,6 @@ const QUARTERLY_ITEM_CAP = 40;
 /** Wall-clock budget for one database round trip. */
 const DB_TIMEOUT_MS = 15_000;
 
-function roleFromJwt(bearer: string): string | null {
-  try {
-    let p = bearer.split(".")[1];
-    p = p.replace(/-/g, "+").replace(/_/g, "/");
-    while (p.length % 4) p += "=";
-    return JSON.parse(atob(p)).role ?? null;
-  } catch (_e) {
-    return null;
-  }
-}
-
 interface QuarterlyReport {
   user_id: string;
   sort_run_id: string | null;
@@ -162,12 +152,12 @@ serve(async (req) => {
   // -------------------------------------------------------------------------
   // The gate. Cron-only, exactly as memory-sweep.
   // -------------------------------------------------------------------------
-  const bearer = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
   const captureSecret = Deno.env.get("CAPTURE_WEEK_SECRET") ?? "";
   const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const okCaller =
-    (!!bearer && ((!!captureSecret && bearer === captureSecret) || (!!svcKey && bearer === svcKey))) ||
-    roleFromJwt(bearer) === "service_role";
+  const okCaller = hasExactServiceCredential(
+    req.headers.get("Authorization"),
+    [captureSecret, svcKey],
+  );
   if (!okCaller) return json({ error: "Forbidden" }, 403);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";

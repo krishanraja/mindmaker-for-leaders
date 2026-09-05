@@ -78,7 +78,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.track-event]
-verify_jwt = false
+verify_jwt = true
 
 # Public email capture on the /download landing page. No session
 # exists yet for a cold visitor, so this must accept unauthenticated calls.
@@ -194,3 +194,43 @@ verify_jwt = false
 # Derives honest fact-to-fact edges for the current user (authed, JWT required).
 [functions.memory-edges-derive]
 verify_jwt = true
+
+# === EXPLICIT TRUST-CONTAINMENT CONTRACTS ===
+# These blocks pin the live gateway posture for routes that previously relied
+# on the platform default or had drifted from production. The handler manifest
+# is supabase/containment/manifest.json.
+[functions.send-feedback]
+verify_jwt = true
+
+[functions.send-mission-check-in]
+verify_jwt = true
+
+[functions.synthesize-interview-audio]
+verify_jwt = true
+
+[functions.aa-tts-monitor]
+verify_jwt = true
+
+[functions.claim-history]
+verify_jwt = true
+
+[functions.swap-profile-data]
+verify_jwt = true
+
+[functions.generate-progress-snapshot]
+verify_jwt = true
+
+[functions.enrich-company-context]
+verify_jwt = true
+
+[functions.generate-meeting-prep]
+verify_jwt = true
+
+[functions.detect-trends]
+verify_jwt = true
+
+[functions.capture-week]
+verify_jwt = false
+
+[functions.decision-watch]
+verify_jwt = false

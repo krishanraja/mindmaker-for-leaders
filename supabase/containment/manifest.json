@@ -1,0 +1,303 @@
+{
+  "schema_version": 1,
+  "release_id": "trust-containment-2026-09-05",
+  "purpose": "Auditable function-first containment. This manifest does not authorize deployment by itself.",
+  "rollback_rule": "Restore a route only after its owner, authentication, authorization, side effects, and adversarial tests are independently verified. Never restore a known-vulnerable version.",
+  "functions": [
+    {
+      "name": "memory-lifecycle",
+      "action": "exact_service_credential",
+      "verify_jwt": false,
+      "forbidden_source_markers": ["roleFromJwt("],
+      "required_source_markers": ["hasExactServiceCredential("]
+    },
+    {
+      "name": "memory-synthesize",
+      "action": "exact_service_credential",
+      "verify_jwt": false,
+      "forbidden_source_markers": ["roleFromJwt("],
+      "required_source_markers": ["hasExactServiceCredential("]
+    },
+    {
+      "name": "memory-sweep",
+      "action": "exact_service_credential",
+      "verify_jwt": false,
+      "forbidden_source_markers": ["roleFromJwt("],
+      "required_source_markers": ["hasExactServiceCredential("]
+    },
+    {
+      "name": "send-reactivation-nudge",
+      "action": "exact_service_credential",
+      "verify_jwt": false,
+      "forbidden_source_markers": ["roleFromJwt("],
+      "required_source_markers": ["hasExactServiceCredential("]
+    },
+    {
+      "name": "capture-week",
+      "action": "exact_service_credential",
+      "verify_jwt": false,
+      "forbidden_source_markers": ["roleFromJwt("],
+      "required_source_markers": ["hasExactServiceCredential("]
+    },
+    {
+      "name": "decision-watch",
+      "action": "exact_service_credential",
+      "verify_jwt": false,
+      "forbidden_source_markers": ["roleFromJwt("],
+      "required_source_markers": ["hasExactServiceCredential("]
+    },
+    {
+      "name": "sharpen-analyze",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": false,
+      "expected_status": 410
+    },
+    {
+      "name": "send-advisory-sprint-notification",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": false,
+      "expected_status": 410
+    },
+    {
+      "name": "send-feedback",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": true,
+      "expected_status": 410
+    },
+    {
+      "name": "send-mission-check-in",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": true,
+      "expected_status": 410
+    },
+    {
+      "name": "synthesize-interview-audio",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": true,
+      "expected_status": 410
+    },
+    {
+      "name": "ai-generate",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": true,
+      "expected_status": 410
+    },
+    {
+      "name": "aa-tts-monitor",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": true,
+      "expected_status": 410
+    },
+    {
+      "name": "claim-history",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": true,
+      "expected_status": 410
+    },
+    {
+      "name": "send-booking-notification",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": false,
+      "expected_status": 410
+    },
+    {
+      "name": "swap-profile-data",
+      "action": "retired",
+      "template": "templates/retired-410.ts",
+      "verify_jwt": true,
+      "expected_status": 410
+    },
+    {
+      "name": "enrich-profile",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": false,
+      "expected_status": 503,
+      "fallback": "Onboarding continues without enrichment."
+    },
+    {
+      "name": "generate-result",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": false,
+      "expected_status": 503,
+      "fallback": "The client renders its deterministic local result."
+    },
+    {
+      "name": "subscribe-briefing",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": false,
+      "expected_status": 503,
+      "fallback": "No subscription is created or reactivated."
+    },
+    {
+      "name": "send-result-email",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": false,
+      "expected_status": 503,
+      "fallback": "The result remains available on screen and no email is sent."
+    },
+    {
+      "name": "track-fork",
+      "action": "neutral_handoff",
+      "template": "templates/track-fork-neutral.ts",
+      "verify_jwt": false,
+      "expected_status": 200,
+      "fallback": "The client continues to ordinary signup without a handoff token."
+    },
+    {
+      "name": "track-event",
+      "action": "accepted_noop",
+      "template": "templates/track-event-noop.ts",
+      "verify_jwt": true,
+      "expected_status": 202,
+      "fallback": "Telemetry remains non-blocking and writes nothing."
+    },
+    {
+      "name": "detect-trends",
+      "action": "readonly_empty",
+      "template": "templates/detect-trends-empty.ts",
+      "verify_jwt": true,
+      "expected_status": 200,
+      "fallback": "Home receives no generic trend prior."
+    },
+    {
+      "name": "portfolio-pulse",
+      "action": "readonly_empty",
+      "template": "templates/portfolio-pulse-empty.ts",
+      "verify_jwt": false,
+      "expected_status": 200,
+      "fallback": "Ranking stays unchanged because the cohort prior is empty."
+    },
+    {
+      "name": "ai-assessment-chat",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "compass-analyze",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "roi-estimate",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "populate-index-participant",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "generate-progress-snapshot",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "enrich-company-context",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "generate-meeting-prep",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "create-leader-assessment",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "voice-transcribe",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "create-diagnostic-payment",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "verify-diagnostic-payment",
+      "action": "unavailable",
+      "template": "templates/unavailable-503.ts",
+      "verify_jwt": true,
+      "expected_status": 503
+    },
+    {
+      "name": "resend-webhook",
+      "action": "retryable_unavailable",
+      "template": "templates/webhook-unavailable-503.ts",
+      "verify_jwt": false,
+      "expected_status": 503
+    },
+    {
+      "name": "batch-compute-drift",
+      "action": "forbidden",
+      "template": "templates/forbidden-403.ts",
+      "verify_jwt": false,
+      "expected_status": 403
+    },
+    {
+      "name": "batch-process-pending-syncs",
+      "action": "forbidden",
+      "template": "templates/forbidden-403.ts",
+      "verify_jwt": false,
+      "expected_status": 403
+    },
+    {
+      "name": "generate-quarterly-index",
+      "action": "forbidden",
+      "template": "templates/forbidden-403.ts",
+      "verify_jwt": false,
+      "expected_status": 403
+    },
+    {
+      "name": "sync-to-google-sheets",
+      "action": "forbidden",
+      "template": "templates/forbidden-403.ts",
+      "verify_jwt": false,
+      "expected_status": 403
+    },
+    {
+      "name": "update-adoption-momentum",
+      "action": "forbidden",
+      "template": "templates/forbidden-403.ts",
+      "verify_jwt": false,
+      "expected_status": 403
+    }
+  ]
+}

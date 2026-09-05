@@ -41,13 +41,13 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 **SURFACE_DEPENDENCIES:**
 
-1. Trust substrate — invisible subject identity, permission, provenance, scoped cache, correction and erasure.
-2. Decide entry — guided help, something specific, or a quick exercise.
-3. Five-minute contrast loop — provisional human view, smallest useful contrast, independent AI view, reconciliation and owned call.
-4. Strategic receipt — immediate reflection, tension or preferred path, uncertainty and next move.
-5. Brain — inspectable criteria, evidence, context, contradictions and corrections.
-6. Return and outcome — revisit when a decision becomes live, an outcome lands or evidence conflicts.
-7. Portable export — human-readable brain plus machine-readable provenance, versions and evaluation fixtures.
+1. Trust substrate: invisible subject identity, permission, provenance, scoped cache, correction and erasure.
+2. Decide entry: guided help, something specific, or a quick exercise.
+3. Five-minute contrast loop: provisional human view, smallest useful contrast, independent AI view, reconciliation and owned call.
+4. Strategic receipt: immediate reflection, tension or preferred path, uncertainty and next move.
+5. Brain: inspectable criteria, evidence, context, contradictions and corrections.
+6. Return and outcome: revisit when a decision becomes live, an outcome lands or evidence conflicts.
+7. Portable export: human-readable brain plus machine-readable provenance, versions and evaluation fixtures.
 
 **VERTICAL_SLICE (provisional):** Live decision → minimum useful contrast → evidence-backed AI view → accept/resist/correct → user-owned call → transparent, authorised brain update → portable version.
 
