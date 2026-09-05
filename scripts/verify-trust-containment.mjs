@@ -28,7 +28,10 @@ for (const entry of manifest.functions) {
 const config = readFileSync('supabase/config.toml', 'utf8');
 for (const entry of manifest.functions) {
   const escaped = entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = new RegExp(`\\[functions\\.${escaped}\\]([^\\[]*)`, 'm').exec(config);
+  const match = new RegExp(
+    `^\\[functions\\.${escaped}\\]\\s*\\r?\\n([\\s\\S]*?)(?=^\\[|(?![\\s\\S]))`,
+    'm',
+  ).exec(config);
   if (!match) {
     errors.push(`${entry.name}: no explicit config.toml block`);
     continue;

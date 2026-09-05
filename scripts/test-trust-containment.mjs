@@ -101,6 +101,9 @@ for (const entry of manifest.functions.filter((item) => item.template)) {
   assert(response.headers.get('cache-control') === 'no-store', `${entry.name}: cache control`);
   assert(response.headers.get('x-content-type-options') === 'nosniff', `${entry.name}: nosniff`);
   assert(response.headers.get('access-control-allow-origin') === '*', `${entry.name}: CORS origin`);
+  if (entry.template === 'templates/webhook-unavailable-503.ts') {
+    assert(response.headers.get('retry-after') === '3600', `${entry.name}: retry-after`);
+  }
   assertSubset(await response.json(), expected.body, entry.name);
 
   const options = await loaded.handler(new Request(request.url, { method: 'OPTIONS' }));
