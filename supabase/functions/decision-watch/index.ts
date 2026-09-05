@@ -12,6 +12,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createLogger } from "../_shared/logger.ts";
+import { hasExactServiceCredential } from "../_shared/service-auth.ts";
 import { verifyClaim } from "../decision-engine/verify.ts";
 import { proposeReaction } from "../decision-engine/reaction.ts";
 import type { ClaimType } from "../decision-engine/types.ts";
@@ -25,28 +26,21 @@ const MAX_CASES = 2; // cases per run
 const MAX_CLAIMS = 6; // hard cap on re-verifications per run (edge budget)
 const STALE_HOURS = 24;
 
-function roleFromJwt(bearer: string): string | null {
-  try {
-    let p = bearer.split(".")[1];
-    p = p.replace(/-/g, "+").replace(/_/g, "/");
-    while (p.length % 4) p += "=";
-    return JSON.parse(atob(p)).role ?? null;
-  } catch (_e) {
-    return null;
-  }
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const log = createLogger("decision-watch");
   const json = (b: unknown, s = 200) =>
     new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-  const bearer = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
-  if (roleFromJwt(bearer) !== "service_role") return json({ error: "Forbidden" }, 403);
+  const watchSecret = Deno.env.get("DECISION_WATCH_SECRET") ?? "";
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const okCaller = hasExactServiceCredential(
+    req.headers.get("Authorization"),
+    [watchSecret, serviceKey],
+  );
+  if (!okCaller) return json({ error: "Forbidden" }, 403);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
   try {

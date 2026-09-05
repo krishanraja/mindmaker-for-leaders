@@ -2,9 +2,17 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-21 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
+Last verified: 2026-09-05 for emergency public-entry availability against production containment release `trust-containment-2026-09-05`, its production database readback, and branch commit `7c48e6fc3f33fff0baa3ce0029f95e38381da258` for the pending recovery copy. The remaining commercial contract was last verified on 2026-08-21 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`
 
 This is the single human-readable authority for marketing and selling CTRL. The machine-readable companion is [`public/.well-known/product.json`](../../public/.well-known/product.json). Agents must use both and may not upgrade an inference into a claim.
+
+## Current public-entry availability
+
+Emergency trust containment is active. The public intake currently provides its questions, a deterministic result rendered in the browser, and the ordinary CTRL signup route.
+
+Do not currently promise company recognition or enrichment, a server-generated result, a persisted portfolio handoff, a result email, or creation or reactivation of a no-login briefing subscription. Those capabilities are temporarily unavailable. No result email or briefing subscription is created on this path.
+
+The containment branch includes honest inline recovery copy and preserves the signup action when briefing subscription fails. That frontend change is not live until the repository owner merges the branch and the Vercel deployment is verified. Elsewhere in this document, public-entry enrichment, handoff, result-email, and no-login subscription language describes the restoration contract unless a paragraph explicitly says it is available now.
 
 ## Product and category
 
@@ -40,7 +48,15 @@ The buyer pays two recurring taxes:
 1. **The context tax.** Every AI tool starts without enough knowledge of the leader, company, priorities, and judgement.
 2. **The evidence tax.** Important calls are made with incomplete research because checking the assumptions takes too long.
 
-CTRL promises a quieter way through both. The mechanism is one connected loop:
+CTRL promises a quieter way through both. During containment, the public-entry mechanism is:
+
+```text
+one-question intake
+  -> deterministic local result
+  -> ordinary CTRL signup
+```
+
+The intended restoration loop is:
 
 ```text
 one-question intake
@@ -59,6 +75,8 @@ The value is not “more AI.” It is less to process, better-grounded judgement
 
 ## What the buyer can use now
 
+This table describes the authenticated product surfaces. It does not reinstate the public-entry capabilities paused above.
+
 | Job | Shipped experience | Tier |
 |---|---|---|
 | Notice what matters | Today and a short personalised read or listen | Free |
@@ -74,15 +92,15 @@ Entitlements are owned by [`src/constants/planMatrix.ts`](../../src/constants/pl
 
 Use these mechanics as proof. Do not convert them into unsupported outcome statistics.
 
-- Today, briefing, and no-login delivery use the same curated and personally ranked pool.
-- Optional onboarding enrichment accepts one work email or public LinkedIn URL, shows the resolved company and fresh linked signals, and transfers the bounded dossier only after the leader confirms it. Search failure or thin evidence is shown as thin rather than filled with invented context.
+- Today and authenticated briefing delivery use the same curated and personally ranked pool. New no-login briefing subscriptions from the public intake are temporarily unavailable.
+- During containment, the public intake can accept a work email or public LinkedIn URL, but it does not perform company or role enrichment. It renders the deterministic local result and continues to ordinary signup without a persisted portfolio handoff. The restoration contract is to show the resolved company and fresh linked signals, then transfer only the bounded dossier the leader confirms.
 - Decide decomposes a call into claims, verifies load-bearing claims, and exposes the evidence trail and judgement boundary.
 - A Blind Spot pattern requires one current user-authored or verified intention plus at least two distinct recurrence records. The recurrence must span two source kinds or at least seven days. Anything weaker is labelled a tension and asks one low-cost question.
 - Blind Spot displays server-owned excerpts, source labels, dates, and evidence strength. A generated candidate is not saved before confirmation.
 - Rejected Blind Spot evidence is suppressed until the inputs change. A confirmed pattern can create one experiment and a later briefing check-in.
 - Memory is owner-scoped, correctable, exportable, and protected by row-level security. The application also writes an AES-256-GCM encrypted shadow payload, but retains plaintext fields for display and search. Never claim end-to-end encryption, exclusively encrypted storage, or a security certification.
 - The Edge Pro MCP server is read-only, uses a revocable per-leader bearer token, and exposes the leader's current context. Briefing access is opt-in.
-- Delivery subscriptions can send the useful briefing by email and link to audio without requiring a dashboard visit. Do not promise WhatsApp, Slack, or another channel until it is shipped and listed in the current feature inventory.
+- Existing delivery paths must be checked against the current release state before they are promised. The public intake cannot currently create or reactivate a no-login briefing subscription or send its result email. Do not promise WhatsApp, Slack, or another channel until it is shipped and listed in the current feature inventory.
 
 ## Message hierarchy
 

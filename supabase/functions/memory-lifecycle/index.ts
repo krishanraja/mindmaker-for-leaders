@@ -1,20 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { hasExactServiceCredential } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-function roleFromJwt(bearer: string): string | null {
-  try {
-    let p = bearer.split(".")[1];
-    p = p.replace(/-/g, "+").replace(/_/g, "/");
-    while (p.length % 4) p += "=";
-    return JSON.parse(atob(p)).role ?? null;
-  } catch (_e) {
-    return null;
-  }
-}
 
 const corsJson = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -27,8 +17,8 @@ Deno.serve(async (req) => {
   try {
     // Dual-mode auth: service-role { user_id } sweep mode OR user-JWT getUser() mode.
     const authHeader = req.headers.get("Authorization") ?? "";
-    const bearer = authHeader.replace("Bearer ", "");
-    const isServiceRole = (!!bearer && bearer === (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "")) || roleFromJwt(bearer) === "service_role";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const isServiceRole = hasExactServiceCredential(authHeader, [serviceRoleKey]);
 
     let userId: string;
     let supabase;

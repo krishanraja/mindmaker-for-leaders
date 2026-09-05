@@ -2,22 +2,32 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-21 against production readback through the Supabase management API
+Last verified: 2026-09-05 against production function, database, and deployment readback
 
 ## Production baseline
 
 | Item | Verified state |
 |---|---|
 | Canonical host | `https://makeyourmindup.ai` |
-| Source branch | `main` |
-| Application baseline | `19d80f36ecda990bce4c3e1e6d18c97387d9ed33` |
-| Vercel deployment | `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci`, READY in production at `19d80f36` |
-| Test suite | 891 tests in 55 files |
-| Edge Function directories | 115 excluding `_shared`, of 178 deployed on the shared project |
+| Frontend source | `main`; containment recovery copy is branch-only |
+| Frontend production baseline | `19d80f36ecda990bce4c3e1e6d18c97387d9ed33` |
+| Vercel production | `dpl_24XfsypkNsxciZJ2Q1Arx3n8XNci`, READY at `19d80f36`; does not contain the recovery-copy repair |
+| Frontend baseline test suite | 891 tests in 55 files |
+| Edge Function source inventory | 115 directories excluding `_shared` |
+| Shared-project Edge Functions | 183 live |
 | Hook files | 51 |
-| SQL migration files | 165 in the source tree |
+| SQL migration files | 167 in the source tree |
 
-Current source inventory is 115 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migration files.
+Current source inventory is 115 Edge Function directories excluding `_shared`, 51 hook files, and 167 SQL migration files. The 183-function shared-project total is deployment inventory, not repository ownership.
+
+## Emergency trust containment, 2026-09-05
+
+- A 44-route containment manifest is live. Thirty-five routes now return side-effect-free containment responses: 10 retired, 15 unavailable, one retryable unavailable, five forbidden, one neutral handoff, one accepted no-op, and two read-only empty responses. Nine routes were repaired in place: seven exact-service credential paths, `synthesize-briefing` with exact-service or authenticated-owner access, and `infer-briefing-interests` bound to the signed-in user.
+- Management readback found 44/44 ACTIVE with expected `verify_jwt` settings and matching runtime source. No-authorisation probes passed 44/44, and invalid service-claim probes were rejected 8/8. A positive real scheduled-service execution remains pending its next observed run.
+- Migration `supabase/migrations/20260905063000_emergency_trust_containment.sql` is recorded in production as `emergency_trust_containment_20260905` at version `20260905060515`. Fresh independent post-readback returned PASS with zero violations, all 23 policy fingerprints unchanged, service-role preservation fingerprint `57dd0937d6b2439f800c5deccb8868fa`, and no `kit-nudges-email` cron job.
+- Containment intentionally pauses public onboarding enrichment, server result generation, result email, and new no-login briefing subscription. The browser still produces its deterministic local result and can continue to ordinary signup; `track-fork` returns no handoff token. Honest morning-brief failure copy is committed on `codex/trust-containment-2026-09-05`, but production will not show that repair until the owner merges it and Vercel deploys it.
+
+Exact route names, versions, hashes, JWT flags, and database evidence live in [`supabase/containment/manifest.json`](../../supabase/containment/manifest.json), [`release-lock.production.json`](../../supabase/containment/release-lock.production.json), and [`db/evidence/`](../../supabase/containment/db/evidence/).
 
 ## Applied migration state, and why the ledger is not the answer
 
@@ -84,9 +94,9 @@ Two fixes followed. The role-then-name rule no longer spans a comma, because a r
 
 The same transform runs on the live extraction path, so these were live defects, not just backfill defects.
 
-## Scheduled work actually running
+## Scheduled rows last read back on 2026-08-20
 
-Twelve cron jobs are active on the production database. This is the real schedule contract; a `cron.schedule` call in a migration file is only a claim until it appears here.
+Schedule presence is not execution proof. Twelve cron rows were active at this readback; the 2026-09-05 containment verified anonymous rejection, but a positive real machine-credential run remains pending. A `cron.schedule` call in a migration file is only a claim until it appears here. The retired `kit-nudges-email` job was absent before and after containment, at count zero.
 
 | Job | Schedule (UTC) |
 |---|---|
@@ -125,24 +135,25 @@ The Supabase management connector permits metadata and read-only SQL but rejects
 
 This file records the deployed application baseline that the current documentation was checked against. Documentation-only commits may advance Git without changing the application behavior described here.
 
-## Shipped product state
+## Current product state
 
 - CTRL and Make Your Mind Up form one product on the canonical host.
-- The public intake hands consented context into First Lens.
+- The public intake remains usable for a deterministic local result and ordinary signup. Company enrichment, server-generated result, result email, new no-login briefing subscription, and portfolio handoff are temporarily unavailable under containment.
 - Today retains premium category visuals and the one-pool ranking model.
 - The briefing control, responsive player, talk-back, and Settings access are integrated.
+- Server voice transcription is temporarily unavailable; typing and browser-supported speech remain the recovery paths.
 - Segoe UI Variable Display/Text is the selected human-facing typography system.
 - Decide, Blind Spot, Memory, context export, delivery, and Edge Pro billing paths are present.
 - Lesson-kit routes redirect to the public demo.
 - Vault-backed prewarm and delivery jobs are represented by the release migrations and runbook.
 
-## Onboarding company-recognition production release
+## Historical onboarding company-recognition release, superseded
 
-The onboarding company-recognition release was merged through PR #369 and is live from `main` at `b5770194b4646302f47e36655e389f7ec2eb43f8`. It includes a 72px animated segmented loading instrument; work-email or LinkedIn resolution; a server-sanitised company dossier with fresh linked signals; one-click confirmation or correction; confirmed company and role handoff into Memory; and company-first no-login result and daily briefings. It uses the existing PDL, Brandfetch, Tavily, and Brave providers and introduces no second curation store.
+The onboarding company-recognition release was merged through PR #369 at `b5770194b4646302f47e36655e389f7ec2eb43f8`. At that release it included a 72px animated segmented loading instrument; work-email or LinkedIn resolution; a server-sanitised company dossier with fresh linked signals; one-click confirmation or correction; confirmed company and role handoff into Memory; and company-first no-login result and daily briefings. It used the existing PDL, Brandfetch, Tavily, and Brave providers and introduced no second curation store.
 
 Release verification: 876 Vitest tests pass across 55 files; the four public-onboarding Playwright journeys pass on `makeyourmindup.ai` at 390x844, 320x568, desktop, and reduced motion; typecheck introduces zero diagnostics against the 221-diagnostic baseline; targeted lint, standards, documentation checks, the 2,791-module production build, and 3/3 prerender routes pass. The production browser suite includes correction recovery, LinkedIn URL normalisation, linked evidence, briefing consent, handoff navigation, 44px targets, and horizontal-overflow checks.
 
-Production readback confirms remote migration `20260812020209_onboarding_company_dossier_handoff`; all ten additive columns at their expected PostgreSQL types; and ACTIVE Edge Function versions `enrich-profile` 33, `generate-result` 36, `track-fork` 34, `send-result-email` 35, `send-daily-briefing` 24, and `resolve-handoff` 11. The public functions retain their bounded input and rate-limit contracts; `resolve-handoff` retains JWT verification. Required PDL, Brandfetch, Tavily, and Brave secret names are configured. The previous production deployment `dpl_Cmyhi9xwWi5ydGgsjmRzjYKFhxvU` remains the frontend rollback candidate; the additive database fields remain backward compatible.
+That 2026-08-12 onboarding release is superseded operationally by the 2026-09-05 containment state above. Its additive database fields remain backward compatible, but the old function versions and public onboarding behavior are not current production contracts.
 
 ## Verification evidence
 

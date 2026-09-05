@@ -1,23 +1,26 @@
 # Supabase, data, and AI
 
 Status: Current
-Last verified: 2026-08-20
+Last verified: 2026-09-05 against live containment readback
 
 Read [`../current/architecture.md`](../current/architecture.md) and the [`REPLICATION_GUIDE`](../../project-documentation/REPLICATION_GUIDE.md) before changing this boundary.
 
 ## The project is shared
 
-Project `bkyuxvschuwngtcdhsyg` hosts CTRL alongside other Mindmaker surfaces. It carries 177 deployed Edge Functions; CTRL accounts for 113. Before you change anything server-side:
+Project `bkyuxvschuwngtcdhsyg` hosts CTRL alongside other Mindmaker surfaces. Production readback on 2026-09-05 found 183 live Edge Functions. The repository source tree contains 115 Edge Function directories excluding `_shared`, 51 hook files, and 167 SQL migrations. These counts describe different inventories and cannot be used to infer function ownership. Before you change anything server-side:
 
-- Only the directories under `supabase/functions/` belong to this repository. A function in the dashboard may be another product's.
-- Every function here is live. Several have no caller in this repository because cron, an external webhook, or an email link invokes them. Never treat "nothing imports it" as evidence a function is unused.
+- Directory presence establishes only that this repository contains a source artifact. Establish ownership and the exact live name before changing, deploying, or rolling back a function; a dashboard function may belong to another product.
+- Treat every repository function as production-significant. Cron, an external webhook, or an email link may invoke a function with no in-repository caller. Neither directory presence nor the absence of an import proves current deployment state.
 - Scope migrations to objects CTRL owns. Other products have tables and cron jobs in the same database.
+
+The current production containment lock covers a reviewed 44-route subset: 35 side-effect-free containment responses and nine in-place authorization repairs. Do not generalize that receipt to the other shared-project functions. The exact manifest is [`../../supabase/containment/manifest.json`](../../supabase/containment/manifest.json), and the production readback is [`../../supabase/containment/release-lock.production.json`](../../supabase/containment/release-lock.production.json).
 
 ## Data
 
 - Migrations are append-only and additive by default.
 - Production has historical migration-ledger drift, so `schema_migrations` cannot tell you what is applied. Confirm by reading the object a migration creates. Never run a blanket production `supabase db push`.
 - Preflight the exact schema and ledger, apply only the reviewed migration, read the objects and policies back, then record only the applied version.
+- The exact emergency containment migration is a recorded exception with complete preflight and post-readback evidence. Production ledger name `emergency_trust_containment_20260905`, version `20260905060515`, was independently verified at `PASS` with zero violations. See the [database containment record](../../supabase/containment/db/README.md).
 - Every retryable public or scheduled write must converge on a stable key.
 - Explicit facts, tentative inferences, and behavioral feedback remain separate data types.
 - Use existing owner-scoped tables and the shared brain accessor. Do not create per-surface profile stores.

@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "cross-env ROLLUP_DISABLE_NATIVE=1 vite",
     "docs:check": "node scripts/check-docs.mjs",
+    "trust:check": "node scripts/verify-trust-containment.mjs && node scripts/test-trust-containment.mjs && vitest run supabase/functions/_shared/service-auth.test.ts",
     "standards:check": "node standards/check-standards.mjs",
     "prebuild": "node standards/check-standards.mjs",
     "build": "cross-env ROLLUP_DISABLE_NATIVE=1 vite build && (npm run prerender || echo '[prerender] skipped; SPA shipped')",

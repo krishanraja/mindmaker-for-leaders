@@ -14,8 +14,7 @@
  *
  * Idempotent: skips any (kind, lower(text)) already present in either table.
  *
- * Auth: accepts a user JWT (preferred) or service-role with explicit
- * `target_user_id` body param (used by cron).
+ * Auth: requires a verified user JWT and always derives the target from it.
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -236,13 +235,6 @@ serve(async (req) => {
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
     let userId: string | null = null;
-    let body: { target_user_id?: string } = {};
-    try {
-      body = await req.json();
-    } catch {
-      body = {};
-    }
-
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.replace('Bearer ', '');
       const userClient = createClient(supabaseUrl, anonKey, {
@@ -250,10 +242,6 @@ serve(async (req) => {
       });
       const { data: userData } = await userClient.auth.getUser(token);
       if (userData?.user) userId = userData.user.id;
-    }
-
-    if (!userId && body.target_user_id) {
-      userId = body.target_user_id;
     }
 
     if (!userId) {

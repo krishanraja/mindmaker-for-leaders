@@ -23,6 +23,7 @@
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendEmail, getDefaultSender, createEmailTemplate, createEmailButton, getAppUrl } from "../_shared/email-utils.ts";
 import { createLogger } from "../_shared/logger.ts";
+import { hasExactServiceCredential } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,17 +49,6 @@ type NudgeKind = "first_decision" | "dormant";
 interface Candidate {
   userId: string;
   kind: NudgeKind;
-}
-
-function roleFromJwt(bearer: string): string | null {
-  try {
-    let payload = bearer.split(".")[1];
-    payload = payload.replace(/-/g, "+").replace(/_/g, "/");
-    while (payload.length % 4) payload += "=";
-    return JSON.parse(atob(payload)).role ?? null;
-  } catch {
-    return null;
-  }
 }
 
 function jsonResponse(payload: unknown, status: number): Response {
@@ -102,8 +92,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const bearer = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
-    if (roleFromJwt(bearer) !== "service_role") {
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (!hasExactServiceCredential(req.headers.get("Authorization"), [serviceRoleKey])) {
       return jsonResponse({ error: "Forbidden" }, 403);
     }
 

@@ -11,6 +11,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createLogger } from "../_shared/logger.ts";
+import { hasExactServiceCredential } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,17 +20,6 @@ const corsHeaders = {
 
 const LIFECYCLE_MAX = 25; // hard cap on lifecycle POSTs per run (edge budget)
 const SYNTH_MAX = 15; // hard cap on paid synthesize POSTs per run
-
-function roleFromJwt(bearer: string): string | null {
-  try {
-    let p = bearer.split(".")[1];
-    p = p.replace(/-/g, "+").replace(/_/g, "/");
-    while (p.length % 4) p += "=";
-    return JSON.parse(atob(p)).role ?? null;
-  } catch (_e) {
-    return null;
-  }
-}
 
 interface SweepRow {
   user_id: string;
@@ -43,18 +33,20 @@ serve(async (req) => {
   const json = (b: unknown, s = 200) =>
     new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-  const bearer = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
   const sweepSecret = Deno.env.get("MEMORY_SWEEP_SECRET") ?? "";
   const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const okCaller = (!!bearer && ((!!sweepSecret && bearer === sweepSecret) || (!!svcKey && bearer === svcKey))) || roleFromJwt(bearer) === "service_role";
+  const okCaller = hasExactServiceCredential(
+    req.headers.get("Authorization"),
+    [sweepSecret, svcKey],
+  );
   if (!okCaller) return json({ error: "Forbidden" }, 403);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-  // Internal POST bearer = the service-role key (itself a signed JWT whose payload
-  // role === "service_role", so each engine's roleFromJwt takes sweep mode).
+  // Internal POST bearer is compared byte-for-byte with the configured service
+  // role key by each engine. Unverified JWT payload claims are never trusted.
   const post = (fn: string, userId: string) =>
     fetch(`${supabaseUrl}/functions/v1/${fn}`, {
       method: "POST",

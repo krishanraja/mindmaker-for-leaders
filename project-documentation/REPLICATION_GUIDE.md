@@ -2,7 +2,7 @@
 
 Status: Reference
 Owner: Mindmaker
-Last verified: 2026-08-20
+Last verified: 2026-09-05
 
 The release and recovery runbook. [`docs/current/release-state.md`](../docs/current/release-state.md) owns what is currently deployed; this file owns how to get there and how to get back.
 
@@ -19,7 +19,7 @@ This is the operational guide for a fresh CTRL instance and for releasing the ca
 - ElevenLabs for audio, Resend for email, Stripe for Edge Pro.
 - Vercel for frontend deployment.
 
-Recounted 2026-08-28: 115 Edge Function directories excluding `_shared`, 51 hook files, and 165 SQL migrations. Re-count before quoting.
+Recounted 2026-09-05: 115 Edge Function directories excluding `_shared`, 51 hook files, and 167 SQL migrations. Re-count before quoting.
 
 ## Local setup
 

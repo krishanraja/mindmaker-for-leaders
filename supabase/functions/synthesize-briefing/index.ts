@@ -9,6 +9,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
+import { hasExactServiceCredential } from "../_shared/service-auth.ts";
 import { ProviderUnavailableError } from "../_shared/with-timeout.ts";
 import { synthesizeSpeech, TTSResponseError } from "../_shared/tts.ts";
 
@@ -17,6 +18,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const briefingNotFound = () => new Response(JSON.stringify({ error: "Briefing not found" }), {
+  status: 404,
+  headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -27,7 +33,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const authHeader = req.headers.get("Authorization") ?? "";
-    const serviceRequest = authHeader === `Bearer ${supabaseServiceKey}`;
+    const serviceRequest = hasExactServiceCredential(authHeader, [supabaseServiceKey]);
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
@@ -56,12 +62,9 @@ serve(async (req) => {
       .eq("id", briefing_id)
       .single();
 
-    if (fetchError || !briefing) throw new Error("Briefing not found");
+    if (fetchError || !briefing) return briefingNotFound();
     if (!serviceRequest && briefing.user_id !== callerId) {
-      return new Response(JSON.stringify({ error: "Briefing not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return briefingNotFound();
     }
 
     // Cost-control rate limit per briefing-owner. Each TTS run is paid bytes;

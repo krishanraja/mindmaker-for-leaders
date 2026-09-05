@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "project_ref": "bkyuxvschuwngtcdhsyg",
+  "status": "READY_FOR_FORWARD",
+  "observed_at": "2026-09-05 06:03:10.303535+00",
+  "database_name": "postgres",
+  "database_user": "supabase_read_only_user",
+  "server_version": "17.4",
+  "source_sql_sha256": "E988EF4E59CD47E64491340CDFB6AA5BA7FE85BDC5507E2C9BABD518B13290EC",
+  "complete_sections_artifact": {
+    "path": "production-preflight-sections-20260905.json",
+    "sha256": "9799FF528B7DA3BD6DC5F4219517C6579802FF1B4E2E54288BC688B66F5EFC50",
+    "bytes": 410661,
+    "result_sets": 15
+  },
+  "exact_script_attempt_artifact": {
+    "path": "production-preflight-20260905.json",
+    "sha256": "BA3C98FAC2D77D5A4E91B75F28010EBE0B3E6BA047AB1EE674C8299CD8B17CA7",
+    "bytes": 752,
+    "runner_note": "The connector returned only the final result set. Every result set was therefore captured separately in a fresh read-only transaction before DDL."
+  },
+  "gates": {
+    "required_relations": 23,
+    "missing_required_relations": 0,
+    "wrong_relation_kinds": 0,
+    "required_security_definer_functions": 6,
+    "unexpected_required_function_shapes": 0,
+    "optional_claim_user_history_present": false,
+    "cron_job_catalog_exists": true,
+    "cron_unschedule_by_id_exists": true,
+    "kit_nudges_email_matching_jobs": 0,
+    "policy_fingerprint_rows": 23,
+    "service_role_preservation_fingerprint": "57dd0937d6b2439f800c5deccb8868fa"
+  }
+}

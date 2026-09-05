@@ -82,6 +82,7 @@ export function CtrlOnboarding() {
   const [result, setResult] = useState<OnboardingResult | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [continuing, setContinuing] = useState(false);
   const [correcting, setCorrecting] = useState(false);
   const [weekTouched, setWeekTouched] = useState(false);
@@ -205,6 +206,7 @@ export function CtrlOnboarding() {
   const sendResult = useCallback(async () => {
     const trimmed = email.trim();
     if (!EMAIL_RE.test(trimmed) || sending || sent) return;
+    setSendError(null);
     setSending(true);
     try {
       const { error } = await supabase.functions.invoke('subscribe-briefing', {
@@ -215,6 +217,8 @@ export function CtrlOnboarding() {
       void supabase.functions.invoke('send-result-email', {
         body: { id: responseId, email: trimmed, variant: 'decide' },
       });
+    } catch {
+      setSendError("I can't start your morning brief just now. Nothing was subscribed or sent. You can still continue into CTRL.");
     } finally {
       setSending(false);
     }
@@ -325,6 +329,7 @@ export function CtrlOnboarding() {
             email={email}
             sent={sent}
             sending={sending}
+            sendError={sendError}
             continuing={continuing}
             correcting={correcting}
             onEmailChange={setEmail}
@@ -336,7 +341,7 @@ export function CtrlOnboarding() {
       default:
         return null;
     }
-  }, [aiTouched, begin, brandProgress, companyAi, companyFuture, continueIntoCtrl, continuing, correctIdentity, correcting, delayedDecision, email, extraSelf, finish, identityInput, navigate, reducedMotion, result, sendResult, sending, sent, step, submitIdentity, weekNeedsMe, weekTouched]);
+  }, [aiTouched, begin, brandProgress, companyAi, companyFuture, continueIntoCtrl, continuing, correctIdentity, correcting, delayedDecision, email, extraSelf, finish, identityInput, navigate, reducedMotion, result, sendError, sendResult, sending, sent, step, submitIdentity, weekNeedsMe, weekTouched]);
 
   return (
     <main
@@ -618,6 +623,7 @@ function ResultStep({
   email,
   sent,
   sending,
+  sendError,
   continuing,
   correcting,
   onEmailChange,
@@ -630,6 +636,7 @@ function ResultStep({
   email: string;
   sent: boolean;
   sending: boolean;
+  sendError: string | null;
   continuing: boolean;
   correcting: boolean;
   onEmailChange: (value: string) => void;
@@ -703,7 +710,11 @@ function ResultStep({
             {sent ? 'Briefing on' : 'Start morning brief'}
           </button>
         </div>
-        <p className="font-mymu-serif text-sm leading-relaxed text-[var(--onboarding-fg-48)]">One email each morning, with audio. No login needed. One click to stop.</p>
+        {sendError ? (
+          <p role="status" aria-live="polite" className="rounded-xl border border-[var(--onboarding-fg-15)] bg-[var(--onboarding-fg-03)] px-4 py-3 font-mymu-serif text-sm leading-relaxed text-[var(--onboarding-fg-72)]">{sendError}</p>
+        ) : (
+          <p className="font-mymu-serif text-sm leading-relaxed text-[var(--onboarding-fg-48)]">One email each morning, with audio. No login needed. One click to stop.</p>
+        )}
         <button type="button" onClick={onContinue} disabled={continuing} className="flex min-h-14 w-full items-center justify-between rounded-2xl bg-[var(--onboarding-action)] px-5 py-4 text-left font-mymu-serif text-lg font-semibold text-[var(--onboarding-action-ink)] transition-transform hover:-translate-y-0.5 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--onboarding-accent-a)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--onboarding-bg)] motion-reduce:transform-none">
           {hasCompany ? 'Yes, this is my world' : 'Let CTRL start here'}
           {continuing ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}

@@ -2,9 +2,15 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8` and live Supabase readback
+Last verified: 2026-09-05 for emergency public-entry availability against production containment release `trust-containment-2026-09-05`, its production database readback, and branch commit `7c48e6fc3f33fff0baa3ce0029f95e38381da258` for the pending recovery copy. The remaining documentation set was last verified on 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8` and live Supabase readback
 
 This directory is the shortest reliable path from product intent to safe operation. It describes CTRL as it exists now. Git history and the dated project records explain how it arrived here.
+
+## Emergency containment snapshot
+
+Production trust containment is active as of 2026-09-05. The public intake currently provides its questions, a deterministic result rendered in the browser, and the ordinary CTRL signup route. Company recognition and enrichment, the server-generated result, persisted portfolio handoff, result email, and creation or reactivation of a no-login briefing subscription are temporarily unavailable.
+
+The containment branch includes inline recovery copy that explains the briefing pause and keeps signup available. That frontend change is branch-only until the repository owner merges it and the Vercel deployment is verified. Use [`supabase/containment/manifest.json`](../../supabase/containment/manifest.json) for the intended containment action and [`supabase/containment/release-lock.production.json`](../../supabase/containment/release-lock.production.json) for production readback. Product and commercial documents preserve the intended restoration contract while labelling it separately from current availability.
 
 ## Read by job
 
