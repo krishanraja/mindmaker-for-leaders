@@ -237,3 +237,6 @@ verify_jwt = false
 
 [functions.decision-eval]
 verify_jwt = true
+
+[functions.infer-briefing-interests]
+verify_jwt = true

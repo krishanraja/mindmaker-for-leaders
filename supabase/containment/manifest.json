@@ -54,6 +54,13 @@
       "required_source_markers": ["hasExactServiceCredential("]
     },
     {
+      "name": "infer-briefing-interests",
+      "action": "authenticated_user_only",
+      "verify_jwt": true,
+      "forbidden_source_markers": ["target_user_id"],
+      "required_source_markers": ["auth.getUser("]
+    },
+    {
       "name": "sharpen-analyze",
       "action": "retired",
       "template": "templates/retired-410.ts",
