@@ -6,8 +6,8 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 - Canonical discovery state: private, append-only Supabase schema `ctrl_discovery`.
 - Audit and recovery surface: this deterministic, redacted Git snapshot.
-- Repository evidence baseline: `8174677125bc2799929e3196282e75cba215b443`.
-- Working branch: `codex/discovery-ledger-2026-09-04`; `main` is unchanged.
+- Initial repository evidence baseline: `8174677125bc2799929e3196282e75cba215b443`.
+- Working branch: `codex/trust-containment-2026-09-05`; `main` is unchanged.
 - The Git snapshot is read-only evidence and never overrides Supabase.
 - Private rationale, user excerpts, restricted risks, personal data, operational identifiers and private hashes are excluded.
 - Credential-shaped values are rejected before insertion and never enter either artifact.
@@ -16,7 +16,7 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 **STATE_ROUTE:** `project-documentation/ctrl-evolution/README.md`
 
-**CURRENT_PHASE:** Founder alignment (Build Apps with Krish, Phase 2). Product implementation and material visual work are paused.
+**CURRENT_PHASE:** Founder alignment (Build Apps with Krish, Phase 2), awaiting G2. Broader product implementation and material visual work are paused.
 
 **SOURCE_LAYERS:**
 
@@ -26,7 +26,7 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 - External evidence: primary provenance, memory, personalization, decision-quality, reliance and human-feedback research.
 - Obsolete or quarantined: static assessment as default, value-after-data-extraction, answer vending, static persona as a sufficient brain, ownerless persistence, global personalized cache, silent self-rewrite and unearned diagnostic claims.
 
-**PRODUCT_TRUTH (provisional pending G1):** CTRL helps a decision-owning leader see something materially sharper about one real consequential decision within five useful minutes, own the call, and let a portable, inspectable working model of their judgement grow as useful residue. It begins as the client engine inside Mindmake's thirty-day proof, not a third public offer.
+**PRODUCT_TRUTH (locked through G1):** CTRL helps a decision-owning leader see something materially sharper about one real consequential decision within five useful minutes, own the call, and let a portable, inspectable working model of their judgement grow as useful residue. Strategic forks are the first proving domain, product and quality calls second, and people decisions third. It begins as the client engine inside Mindmake's thirty-day proof, not a third public offer.
 
 **NON_GOALS:**
 
@@ -53,9 +53,9 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 **FIRST_SURFACE:** `Decide: first five-minute loop`. The Brain is the residue of useful work, not the first tax imposed on the user. Material visual work stays paused until founder direction is locked.
 
-**AUTHORITY:** Read-only inspection and append-only/redacted documentation are authorised. Production containment, product implementation, material visual construction, deployment and public release are not yet authorised.
+**AUTHORITY:** D-016 authorised the exact production trust containment, which is now live and independently verified. Append-only discovery and redacted snapshot maintenance remain authorised. Broader product implementation, material visual construction, main-branch merge, capability restoration and public release require their own scoped gates.
 
-**NEXT_ACTION:** Krish replies with the production-containment gate and the three G1 product choices. Codex records exact selections and nuance before asking G2.
+**NEXT_ACTION:** Krish answers G2: the strongest seven-day proof signals, the most valuable insufficient-evidence behavior, and where value should be felt during the thirty-day engagement. Codex preserves exact selections and nuance before routing G3.
 
 ## Progress
 
@@ -70,7 +70,7 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 | Design adaptive founder interview | Complete |
 | Design trust, erasure, cache and export architecture | Complete |
 | Verify high-confidence trust findings against live bundles | Complete |
-| Apply and verify production trust containment | Awaiting founder authorisation |
+| Apply and verify production trust containment | Complete |
 | Complete founder product interview | In progress |
 | Produce decision-complete product corpus and architecture | Pending |
 | Diverge, render and approve first material surface | Pending |
@@ -90,13 +90,17 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 - `D-010` CTRL reveals its view after the user's provisional view.
 - `D-011` Begin with three human doors: guide me, something specific, or a quick exercise.
 - `D-012` Mobile is tap-first, with voice immediately available and typing optional.
+- `D-013` Prove CTRL on strategic forks first, product and quality calls second, and people decisions third.
+- `D-014` Begin with work; invite personal context only when its relevance is clear.
+- `D-015` Choose the first recognition from the strongest supported hidden criterion, missed tension or sharper choice; abstain rather than manufacture one.
+- `D-016` Apply staged production trust containment within the recorded non-deletion and secure-rollback boundary.
 
 ## Snapshot contract
 
 `ledger.snapshot.jsonl` is sorted by `record_key` using bytewise ordering and then by version. Every object is recursively key-sorted and encoded as UTF-8 with LF endings. It contains no export timestamp or other volatile field.
 
-- Rows: 122
-- SHA-256: `44dfe7e8d6aa14866d900715c4728030044f47405060289267d8da40e7f6f212`
+- Rows: 132
+- SHA-256: `ee13e0d616b465ff7ad3ed2373fb507c42a742f57b60bb6ca6d3304931af2b78`
 - Sidecar: `ledger.snapshot.sha256`
 
 Every answered interview batch is appended to Supabase as an idempotent version, read back with generated hashes, then regenerated here. Existing history is never rewritten.
