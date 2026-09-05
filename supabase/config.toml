@@ -234,3 +234,6 @@ verify_jwt = false
 
 [functions.decision-watch]
 verify_jwt = false
+
+[functions.decision-eval]
+verify_jwt = true
