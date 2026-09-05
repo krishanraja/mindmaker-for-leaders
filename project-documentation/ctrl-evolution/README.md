@@ -57,9 +57,9 @@ The first wedge is leader adaptation, followed by organisation now/next/not-yet 
 
 **AUTHORITY:** D-016 authorised the exact production trust containment, which is now live and independently verified. Append-only discovery and redacted snapshot maintenance remain authorised. Broader product implementation, material visual construction, main-branch merge, capability restoration and public release require their own scoped gates.
 
-**ACTIVE_CASE:** Whether to reorient marketing completely around AI and redesign the division around high-agency, high-taste judgement and systems-administration capabilities. Treat marketing strategy, future operating model and current-team transition as three coupled but distinct decisions. The founder reports reluctance to change and mid-level staff spending entire weeks producing LinkedIn posts. This supports an obsolete-work-system diagnosis more strongly than it supports replacing current people; the causal role of mandate, incentives, permission and measures remains open.
+**ACTIVE_CASE:** Whether to reorient marketing completely around AI and redesign the division around high-agency, high-taste judgement and systems-administration capabilities. Treat marketing strategy, future operating model and current-team transition as three coupled but distinct decisions. The founder reports reluctance to change and mid-level staff spending entire weeks producing LinkedIn posts. Leadership had not yet committed the new strategy or changed incentives and success measures beyond encouraging greater Claude use. The evidence therefore supports strategic and operating-system ambiguity more strongly than it supports replacing current people.
 
-**NEXT_ACTION:** Establish what leadership had explicitly changed about the division's mandate, incentives, permission and success measures before attributing hesitation to the people (`Q-051`).
+**NEXT_ACTION:** Strip away AI and the people question and identify the business outcome marketing was failing to produce, or newly needed to produce (`Q-052`).
 
 ## Current strategic synthesis through G10
 
@@ -76,6 +76,18 @@ The first wedge is leader adaptation, followed by organisation now/next/not-yet 
 | Proof | Held-back new-decision performance first; reinvested capacity, transition-map quality and staff agency second; return pull is an adoption signal | This resists hindsight, luck, artifact completion and engagement vanity. |
 
 The remaining decision-critical tensions are explicit rather than smoothed over: adaptive magic versus reproducible evaluation; proactive “interestingness” versus protection of attention; automatic usefulness versus genuine privacy; and founder appetite for rich ranked elicitation versus target-user overwhelm. Each now has a test or flip rule in the canonical ledger.
+
+## Ikigai alignment
+
+The independently authored `CTRL Evolution` workbook was read directly from Google Sheets on 2026-09-05 (source modified `2026-09-05T08:39:31.403Z`). It strongly reinforces the current architecture: the leader keeps their edge after the room; the standard, memory and judgement belong to the person; early sight becomes decisions; claims are verified or silent; AI mechanics stay invisible; judgement compounds visibly; repetition moves from Krish into the system; adoption is pulled rather than pushed; and portability is earned.
+
+Its commercial phases resolve an apparent conflict in the current direction:
+
+- P1: the paid room creates the leader's edge file and relationship-embedded value.
+- P2: ongoing independent use begins only after leaders explicitly ask to keep it and retention is demonstrated.
+- P3: portability across roles and tools is proved only after retained value exists.
+
+Four refinements are now explicit. Continuous early-sight processing does not require a compulsory daily interruption. “What to do first” must preserve a user-owned call. Decision scorecards must measure process, calibration and appropriate resistance rather than naive win/loss outcomes. Standard fidelity may measure value alignment, but it cannot be the primary moat because matching the leader's existing answer would reward imitation over productive challenge; earlier high-quality calls and held-back decision performance remain stronger moat candidates.
 
 ## Progress
 
@@ -138,8 +150,8 @@ The remaining decision-critical tensions are explicit rather than smoothed over:
 
 `ledger.snapshot.jsonl` is sorted by `record_key` using bytewise ordering and then by version. Every object is recursively key-sorted and encoded as UTF-8 with LF endings. It contains no export timestamp or other volatile field.
 
-- Rows: 194
-- SHA-256: `bb2c70ae79bed52b8553f1e54357942cea172b285272e4a06dbb3f5903b9db8d`
+- Rows: 201
+- SHA-256: `d6b23c262398c6d616bf3fd9ad518761310ea792e8610e5b378543d375b8bcdd`
 - Sidecar: `ledger.snapshot.sha256`
 
 Every answered interview batch is appended to Supabase as an idempotent version, read back with generated hashes, then regenerated here. Existing history is never rewritten.
