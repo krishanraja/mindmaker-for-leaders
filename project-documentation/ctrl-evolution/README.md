@@ -100,8 +100,8 @@ This is the canonical, resumable state for the CTRL product evolution. It preven
 
 `ledger.snapshot.jsonl` is sorted by `record_key` using bytewise ordering and then by version. Every object is recursively key-sorted and encoded as UTF-8 with LF endings. It contains no export timestamp or other volatile field.
 
-- Rows: 133
-- SHA-256: `7c0016fabcbecb569064cbeb7139b6e0344b0ffec04a532543eb793bb25888ee`
+- Rows: 134
+- SHA-256: `bdf1b84c43ced60b517a01ec1205e43dcae1bb83d6eb59277696a844138390c5`
 - Sidecar: `ledger.snapshot.sha256`
 
 Every answered interview batch is appended to Supabase as an idempotent version, read back with generated hashes, then regenerated here. Existing history is never rewritten.
