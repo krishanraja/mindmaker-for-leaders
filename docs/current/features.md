@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8`, `src/router.tsx`, plan constants, and deployed onboarding and Blind Spot contracts
+Last verified: 2026-09-06 against source at `8174677`, `src/router.tsx`, and plan constants, adding the curation-pool audience axis and stance classification; the 2026-08-20 onboarding and Blind Spot contract verification was not re-run this pass
 
 This inventory distinguishes the user-facing product from supporting and nested harnesses. It does not treat every route or Edge Function as a feature.
 
@@ -26,6 +26,7 @@ Entitlements are defined by [`src/constants/planMatrix.ts`](../../src/constants/
 - Consented handoff into authenticated context and First Lens.
 - Nine AI-native news categories with stable visual motifs.
 - Shared-source clustering, corroboration, category balance, and role-aware ranking.
+- Audience axis and leader stance on the shared pool: each card is optionally classified by which business divisions it lands on (`affects`, up to five of eight identifiers) and what it asks of a leader (`stance`: opportunity, shift, or risk). Damage-only items carry no forward move and are dropped before caching.
 - One feed-tuning control reused by Today and Settings.
 - Email and audio delivery without a dashboard visit.
 - No-login briefings use confirmed company signals first and fill remaining space from the same shared curation pool rather than creating a company-news feed.

@@ -1,5 +1,11 @@
 # Agentic UI Testing Guide
 
+Status: Reference
+Owner: Mindmaker
+Last verified: 2026-08-20
+
+The Playwright and agent-driven UI testing approach. Complements the gates in [`docs/agent-instructions/verification.md`](./agent-instructions/verification.md), which owns what must be run.
+
 A comprehensive guide for autonomous AI agents to perform thorough end-to-end testing of web applications. This document provides structured test scenarios, expected behaviors, and debugging procedures.
 
 ---

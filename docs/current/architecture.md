@@ -2,7 +2,7 @@
 
 Status: Current
 Owner: Mindmaker
-Last verified: 2026-08-20 against production application baseline `b5770194b4646302f47e36655e389f7ec2eb43f8` and live readback through the Supabase management API
+Last verified: 2026-09-06 against source at `8174677`, adding the curation-pool audience axis and stance classification; this pass reconciled source and CHANGELOG only, not a fresh production baseline or live Supabase readback
 
 CTRL is a Vite React application on Vercel with Supabase Auth, PostgreSQL, Edge Functions, Storage, Vault, and scheduled jobs. The architecture has one personal context substrate and one curation pool. Product surfaces are views over those shared systems.
 
@@ -104,6 +104,8 @@ source gather
 ```
 
 Control Center is an optional read-only source adapter inside `live-headlines`. It does not create another feed. Missing bridge configuration fails closed.
+
+Each cached card is optionally classified along two axes by the same batched synthesis call: `affects` (which of eight business divisions the story lands on) and `stance` (opportunity, shift, risk, or damage). Damage-only items are dropped before caching; a served card never carries that stance. A service-gated `?backfill=1` action on `live-headlines` classifies already-cached days in place.
 
 ### Decision engine
 
